@@ -8,8 +8,10 @@ import pytest
 
 from crimson.dbg.diff import diff_traces
 from crimson.dbg.record import record_replay_to_trace
+from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import TraceReader, iter_trace_ticks
-from crimson.replay.codec import dump_replay_file, load_replay_file
+from crimson.replay.codec import load_replay_file
+from crimson.replay.types import REPLAY_FORMAT_VERSION
 
 FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "captures"
 MANIFEST_PATH = FIXTURE_DIR / "manifest.json"
@@ -21,6 +23,7 @@ if not MANIFEST_PATH.is_file():
     )
 
 MANIFEST = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+assert int(MANIFEST["format_version"]) == 1
 CASES = {case["name"]: case for case in MANIFEST["cases"]}
 
 pytestmark = [pytest.mark.replay_fixture]
@@ -36,17 +39,12 @@ def _candidate_trace(case: dict, recorded: dict[str, Path], tmp_path_factory: py
     if name in recorded:
         return recorded[name]
     work_dir = tmp_path_factory.mktemp(f"capture_{name}")
-    replay = load_replay_file(FIXTURE_DIR / case["crd"])
-    last_window_end = int(case["windows"][-1]["end_tick"])
-    trimmed = msgspec.structs.replace(replay, ticks=replay.ticks[: last_window_end + 1])
-    trimmed_crd = work_dir / "window.crd"
+    replay_path = FIXTURE_DIR / case["crd"]
     candidate_cdt = work_dir / "candidate.cdt"
-    dump_replay_file(trimmed_crd, trimmed)
     record_replay_to_trace(
-        replay_path=trimmed_crd,
+        replay_path=replay_path,
         out_path=candidate_cdt,
         warnings_out=[],
-        pre_tick_rand_draws=int(case["outside_draws_per_tick"] or 0),
     )
     recorded[name] = candidate_cdt
     return candidate_cdt
@@ -55,17 +53,22 @@ def _candidate_trace(case: dict, recorded: dict[str, Path], tmp_path_factory: py
 @pytest.mark.parametrize("name", sorted(CASES))
 def test_fixture_metadata_matches_manifest(name: str) -> None:
     case = CASES[name]
-    windows = case["windows"]
+    tick_range = case["trace_tick_range"]
     with TraceReader(FIXTURE_DIR / case["cdt"]) as trace:
         assert trace.meta.producer.impl == "frida_original"
-        assert int(trace.meta.tick_range.start_tick) == int(windows[0]["start_tick"])
-        assert int(trace.meta.tick_range.end_tick) == int(windows[-1]["end_tick"])
-        assert int(trace.meta.tick_range.tick_count) == int(case["window_tick_count"])
+        assert int(trace.meta.tick_range.start_tick) == int(tick_range["start_tick"])
+        assert int(trace.meta.tick_range.end_tick) == int(tick_range["end_tick"])
+        assert int(trace.meta.tick_range.tick_count) == int(tick_range["tick_count"])
         assert str(trace.meta.source.run_start_seed_source) == str(case["seed_source"])
-    assert sum(int(window["tick_count"]) for window in windows) == int(case["window_tick_count"])
+        assert int(trace.meta.trace_format_version) == int(TRACE_FORMAT_VERSION)
+        assert int(trace.meta.trace_schema_version) == int(TRACE_SCHEMA_VERSION)
+        assert int(case["trace_format_version"]) == int(TRACE_FORMAT_VERSION)
+        assert int(case["trace_schema_version"]) == int(TRACE_SCHEMA_VERSION)
     replay = load_replay_file(FIXTURE_DIR / case["crd"])
     assert int(replay.header.seed) == int(case["seed"])
     assert int(replay.header.game_mode_id) == int(case["game_mode_id"])
+    assert int(replay.header.replay_format_version) == int(REPLAY_FORMAT_VERSION)
+    assert int(case["replay_format_version"]) == int(REPLAY_FORMAT_VERSION)
     assert len(replay.ticks) == int(case["tick_count"])
 
 
@@ -98,35 +101,15 @@ def test_first_gameplay_draw_matches_native(
         caller = -1 if row.caller is None else int(row.caller)
         assert caller == int(expected["caller"])
         return
-    pytest.fail(f"{name}: candidate trace has no rng draws within the recorded window")
-
-
-def _window_cases() -> list[tuple[str, int, int]]:
-    return [
-        (name, int(window["start_tick"]), int(window["end_tick"]))
-        for name, case in sorted(CASES.items())
-        for window in case["windows"]
-    ]
+    pytest.fail(f"{name}: candidate trace has no rng draws")
 
 
 @pytest.mark.parametrize(
-    ("name", "start_tick", "end_tick"),
-    _window_cases(),
-    ids=[f"{name}-{start}..{end}" for name, start, end in _window_cases()],
+    "name",
+    sorted(CASES),
 )
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "known capture parity gaps: native burns rng draws outside the hooked gameplay "
-        "stream (see the .rng_evidence.json finalize reports), native weapon state at "
-        "run start is not modeled, and capture encodes some channel fields as raw f32 "
-        "bit patterns"
-    ),
-)
-def test_capture_window_strict_diff(
+def test_capture_strict_diff(
     name: str,
-    start_tick: int,
-    end_tick: int,
     recorded_candidates: dict[str, Path],
     tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
@@ -135,7 +118,5 @@ def test_capture_window_strict_diff(
     report = diff_traces(
         expected_trace_path=FIXTURE_DIR / case["cdt"],
         actual_trace_path=candidate,
-        tick_start=start_tick,
-        tick_end=end_tick,
     )
     assert report.ok, msgspec.json.encode(report.mismatch).decode()

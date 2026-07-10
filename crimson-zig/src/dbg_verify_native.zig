@@ -1,10 +1,13 @@
 const std = @import("std");
 
 const cdt_trace = @import("cdt_trace.zig");
+const checkpoint_diff_native = @import("checkpoint_diff_native.zig");
 const replay_codec = @import("replay_codec.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
+pub const frida_capture_format_version: i32 = 18;
+pub const frida_evidence_format_version: i32 = 1;
 
 pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !CommandOutput {
     if (args.len != 0) {
@@ -15,10 +18,25 @@ pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !Com
     defer stdout_buf.deinit();
     const writer = &stdout_buf.writer;
 
-    try writer.print("trace_schema_version={d}\n", .{cdt_trace.trace_schema_version});
-    try writer.print("replay_format_version={d}\n", .{replay_codec.replay_format_version});
-    try writer.print("required_channels={s}\n", .{cdt_trace.trace_required_channels});
-    try writer.writeAll("result=ok\n");
+    try writer.print(
+        \\trace_format_version={d}
+        \\trace_schema_version={d}
+        \\replay_format_version={d}
+        \\checkpoint_format_version={d}
+        \\frida_capture_format_version={d}
+        \\frida_evidence_format_version={d}
+        \\required_channels={s}
+        \\result=ok
+        \\
+    , .{
+        cdt_trace.trace_format_version,
+        cdt_trace.trace_schema_version,
+        replay_codec.replay_format_version,
+        checkpoint_diff_native.checkpoints_format_version,
+        frida_capture_format_version,
+        frida_evidence_format_version,
+        cdt_trace.trace_required_channels,
+    });
 
     return .{
         .stdout = try stdout_buf.toOwnedSlice(),
@@ -41,7 +59,7 @@ fn buildInvalidArgsOutput(
     };
 }
 
-test "dbg verify emits schema contract" {
+test "dbg verify emits complete ordered format contract" {
     const allocator = std.testing.allocator;
 
     const output = try runDbgVerify(allocator, &.{});
@@ -49,8 +67,15 @@ test "dbg verify emits schema contract" {
 
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expectEqualStrings("", output.stderr);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "trace_schema_version=12\n") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "replay_format_version=11\n") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "required_channels=checkpoint,sim_state,entity_samples,rng_stream,timing_samples\n") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.stdout, "result=ok\n") != null);
+    try std.testing.expectEqualStrings(
+        \\trace_format_version=2
+        \\trace_schema_version=14
+        \\replay_format_version=15
+        \\checkpoint_format_version=5
+        \\frida_capture_format_version=18
+        \\frida_evidence_format_version=1
+        \\required_channels=replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples
+        \\result=ok
+        \\
+    , output.stdout);
 }

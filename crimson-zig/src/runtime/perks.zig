@@ -328,6 +328,30 @@ pub fn perkSelectionPickWithContext(
     return perk_id;
 }
 
+/// Apply a replayed pick from the choices prepared by an earlier menu-open.
+///
+/// Native capture order matters: picking marks the cache dirty, but does not
+/// generate the next offer. A later explicit menu-open owns that RNG work.
+pub fn perkSelectionPickPreparedWithContext(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    choice_index: i32,
+    context: PerkApplyContext,
+) PerkApplyError!?PerkId {
+    if (players.len == 0) return null;
+    if (state.perk_selection.pending_count <= 0) return null;
+
+    const choices = perkSelectionPreparedChoices(players, &state.perk_selection);
+    if (choices.len == 0) return null;
+    if (choice_index < 0 or choice_index >= choices.len) return null;
+
+    const perk_id = choices[@intCast(choice_index)];
+    try applyPerkWithContext(state, players, perk_id, context);
+    state.perk_selection.pending_count = @max(0, state.perk_selection.pending_count - 1);
+    state.perk_selection.choices_dirty = true;
+    return perk_id;
+}
+
 pub fn applyPerk(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,

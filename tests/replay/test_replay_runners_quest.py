@@ -11,7 +11,7 @@ from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_ve
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from crimson.sim.hooks import TickResult
-from crimson.sim.input_providers import PerkPickCommand
+from crimson.sim.input_providers import PerkPickCommand, RngBurnOperation
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
@@ -68,13 +68,17 @@ def test_quest_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
-def test_quest_runner_inter_tick_rand_draws_shift_rng_state() -> None:
+def test_quest_runner_rng_burn_prelude_shifts_rng_state() -> None:
     _header, rec = _blank_quest_replay(ticks=3, seed=101)
     replay = rec.finish()
 
     baseline = _run_verify_playback(replay, spawn_entries=())
-    shifted = _run_verify_playback(replay, spawn_entries=(), inter_tick_rand_draws=1)
-    shifted_again = _run_verify_playback(replay, spawn_entries=(), inter_tick_rand_draws=1)
+    shifted_replay = msgspec.structs.replace(
+        replay,
+        ticks=[msgspec.structs.replace(tick, prelude=[RngBurnOperation(draws=1)]) for tick in replay.ticks],
+    )
+    shifted = _run_verify_playback(shifted_replay, spawn_entries=())
+    shifted_again = _run_verify_playback(shifted_replay, spawn_entries=())
 
     assert baseline.ticks == shifted.ticks == shifted_again.ticks == 3
     assert shifted == shifted_again
@@ -159,7 +163,7 @@ def test_quest_runner_ignores_stale_perk_pick_command() -> None:
     replay = rec.finish()
     replay.ticks[0] = msgspec.structs.replace(
         replay.ticks[0],
-        commands=[PerkPickCommand(player_index=0, choice_index=0)],
+        prelude=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
     result = _run_verify_playback(replay, spawn_entries=())

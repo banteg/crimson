@@ -5,29 +5,37 @@ tags:
   - formats
 ---
 
-# Trace format alignment plan
+# Trace format alignment
 
-This page tracks the owned `.cdt` trace format alignment across the three
-producers we compare during parity work:
+The debugging pipeline has one current contract shared by the three producers
+used for parity work:
 
 1. Original executable capture through Frida JSONL, finalized by
    `src/crimson/dbg/frida_finalize.py`.
 2. Python replay recording through `src/crimson/dbg/record.py`.
 3. Zig replay recording through `crimson-zig/src/cdt_trace.zig`.
 
-The goal is not to make Frida raw JSONL, Python internals, and Zig internals look
-identical. The goal is that once a run becomes a `.cdt`, consumers compare
-original, Python, and Zig traces without producer-specific interpretation.
+Frida JSONL remains a producer-private transport. Once a run becomes a `.cdt`,
+all consumers see the same typed tick data and no producer-specific aliases.
 
-## Current contract
+## Current-only contract
 
-The on-disk container is `trace_format_version = 1`. The active payload schema is
-`trace_schema_version = 12`.
+| Artifact | Current version | Authority |
+| --- | ---: | --- |
+| Frida raw JSONL | 18 | `scripts/frida/gameplay_diff_capture.js` |
+| Frida evidence sidecar | 1 | `src/crimson/dbg/frida_finalize.py` |
+| CDT container | 2 | `src/crimson/dbg/schema.py` |
+| CDT payload schema | 14 | `src/crimson/dbg/schema.py` |
+| CRD replay | 15 | `src/crimson/replay/types.py` |
 
-This is the shared `.cdt` schema. Zig's runtime replay trace structs are internal
-collection types and no longer define a separate on-disk msgpack trace format.
+These artifacts are throwaway debugging data. Readers and finalizers require
+exactly these versions; they do not translate, normalize, or salvage an older
+recording. Regenerate an original capture with the current Frida script when a
+version changes.
 
-Each tick has:
+## Canonical tick
+
+Every `TickRecord` contains:
 
 - `tick_index`
 - `elapsed_ms`
@@ -35,155 +43,130 @@ Each tick has:
 - `mode_id`
 - `channels`
 
-Required channels are:
+Schema 14 requires every channel on every tick:
 
+- `replay_step`
 - `checkpoint`
 - `sim_state`
 - `entity_samples`
 - `rng_stream`
 - `timing_samples`
 
-The core channel payload structs live in `src/crimson/dbg/canonical_channels.py`.
-Zig mirrors the same schema in `crimson-zig/src/cdt_trace.zig`.
+The core channel types live in
+`src/crimson/dbg/canonical_channels.py`; Zig mirrors the same wire schema in
+`crimson-zig/src/cdt_trace.zig`.
 
-`TraceMeta` is typed in Python and mirrored by Zig:
+### Replay-driving evidence
 
-- `TraceProducer`
-- `TraceSource`
-- `TraceTickRange`
+`replay_step` is the first channel because it records what drove the tick, not
+only what existed after the tick:
 
-Unknown metadata fields are rejected. Producer-private config stays in
-producer-private logs because it is diagnostic context, not part of the shared
-comparison contract.
+- `dt`: the exact f32 frame delta used by replay
+- `inputs`: one input row per player with movement, aim, and flags
+- `prelude`: ordered RNG burns and perk operations applied before simulation
+- `postlude`: perk-menu generation applied after simulation while tick RNG
+  tracing remains active
+- `commands`: Typ-o commands applied as part of the tick
 
-## Why this format exists
+The generated `.crd` sidecar and replay-recorded `.cdt` both derive from this
+same payload. There is no separate `replay_inputs` field in the raw tick
+contract.
 
-The trace format needs to answer parity questions in a stable order:
+### Movement state
 
-1. Did the two runs process the same tick?
-2. Did they reach the same replay checkpoint?
-3. Did they consume the same RNG draws in the same order?
-4. Did the same simulation state and entity samples exist after the tick?
-5. Did timing inputs and timing-sensitive phases match?
+Each player in `sim_state` preserves the movement and aim state needed to
+localize a control or integration mismatch:
 
-The format should preserve enough evidence to let `dbg diff` find the first bad
-tick and let `dbg focus` explain that tick without going back to producer-private
-logs.
+- `heading`
+- `move_speed`
+- `move_phase`
+- `aim`
+- `aim_heading`
 
-## Producer alignment
+These fields complement the input intent in `replay_step`: input differences
+identify the cause before simulation, while state differences show their
+effect.
+
+## Strict invariants
+
+The owned formats fail at the first contract violation:
+
+- unknown typed fields are rejected
+- CDT tick indices are strictly increasing and unique
+- Frida run-local and session-global tick indices are contiguous
+- tick, checkpoint, timing, mode, and player counts must agree
+- `replay_step.inputs` and `timing_samples` must be non-empty
+- every tick has exactly one `gpur_enter` timing sample
+- `gpur_enter.frame_dt_f32` equals `replay_step.dt`
+- `gpur_enter.frame_dt_ms_i32` equals `TickRecord.dt_ms_i32`
+- RNG rows use one-based call indices and valid CRT state transitions
+- a Frida stream must close every run and end with a matching `session_end`
+
+An `error`/`run_error`, truncated lifecycle, out-of-sequence row, or mismatched
+counter invalidates the capture. Partial-run finalization would turn missing
+evidence into an apparent behavior difference, so it is intentionally not
+supported.
+
+## Producer boundaries
 
 ### Frida original capture
 
-Frida JSONL is an owned producer-private wire format. It may keep capture-side
-field names and diagnostic bags, but `frida_finalize.py` is the boundary that
-must produce canonical `.cdt` rows.
+Capture format 18 emits typed lifecycle rows and canonical tick channels. The
+finalizer validates them, writes one CDT/CRD pair per completed run, and writes
+a sibling typed evidence sidecar containing the producer-only rows used to
+explain how canonical values were derived. The CDT, CRD, RNG report, and typed
+evidence sidecar publish as one rollback-safe artifact bundle.
 
-- current raw capture format is `capture_format_version = 12`
-- lifecycle rows are strict and typed
-- tick channels are decoded with `msgspec` and unknown fields are rejected
-- `caller_static` is normalized into durable RNG `caller`
-- raw `branch_id` is no longer accepted
-- timing samples are validated as replay-grade evidence
-- Frida session config stays in the raw JSONL stream, not in shared CDT metadata
+Run-start creature-pool residue is copied into the replay header when present.
+That preserves original state which survives the native reset and avoids
+reconstructing it from the first post-tick snapshot.
 
 ### Python replay recorder
 
-Python replay recording produces canonical checkpoint, state, entity, and RNG
-rows from the replay driver.
-
-- RNG rows carry direct draw state and optional static caller addresses
-- strict RNG trace mode catches untagged supported gameplay draws
-- metadata points at the replay file fingerprint and selected implementation
-- Python now emits the shared minimum `timing_samples` row set
-- metadata uses the same typed `TraceMeta` contract as finalized Frida and Zig
-  traces
+Python records the same replay step, checkpoint, simulation state, entity, RNG,
+and timing evidence while it executes a CRD replay. Metadata identifies the
+replay fingerprint and implementation, and is validated through the same typed
+`TraceMeta` contract.
 
 ### Zig replay recorder
 
-Zig replay recording is no longer a verifier-only side path. Its `.cdt` writer
-targets schema 12 and serializes the same required channels.
+Zig writes the same CDT v2/schema 14 chunks and channel payloads. Use
+`crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
+`crimson-zig dbg verify` to check that its compiled schema and replay versions
+match the owned contract.
 
-- Zig writes schema 12 `.cdt` traces
-- Zig exposes native trace export as `crimson-zig dbg record <replay.crd> --out <trace.cdt>`
-- Zig exposes the matching schema/replay contract check as `crimson-zig dbg verify`
-- RNG rows come from direct traced draws, not post-hoc lifecycle reconstruction
-- RNG rows include optional static caller addresses
-- timing rows are emitted and have coverage tests
-- metadata is structured in Zig before msgpack encoding
-- Zig metadata field names and requiredness match Python `TraceMeta`
+## Differential workflow
 
-## Timing policy
+Run `dbg verify` after changing any owned format; it prints the complete current
+Frida, evidence, CDT, replay, and checkpoint version matrix, then checks the
+Python, Frida, and Zig source declarations, tick-boundary field order, required
+channels, and replay/checkpoint payload ceilings for drift.
 
-`timing_samples` is required by the schema and compared by `dbg diff`, but
-Python replay traces used to write an empty list for every tick. Timing is now
-core, not optional.
+Run `dbg health` on both traces before interpreting a diff. Health validates the
+tick records, reports tick spans and gaps, counts rows per channel, and exits
+nonzero when the selected window is not ready for parity analysis.
 
-The shared minimum per tick is a `gpur_enter` sample with:
+`dbg diff` then compares the driving step before post-tick state:
 
-- `tick_index`
-- `gameplay_frame`
-- `phase = "gpur_enter"`
-- `write_kind = "snapshot"`
-- `frame_dt_f32`
-- `frame_dt_ms_i32`
-- `frame_dt_ms_f32`
-- `time_scale_active_entry`
-- `time_scale_active_current`
-- `time_scale_factor`
-- `bonus_reflex_boost_timer`
-- `mode_fn = "gameplay_update_and_render"`
+1. `replay_step`
+2. `checkpoint`
+3. `rng_stream`
+4. `sim_state`
+5. `entity_samples`
+6. `timing_samples`
 
-Frida validates this row against raw tick `dt`, Python records it from the replay
-driver `before_tick` hook, and Zig emits it from the replay step timing trace.
-`dbg diff` and `dbg focus` compare timing rows. Python `dbg health` and native
-`crimson-zig dbg health <trace.cdt> --format json` report required row channels
-that are present but empty across the selected trace window. Native
-`crimson-zig dbg tick <trace.cdt> <tick> --json` can inspect one tick's
-checkpoint, entity-count, event-count, RNG-row, and timing-row summary directly
-from the same CDT chunks. Native
-`crimson-zig dbg entity <trace.cdt> <entity_uid> --json` can also follow one
-sampled entity UID across a selected tick range. Native
-`crimson-zig dbg query <trace.cdt> "entities where uid == 0" --json` exposes a
-compact field-filter subset for tick and entity rows.
+The top-level mismatch remains the earliest divergent tick. The report also
+contains `channel_first_mismatches`, so one run exposes the first bad tick for
+each channel instead of hiding downstream evidence behind the earliest one.
+`channel_first_diagnostics` carries non-behavioral evidence.
 
-## Phase model
+RNG caller labels are attribution metadata. If draw values and state
+transitions match but caller labels differ, the result is an
+`rng_caller_attribution_mismatch` diagnostic, not behavioral divergence.
 
-Schema 11 removes durable `phase_markers`. They were low-authority labels and
-the actual debugging workflow now uses timing rows plus RNG caller rows for
-intra-tick localization.
+Strict numeric mismatches include the numeric delta, both f32 bit patterns, and
+the f32 ULP distance. This makes one-bit precision drift distinguishable from a
+different simulation decision without returning to producer logs.
 
-Add typed phase anchors only if a current parity investigation needs localization
-that those channels cannot explain.
-
-If phase anchors are added later:
-
-- add them as a typed channel, not producer-private marker payloads
-- require Frida, Python, and Zig producer support in the same schema bump
-- update `diff` and `focus` to explain how anchors affect mismatch reporting
-
-## Schema 11 cleanup
-
-The schema 11 bump folds the stale cleanup items into the shared contract:
-
-- `TickRecord.phase_markers` was removed
-- Frida raw `branch_id` is rejected instead of carried as a capture alias
-- Zig's old `--debug-trace-msgpack` path was removed; use `--debug-trace-cdt`
-- `TraceFooter.channel_counts` was split into `channel_tick_counts` and
-  `channel_row_counts`
-- `dbg health` reports `ok_for_parity_analysis` and prints
-  `parity_analysis_ready`
-
-## Schema 12 cleanup
-
-Schema 12 collapses owned-producer metadata that had no independent consumer:
-
-- `TraceMeta.channels` and `TraceMeta.channel_versions` were removed because
-  the schema always requires the same channel set
-- `TraceMeta.config` was removed because producer-private config belongs in raw
-  producer logs
-- footer channel count summaries were removed because Python and native
-  `dbg health` recompute row coverage from ticks
-- raw Frida JSONL dropped its separate `schema_version` and now uses only
-  `capture_format_version = 12`
-- public trace chunk-size options were removed; CDT chunking is fixed at the
-  writer boundary
+Use `dbg bisect` to bound the earliest bad tick and `dbg focus`, `dbg tick`,
+`dbg entity`, or `dbg query` to inspect the relevant channel and entity history.

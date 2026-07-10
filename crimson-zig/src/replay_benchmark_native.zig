@@ -168,9 +168,6 @@ pub fn runReplayBenchmarkBytesJson(
     if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .benchmark)) |detail| {
         return buildBenchmarkFailedOutput(allocator, detail);
     }
-    replay_codec.validateReplayBootstrap(replay.header) catch |err| {
-        return buildBenchmarkFailedOutput(allocator, benchmarkReplayLoadErrorDetail(err));
-    };
 
     return runBenchmarkWithReplay(allocator, replay_name, .{
         .replay_file = replay_name,
@@ -409,9 +406,6 @@ fn runNativeBenchmark(
     if (replay_codec.unsupportedReplayHeaderDetail(replay.header, replay.tickCount(), .benchmark)) |detail| {
         return buildBenchmarkFailedOutput(allocator, detail);
     }
-    replay_codec.validateReplayBootstrap(replay.header) catch |err| {
-        return buildBenchmarkFailedOutput(allocator, benchmarkReplayLoadErrorDetail(err));
-    };
 
     return runBenchmarkWithReplay(allocator, resolution.resolved_path, request, replay);
 }
@@ -623,7 +617,7 @@ fn loadReplay(
         io,
         path,
         allocator,
-        .limited(replay_codec.max_replay_payload_bytes),
+        .limited(replay_codec.max_replay_file_bytes),
     );
     defer allocator.free(replay_bytes);
 
@@ -637,15 +631,12 @@ fn loadReplayBytes(
 ) !replay_codec.Replay {
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateZstdPayload(allocator, replay_bytes, replay_codec.max_replay_payload_bytes);
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = try replay_codec.inflateGzipPayload(allocator, replay_bytes, replay_codec.max_replay_payload_bytes);
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else replay_bytes;
+    const replay_payload = try replay_codec.inflateZstdFilePayload(
+        allocator,
+        replay_bytes,
+        replay_codec.max_replay_payload_bytes,
+    );
+    replay_payload_alloc = replay_payload;
     return replay_codec.parseReplay(allocator, replay_payload) catch |err| {
         if (err == error.UnsupportedInputShape) {
             if (parse_detail) |detail| {
@@ -658,6 +649,10 @@ fn loadReplayBytes(
         } else if (err == error.UnknownCommandKind) {
             if (parse_detail) |detail| {
                 detail.* = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+            }
+        } else if (err == error.UnsupportedEventKind) {
+            if (parse_detail) |detail| {
+                detail.* = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
             }
         }
         return err;
@@ -883,23 +878,21 @@ fn buildBenchmarkFailedOutput(
 
 fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
-        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
+        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
-        error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
-        error.InvalidGzipPayload => "unable to inflate replay gzip payload",
+        error.UnsupportedGameMode => "replay game mode is not supported",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
+        error.UnsupportedEventShape => "replay tick operations do not match format 15",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay events include an unknown command kind",
-        error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
+        error.UnknownCommandKind => "replay tick operations do not match format 15",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
-        error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
+        error.FileTooBig => "replay zstd envelope exceeds max file size",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay benchmark ran out of memory while loading replay",
         else => @errorName(err),
@@ -915,7 +908,7 @@ fn benchmarkReplayRunnerErrorDetail(err: anyerror) []const u8 {
         error.UnsupportedPlayerCount => "native replay benchmark only supports 1-4 player replays",
         error.UnsupportedInputQuantization => "native replay benchmark only supports f32 quantization",
         error.UnsupportedEventOrdering => "replay events are not ordered in canonical tick order",
-        error.UnsupportedEventKind => "replay events include invalid kinds or values for this mode",
+        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.UnsupportedEventPlayerIndex => "replay events include an out-of-range player_index",
         error.MissingRngCallerTag => "replay capture is missing required RNG caller tags",
         error.InvalidSpawnTemplate => "replay capture references an invalid spawn template",
@@ -1115,7 +1108,7 @@ test "benchmark aggregate computes min max mean and upper median" {
 }
 
 test "byte replay benchmark emits JSON payload" {
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(std.testing.allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(std.testing.allocator);
     defer std.testing.allocator.free(replay_bytes);
 
     const output = try runReplayBenchmarkBytesJson(
@@ -1195,7 +1188,7 @@ test "benchmark writes json and profile artifacts in human mode" {
     const profile_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "profile.json" });
     defer allocator.free(profile_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -1240,7 +1233,7 @@ test "benchmark writes json and profile artifacts in human mode" {
 
 test "benchmark replay load errors use user-facing details" {
     try std.testing.expectEqualStrings(
-        "replay payload is not valid msgpack wire format",
+        "replay payload does not match format 15 msgpack schema",
         benchmarkReplayLoadErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -1252,7 +1245,7 @@ test "benchmark replay load errors use user-facing details" {
         benchmarkReplayLoadErrorDetail(error.OutOfMemory),
     );
     try std.testing.expectEqualStrings(
-        "replay events include an unknown command kind",
+        "replay tick operations do not match format 15",
         benchmarkReplayLoadErrorDetail(error.UnknownCommandKind),
     );
 }
@@ -1267,7 +1260,7 @@ test "benchmark runner and output errors use user-facing details" {
         benchmarkReplayRunnerErrorDetail(error.UnsupportedEventPlayerIndex),
     );
     try std.testing.expectEqualStrings(
-        "replay events include invalid kinds or values for this mode",
+        "replay tick commands are invalid for this game mode",
         benchmarkReplayRunnerErrorDetail(error.UnsupportedEventKind),
     );
     try std.testing.expectEqualStrings(

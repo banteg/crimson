@@ -22,13 +22,13 @@ from ._helpers import (
     build_typo_submit_replay,
     inject_tick_commands,
     write_current_bad_claimed_stats_replay,
+    write_current_bad_event_player_index_replay,
     write_current_bad_tick_player_count_replay,
     write_current_missing_perk_choice_replay,
     write_current_missing_quest_level_replay,
     write_current_mode_player_count_replay,
     write_current_string_quest_level_replay,
     write_current_typo_event_replay,
-    write_legacy_out_of_order_event_replay,
     write_replay,
 )
 
@@ -116,7 +116,7 @@ def test_zig_replay_verify_matches_python_full_payload_on_tutorial_replay(tmp_pa
     assert zig_payload == python_payload
 
 
-def test_zig_replay_verify_accepts_current_string_quest_level(tmp_path: Path) -> None:
+def test_zig_replay_verify_rejects_string_quest_level(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1")
     replay_path = write_current_string_quest_level_replay(
         tmp_path,
@@ -125,12 +125,11 @@ def test_zig_replay_verify_accepts_current_string_quest_level(tmp_path: Path) ->
         quest_level="1.1",
     )
 
-    zig_payload = _run_zig_replay_verify([str(replay_path), "--format", "json"])
+    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
 
-    assert zig_payload["status"] == "ok"
-    run_result = cast("dict[str, object]", zig_payload["run_result"])
-    assert run_result["game_mode_id"] == int(GameMode.QUESTS)
-    assert run_result["ticks"] == 2
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay verification failed:" in result.stderr
 
 
 def test_zig_replay_verify_matches_python_rush_spawn_boundary(tmp_path: Path) -> None:
@@ -300,7 +299,7 @@ def test_zig_replay_verify_reports_old_format_as_replay_failure(tmp_path: Path) 
         header=msgspec.structs.replace(replay.header, replay_format_version=10),
     )
     replay_path = tmp_path / "old-format.crd"
-    replay_path.write_bytes(msgspec.msgpack.encode(replay))
+    replay_path.write_bytes(zstd.ZstdCompressor(level=19).compress(msgspec.msgpack.encode(replay)))
 
     result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
 
@@ -310,7 +309,7 @@ def test_zig_replay_verify_reports_old_format_as_replay_failure(tmp_path: Path) 
     assert "native runtime limitation" not in result.stderr
 
 
-def test_zig_replay_verify_reports_legacy_json_as_replay_failure(tmp_path: Path) -> None:
+def test_zig_replay_verify_rejects_non_zstd_legacy_json_as_current_envelope_failure(tmp_path: Path) -> None:
     replay_path = tmp_path / "legacy-json.crd"
     replay_path.write_bytes(b' \n{"header":{"game_mode_id":1,"seed":1}}')
 
@@ -318,10 +317,7 @@ def test_zig_replay_verify_reports_legacy_json_as_replay_failure(tmp_path: Path)
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert (
-        "replay verification failed: legacy JSON replay format is unsupported; regenerate the replay"
-        in result.stderr
-    )
+    assert "replay verification failed: unable to inflate replay zstd payload" in result.stderr
     assert "msgpack" not in result.stderr
     assert "native runtime limitation" not in result.stderr
 
@@ -379,7 +375,7 @@ def test_zig_replay_verify_reports_event_shape_detail(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event perk_pick missing choice_index: tick=0 event_index=0"
+        "replay verification failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
         in result.stderr
     )
     assert "canonical wire shape" not in result.stderr
@@ -391,15 +387,15 @@ def test_zig_replay_verify_reports_unknown_command_as_replay_failure(tmp_path: P
     payload = msgspec.msgpack.decode(raw_payload)
     payload["ticks"][0]["commands"] = [{"type": "network_ping", "player_index": 0}]
     replay_path = tmp_path / "unknown-command.crd"
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    replay_path.write_bytes(zstd.ZstdCompressor(level=19).compress(msgspec.msgpack.encode(payload)))
 
     result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
 
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event command kind is unknown: "
-        "type=network_ping tick=0 event_index=0"
+        "replay verification failed: replay command type is unknown: "
+        "type=network_ping tick=0 command_index=0"
     ) in result.stderr
     assert "native runtime limitation" not in result.stderr
 
@@ -448,34 +444,19 @@ def test_zig_replay_verify_reports_single_player_mode_count_as_replay_failure(tm
 
 def test_zig_replay_verify_reports_event_player_index_detail(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    raw_payload = zstd.ZstdDecompressor().decompress(dump_replay(replay))
-    payload = msgspec.msgpack.decode(raw_payload)
-    payload["ticks"][0]["commands"] = [{"type": "perk_menu_open", "player_index": 1}]
-    replay_path = tmp_path / "event-player-index.crd"
-    replay_path.write_bytes(msgspec.msgpack.encode(payload))
+    replay_path = write_current_bad_event_player_index_replay(
+        tmp_path,
+        replay=replay,
+        name="event-player-index.crd",
+    )
 
     result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
 
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event player_index out of range: 1 "
+        "replay verification failed: replay prelude player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stderr
-    assert "ticks_processed=" not in result.stderr
-
-
-def test_zig_replay_verify_reports_event_ordering_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
-
-    result = _run_zig_replay_verify_process([str(replay_path), "--format", "json"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay verification failed: replay events are not ordered in canonical tick order: "
-        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
     ) in result.stderr
     assert "ticks_processed=" not in result.stderr
 
@@ -489,8 +470,8 @@ def test_zig_replay_verify_reports_event_kind_detail(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay verification failed: replay event kind invalid for game mode: "
-        "event=typo_char tick=0 event_index=0 game_mode=survival"
+        "replay verification failed: replay command invalid for game mode: "
+        "type=typo_char tick=0 command_index=0 game_mode=survival"
     ) in result.stderr
     assert "replay events include invalid kinds or values for this mode" not in result.stderr
 

@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from crimson.dbg.checkpoint_diff import compare_checkpoints
-from crimson.replay import Replay, ReplayCodecError, load_replay_file
+from crimson.replay import Replay, load_replay_file
 from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.driver.playback_driver import (
     PlaybackDriver,
@@ -20,8 +20,8 @@ FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "replays"
 
 pytestmark = [pytest.mark.slow, pytest.mark.replay_fixture]
 
-# Re-record gameplay fixtures with replay format v12 (native run-start weapon
-# state, PC=24 movement chain) and list them here with their run stats:
+# Re-record gameplay fixtures with the current replay format v15 and list them
+# here with their run stats:
 # (filename, expected_ticks, expected_score_xp, expected_kills).
 _REPLAY_CASES: tuple[tuple[str, int, int, int], ...] = ()
 _PLAYBACK_CHUNK_PATTERN = (1, 7, 31, 256)
@@ -47,11 +47,8 @@ def _build_verify_driver(*, replay):
     )
 
 
-def _load_replay_fixture_or_skip(replay_path: Path) -> Replay:
-    try:
-        return load_replay_file(replay_path)
-    except ReplayCodecError as exc:
-        pytest.skip(f"legacy replay fixture is not accepted by the current replay codec: {exc}")
+def _load_replay_fixture(replay_path: Path) -> Replay:
+    return load_replay_file(replay_path)
 
 
 class _CheckpointObserver(PlaybackWalkObserver):
@@ -111,7 +108,7 @@ def test_replay_fixture_run_stats_and_checkpoint_parity(
     if not replay_path.is_file() or not checkpoints_path.is_file():
         pytest.skip(f"missing replay fixture: {replay_name}")
 
-    replay = _load_replay_fixture_or_skip(replay_path)
+    replay = _load_replay_fixture(replay_path)
     expected_sidecar = load_checkpoints_file(checkpoints_path)
 
     actual_checkpoints = []
@@ -143,7 +140,7 @@ def test_verify_vs_playback_parity(
     if not replay_path.is_file():
         pytest.skip(f"missing replay fixture: {replay_name}")
 
-    replay = _load_replay_fixture_or_skip(replay_path)
+    replay = _load_replay_fixture(replay_path)
     checkpoint_ticks = _sample_tick_indexes(len(replay.ticks))
     verify_checkpoints = []
     verify_result = _run_verify_playback(

@@ -91,13 +91,10 @@ pub fn applyReplayEvent(
             if (pick.player_index < 0 or pick.player_index >= @as(i32, @intCast(players.len))) {
                 return error.UnsupportedEventPlayerIndex;
             }
-            const applied = perks.perkSelectionPickWithContext(
+            const applied = perks.perkSelectionPickPreparedWithContext(
                 state,
                 players,
                 pick.choice_index,
-                options.game_mode,
-                options.player_count,
-                options.quest_unlock_index,
                 .{
                     .creatures = creatures,
                     .dt_frame = dt_frame,
@@ -404,6 +401,7 @@ test "perk pick event applies immediate creature perk effects through shared pat
     state.perk_selection.choices_dirty = false;
     creatures.entries[0].active = true;
     creatures.entries[0].lifecycle_stage = 5.0;
+    const rng_before_pick = state.rng.state;
 
     const outcome = try applyReplayEvent(
         .{ .perk_pick = .{ .tick_index = 0, .player_index = 0, .choice_index = 0 } },
@@ -424,4 +422,6 @@ test "perk pick event applies immediate creature perk effects through shared pat
 
     try std.testing.expectEqual(@as(usize, 1), outcome.perk_pick_count_delta);
     try std.testing.expectApproxEqAbs(@as(f32, 4.925), creatures.entries[0].lifecycle_stage, 1e-6);
+    try std.testing.expect(state.perk_selection.choices_dirty);
+    try std.testing.expectEqual(rng_before_pick, state.rng.state);
 }

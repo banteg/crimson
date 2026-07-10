@@ -196,10 +196,6 @@ pub fn stepTick(
     }
 
     context.state.game_mode = context.game_mode;
-    for (0..@as(usize, @intCast(@max(context.inter_tick_rand_draws, 0)))) |_| {
-        _ = context.state.rng.randTagged(rng_callers.replay_driver_inter_tick_draw_by_tick);
-    }
-
     callPhaseHook(options.hooks, context, .pre_events, &frame);
     const perk_event_dt = survival_progression.timeScaleReflexBoostBonus(
         context.state.bonuses.reflex_boost,
@@ -895,15 +891,13 @@ fn testHeader() replay_codec.ReplayHeader {
         .seed = 0xD00D,
         .replay_format_version = replay_codec.replay_format_version,
         .quest_level = @constCast("1.1"),
-        .bootstrap_kind = @constCast("none"),
-        .bootstrap_seed = 0,
         .game_version = @constCast("test"),
         .tick_rate = 60,
-        .difficulty_level = 0,
+        .quest_fail_retry_count = 0,
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .gore_disabled = 0,
+        .violence_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{},

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import math
+import struct
 from collections.abc import Mapping, Sequence
 from typing import cast
 
@@ -9,11 +11,23 @@ import msgspec
 from .payloads import BuiltinRows, BuiltinValue, to_builtin_rows, to_builtin_value
 
 
-class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True, omit_defaults=True):
     path: str
     kind: str
     expected: BuiltinValue | None = None
     actual: BuiltinValue | None = None
+    numeric_delta: float | None = None
+    expected_f32_hex: str | None = None
+    actual_f32_hex: str | None = None
+    f32_ulp_distance: int | None = None
+
+
+def _f32_bits(value: float) -> int:
+    return int(struct.unpack("<I", struct.pack("<f", float(value)))[0])
+
+
+def _ordered_f32(bits: int) -> int:
+    return int((~bits & 0xFFFFFFFF) if bits & 0x80000000 else bits | 0x80000000)
 
 
 def _path_or_root(path: str) -> str:
@@ -59,19 +73,52 @@ def _append(
     expected: object | None = None,
     actual: object | None = None,
 ) -> None:
+    numeric_delta: float | None = None
+    expected_f32_hex: str | None = None
+    actual_f32_hex: str | None = None
+    f32_ulp_distance: int | None = None
+    if isinstance(expected, float) and isinstance(actual, float):
+        if math.isfinite(expected) and math.isfinite(actual):
+            numeric_delta = float(actual - expected)
+        try:
+            expected_bits = _f32_bits(expected)
+            actual_bits = _f32_bits(actual)
+            expected_f32_hex = f"0x{expected_bits:08x}"
+            actual_f32_hex = f"0x{actual_bits:08x}"
+            f32_ulp_distance = abs(_ordered_f32(actual_bits) - _ordered_f32(expected_bits))
+        except OverflowError:
+            pass
     out.append(
         FieldMismatch(
             path=_path_or_root(path),
             kind=str(kind),
             expected=to_builtin_value(expected, field=f"{_path_or_root(path)}.expected") if expected is not None else None,
             actual=to_builtin_value(actual, field=f"{_path_or_root(path)}.actual") if actual is not None else None,
+            numeric_delta=numeric_delta,
+            expected_f32_hex=expected_f32_hex,
+            actual_f32_hex=actual_f32_hex,
+            f32_ulp_distance=f32_ulp_distance,
         ),
     )
 
 
 def _collect(expected: object, actual: object, *, path: str, out: list[FieldMismatch]) -> None:
-    if type(expected) is type(actual) and expected == actual:
-        return
+    if type(expected) is type(actual):
+        if isinstance(expected, float):
+            assert isinstance(actual, float)
+            try:
+                if _f32_bits(expected) == _f32_bits(actual):
+                    return
+            except OverflowError:
+                if expected == actual:
+                    return
+        elif (
+            not _is_struct_instance(expected)
+            and not isinstance(expected, Mapping)
+            and not _is_sequence(expected)
+            and expected == actual
+        ):
+            return
 
     if type(expected) is not type(actual):
         _append(out, path=path, kind="type_mismatch", expected=type(expected).__name__, actual=type(actual).__name__)

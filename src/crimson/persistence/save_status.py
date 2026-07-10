@@ -67,7 +67,7 @@ GAME_CFG_STRUCT = Struct(
 )
 
 
-class GameStatusData(msgspec.Struct):
+class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     quest_unlock_index: int = 0
     quest_unlock_index_full: int = 0
     weapon_usage_counts: WeaponUsageCounts = msgspec.field(default_factory=lambda: ZERO_WEAPON_USAGE_COUNTS)

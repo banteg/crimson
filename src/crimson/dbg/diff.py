@@ -4,7 +4,13 @@ from pathlib import Path
 
 import msgspec
 
-from .channel_compare import compare_entity_samples, compare_rng_stream, compare_sim_state, compare_timing_samples
+from .channel_compare import (
+    compare_entity_samples,
+    compare_replay_step,
+    compare_rng_stream,
+    compare_sim_state,
+    compare_timing_samples,
+)
 from .channel_helpers import (
     checkpoint_channel_required,
     entity_samples_channel_required,
@@ -30,6 +36,9 @@ class TraceDiffReport(msgspec.Struct, frozen=True):
     tick_start: int | None
     tick_end: int | None
     mismatch: TraceMismatch | None = None
+    compared_count: int = 0
+    channel_first_mismatches: dict[str, TraceMismatch] = msgspec.field(default_factory=dict)
+    channel_first_diagnostics: dict[str, TraceMismatch] = msgspec.field(default_factory=dict)
 
 
 class TraceBisectReport(msgspec.Struct, frozen=True):
@@ -58,15 +67,102 @@ def _tick_mismatch_row(*, kind: str, channel: str, detail: BuiltinObject | None)
     )
 
 
-def _is_capture_impl(impl: str) -> bool:
-    return str(impl) == "frida_original"
+def _compare_tick_channels(expected_row: TickRecord, actual_row: TickRecord) -> tuple[list[BuiltinObject], list[BuiltinObject]]:
+    mismatches: list[BuiltinObject] = []
+    diagnostics: list[BuiltinObject] = []
+
+    replay_step_ok, replay_step_detail = compare_replay_step(
+        expected_row.channels.replay_step,
+        actual_row.channels.replay_step,
+    )
+    if not replay_step_ok:
+        mismatches.append(
+            _tick_mismatch_row(
+                kind="replay_step_mismatch",
+                channel="replay_step",
+                detail=replay_step_detail,
+            ),
+        )
+
+    checkpoint_diff = checkpoint_deepdiff(
+        checkpoint_channel_required(expected_row),
+        checkpoint_channel_required(actual_row),
+    )
+    if checkpoint_diff is not None:
+        mismatches.append(
+            _tick_mismatch_row(
+                kind="checkpoint_field_mismatch",
+                channel="checkpoint",
+                detail={
+                    "diff_count": int(checkpoint_diff.diff_count),
+                    "payload": msgspec.to_builtins(checkpoint_diff.payload),
+                    "pretty": str(checkpoint_diff.pretty),
+                },
+            ),
+        )
+
+    rng_ok, rng_detail = compare_rng_stream(
+        rng_stream_channel_required(expected_row),
+        rng_stream_channel_required(actual_row),
+    )
+    if not rng_ok:
+        mismatches.append(
+            _tick_mismatch_row(
+                kind="rng_stream_mismatch",
+                channel="rng_stream",
+                detail=rng_detail,
+            ),
+        )
+    elif rng_detail is not None:
+        diagnostics.append(
+            _tick_mismatch_row(
+                kind="rng_caller_attribution_mismatch",
+                channel="rng_stream",
+                detail=rng_detail,
+            ),
+        )
+
+    sim_ok, sim_detail = compare_sim_state(
+        sim_state_channel_required(expected_row),
+        sim_state_channel_required(actual_row),
+    )
+    if not sim_ok:
+        mismatches.append(
+            _tick_mismatch_row(kind="sim_state_mismatch", channel="sim_state", detail=sim_detail),
+        )
+
+    entities_ok, entities_detail = compare_entity_samples(
+        entity_samples_channel_required(expected_row),
+        entity_samples_channel_required(actual_row),
+    )
+    if not entities_ok:
+        mismatches.append(
+            _tick_mismatch_row(
+                kind="entity_sample_mismatch",
+                channel="entity_samples",
+                detail=entities_detail,
+            ),
+        )
+
+    timing_ok, timing_detail = compare_timing_samples(
+        timing_samples_channel_required(expected_row),
+        timing_samples_channel_required(actual_row),
+    )
+    if not timing_ok:
+        mismatches.append(
+            _tick_mismatch_row(
+                kind="timing_samples_mismatch",
+                channel="timing_samples",
+                detail=timing_detail,
+            ),
+        )
+    return mismatches, diagnostics
 
 
 def _first_mismatch(
     *,
     pairs: list[_TickPair],
     tick_end: int | None = None,
-    capture_compare: bool = False,
 ) -> tuple[int, TraceMismatch | None]:
     checked_count = 0
     for pair in pairs:
@@ -82,81 +178,7 @@ def _first_mismatch(
                     tick_index=tick,
                 ),
             )
-        tick_mismatches: list[BuiltinObject] = []
-
-        expected = checkpoint_channel_required(pair.expected_row)
-        actual = checkpoint_channel_required(pair.actual_row)
-        exp_rng_stream = rng_stream_channel_required(pair.expected_row)
-        act_rng_stream = rng_stream_channel_required(pair.actual_row)
-
-        checkpoint_diff = checkpoint_deepdiff(expected, actual, capture_compare=capture_compare)
-        if checkpoint_diff is not None:
-            tick_mismatches.append(
-                _tick_mismatch_row(
-                    kind="checkpoint_field_mismatch",
-                    channel="checkpoint",
-                    detail={
-                        "diff_count": int(checkpoint_diff.diff_count),
-                        "payload": msgspec.to_builtins(checkpoint_diff.payload),
-                        "pretty": str(checkpoint_diff.pretty),
-                    },
-                ),
-            )
-
-        rng_ok, rng_detail = compare_rng_stream(exp_rng_stream, act_rng_stream)
-        if not rng_ok:
-            tick_mismatches.append(
-                _tick_mismatch_row(
-                    kind="rng_stream_mismatch",
-                    channel="rng_stream",
-                    detail=rng_detail,
-                ),
-            )
-
-        expected_sim_state = sim_state_channel_required(pair.expected_row)
-        actual_sim_state = sim_state_channel_required(pair.actual_row)
-        sim_ok, sim_detail = compare_sim_state(
-            expected_sim_state,
-            actual_sim_state,
-        )
-        if not sim_ok:
-            tick_mismatches.append(
-                _tick_mismatch_row(
-                    kind="sim_state_mismatch",
-                    channel="sim_state",
-                    detail=sim_detail,
-                ),
-            )
-
-        expected_entity_samples = entity_samples_channel_required(pair.expected_row)
-        actual_entity_samples = entity_samples_channel_required(pair.actual_row)
-        entities_ok, entities_detail = compare_entity_samples(
-            expected_entity_samples,
-            actual_entity_samples,
-        )
-        if not entities_ok:
-            tick_mismatches.append(
-                _tick_mismatch_row(
-                    kind="entity_sample_mismatch",
-                    channel="entity_samples",
-                    detail=entities_detail,
-                ),
-            )
-
-        expected_timing_samples = timing_samples_channel_required(pair.expected_row)
-        actual_timing_samples = timing_samples_channel_required(pair.actual_row)
-        timing_ok, timing_detail = compare_timing_samples(
-            expected_timing_samples,
-            actual_timing_samples,
-        )
-        if not timing_ok:
-            tick_mismatches.append(
-                _tick_mismatch_row(
-                    kind="timing_samples_mismatch",
-                    channel="timing_samples",
-                    detail=timing_detail,
-                ),
-            )
+        tick_mismatches, _diagnostics = _compare_tick_channels(pair.expected_row, pair.actual_row)
 
         if tick_mismatches:
             return (
@@ -172,6 +194,48 @@ def _first_mismatch(
             )
 
     return checked_count, None
+
+
+def _channel_first_results(
+    *,
+    pairs: list[_TickPair],
+    tick_end: int | None,
+) -> tuple[int, dict[str, TraceMismatch], dict[str, TraceMismatch]]:
+    compared_count = 0
+    mismatches: dict[str, TraceMismatch] = {}
+    diagnostics: dict[str, TraceMismatch] = {}
+    for pair in pairs:
+        tick = int(pair.tick_index)
+        if tick_end is not None and tick > int(tick_end):
+            break
+        compared_count += 1
+        if pair.expected_row is None or pair.actual_row is None:
+            mismatches.setdefault("tick", TraceMismatch(kind="missing_tick", tick_index=tick))
+            continue
+        tick_mismatches, tick_diagnostics = _compare_tick_channels(pair.expected_row, pair.actual_row)
+        for item in tick_mismatches:
+            channel = str(item.get("channel", "unknown"))
+            detail = item.get("detail")
+            mismatches.setdefault(
+                channel,
+                TraceMismatch(
+                    kind=str(item.get("kind", "channel_mismatch")),
+                    tick_index=tick,
+                    detail=(detail if isinstance(detail, dict) else None),
+                ),
+            )
+        for item in tick_diagnostics:
+            channel = str(item.get("channel", "unknown"))
+            detail = item.get("detail")
+            diagnostics.setdefault(
+                channel,
+                TraceMismatch(
+                    kind=str(item.get("kind", "channel_diagnostic")),
+                    tick_index=tick,
+                    detail=(detail if isinstance(detail, dict) else None),
+                ),
+            )
+    return compared_count, mismatches, diagnostics
 
 
 def _load_pairs(
@@ -198,6 +262,29 @@ def _load_pairs(
     return pairs
 
 
+def validate_comparison_identity(expected_trace: TraceReader, actual_trace: TraceReader) -> None:
+    expected = expected_trace.meta.source
+    actual = actual_trace.meta.source
+    required_fields = ("replay_sha256", "tick_rate", "seed", "mode_id", "player_count")
+    for label, source in (("expected", expected), ("actual", actual)):
+        missing = [
+            field
+            for field in required_fields
+            if getattr(source, field) is None or (field == "replay_sha256" and not str(getattr(source, field)))
+        ]
+        if missing:
+            raise ValueError(f"{label} trace is missing comparison identity fields: {', '.join(missing)}")
+    fields = (*required_fields, "quest_level", "quest_stage_major", "quest_stage_minor")
+    mismatches: list[str] = []
+    for field in fields:
+        expected_value = getattr(expected, field)
+        actual_value = getattr(actual, field)
+        if expected_value != actual_value:
+            mismatches.append(f"{field}: expected={expected_value!r} actual={actual_value!r}")
+    if mismatches:
+        raise ValueError("trace comparison identity mismatch: " + "; ".join(mismatches))
+
+
 def diff_traces(
     *,
     expected_trace_path: Path,
@@ -206,20 +293,25 @@ def diff_traces(
     tick_end: int | None = None,
 ) -> TraceDiffReport:
     with TraceReader(Path(expected_trace_path)) as expected_trace, TraceReader(Path(actual_trace_path)) as actual_trace:
+        if tick_start is not None and tick_end is not None and int(tick_start) > int(tick_end):
+            raise ValueError(f"invalid tick window: start {int(tick_start)} is after end {int(tick_end)}")
+        validate_comparison_identity(expected_trace, actual_trace)
         pairs = _load_pairs(
             expected_trace=expected_trace,
             actual_trace=actual_trace,
             tick_start=tick_start,
             tick_end=tick_end,
         )
-        capture_compare = _is_capture_impl(expected_trace.meta.producer.impl) or _is_capture_impl(
-            actual_trace.meta.producer.impl,
-        )
+        if not pairs:
+            raise ValueError("trace comparison window contains no ticks")
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
                 tick_end=tick_end,
-                capture_compare=capture_compare,
+            )
+            compared_count, channel_mismatches, channel_diagnostics = _channel_first_results(
+                pairs=pairs,
+                tick_end=tick_end,
             )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
@@ -229,6 +321,9 @@ def diff_traces(
             tick_start=tick_start,
             tick_end=tick_end,
             mismatch=mismatch,
+            compared_count=compared_count,
+            channel_first_mismatches=channel_mismatches,
+            channel_first_diagnostics=channel_diagnostics,
         )
 
 
@@ -242,6 +337,9 @@ def bisect_traces(
     window_after: int = 6,
 ) -> TraceBisectReport:
     with TraceReader(Path(expected_trace_path)) as expected_trace, TraceReader(Path(actual_trace_path)) as actual_trace:
+        if tick_start is not None and tick_end is not None and int(tick_start) > int(tick_end):
+            raise ValueError(f"invalid tick window: start {int(tick_start)} is after end {int(tick_end)}")
+        validate_comparison_identity(expected_trace, actual_trace)
         pairs = _load_pairs(
             expected_trace=expected_trace,
             actual_trace=actual_trace,
@@ -249,24 +347,13 @@ def bisect_traces(
             tick_end=tick_end,
         )
         if not pairs:
-            return TraceBisectReport(
-                ok=True,
-                first_bad_tick=None,
-                checked_count=0,
-                mismatch=None,
-                window_start=None,
-                window_end=None,
-            )
+            raise ValueError("trace comparison window contains no ticks")
 
-        capture_compare = _is_capture_impl(expected_trace.meta.producer.impl) or _is_capture_impl(
-            actual_trace.meta.producer.impl,
-        )
         end_tick_bound = pairs[-1].tick_index if tick_end is None else tick_end
         try:
             checked_count, mismatch = _first_mismatch(
                 pairs=pairs,
                 tick_end=end_tick_bound,
-                capture_compare=capture_compare,
             )
         except TraceError as exc:
             raise ValueError(str(exc)) from exc
@@ -311,12 +398,21 @@ def mismatch_to_json(mismatch: TraceMismatch | None) -> BuiltinObject | None:
 def diff_report_to_json(report: TraceDiffReport) -> BuiltinObject:
     return to_builtin_object(
         {
-            "schema_version": 1,
+            "schema_version": 2,
             "status": ("ok" if report.ok else "diverged"),
             "checked_count": report.checked_count,
+            "compared_count": report.compared_count,
             "tick_start": report.tick_start,
             "tick_end": report.tick_end,
             "mismatch": mismatch_to_json(report.mismatch),
+            "channel_first_mismatches": {
+                channel: mismatch_to_json(mismatch)
+                for channel, mismatch in sorted(report.channel_first_mismatches.items())
+            },
+            "channel_first_diagnostics": {
+                channel: mismatch_to_json(mismatch)
+                for channel, mismatch in sorted(report.channel_first_diagnostics.items())
+            },
         },
         field="diff_report",
     )

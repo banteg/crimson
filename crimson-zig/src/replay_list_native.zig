@@ -352,7 +352,7 @@ fn buildReplayListRow(
         io,
         replay_path,
         allocator,
-        .limited(replay_codec.max_replay_payload_bytes),
+        .limited(replay_codec.max_replay_file_bytes),
     ) catch |err| {
         return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
     };
@@ -360,19 +360,14 @@ fn buildReplayListRow(
 
     var replay_payload_alloc: ?[]u8 = null;
     defer if (replay_payload_alloc) |buf| allocator.free(buf);
-    const replay_payload: []const u8 = if (replay_codec.isZstdPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateZstdPayload(allocator, replay_bytes, replay_codec.max_replay_payload_bytes) catch |err| {
-            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else if (replay_codec.isGzipPayload(replay_bytes)) blk: {
-        const inflated = replay_codec.inflateGzipPayload(allocator, replay_bytes, replay_codec.max_replay_payload_bytes) catch |err| {
-            return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
-        };
-        replay_payload_alloc = inflated;
-        break :blk inflated;
-    } else replay_bytes;
+    const replay_payload = replay_codec.inflateZstdFilePayload(
+        allocator,
+        replay_bytes,
+        replay_codec.max_replay_payload_bytes,
+    ) catch |err| {
+        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
+    };
+    replay_payload_alloc = replay_payload;
 
     var parse_detail: ?[]u8 = null;
     defer if (parse_detail) |detail| allocator.free(detail);
@@ -383,6 +378,8 @@ fn buildReplayListRow(
             parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
         } else if (err == error.UnknownCommandKind) {
             parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+        } else if (err == error.UnsupportedEventKind) {
+            parse_detail = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
         }
         return buildInvalidReplayListRow(
             allocator,
@@ -397,9 +394,6 @@ fn buildReplayListRow(
     if (replay_codec.unsupportedReplayHeaderDetail(header, summary.tick_count, .replay_list)) |detail| {
         return buildInvalidReplayListRow(allocator, rel_path, modified_ns, detail);
     }
-    replay_codec.validateReplayBootstrap(header) catch |err| {
-        return buildInvalidReplayListRow(allocator, rel_path, modified_ns, replayListRowErrorDetail(err));
-    };
     if (summary.events.total_count > 0) {
         var replay = replay_codec.parseReplay(allocator, replay_payload) catch |err| {
             if (err == error.UnsupportedInputShape) {
@@ -408,6 +402,8 @@ fn buildReplayListRow(
                 parse_detail = try replay_codec.replayEventShapeFailureDetail(allocator, replay_payload);
             } else if (err == error.UnknownCommandKind) {
                 parse_detail = try replay_codec.replayUnknownCommandFailureDetail(allocator, replay_payload);
+            } else if (err == error.UnsupportedEventKind) {
+                parse_detail = try replay_codec.replayCommandKindFailureDetail(allocator, replay_payload);
             }
             return buildInvalidReplayListRow(
                 allocator,
@@ -600,24 +596,23 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
         error.FileNotFound => "replay file not found",
         error.AccessDenied => "unable to read replay file: access denied",
-        error.FileTooBig, error.PayloadTooLarge => "replay payload exceeds max decompressed size",
-        error.InvalidMsgpack => "replay payload is not valid msgpack wire format",
-        error.LegacyJsonPayload => "legacy JSON replay format is unsupported; regenerate the replay",
+        error.FileTooBig => "replay zstd envelope exceeds max file size",
+        error.PayloadTooLarge => "replay payload exceeds max decompressed size",
+        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
         error.MissingQuestLevel => "quest replays require a valid header.quest_level",
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
-        error.UnsupportedInputShape => "replay input rows are invalid: expected canonical wire shape",
-        error.UnsupportedEventShape => "replay events are invalid: expected canonical wire shape",
-        error.InvalidGzipPayload => "unable to inflate replay gzip payload",
+        error.UnsupportedGameMode => "replay game mode is not supported",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
+        error.UnsupportedEventShape => "replay tick operations do not match format 15",
+        error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay events include an unknown command kind",
-        error.UnsupportedBootstrapKind => "replay bootstrap kind is not supported",
+        error.UnknownCommandKind => "replay tick operations do not match format 15",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
-        error.BootstrapSeedMismatch => "replay bootstrap seed does not match canonical terrain bootstrap draws",
         error.OutOfMemory => "native replay list ran out of memory while reading replay",
         else => @errorName(err),
     };
@@ -670,7 +665,7 @@ test "replay list writes json artifact while preserving json stdout" {
     const json_path = try std.fs.path.join(allocator, &.{ base_dir, "reports", "list.json" });
     defer allocator.free(json_path);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
 
     const io = std.Io.Threaded.global_single_threaded.io();
@@ -739,7 +734,7 @@ test "modified formatting mirrors replay list display shape" {
 
 test "replay list maps invalid row errors to user details" {
     try std.testing.expectEqualStrings(
-        "replay payload is not valid msgpack wire format",
+        "replay payload does not match format 15 msgpack schema",
         replayListRowErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -747,15 +742,15 @@ test "replay list maps invalid row errors to user details" {
         replayListRowErrorDetail(error.PayloadTooLarge),
     );
     try std.testing.expectEqualStrings(
-        "replay events include an unknown command kind",
+        "replay tick operations do not match format 15",
         replayListRowErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(
-        "replay input rows are invalid: expected canonical wire shape",
+        "replay tick inputs do not match format 15",
         replayListRowErrorDetail(error.UnsupportedInputShape),
     );
     try std.testing.expectEqualStrings(
-        "replay events are invalid: expected canonical wire shape",
+        "replay tick operations do not match format 15",
         replayListRowErrorDetail(error.UnsupportedEventShape),
     );
     try std.testing.expectEqualStrings(

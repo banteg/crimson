@@ -23,7 +23,6 @@ from ._helpers import (
     write_current_string_quest_level_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
-    write_legacy_out_of_order_event_replay,
     write_replay,
 )
 
@@ -80,7 +79,7 @@ def test_zig_replay_info_matches_python_json_payload_on_quest_replay(tmp_path: P
     assert zig_payload == python_payload
 
 
-def test_zig_replay_info_accepts_current_string_quest_level(tmp_path: Path) -> None:
+def test_zig_replay_info_rejects_string_quest_level(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1")
     replay_path = write_current_string_quest_level_replay(
         tmp_path,
@@ -89,11 +88,11 @@ def test_zig_replay_info_accepts_current_string_quest_level(tmp_path: Path) -> N
         quest_level="1.1",
     )
 
-    zig_payload = _run_zig_replay_info([str(replay_path), "--format", "json"])
+    result = _run_zig_replay_info_process([str(replay_path), "--format", "json"])
 
-    summary = cast("dict[str, Any]", zig_payload["summary"])
-    assert summary["game_mode_id"] == int(GameMode.QUESTS)
-    assert summary["ticks_simulated"] == 2
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "replay info failed:" in result.stderr
 
 
 def test_zig_replay_info_respects_python_max_ticks_contract(tmp_path: Path) -> None:
@@ -322,7 +321,10 @@ def test_zig_replay_info_reports_event_shape_detail(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay info failed: replay event perk_pick missing choice_index: tick=0 event_index=0" in result.stderr
+    assert (
+        "replay info failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
+        in result.stderr
+    )
     assert "canonical wire shape" not in result.stderr
 
 
@@ -339,23 +341,8 @@ def test_zig_replay_info_reports_event_player_index_detail(tmp_path: Path) -> No
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay info failed: replay event player_index out of range: 1 "
+        "replay info failed: replay prelude player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stderr
-    assert "replay info collector" not in result.stderr
-
-
-def test_zig_replay_info_reports_event_ordering_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
-
-    result = _run_zig_replay_info_process([str(replay_path), "--format", "json"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay info failed: replay events are not ordered in canonical tick order: "
-        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
     ) in result.stderr
     assert "replay info collector" not in result.stderr
 
@@ -369,8 +356,8 @@ def test_zig_replay_info_reports_event_kind_detail(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay info failed: replay event kind invalid for game mode: "
-        "event=typo_char tick=0 event_index=0 game_mode=survival"
+        "replay info failed: replay command invalid for game mode: "
+        "type=typo_char tick=0 command_index=0 game_mode=survival"
     ) in result.stderr
     assert "replay info collector" not in result.stderr
 
@@ -384,8 +371,8 @@ def test_zig_replay_info_reports_unknown_command_as_replay_failure(tmp_path: Pat
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay info failed: replay event command kind is unknown: "
-        "type=network_ping tick=0 event_index=0"
+        "replay info failed: replay command type is unknown: "
+        "type=network_ping tick=0 command_index=0"
     ) in result.stderr
     assert "replay info collector" not in result.stderr
 

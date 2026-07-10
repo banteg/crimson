@@ -4,9 +4,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import msgspec
+import pytest
 from typer.testing import CliRunner
 
 import crimson.dbg.diff as dbg_diff
+import crimson.dbg.trace as dbg_trace
 from crimson.cli import app
 from crimson.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
 from crimson.dbg.trace import TraceReader, load_trace, write_trace
@@ -14,6 +16,31 @@ from crimson.game_modes import GameMode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
+
+
+def test_dbg_verify_reports_complete_current_format_matrix() -> None:
+    result = CliRunner().invoke(app, ["dbg", "verify"])
+
+    assert result.exit_code == 0, result.output
+    assert "trace_format_version=2" in result.output
+    assert "trace_schema_version=14" in result.output
+    assert "replay_format_version=15" in result.output
+    assert "checkpoint_format_version=5" in result.output
+    assert "frida_capture_format_version=18" in result.output
+    assert "frida_evidence_format_version=1" in result.output
+    assert "result=ok" in result.output
+
+
+def test_dbg_verify_fails_when_cross_language_contract_drifts(monkeypatch: pytest.MonkeyPatch) -> None:
+    import crimson.dbg.format_contract as format_contract_mod
+
+    monkeypatch.setattr(format_contract_mod, "format_contract_errors", lambda: ["Zig replay format drifted"])
+    result = CliRunner().invoke(app, ["dbg", "verify"])
+
+    assert result.exit_code == 1
+    assert "contract_error=Zig replay format drifted" in result.output
+    assert "result=failed" in result.output
+    assert "result=ok" not in result.output
 
 
 def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
@@ -35,11 +62,17 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
         ["dbg", "health", str(trace_path)],
     )
     assert health_result.exit_code == 0, health_result.output
-    assert "parity_analysis_ready=" in health_result.output
+    assert "trace_format_version=2" in health_result.output
+    assert "trace_schema_version=14" in health_result.output
+    assert 'tick_spans=[{"end_tick": 2, "start_tick": 0, "tick_count": 3}]' in health_result.output
+    assert "tick_gaps=[]" in health_result.output
+    assert "replay_step_rows=3" in health_result.output
+    assert "validated_tick_records=3" in health_result.output
+    assert "parity_analysis_ready=True" in health_result.output
     assert "timing_samples_rows=" in health_result.output
 
 
-def test_dbg_health_flags_empty_timing_rows(tmp_path: Path) -> None:
+def test_dbg_health_flags_empty_timing_rows(tmp_path: Path, monkeypatch) -> None:
     replay_path = _write_replay(tmp_path / "sample_empty_timing.crd")
     trace_path = tmp_path / "sample_empty_timing.cdt"
     empty_timing_trace = tmp_path / "sample_empty_timing_modified.cdt"
@@ -52,16 +85,24 @@ def test_dbg_health_flags_empty_timing_rows(tmp_path: Path) -> None:
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(trace_path)
-    for tick in ticks:
-        tick.channels = msgspec.structs.replace(tick.channels, timing_samples=[])
-    write_trace(empty_timing_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+    invalid_ticks = [
+        msgspec.structs.replace(
+            tick,
+            channels=msgspec.structs.replace(tick.channels, timing_samples=[]),
+        )
+        for tick in ticks
+    ]
+    with monkeypatch.context() as patcher:
+        patcher.setattr(dbg_trace, "validate_tick_record", lambda _row, **_kwargs: None)
+        write_trace(empty_timing_trace, meta=meta, ticks=invalid_ticks, chunk_ticks=2)
 
     health_result = runner.invoke(
         app,
         ["dbg", "health", str(empty_timing_trace)],
     )
     assert health_result.exit_code == 1, health_result.output
-    assert "issue=timing_samples channel has no rows in trace window" in health_result.output
+    assert "issue=invalid tick record 0: tick 0: timing_samples must be non-empty" in health_result.output
+    assert "issue=timing_samples missing for 3 tick(s) in trace window" in health_result.output
 
 
 def test_dbg_record_rejects_removed_profile_option(tmp_path: Path) -> None:
@@ -104,8 +145,7 @@ def test_dbg_bisect_rejects_removed_out_option(tmp_path: Path) -> None:
     )
     assert record_result.exit_code == 0, record_result.output
     meta, ticks, _footer = load_trace(golden_trace)
-    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    _with_score_xp_delta(tick1, delta=1)
+    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(
@@ -194,13 +234,23 @@ def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
     return path
 
 
-def _with_score_xp_delta(row: TickRecord, *, delta: int) -> TickRecord:
-    checkpoint = msgspec.structs.replace(
-        row.channels.checkpoint,
-        score_xp=int(row.channels.checkpoint.score_xp) + int(delta),
-    )
-    row.channels = msgspec.structs.replace(row.channels, checkpoint=checkpoint)
-    return row
+def _with_score_xp_delta(rows: list[TickRecord], *, tick_index: int, delta: int) -> list[TickRecord]:
+    out: list[TickRecord] = []
+    for row in rows:
+        if int(row.tick_index) != int(tick_index):
+            out.append(row)
+            continue
+        checkpoint = msgspec.structs.replace(
+            row.channels.checkpoint,
+            score_xp=int(row.channels.checkpoint.score_xp) + int(delta),
+        )
+        out.append(
+            msgspec.structs.replace(
+                row,
+                channels=msgspec.structs.replace(row.channels, checkpoint=checkpoint),
+            ),
+        )
+    return out
 
 
 def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
@@ -264,8 +314,7 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    _with_score_xp_delta(tick1, delta=1)
+    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     diff_result = runner.invoke(
@@ -280,10 +329,130 @@ def test_dbg_diff_and_bisect(tmp_path: Path) -> None:
         app,
         ["dbg", "bisect", str(golden_trace), str(candidate_trace)],
     )
-    assert bisect_result.exit_code == 0, bisect_result.output
+    assert bisect_result.exit_code == 1, bisect_result.output
     assert "result=diverged" in bisect_result.output
     assert "first_bad_tick=1" in bisect_result.output
     assert "window=-11..7" in bisect_result.output
+
+
+def test_dbg_diff_reports_first_mismatch_for_each_channel(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_channels.crd")
+    golden_trace = tmp_path / "golden_channels.cdt"
+    candidate_trace = tmp_path / "candidate_channels.cdt"
+    runner = CliRunner()
+    record_result = runner.invoke(app, ["dbg", "record", str(replay_path), "--out", str(golden_trace)])
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    candidate = list(ticks)
+    candidate[0] = msgspec.structs.replace(
+        candidate[0],
+        channels=msgspec.structs.replace(
+            candidate[0].channels,
+            checkpoint=msgspec.structs.replace(
+                candidate[0].channels.checkpoint,
+                score_xp=int(candidate[0].channels.checkpoint.score_xp) + 1,
+            ),
+        ),
+    )
+    timing = list(candidate[1].channels.timing_samples)
+    timing[0] = msgspec.structs.replace(timing[0], time_scale_factor=0.5)
+    candidate[1] = msgspec.structs.replace(
+        candidate[1],
+        channels=msgspec.structs.replace(candidate[1].channels, timing_samples=timing),
+    )
+    player = candidate[2].channels.sim_state.players[0]
+    candidate[2] = msgspec.structs.replace(
+        candidate[2],
+        channels=msgspec.structs.replace(
+            candidate[2].channels,
+            sim_state=msgspec.structs.replace(
+                candidate[2].channels.sim_state,
+                players=[msgspec.structs.replace(player, heading=float(player.heading) + 0.25)],
+            ),
+        ),
+    )
+    write_trace(candidate_trace, meta=meta, ticks=candidate, chunk_ticks=2)
+
+    report = dbg_diff.diff_traces(expected_trace_path=golden_trace, actual_trace_path=candidate_trace)
+
+    assert not report.ok
+    assert report.compared_count == 3
+    assert report.channel_first_mismatches["checkpoint"].tick_index == 0
+    assert report.channel_first_mismatches["timing_samples"].tick_index == 1
+    assert report.channel_first_mismatches["sim_state"].tick_index == 2
+
+
+def test_dbg_diff_prints_caller_only_rng_diagnostic_on_success(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_rng_diag.crd")
+    golden_trace = tmp_path / "golden_rng_diag.cdt"
+    candidate_trace = tmp_path / "candidate_rng_diag.cdt"
+    runner = CliRunner()
+    record_result = runner.invoke(app, ["dbg", "record", str(replay_path), "--out", str(golden_trace)])
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    tick = next(row for row in ticks if row.channels.rng_stream)
+    rng_rows = list(tick.channels.rng_stream)
+    caller = 0 if rng_rows[0].caller is None else int(rng_rows[0].caller)
+    rng_rows[0] = msgspec.structs.replace(rng_rows[0], caller=caller + 4)
+    ticks[int(tick.tick_index)] = msgspec.structs.replace(
+        tick,
+        channels=msgspec.structs.replace(tick.channels, rng_stream=rng_rows),
+    )
+    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
+
+    result = runner.invoke(app, ["dbg", "diff", str(golden_trace), str(candidate_trace)])
+
+    assert result.exit_code == 0, result.output
+    assert "result=ok" in result.output
+    assert "diagnostics=1" in result.output
+    assert "diagnostic_channel=rng_stream" in result.output
+
+
+def test_dbg_diff_rejects_empty_or_invalid_windows(tmp_path: Path) -> None:
+    replay_path = _write_replay(tmp_path / "sample_window.crd")
+    trace_path = tmp_path / "window.cdt"
+    runner = CliRunner()
+    record_result = runner.invoke(app, ["dbg", "record", str(replay_path), "--out", str(trace_path)])
+    assert record_result.exit_code == 0, record_result.output
+
+    with pytest.raises(ValueError, match="start 2 is after end 1"):
+        dbg_diff.diff_traces(
+            expected_trace_path=trace_path,
+            actual_trace_path=trace_path,
+            tick_start=2,
+            tick_end=1,
+        )
+    with pytest.raises(ValueError, match="contains no ticks"):
+        dbg_diff.diff_traces(
+            expected_trace_path=trace_path,
+            actual_trace_path=trace_path,
+            tick_start=100,
+        )
+
+
+def test_dbg_diff_and_focus_reject_different_replay_identity(tmp_path: Path) -> None:
+    from crimson.dbg.focus import focus_tick
+
+    replay_path = _write_replay(tmp_path / "sample_identity.crd")
+    golden_trace = tmp_path / "golden_identity.cdt"
+    candidate_trace = tmp_path / "candidate_identity.cdt"
+    runner = CliRunner()
+    record_result = runner.invoke(app, ["dbg", "record", str(replay_path), "--out", str(golden_trace)])
+    assert record_result.exit_code == 0, record_result.output
+
+    meta, ticks, _footer = load_trace(golden_trace)
+    candidate_meta = msgspec.structs.replace(
+        meta,
+        source=msgspec.structs.replace(meta.source, seed=int(meta.source.seed or 0) + 1),
+    )
+    write_trace(candidate_trace, meta=candidate_meta, ticks=ticks, chunk_ticks=2)
+
+    with pytest.raises(ValueError, match="seed"):
+        dbg_diff.diff_traces(expected_trace_path=golden_trace, actual_trace_path=candidate_trace)
+    with pytest.raises(ValueError, match="seed"):
+        focus_tick(golden_trace=golden_trace, candidate_trace=candidate_trace, tick_index=0)
 
 
 def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> None:
@@ -299,11 +468,7 @@ def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> No
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    tick0 = next(row for row in ticks if int(row.tick_index) == 0)
-    tick0.channels = msgspec.structs.replace(
-        tick0.channels,
-        checkpoint=msgspec.structs.replace(tick0.channels.checkpoint, score_xp=999999),
-    )
+    ticks = _with_score_xp_delta(ticks, tick_index=0, delta=999999)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     result = runner.invoke(
@@ -333,20 +498,18 @@ def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    tick1 = next(row for row in ticks if row.tick_index == 1)
-    _with_score_xp_delta(tick1, delta=1)
+    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     call_count = 0
     original_first_mismatch = dbg_diff._first_mismatch
 
-    def _counting_first_mismatch(*, pairs, tick_end=None, capture_compare=False):
+    def _counting_first_mismatch(*, pairs, tick_end=None):
         nonlocal call_count
         call_count += 1
         return original_first_mismatch(
             pairs=pairs,
             tick_end=tick_end,
-            capture_compare=capture_compare,
         )
 
     monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)
@@ -373,8 +536,7 @@ def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:
     assert record_result.exit_code == 0, record_result.output
 
     meta, ticks, _footer = load_trace(golden_trace)
-    tick1 = next(row for row in ticks if int(row.tick_index) == 1)
-    _with_score_xp_delta(tick1, delta=1)
+    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
     write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
 
     entity_uid = -1

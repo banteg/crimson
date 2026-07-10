@@ -65,6 +65,7 @@ pub const CreatureState = struct {
     vel: state_mod.Vec2 = .{},
     move_scale: f32 = 1.0,
     force_target: i32 = 0,
+    target_player: i32 = 0,
     ai_mode: spawn_mod.CreatureAiMode = .orbit_player,
     // Native keeps this stale across slot reuse for some spawn paths.
     link_index: i32 = -1,
@@ -107,6 +108,7 @@ pub fn applyPoolResidue(
             .anim_phase = slot.anim_phase,
             .vel = .{ .x = slot.vel.x, .y = slot.vel.y },
             .force_target = slot.force_target,
+            .target_player = slot.target_player,
             .ai_mode = std.enums.fromInt(spawn_mod.CreatureAiMode, slot.ai_mode) orelse .orbit_player,
             .link_index = slot.link_index,
             .orbit_angle = slot.orbit_angle,

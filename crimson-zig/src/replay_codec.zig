@@ -1,14 +1,17 @@
 const std = @import("std");
 const msgpack = @import("msgpack");
-const rng_callers = @import("rng_caller_static.zig");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 12;
+pub const replay_format_version: i32 = 15;
 pub const weapon_usage_count: usize = 53;
+pub const quest_play_count: usize = 91;
+pub const status_unknown_tail_size: usize = 16;
 pub const max_players: usize = 4;
-pub const gzip_magic = [_]u8{ 0x1f, 0x8b };
+pub const perk_choice_slot_count: usize = 7;
 pub const zstd_magic = [_]u8{ 0x28, 0xB5, 0x2F, 0xFD };
 pub const max_replay_payload_bytes: usize = 64 * 1024 * 1024;
+pub const max_replay_file_bytes: usize = 65 * 1024 * 1024;
+const canonical_tick_dt_f64: f64 = @as(f32, 1.0 / 60.0);
 pub const latest_ruleset_game_version_prefixes = [_][]const u8{
     "0.9.",
     "0.10.",
@@ -32,33 +35,35 @@ pub const move_mode_mask: u32 = 0x7;
 pub const aim_scheme_present_flag: u32 = 1 << 12;
 pub const aim_scheme_shift: u5 = 13;
 pub const aim_scheme_mask: u32 = 0x7;
-
-const terrain_density_base: i64 = 800;
-const terrain_density_overlay: i64 = 0x23;
-const terrain_density_detail: i64 = 0x0F;
-const terrain_density_shift: u6 = 19;
-const terrain_rand_draws_per_stamp: i64 = 3;
-
-const crt_rand_mult: u32 = 214_013;
-const crt_rand_inc: u32 = 2_531_011;
+const supported_input_flags_mask: u32 = fire_down_flag |
+    fire_pressed_flag |
+    reload_pressed_flag |
+    reload_down_flag |
+    move_keys_present_flag |
+    move_forward_flag |
+    move_backward_flag |
+    turn_left_flag |
+    turn_right_flag |
+    move_mode_present_flag |
+    (move_mode_mask << move_mode_shift) |
+    aim_scheme_present_flag |
+    (aim_scheme_mask << aim_scheme_shift);
 
 pub const ReplayCodecError = error{
     InvalidMsgpack,
-    LegacyJsonPayload,
     InvalidHeaderValue,
     InvalidClaimedStats,
     MissingHeaderField,
     MissingQuestLevel,
     TypoMultiplayer,
     TutorialMultiplayer,
+    UnsupportedGameMode,
     UnsupportedReplayFormatVersion,
     UnsupportedInputShape,
     UnsupportedEventShape,
+    UnsupportedEventKind,
     UnknownCommandKind,
-    UnsupportedBootstrapKind,
     UnsupportedInputQuantization,
-    BootstrapSeedMismatch,
-    InvalidGzipPayload,
     InvalidZstdPayload,
     PayloadTooLarge,
     OutOfMemory,
@@ -68,6 +73,37 @@ pub const ReplayStatus = struct {
     quest_unlock_index: i32 = 0,
     quest_unlock_index_full: i32 = 0,
     weapon_usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count,
+    quest_play_counts: [quest_play_count]u32 = [_]u32{0} ** quest_play_count,
+    mode_play_survival: i32 = 0,
+    mode_play_rush: i32 = 0,
+    mode_play_typo: i32 = 0,
+    mode_play_other: i32 = 0,
+    game_sequence_id: i32 = 0,
+    unknown_tail: [status_unknown_tail_size]u8 = [_]u8{0} ** status_unknown_tail_size,
+
+    pub fn msgpackWrite(self: ReplayStatus, packer: anytype) !void {
+        try packer.writeMapHeader(10);
+        try packer.writeString("quest_unlock_index");
+        try packer.writeInt(self.quest_unlock_index);
+        try packer.writeString("quest_unlock_index_full");
+        try packer.writeInt(self.quest_unlock_index_full);
+        try packer.writeString("weapon_usage_counts");
+        try packer.writeArray(u32, self.weapon_usage_counts[0..]);
+        try packer.writeString("quest_play_counts");
+        try packer.writeArray(u32, self.quest_play_counts[0..]);
+        try packer.writeString("mode_play_survival");
+        try packer.writeInt(self.mode_play_survival);
+        try packer.writeString("mode_play_rush");
+        try packer.writeInt(self.mode_play_rush);
+        try packer.writeString("mode_play_typo");
+        try packer.writeInt(self.mode_play_typo);
+        try packer.writeString("mode_play_other");
+        try packer.writeInt(self.mode_play_other);
+        try packer.writeString("game_sequence_id");
+        try packer.writeInt(self.game_sequence_id);
+        try packer.writeString("unknown_tail");
+        try packer.writeBinary(self.unknown_tail[0..]);
+    }
 };
 
 pub const ReplayClaimedStats = struct {
@@ -88,32 +124,31 @@ pub const ReplayHeader = struct {
     quest_level: []u8,
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
-    bootstrap_kind: []u8,
-    bootstrap_seed: u32,
     game_version: []u8,
     tick_rate: i32,
-    difficulty_level: i32,
+    quest_fail_retry_count: i32,
     hardcore: bool,
     preserve_bugs: bool,
     detail_preset: i32,
-    gore_disabled: i32,
+    violence_disabled: i32,
     world_size: f32,
     player_count: i32,
     status: ReplayStatus,
     claimed_stats: ReplayClaimedStats = .{},
     input_quantization: []u8,
-    // Creature pool residue at run start (native captures); empty for
-    // port-recorded replays, which start from a fresh pool.
-    initial_creature_pool: []const ReplayCreatureSlotResidue = &.{},
+    // Preserve the v15 wire distinction: null means no captured residue,
+    // while an empty array is an explicit captured empty pool.
+    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
 
     pub fn deinit(self: ReplayHeader, allocator: std.mem.Allocator) void {
         allocator.free(self.quest_level);
         freeStringSliceList(allocator, self.typo_dictionary_words);
         freeStringSliceList(allocator, self.typo_highscore_names);
-        allocator.free(self.bootstrap_kind);
         allocator.free(self.game_version);
         allocator.free(self.input_quantization);
-        if (self.initial_creature_pool.len > 0) allocator.free(self.initial_creature_pool);
+        if (self.initial_creature_pool) |pool| {
+            if (pool.len > 0) allocator.free(pool);
+        }
     }
 };
 
@@ -250,11 +285,11 @@ fn isMissingQuestLevel(game_mode_id: i32, quest_level: []const u8) bool {
 }
 
 fn validateModePlayerCount(game_mode_id: i32, player_count: i32) ReplayCodecError!void {
-    if (game_mode_id == @intFromEnum(game_ids.GameModeId.typo) and player_count != 1) {
-        return error.TypoMultiplayer;
-    }
-    if (game_mode_id == @intFromEnum(game_ids.GameModeId.tutorial) and player_count != 1) {
-        return error.TutorialMultiplayer;
+    const game_mode = std.enums.fromInt(game_ids.GameModeId, game_mode_id) orelse return error.UnsupportedGameMode;
+    switch (game_mode) {
+        .typo => if (player_count != 1) return error.TypoMultiplayer,
+        .tutorial => if (player_count != 1) return error.TutorialMultiplayer,
+        .survival, .rush, .quests => {},
     }
 }
 
@@ -263,6 +298,7 @@ fn validateClaimedStats(claimed_stats: ReplayClaimedStats) ReplayCodecError!void
         claimed_stats.elapsed_ms < 0 or
         claimed_stats.score_xp < 0 or
         claimed_stats.kills < 0 or
+        std.enums.fromInt(game_ids.WeaponId, claimed_stats.most_used_weapon_id) == null or
         claimed_stats.shots_fired < 0 or
         claimed_stats.shots_hit < 0)
     {
@@ -282,6 +318,43 @@ pub const PerkPickEvent = struct {
 pub const PerkMenuOpenEvent = struct {
     tick_index: usize,
     player_index: i32,
+};
+
+pub const RngBurnPrelude = struct {
+    tick_index: usize,
+    draws: u32,
+};
+
+pub const PerkMenuOpenPrelude = struct {
+    tick_index: usize,
+    player_index: i32,
+};
+
+pub const PerkPickPrelude = struct {
+    tick_index: usize,
+    player_index: i32,
+    choice_index: i32,
+};
+
+pub const ReplayPreludeOp = union(enum) {
+    rng_burn: RngBurnPrelude,
+    perk_menu_open: PerkMenuOpenPrelude,
+    perk_pick: PerkPickPrelude,
+
+    pub fn tickIndex(self: ReplayPreludeOp) usize {
+        return switch (self) {
+            inline else => |op| op.tick_index,
+        };
+    }
+};
+
+pub const ReplayPostludeOp = struct {
+    tick_index: usize,
+    player_index: i32,
+
+    pub fn tickIndex(self: ReplayPostludeOp) usize {
+        return self.tick_index;
+    }
 };
 
 pub const TypoCharEvent = struct {
@@ -550,20 +623,14 @@ pub fn replayInputShapeFailureDetail(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!?[]u8 {
-    if (try currentReplayInputShapeFailureDetail(allocator, payload)) |detail| {
-        return detail;
-    }
-    return legacyReplayInputShapeFailureDetail(allocator, payload);
+    return currentReplayInputShapeFailureDetail(allocator, payload);
 }
 
 pub fn replayEventShapeFailureDetail(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!?[]u8 {
-    if (try currentReplayEventShapeFailureDetail(allocator, payload)) |detail| {
-        return detail;
-    }
-    return legacyReplayEventShapeFailureDetail(allocator, payload);
+    return currentReplayEventShapeFailureDetail(allocator, payload);
 }
 
 pub fn replayUnknownCommandFailureDetail(
@@ -578,19 +645,50 @@ pub fn replayUnknownCommandFailureDetail(
     };
     defer decoded.deinit();
 
-    var event_index: usize = 0;
     for (decoded.value.ticks, 0..) |tick, tick_index| {
-        for (tick.commands) |command| {
-            defer event_index += 1;
+        for (tick.commands, 0..) |command, command_index| {
             if (currentCommandKindKnown(command.type)) continue;
             return std.fmt.allocPrint(
                 allocator,
-                "replay event command kind is unknown: type={s} tick={d} event_index={d}",
-                .{ command.type, tick_index, event_index },
+                "replay command type is unknown: type={s} tick={d} command_index={d}",
+                .{ command.type, tick_index, command_index },
             ) catch return error.OutOfMemory;
         }
     }
 
+    return null;
+}
+
+pub fn replayCommandKindFailureDetail(
+    allocator: std.mem.Allocator,
+    payload: []const u8,
+) ReplayCodecError!?[]u8 {
+    var decoded = msgpack.decodeFromSlice(ReplayCurrentWire, allocator, payload) catch |err| {
+        return switch (err) {
+            error.OutOfMemory => error.OutOfMemory,
+            else => null,
+        };
+    };
+    defer decoded.deinit();
+
+    const game_mode = std.enums.fromInt(game_ids.GameModeId, decoded.value.header.game_mode_id) orelse return null;
+    for (decoded.value.ticks, 0..) |tick, tick_index| {
+        for (tick.commands, 0..) |command, command_index| {
+            if (!currentCommandKindKnown(command.type)) {
+                return std.fmt.allocPrint(
+                    allocator,
+                    "replay command type is unknown: type={s} tick={d} command_index={d}",
+                    .{ command.type, tick_index, command_index },
+                ) catch return error.OutOfMemory;
+            }
+            if (game_mode == .typo) continue;
+            return std.fmt.allocPrint(
+                allocator,
+                "replay command invalid for game mode: type={s} tick={d} command_index={d} game_mode={s}",
+                .{ command.type, tick_index, command_index, @tagName(game_mode) },
+            ) catch return error.OutOfMemory;
+        }
+    }
     return null;
 }
 
@@ -645,6 +743,7 @@ fn replayEventKindName(event: ReplayEvent) []const u8 {
 
 pub const ReplayEventSummary = struct {
     total_count: usize = 0,
+    rng_burn_count: usize = 0,
     perk_menu_open_count: usize = 0,
     perk_pick_count: usize = 0,
     typo_char_count: usize = 0,
@@ -661,6 +760,8 @@ pub const Replay = struct {
     header: ReplayHeader,
     inputs: []ReplayTickInputs,
     dt: []f32,
+    prelude: []ReplayPreludeOp = &.{},
+    postlude: []ReplayPostludeOp = &.{},
     events: []ReplayEvent,
 
     pub fn deinit(self: Replay, allocator: std.mem.Allocator) void {
@@ -668,6 +769,8 @@ pub const Replay = struct {
         for (self.inputs) |tick| allocator.free(tick);
         allocator.free(self.inputs);
         allocator.free(self.dt);
+        if (self.prelude.len > 0) allocator.free(self.prelude);
+        if (self.postlude.len > 0) allocator.free(self.postlude);
         allocator.free(self.events);
     }
 
@@ -677,8 +780,10 @@ pub const Replay = struct {
 
     pub fn summarizeEvents(self: Replay) ReplayEventSummary {
         var summary: ReplayEventSummary = .{
-            .total_count = self.events.len,
+            .total_count = self.prelude.len + self.postlude.len + self.events.len,
         };
+        for (self.prelude) |op| countReplayPrelude(&summary, op);
+        summary.perk_menu_open_count += self.postlude.len;
         for (self.events) |event| {
             countReplayEvent(&summary, event);
         }
@@ -696,61 +801,68 @@ pub const ReplaySummary = struct {
     }
 };
 
-const ReplayStatusWire = struct {
-    quest_unlock_index: i32 = 0,
-    quest_unlock_index_full: i32 = 0,
-    weapon_usage_counts: []const u32 = &.{},
-};
-
 pub const ReplayStatusCurrentWire = struct {
     quest_unlock_index: i32 = 0,
     quest_unlock_index_full: i32 = 0,
     weapon_usage_counts: []const u32 = &.{},
-    quest_play_counts: []const u32 = &.{},
+    quest_play_counts: []const u32 = &([_]u32{0} ** quest_play_count),
     mode_play_survival: i32 = 0,
     mode_play_rush: i32 = 0,
     mode_play_typo: i32 = 0,
     mode_play_other: i32 = 0,
     game_sequence_id: i32 = 0,
-    unknown_tail: BinaryBytes = .{ .data = "" },
+    unknown_tail: BinaryBytes = .{ .data = &([_]u8{0} ** status_unknown_tail_size) },
 
     pub fn msgpackRead(unpacker: anytype) !ReplayStatusCurrentWire {
         const field_count = try unpacker.readMapHeader(u16);
+        if (field_count != 10) return error.InvalidFormat;
         var field_name_buf: [64]u8 = undefined;
         var status: ReplayStatusCurrentWire = .{};
+        var fields_seen: u16 = 0;
 
         for (0..field_count) |_| {
             const field_name = try unpacker.readStringInto(&field_name_buf);
             if (std.mem.eql(u8, field_name, "quest_unlock_index")) {
+                fields_seen |= 1 << 0;
                 status.quest_unlock_index = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "quest_unlock_index_full")) {
+                fields_seen |= 1 << 1;
                 status.quest_unlock_index_full = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "weapon_usage_counts")) {
+                fields_seen |= 1 << 2;
                 status.weapon_usage_counts = try readExactU32Array(unpacker);
             } else if (std.mem.eql(u8, field_name, "quest_play_counts")) {
+                fields_seen |= 1 << 3;
                 status.quest_play_counts = try readExactU32Array(unpacker);
             } else if (std.mem.eql(u8, field_name, "mode_play_survival")) {
+                fields_seen |= 1 << 4;
                 status.mode_play_survival = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "mode_play_rush")) {
+                fields_seen |= 1 << 5;
                 status.mode_play_rush = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "mode_play_typo")) {
+                fields_seen |= 1 << 6;
                 status.mode_play_typo = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "mode_play_other")) {
+                fields_seen |= 1 << 7;
                 status.mode_play_other = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "game_sequence_id")) {
+                fields_seen |= 1 << 8;
                 status.game_sequence_id = try unpacker.readInt(i32);
             } else if (std.mem.eql(u8, field_name, "unknown_tail")) {
+                fields_seen |= 1 << 9;
                 status.unknown_tail = .{ .data = try readExactBinary(unpacker) };
             } else {
                 return error.UnknownStructField;
             }
         }
 
+        if (fields_seen != (1 << 10) - 1) return error.MissingStructFields;
         return status;
     }
 };
 
-const ReplayClaimedStatsWire = struct {
+pub const ReplayClaimedStatsWire = struct {
     complete: bool = false,
     ticks: i32 = 0,
     elapsed_ms: i64 = 0,
@@ -759,11 +871,94 @@ const ReplayClaimedStatsWire = struct {
     most_used_weapon_id: i32 = 0,
     shots_fired: i32 = 0,
     shots_hit: i32 = 0,
+
+    pub fn msgpackRead(unpacker: anytype) !ReplayClaimedStatsWire {
+        const field_count = try unpacker.readMapHeader(u16);
+        if (field_count != 8) return error.InvalidFormat;
+        var field_name_buf: [64]u8 = undefined;
+        var stats: ReplayClaimedStatsWire = .{};
+        var fields_seen: u8 = 0;
+
+        for (0..field_count) |_| {
+            const field_name = try unpacker.readStringInto(&field_name_buf);
+            if (std.mem.eql(u8, field_name, "complete")) {
+                fields_seen |= 1 << 0;
+                stats.complete = try unpacker.readBool(bool);
+            } else if (std.mem.eql(u8, field_name, "ticks")) {
+                fields_seen |= 1 << 1;
+                stats.ticks = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "elapsed_ms")) {
+                fields_seen |= 1 << 2;
+                stats.elapsed_ms = try unpacker.readInt(i64);
+            } else if (std.mem.eql(u8, field_name, "score_xp")) {
+                fields_seen |= 1 << 3;
+                stats.score_xp = try unpacker.readInt(i64);
+            } else if (std.mem.eql(u8, field_name, "kills")) {
+                fields_seen |= 1 << 4;
+                stats.kills = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "most_used_weapon_id")) {
+                fields_seen |= 1 << 5;
+                stats.most_used_weapon_id = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "shots_fired")) {
+                fields_seen |= 1 << 6;
+                stats.shots_fired = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "shots_hit")) {
+                fields_seen |= 1 << 7;
+                stats.shots_hit = try unpacker.readInt(i32);
+            } else {
+                return error.UnknownStructField;
+            }
+        }
+
+        if (fields_seen != std.math.maxInt(u8)) return error.MissingStructFields;
+        return stats;
+    }
 };
 
-pub const ReplayVec2Wire = struct {
+const ReplayVec2Wire = struct {
+    x: f64,
+    y: f64,
+};
+
+pub const ReplayVec2 = struct {
     x: f32 = 0.0,
     y: f32 = 0.0,
+};
+
+const ReplayCreatureSlotResidueWire = struct {
+    index: i32,
+    phase_seed: f64,
+    state_flag: i32,
+    collision_flag: i32,
+    collision_timer: f64,
+    lifecycle_stage: f64,
+    pos: ReplayVec2Wire,
+    vel: ReplayVec2Wire,
+    hp: f64,
+    max_hp: f64,
+    heading: f64,
+    target_heading: f64,
+    size: f64,
+    hit_flash_timer: f64,
+    tint_r: f64,
+    tint_g: f64,
+    tint_b: f64,
+    tint_a: f64,
+    force_target: i32,
+    target: ReplayVec2Wire,
+    contact_damage: f64,
+    move_speed: f64,
+    attack_cooldown: f64,
+    reward_value: f64,
+    type_id: i32,
+    target_player: i32,
+    link_index: i32,
+    target_offset: ReplayVec2Wire,
+    orbit_angle: f64,
+    orbit_radius_u32: u32,
+    flags: i32,
+    ai_mode: i32,
+    anim_phase: f64,
 };
 
 pub const ReplayCreatureSlotResidue = struct {
@@ -773,8 +968,8 @@ pub const ReplayCreatureSlotResidue = struct {
     collision_flag: i32 = 0,
     collision_timer: f32 = 0.0,
     lifecycle_stage: f32 = 0.0,
-    pos: ReplayVec2Wire = .{},
-    vel: ReplayVec2Wire = .{},
+    pos: ReplayVec2 = .{},
+    vel: ReplayVec2 = .{},
     hp: f32 = 0.0,
     max_hp: f32 = 0.0,
     heading: f32 = 0.0,
@@ -786,7 +981,7 @@ pub const ReplayCreatureSlotResidue = struct {
     tint_b: f32 = 0.0,
     tint_a: f32 = 0.0,
     force_target: i32 = 0,
-    target: ReplayVec2Wire = .{},
+    target: ReplayVec2 = .{},
     contact_damage: f32 = 0.0,
     move_speed: f32 = 0.0,
     attack_cooldown: f32 = 0.0,
@@ -794,7 +989,7 @@ pub const ReplayCreatureSlotResidue = struct {
     type_id: i32 = 0,
     target_player: i32 = 0,
     link_index: i32 = 0,
-    target_offset: ReplayVec2Wire = .{},
+    target_offset: ReplayVec2 = .{},
     orbit_angle: f32 = 0.0,
     orbit_radius_u32: u32 = 0,
     flags: i32 = 0,
@@ -802,89 +997,117 @@ pub const ReplayCreatureSlotResidue = struct {
     anim_phase: f32 = 0.0,
 };
 
-const ReplayHeaderWire = struct {
-    game_mode_id: i32,
-    seed: u32,
-    replay_format_version: i32,
-    quest_level: []const u8 = "",
-    bootstrap_kind: []const u8 = "none",
-    bootstrap_seed: u32 = 0,
-    game_version: []const u8 = "",
-    tick_rate: i32 = 60,
-    difficulty_level: i32 = 0,
-    hardcore: bool = false,
-    preserve_bugs: bool = false,
-    detail_preset: i32 = 5,
-    gore_disabled: i32 = 0,
-    world_size: f32 = 1024.0,
-    player_count: i32 = 1,
-    status: ReplayStatusWire = .{},
-    claimed_stats: ReplayClaimedStatsWire,
-    input_quantization: []const u8 = "f32",
-};
-
 const QuestLevelCurrentWire = struct {
     major: i32,
     minor: i32,
 };
 
-const ReplayHeaderCurrentWire = struct {
+pub const ReplayHeaderCurrentWire = struct {
     game_mode_id: i32,
     seed: u32,
     replay_format_version: i32,
     quest_level: ?QuestLevelCurrentWire = null,
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
-    bootstrap_kind: []const u8 = "none",
-    bootstrap_seed: u32 = 0,
     game_version: []const u8 = "",
     tick_rate: i32 = 60,
-    difficulty_level: i32 = 0,
     quest_fail_retry_count: i32 = 0,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     detail_preset: i32 = 5,
-    gore_disabled: i32 = 0,
     violence_disabled: i32 = 0,
-    world_size: f32 = 1024.0,
+    world_size: f64 = 1024.0,
     player_count: i32 = 1,
     status: ReplayStatusCurrentWire = .{},
     claimed_stats: ReplayClaimedStatsWire,
     input_quantization: []const u8 = "f32",
-    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
-};
+    initial_creature_pool: ?[]const ReplayCreatureSlotResidueWire = null,
 
-const ReplayHeaderCurrentStringQuestWire = struct {
-    game_mode_id: i32,
-    seed: u32,
-    replay_format_version: i32,
-    quest_level: []const u8 = "",
-    typo_dictionary_words: []const []const u8 = &.{},
-    typo_highscore_names: []const []const u8 = &.{},
-    bootstrap_kind: []const u8 = "none",
-    bootstrap_seed: u32 = 0,
-    game_version: []const u8 = "",
-    tick_rate: i32 = 60,
-    difficulty_level: i32 = 0,
-    quest_fail_retry_count: i32 = 0,
-    hardcore: bool = false,
-    preserve_bugs: bool = false,
-    detail_preset: i32 = 5,
-    gore_disabled: i32 = 0,
-    violence_disabled: i32 = 0,
-    world_size: f32 = 1024.0,
-    player_count: i32 = 1,
-    status: ReplayStatusCurrentWire = .{},
-    claimed_stats: ReplayClaimedStatsWire,
-    input_quantization: []const u8 = "f32",
-    initial_creature_pool: ?[]const ReplayCreatureSlotResidue = null,
+    pub fn msgpackFormat() msgpack.StructFormat {
+        return .{ .as_map = .{ .key = .field_name, .omit_nulls = false } };
+    }
+
+    pub fn msgpackRead(unpacker: anytype) !ReplayHeaderCurrentWire {
+        const field_count = try unpacker.readMapHeader(u16);
+        if (field_count != 19) return error.InvalidFormat;
+        var field_name_buf: [64]u8 = undefined;
+        var header: ReplayHeaderCurrentWire = undefined;
+        var fields_seen: u32 = 0;
+
+        for (0..field_count) |_| {
+            const field_name = try unpacker.readStringInto(&field_name_buf);
+            if (std.mem.eql(u8, field_name, "game_mode_id")) {
+                fields_seen |= 1 << 0;
+                header.game_mode_id = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "seed")) {
+                fields_seen |= 1 << 1;
+                header.seed = try unpacker.readInt(u32);
+            } else if (std.mem.eql(u8, field_name, "replay_format_version")) {
+                fields_seen |= 1 << 2;
+                header.replay_format_version = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "quest_level")) {
+                fields_seen |= 1 << 3;
+                header.quest_level = try unpacker.read(?QuestLevelCurrentWire);
+            } else if (std.mem.eql(u8, field_name, "typo_dictionary_words")) {
+                fields_seen |= 1 << 4;
+                header.typo_dictionary_words = try unpacker.read([]const []const u8);
+            } else if (std.mem.eql(u8, field_name, "typo_highscore_names")) {
+                fields_seen |= 1 << 5;
+                header.typo_highscore_names = try unpacker.read([]const []const u8);
+            } else if (std.mem.eql(u8, field_name, "game_version")) {
+                fields_seen |= 1 << 6;
+                header.game_version = try unpacker.read([]const u8);
+            } else if (std.mem.eql(u8, field_name, "tick_rate")) {
+                fields_seen |= 1 << 7;
+                header.tick_rate = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "quest_fail_retry_count")) {
+                fields_seen |= 1 << 8;
+                header.quest_fail_retry_count = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "hardcore")) {
+                fields_seen |= 1 << 9;
+                header.hardcore = try unpacker.readBool(bool);
+            } else if (std.mem.eql(u8, field_name, "preserve_bugs")) {
+                fields_seen |= 1 << 10;
+                header.preserve_bugs = try unpacker.readBool(bool);
+            } else if (std.mem.eql(u8, field_name, "detail_preset")) {
+                fields_seen |= 1 << 11;
+                header.detail_preset = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "violence_disabled")) {
+                fields_seen |= 1 << 12;
+                header.violence_disabled = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "world_size")) {
+                fields_seen |= 1 << 13;
+                header.world_size = try unpacker.readFloat(f64);
+            } else if (std.mem.eql(u8, field_name, "player_count")) {
+                fields_seen |= 1 << 14;
+                header.player_count = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "status")) {
+                fields_seen |= 1 << 15;
+                header.status = try unpacker.read(ReplayStatusCurrentWire);
+            } else if (std.mem.eql(u8, field_name, "claimed_stats")) {
+                fields_seen |= 1 << 16;
+                header.claimed_stats = try unpacker.read(ReplayClaimedStatsWire);
+            } else if (std.mem.eql(u8, field_name, "input_quantization")) {
+                fields_seen |= 1 << 17;
+                header.input_quantization = try unpacker.read([]const u8);
+            } else if (std.mem.eql(u8, field_name, "initial_creature_pool")) {
+                fields_seen |= 1 << 18;
+                header.initial_creature_pool = try unpacker.read(?[]const ReplayCreatureSlotResidueWire);
+            } else {
+                return error.UnknownStructField;
+            }
+        }
+
+        if (fields_seen != (1 << 19) - 1) return error.MissingStructFields;
+        return header;
+    }
 };
 
 const ReplayInputWire = struct {
-    move_x: f32,
-    move_y: f32,
-    aim_x: f32,
-    aim_y: f32,
+    move_x: f64,
+    move_y: f64,
+    aim_x: f64,
+    aim_y: f64,
     flags: i32,
 
     pub fn msgpackFormat() msgpack.StructFormat {
@@ -892,26 +1115,113 @@ const ReplayInputWire = struct {
     }
 };
 
-const PerkPickEventWire = struct {
-    tick_index: i32,
-    player_index: i32,
-    choice_index: i32,
+const RngBurnPreludeWire = struct {
+    draws: i32,
 };
 
-const PerkMenuOpenEventWire = struct {
-    tick_index: i32,
+const PerkMenuOpenPreludeWire = struct {
     player_index: i32,
 };
 
-const ReplayCommandCurrentWire = struct {
+const PerkPickPreludeWire = struct {
+    player_index: i32,
+    choice_index: ?i32 = null,
+};
+
+const ReplayPreludeCurrentWire = union(enum) {
+    rng_burn: RngBurnPreludeWire,
+    perk_menu_open: PerkMenuOpenPreludeWire,
+    perk_pick: PerkPickPreludeWire,
+
+    pub fn msgpackFormat() msgpack.UnionFormat {
+        return .{ .as_tagged = .{
+            .tag_field = "type",
+            .tag_value = .field_name,
+        } };
+    }
+};
+
+const ReplayPostludeCurrentWire = union(enum) {
+    perk_menu_open: PerkMenuOpenPreludeWire,
+
+    pub fn msgpackFormat() msgpack.UnionFormat {
+        return .{ .as_tagged = .{
+            .tag_field = "type",
+            .tag_value = .field_name,
+        } };
+    }
+};
+
+pub const ReplayCommandCurrentWire = struct {
     type: []const u8,
     player_index: i32 = 0,
     choice_index: ?i32 = null,
     ch: ?[]const u8 = null,
+
+    pub fn msgpackWrite(self: ReplayCommandCurrentWire, packer: anytype) !void {
+        const has_choice = self.choice_index != null;
+        const has_ch = self.ch != null;
+        if (has_choice and has_ch) return error.InvalidFormat;
+        try packer.writeMapHeader(if (has_choice or has_ch) 3 else 2);
+        try packer.writeString("type");
+        try packer.writeString(self.type);
+        try packer.writeString("player_index");
+        try packer.writeInt(self.player_index);
+        if (self.choice_index) |choice_index| {
+            try packer.writeString("choice_index");
+            try packer.writeInt(choice_index);
+        } else if (self.ch) |ch| {
+            try packer.writeString("ch");
+            try packer.writeString(ch);
+        }
+    }
+
+    pub fn msgpackRead(unpacker: anytype) !ReplayCommandCurrentWire {
+        const field_count = try unpacker.readMapHeader(u16);
+        if (field_count != 2 and field_count != 3) return error.InvalidFormat;
+        var field_name_buf: [32]u8 = undefined;
+        var command: ReplayCommandCurrentWire = .{ .type = "" };
+        var fields_seen: u8 = 0;
+
+        for (0..field_count) |_| {
+            const field_name = try unpacker.readStringInto(&field_name_buf);
+            if (std.mem.eql(u8, field_name, "type")) {
+                fields_seen |= 1 << 0;
+                command.type = try unpacker.read([]const u8);
+            } else if (std.mem.eql(u8, field_name, "player_index")) {
+                fields_seen |= 1 << 1;
+                command.player_index = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "choice_index")) {
+                fields_seen |= 1 << 2;
+                command.choice_index = try unpacker.readInt(i32);
+            } else if (std.mem.eql(u8, field_name, "ch")) {
+                fields_seen |= 1 << 3;
+                command.ch = try unpacker.read([]const u8);
+            } else {
+                return error.UnknownStructField;
+            }
+        }
+
+        if ((fields_seen & 0b0011) != 0b0011) return error.MissingStructFields;
+        if (std.mem.eql(u8, command.type, "perk_pick")) {
+            if (fields_seen != 0b0011 and fields_seen != 0b0111) return error.InvalidFormat;
+        } else if (std.mem.eql(u8, command.type, "typo_char")) {
+            if (fields_seen != 0b0011 and fields_seen != 0b1011) return error.InvalidFormat;
+        } else if (currentCommandKindKnown(command.type)) {
+            if (fields_seen != 0b0011) return error.InvalidFormat;
+        } else if ((fields_seen & 0b1100) == 0b1100) {
+            return error.InvalidFormat;
+        }
+        return command;
+    }
 };
 
 pub const BinaryBytes = struct {
     data: []const u8,
+
+    pub fn msgpackWrite(self: BinaryBytes, packer: anytype) !void {
+        try packer.writeBinary(self.data);
+    }
 
     pub fn msgpackRead(unpacker: anytype) !BinaryBytes {
         return .{ .data = try readExactBinary(unpacker) };
@@ -949,148 +1259,12 @@ fn readPackedInt(comptime T: type, reader: *std.Io.Reader) !T {
     return std.mem.readInt(T, &buf, .big);
 }
 
-const CaptureBootstrapQuestSessionWire = struct {
-    spawn_timeline_ms: ?f32,
-    no_creatures_timer_ms: ?f32,
-    completion_transition_ms: ?f32,
-};
-
-const CaptureBootstrapPlayerWire = struct {
-    weapon_id: i32,
-    pos_x: f32,
-    pos_y: f32,
-    health: f32,
-    ammo: f32,
-    experience: i32,
-    level: i32,
-    clip_size: ?i32,
-    reload_active: ?bool,
-    reload_timer: ?f32,
-    reload_timer_max: ?f32,
-    shot_cooldown: ?f32,
-    spread_heat: ?f32,
-    aim_x: ?f32,
-    aim_y: ?f32,
-    aim_heading: ?f32,
-    alt_weapon_id: ?i32,
-    alt_clip_size: ?i32,
-    alt_ammo: ?f32,
-    alt_reload_active: ?bool,
-    alt_reload_timer: ?f32,
-    alt_reload_timer_max: ?f32,
-    alt_shot_cooldown: ?f32,
-    shield_ms: ?i32,
-    fire_bullets_ms: ?i32,
-    speed_bonus_ms: ?i32,
-    hot_tempered_timer: ?f32,
-    man_bomb_timer: ?f32,
-    living_fortress_timer: ?f32,
-    fire_cough_timer: ?f32,
-};
-
-const CaptureBootstrapEventWire = struct {
-    tick_index: i32,
-    elapsed_ms: i32,
-    score_xp: i32,
-    perk_pending: i32,
-    perk_pending_count: i32,
-    perk_choices_dirty: bool,
-    perk_choices: []const i32,
-    player_nonzero_counts: []const []const []const i32,
-    players: []const CaptureBootstrapPlayerWire,
-    digital_move_enabled_by_player: []const bool,
-    weapon_power_up_ms: i32,
-    reflex_boost_ms: i32,
-    energizer_ms: i32,
-    double_experience_ms: i32,
-    freeze_ms: i32,
-    perk_interval_man_bomb: ?f32,
-    perk_interval_fire_cough: ?f32,
-    perk_interval_hot_tempered: ?f32,
-    quest_session: ?CaptureBootstrapQuestSessionWire,
-};
-
-const CapturePerkApplyEventWire = struct {
-    tick_index: i32,
-    perk_id: i32,
-    outside_before: bool,
-    pending_before: ?i32,
-    pending_after: ?i32,
-};
-
-const CapturePerkPendingEventWire = struct {
-    tick_index: i32,
-    perk_pending: i32,
-};
-
-const CaptureCreatureSpawnRowWire = struct {
-    template_id: i32,
-    pos_x: f32,
-    pos_y: f32,
-    heading: f32,
-};
-
-const CaptureCreatureSpawnAddedHeadRowWire = struct {
-    index: i32,
-    heading: ?f32,
-    target_heading: ?f32,
-    ai_mode: ?i32,
-    link_index: ?i32,
-    hp: ?f32,
-    lifecycle_stage: ?f32,
-    orbit_angle: ?f32,
-    orbit_radius: ?f32,
-    flags: ?i32,
-    type_id: ?i32,
-    pos_x: ?f32,
-    pos_y: ?f32,
-};
-
-const CaptureCreatureSpawnEventWire = struct {
-    tick_index: i32,
-    spawns: []const CaptureCreatureSpawnRowWire,
-    added_head: []const CaptureCreatureSpawnAddedHeadRowWire,
-};
-
-const CaptureStateTransitionRowWire = struct {
-    target_state: i32,
-    before_state: ?i32,
-    after_state: ?i32,
-};
-
-const CaptureStateTransitionEventWire = struct {
-    tick_index: i32,
-    transitions: []const CaptureStateTransitionRowWire,
-};
-
-const ReplayEventWire = union(enum) {
-    perk_pick: PerkPickEventWire,
-    perk_menu_open: PerkMenuOpenEventWire,
-    orig_capture_bootstrap: CaptureBootstrapEventWire,
-    orig_capture_perk_apply: CapturePerkApplyEventWire,
-    orig_capture_perk_pending: CapturePerkPendingEventWire,
-    orig_capture_creature_spawn: CaptureCreatureSpawnEventWire,
-    orig_capture_state_transition: CaptureStateTransitionEventWire,
-
-    pub fn msgpackFormat() msgpack.UnionFormat {
-        return .{ .as_tagged = .{
-            .tag_field = "type",
-            .tag_value = .field_name,
-        } };
-    }
-};
-
-const ReplayWire = struct {
-    header: ReplayHeaderWire,
-    inputs: []const []const ReplayInputWire,
-    dt: []const f32 = &.{},
-    events: []const ReplayEventWire = &.{},
-};
-
 const ReplayTickCurrentWire = struct {
-    dt: f32,
+    dt: f64,
     inputs: []const ReplayInputWire,
-    commands: []const ReplayCommandCurrentWire = &.{},
+    prelude: []const ReplayPreludeCurrentWire,
+    postlude: []const ReplayPostludeCurrentWire,
+    commands: []const ReplayCommandCurrentWire,
 };
 
 const ReplayCurrentWire = struct {
@@ -1098,107 +1272,9 @@ const ReplayCurrentWire = struct {
     ticks: []const ReplayTickCurrentWire,
 };
 
-const ReplayCurrentStringQuestWire = struct {
-    header: ReplayHeaderCurrentStringQuestWire,
-    ticks: []const ReplayTickCurrentWire,
-};
-
-const TerrainRule = struct {
-    threshold: i32,
-};
-
-const terrain_unlock_rules = [_]TerrainRule{
-    .{ .threshold = 0x28 },
-    .{ .threshold = 0x1E },
-    .{ .threshold = 0x14 },
-};
-
-const unlock_random_terrain_prelude_callers = [_]rng_callers.Caller{
-    rng_callers.terrain_generate_random_prelude_1,
-    rng_callers.terrain_generate_random_prelude_2,
-    rng_callers.terrain_generate_random_prelude_3,
-};
-
-const unlock_random_terrain_stamp_callers = [_][3]rng_callers.Caller{
-    .{
-        rng_callers.terrain_generate_random_base_rotation,
-        rng_callers.terrain_generate_random_base_y,
-        rng_callers.terrain_generate_random_base_x,
-    },
-    .{
-        rng_callers.terrain_generate_random_overlay_rotation,
-        rng_callers.terrain_generate_random_overlay_y,
-        rng_callers.terrain_generate_random_overlay_x,
-    },
-    .{
-        rng_callers.terrain_generate_random_detail_rotation,
-        rng_callers.terrain_generate_random_detail_y,
-        rng_callers.terrain_generate_random_detail_x,
-    },
-};
-
-const Crand = struct {
-    state: u32 = 0,
-
-    fn srand(self: *Crand, seed: u32) void {
-        self.state = seed;
-    }
-
-    fn rand(self: *Crand) u32 {
-        self.state = self.state *% crt_rand_mult +% crt_rand_inc;
-        return (self.state >> 16) & 0x7fff;
-    }
-
-    fn randTagged(self: *Crand, _: rng_callers.Caller) u32 {
-        return self.rand();
-    }
-};
-
-pub fn isGzipPayload(bytes: []const u8) bool {
-    if (bytes.len < gzip_magic.len) return false;
-    return std.mem.eql(u8, bytes[0..gzip_magic.len], gzip_magic[0..]);
-}
-
 pub fn isZstdPayload(bytes: []const u8) bool {
     if (bytes.len < zstd_magic.len) return false;
     return std.mem.eql(u8, bytes[0..zstd_magic.len], zstd_magic[0..]);
-}
-
-fn isLegacyJsonPayload(bytes: []const u8) bool {
-    var idx: usize = 0;
-    while (idx < bytes.len) : (idx += 1) {
-        switch (bytes[idx]) {
-            ' ', '\t', '\r', '\n', 0x0b, 0x0c => continue,
-            '{', '[' => return true,
-            else => return false,
-        }
-    }
-    return false;
-}
-
-pub fn inflateGzipPayload(
-    allocator: std.mem.Allocator,
-    compressed: []const u8,
-    max_output_bytes: usize,
-) ReplayCodecError![]u8 {
-    var input: std.Io.Reader = .fixed(compressed);
-    var window: [std.compress.flate.max_window_len]u8 = undefined;
-    var decompress: std.compress.flate.Decompress = .init(&input, .gzip, &window);
-
-    var out: std.ArrayList(u8) = .empty;
-    defer out.deinit(allocator);
-
-    var chunk: [8192]u8 = undefined;
-    var total: usize = 0;
-    while (true) {
-        const n = decompress.reader.readSliceShort(&chunk) catch return error.InvalidGzipPayload;
-        if (n == 0) break;
-        total += n;
-        if (total > max_output_bytes) return error.PayloadTooLarge;
-        out.appendSlice(allocator, chunk[0..n]) catch return error.OutOfMemory;
-    }
-
-    return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
 }
 
 pub fn inflateZstdPayload(
@@ -1229,96 +1305,98 @@ pub fn inflateZstdPayload(
     return out.toOwnedSlice(allocator) catch return error.OutOfMemory;
 }
 
+fn inflateSingleZstdFramePayload(
+    allocator: std.mem.Allocator,
+    compressed: []const u8,
+    max_output_bytes: usize,
+) ReplayCodecError![]u8 {
+    var input: std.Io.Reader = .fixed(compressed);
+    var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
+    var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
+    var output: std.ArrayList(u8) = .empty;
+    defer output.deinit(allocator);
+
+    var frame_started = false;
+    while (true) {
+        const frame_finished = switch (decompress.state) {
+            .new_frame => frame_started and decompress.reader.bufferedLen() == 0,
+            else => false,
+        };
+        if (frame_finished) break;
+        frame_started = true;
+
+        var chunk: [8192]u8 = undefined;
+        var chunk_writer: std.Io.Writer = .fixed(&chunk);
+        _ = decompress.reader.stream(&chunk_writer, .limited(chunk.len)) catch |err| switch (err) {
+            error.WriteFailed => unreachable,
+            error.ReadFailed, error.EndOfStream => {
+                _ = decompress.err;
+                return error.InvalidZstdPayload;
+            },
+        };
+        if (chunk_writer.end > max_output_bytes - output.items.len) return error.PayloadTooLarge;
+        output.appendSlice(allocator, chunk[0..chunk_writer.end]) catch return error.OutOfMemory;
+    }
+
+    if (input.seek != compressed.len) return error.InvalidZstdPayload;
+    const has_checksum = compressed.len > zstd_magic.len and
+        (compressed[zstd_magic.len] & 0b0000_0100) != 0;
+    if (has_checksum) {
+        if (input.seek < @sizeOf(u32)) return error.InvalidZstdPayload;
+        const expected = std.mem.readInt(
+            u32,
+            compressed[input.seek - @sizeOf(u32) ..][0..@sizeOf(u32)],
+            .little,
+        );
+        const actual: u32 = @truncate(std.hash.XxHash64.hash(
+            0,
+            output.items,
+        ));
+        if (actual != expected) return error.InvalidZstdPayload;
+    }
+    return output.toOwnedSlice(allocator) catch return error.OutOfMemory;
+}
+
+/// Decode the only supported on-disk replay envelope.
+///
+/// `parseReplay` and `parseReplaySummary` intentionally continue to accept raw
+/// msgpack payloads for in-memory callers and tests. File-facing commands must
+/// pass through this function so raw or otherwise non-zstd payloads cannot be mistaken for
+/// current replay files.
+pub fn inflateZstdFilePayload(
+    allocator: std.mem.Allocator,
+    compressed: []const u8,
+    max_output_bytes: usize,
+) ReplayCodecError![]u8 {
+    if (!isZstdPayload(compressed)) return error.InvalidZstdPayload;
+    return inflateSingleZstdFramePayload(allocator, compressed, max_output_bytes);
+}
+
 pub fn parseReplaySummary(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!ReplaySummary {
-    if (isLegacyJsonPayload(payload)) return error.LegacyJsonPayload;
-
     if (try tryParseCurrentReplaySummary(allocator, payload)) |summary| {
         return summary;
     }
-    if (try tryParseCurrentStringQuestReplaySummary(allocator, payload)) |summary| {
-        return summary;
-    }
-
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => error.InvalidMsgpack,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const header = try buildHeader(allocator, wire.header);
-    errdefer header.deinit(allocator);
-
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
-    }
-
-    try validateInputShape(wire.inputs, header.player_count);
-    try validateDtRows(wire.dt, wire.inputs.len);
-    const events = try parseEventSummary(wire.events, wire.inputs.len);
-
-    return .{
-        .header = header,
-        .tick_count = wire.inputs.len,
-        .events = events,
-    };
+    return error.InvalidMsgpack;
 }
 
 pub fn parseReplay(
     allocator: std.mem.Allocator,
     payload: []const u8,
 ) ReplayCodecError!Replay {
-    if (isLegacyJsonPayload(payload)) return error.LegacyJsonPayload;
-
     if (try tryParseCurrentReplay(allocator, payload)) |replay| {
         return replay;
     }
-    if (try tryParseCurrentStringQuestReplay(allocator, payload)) |replay| {
-        return replay;
-    }
-
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => error.InvalidMsgpack,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const header = try buildHeader(allocator, wire.header);
-    errdefer header.deinit(allocator);
-
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
-    }
-
-    try validateInputShape(wire.inputs, header.player_count);
-    try validateDtRows(wire.dt, wire.inputs.len);
-
-    const inputs = try buildInputs(allocator, wire.inputs);
-    errdefer freeInputs(allocator, inputs);
-
-    const dt = try buildDt(allocator, wire.dt, wire.inputs.len);
-    errdefer allocator.free(dt);
-
-    const events = try buildEvents(allocator, wire.events, wire.inputs.len);
-    errdefer allocator.free(events);
-
-    return .{
-        .header = header,
-        .inputs = inputs,
-        .dt = dt,
-        .events = events,
-    };
+    return error.InvalidMsgpack;
 }
 
 pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
+    return buildSmokeTestReplayPayloadForMode(allocator, @intFromEnum(game_ids.GameModeId.survival));
+}
+
+fn buildSmokeTestReplayPayloadForMode(allocator: std.mem.Allocator, game_mode_id: i32) ![]u8 {
     // Small canonical replay payload used by ABI/tests that need real msgpack replay bytes
     // without depending on checked-in fixture encodings.
     const usage_counts = [_]u32{0} ** weapon_usage_count;
@@ -1340,29 +1418,23 @@ pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
             .flags = 0,
         },
     };
-    const inputs = [_][]const ReplayInputWire{
-        tick0[0..],
-        tick1[0..],
+    const ticks = [_]ReplayTickCurrentWire{
+        .{ .dt = canonical_tick_dt_f64, .inputs = tick0[0..], .prelude = &.{}, .postlude = &.{}, .commands = &.{} },
+        .{ .dt = canonical_tick_dt_f64, .inputs = tick1[0..], .prelude = &.{}, .postlude = &.{}, .commands = &.{} },
     };
-    const dt = [_]f32{
-        1.0 / 60.0,
-        1.0 / 60.0,
-    };
-    const replay: ReplayWire = .{
+    const replay: ReplayCurrentWire = .{
         .header = .{
-            .game_mode_id = 1,
+            .game_mode_id = game_mode_id,
             .seed = 1,
             .replay_format_version = replay_format_version,
-            .quest_level = "",
-            .bootstrap_kind = "none",
-            .bootstrap_seed = 0,
+            .quest_level = null,
             .game_version = "0.9.0",
             .tick_rate = 60,
-            .difficulty_level = 0,
+            .quest_fail_retry_count = 0,
             .hardcore = false,
             .preserve_bugs = false,
             .detail_preset = 5,
-            .gore_disabled = 0,
+            .violence_disabled = 0,
             .world_size = 1024.0,
             .player_count = 1,
             .status = .{
@@ -1373,9 +1445,7 @@ pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
             .claimed_stats = .{},
             .input_quantization = "f32",
         },
-        .inputs = inputs[0..],
-        .dt = dt[0..],
-        .events = &.{},
+        .ticks = ticks[0..],
     };
 
     var writer: std.Io.Writer.Allocating = .init(allocator);
@@ -1384,96 +1454,60 @@ pub fn buildSmokeTestReplayPayload(allocator: std.mem.Allocator) ![]u8 {
     return writer.toOwnedSlice();
 }
 
-pub fn validateReplayBootstrap(header: ReplayHeader) ReplayCodecError!void {
-    if (std.mem.eql(u8, header.bootstrap_kind, "none")) {
-        return;
-    }
-    if (!std.mem.eql(u8, header.bootstrap_kind, "terrain_v1")) {
-        return error.UnsupportedBootstrapKind;
-    }
-
-    var rng: Crand = .{};
-    rng.srand(header.bootstrap_seed);
-    advanceRandomTerrainPreludeRng(&rng);
-    _ = chooseTerrainIds(header.status.quest_unlock_index, &rng);
-
-    const width_i32 = @max(@as(i32, 1), floatToPositiveI32(header.world_size));
-    const height_i32 = width_i32;
-    advanceTerrainStampingRng(&rng, width_i32, height_i32);
-
-    if (rng.state != header.seed) {
-        return error.BootstrapSeedMismatch;
-    }
-}
-
-fn parseEventSummary(
-    wire_events: []const ReplayEventWire,
-    input_len: usize,
-) ReplayCodecError!ReplayEventSummary {
-    var summary: ReplayEventSummary = .{
-        .total_count = wire_events.len,
-    };
-    for (wire_events) |wire_event| {
-        const event = try parseReplayEvent(wire_event, input_len);
-        countReplayEvent(&summary, event);
-    }
-    return summary;
-}
-
-fn buildInputs(
+/// Build a valid zstd file envelope using raw blocks.
+///
+/// This keeps test and embedding callers independent of a zstd compressor
+/// while exercising the same mandatory envelope as real `.crd` files.
+pub fn wrapZstdFilePayload(
     allocator: std.mem.Allocator,
-    wire_inputs: []const []const ReplayInputWire,
-) ReplayCodecError![]ReplayTickInputs {
-    const out = allocator.alloc(ReplayTickInputs, wire_inputs.len) catch return error.OutOfMemory;
-    var built: usize = 0;
-    errdefer {
-        for (0..built) |idx| allocator.free(out[idx]);
-        allocator.free(out);
+    payload: []const u8,
+) ![]u8 {
+    if (payload.len > std.math.maxInt(u32)) return error.PayloadTooLarge;
+
+    var writer: std.Io.Writer.Allocating = .init(allocator);
+    errdefer writer.deinit();
+    try writer.writer.writeAll(&zstd_magic);
+
+    if (payload.len <= std.math.maxInt(u8)) {
+        try writer.writer.writeByte(0x20);
+        try writer.writer.writeByte(@intCast(payload.len));
+    } else if (payload.len <= 65_791) {
+        try writer.writer.writeByte(0x60);
+        var content_size: [2]u8 = undefined;
+        std.mem.writeInt(u16, &content_size, @intCast(payload.len - 256), .little);
+        try writer.writer.writeAll(&content_size);
+    } else {
+        try writer.writer.writeByte(0xA0);
+        var content_size: [4]u8 = undefined;
+        std.mem.writeInt(u32, &content_size, @intCast(payload.len), .little);
+        try writer.writer.writeAll(&content_size);
     }
 
-    for (wire_inputs, 0..) |wire_tick, tick_idx| {
-        const tick_inputs = allocator.alloc(ReplayPlayerInput, wire_tick.len) catch return error.OutOfMemory;
-        errdefer allocator.free(tick_inputs);
-        for (wire_tick, 0..) |wire_input, player_idx| {
-            tick_inputs[player_idx] = .{
-                .move_x = normalizeInputValue(wire_input.move_x),
-                .move_y = normalizeInputValue(wire_input.move_y),
-                .aim_x = normalizeInputValue(wire_input.aim_x),
-                .aim_y = normalizeInputValue(wire_input.aim_y),
-                .flags = try parseInputFlagsValue(wire_input.flags),
-            };
-        }
-        out[tick_idx] = tick_inputs;
-        built += 1;
+    const max_raw_block_len: usize = 128 * 1024;
+    var offset: usize = 0;
+    while (offset < payload.len or (payload.len == 0 and offset == 0)) {
+        const remaining = payload.len - offset;
+        const block_len = @min(remaining, max_raw_block_len);
+        const last: u32 = @intFromBool(offset + block_len == payload.len);
+        const block_header: u32 = last | (@as(u32, @intCast(block_len)) << 3);
+        const header_bytes = [_]u8{
+            @truncate(block_header),
+            @truncate(block_header >> 8),
+            @truncate(block_header >> 16),
+        };
+        try writer.writer.writeAll(&header_bytes);
+        try writer.writer.writeAll(payload[offset .. offset + block_len]);
+        offset += block_len;
+        if (last != 0) break;
     }
 
-    return out;
+    return writer.toOwnedSlice();
 }
 
-fn buildEvents(
-    allocator: std.mem.Allocator,
-    wire_events: []const ReplayEventWire,
-    input_len: usize,
-) ReplayCodecError![]ReplayEvent {
-    const events = allocator.alloc(ReplayEvent, wire_events.len) catch return error.OutOfMemory;
-    errdefer allocator.free(events);
-    for (wire_events, 0..) |wire_event, idx| {
-        events[idx] = try parseReplayEvent(wire_event, input_len);
-    }
-    return events;
-}
-
-fn buildDt(
-    allocator: std.mem.Allocator,
-    wire_dt: []const f32,
-    input_len: usize,
-) ReplayCodecError![]f32 {
-    try validateDtRows(wire_dt, input_len);
-    const out = allocator.alloc(f32, wire_dt.len) catch return error.OutOfMemory;
-    for (wire_dt, 0..) |value, idx| {
-        out[idx] = value;
-    }
-    return out;
+pub fn buildSmokeTestReplayFile(allocator: std.mem.Allocator) ![]u8 {
+    const payload = try buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(payload);
+    return wrapZstdFilePayload(allocator, payload);
 }
 
 fn currentReplayInputShapeFailureDetail(
@@ -1501,12 +1535,36 @@ fn currentReplayInputShapeFailureDetail(
                 .{ tick_idx, tick.inputs.len, expected_players },
             ) catch return error.OutOfMemory;
         }
-        if (!std.math.isFinite(tick.dt) or tick.dt < 0.0) {
+        const dt = canonicalF32(tick.dt) orelse {
+            return std.fmt.allocPrint(
+                allocator,
+                "replay tick {d} dt must already be exactly representable as f32",
+                .{tick_idx},
+            ) catch return error.OutOfMemory;
+        };
+        if (dt < 0.0) {
             return std.fmt.allocPrint(
                 allocator,
                 "replay tick {d} dt must be finite and >= 0",
                 .{tick_idx},
             ) catch return error.OutOfMemory;
+        }
+        for (tick.inputs, 0..) |input, player_idx| {
+            const fields = [_]struct { name: []const u8, value: f64 }{
+                .{ .name = "move_x", .value = input.move_x },
+                .{ .name = "move_y", .value = input.move_y },
+                .{ .name = "aim_x", .value = input.aim_x },
+                .{ .name = "aim_y", .value = input.aim_y },
+            };
+            for (fields) |field| {
+                _ = canonicalF32(field.value) orelse {
+                    return std.fmt.allocPrint(
+                        allocator,
+                        "replay tick {d} player {d} {s} must already be exactly representable as f32",
+                        .{ tick_idx, player_idx, field.name },
+                    ) catch return error.OutOfMemory;
+                };
+            }
         }
     }
 
@@ -1516,27 +1574,58 @@ fn currentReplayInputShapeFailureDetail(
 fn validateCurrentTicks(
     wire_ticks: []const ReplayTickCurrentWire,
     player_count: i32,
+    game_mode_id: i32,
 ) ReplayCodecError!void {
+    if (wire_ticks.len == 0) return error.UnsupportedInputShape;
     const expected_players: usize = @intCast(player_count);
     for (wire_ticks) |tick| {
-        if (!std.math.isFinite(tick.dt) or tick.dt < 0.0) return error.UnsupportedInputShape;
+        if (tick.commands.len > 0 and game_mode_id != @intFromEnum(game_ids.GameModeId.typo)) {
+            return error.UnsupportedEventKind;
+        }
+        const dt = canonicalF32(tick.dt) orelse return error.UnsupportedInputShape;
+        if (dt < 0.0) return error.UnsupportedInputShape;
         if (tick.inputs.len != expected_players) return error.UnsupportedInputShape;
+        for (tick.inputs) |input| {
+            _ = canonicalF32(input.move_x) orelse return error.UnsupportedInputShape;
+            _ = canonicalF32(input.move_y) orelse return error.UnsupportedInputShape;
+            _ = canonicalF32(input.aim_x) orelse return error.UnsupportedInputShape;
+            _ = canonicalF32(input.aim_y) orelse return error.UnsupportedInputShape;
+            _ = try parseInputFlagsValue(input.flags);
+        }
     }
 }
 
 fn parseCurrentEventSummary(
     wire_ticks: []const ReplayTickCurrentWire,
-    input_len: usize,
+    player_count: i32,
 ) ReplayCodecError!ReplayEventSummary {
     var summary: ReplayEventSummary = .{};
     for (wire_ticks, 0..) |tick, tick_index| {
+        for (tick.prelude) |wire_op| {
+            const op = try parseCurrentPrelude(wire_op, tick_index, player_count);
+            summary.total_count += 1;
+            countReplayPrelude(&summary, op);
+        }
+        for (tick.postlude) |wire_op| {
+            _ = try parseCurrentPostlude(wire_op, tick_index, player_count);
+            summary.total_count += 1;
+            summary.perk_menu_open_count += 1;
+        }
         for (tick.commands) |command| {
-            const event = try parseCurrentCommand(command, tick_index, input_len);
+            const event = try parseCurrentCommand(command, tick_index, player_count);
             summary.total_count += 1;
             countReplayEvent(&summary, event);
         }
     }
     return summary;
+}
+
+fn countReplayPrelude(summary: *ReplayEventSummary, op: ReplayPreludeOp) void {
+    switch (op) {
+        .rng_burn => summary.rng_burn_count += 1,
+        .perk_menu_open => summary.perk_menu_open_count += 1,
+        .perk_pick => summary.perk_pick_count += 1,
+    }
 }
 
 fn countReplayEvent(summary: *ReplayEventSummary, event: ReplayEvent) void {
@@ -1570,10 +1659,10 @@ fn buildInputsCurrent(
         errdefer allocator.free(tick_inputs);
         for (tick.inputs, 0..) |wire_input, player_idx| {
             tick_inputs[player_idx] = .{
-                .move_x = normalizeInputValue(wire_input.move_x),
-                .move_y = normalizeInputValue(wire_input.move_y),
-                .aim_x = normalizeInputValue(wire_input.aim_x),
-                .aim_y = normalizeInputValue(wire_input.aim_y),
+                .move_x = canonicalF32(wire_input.move_x) orelse return error.UnsupportedInputShape,
+                .move_y = canonicalF32(wire_input.move_y) orelse return error.UnsupportedInputShape,
+                .aim_x = canonicalF32(wire_input.aim_x) orelse return error.UnsupportedInputShape,
+                .aim_y = canonicalF32(wire_input.aim_y) orelse return error.UnsupportedInputShape,
                 .flags = try parseInputFlagsValue(wire_input.flags),
             };
         }
@@ -1586,7 +1675,7 @@ fn buildInputsCurrent(
 fn buildEventsCurrent(
     allocator: std.mem.Allocator,
     wire_ticks: []const ReplayTickCurrentWire,
-    input_len: usize,
+    player_count: i32,
 ) ReplayCodecError![]ReplayEvent {
     var total_count: usize = 0;
     for (wire_ticks) |tick| total_count += tick.commands.len;
@@ -1597,11 +1686,55 @@ fn buildEventsCurrent(
     var event_index: usize = 0;
     for (wire_ticks, 0..) |tick, tick_index| {
         for (tick.commands) |command| {
-            events[event_index] = try parseCurrentCommand(command, tick_index, input_len);
+            events[event_index] = try parseCurrentCommand(command, tick_index, player_count);
             event_index += 1;
         }
     }
     return events;
+}
+
+fn buildPreludeCurrent(
+    allocator: std.mem.Allocator,
+    wire_ticks: []const ReplayTickCurrentWire,
+    player_count: i32,
+) ReplayCodecError![]ReplayPreludeOp {
+    var total_count: usize = 0;
+    for (wire_ticks) |tick| total_count += tick.prelude.len;
+    if (total_count == 0) return &.{};
+
+    const prelude = allocator.alloc(ReplayPreludeOp, total_count) catch return error.OutOfMemory;
+    errdefer allocator.free(prelude);
+
+    var op_index: usize = 0;
+    for (wire_ticks, 0..) |tick, tick_index| {
+        for (tick.prelude) |wire_op| {
+            prelude[op_index] = try parseCurrentPrelude(wire_op, tick_index, player_count);
+            op_index += 1;
+        }
+    }
+    return prelude;
+}
+
+fn buildPostludeCurrent(
+    allocator: std.mem.Allocator,
+    wire_ticks: []const ReplayTickCurrentWire,
+    player_count: i32,
+) ReplayCodecError![]ReplayPostludeOp {
+    var total_count: usize = 0;
+    for (wire_ticks) |tick| total_count += tick.postlude.len;
+    if (total_count == 0) return &.{};
+
+    const postlude = allocator.alloc(ReplayPostludeOp, total_count) catch return error.OutOfMemory;
+    errdefer allocator.free(postlude);
+
+    var op_index: usize = 0;
+    for (wire_ticks, 0..) |tick, tick_index| {
+        for (tick.postlude) |wire_op| {
+            postlude[op_index] = try parseCurrentPostlude(wire_op, tick_index, player_count);
+            op_index += 1;
+        }
+    }
+    return postlude;
 }
 
 fn buildDtCurrent(
@@ -1609,76 +1742,77 @@ fn buildDtCurrent(
     wire_ticks: []const ReplayTickCurrentWire,
 ) ReplayCodecError![]f32 {
     const out = allocator.alloc(f32, wire_ticks.len) catch return error.OutOfMemory;
+    errdefer allocator.free(out);
     for (wire_ticks, 0..) |tick, idx| {
-        out[idx] = tick.dt;
+        out[idx] = canonicalF32(tick.dt) orelse return error.UnsupportedInputShape;
     }
     return out;
 }
 
-fn legacyReplayInputShapeFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
+fn parseCurrentPrelude(
+    wire_op: ReplayPreludeCurrentWire,
+    tick_index: usize,
+    player_count: i32,
+) ReplayCodecError!ReplayPreludeOp {
+    return switch (wire_op) {
+        .rng_burn => |op| blk: {
+            if (op.draws <= 0) return error.UnsupportedEventShape;
+            break :blk .{ .rng_burn = .{
+                .tick_index = tick_index,
+                .draws = @intCast(op.draws),
+            } };
+        },
+        .perk_menu_open => |op| blk: {
+            if (op.player_index < 0 or op.player_index >= player_count) {
+                return error.UnsupportedEventShape;
+            }
+            break :blk .{ .perk_menu_open = .{
+                .tick_index = tick_index,
+                .player_index = op.player_index,
+            } };
+        },
+        .perk_pick => |op| blk: {
+            if (op.player_index < 0 or op.player_index >= player_count) {
+                return error.UnsupportedEventShape;
+            }
+            const choice_index = op.choice_index orelse return error.UnsupportedEventShape;
+            if (choice_index < 0 or choice_index >= @as(i32, @intCast(perk_choice_slot_count))) {
+                return error.UnsupportedEventShape;
+            }
+            break :blk .{ .perk_pick = .{
+                .tick_index = tick_index,
+                .player_index = op.player_index,
+                .choice_index = choice_index,
+            } };
+        },
     };
-    defer decoded.deinit();
+}
 
-    const wire = decoded.value;
-    const player_count = try parseI32(wire.header.player_count);
-    if (player_count <= 0) return null;
-    const expected_players: usize = @intCast(player_count);
-
-    for (wire.inputs, 0..) |tick, tick_idx| {
-        if (tick.len != expected_players) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay tick {d} has {d} players, expected {d}",
-                .{ tick_idx, tick.len, expected_players },
-            ) catch return error.OutOfMemory;
-        }
-    }
-    if (wire.dt.len != wire.inputs.len) {
-        return std.fmt.allocPrint(
-            allocator,
-            "replay dt row count {d} does not match input tick count {d}",
-            .{ wire.dt.len, wire.inputs.len },
-        ) catch return error.OutOfMemory;
-    }
-    for (wire.dt, 0..) |value, tick_idx| {
-        if (!std.math.isFinite(value) or value < 0.0) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay tick {d} dt must be finite and >= 0",
-                .{tick_idx},
-            ) catch return error.OutOfMemory;
-        }
-    }
-
-    return null;
+fn parseCurrentPostlude(
+    wire_op: ReplayPostludeCurrentWire,
+    tick_index: usize,
+    player_count: i32,
+) ReplayCodecError!ReplayPostludeOp {
+    return switch (wire_op) {
+        .perk_menu_open => |op| {
+            if (op.player_index < 0 or op.player_index >= player_count) {
+                return error.UnsupportedEventShape;
+            }
+            return .{
+                .tick_index = tick_index,
+                .player_index = op.player_index,
+            };
+        },
+    };
 }
 
 fn parseCurrentCommand(
     command: ReplayCommandCurrentWire,
     tick_index: usize,
-    input_len: usize,
+    player_count: i32,
 ) ReplayCodecError!ReplayEvent {
-    _ = input_len;
-    if (std.mem.eql(u8, command.type, "perk_menu_open")) {
-        return .{ .perk_menu_open = .{
-            .tick_index = tick_index,
-            .player_index = command.player_index,
-        } };
-    }
-    if (std.mem.eql(u8, command.type, "perk_pick")) {
-        return .{ .perk_pick = .{
-            .tick_index = tick_index,
-            .player_index = command.player_index,
-            .choice_index = command.choice_index orelse return error.UnsupportedEventShape,
-        } };
+    if (command.player_index < 0 or command.player_index >= player_count) {
+        return error.UnsupportedEventShape;
     }
     if (std.mem.eql(u8, command.type, "typo_char")) {
         const raw = command.ch orelse return error.UnsupportedEventShape;
@@ -1705,9 +1839,7 @@ fn parseCurrentCommand(
 }
 
 fn currentCommandKindKnown(command_type: []const u8) bool {
-    return std.mem.eql(u8, command_type, "perk_menu_open") or
-        std.mem.eql(u8, command_type, "perk_pick") or
-        std.mem.eql(u8, command_type, "typo_char") or
+    return std.mem.eql(u8, command_type, "typo_char") or
         std.mem.eql(u8, command_type, "typo_backspace") or
         std.mem.eql(u8, command_type, "typo_submit");
 }
@@ -1724,31 +1856,87 @@ fn currentReplayEventShapeFailureDetail(
     };
     defer decoded.deinit();
 
-    var event_index: usize = 0;
+    const player_count = decoded.value.header.player_count;
     for (decoded.value.ticks, 0..) |tick, tick_index| {
-        for (tick.commands) |command| {
-            defer event_index += 1;
-            if (std.mem.eql(u8, command.type, "perk_pick")) {
-                if (command.choice_index == null) {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay event perk_pick missing choice_index: tick={d} event_index={d}",
-                        .{ tick_index, event_index },
-                    ) catch return error.OutOfMemory;
-                }
-            } else if (std.mem.eql(u8, command.type, "typo_char")) {
+        for (tick.prelude, 0..) |wire_op, operation_index| {
+            switch (wire_op) {
+                .rng_burn => |op| {
+                    if (op.draws <= 0) {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay prelude rng_burn draws must be > 0: draws={d} tick={d} operation_index={d}",
+                            .{ op.draws, tick_index, operation_index },
+                        ) catch return error.OutOfMemory;
+                    }
+                },
+                .perk_menu_open => |op| {
+                    if (op.player_index < 0 or op.player_index >= player_count) {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay prelude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_menu_open)",
+                            .{ op.player_index, player_count, tick_index },
+                        ) catch return error.OutOfMemory;
+                    }
+                },
+                .perk_pick => |op| {
+                    if (op.player_index < 0 or op.player_index >= player_count) {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay prelude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_pick)",
+                            .{ op.player_index, player_count, tick_index },
+                        ) catch return error.OutOfMemory;
+                    }
+                    const choice_index = op.choice_index orelse {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay prelude perk_pick missing choice_index: tick={d} operation_index={d}",
+                            .{ tick_index, operation_index },
+                        ) catch return error.OutOfMemory;
+                    };
+                    if (choice_index < 0 or choice_index >= @as(i32, @intCast(perk_choice_slot_count))) {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay prelude perk_pick choice_index must be in 0..6: choice_index={d} tick={d} operation_index={d}",
+                            .{ choice_index, tick_index, operation_index },
+                        ) catch return error.OutOfMemory;
+                    }
+                },
+            }
+        }
+        for (tick.postlude) |wire_op| {
+            switch (wire_op) {
+                .perk_menu_open => |op| {
+                    if (op.player_index < 0 or op.player_index >= player_count) {
+                        return std.fmt.allocPrint(
+                            allocator,
+                            "replay postlude player_index out of range: {d} (player_count={d}, tick={d}, event=perk_menu_open)",
+                            .{ op.player_index, player_count, tick_index },
+                        ) catch return error.OutOfMemory;
+                    }
+                },
+            }
+        }
+        for (tick.commands, 0..) |command, command_index| {
+            if (command.player_index < 0 or command.player_index >= player_count) {
+                return std.fmt.allocPrint(
+                    allocator,
+                    "replay command player_index out of range: {d} (player_count={d}, tick={d}, type={s})",
+                    .{ command.player_index, player_count, tick_index, command.type },
+                ) catch return error.OutOfMemory;
+            }
+            if (std.mem.eql(u8, command.type, "typo_char")) {
                 const raw = command.ch orelse {
                     return std.fmt.allocPrint(
                         allocator,
-                        "replay event typo_char missing ch: tick={d} event_index={d}",
-                        .{ tick_index, event_index },
+                        "replay command typo_char missing ch: tick={d} command_index={d}",
+                        .{ tick_index, command_index },
                     ) catch return error.OutOfMemory;
                 };
                 if (raw.len != 1) {
                     return std.fmt.allocPrint(
                         allocator,
-                        "replay event typo_char ch must be exactly one byte: tick={d} event_index={d} length={d}",
-                        .{ tick_index, event_index, raw.len },
+                        "replay command typo_char ch must be exactly one byte: tick={d} command_index={d} length={d}",
+                        .{ tick_index, command_index, raw.len },
                     ) catch return error.OutOfMemory;
                 }
             }
@@ -1756,406 +1944,11 @@ fn currentReplayEventShapeFailureDetail(
     }
 
     return null;
-}
-
-fn validateDtRows(
-    wire_dt: []const f32,
-    input_len: usize,
-) ReplayCodecError!void {
-    if (wire_dt.len != input_len) return error.UnsupportedInputShape;
-    for (wire_dt) |value| {
-        if (!std.math.isFinite(value) or value < 0.0) return error.UnsupportedInputShape;
-    }
 }
 
 fn freeInputs(allocator: std.mem.Allocator, inputs: []ReplayTickInputs) void {
     for (inputs) |tick| allocator.free(tick);
     allocator.free(inputs);
-}
-
-fn parseReplayEvent(
-    wire_event: ReplayEventWire,
-    input_len: usize,
-) ReplayCodecError!ReplayEvent {
-    const raw_tick_index = switch (wire_event) {
-        .perk_pick => |event| event.tick_index,
-        .perk_menu_open => |event| event.tick_index,
-        .orig_capture_bootstrap => |event| event.tick_index,
-        .orig_capture_perk_apply => |event| event.tick_index,
-        .orig_capture_perk_pending => |event| event.tick_index,
-        .orig_capture_creature_spawn => |event| event.tick_index,
-        .orig_capture_state_transition => |event| event.tick_index,
-    };
-    if (raw_tick_index < 0) return error.UnsupportedEventShape;
-
-    const tick_index: usize = @intCast(raw_tick_index);
-    if (tick_index > input_len) return error.UnsupportedEventShape;
-
-    return switch (wire_event) {
-        .perk_pick => |event| blk: {
-            if (event.player_index < 0 or event.choice_index < 0) {
-                return error.UnsupportedEventShape;
-            }
-            break :blk .{
-                .perk_pick = .{
-                    .tick_index = tick_index,
-                    .player_index = try parseEventI32(event.player_index),
-                    .choice_index = try parseEventI32(event.choice_index),
-                },
-            };
-        },
-        .perk_menu_open => |event| blk: {
-            if (event.player_index < 0) {
-                return error.UnsupportedEventShape;
-            }
-            break :blk .{
-                .perk_menu_open = .{
-                    .tick_index = tick_index,
-                    .player_index = try parseEventI32(event.player_index),
-                },
-            };
-        },
-        .orig_capture_bootstrap => |event| .{
-            .capture_bootstrap = try parseCaptureBootstrapEvent(tick_index, event),
-        },
-        .orig_capture_perk_apply => |event| .{
-            .capture_perk_apply = try parseCapturePerkApplyEvent(tick_index, event),
-        },
-        .orig_capture_perk_pending => |event| .{
-            .capture_perk_pending = try parseCapturePerkPendingEvent(tick_index, event),
-        },
-        .orig_capture_creature_spawn => |event| .{
-            .capture_creature_spawn = try parseCaptureCreatureSpawnEvent(tick_index, event),
-        },
-        .orig_capture_state_transition => |event| .{
-            .capture_state_transition = try parseCaptureStateTransitionEvent(tick_index, event),
-        },
-    };
-}
-
-fn legacyReplayEventShapeFailureDetail(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?[]u8 {
-    var decoded = msgpack.decodeFromSlice(ReplayWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const input_len = decoded.value.inputs.len;
-    for (decoded.value.events, 0..) |event, event_index| {
-        const tick_index = replayEventWireTickIndex(event);
-        const event_name = replayEventWireKindName(event);
-        if (tick_index < 0) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay event {s} has negative tick_index={d}: event_index={d}",
-                .{ event_name, tick_index, event_index },
-            ) catch return error.OutOfMemory;
-        }
-        if (@as(usize, @intCast(tick_index)) > input_len) {
-            return std.fmt.allocPrint(
-                allocator,
-                "replay event {s} tick_index out of range: tick={d} input_ticks={d} event_index={d}",
-                .{ event_name, tick_index, input_len, event_index },
-            ) catch return error.OutOfMemory;
-        }
-
-        switch (event) {
-            .perk_pick => |payload_event| {
-                if (payload_event.player_index < 0) {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay event perk_pick has negative player_index={d}: tick={d} event_index={d}",
-                        .{ payload_event.player_index, tick_index, event_index },
-                    ) catch return error.OutOfMemory;
-                }
-                if (payload_event.choice_index < 0) {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay event perk_pick has negative choice_index={d}: tick={d} event_index={d}",
-                        .{ payload_event.choice_index, tick_index, event_index },
-                    ) catch return error.OutOfMemory;
-                }
-            },
-            .perk_menu_open => |payload_event| {
-                if (payload_event.player_index < 0) {
-                    return std.fmt.allocPrint(
-                        allocator,
-                        "replay event perk_menu_open has negative player_index={d}: tick={d} event_index={d}",
-                        .{ payload_event.player_index, tick_index, event_index },
-                    ) catch return error.OutOfMemory;
-                }
-            },
-            else => {},
-        }
-    }
-
-    return null;
-}
-
-fn replayEventWireTickIndex(event: ReplayEventWire) i32 {
-    return switch (event) {
-        .perk_pick => |payload| payload.tick_index,
-        .perk_menu_open => |payload| payload.tick_index,
-        .orig_capture_bootstrap => |payload| payload.tick_index,
-        .orig_capture_perk_apply => |payload| payload.tick_index,
-        .orig_capture_perk_pending => |payload| payload.tick_index,
-        .orig_capture_creature_spawn => |payload| payload.tick_index,
-        .orig_capture_state_transition => |payload| payload.tick_index,
-    };
-}
-
-fn replayEventWireKindName(event: ReplayEventWire) []const u8 {
-    return switch (event) {
-        .perk_pick => "perk_pick",
-        .perk_menu_open => "perk_menu_open",
-        .orig_capture_bootstrap => "orig_capture_bootstrap",
-        .orig_capture_perk_apply => "orig_capture_perk_apply",
-        .orig_capture_perk_pending => "orig_capture_perk_pending",
-        .orig_capture_creature_spawn => "orig_capture_creature_spawn",
-        .orig_capture_state_transition => "orig_capture_state_transition",
-    };
-}
-
-fn parseCaptureBootstrapEvent(
-    tick_index: usize,
-    payload: CaptureBootstrapEventWire,
-) ReplayCodecError!CaptureBootstrapEvent {
-    var event: CaptureBootstrapEvent = .{
-        .tick_index = tick_index,
-    };
-
-    event.elapsed_ms = try parseEventI32(payload.elapsed_ms);
-    event.score_xp = try parseEventI32(payload.score_xp);
-    event.perk_pending = try parseEventI32(payload.perk_pending);
-    event.perk_pending_count = try parseEventI32(payload.perk_pending_count);
-    event.perk_choices_dirty = payload.perk_choices_dirty;
-
-    if (payload.perk_choices.len > event.perk_choices.len) {
-        return error.UnsupportedEventShape;
-    }
-    event.perk_choice_count = payload.perk_choices.len;
-    for (payload.perk_choices, 0..) |choice_id, idx| {
-        event.perk_choices[idx] = try parseEventI32(choice_id);
-    }
-
-    const player_perk_count = payload.player_nonzero_counts.len;
-    if (player_perk_count > max_players) {
-        return error.UnsupportedEventShape;
-    }
-    for (0..player_perk_count) |player_idx| {
-        const raw_pairs = payload.player_nonzero_counts[player_idx];
-        if (raw_pairs.len > max_capture_bootstrap_perk_pairs_per_player) {
-            return error.UnsupportedEventShape;
-        }
-        event.player_perk_counts[player_idx].pair_count = raw_pairs.len;
-        for (raw_pairs, 0..) |raw_pair, pair_idx| {
-            if (raw_pair.len != 2) return error.UnsupportedEventShape;
-            event.player_perk_counts[player_idx].pairs[pair_idx] = .{
-                .perk_id = try parseEventI32(raw_pair[0]),
-                .count = try parseEventI32(raw_pair[1]),
-            };
-        }
-    }
-
-    const player_count = payload.players.len;
-    if (player_count > max_players) {
-        return error.UnsupportedEventShape;
-    }
-    event.player_count = player_count;
-    for (payload.players, 0..) |player_wire, idx| {
-        event.players[idx] = .{
-            .weapon_id = try parseEventI32(player_wire.weapon_id),
-            .pos_x = player_wire.pos_x,
-            .pos_y = player_wire.pos_y,
-            .health = player_wire.health,
-            .ammo = player_wire.ammo,
-            .experience = try parseEventI32(player_wire.experience),
-            .level = try parseEventI32(player_wire.level),
-            .clip_size = if (player_wire.clip_size) |clip_size| try parseEventI32(clip_size) else null,
-            .reload_active = player_wire.reload_active,
-            .reload_timer = player_wire.reload_timer,
-            .reload_timer_max = player_wire.reload_timer_max,
-            .shot_cooldown = player_wire.shot_cooldown,
-            .spread_heat = player_wire.spread_heat,
-            .aim_x = player_wire.aim_x,
-            .aim_y = player_wire.aim_y,
-            .aim_heading = player_wire.aim_heading,
-            .alt_weapon_id = if (player_wire.alt_weapon_id) |value| try parseEventI32(value) else null,
-            .alt_clip_size = if (player_wire.alt_clip_size) |value| try parseEventI32(value) else null,
-            .alt_ammo = player_wire.alt_ammo,
-            .alt_reload_active = player_wire.alt_reload_active,
-            .alt_reload_timer = player_wire.alt_reload_timer,
-            .alt_reload_timer_max = player_wire.alt_reload_timer_max,
-            .alt_shot_cooldown = player_wire.alt_shot_cooldown,
-            .shield_ms = if (player_wire.shield_ms) |value| try parseEventI32(value) else null,
-            .fire_bullets_ms = if (player_wire.fire_bullets_ms) |value| try parseEventI32(value) else null,
-            .speed_bonus_ms = if (player_wire.speed_bonus_ms) |value| try parseEventI32(value) else null,
-            .hot_tempered_timer = player_wire.hot_tempered_timer,
-            .man_bomb_timer = player_wire.man_bomb_timer,
-            .living_fortress_timer = player_wire.living_fortress_timer,
-            .fire_cough_timer = player_wire.fire_cough_timer,
-        };
-    }
-
-    if (payload.digital_move_enabled_by_player.len > max_players) {
-        return error.UnsupportedEventShape;
-    }
-    for (payload.digital_move_enabled_by_player, 0..) |enabled, idx| {
-        event.digital_move_enabled_by_player[idx] = enabled;
-    }
-
-    event.weapon_power_up_ms = try parseEventI32(payload.weapon_power_up_ms);
-    event.reflex_boost_ms = try parseEventI32(payload.reflex_boost_ms);
-    event.energizer_ms = try parseEventI32(payload.energizer_ms);
-    event.double_experience_ms = try parseEventI32(payload.double_experience_ms);
-    event.freeze_ms = try parseEventI32(payload.freeze_ms);
-    event.perk_interval_man_bomb = payload.perk_interval_man_bomb;
-    event.perk_interval_fire_cough = payload.perk_interval_fire_cough;
-    event.perk_interval_hot_tempered = payload.perk_interval_hot_tempered;
-    if (payload.quest_session) |quest_session| {
-        const spawn_timeline_ms = quest_session.spawn_timeline_ms orelse return error.UnsupportedEventShape;
-        const no_creatures_timer_ms = quest_session.no_creatures_timer_ms orelse return error.UnsupportedEventShape;
-        const completion_transition_ms = quest_session.completion_transition_ms orelse return error.UnsupportedEventShape;
-        event.quest_session = .{
-            .spawn_timeline_ms = spawn_timeline_ms,
-            .no_creatures_timer_ms = no_creatures_timer_ms,
-            .completion_transition_ms = completion_transition_ms,
-        };
-    }
-
-    return event;
-}
-
-fn parseCapturePerkApplyEvent(
-    tick_index: usize,
-    payload: CapturePerkApplyEventWire,
-) ReplayCodecError!CapturePerkApplyEvent {
-    const perk_id = try parseEventI32(payload.perk_id);
-    if (perk_id <= 0) return error.UnsupportedEventShape;
-    if (payload.pending_before) |value| {
-        if (value < 0) return error.UnsupportedEventShape;
-    }
-    if (payload.pending_after) |value| {
-        if (value < 0) return error.UnsupportedEventShape;
-    }
-    return .{
-        .tick_index = tick_index,
-        .perk_id = perk_id,
-        .outside_before = payload.outside_before,
-        .pending_before = if (payload.pending_before) |value|
-            try parseEventI32(value)
-        else
-            null,
-        .pending_after = if (payload.pending_after) |value|
-            try parseEventI32(value)
-        else
-            null,
-    };
-}
-
-fn parseCapturePerkPendingEvent(
-    tick_index: usize,
-    payload: CapturePerkPendingEventWire,
-) ReplayCodecError!CapturePerkPendingEvent {
-    const pending = try parseEventI32(payload.perk_pending);
-    if (pending < 0) return error.UnsupportedEventShape;
-    return .{
-        .tick_index = tick_index,
-        .perk_pending = pending,
-    };
-}
-
-fn parseCaptureCreatureSpawnEvent(
-    tick_index: usize,
-    payload: CaptureCreatureSpawnEventWire,
-) ReplayCodecError!CaptureCreatureSpawnEvent {
-    var event: CaptureCreatureSpawnEvent = .{
-        .tick_index = tick_index,
-    };
-    if (payload.spawns.len > event.spawns.len) return error.UnsupportedEventShape;
-    if (payload.added_head.len > event.added_head.len) return error.UnsupportedEventShape;
-
-    event.spawn_count = payload.spawns.len;
-    for (payload.spawns, 0..) |spawn_row, idx| {
-        event.spawns[idx] = .{
-            .template_id = try parseEventI32(spawn_row.template_id),
-            .pos_x = spawn_row.pos_x,
-            .pos_y = spawn_row.pos_y,
-            .heading = spawn_row.heading,
-        };
-    }
-
-    event.added_head_count = payload.added_head.len;
-    for (payload.added_head, 0..) |row, idx| {
-        const has_pos_x = row.pos_x != null;
-        const has_pos_y = row.pos_y != null;
-        if (has_pos_x != has_pos_y) return error.UnsupportedEventShape;
-        event.added_head[idx] = .{
-            .index = try parseEventI32(row.index),
-            .has_heading = row.heading != null,
-            .heading = row.heading orelse 0.0,
-            .has_target_heading = row.target_heading != null,
-            .target_heading = row.target_heading orelse 0.0,
-            .has_ai_mode = row.ai_mode != null,
-            .ai_mode = if (row.ai_mode) |value| try parseEventI32(value) else 0,
-            .has_link_index = row.link_index != null,
-            .link_index = if (row.link_index) |value| try parseEventI32(value) else 0,
-            .has_hp = row.hp != null,
-            .hp = row.hp orelse 0.0,
-            .has_lifecycle_stage = row.lifecycle_stage != null,
-            .lifecycle_stage = row.lifecycle_stage orelse 0.0,
-            .has_orbit_angle = row.orbit_angle != null,
-            .orbit_angle = row.orbit_angle orelse 0.0,
-            .has_orbit_radius = row.orbit_radius != null,
-            .orbit_radius = row.orbit_radius orelse 0.0,
-            .has_flags = row.flags != null,
-            .flags = if (row.flags) |value| try parseEventI32(value) else 0,
-            .has_type_id = row.type_id != null,
-            .type_id = if (row.type_id) |value| try parseEventI32(value) else 0,
-            .has_pos = has_pos_x and has_pos_y,
-            .pos_x = row.pos_x orelse 0.0,
-            .pos_y = row.pos_y orelse 0.0,
-        };
-    }
-
-    return event;
-}
-
-fn parseCaptureStateTransitionEvent(
-    tick_index: usize,
-    payload: CaptureStateTransitionEventWire,
-) ReplayCodecError!CaptureStateTransitionEvent {
-    var event: CaptureStateTransitionEvent = .{
-        .tick_index = tick_index,
-    };
-    if (payload.transitions.len > event.transitions.len) return error.UnsupportedEventShape;
-    event.transition_count = payload.transitions.len;
-    for (payload.transitions, 0..) |row, idx| {
-        event.transitions[idx] = .{
-            .target_state = try parseEventI32(row.target_state),
-            .has_before_state = row.before_state != null,
-            .before_state = if (row.before_state) |value| try parseEventI32(value) else 0,
-            .has_after_state = row.after_state != null,
-            .after_state = if (row.after_state) |value| try parseEventI32(value) else 0,
-        };
-    }
-    return event;
-}
-
-fn validateInputShape(
-    wire_inputs: []const []const ReplayInputWire,
-    player_count: i32,
-) ReplayCodecError!void {
-    const expected_players: usize = @intCast(player_count);
-    for (wire_inputs) |tick| {
-        if (tick.len == 0) return error.UnsupportedInputShape;
-        if (tick.len != expected_players) return error.UnsupportedInputShape;
-    }
 }
 
 fn isSupportedReplayFormatVersion(version: i32) bool {
@@ -2182,39 +1975,11 @@ fn tryParseCurrentReplaySummary(
     }
 
     const tick_count = wire.ticks.len;
-    try validateCurrentTicks(wire.ticks, header.player_count);
+    try validateCurrentTicks(wire.ticks, header.player_count, header.game_mode_id);
     return .{
         .header = header,
         .tick_count = tick_count,
-        .events = try parseCurrentEventSummary(wire.ticks, tick_count),
-    };
-}
-
-fn tryParseCurrentStringQuestReplaySummary(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?ReplaySummary {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentStringQuestWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const header = try buildHeaderCurrentStringQuest(allocator, wire.header);
-    errdefer header.deinit(allocator);
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
-    }
-
-    const tick_count = wire.ticks.len;
-    try validateCurrentTicks(wire.ticks, header.player_count);
-    return .{
-        .header = header,
-        .tick_count = tick_count,
-        .events = try parseCurrentEventSummary(wire.ticks, tick_count),
+        .events = try parseCurrentEventSummary(wire.ticks, header.player_count),
     };
 }
 
@@ -2237,140 +2002,25 @@ fn tryParseCurrentReplay(
         return error.UnsupportedReplayFormatVersion;
     }
 
-    try validateCurrentTicks(wire.ticks, header.player_count);
+    try validateCurrentTicks(wire.ticks, header.player_count, header.game_mode_id);
+    const prelude = try buildPreludeCurrent(allocator, wire.ticks, header.player_count);
+    errdefer if (prelude.len > 0) allocator.free(prelude);
+    const postlude = try buildPostludeCurrent(allocator, wire.ticks, header.player_count);
+    errdefer if (postlude.len > 0) allocator.free(postlude);
     const inputs = try buildInputsCurrent(allocator, wire.ticks);
     errdefer freeInputs(allocator, inputs);
     const dt = try buildDtCurrent(allocator, wire.ticks);
     errdefer allocator.free(dt);
-    const events = try buildEventsCurrent(allocator, wire.ticks, wire.ticks.len);
+    const events = try buildEventsCurrent(allocator, wire.ticks, header.player_count);
     errdefer allocator.free(events);
 
     return .{
         .header = header,
         .inputs = inputs,
         .dt = dt,
+        .prelude = prelude,
+        .postlude = postlude,
         .events = events,
-    };
-}
-
-fn tryParseCurrentStringQuestReplay(
-    allocator: std.mem.Allocator,
-    payload: []const u8,
-) ReplayCodecError!?Replay {
-    var decoded = msgpack.decodeFromSlice(ReplayCurrentStringQuestWire, allocator, payload) catch |err| {
-        return switch (err) {
-            error.OutOfMemory => error.OutOfMemory,
-            else => null,
-        };
-    };
-    defer decoded.deinit();
-
-    const wire = decoded.value;
-    const header = try buildHeaderCurrentStringQuest(allocator, wire.header);
-    errdefer header.deinit(allocator);
-    if (!isSupportedReplayFormatVersion(header.replay_format_version)) {
-        return error.UnsupportedReplayFormatVersion;
-    }
-
-    try validateCurrentTicks(wire.ticks, header.player_count);
-    const inputs = try buildInputsCurrent(allocator, wire.ticks);
-    errdefer freeInputs(allocator, inputs);
-    const dt = try buildDtCurrent(allocator, wire.ticks);
-    errdefer allocator.free(dt);
-    const events = try buildEventsCurrent(allocator, wire.ticks, inputs.len);
-    errdefer allocator.free(events);
-
-    return .{
-        .header = header,
-        .inputs = inputs,
-        .dt = dt,
-        .events = events,
-    };
-}
-
-fn buildHeader(
-    allocator: std.mem.Allocator,
-    wire: ReplayHeaderWire,
-) ReplayCodecError!ReplayHeader {
-    const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
-    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f32) {
-        return error.InvalidHeaderValue;
-    }
-    if (!std.mem.eql(u8, wire.bootstrap_kind, "none") and !std.mem.eql(u8, wire.bootstrap_kind, "terrain_v1")) {
-        return error.UnsupportedBootstrapKind;
-    }
-    if (!std.mem.eql(u8, wire.input_quantization, "f32")) {
-        return error.UnsupportedInputQuantization;
-    }
-
-    const game_mode_id = try parseI32(wire.game_mode_id);
-    const seed = try parseU32(wire.seed);
-    const format_version = try parseI32(wire.replay_format_version);
-    const bootstrap_seed = try parseU32(wire.bootstrap_seed);
-    const tick_rate = try parseI32(wire.tick_rate);
-    const difficulty_level = try parseI32(wire.difficulty_level);
-    const detail_preset = try parseI32(wire.detail_preset);
-    const gore_disabled = try parseI32(wire.gore_disabled);
-    const player_count = try parseI32(wire.player_count);
-    const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
-    const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
-
-    if (tick_rate <= 0 or player_count <= 0) {
-        return error.InvalidHeaderValue;
-    }
-    try validateModePlayerCount(game_mode_id, player_count);
-    if (wire.game_version.len == 0) {
-        return error.MissingHeaderField;
-    }
-    if (isMissingQuestLevel(game_mode_id, wire.quest_level)) {
-        return error.MissingQuestLevel;
-    }
-    if (wire.status.weapon_usage_counts.len != weapon_usage_count) {
-        return error.InvalidHeaderValue;
-    }
-
-    var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
-    for (wire.status.weapon_usage_counts, 0..) |value, idx| {
-        usage_counts[idx] = try parseU32(value);
-    }
-
-    const claimed_stats: ReplayClaimedStats = .{
-        .complete = wire.claimed_stats.complete,
-        .ticks = try parseI32(wire.claimed_stats.ticks),
-        .elapsed_ms = try parseI64(wire.claimed_stats.elapsed_ms),
-        .score_xp = try parseI64(wire.claimed_stats.score_xp),
-        .kills = try parseI32(wire.claimed_stats.kills),
-        .most_used_weapon_id = try parseI32(wire.claimed_stats.most_used_weapon_id),
-        .shots_fired = try parseI32(wire.claimed_stats.shots_fired),
-        .shots_hit = try parseI32(wire.claimed_stats.shots_hit),
-    };
-    try validateClaimedStats(claimed_stats);
-
-    return .{
-        .game_mode_id = game_mode_id,
-        .seed = seed,
-        .replay_format_version = format_version,
-        .quest_level = allocator.dupe(u8, wire.quest_level) catch return error.OutOfMemory,
-        .typo_dictionary_words = &.{},
-        .typo_highscore_names = &.{},
-        .bootstrap_kind = allocator.dupe(u8, wire.bootstrap_kind) catch return error.OutOfMemory,
-        .bootstrap_seed = bootstrap_seed,
-        .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
-        .tick_rate = tick_rate,
-        .difficulty_level = difficulty_level,
-        .hardcore = wire.hardcore,
-        .preserve_bugs = wire.preserve_bugs,
-        .detail_preset = detail_preset,
-        .gore_disabled = gore_disabled,
-        .world_size = wire.world_size,
-        .player_count = player_count,
-        .status = .{
-            .quest_unlock_index = quest_unlock_index,
-            .quest_unlock_index_full = quest_unlock_index_full,
-            .weapon_usage_counts = usage_counts,
-        },
-        .claimed_stats = claimed_stats,
-        .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
     };
 }
 
@@ -2378,6 +2028,18 @@ fn buildHeaderCurrent(
     allocator: std.mem.Allocator,
     wire: ReplayHeaderCurrentWire,
 ) ReplayCodecError!ReplayHeader {
+    const game_mode = std.enums.fromInt(game_ids.GameModeId, wire.game_mode_id) orelse return error.UnsupportedGameMode;
+    switch (game_mode) {
+        .quests => {
+            const level = wire.quest_level orelse return error.MissingQuestLevel;
+            if (level.major < 1 or level.major > 5 or level.minor < 1 or level.minor > 10) {
+                return error.InvalidHeaderValue;
+            }
+        },
+        .survival, .rush, .typo, .tutorial => {
+            if (wire.quest_level != null) return error.InvalidHeaderValue;
+        },
+    }
     var quest_level_buf: [32]u8 = undefined;
     const quest_level = if (wire.quest_level) |level|
         std.fmt.bufPrint(quest_level_buf[0..], "{d}.{d}", .{ level.major, level.minor }) catch return error.InvalidHeaderValue
@@ -2386,20 +2048,14 @@ fn buildHeaderCurrent(
     return buildHeaderCurrentWithQuestLevelText(allocator, wire, quest_level);
 }
 
-fn buildHeaderCurrentStringQuest(
-    allocator: std.mem.Allocator,
-    wire: ReplayHeaderCurrentStringQuestWire,
-) ReplayCodecError!ReplayHeader {
-    return buildHeaderCurrentWithQuestLevelText(allocator, wire, wire.quest_level);
-}
-
 fn buildHeaderCurrentWithQuestLevelText(
     allocator: std.mem.Allocator,
     wire: anytype,
     quest_level: []const u8,
 ) ReplayCodecError!ReplayHeader {
     const max_world_size_i32_f32: f32 = @floatFromInt(std.math.maxInt(i32));
-    if (!std.math.isFinite(wire.world_size) or wire.world_size <= 0.0 or wire.world_size > max_world_size_i32_f32) {
+    const world_size = canonicalF32(wire.world_size) orelse return error.InvalidHeaderValue;
+    if (world_size <= 0.0 or world_size > max_world_size_i32_f32) {
         return error.InvalidHeaderValue;
     }
     if (!std.mem.eql(u8, wire.input_quantization, "f32")) {
@@ -2409,25 +2065,40 @@ fn buildHeaderCurrentWithQuestLevelText(
     const tick_rate = try parseI32(wire.tick_rate);
     const player_count = try parseI32(wire.player_count);
     const quest_fail_retry_count = try parseI32(wire.quest_fail_retry_count);
-    const difficulty_level_raw = try parseI32(wire.difficulty_level);
     const detail_preset = try parseI32(wire.detail_preset);
     const violence_disabled = try parseI32(wire.violence_disabled);
-    const gore_disabled_raw = try parseI32(wire.gore_disabled);
     const quest_unlock_index = try parseI32(wire.status.quest_unlock_index);
     const quest_unlock_index_full = try parseI32(wire.status.quest_unlock_index_full);
-    const difficulty_level = if (difficulty_level_raw != 0) difficulty_level_raw else quest_fail_retry_count;
-    const gore_disabled = if (gore_disabled_raw != 0) gore_disabled_raw else violence_disabled;
 
-    if (tick_rate <= 0 or player_count <= 0) return error.InvalidHeaderValue;
+    if (tick_rate <= 0 or
+        player_count <= 0 or
+        player_count > max_players or
+        quest_fail_retry_count < 0 or
+        detail_preset < 0 or
+        violence_disabled < 0)
+    {
+        return error.InvalidHeaderValue;
+    }
     try validateModePlayerCount(wire.game_mode_id, player_count);
     if (wire.game_version.len == 0) return error.MissingHeaderField;
     if (isMissingQuestLevel(wire.game_mode_id, quest_level)) return error.MissingQuestLevel;
-    if (wire.status.weapon_usage_counts.len != weapon_usage_count) return error.InvalidHeaderValue;
+    if (wire.status.weapon_usage_counts.len != weapon_usage_count or
+        wire.status.quest_play_counts.len != quest_play_count or
+        wire.status.unknown_tail.data.len != status_unknown_tail_size)
+    {
+        return error.InvalidHeaderValue;
+    }
 
     var usage_counts: [weapon_usage_count]u32 = [_]u32{0} ** weapon_usage_count;
     for (wire.status.weapon_usage_counts, 0..) |value, idx| {
         usage_counts[idx] = try parseU32(value);
     }
+    var quest_play_counts: [quest_play_count]u32 = [_]u32{0} ** quest_play_count;
+    for (wire.status.quest_play_counts, 0..) |value, idx| {
+        quest_play_counts[idx] = try parseU32(value);
+    }
+    var unknown_tail: [status_unknown_tail_size]u8 = undefined;
+    @memcpy(unknown_tail[0..], wire.status.unknown_tail.data);
 
     const claimed_stats: ReplayClaimedStats = .{
         .complete = wire.claimed_stats.complete,
@@ -2443,6 +2114,13 @@ fn buildHeaderCurrentWithQuestLevelText(
 
     const quest_level_owned = allocator.dupe(u8, quest_level) catch return error.OutOfMemory;
     errdefer allocator.free(quest_level_owned);
+    const initial_creature_pool: ?[]const ReplayCreatureSlotResidue = if (wire.initial_creature_pool) |pool|
+        try buildCreaturePoolResidue(allocator, pool)
+    else
+        null;
+    errdefer if (initial_creature_pool) |pool| {
+        if (pool.len > 0) allocator.free(pool);
+    };
 
     return .{
         .game_mode_id = wire.game_mode_id,
@@ -2451,100 +2129,129 @@ fn buildHeaderCurrentWithQuestLevelText(
         .quest_level = quest_level_owned,
         .typo_dictionary_words = try dupStringSliceList(allocator, wire.typo_dictionary_words),
         .typo_highscore_names = try dupStringSliceList(allocator, wire.typo_highscore_names),
-        .bootstrap_kind = allocator.dupe(u8, wire.bootstrap_kind) catch return error.OutOfMemory,
-        .bootstrap_seed = wire.bootstrap_seed,
         .game_version = allocator.dupe(u8, wire.game_version) catch return error.OutOfMemory,
         .tick_rate = tick_rate,
-        .difficulty_level = difficulty_level,
+        .quest_fail_retry_count = quest_fail_retry_count,
         .hardcore = wire.hardcore,
         .preserve_bugs = wire.preserve_bugs,
         .detail_preset = detail_preset,
-        .gore_disabled = gore_disabled,
-        .world_size = wire.world_size,
+        .violence_disabled = violence_disabled,
+        .world_size = world_size,
         .player_count = player_count,
         .status = .{
             .quest_unlock_index = quest_unlock_index,
             .quest_unlock_index_full = quest_unlock_index_full,
             .weapon_usage_counts = usage_counts,
+            .quest_play_counts = quest_play_counts,
+            .mode_play_survival = wire.status.mode_play_survival,
+            .mode_play_rush = wire.status.mode_play_rush,
+            .mode_play_typo = wire.status.mode_play_typo,
+            .mode_play_other = wire.status.mode_play_other,
+            .game_sequence_id = wire.status.game_sequence_id,
+            .unknown_tail = unknown_tail,
         },
         .claimed_stats = claimed_stats,
         .input_quantization = allocator.dupe(u8, wire.input_quantization) catch return error.OutOfMemory,
-        .initial_creature_pool = if (wire.initial_creature_pool) |pool|
-            (allocator.dupe(ReplayCreatureSlotResidue, pool) catch return error.OutOfMemory)
-        else
-            &.{},
+        .initial_creature_pool = initial_creature_pool,
     };
 }
 
-fn normalizeInputValue(value: f32) f32 {
-    return value;
+fn buildCreaturePoolResidue(
+    allocator: std.mem.Allocator,
+    wire_pool: []const ReplayCreatureSlotResidueWire,
+) ReplayCodecError![]ReplayCreatureSlotResidue {
+    if (wire_pool.len == 0) return &.{};
+    const pool = allocator.alloc(ReplayCreatureSlotResidue, wire_pool.len) catch return error.OutOfMemory;
+    errdefer allocator.free(pool);
+
+    for (wire_pool, 0..) |wire, idx| {
+        if (idx > 0 and wire.index <= wire_pool[idx - 1].index) return error.InvalidHeaderValue;
+        pool[idx] = .{
+            .index = wire.index,
+            .phase_seed = canonicalF32(wire.phase_seed) orelse return error.InvalidHeaderValue,
+            .state_flag = wire.state_flag,
+            .collision_flag = wire.collision_flag,
+            .collision_timer = canonicalF32(wire.collision_timer) orelse return error.InvalidHeaderValue,
+            .lifecycle_stage = canonicalF32(wire.lifecycle_stage) orelse return error.InvalidHeaderValue,
+            .pos = .{
+                .x = canonicalF32(wire.pos.x) orelse return error.InvalidHeaderValue,
+                .y = canonicalF32(wire.pos.y) orelse return error.InvalidHeaderValue,
+            },
+            .vel = .{
+                .x = canonicalF32(wire.vel.x) orelse return error.InvalidHeaderValue,
+                .y = canonicalF32(wire.vel.y) orelse return error.InvalidHeaderValue,
+            },
+            .hp = canonicalF32(wire.hp) orelse return error.InvalidHeaderValue,
+            .max_hp = canonicalF32(wire.max_hp) orelse return error.InvalidHeaderValue,
+            .heading = canonicalF32(wire.heading) orelse return error.InvalidHeaderValue,
+            .target_heading = canonicalF32(wire.target_heading) orelse return error.InvalidHeaderValue,
+            .size = canonicalF32(wire.size) orelse return error.InvalidHeaderValue,
+            .hit_flash_timer = canonicalF32(wire.hit_flash_timer) orelse return error.InvalidHeaderValue,
+            .tint_r = canonicalF32(wire.tint_r) orelse return error.InvalidHeaderValue,
+            .tint_g = canonicalF32(wire.tint_g) orelse return error.InvalidHeaderValue,
+            .tint_b = canonicalF32(wire.tint_b) orelse return error.InvalidHeaderValue,
+            .tint_a = canonicalF32(wire.tint_a) orelse return error.InvalidHeaderValue,
+            .force_target = wire.force_target,
+            .target = .{
+                .x = canonicalF32(wire.target.x) orelse return error.InvalidHeaderValue,
+                .y = canonicalF32(wire.target.y) orelse return error.InvalidHeaderValue,
+            },
+            .contact_damage = canonicalF32(wire.contact_damage) orelse return error.InvalidHeaderValue,
+            .move_speed = canonicalF32(wire.move_speed) orelse return error.InvalidHeaderValue,
+            .attack_cooldown = canonicalF32(wire.attack_cooldown) orelse return error.InvalidHeaderValue,
+            .reward_value = canonicalF32(wire.reward_value) orelse return error.InvalidHeaderValue,
+            .type_id = wire.type_id,
+            .target_player = wire.target_player,
+            .link_index = wire.link_index,
+            .target_offset = .{
+                .x = canonicalF32(wire.target_offset.x) orelse return error.InvalidHeaderValue,
+                .y = canonicalF32(wire.target_offset.y) orelse return error.InvalidHeaderValue,
+            },
+            .orbit_angle = canonicalF32(wire.orbit_angle) orelse return error.InvalidHeaderValue,
+            .orbit_radius_u32 = wire.orbit_radius_u32,
+            .flags = wire.flags,
+            .ai_mode = wire.ai_mode,
+            .anim_phase = canonicalF32(wire.anim_phase) orelse return error.InvalidHeaderValue,
+        };
+    }
+    return pool;
+}
+
+fn canonicalF32(value: f64) ?f32 {
+    if (!std.math.isFinite(value)) return null;
+    const max_f32: f64 = std.math.floatMax(f32);
+    if (value < -max_f32 or value > max_f32) return null;
+    const narrowed: f32 = @floatCast(value);
+    if (@as(f64, narrowed) != value) return null;
+    return narrowed;
 }
 
 fn parseInputFlagsValue(value: i32) ReplayCodecError!u32 {
-    if (value < 0 or value > std.math.maxInt(u32)) return error.UnsupportedInputShape;
-    return @intCast(value);
-}
+    if (value < 0) return error.UnsupportedInputShape;
+    const flags: u32 = @intCast(value);
+    if ((flags & ~supported_input_flags_mask) != 0) return error.UnsupportedInputShape;
 
-fn parseEventI32(value: i32) ReplayCodecError!i32 {
-    return value;
-}
-
-fn chooseTerrainIds(quest_unlock_index: i32, rng: *Crand) i32 {
-    _ = i32;
-    for (terrain_unlock_rules) |rule| {
-        const caller = switch (rule.threshold) {
-            0x28 => rng_callers.unlock_terrain_q4,
-            0x1E => rng_callers.unlock_terrain_q3,
-            0x14 => rng_callers.unlock_terrain_q2,
-            else => unreachable,
-        };
-        if (quest_unlock_index >= rule.threshold and ((rng.randTagged(caller) & 7) == 3)) {
-            return 1;
-        }
+    const move_key_bits = move_forward_flag | move_backward_flag | turn_left_flag | turn_right_flag;
+    if ((flags & move_keys_present_flag) == 0 and (flags & move_key_bits) != 0) {
+        return error.UnsupportedInputShape;
     }
-    return 0;
-}
 
-fn advanceRandomTerrainPreludeRng(rng: *Crand) void {
-    for (unlock_random_terrain_prelude_callers) |caller| {
-        _ = rng.randTagged(caller);
+    const move_mode_value = (flags >> move_mode_shift) & move_mode_mask;
+    if ((flags & move_mode_present_flag) == 0 and move_mode_value != 0) {
+        return error.UnsupportedInputShape;
     }
-}
+    if ((flags & move_mode_present_flag) != 0 and move_mode_value > 5) {
+        return error.UnsupportedInputShape;
+    }
 
-fn advanceTerrainStampingRng(rng: *Crand, width: i32, height: i32) void {
-    const area = @as(i64, @max(width, 0)) * @as(i64, @max(height, 0));
-    const densities = [_]i64{ terrain_density_base, terrain_density_overlay, terrain_density_detail };
-    for (unlock_random_terrain_stamp_callers, densities) |callers, density| {
-        const count = (area * density) >> terrain_density_shift;
-        for (0..@as(usize, @intCast(count))) |_| {
-            _ = rng.randTagged(callers[0]);
-            _ = rng.randTagged(callers[1]);
-            _ = rng.randTagged(callers[2]);
-        }
+    const aim_scheme_value = (flags >> aim_scheme_shift) & aim_scheme_mask;
+    if ((flags & aim_scheme_present_flag) == 0 and aim_scheme_value != 0) {
+        return error.UnsupportedInputShape;
     }
-}
-
-fn terrainStampingDraws(width: i32, height: i32, layers: i32) i64 {
-    const clamped_layers = std.math.clamp(layers, 0, 3);
-    const area = @as(i64, width) * @as(i64, height);
-
-    var stamps: i64 = 0;
-    if (clamped_layers >= 1) {
-        stamps += (area * terrain_density_base) >> terrain_density_shift;
+    if ((flags & aim_scheme_present_flag) != 0 and aim_scheme_value == 6) {
+        return error.UnsupportedInputShape;
     }
-    if (clamped_layers >= 2) {
-        stamps += (area * terrain_density_overlay) >> terrain_density_shift;
-    }
-    if (clamped_layers >= 3) {
-        stamps += (area * terrain_density_detail) >> terrain_density_shift;
-    }
-    return stamps * terrain_rand_draws_per_stamp;
-}
-
-fn floatToPositiveI32(value: f32) i32 {
-    if (!std.math.isFinite(value)) return 1;
-    const clamped = std.math.clamp(value, 0.0, @as(f32, @floatFromInt(std.math.maxInt(i32))));
-    return @intFromFloat(clamped);
+    return flags;
 }
 
 fn parseI32(value: i32) ReplayCodecError!i32 {
@@ -2582,186 +2289,6 @@ test "unpack input flags decodes packed fields" {
     try std.testing.expect(decoded.move_backward_pressed != null and !decoded.move_backward_pressed.?);
     try std.testing.expect(decoded.turn_left_pressed != null and decoded.turn_left_pressed.?);
     try std.testing.expect(decoded.turn_right_pressed != null and !decoded.turn_right_pressed.?);
-}
-
-test "validate terrain bootstrap matches known latest survival header" {
-    const allocator = std.testing.allocator;
-    const header: ReplayHeader = .{
-        .game_mode_id = 1,
-        .seed = 1_764_335_965,
-        .replay_format_version = replay_format_version,
-        .quest_level = try allocator.dupe(u8, ""),
-        .bootstrap_kind = try allocator.dupe(u8, "terrain_v1"),
-        .bootstrap_seed = 702_897_212,
-        .game_version = try allocator.dupe(u8, "0.7.0"),
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .gore_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 49,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
-        },
-        .input_quantization = try allocator.dupe(u8, "f32"),
-    };
-    defer header.deinit(allocator);
-
-    try validateReplayBootstrap(header);
-}
-
-test "bootstrap mismatch is rejected" {
-    const allocator = std.testing.allocator;
-    const header: ReplayHeader = .{
-        .game_mode_id = 1,
-        .seed = 1234,
-        .replay_format_version = replay_format_version,
-        .quest_level = try allocator.dupe(u8, ""),
-        .bootstrap_kind = try allocator.dupe(u8, "terrain_v1"),
-        .bootstrap_seed = 1,
-        .game_version = try allocator.dupe(u8, "0.7.0"),
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .gore_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = [_]u32{0} ** weapon_usage_count,
-        },
-        .input_quantization = try allocator.dupe(u8, "f32"),
-    };
-    defer header.deinit(allocator);
-
-    try std.testing.expectError(error.BootstrapSeedMismatch, validateReplayBootstrap(header));
-}
-
-test "parse replay event supports capture payload kinds" {
-    const empty_pairs: [0][]const i32 = .{};
-    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
-    const bootstrap_players = [_]CaptureBootstrapPlayerWire{
-        .{
-            .weapon_id = 1,
-            .pos_x = 512.0,
-            .pos_y = 512.0,
-            .health = 100.0,
-            .ammo = 11.0,
-            .experience = 0,
-            .level = 1,
-            .clip_size = null,
-            .reload_active = null,
-            .reload_timer = null,
-            .reload_timer_max = null,
-            .shot_cooldown = null,
-            .spread_heat = null,
-            .aim_x = null,
-            .aim_y = null,
-            .aim_heading = null,
-            .alt_weapon_id = null,
-            .alt_clip_size = null,
-            .alt_ammo = null,
-            .alt_reload_active = null,
-            .alt_reload_timer = null,
-            .alt_reload_timer_max = null,
-            .alt_shot_cooldown = null,
-            .shield_ms = null,
-            .fire_bullets_ms = null,
-            .speed_bonus_ms = null,
-            .hot_tempered_timer = null,
-            .man_bomb_timer = null,
-            .living_fortress_timer = null,
-            .fire_cough_timer = null,
-        },
-    };
-    const spawn_rows = [_]CaptureCreatureSpawnRowWire{
-        .{
-            .template_id = 0x12,
-            .pos_x = 512.0,
-            .pos_y = 512.0,
-            .heading = 0.0,
-        },
-    };
-    const transitions = [_]CaptureStateTransitionRowWire{
-        .{
-            .target_state = 12,
-            .before_state = 9,
-            .after_state = 12,
-        },
-    };
-
-    const wire_events = [_]ReplayEventWire{
-        .{ .orig_capture_bootstrap = .{
-            .tick_index = 0,
-            .elapsed_ms = 0,
-            .score_xp = 0,
-            .perk_pending = 0,
-            .perk_pending_count = 0,
-            .perk_choices_dirty = false,
-            .perk_choices = &.{},
-            .player_nonzero_counts = player_nonzero_counts[0..],
-            .players = bootstrap_players[0..],
-            .digital_move_enabled_by_player = &.{false},
-            .weapon_power_up_ms = 0,
-            .reflex_boost_ms = 0,
-            .energizer_ms = 0,
-            .double_experience_ms = 0,
-            .freeze_ms = 0,
-            .perk_interval_man_bomb = null,
-            .perk_interval_fire_cough = null,
-            .perk_interval_hot_tempered = null,
-            .quest_session = null,
-        } },
-        .{ .orig_capture_perk_apply = .{
-            .tick_index = 0,
-            .perk_id = 44,
-            .outside_before = true,
-            .pending_before = null,
-            .pending_after = null,
-        } },
-        .{ .orig_capture_perk_pending = .{
-            .tick_index = 0,
-            .perk_pending = 2,
-        } },
-        .{ .orig_capture_creature_spawn = .{
-            .tick_index = 0,
-            .spawns = spawn_rows[0..],
-            .added_head = &.{},
-        } },
-        .{ .orig_capture_state_transition = .{
-            .tick_index = 0,
-            .transitions = transitions[0..],
-        } },
-    };
-
-    const parsed0 = try parseReplayEvent(wire_events[0], 1);
-    const parsed1 = try parseReplayEvent(wire_events[1], 1);
-    const parsed2 = try parseReplayEvent(wire_events[2], 1);
-    const parsed3 = try parseReplayEvent(wire_events[3], 1);
-    const parsed4 = try parseReplayEvent(wire_events[4], 1);
-    try std.testing.expect(parsed0 == .capture_bootstrap);
-    try std.testing.expect(parsed1 == .capture_perk_apply);
-    try std.testing.expect(parsed2 == .capture_perk_pending);
-    try std.testing.expect(parsed3 == .capture_creature_spawn);
-    try std.testing.expect(parsed4 == .capture_state_transition);
-}
-
-test "parse replay event rejects invalid perk pick indexes" {
-    const wire: ReplayEventWire = .{
-        .perk_pick = .{
-            .tick_index = 0,
-            .player_index = -1,
-            .choice_index = 0,
-        },
-    };
-    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }
 
 test "event player index failure detail identifies first invalid command event" {
@@ -2837,12 +2364,108 @@ test "inflate zstd payload consumes replay fixture through eof" {
     try std.testing.expectEqualSlices(u8, &.{ 0x82, 0xa6, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72 }, inflated[0..8]);
 }
 
-test "parse current replay summary reaches version check for hybrid string quest level fixture" {
+test "smoke replay retains raw parser API and requires zstd file envelope" {
+    const allocator = std.testing.allocator;
+    const raw = try buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(raw);
+
+    var replay = try parseReplay(allocator, raw);
+    defer replay.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 2), replay.tickCount());
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        inflateZstdFilePayload(allocator, raw, max_replay_payload_bytes),
+    );
+
+    const file_bytes = try wrapZstdFilePayload(allocator, raw);
+    defer allocator.free(file_bytes);
+    const inflated = try inflateZstdFilePayload(allocator, file_bytes, max_replay_payload_bytes);
+    defer allocator.free(inflated);
+    try std.testing.expectEqualSlices(u8, raw, inflated);
+}
+
+test "zstd file envelope rejects trailing bytes and concatenated frames" {
+    const allocator = std.testing.allocator;
+    const raw = try buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(raw);
+    const frame = try wrapZstdFilePayload(allocator, raw);
+    defer allocator.free(frame);
+
+    const with_trailing_byte = try std.mem.concat(allocator, u8, &.{ frame, &.{0} });
+    defer allocator.free(with_trailing_byte);
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        inflateZstdFilePayload(allocator, with_trailing_byte, max_replay_payload_bytes),
+    );
+
+    const concatenated_frames = try std.mem.concat(allocator, u8, &.{ frame, frame });
+    defer allocator.free(concatenated_frames);
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        inflateZstdFilePayload(allocator, concatenated_frames, max_replay_payload_bytes),
+    );
+
+    const checksum_frame = try allocator.alloc(u8, frame.len + @sizeOf(u32));
+    defer allocator.free(checksum_frame);
+    @memcpy(checksum_frame[0..frame.len], frame);
+    checksum_frame[zstd_magic.len] |= 0b0000_0100;
+    const checksum: u32 = @truncate(std.hash.XxHash64.hash(0, raw));
+    std.mem.writeInt(u32, checksum_frame[frame.len..][0..@sizeOf(u32)], checksum, .little);
+
+    const checksum_inflated = try inflateZstdFilePayload(
+        allocator,
+        checksum_frame,
+        max_replay_payload_bytes,
+    );
+    defer allocator.free(checksum_inflated);
+    try std.testing.expectEqualSlices(u8, raw, checksum_inflated);
+
+    checksum_frame[checksum_frame.len - 1] ^= 0x80;
+    try std.testing.expectError(
+        error.InvalidZstdPayload,
+        inflateZstdFilePayload(allocator, checksum_frame, max_replay_payload_bytes),
+    );
+}
+
+test "single-frame file inflater handles empty and multi-block payloads within the size ceiling" {
+    const allocator = std.testing.allocator;
+
+    const empty_frame = try wrapZstdFilePayload(allocator, &.{});
+    defer allocator.free(empty_frame);
+    const empty = try inflateZstdFilePayload(allocator, empty_frame, 0);
+    defer allocator.free(empty);
+    try std.testing.expectEqual(@as(usize, 0), empty.len);
+
+    const raw = try allocator.alloc(u8, 128 * 1024 + 17);
+    defer allocator.free(raw);
+    for (raw, 0..) |*byte, index| byte.* = @truncate(index);
+    const frame = try wrapZstdFilePayload(allocator, raw);
+    defer allocator.free(frame);
+    const inflated = try inflateZstdFilePayload(allocator, frame, raw.len);
+    defer allocator.free(inflated);
+    try std.testing.expectEqualSlices(u8, raw, inflated);
+    try std.testing.expectError(
+        error.PayloadTooLarge,
+        inflateZstdFilePayload(allocator, frame, raw.len - 1),
+    );
+}
+
+test "current replay parser rejects non-executable game modes" {
+    const allocator = std.testing.allocator;
+    for ([_]i32{ 0, 5, 999 }) |game_mode_id| {
+        const raw = try buildSmokeTestReplayPayloadForMode(allocator, game_mode_id);
+        defer allocator.free(raw);
+        try std.testing.expectError(error.UnsupportedGameMode, parseReplay(allocator, raw));
+        try std.testing.expectError(error.UnsupportedGameMode, parseReplaySummary(allocator, raw));
+    }
+}
+
+test "parse current replay rejects hybrid string quest level fixture" {
     const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
     const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
     defer std.testing.allocator.free(inflated);
 
-    try std.testing.expectError(error.UnsupportedReplayFormatVersion, parseReplaySummary(std.testing.allocator, inflated));
+    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, inflated));
 }
 
 test "inflate zstd payload enforces max output size" {
@@ -2867,8 +2490,10 @@ test "parse current replay preserves typo metadata and commands" {
     };
     const ticks = [_]ReplayTickCurrentWire{
         .{
-            .dt = 1.0 / 60.0,
+            .dt = canonical_tick_dt_f64,
             .inputs = tick_inputs[0..],
+            .prelude = &.{.{ .rng_burn = .{ .draws = 2 } }},
+            .postlude = &.{.{ .perk_menu_open = .{ .player_index = 0 } }},
             .commands = &.{
                 .{
                     .type = "typo_char",
@@ -2916,6 +2541,11 @@ test "parse current replay preserves typo metadata and commands" {
     try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.GameModeId.typo)), replay.header.game_mode_id);
     try std.testing.expectEqualStrings("amber", replay.header.typo_dictionary_words[0]);
     try std.testing.expectEqualStrings("ALPHA", replay.header.typo_highscore_names[0]);
+    try std.testing.expectEqual(@as(usize, 1), replay.prelude.len);
+    try std.testing.expect(replay.prelude[0] == .rng_burn);
+    try std.testing.expectEqual(@as(u32, 2), replay.prelude[0].rng_burn.draws);
+    try std.testing.expectEqual(@as(usize, 1), replay.postlude.len);
+    try std.testing.expectEqual(@as(i32, 0), replay.postlude[0].player_index);
     try std.testing.expectEqual(@as(usize, 3), replay.events.len);
     try std.testing.expect(replay.events[0] == .typo_char);
     try std.testing.expectEqual(@as(u8, 'a'), replay.events[0].typo_char.ch);
@@ -2923,14 +2553,18 @@ test "parse current replay preserves typo metadata and commands" {
     try std.testing.expect(replay.events[2] == .typo_submit);
 
     const replay_summary = replay.summarizeEvents();
-    try std.testing.expectEqual(@as(usize, 3), replay_summary.total_count);
+    try std.testing.expectEqual(@as(usize, 5), replay_summary.total_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.rng_burn_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_char_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_backspace_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_submit_count);
 
     const parsed_summary = try parseReplaySummary(allocator, writer.written());
     defer parsed_summary.deinit(allocator);
-    try std.testing.expectEqual(@as(usize, 3), parsed_summary.events.total_count);
+    try std.testing.expectEqual(@as(usize, 5), parsed_summary.events.total_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.rng_burn_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_char_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_backspace_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_submit_count);
@@ -2950,8 +2584,10 @@ test "unknown current replay command detail names command type and position" {
     };
     const ticks = [_]ReplayTickCurrentWire{
         .{
-            .dt = 1.0 / 60.0,
+            .dt = canonical_tick_dt_f64,
             .inputs = tick_inputs[0..],
+            .prelude = &.{},
+            .postlude = &.{},
             .commands = &.{
                 .{
                     .type = "network_ping",
@@ -2986,68 +2622,208 @@ test "unknown current replay command detail names command type and position" {
     const detail = (try replayUnknownCommandFailureDetail(allocator, writer.written())) orelse return error.TestExpectedDetail;
     defer allocator.free(detail);
     try std.testing.expectEqualStrings(
-        "replay event command kind is unknown: type=network_ping tick=0 event_index=0",
+        "replay command type is unknown: type=network_ping tick=0 command_index=0",
         detail,
     );
 }
 
-test "build header rejects world_size above i32 range" {
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const too_large_world_size: f32 = @as(f32, @floatFromInt(std.math.maxInt(i32))) + 1024.0;
-    const wire: ReplayHeaderWire = .{
-        .game_mode_id = 1,
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = "",
-        .bootstrap_kind = "none",
-        .bootstrap_seed = 0,
-        .game_version = "0.7.0",
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .gore_disabled = 0,
-        .world_size = too_large_world_size,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = usage_counts[0..],
-        },
-        .claimed_stats = .{},
-        .input_quantization = "f32",
-    };
-    try std.testing.expectError(error.InvalidClaimedStats, buildHeader(std.testing.allocator, wire));
+test "current replay separates ordered prelude from typo commands" {
+    try std.testing.expectError(
+        error.UnsupportedEventShape,
+        parseCurrentPrelude(.{ .perk_menu_open = .{ .player_index = 1 } }, 0, 1),
+    );
+    try std.testing.expectError(
+        error.UnsupportedEventShape,
+        parseCurrentPrelude(.{ .perk_pick = .{ .player_index = 0, .choice_index = 7 } }, 0, 1),
+    );
+    try std.testing.expectError(
+        error.UnsupportedEventShape,
+        parseCurrentPrelude(.{ .rng_burn = .{ .draws = 0 } }, 0, 1),
+    );
+    try std.testing.expectError(
+        error.UnsupportedEventShape,
+        parseCurrentPostlude(.{ .perk_menu_open = .{ .player_index = 1 } }, 0, 1),
+    );
+    try std.testing.expectError(
+        error.UnknownCommandKind,
+        parseCurrentCommand(.{ .type = "perk_menu_open", .player_index = 0 }, 0, 1),
+    );
 }
 
-test "build header rejects quest replay without quest level" {
+test "current replay rejects noncanonical f32 wire values" {
+    try std.testing.expect(canonicalF32(@as(f64, @as(f32, 0.1))) != null);
+    try std.testing.expect(canonicalF32(@as(f64, 0.1)) == null);
+
+    const bad_input = [_]ReplayInputWire{.{
+        .move_x = 0.1,
+        .move_y = 0.0,
+        .aim_x = 0.0,
+        .aim_y = 0.0,
+        .flags = 0,
+    }};
+    const bad_input_ticks = [_]ReplayTickCurrentWire{.{
+        .dt = canonical_tick_dt_f64,
+        .inputs = bad_input[0..],
+        .prelude = &.{},
+        .postlude = &.{},
+        .commands = &.{},
+    }};
+    try std.testing.expectError(error.UnsupportedInputShape, validateCurrentTicks(bad_input_ticks[0..], 1, @intFromEnum(game_ids.GameModeId.survival)));
+
+    const good_input = [_]ReplayInputWire{.{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 0.0,
+        .aim_y = 0.0,
+        .flags = 0,
+    }};
+    const bad_dt_ticks = [_]ReplayTickCurrentWire{.{
+        .dt = 1.0 / 60.0,
+        .inputs = good_input[0..],
+        .prelude = &.{},
+        .postlude = &.{},
+        .commands = &.{},
+    }};
+    try std.testing.expectError(error.UnsupportedInputShape, validateCurrentTicks(bad_dt_ticks[0..], 1, @intFromEnum(game_ids.GameModeId.survival)));
+
     const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire: ReplayHeaderWire = .{
-        .game_mode_id = @intFromEnum(game_ids.GameModeId.quests),
+    const header: ReplayHeaderCurrentWire = .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
         .seed = 1,
         .replay_format_version = replay_format_version,
-        .quest_level = " \t",
-        .bootstrap_kind = "none",
-        .bootstrap_seed = 0,
-        .game_version = "0.7.0",
+        .quest_level = null,
+        .game_version = "0.9.0",
+        .world_size = 0.1,
+        .player_count = 1,
+        .status = .{ .weapon_usage_counts = usage_counts[0..] },
+        .claimed_stats = .{},
+    };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, header));
+
+    const residue: ReplayCreatureSlotResidueWire = .{
+        .index = 0,
+        .phase_seed = 0.1,
+        .state_flag = 0,
+        .collision_flag = 0,
+        .collision_timer = 0.0,
+        .lifecycle_stage = 0.0,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .vel = .{ .x = 0.0, .y = 0.0 },
+        .hp = 0.0,
+        .max_hp = 0.0,
+        .heading = 0.0,
+        .target_heading = 0.0,
+        .size = 0.0,
+        .hit_flash_timer = 0.0,
+        .tint_r = 0.0,
+        .tint_g = 0.0,
+        .tint_b = 0.0,
+        .tint_a = 0.0,
+        .force_target = 0,
+        .target = .{ .x = 0.0, .y = 0.0 },
+        .contact_damage = 0.0,
+        .move_speed = 0.0,
+        .attack_cooldown = 0.0,
+        .reward_value = 0.0,
+        .type_id = 0,
+        .target_player = 0,
+        .link_index = 0,
+        .target_offset = .{ .x = 0.0, .y = 0.0 },
+        .orbit_angle = 0.0,
+        .orbit_radius_u32 = 0,
+        .flags = 0,
+        .ai_mode = 0,
+        .anim_phase = 0.0,
+    };
+    try std.testing.expectError(
+        error.InvalidHeaderValue,
+        buildCreaturePoolResidue(std.testing.allocator, &.{residue}),
+    );
+
+    var first = residue;
+    first.index = 1;
+    first.phase_seed = 0.0;
+    var duplicate = first;
+    duplicate.index = 1;
+    try std.testing.expectError(
+        error.InvalidHeaderValue,
+        buildCreaturePoolResidue(std.testing.allocator, &.{ first, duplicate }),
+    );
+}
+
+fn testCurrentHeaderWire() ReplayHeaderCurrentWire {
+    return .{
+        .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
+        .seed = 1,
+        .replay_format_version = replay_format_version,
+        .quest_level = null,
+        .game_version = "0.9.0",
         .tick_rate = 60,
-        .difficulty_level = 0,
+        .quest_fail_retry_count = 0,
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .gore_disabled = 0,
+        .violence_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = usage_counts[0..],
+            .weapon_usage_counts = &([_]u32{0} ** weapon_usage_count),
         },
         .claimed_stats = .{},
         .input_quantization = "f32",
     };
-    try std.testing.expectError(error.MissingQuestLevel, buildHeader(std.testing.allocator, wire));
+}
+
+test "current header enforces latest semantic constraints" {
+    var wire = testCurrentHeaderWire();
+
+    wire.quest_level = .{ .major = 1, .minor = 1 };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+
+    wire.game_mode_id = @intFromEnum(game_ids.GameModeId.quests);
+    wire.quest_level = .{ .major = 0, .minor = 1 };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire.quest_level = .{ .major = 1, .minor = 11 };
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+
+    wire = testCurrentHeaderWire();
+    wire.player_count = max_players + 1;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire = testCurrentHeaderWire();
+    wire.quest_fail_retry_count = -1;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire = testCurrentHeaderWire();
+    wire.detail_preset = -1;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire = testCurrentHeaderWire();
+    wire.violence_disabled = -1;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire = testCurrentHeaderWire();
+    wire.claimed_stats.most_used_weapon_id = -1;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+    wire = testCurrentHeaderWire();
+    wire.claimed_stats.most_used_weapon_id = 54;
+    try std.testing.expectError(error.InvalidHeaderValue, buildHeaderCurrent(std.testing.allocator, wire));
+}
+
+test "current input flags enforce the shared packed-bit contract" {
+    const invalid = [_]i32{
+        -1,
+        1 << 17,
+        move_forward_flag,
+        1 << move_mode_shift,
+        move_mode_present_flag | (6 << move_mode_shift),
+        1 << aim_scheme_shift,
+        aim_scheme_present_flag | (6 << aim_scheme_shift),
+    };
+    for (invalid) |flags| {
+        try std.testing.expectError(error.UnsupportedInputShape, parseInputFlagsValue(flags));
+    }
+
+    try std.testing.expectEqual(
+        aim_scheme_present_flag | (7 << aim_scheme_shift),
+        try parseInputFlagsValue(aim_scheme_present_flag | (7 << aim_scheme_shift)),
+    );
 }
 
 test "build current header rejects quest replay without quest level" {
@@ -3077,7 +2853,7 @@ test "build current header rejects quest replay without quest level" {
     try std.testing.expectError(error.MissingQuestLevel, buildHeaderCurrent(std.testing.allocator, wire));
 }
 
-test "build headers reject multiplayer Typ-o and tutorial replays" {
+test "current header rejects multiplayer Typ-o and tutorial replays" {
     const usage_counts = [_]u32{0} ** weapon_usage_count;
     const cases = [_]struct {
         game_mode_id: i32,
@@ -3094,32 +2870,6 @@ test "build headers reject multiplayer Typ-o and tutorial replays" {
     };
 
     for (cases) |case| {
-        const wire: ReplayHeaderWire = .{
-            .game_mode_id = case.game_mode_id,
-            .seed = 1,
-            .replay_format_version = replay_format_version,
-            .quest_level = "",
-            .bootstrap_kind = "none",
-            .bootstrap_seed = 0,
-            .game_version = "0.7.0",
-            .tick_rate = 60,
-            .difficulty_level = 0,
-            .hardcore = false,
-            .preserve_bugs = false,
-            .detail_preset = 5,
-            .gore_disabled = 0,
-            .world_size = 1024.0,
-            .player_count = 2,
-            .status = .{
-                .quest_unlock_index = 0,
-                .quest_unlock_index_full = 0,
-                .weapon_usage_counts = usage_counts[0..],
-            },
-            .claimed_stats = .{},
-            .input_quantization = "f32",
-        };
-        try std.testing.expectError(case.expected_error, buildHeader(std.testing.allocator, wire));
-
         const current_wire: ReplayHeaderCurrentWire = .{
             .game_mode_id = case.game_mode_id,
             .seed = 1,
@@ -3153,15 +2903,13 @@ test "unsupported replay header detail reports missing quest level" {
         .seed = 1,
         .replay_format_version = replay_format_version,
         .quest_level = try allocator.dupe(u8, ""),
-        .bootstrap_kind = try allocator.dupe(u8, "none"),
-        .bootstrap_seed = 0,
         .game_version = try allocator.dupe(u8, "0.9.0"),
         .tick_rate = 60,
-        .difficulty_level = 0,
+        .quest_fail_retry_count = 0,
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .gore_disabled = 0,
+        .violence_disabled = 0,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{
@@ -3177,118 +2925,6 @@ test "unsupported replay header detail reports missing quest level" {
         "quest replays require a valid header.quest_level",
         unsupportedReplayHeaderDetail(header, 1, .verifier).?,
     );
-}
-
-test "build header parses claimed stats snapshot" {
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire: ReplayHeaderWire = .{
-        .game_mode_id = 1,
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = "",
-        .bootstrap_kind = "none",
-        .bootstrap_seed = 0,
-        .game_version = "0.7.0",
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .gore_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = usage_counts[0..],
-        },
-        .claimed_stats = .{
-            .complete = true,
-            .ticks = 12,
-            .elapsed_ms = 200,
-            .score_xp = 1234,
-            .kills = 56,
-            .most_used_weapon_id = 7,
-            .shots_fired = 10,
-            .shots_hit = 8,
-        },
-        .input_quantization = "f32",
-    };
-    const header = try buildHeader(std.testing.allocator, wire);
-    defer header.deinit(std.testing.allocator);
-
-    const claimed = header.claimed_stats;
-    try std.testing.expect(claimed.complete);
-    try std.testing.expectEqual(@as(i32, 12), claimed.ticks);
-    try std.testing.expectEqual(@as(i64, 200), claimed.elapsed_ms);
-    try std.testing.expectEqual(@as(i64, 1234), claimed.score_xp);
-    try std.testing.expectEqual(@as(i32, 56), claimed.kills);
-    try std.testing.expectEqual(@as(i32, 7), claimed.most_used_weapon_id);
-    try std.testing.expectEqual(@as(i32, 10), claimed.shots_fired);
-    try std.testing.expectEqual(@as(i32, 8), claimed.shots_hit);
-}
-
-test "build header rejects invalid claimed stats snapshot" {
-    const usage_counts = [_]u32{0} ** weapon_usage_count;
-    const wire: ReplayHeaderWire = .{
-        .game_mode_id = 1,
-        .seed = 1,
-        .replay_format_version = replay_format_version,
-        .quest_level = "",
-        .bootstrap_kind = "none",
-        .bootstrap_seed = 0,
-        .game_version = "0.7.0",
-        .tick_rate = 60,
-        .difficulty_level = 0,
-        .hardcore = false,
-        .preserve_bugs = false,
-        .detail_preset = 5,
-        .gore_disabled = 0,
-        .world_size = 1024.0,
-        .player_count = 1,
-        .status = .{
-            .quest_unlock_index = 0,
-            .quest_unlock_index_full = 0,
-            .weapon_usage_counts = usage_counts[0..],
-        },
-        .claimed_stats = .{
-            .complete = false,
-            .ticks = 1,
-            .elapsed_ms = 16,
-            .score_xp = 0,
-            .kills = 0,
-            .most_used_weapon_id = 1,
-            .shots_fired = 1,
-            .shots_hit = 2,
-        },
-        .input_quantization = "f32",
-    };
-    try std.testing.expectError(error.InvalidHeaderValue, buildHeader(std.testing.allocator, wire));
-}
-
-test "build inputs frees tick allocations on parse error" {
-    const wire_tick = [_]ReplayInputWire{
-        .{
-            .move_x = 0.0,
-            .move_y = 0.0,
-            .aim_x = 0.0,
-            .aim_y = 0.0,
-            .flags = -1,
-        },
-    };
-    const wire_inputs = [_][]const ReplayInputWire{wire_tick[0..]};
-    try std.testing.expectError(error.UnsupportedInputShape, buildInputs(std.testing.allocator, wire_inputs[0..]));
-}
-
-test "build events frees allocation on parse error" {
-    const wire_events = [_]ReplayEventWire{
-        .{ .perk_pick = .{
-            .tick_index = -1,
-            .player_index = 0,
-            .choice_index = 0,
-        } },
-    };
-    try std.testing.expectError(error.UnsupportedEventShape, buildEvents(std.testing.allocator, wire_events[0..], 1));
 }
 
 test "parse replay decode errors preserve oom and map invalid msgpack" {
@@ -3307,11 +2943,11 @@ test "parse replay decode errors preserve oom and map invalid msgpack" {
     try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, invalid_payload[0..]));
 }
 
-test "parse replay rejects legacy json payload before msgpack decode" {
+test "parse replay rejects non-msgpack payload generically" {
     const payload = " \n{\"header\":{\"game_mode_id\":1,\"seed\":1}}";
 
-    try std.testing.expectError(error.LegacyJsonPayload, parseReplaySummary(std.testing.allocator, payload));
-    try std.testing.expectError(error.LegacyJsonPayload, parseReplay(std.testing.allocator, payload));
+    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, payload));
+    try std.testing.expectError(error.InvalidMsgpack, parseReplay(std.testing.allocator, payload));
 }
 
 test "binary bytes reader accepts msgpack bin8 payloads" {
@@ -3320,125 +2956,4 @@ test "binary bytes reader accepts msgpack bin8 payloads" {
     defer decoded.deinit();
 
     try std.testing.expectEqualSlices(u8, &.{ 0xDE, 0xAD, 0xBE, 0xEF }, decoded.value.data);
-}
-
-test "capture bootstrap rejects perk nonzero counts above max players" {
-    const empty_pairs: [0][]const i32 = .{};
-    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
-    const wire: ReplayEventWire = .{
-        .orig_capture_bootstrap = .{
-            .tick_index = 0,
-            .elapsed_ms = 0,
-            .score_xp = 0,
-            .perk_pending = 0,
-            .perk_pending_count = 0,
-            .perk_choices_dirty = false,
-            .perk_choices = &.{},
-            .player_nonzero_counts = player_nonzero_counts[0..],
-            .players = &.{},
-            .digital_move_enabled_by_player = &.{},
-            .weapon_power_up_ms = 0,
-            .reflex_boost_ms = 0,
-            .energizer_ms = 0,
-            .double_experience_ms = 0,
-            .freeze_ms = 0,
-            .perk_interval_man_bomb = null,
-            .perk_interval_fire_cough = null,
-            .perk_interval_hot_tempered = null,
-            .quest_session = null,
-        },
-    };
-    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
-}
-
-test "capture bootstrap rejects players above max players" {
-    const player: CaptureBootstrapPlayerWire = .{
-        .weapon_id = 1,
-        .pos_x = 0.0,
-        .pos_y = 0.0,
-        .health = 100.0,
-        .ammo = 0.0,
-        .experience = 0,
-        .level = 1,
-        .clip_size = null,
-        .reload_active = null,
-        .reload_timer = null,
-        .reload_timer_max = null,
-        .shot_cooldown = null,
-        .spread_heat = null,
-        .aim_x = null,
-        .aim_y = null,
-        .aim_heading = null,
-        .alt_weapon_id = null,
-        .alt_clip_size = null,
-        .alt_ammo = null,
-        .alt_reload_active = null,
-        .alt_reload_timer = null,
-        .alt_reload_timer_max = null,
-        .alt_shot_cooldown = null,
-        .shield_ms = null,
-        .fire_bullets_ms = null,
-        .speed_bonus_ms = null,
-        .hot_tempered_timer = null,
-        .man_bomb_timer = null,
-        .living_fortress_timer = null,
-        .fire_cough_timer = null,
-    };
-    const players = [_]CaptureBootstrapPlayerWire{player} ** (max_players + 1);
-    const empty_pairs: [0][]const i32 = .{};
-    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]} ** (max_players + 1);
-    const wire: ReplayEventWire = .{
-        .orig_capture_bootstrap = .{
-            .tick_index = 0,
-            .elapsed_ms = 0,
-            .score_xp = 0,
-            .perk_pending = 0,
-            .perk_pending_count = 0,
-            .perk_choices_dirty = false,
-            .perk_choices = &.{},
-            .player_nonzero_counts = player_nonzero_counts[0..],
-            .players = players[0..],
-            .digital_move_enabled_by_player = &.{},
-            .weapon_power_up_ms = 0,
-            .reflex_boost_ms = 0,
-            .energizer_ms = 0,
-            .double_experience_ms = 0,
-            .freeze_ms = 0,
-            .perk_interval_man_bomb = null,
-            .perk_interval_fire_cough = null,
-            .perk_interval_hot_tempered = null,
-            .quest_session = null,
-        },
-    };
-    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
-}
-
-test "capture bootstrap rejects digital move flags above max players" {
-    const digital_move_enabled_by_player = [_]bool{false} ** (max_players + 1);
-    const empty_pairs: [0][]const i32 = .{};
-    const player_nonzero_counts = [_][]const []const i32{empty_pairs[0..]};
-    const wire: ReplayEventWire = .{
-        .orig_capture_bootstrap = .{
-            .tick_index = 0,
-            .elapsed_ms = 0,
-            .score_xp = 0,
-            .perk_pending = 0,
-            .perk_pending_count = 0,
-            .perk_choices_dirty = false,
-            .perk_choices = &.{},
-            .player_nonzero_counts = player_nonzero_counts[0..],
-            .players = &.{},
-            .digital_move_enabled_by_player = digital_move_enabled_by_player[0..],
-            .weapon_power_up_ms = 0,
-            .reflex_boost_ms = 0,
-            .energizer_ms = 0,
-            .double_experience_ms = 0,
-            .freeze_ms = 0,
-            .perk_interval_man_bomb = null,
-            .perk_interval_fire_cough = null,
-            .perk_interval_hot_tempered = null,
-            .quest_session = null,
-        },
-    };
-    try std.testing.expectError(error.UnsupportedEventShape, parseReplayEvent(wire, 1));
 }

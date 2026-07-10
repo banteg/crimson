@@ -383,8 +383,7 @@ class RngCallerStatic(IntEnum):
     # Synthetic caller ids reserve the high range so they cannot be
     # mistaken for native return addresses from the main executable.
     REWRITE_JINXED_ACCIDENT_TARGET_PICK = 0xF1000001
-    REPLAY_DRIVER_INTER_TICK_DRAW_BY_TICK = 0xF1000004
-    REPLAY_DRIVER_INTER_TICK_DRAW = 0xF1000005
+    REPLAY_PRELUDE_RNG_BURN = 0xF1000004
     REWRITE_STATS_MENU_EASTER_ROLL = 0xF1000006
     REWRITE_STATS_MENU_EASTER_TEXT_X = 0xF1000007
 

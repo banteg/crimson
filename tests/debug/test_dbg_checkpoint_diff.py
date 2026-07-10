@@ -7,12 +7,13 @@ import msgspec
 from crimson.dbg.checkpoint_diff import checkpoint_deepdiff, compare_checkpoints
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
+    ReplayCheckpointVec2,
     ReplayEventSummary,
     ReplayHitSummaryEntry,
+    ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
 from crimson.weapons import WeaponId
-from grim.geom import Vec2
 
 
 def _next_float32(value: float, *, ulps: int) -> float:
@@ -32,7 +33,7 @@ def _checkpoint_with_health(health: float) -> ReplayCheckpoint:
         perk_pending=0,
         players=[
             ReplayPlayerCheckpoint(
-                pos=Vec2(0.0, 0.0),
+                pos=ReplayCheckpointVec2(0.0, 0.0),
                 health=float(health),
                 weapon_id=WeaponId.PISTOL,
                 ammo=0.0,
@@ -41,6 +42,22 @@ def _checkpoint_with_health(health: float) -> ReplayCheckpoint:
             ),
         ],
         bonus_timers={},
+        deaths=[],
+        perk=ReplayPerkSnapshot(
+            pending_count=0,
+            choices_dirty=False,
+            choices=[0] * 7,
+            player_nonzero_counts=[[]],
+        ),
+        events=ReplayEventSummary(
+            hit_count=0,
+            pickup_count=0,
+            sfx_count=0,
+            sfx_head=[],
+            hit_head=[],
+        ),
+        tutorial=None,
+        typo=None,
     )
 
 
@@ -61,39 +78,64 @@ def test_checkpoint_deepdiff_returns_none_for_identical_objects() -> None:
     assert checkpoint_deepdiff(expected, actual) is None
 
 
-def test_compare_checkpoints_can_skip_elapsed_mismatch_rows() -> None:
-    first_expected = _checkpoint_with_health(1.0)
-    first_actual = msgspec.structs.replace(first_expected, elapsed_ms=int(first_expected.elapsed_ms) + 16)
-    second_expected = msgspec.structs.replace(_checkpoint_with_health(1.0), tick_index=1)
-    second_actual = msgspec.structs.replace(second_expected, score_xp=1)
+def test_compare_checkpoints_does_not_mask_state_when_elapsed_also_differs() -> None:
+    expected = _checkpoint_with_health(1.0)
+    actual = msgspec.structs.replace(expected, elapsed_ms=int(expected.elapsed_ms) + 16, score_xp=1)
 
-    diff = compare_checkpoints(
-        [first_expected, second_expected],
-        [first_actual, second_actual],
-        skip_elapsed_mismatch=True,
-    )
+    diff = compare_checkpoints([expected], [actual])
 
     assert not diff.ok
-    assert diff.skipped_elapsed_mismatch_count == 1
     assert diff.failure is not None
+    assert diff.failure.tick_index == 0
+
+
+def test_compare_checkpoints_rejects_rng_only_mismatch() -> None:
+    expected = _checkpoint_with_health(1.0)
+    actual = msgspec.structs.replace(expected, rng_state=int(expected.rng_state) + 1)
+
+    diff = compare_checkpoints([expected], [actual])
+
+    assert not diff.ok
+    assert diff.failure is not None
+    assert diff.failure.kind == "state_mismatch"
+
+
+def test_compare_checkpoints_rejects_extra_actual_tick() -> None:
+    expected = _checkpoint_with_health(1.0)
+    extra = msgspec.structs.replace(expected, tick_index=1)
+
+    diff = compare_checkpoints([expected], [expected, extra])
+
+    assert not diff.ok
+    assert diff.failure is not None
+    assert diff.failure.kind == "extra_checkpoint"
     assert diff.failure.tick_index == 1
 
 
-def test_compare_checkpoints_ignores_hit_head_when_one_side_is_legacy() -> None:
+def test_compare_checkpoints_requires_hit_head_on_both_sides() -> None:
     expected = msgspec.structs.replace(
         _checkpoint_with_health(1.0),
-        events=ReplayEventSummary(hit_count=1),
+        events=ReplayEventSummary(
+            hit_count=1,
+            pickup_count=0,
+            sfx_count=0,
+            sfx_head=[],
+            hit_head=[],
+        ),
     )
     actual = msgspec.structs.replace(
         expected,
         events=ReplayEventSummary(
             hit_count=1,
+            pickup_count=0,
+            sfx_count=0,
+            sfx_head=[],
             hit_head=[
                 ReplayHitSummaryEntry(
                     type_id=1,
-                    origin=Vec2(1.0, 2.0),
-                    hit=Vec2(3.0, 4.0),
-                    target=Vec2(5.0, 6.0),
+                    origin=ReplayCheckpointVec2(1.0, 2.0),
+                    hit=ReplayCheckpointVec2(3.0, 4.0),
+                    target=ReplayCheckpointVec2(5.0, 6.0),
                 ),
             ],
         ),
@@ -101,25 +143,36 @@ def test_compare_checkpoints_ignores_hit_head_when_one_side_is_legacy() -> None:
 
     diff = compare_checkpoints([expected], [actual])
 
-    assert diff.ok
+    assert not diff.ok
+    assert diff.failure is not None
+    assert diff.failure.tick_index == 0
 
 
 def test_compare_checkpoints_compares_hit_head_when_both_sides_record_it() -> None:
     hit = ReplayHitSummaryEntry(
         type_id=1,
-        origin=Vec2(1.0, 2.0),
-        hit=Vec2(3.0, 4.0),
-        target=Vec2(5.0, 6.0),
+        origin=ReplayCheckpointVec2(1.0, 2.0),
+        hit=ReplayCheckpointVec2(3.0, 4.0),
+        target=ReplayCheckpointVec2(5.0, 6.0),
     )
     expected = msgspec.structs.replace(
         _checkpoint_with_health(1.0),
-        events=ReplayEventSummary(hit_count=1, hit_head=[hit]),
+        events=ReplayEventSummary(
+            hit_count=1,
+            pickup_count=0,
+            sfx_count=0,
+            sfx_head=[],
+            hit_head=[hit],
+        ),
     )
     actual = msgspec.structs.replace(
         expected,
         events=ReplayEventSummary(
             hit_count=1,
-            hit_head=[msgspec.structs.replace(hit, target=Vec2(7.0, 8.0))],
+            pickup_count=0,
+            sfx_count=0,
+            sfx_head=[],
+            hit_head=[msgspec.structs.replace(hit, target=ReplayCheckpointVec2(7.0, 8.0))],
         ),
     )
 

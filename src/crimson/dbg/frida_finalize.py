@@ -3,25 +3,32 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import struct
 from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import BinaryIO
+from tempfile import SpooledTemporaryFile, TemporaryDirectory
+from typing import Any, BinaryIO, Protocol
 
 import msgspec
+import zstandard as zstd
 
 from ..game_modes import GameMode
 from ..net.session_settings import session_settings_for_lockstep
-from ..persistence.save_status import GameStatusData
+from ..persistence.save_status import (
+    QUEST_PLAY_COUNT,
+    UNKNOWN_TAIL_SIZE,
+    WEAPON_USAGE_COUNT,
+    GameStatusData,
+)
 from ..quests.level import QuestLevel
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
-from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2
+from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2, quantize_f32
+from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
 from .canonical_channels import (
     EntitySamplesSnapshot,
+    ReplayStepSnapshot,
     RngStreamRow,
     SimStateSnapshot,
     SnapshotBonusTimers,
@@ -43,21 +50,24 @@ from .schema import (
 from .trace import TraceSummary, write_trace_iter
 
 _FRAME_LEN_BYTES = 4
+_EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-# v13 samples clip_size as raw f32 bits; v14 emits the decoded value;
-# v15 adds the creature pool residue snapshot on run_start rows.
-_SUPPORTED_CAPTURE_FORMAT_VERSIONS = frozenset({13, 14, 15})
-_POOL_RESIDUE_CAPTURE_VERSION = 15
+FRIDA_CAPTURE_FORMAT_VERSION = 18
+FRIDA_EVIDENCE_FORMAT_VERSION = 1
+_EVIDENCE_ZSTD_LEVEL = 10
+_EVIDENCE_DECODE_SPOOL_MAX_MEMORY = 8 * 1024 * 1024
+_EVIDENCE_COMPRESSED_READ_BYTES = 1024 * 1024
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
-_RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown", "capture_contract_error"))
+_RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
 _SEED_SOURCES = frozenset(("unknown", "crt_srand"))
 # Replay seeds are derived from the rand state latched at run-setup entry
 # (before the first terrain draw), not from the stale session-wide srand seed.
 _RUN_SETUP_SEED_SOURCE = "run_setup_rng_state"
 _LCG_GAP_SEARCH_LIMIT = 1 << 16
+_SUPPORTED_CAPTURE_MODES = frozenset((int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)))
 
 
 def _lcg_step_u32(state: int) -> int:
@@ -72,6 +82,8 @@ def _lcg_distance_u32(start: int, target: int, *, limit: int = _LCG_GAP_SEARCH_L
             return steps
         state = _lcg_step_u32(state)
     return None
+
+
 _MODE_LABEL_BY_ID = {
     int(GameMode.DEMO): "demo",
     int(GameMode.SURVIVAL): "survival",
@@ -86,12 +98,16 @@ class FridaFinalizeError(ValueError):
     pass
 
 
+class _BinaryReader(Protocol):
+    def read(self, size: int = -1, /) -> bytes: ...
+
+
 class _CaptureRngStreamRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_call_index: int
     value_15: int
     state_before_u32: int
     state_after_u32: int
-    caller_static: str | None = None
+    caller: int | None
 
 
 class _CaptureSnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -101,7 +117,6 @@ class _CaptureSnapshotGameplay(msgspec.Struct, frozen=True, forbid_unknown_field
     perk_pending_count: int
     perk_choices_dirty: bool
     bonus_timers: SnapshotBonusTimers
-    status: GameStatusData | None = None
 
 
 class _CaptureSimStateSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -110,6 +125,7 @@ class _CaptureSimStateSnapshot(msgspec.Struct, frozen=True, forbid_unknown_field
 
 
 class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    replay_step: ReplayStepSnapshot
     checkpoint: ReplayCheckpoint
     sim_state: _CaptureSimStateSnapshot
     entity_samples: EntitySamplesSnapshot
@@ -120,7 +136,7 @@ class _TickChannels(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class _SessionFingerprintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     session_id: str
     ptrs_hash: str
-    module_hash: str | None = None
+    module_hash: str | None
 
 
 class _SessionConfigRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -190,61 +206,84 @@ class _SessionStartRow(
 class _OutsideRngHeadRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     state_before_u32: int
     state_after_u32: int
-    value_15: int | None = None
-    caller_static: str | None = None
+    value_15: int | None
+    caller_static: str | None
 
 
 class _OutsideRngBag(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    calls: int = 0
-    dropped: int = 0
-    caller_counts: dict[str, int] = msgspec.field(default_factory=dict)
-    head: list[_OutsideRngHeadRow] = msgspec.field(default_factory=list)
+    calls: int
+    dropped: int
+    caller_counts: dict[str, int]
+    head: list[_OutsideRngHeadRow]
 
 
 class _CaptureVec2Row(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    x: float | None = None
-    y: float | None = None
+    x: float
+    y: float
 
 
 class _CaptureTintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    r: float | None = None
-    g: float | None = None
-    b: float | None = None
-    a: float | None = None
+    r: float
+    g: float
+    b: float
+    a: float
 
 
 class _CapturePoolResidueRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     index: int
-    active: int | None = None
-    phase_seed: float | None = None
-    state_flag: int | None = None
-    collision_flag: int | None = None
-    collision_timer: float | None = None
-    lifecycle_stage: float | None = None
-    pos: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
-    vel: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
-    hp: float | None = None
-    max_hp: float | None = None
-    heading: float | None = None
-    target_heading: float | None = None
-    size: float | None = None
-    hit_flash_timer: float | None = None
-    tint: _CaptureTintRow = msgspec.field(default_factory=_CaptureTintRow)
-    force_target: int | None = None
-    target: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
-    contact_damage: float | None = None
-    move_speed: float | None = None
-    attack_cooldown: float | None = None
-    reward_value: float | None = None
-    type_id: int | None = None
-    target_player: int | None = None
-    link_index: int | None = None
-    target_offset: _CaptureVec2Row = msgspec.field(default_factory=_CaptureVec2Row)
-    orbit_angle: float | None = None
-    orbit_radius_u32: int | None = None
-    flags: int | None = None
-    ai_mode: int | None = None
-    anim_phase: float | None = None
+    active: int
+    phase_seed: float
+    state_flag: int
+    collision_flag: int
+    collision_timer: float
+    lifecycle_stage: float
+    pos: _CaptureVec2Row
+    vel: _CaptureVec2Row
+    hp: float
+    max_hp: float
+    heading: float
+    target_heading: float
+    size: float
+    hit_flash_timer: float
+    tint: _CaptureTintRow
+    force_target: int
+    target: _CaptureVec2Row
+    contact_damage: float
+    move_speed: float
+    attack_cooldown: float
+    reward_value: float
+    type_id: int
+    target_player: int
+    link_index: int
+    target_offset: _CaptureVec2Row
+    orbit_angle: float
+    orbit_radius_u32: int
+    flags: int
+    ai_mode: int
+    anim_phase: float
+
+
+class _CaptureGameStatusRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    quest_unlock_index: int
+    quest_unlock_index_full: int
+    weapon_usage_counts: list[int]
+    quest_play_counts: list[int]
+    mode_play_survival: int
+    mode_play_rush: int
+    mode_play_typo: int
+    mode_play_other: int
+    game_sequence_id: int
+    unknown_tail: list[int]
+
+
+class _RunSettingsRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    tick_rate: int
+    quest_fail_retry_count: int
+    hardcore: bool
+    detail_preset: int
+    violence_disabled: int
+    world_size: float
+    status: _CaptureGameStatusRow
 
 
 class _RunStartRow(
@@ -258,14 +297,117 @@ class _RunStartRow(
     mode_id: int
     seed: int
     player_count: int
-    reason: str = "run_start"
-    quest_stage_major: int = -1
-    quest_stage_minor: int = -1
-    seed_source: str = "unknown"
-    tick_index_global: int | None = None
-    rng_state_at_run_setup: int | None = None
-    rng_setup_caller_static: str | None = None
-    pool_residue: list[_CapturePoolResidueRow] | None = None
+    reason: str
+    quest_stage_major: int
+    quest_stage_minor: int
+    seed_source: str
+    global_tick_index: int
+    rng_state_at_run_setup: int
+    rng_setup_caller_static: str
+    pool_residue: list[_CapturePoolResidueRow]
+    settings: _RunSettingsRow
+
+
+class _CaptureCheckpointEventEvidence(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    hit_count: int
+    pickup_count: int
+    sfx_count: int
+    sfx_head: list[Any]
+    hit_head: list[Any]
+
+
+class _CaptureCheckpointEvidence(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    elapsed_ms: int
+    deaths: list[Any]
+    events: _CaptureCheckpointEventEvidence
+
+
+class _CaptureClockEvidence(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    time_played_ms_raw: int
+    quest_spawn_timeline_raw: int
+    summed_replay_clock_ms: int
+    canonical_elapsed_ms: int
+
+
+class _CaptureTickEvidence(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    event_counts: dict[str, int]
+    event_overflow: bool
+    event_heads: dict[str, list[Any]]
+    diagnostics: dict[str, Any]
+    input_queries: dict[str, Any]
+    input_player_keys: list[Any]
+    input_approx: list[Any]
+    before: dict[str, Any]
+    after: dict[str, Any]
+    samples: dict[str, Any]
+    frame_dt_ms: int | float | None
+    frame_dt_ms_i32: int | None
+    checkpoint_private: _CaptureCheckpointEvidence
+    clocks: _CaptureClockEvidence
+
+
+class FridaEvidenceHeader(
+    msgspec.Struct,
+    frozen=True,
+    forbid_unknown_fields=True,
+    tag_field="kind",
+    tag="header",
+):
+    evidence_format_version: int
+    capture_format_version: int
+    trace_format_version: int
+    trace_schema_version: int
+    session_id: str
+    ptrs_hash: str
+    module_hash: str | None
+    run_id: int
+    mode_id: int
+    quest_stage_major: int
+    quest_stage_minor: int
+    tick_count: int
+    raw_sha256: str
+    trace_sha256: str
+    replay_sha256: str
+
+
+class FridaEvidenceTick(
+    msgspec.Struct,
+    frozen=True,
+    forbid_unknown_fields=True,
+    tag_field="kind",
+    tag="tick",
+):
+    run_id: int
+    tick_index: int
+    global_tick_index: int
+    evidence: _CaptureTickEvidence
+
+
+class FridaEvidenceFooter(
+    msgspec.Struct,
+    frozen=True,
+    forbid_unknown_fields=True,
+    tag_field="kind",
+    tag="footer",
+):
+    tick_count: int
+    first_tick: int
+    last_tick: int
+    global_tick_first: int
+    global_tick_last: int
+
+
+type FridaEvidenceRow = FridaEvidenceHeader | FridaEvidenceTick | FridaEvidenceFooter
+
+
+class FridaEvidenceBundle(msgspec.Struct, frozen=True):
+    header: FridaEvidenceHeader
+    ticks: list[FridaEvidenceTick]
+    footer: FridaEvidenceFooter
+
+
+_EVIDENCE_ENCODER = msgspec.msgpack.Encoder()
+_EVIDENCE_DECODER = msgspec.msgpack.Decoder(type=FridaEvidenceRow)
 
 
 class _TickRow(
@@ -276,19 +418,19 @@ class _TickRow(
     tag="tick",
 ):
     run_id: int
+    tick_index: int
+    global_tick_index: int
     elapsed_ms: int
-    dt: float
     dt_ms_i32: int
     mode_id: int
     channels: _TickChannels
-    tick_index_global: int | None = None
-    quest_stage_major: int = -1
-    quest_stage_minor: int = -1
-    rng_calls: int | None = None
-    rng_outside_before: _OutsideRngBag | None = None
-    rng_state_enter_u32: int | None = None
-    rng_state_leave_u32: int | None = None
-    replay_inputs: list[tuple[float, float, float, float, int]] = msgspec.field(default_factory=list)
+    quest_stage_major: int
+    quest_stage_minor: int
+    rng_calls: int
+    rng_outside_before: _OutsideRngBag
+    rng_state_enter_u32: int
+    rng_state_leave_u32: int
+    evidence: _CaptureTickEvidence
 
 
 class _RunEndRow(
@@ -303,9 +445,9 @@ class _RunEndRow(
     quest_stage_major: int
     quest_stage_minor: int
     ticks_written: int
-    reason: str = "run_end"
-    tick_index_global: int | None = None
-    rng_outside_tail: _OutsideRngBag | None = None
+    reason: str
+    global_tick_index: int
+    rng_outside_tail: _OutsideRngBag
 
 
 class _ErrorRow(
@@ -317,7 +459,7 @@ class _ErrorRow(
 ):
     error: str
     run_id: int | None = None
-    tick_index_global: int | None = None
+    global_tick_index: int | None = None
 
 
 class _RunErrorRow(
@@ -332,7 +474,7 @@ class _RunErrorRow(
     mode_id: int | None = None
     quest_stage_major: int | None = None
     quest_stage_minor: int | None = None
-    tick_index_global: int | None = None
+    global_tick_index: int | None = None
 
 
 class _SessionEndRow(
@@ -356,6 +498,7 @@ class FinalizedTrace(msgspec.Struct, frozen=True):
     run_id: int
     out_path: Path
     replay_path: Path
+    evidence_path: Path
     tick_count: int
     mode_id: int
     quest_stage_major: int
@@ -376,14 +519,27 @@ class _OpenRun(msgspec.Struct):
     quest_stage_minor: int
     replay_seed: int
     replay_player_count: int
+    next_global_tick: int
     temp_path: Path
     stream: BinaryIO
+    evidence_temp_path: Path
+    evidence_stream: BinaryIO
     replay_seed_source: str = "unknown"
     tick_count: int = 0
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
     replay_dt: list[float] = msgspec.field(default_factory=list)
+    replay_prelude: list[list[ReplayPreludeOperation]] = msgspec.field(default_factory=list)
+    replay_postlude: list[list[ReplayPostludeOperation]] = msgspec.field(default_factory=list)
+    replay_commands: list[list[ReplayTickCommand]] = msgspec.field(default_factory=list)
     status: GameStatusData = msgspec.field(default_factory=GameStatusData)
+    tick_rate: int = 60
+    quest_fail_retry_count: int = 0
+    hardcore: bool = False
+    detail_preset: int = 5
+    violence_disabled: int = 0
+    world_size: float = 1024.0
+    evidence_count: int = 0
     global_tick_first: int | None = None
     global_tick_last: int | None = None
     rng_outside_calls: int = 0
@@ -395,7 +551,7 @@ class _OpenRun(msgspec.Struct):
     rng_unhooked_gap_neighbors: dict[str, int] = msgspec.field(default_factory=dict)
     rng_setup_draw_distance: int | None = None
     rng_prev_leave_state: int | None = None
-    pool_residue: tuple[ReplayCreatureSlotResidue, ...] | None = None
+    pool_residue: tuple[ReplayCreatureSlotResidue, ...] = ()
 
 
 def _fingerprint(path: Path) -> BuiltinObject:
@@ -431,7 +587,7 @@ def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
 
 
 def _residue_float(value: float | None, *, field: str) -> float:
-    if value is None:
+    if value is None or not math.isfinite(float(value)):
         raise FridaFinalizeError(f"{field} must be a finite float in the pool residue snapshot")
     return float(value)
 
@@ -451,8 +607,8 @@ def _residue_vec2(row: _CaptureVec2Row, *, field: str) -> ReplayVec2:
 
 def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tuple[ReplayCreatureSlotResidue, ...]:
     rows = run_start.pool_residue
-    if rows is None:
-        raise FridaFinalizeError(f"{field}.pool_residue is required for capture v15 run_start rows")
+    if not rows:
+        raise FridaFinalizeError(f"{field}.pool_residue must be non-empty")
     out: list[ReplayCreatureSlotResidue] = []
     for i, row in enumerate(rows):
         slot_field = f"{field}.pool_residue[{i}]"
@@ -493,7 +649,7 @@ def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tupl
                 link_index=_residue_int(row.link_index, field=f"{slot_field}.link_index"),
                 target_offset=_residue_vec2(row.target_offset, field=f"{slot_field}.target_offset"),
                 orbit_angle=_residue_float(row.orbit_angle, field=f"{slot_field}.orbit_angle"),
-                orbit_radius_u32=_residue_int(row.orbit_radius_u32, field=f"{slot_field}.orbit_radius_u32"),
+                orbit_radius_u32=_capture_u32(row.orbit_radius_u32, field=f"{slot_field}.orbit_radius_u32"),
                 flags=_residue_int(row.flags, field=f"{slot_field}.flags"),
                 ai_mode=_residue_int(row.ai_mode, field=f"{slot_field}.ai_mode"),
                 anim_phase=_residue_float(row.anim_phase, field=f"{slot_field}.anim_phase"),
@@ -517,12 +673,8 @@ def _validate_capture_completeness(session_row: _SessionStartRow, *, field: str)
         "max_events_per_tick": config.max_events_per_tick,
         "max_head_per_kind": config.max_head_per_kind,
     }
-    # v13 sessions predate unlimited defaults for the diagnostic streams; from
-    # v14 on they must be complete too (outside-tick rng head fed the per-frame
-    # burn forensics, creature delta ids feed lifecycle digests).
-    if int(session_row.capture_format_version) >= 14:
-        untrimmed_required["max_rng_outside_tick_head"] = config.max_rng_outside_tick_head
-        untrimmed_required["max_creature_delta_ids"] = config.max_creature_delta_ids
+    untrimmed_required["max_rng_outside_tick_head"] = config.max_rng_outside_tick_head
+    untrimmed_required["max_creature_delta_ids"] = config.max_creature_delta_ids
     trimmed = {name: int(value) for name, value in untrimmed_required.items() if int(value) >= 0}
     if trimmed:
         raise FridaFinalizeError(
@@ -534,33 +686,24 @@ def _validate_capture_completeness(session_row: _SessionStartRow, *, field: str)
             f"{field} capture used focus mode (focus_tick={int(config.focus_tick)}); "
             "parity captures must record every tick",
         )
-
-
-def _decode_clip_size_raw_bits(value: int, *, field: str) -> int:
-    """Decode a v13 `clip_size` sample into the integral clip size.
-
-    The native player struct stores clip_size as f32 and the v13 capture
-    script samples it with a 32-bit integer read, so the wire value is the
-    raw bit pattern (e.g. 1092616192 == 10.0f)."""
-
-    bits = int(value) & 0xFFFFFFFF
-    decoded = struct.unpack("<f", struct.pack("<I", bits))[0]
-    if not math.isfinite(decoded) or not (0.0 <= decoded <= 10000.0):
-        raise FridaFinalizeError(f"{field} is not a plausible f32 clip_size bit pattern: {int(value)}")
-    rounded = round(decoded)
-    if abs(decoded - rounded) > 1e-3:
-        raise FridaFinalizeError(f"{field} decodes to a non-integral clip_size: {decoded!r}")
-    return int(rounded)
-
-
-def _normalized_capture_player(player: SnapshotPlayer, *, clip_size_raw_bits: bool, field: str) -> SnapshotPlayer:
-    if not clip_size_raw_bits:
-        return player
-    weapon = msgspec.structs.replace(
-        player.weapon,
-        clip_size=_decode_clip_size_raw_bits(player.weapon.clip_size, field=f"{field}.weapon.clip_size"),
-    )
-    return msgspec.structs.replace(player, weapon=weapon)
+    if int(config.player_count_override) > 0:
+        raise FridaFinalizeError(
+            f"{field} capture used player_count_override={int(config.player_count_override)}; "
+            "parity captures must resolve the native player count",
+        )
+    disabled_required_hooks = [
+        name
+        for name, enabled in (
+            ("enable_input_hooks", config.enable_input_hooks),
+            ("enable_rng_hooks", config.enable_rng_hooks),
+            ("enable_rng_state_mirror", config.enable_rng_state_mirror),
+        )
+        if not bool(enabled)
+    ]
+    if disabled_required_hooks:
+        raise FridaFinalizeError(
+            f"{field} capture disabled required replay hooks {disabled_required_hooks!r}",
+        )
 
 
 def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
@@ -573,124 +716,173 @@ def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
 def _canonical_channels_payload(
     *,
     channels: _TickChannels,
-    local_tick: int,
-    clip_size_raw_bits: bool,
+    evidence: _CaptureTickEvidence,
     field: str,
-) -> tuple[ReplayCheckpoint, ReplayTickChannels]:
-    checkpoint = msgspec.structs.replace(channels.checkpoint, tick_index=int(local_tick))
+) -> ReplayTickChannels:
     rng_stream = [
         RngStreamRow(
             tick_call_index=int(row.tick_call_index),
             value_15=int(row.value_15),
             state_before_u32=int(row.state_before_u32),
             state_after_u32=int(row.state_after_u32),
-            caller=(
-                None
-                if row.caller_static is None
-                else _caller_from_capture(
-                    row.caller_static,
-                    field=f"{field}.rng_stream[{idx}].caller_static",
-                )
-            ),
+            caller=None if row.caller is None else _capture_u32(row.caller, field=f"{field}.rng_stream[{idx}].caller"),
         )
         for idx, row in enumerate(channels.rng_stream)
     ]
-    # Capture timing rows carry session-global tick/frame counters and a null
-    # mode_fn (the gpur_enter sample is built before any mode hook fires);
-    # rebase them to the run-local domain the rewrite recorder emits so the
-    # timing channel is comparable. `frame_dt_ms_f32` is recomputed from the
-    # i32 sample: the native global is an i32 and the v13 capture script reads
-    # it with a float read, leaving a denormal bit pattern on the wire.
-    timing_samples = [
-        msgspec.structs.replace(
-            row,
-            tick_index=int(local_tick),
-            gameplay_frame=(None if row.gameplay_frame is None else int(local_tick)),
-            mode_fn=(
-                "gameplay_update_and_render"
-                if row.mode_fn is None and row.phase == "gpur_enter"
-                else row.mode_fn
-            ),
-            frame_dt_ms_f32=(
-                row.frame_dt_ms_f32 if row.frame_dt_ms_i32 is None else float(int(row.frame_dt_ms_i32))
-            ),
+    gameplay = channels.sim_state.gameplay
+    checkpoint = channels.checkpoint
+    required_event_counts = ("projectile_find_hit", "projectile_find_owner_collision", "bonus_apply")
+    missing_event_counts = [name for name in required_event_counts if name not in evidence.event_counts]
+    if missing_event_counts:
+        raise FridaFinalizeError(f"{field} missing required event counts {missing_event_counts!r}")
+    raw_hit_count = int(evidence.event_counts["projectile_find_hit"])
+    owner_collision_count = int(evidence.event_counts["projectile_find_owner_collision"])
+    pickup_count = int(evidence.event_counts["bonus_apply"])
+    if raw_hit_count < 0 or owner_collision_count < 0 or pickup_count < 0:
+        raise FridaFinalizeError(f"{field} event counts must be non-negative")
+    if owner_collision_count > raw_hit_count:
+        raise FridaFinalizeError(
+            f"{field} projectile owner-collision count {owner_collision_count} "
+            f"exceeds raw hit count {raw_hit_count}",
         )
-        for row in channels.timing_samples
-    ]
-    normalized = _TickChannels(
-        checkpoint=checkpoint,
-        sim_state=channels.sim_state,
-        entity_samples=channels.entity_samples,
-        rng_stream=list(channels.rng_stream),
-        timing_samples=timing_samples,
+    checkpoint = msgspec.structs.replace(
+        checkpoint,
+        deaths=[],
+        events=msgspec.structs.replace(
+            checkpoint.events,
+            hit_count=raw_hit_count - owner_collision_count,
+            pickup_count=pickup_count,
+            # Native audio hooks cover a broader surface than the rewrite's
+            # gameplay event queue. Keep the native count in evidence, but do
+            # not compare unlike counters in the producer-neutral CDT channel.
+            sfx_count=0,
+            sfx_head=[],
+            hit_head=[],
+        ),
     )
-    gameplay = normalized.sim_state.gameplay
-    # Outside quest mode the native quest_stage globals are sticky menu
-    # residue (whatever quest the menu last selected), not run state; the
-    # canonical channel zeroes them like the rewrite does.
-    in_quest = int(gameplay.mode_id) == _GAME_MODE_QUESTS
-    return checkpoint, ReplayTickChannels(
-        checkpoint=normalized.checkpoint,
+    return ReplayTickChannels(
+        replay_step=channels.replay_step,
+        checkpoint=checkpoint,
         sim_state=SimStateSnapshot(
             gameplay=SnapshotGameplay(
                 mode_id=int(gameplay.mode_id),
-                quest_stage_major=(int(gameplay.quest_stage_major) if in_quest else 0),
-                quest_stage_minor=(int(gameplay.quest_stage_minor) if in_quest else 0),
+                quest_stage_major=int(gameplay.quest_stage_major),
+                quest_stage_minor=int(gameplay.quest_stage_minor),
                 perk_pending_count=int(gameplay.perk_pending_count),
                 perk_choices_dirty=bool(gameplay.perk_choices_dirty),
                 bonus_timers=gameplay.bonus_timers,
             ),
-            players=[
-                _normalized_capture_player(
-                    player,
-                    clip_size_raw_bits=clip_size_raw_bits,
-                    field=f"{field}.sim_state.players[{idx}]",
-                )
-                for idx, player in enumerate(normalized.sim_state.players)
-            ],
+            players=list(channels.sim_state.players),
         ),
-        entity_samples=normalized.entity_samples,
+        entity_samples=channels.entity_samples,
         rng_stream=rng_stream,
-        timing_samples=list(normalized.timing_samples),
+        timing_samples=list(channels.timing_samples),
     )
 
 
-def _caller_from_capture(value: str, *, field: str) -> int:
-    text = value
-    if not text.lower().startswith("0x"):
-        raise FridaFinalizeError(f"{field} must be a 0x-prefixed hex string")
+def _capture_u32(value: int, *, field: str) -> int:
+    out = int(value)
+    if not (0 <= out <= 0xFFFFFFFF):
+        raise FridaFinalizeError(f"{field} must be a uint32")
+    return out
+
+
+def _capture_status(row: _CaptureGameStatusRow, *, field: str) -> GameStatusData:
+    if len(row.weapon_usage_counts) != int(WEAPON_USAGE_COUNT):
+        raise FridaFinalizeError(
+            f"{field}.weapon_usage_counts must contain exactly {int(WEAPON_USAGE_COUNT)} entries",
+        )
+    if len(row.quest_play_counts) != int(QUEST_PLAY_COUNT):
+        raise FridaFinalizeError(
+            f"{field}.quest_play_counts must contain exactly {int(QUEST_PLAY_COUNT)} entries",
+        )
+    if len(row.unknown_tail) != int(UNKNOWN_TAIL_SIZE):
+        raise FridaFinalizeError(
+            f"{field}.unknown_tail must contain exactly {int(UNKNOWN_TAIL_SIZE)} bytes",
+        )
+    weapon_usage_counts = tuple(
+        _capture_u32(value, field=f"{field}.weapon_usage_counts[{index}]")
+        for index, value in enumerate(row.weapon_usage_counts)
+    )
+    quest_play_counts = tuple(
+        _capture_u32(value, field=f"{field}.quest_play_counts[{index}]")
+        for index, value in enumerate(row.quest_play_counts)
+    )
+    unknown_tail_values = []
+    for index, value in enumerate(row.unknown_tail):
+        byte = int(value)
+        if not (0 <= byte <= 0xFF):
+            raise FridaFinalizeError(f"{field}.unknown_tail[{index}] must be a byte")
+        unknown_tail_values.append(byte)
+    mode_play_survival = _capture_u32(row.mode_play_survival, field=f"{field}.mode_play_survival")
+    mode_play_rush = _capture_u32(row.mode_play_rush, field=f"{field}.mode_play_rush")
+    mode_play_typo = _capture_u32(row.mode_play_typo, field=f"{field}.mode_play_typo")
+    mode_play_other = _capture_u32(row.mode_play_other, field=f"{field}.mode_play_other")
+    game_sequence_id = _capture_u32(row.game_sequence_id, field=f"{field}.game_sequence_id")
+    return GameStatusData(
+        quest_unlock_index=int(row.quest_unlock_index),
+        quest_unlock_index_full=int(row.quest_unlock_index_full),
+        weapon_usage_counts=weapon_usage_counts,
+        quest_play_counts=quest_play_counts,
+        mode_play_survival=mode_play_survival,
+        mode_play_rush=mode_play_rush,
+        mode_play_typo=mode_play_typo,
+        mode_play_other=mode_play_other,
+        game_sequence_id=game_sequence_id,
+        unknown_tail=bytes(unknown_tail_values),
+    )
+
+
+def _validate_run_settings(settings: _RunSettingsRow, *, field: str) -> GameStatusData:
+    if int(settings.tick_rate) <= 0:
+        raise FridaFinalizeError(f"{field}.tick_rate must be positive")
+    if int(settings.quest_fail_retry_count) < 0:
+        raise FridaFinalizeError(f"{field}.quest_fail_retry_count must be non-negative")
+    if not (1 <= int(settings.detail_preset) <= 5):
+        raise FridaFinalizeError(f"{field}.detail_preset must be in 1..5")
+    if int(settings.violence_disabled) not in (0, 1):
+        raise FridaFinalizeError(f"{field}.violence_disabled must be 0 or 1")
+    if not math.isfinite(float(settings.world_size)) or float(settings.world_size) <= 0.0:
+        raise FridaFinalizeError(f"{field}.world_size must be finite and positive")
     try:
-        caller = int(text, 16)
-    except ValueError as exc:
-        raise FridaFinalizeError(f"{field} invalid hex value: {text!r}") from exc
-    if not (0 <= caller <= 0xFFFFFFFF):
-        raise FridaFinalizeError(f"{field} must decode to a uint32")
-    return caller
+        canonical_world_size = quantize_f32(float(settings.world_size))
+    except OverflowError as exc:
+        raise FridaFinalizeError(f"{field}.world_size must fit in f32") from exc
+    if canonical_world_size != float(settings.world_size):
+        raise FridaFinalizeError(f"{field}.world_size must be canonical f32")
+    return _capture_status(settings.status, field=f"{field}.status")
 
 
-def _replay_tick_inputs_from_row(
-    replay_inputs: list[tuple[float, float, float, float, int]],
+def _replay_tick_inputs_from_step(
+    replay_step: ReplayStepSnapshot,
     *,
     expected_players: int,
     field: str,
 ) -> list[list[float | int]]:
-    if len(replay_inputs) != int(expected_players):
+    if not math.isfinite(float(replay_step.dt)) or float(replay_step.dt) < 0.0:
+        raise FridaFinalizeError(f"{field}.dt must be finite and >= 0")
+    if float(replay_step.dt) != quantize_f32(float(replay_step.dt)):
+        raise FridaFinalizeError(f"{field}.dt must already be canonical f32")
+    if len(replay_step.inputs) != int(expected_players):
         raise FridaFinalizeError(
-            f"{field} must contain {int(expected_players)} player rows, got {len(replay_inputs)}",
-    )
+            f"{field}.inputs must contain {int(expected_players)} player rows, got {len(replay_step.inputs)}",
+        )
     out: list[list[float | int]] = []
-    for player_index, (move_x, move_y, aim_x, aim_y, flags) in enumerate(replay_inputs):
-        player_field = f"{field}[{player_index}]"
+    for player_index, sample in enumerate(replay_step.inputs):
+        player_field = f"{field}.inputs[{player_index}]"
         scalars = (
-            ("move_x", move_x),
-            ("move_y", move_y),
-            ("aim_x", aim_x),
-            ("aim_y", aim_y),
+            ("move_x", sample.move_x),
+            ("move_y", sample.move_y),
+            ("aim_x", sample.aim_x),
+            ("aim_y", sample.aim_y),
         )
         for scalar_name, scalar_value in scalars:
             if not math.isfinite(float(scalar_value)):
                 raise FridaFinalizeError(f"{player_field}.{scalar_name} must be finite")
-        out.append([float(move_x), float(move_y), float(aim_x), float(aim_y), int(flags)])
+            if float(scalar_value) != quantize_f32(float(scalar_value)):
+                raise FridaFinalizeError(f"{player_field}.{scalar_name} must already be canonical f32")
+        flags = _capture_u32(sample.flags, field=f"{player_field}.flags")
+        out.append([float(sample.move_x), float(sample.move_y), float(sample.aim_x), float(sample.aim_y), flags])
     return out
 
 
@@ -698,8 +890,8 @@ def _validate_tick_channels(
     *,
     channels: _TickChannels,
     expected_players: int,
+    tick_index: int,
     elapsed_ms: int,
-    dt: float,
     dt_ms_i32: int,
     mode_id: int,
     quest_stage_major: int,
@@ -713,6 +905,11 @@ def _validate_tick_channels(
         raise FridaFinalizeError(
             f"{field}.checkpoint.players length {len(checkpoint_players)} "
             f"does not match run_start.player_count {int(expected_players)}",
+        )
+    if int(channels.checkpoint.tick_index) != int(tick_index):
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.tick_index={int(channels.checkpoint.tick_index)} "
+            f"does not match tick.tick_index {int(tick_index)}",
         )
     if int(channels.checkpoint.elapsed_ms) != int(elapsed_ms):
         raise FridaFinalizeError(
@@ -728,11 +925,38 @@ def _validate_tick_channels(
             f"{field}.sim_state.players length {len(sim_players)} "
             f"does not match checkpoint.players length {len(checkpoint_players)}",
         )
+    replay_step = channels.replay_step
+    _replay_tick_inputs_from_step(
+        replay_step,
+        expected_players=int(expected_players),
+        field=f"{field}.replay_step",
+    )
+    if replay_step.commands:
+        raise FridaFinalizeError(f"{field}.replay_step.commands must be empty for supported classic modes")
+    for player_index, player in enumerate(sim_players):
+        if int(player.index) != int(player_index):
+            raise FridaFinalizeError(
+                f"{field}.sim_state.players[{player_index}].index={int(player.index)} does not match slot",
+            )
+        scalars = (
+            ("pos.x", player.pos.x),
+            ("pos.y", player.pos.y),
+            ("heading", player.heading),
+            ("move_speed", player.move_speed),
+            ("move_phase", player.move_phase),
+            ("aim.x", player.aim.x),
+            ("aim.y", player.aim.y),
+            ("aim_heading", player.aim_heading),
+        )
+        for scalar_name, scalar_value in scalars:
+            if not math.isfinite(float(scalar_value)):
+                raise FridaFinalizeError(
+                    f"{field}.sim_state.players[{player_index}].{scalar_name} must be finite",
+                )
     gameplay = channels.sim_state.gameplay
     if int(gameplay.mode_id) != int(mode_id):
         raise FridaFinalizeError(
-            f"{field}.sim_state.gameplay.mode_id={int(gameplay.mode_id)} "
-            f"does not match tick.mode_id {int(mode_id)}",
+            f"{field}.sim_state.gameplay.mode_id={int(gameplay.mode_id)} does not match tick.mode_id {int(mode_id)}",
         )
     if int(gameplay.quest_stage_major) != int(quest_stage_major):
         raise FridaFinalizeError(
@@ -752,6 +976,16 @@ def _validate_tick_channels(
             raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].phase must be non-empty")
         if not str(sample.write_kind):
             raise FridaFinalizeError(f"{field}.timing_samples[{sample_index}].write_kind must be non-empty")
+        if int(sample.tick_index) != int(tick_index):
+            raise FridaFinalizeError(
+                f"{field}.timing_samples[{sample_index}].tick_index={int(sample.tick_index)} "
+                f"does not match tick.tick_index {int(tick_index)}",
+            )
+        if sample.gameplay_frame is not None and int(sample.gameplay_frame) != int(tick_index):
+            raise FridaFinalizeError(
+                f"{field}.timing_samples[{sample_index}].gameplay_frame={int(sample.gameplay_frame)} "
+                f"does not match tick.tick_index {int(tick_index)}",
+            )
     gpur_enter = next((sample for sample in timing_samples if str(sample.phase) == "gpur_enter"), None)
     if gpur_enter is None:
         raise FridaFinalizeError(f"{field}.timing_samples must include phase `gpur_enter`")
@@ -761,16 +995,22 @@ def _validate_tick_channels(
         raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be present")
     if int(gpur_enter.frame_dt_ms_i32) < 0:
         raise FridaFinalizeError(f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32 must be >= 0")
-    if float(gpur_enter.frame_dt_f32) != float(dt):
+    if float(gpur_enter.frame_dt_f32) != float(replay_step.dt):
         raise FridaFinalizeError(
             f"{field}.timing_samples.gpur_enter.frame_dt_f32={float(gpur_enter.frame_dt_f32)} "
-            f"does not match tick.dt {float(dt)}",
+            f"does not match replay_step.dt {float(replay_step.dt)}",
         )
     if int(gpur_enter.frame_dt_ms_i32) != int(dt_ms_i32):
         raise FridaFinalizeError(
             f"{field}.timing_samples.gpur_enter.frame_dt_ms_i32={int(gpur_enter.frame_dt_ms_i32)} "
             f"does not match tick.dt_ms_i32 {int(dt_ms_i32)}",
         )
+    if gpur_enter.mode_fn != "gameplay_update_and_render":
+        raise FridaFinalizeError(
+            f"{field}.timing_samples.gpur_enter.mode_fn must be 'gameplay_update_and_render'",
+        )
+
+
 def _tick_iter_from_spool(path: Path):
     with Path(path).open("rb") as handle:
         while True:
@@ -791,6 +1031,174 @@ def _tick_iter_from_spool(path: Path):
                 raise FridaFinalizeError(f"invalid tick spool payload in {path}") from exc
 
 
+def _write_framed_payload(stream: BinaryIO, payload: bytes, *, field: str) -> None:
+    frame_len = len(payload)
+    if frame_len <= 0 or frame_len > 0xFFFFFFFF:
+        raise FridaFinalizeError(f"{field} has invalid frame length {frame_len}")
+    stream.write(frame_len.to_bytes(_EVIDENCE_FRAME_LEN_BYTES, "little", signed=False))
+    stream.write(payload)
+
+
+def _read_exact(stream: _BinaryReader, size: int, *, field: str) -> bytes:
+    chunks: list[bytes] = []
+    remaining = int(size)
+    while remaining > 0:
+        chunk = stream.read(remaining)
+        if not chunk:
+            raise FridaFinalizeError(f"truncated {field}")
+        chunks.append(bytes(chunk))
+        remaining -= len(chunk)
+    return b"".join(chunks)
+
+
+def _iter_framed_payloads(stream: _BinaryReader, *, field: str):
+    while True:
+        len_raw = stream.read(_EVIDENCE_FRAME_LEN_BYTES)
+        if not len_raw:
+            return
+        if len(len_raw) != _EVIDENCE_FRAME_LEN_BYTES:
+            raise FridaFinalizeError(f"truncated {field} frame length")
+        frame_len = int.from_bytes(len_raw, "little", signed=False)
+        if frame_len <= 0:
+            raise FridaFinalizeError(f"invalid {field} frame length {frame_len}")
+        yield _read_exact(stream, frame_len, field=f"{field} frame payload")
+
+
+def _write_run_evidence(
+    path: Path,
+    *,
+    raw_fingerprint: BuiltinObject,
+    session_start: _SessionStartRow,
+    run: _OpenRun,
+    trace_sha256: str,
+    replay_sha256: str,
+) -> None:
+    if not run.evidence_stream.closed:
+        run.evidence_stream.flush()
+        run.evidence_stream.close()
+    header = FridaEvidenceHeader(
+        evidence_format_version=int(FRIDA_EVIDENCE_FORMAT_VERSION),
+        capture_format_version=int(FRIDA_CAPTURE_FORMAT_VERSION),
+        trace_format_version=int(TRACE_FORMAT_VERSION),
+        trace_schema_version=int(TRACE_SCHEMA_VERSION),
+        session_id=str(session_start.session_id),
+        ptrs_hash=str(session_start.session_fingerprint.ptrs_hash),
+        module_hash=session_start.session_fingerprint.module_hash,
+        run_id=int(run.run_id),
+        mode_id=int(run.mode_id),
+        quest_stage_major=int(run.quest_stage_major),
+        quest_stage_minor=int(run.quest_stage_minor),
+        tick_count=int(run.tick_count),
+        raw_sha256=_builtin_text(raw_fingerprint, "sha256"),
+        trace_sha256=str(trace_sha256),
+        replay_sha256=str(replay_sha256),
+    )
+    if run.global_tick_first is None or run.global_tick_last is None:
+        raise FridaFinalizeError(f"run {run.run_id}: evidence footer requires global tick bounds")
+    footer = FridaEvidenceFooter(
+        tick_count=int(run.tick_count),
+        first_tick=0,
+        last_tick=int(run.tick_count) - 1,
+        global_tick_first=int(run.global_tick_first),
+        global_tick_last=int(run.global_tick_last),
+    )
+    with Path(path).open("wb") as raw_handle:
+        with zstd.ZstdCompressor(level=_EVIDENCE_ZSTD_LEVEL).stream_writer(
+            raw_handle,
+            closefd=False,
+        ) as compressed:
+            _write_framed_payload(
+                compressed,
+                _EVIDENCE_ENCODER.encode(header),
+                field="evidence header",
+            )
+            copied = 0
+            with run.evidence_temp_path.open("rb") as spool:
+                for payload in _iter_framed_payloads(spool, field="evidence spool"):
+                    try:
+                        row = _EVIDENCE_DECODER.decode(payload)
+                    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+                        raise FridaFinalizeError(
+                            f"invalid evidence spool payload in {run.evidence_temp_path}",
+                        ) from exc
+                    if not isinstance(row, FridaEvidenceTick):
+                        raise FridaFinalizeError("evidence spool may contain only tick rows")
+                    _write_framed_payload(compressed, payload, field="evidence tick")
+                    copied += 1
+            if copied != int(run.tick_count) or copied != int(run.evidence_count):
+                raise FridaFinalizeError(
+                    f"run {run.run_id}: evidence count {copied} does not match tick_count {run.tick_count}",
+                )
+            _write_framed_payload(
+                compressed,
+                _EVIDENCE_ENCODER.encode(footer),
+                field="evidence footer",
+            )
+
+
+def load_frida_evidence_file(path: Path) -> FridaEvidenceBundle:
+    rows: list[FridaEvidenceRow] = []
+    try:
+        with (
+            Path(path).open("rb") as compressed_handle,
+            SpooledTemporaryFile(max_size=_EVIDENCE_DECODE_SPOOL_MAX_MEMORY, mode="w+b") as decompressed,
+        ):
+            decompressor = zstd.ZstdDecompressor().decompressobj()
+            while chunk := compressed_handle.read(_EVIDENCE_COMPRESSED_READ_BYTES):
+                decompressed.write(decompressor.decompress(chunk))
+                if decompressor.unused_data or decompressor.unconsumed_tail:
+                    raise FridaFinalizeError("Frida evidence sidecar has trailing bytes or extra zstd frames")
+                if decompressor.eof:
+                    if compressed_handle.read(1):
+                        raise FridaFinalizeError("Frida evidence sidecar has trailing bytes or extra zstd frames")
+                    break
+            if not decompressor.eof:
+                raise FridaFinalizeError("truncated Frida evidence zstd frame")
+            decompressed.write(decompressor.flush())
+            decompressed.seek(0)
+            for payload in _iter_framed_payloads(decompressed, field="evidence"):
+                rows.append(_EVIDENCE_DECODER.decode(payload))
+    except (OSError, zstd.ZstdError, msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise FridaFinalizeError(f"invalid Frida evidence sidecar: {path}") from exc
+    if len(rows) < 2 or not isinstance(rows[0], FridaEvidenceHeader) or not isinstance(rows[-1], FridaEvidenceFooter):
+        raise FridaFinalizeError("Frida evidence sidecar must contain one header and footer")
+    header = rows[0]
+    footer = rows[-1]
+    ticks = rows[1:-1]
+    if not all(isinstance(row, FridaEvidenceTick) for row in ticks):
+        raise FridaFinalizeError("Frida evidence sidecar contains an out-of-order row")
+    typed_ticks = [row for row in ticks if isinstance(row, FridaEvidenceTick)]
+    if int(header.evidence_format_version) != int(FRIDA_EVIDENCE_FORMAT_VERSION):
+        raise FridaFinalizeError(
+            f"unsupported Frida evidence version: {int(header.evidence_format_version)}",
+        )
+    if int(header.capture_format_version) != int(FRIDA_CAPTURE_FORMAT_VERSION):
+        raise FridaFinalizeError(
+            f"unsupported Frida capture version in evidence: {int(header.capture_format_version)}",
+        )
+    if int(header.trace_format_version) != int(TRACE_FORMAT_VERSION):
+        raise FridaFinalizeError("Frida evidence trace format version does not match the current CDT format")
+    if int(header.trace_schema_version) != int(TRACE_SCHEMA_VERSION):
+        raise FridaFinalizeError("Frida evidence trace schema version does not match the current CDT schema")
+    if int(header.tick_count) != len(typed_ticks) or int(footer.tick_count) != len(typed_ticks):
+        raise FridaFinalizeError("Frida evidence tick count does not match header/footer")
+    expected_ticks = list(range(len(typed_ticks)))
+    actual_ticks = [int(row.tick_index) for row in typed_ticks]
+    if actual_ticks != expected_ticks:
+        raise FridaFinalizeError("Frida evidence tick indices must be contiguous from zero")
+    if typed_ticks:
+        if any(int(row.run_id) != int(header.run_id) for row in typed_ticks):
+            raise FridaFinalizeError("Frida evidence tick run_id does not match header")
+        if int(footer.first_tick) != actual_ticks[0] or int(footer.last_tick) != actual_ticks[-1]:
+            raise FridaFinalizeError("Frida evidence footer tick bounds do not match rows")
+        globals_actual = [int(row.global_tick_index) for row in typed_ticks]
+        if globals_actual != list(range(globals_actual[0], globals_actual[0] + len(globals_actual))):
+            raise FridaFinalizeError("Frida evidence global tick indices must be contiguous")
+        if int(footer.global_tick_first) != globals_actual[0] or int(footer.global_tick_last) != globals_actual[-1]:
+            raise FridaFinalizeError("Frida evidence footer global tick bounds do not match rows")
+    return FridaEvidenceBundle(header=header, ticks=typed_ticks, footer=footer)
+
+
 def _run_output_path(
     *,
     raw_path: Path,
@@ -801,11 +1209,7 @@ def _run_output_path(
     counters: dict[str, int],
 ) -> Path:
     base = Path(raw_path).stem
-    is_quest_run = (
-        int(mode_id) == int(_GAME_MODE_QUESTS)
-        and int(quest_stage_major) > 0
-        and int(quest_stage_minor) > 0
-    )
+    is_quest_run = int(mode_id) == int(_GAME_MODE_QUESTS) and int(quest_stage_major) > 0 and int(quest_stage_minor) > 0
     if is_quest_run:
         key = f"quest_{int(quest_stage_major)}_{int(quest_stage_minor)}"
         idx = counters.get(key, 0) + 1
@@ -826,11 +1230,18 @@ def _build_meta(
     session_start: _SessionStartRow,
     run: _OpenRun,
     tick_count: int,
+    replay_sha256: str,
+    replay_tick_rate: int,
 ) -> TraceMeta:
     producer_platform = str(session_start.platform)
     producer_arch = str(session_start.arch)
     producer_impl_version = str(session_start.script_version)
     tick_end = int(tick_count) - 1
+    quest_level = (
+        f"{int(run.quest_stage_major)}.{int(run.quest_stage_minor)}"
+        if int(run.mode_id) == int(_GAME_MODE_QUESTS)
+        else None
+    )
     return TraceMeta(
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=int(TRACE_SCHEMA_VERSION),
@@ -846,11 +1257,16 @@ def _build_meta(
             sha256=_builtin_text(raw_fingerprint, "sha256"),
             size=_builtin_int(raw_fingerprint, "size"),
             mtime_ns=_builtin_int(raw_fingerprint, "mtime_ns"),
+            kind="capture",
+            replay_sha256=str(replay_sha256),
+            tick_rate=int(replay_tick_rate),
             mode_id=int(run.mode_id),
             seed=int(run.replay_seed),
+            player_count=int(run.replay_player_count),
+            quest_level=quest_level,
             run_id=int(run.run_id),
-            quest_stage_major=int(run.quest_stage_major),
-            quest_stage_minor=int(run.quest_stage_minor),
+            quest_stage_major=None if quest_level is None else int(run.quest_stage_major),
+            quest_stage_minor=None if quest_level is None else int(run.quest_stage_minor),
             global_tick_first=None if run.global_tick_first is None else int(run.global_tick_first),
             global_tick_last=None if run.global_tick_last is None else int(run.global_tick_last),
             run_start_seed_source=str(run.replay_seed_source),
@@ -885,22 +1301,12 @@ def _account_tick_rng_evidence(
     callers bracket each gap so the report points at what the port misses.
     """
     bag = tick_row.rng_outside_before
-    if (
-        tick_row.rng_calls is None
-        or bag is None
-        or tick_row.rng_state_enter_u32 is None
-        or tick_row.rng_state_leave_u32 is None
-    ):
-        raise FridaFinalizeError(
-            f"{field} must carry rng accounting "
-            "(rng_calls, rng_outside_before, rng_state_enter_u32, rng_state_leave_u32)",
-        )
     if int(tick_row.rng_calls) != len(rng_stream):
         raise FridaFinalizeError(
             f"{field}.rng_calls={int(tick_row.rng_calls)} does not match rng_stream length {len(rng_stream)}",
         )
-    enter = int(tick_row.rng_state_enter_u32)
-    leave = int(tick_row.rng_state_leave_u32)
+    enter = _capture_u32(tick_row.rng_state_enter_u32, field=f"{field}.rng_state_enter_u32")
+    leave = _capture_u32(tick_row.rng_state_leave_u32, field=f"{field}.rng_state_leave_u32")
     _merge_outside_rng_bag(run, bag)
 
     if run.rng_prev_leave_state is None:
@@ -935,9 +1341,7 @@ def _account_tick_rng_evidence(
         run.rng_unhooked_unresolved += 1
     elif tail_gap > 0:
         run.rng_unhooked_in_tick += tail_gap
-        run.rng_unhooked_gap_neighbors["tick_tail"] = (
-            run.rng_unhooked_gap_neighbors.get("tick_tail", 0) + tail_gap
-        )
+        run.rng_unhooked_gap_neighbors["tick_tail"] = run.rng_unhooked_gap_neighbors.get("tick_tail", 0) + tail_gap
     run.rng_prev_leave_state = leave
 
 
@@ -972,8 +1376,12 @@ def _write_run_trace(
     run: _OpenRun,
     counters: dict[str, int],
 ) -> FinalizedTrace:
-    run.stream.flush()
-    run.stream.close()
+    if not run.stream.closed:
+        run.stream.flush()
+        run.stream.close()
+    if not run.evidence_stream.closed:
+        run.evidence_stream.flush()
+        run.evidence_stream.close()
     if int(run.replay_player_count) <= 0:
         raise FridaFinalizeError(f"run {run.run_id}: invalid replay player_count={run.replay_player_count}")
     if len(run.replay_inputs) != int(run.tick_count):
@@ -982,7 +1390,21 @@ def _write_run_trace(
         )
     if len(run.replay_dt) != int(run.tick_count):
         raise FridaFinalizeError(
-            f"run {run.run_id}: replay_dt count {len(run.replay_dt)} "
+            f"run {run.run_id}: replay_dt count {len(run.replay_dt)} does not match tick_count {run.tick_count}",
+        )
+    if len(run.replay_prelude) != int(run.tick_count):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: replay_prelude count {len(run.replay_prelude)} "
+            f"does not match tick_count {run.tick_count}",
+        )
+    if len(run.replay_postlude) != int(run.tick_count):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: replay_postlude count {len(run.replay_postlude)} "
+            f"does not match tick_count {run.tick_count}",
+        )
+    if len(run.replay_commands) != int(run.tick_count):
+        raise FridaFinalizeError(
+            f"run {run.run_id}: replay_commands count {len(run.replay_commands)} "
             f"does not match tick_count {run.tick_count}",
         )
     out_path = _run_output_path(
@@ -993,48 +1415,39 @@ def _write_run_trace(
         quest_stage_minor=int(run.quest_stage_minor),
         counters=counters,
     )
-    meta = _build_meta(
-        raw_fingerprint=raw_fingerprint,
-        session_start=session_start,
-        run=run,
-        tick_count=int(run.tick_count),
-    )
-    summary = write_trace_iter(
-        out_path,
-        meta=meta,
-        ticks=_tick_iter_from_spool(run.temp_path),
-        chunk_ticks=_TRACE_CHUNK_TICKS,
-    )
     replay_path = Path(out_path).with_suffix(".crd")
+    evidence_path = Path(out_path).with_suffix(".evidence.msgpack.zst")
     is_quest_run = (
-        int(run.mode_id) == int(_GAME_MODE_QUESTS)
-        and int(run.quest_stage_major) > 0
-        and int(run.quest_stage_minor) > 0
+        int(run.mode_id) == int(_GAME_MODE_QUESTS) and int(run.quest_stage_major) > 0 and int(run.quest_stage_minor) > 0
     )
     settings = session_settings_for_lockstep(
         mode_id=GameMode(int(run.mode_id)),
         player_count=int(run.replay_player_count),
-        quest_level=(
-            QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor))
-            if is_quest_run
-            else None
-        ),
-        preserve_bugs=False,
+        quest_level=(QuestLevel(int(run.quest_stage_major), int(run.quest_stage_minor)) if is_quest_run else None),
+        preserve_bugs=True,
+        tick_rate=int(run.tick_rate),
     )
     replay_header = replay_header_from_session_settings(
         settings,
         seed=int(run.replay_seed),
+        quest_fail_retry_count=int(run.quest_fail_retry_count),
+        hardcore=bool(run.hardcore),
+        detail_preset=int(run.detail_preset),
+        violence_disabled=int(run.violence_disabled),
+        world_size=float(run.world_size),
         status=run.status,
     )
-    if run.pool_residue is not None:
-        replay_header = msgspec.structs.replace(
-            replay_header,
-            initial_creature_pool=run.pool_residue,
-        )
+    replay_header = msgspec.structs.replace(
+        replay_header,
+        initial_creature_pool=run.pool_residue,
+    )
     replay_ticks = [
         ReplayTick(
             inputs=run.replay_inputs[i],
             dt=run.replay_dt[i],
+            prelude=run.replay_prelude[i],
+            postlude=run.replay_postlude[i],
+            commands=run.replay_commands[i],
         )
         for i in range(run.tick_count)
     ]
@@ -1042,17 +1455,122 @@ def _write_run_trace(
         replay_path,
         Replay(header=replay_header, ticks=replay_ticks),
     )
+    replay_sha256 = hashlib.sha256(replay_path.read_bytes()).hexdigest()
+    meta = _build_meta(
+        raw_fingerprint=raw_fingerprint,
+        session_start=session_start,
+        run=run,
+        tick_count=int(run.tick_count),
+        replay_sha256=replay_sha256,
+        replay_tick_rate=int(replay_header.tick_rate),
+    )
+    summary = write_trace_iter(
+        out_path,
+        meta=meta,
+        ticks=_tick_iter_from_spool(run.temp_path),
+        chunk_ticks=_TRACE_CHUNK_TICKS,
+    )
     _write_rng_evidence_report(out_path, run)
+    trace_sha256 = hashlib.sha256(out_path.read_bytes()).hexdigest()
+    _write_run_evidence(
+        evidence_path,
+        raw_fingerprint=raw_fingerprint,
+        session_start=session_start,
+        run=run,
+        trace_sha256=trace_sha256,
+        replay_sha256=replay_sha256,
+    )
     return FinalizedTrace(
         run_id=int(run.run_id),
         out_path=Path(out_path),
         replay_path=Path(replay_path),
+        evidence_path=Path(evidence_path),
         tick_count=int(run.tick_count),
         mode_id=int(run.mode_id),
         quest_stage_major=int(run.quest_stage_major),
         quest_stage_minor=int(run.quest_stage_minor),
         summary=summary,
     )
+
+
+def _staged_artifact_pairs(
+    staged_traces: list[FinalizedTrace],
+    *,
+    output_root: Path,
+) -> list[tuple[Path, Path]]:
+    pairs: list[tuple[Path, Path]] = []
+    for trace in staged_traces:
+        staged_rng_path = trace.out_path.with_suffix(".rng_evidence.json")
+        for staged_path in (
+            trace.out_path,
+            trace.replay_path,
+            staged_rng_path,
+            trace.evidence_path,
+        ):
+            pairs.append((staged_path, Path(output_root) / staged_path.name))
+    destinations = [destination for _, destination in pairs]
+    if len(set(destinations)) != len(destinations):
+        raise FridaFinalizeError("finalize staging produced duplicate artifact destinations")
+    missing = [str(staged) for staged, _ in pairs if not staged.is_file()]
+    if missing:
+        raise FridaFinalizeError(f"finalize staging omitted artifacts: {missing!r}")
+    invalid_destinations = [str(path) for path in destinations if path.exists() and not path.is_file()]
+    if invalid_destinations:
+        raise FridaFinalizeError(
+            f"finalize destinations must be files when they already exist: {invalid_destinations!r}",
+        )
+    return pairs
+
+
+def _publish_staged_traces(
+    staged_traces: list[FinalizedTrace],
+    *,
+    output_root: Path,
+    temp_root: Path,
+) -> list[FinalizedTrace]:
+    """Publish the complete artifact set, restoring prior files on failure."""
+
+    pairs = _staged_artifact_pairs(staged_traces, output_root=output_root)
+    backup_root = Path(temp_root) / "publish-backups"
+    backup_root.mkdir()
+    backups: list[tuple[Path, Path]] = []
+    committed: list[Path] = []
+    try:
+        for index, (_, destination) in enumerate(pairs):
+            if not destination.exists():
+                continue
+            backup = backup_root / f"{index:04d}-{destination.name}"
+            destination.replace(backup)
+            backups.append((backup, destination))
+        for staged, destination in pairs:
+            staged.replace(destination)
+            committed.append(destination)
+    except Exception as exc:
+        rollback_errors: list[str] = []
+        for destination in reversed(committed):
+            try:
+                destination.unlink(missing_ok=True)
+            except Exception as rollback_exc:
+                rollback_errors.append(f"remove {destination}: {rollback_exc}")
+        for backup, destination in reversed(backups):
+            try:
+                backup.replace(destination)
+            except Exception as rollback_exc:
+                rollback_errors.append(f"restore {destination}: {rollback_exc}")
+        detail = ""
+        if rollback_errors:
+            detail = f"; rollback errors: {rollback_errors!r}"
+        raise FridaFinalizeError(f"failed to publish finalized artifact set{detail}") from exc
+
+    return [
+        msgspec.structs.replace(
+            staged,
+            out_path=Path(output_root) / staged.out_path.name,
+            replay_path=Path(output_root) / staged.replay_path.name,
+            evidence_path=Path(output_root) / staged.evidence_path.name,
+        )
+        for staged in staged_traces
+    ]
 
 
 def finalize_frida_jsonl_to_traces(
@@ -1073,9 +1591,11 @@ def finalize_frida_jsonl_to_traces(
     session_start: _SessionStartRow | None = None
     session_ended = False
     active_run: _OpenRun | None = None
+    closed_runs: list[_OpenRun] = []
+    seen_run_ids: set[int] = set()
     captured_tick_count = 0
 
-    temp_dir_obj = TemporaryDirectory(prefix="crimson-frida-finalize-")
+    temp_dir_obj = TemporaryDirectory(prefix=".crimson-frida-finalize-", dir=output_root)
     temp_root = Path(temp_dir_obj.name)
     try:
         with raw_path.open("rb") as handle:
@@ -1084,16 +1604,18 @@ def finalize_frida_jsonl_to_traces(
                 if not line:
                     continue
                 row = _decode_capture_row(line, field=f"{raw_path}.lines[{line_no}]")
+                if session_ended:
+                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] row after session_end")
 
                 match row:
                     case _SessionStartRow() as session_row:
                         if session_start is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] duplicate session_start")
-                        if int(session_row.capture_format_version) not in _SUPPORTED_CAPTURE_FORMAT_VERSIONS:
+                        if int(session_row.capture_format_version) != int(FRIDA_CAPTURE_FORMAT_VERSION):
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}] unsupported capture_format_version="
                                 f"{int(session_row.capture_format_version)}; "
-                                f"expected one of {sorted(_SUPPORTED_CAPTURE_FORMAT_VERSIONS)}",
+                                f"expected {FRIDA_CAPTURE_FORMAT_VERSION}",
                             )
                         if not str(session_row.session_id):
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].session_id must be non-empty")
@@ -1133,28 +1655,42 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}].seed_source must be one of {sorted(_SEED_SOURCES)!r}",
                             )
                         mode_id = int(run_start.mode_id)
+                        if mode_id not in _SUPPORTED_CAPTURE_MODES:
+                            supported = sorted(_SUPPORTED_CAPTURE_MODES)
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] unsupported mode_id={mode_id}; "
+                                f"Frida replay capture supports only {supported!r}",
+                            )
+                        if int(run_start.run_id) in seen_run_ids:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] duplicate run_id={int(run_start.run_id)}",
+                            )
+                        seen_run_ids.add(int(run_start.run_id))
                         if int(run_start.seed) < 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].seed must be >= 0")
                         if int(run_start.player_count) <= 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
+                        if int(run_start.global_tick_index) < 0:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].global_tick_index must be >= 0",
+                            )
                         # The session srand seed is stale by run start (menus and
                         # earlier runs already consumed draws); the rand state
                         # latched at run-setup entry is the replayable seed.
-                        if run_start.rng_state_at_run_setup is None:
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].rng_state_at_run_setup is required for replay seeding",
-                            )
                         if not (0 <= int(run_start.rng_state_at_run_setup) <= 0xFFFFFFFF):
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].rng_state_at_run_setup must be u32",
                             )
-                        pool_residue: tuple[ReplayCreatureSlotResidue, ...] | None = None
-                        if int(session_start.capture_format_version) >= _POOL_RESIDUE_CAPTURE_VERSION:
-                            pool_residue = _pool_residue_from_run_start(
-                                run_start,
-                                field=f"{raw_path}.lines[{line_no}]",
-                            )
+                        pool_residue = _pool_residue_from_run_start(
+                            run_start,
+                            field=f"{raw_path}.lines[{line_no}]",
+                        )
+                        status = _validate_run_settings(
+                            run_start.settings,
+                            field=f"{raw_path}.lines[{line_no}].settings",
+                        )
                         spool_path = temp_root / f"run_{int(run_start.run_id)}.ticks"
+                        evidence_spool_path = temp_root / f"run_{int(run_start.run_id)}.evidence"
                         active_run = _OpenRun(
                             run_id=int(run_start.run_id),
                             mode_id=mode_id,
@@ -1162,9 +1698,19 @@ def finalize_frida_jsonl_to_traces(
                             quest_stage_minor=int(run_start.quest_stage_minor),
                             replay_seed=int(run_start.rng_state_at_run_setup),
                             replay_player_count=int(run_start.player_count),
+                            next_global_tick=int(run_start.global_tick_index),
                             temp_path=spool_path,
                             stream=spool_path.open("wb"),
+                            evidence_temp_path=evidence_spool_path,
+                            evidence_stream=evidence_spool_path.open("wb"),
                             replay_seed_source=_RUN_SETUP_SEED_SOURCE,
+                            status=status,
+                            tick_rate=int(run_start.settings.tick_rate),
+                            quest_fail_retry_count=int(run_start.settings.quest_fail_retry_count),
+                            hardcore=bool(run_start.settings.hardcore),
+                            detail_preset=int(run_start.settings.detail_preset),
+                            violence_disabled=int(run_start.settings.violence_disabled),
+                            world_size=float(run_start.settings.world_size),
                             pool_residue=pool_residue,
                         )
                         continue
@@ -1175,6 +1721,16 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}] tick run_id={int(tick_row.run_id)} "
                                 f"does not match active run {active_run.run_id}",
+                            )
+                        if int(tick_row.tick_index) != int(active_run.next_local_tick):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] tick_index={int(tick_row.tick_index)} "
+                                f"does not match expected local tick {int(active_run.next_local_tick)}",
+                            )
+                        if int(tick_row.global_tick_index) != int(active_run.next_global_tick):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] global_tick_index={int(tick_row.global_tick_index)} "
+                                f"does not match expected global tick {int(active_run.next_global_tick)}",
                             )
                         if int(tick_row.mode_id) != int(active_run.mode_id):
                             raise FridaFinalizeError(
@@ -1191,10 +1747,6 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] tick quest_stage_minor={int(tick_row.quest_stage_minor)} "
                                 f"does not match active run {active_run.quest_stage_minor}",
                             )
-                        if not math.isfinite(float(tick_row.dt)) or float(tick_row.dt) < 0.0:
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].dt must be finite and >= 0",
-                            )
                         if int(tick_row.elapsed_ms) < 0:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].elapsed_ms must be >= 0",
@@ -1204,23 +1756,22 @@ def finalize_frida_jsonl_to_traces(
                         _validate_tick_channels(
                             channels=tick_row.channels,
                             expected_players=int(active_run.replay_player_count),
+                            tick_index=int(tick_row.tick_index),
                             elapsed_ms=int(tick_row.elapsed_ms),
-                            dt=float(tick_row.dt),
                             dt_ms_i32=int(tick_row.dt_ms_i32),
                             mode_id=int(tick_row.mode_id),
                             quest_stage_major=int(tick_row.quest_stage_major),
                             quest_stage_minor=int(tick_row.quest_stage_minor),
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
-                        replay_inputs = _replay_tick_inputs_from_row(
-                            tick_row.replay_inputs,
+                        replay_inputs = _replay_tick_inputs_from_step(
+                            tick_row.channels.replay_step,
                             expected_players=int(active_run.replay_player_count),
-                            field=f"{raw_path}.lines[{line_no}].replay_inputs",
+                            field=f"{raw_path}.lines[{line_no}].channels.replay_step",
                         )
-                        _checkpoint, channels = _canonical_channels_payload(
+                        channels = _canonical_channels_payload(
                             channels=tick_row.channels,
-                            local_tick=int(active_run.next_local_tick),
-                            clip_size_raw_bits=(int(session_start.capture_format_version) == 13),
+                            evidence=tick_row.evidence,
                             field=f"{raw_path}.lines[{line_no}].channels",
                         )
                         _account_tick_rng_evidence(
@@ -1229,12 +1780,13 @@ def finalize_frida_jsonl_to_traces(
                             rng_stream=channels.rng_stream,
                             field=f"{raw_path}.lines[{line_no}]",
                         )
-                        if int(active_run.tick_count) == 0 and tick_row.channels.sim_state.gameplay.status is not None:
-                            active_run.status = tick_row.channels.sim_state.gameplay.status
                         active_run.replay_inputs.append(list(replay_inputs))
-                        active_run.replay_dt.append(float(tick_row.dt))
+                        active_run.replay_dt.append(float(tick_row.channels.replay_step.dt))
+                        active_run.replay_prelude.append(list(tick_row.channels.replay_step.prelude))
+                        active_run.replay_postlude.append(list(tick_row.channels.replay_step.postlude))
+                        active_run.replay_commands.append(list(tick_row.channels.replay_step.commands))
                         tick = TickRecord(
-                            tick_index=int(active_run.next_local_tick),
+                            tick_index=int(tick_row.tick_index),
                             elapsed_ms=int(tick_row.elapsed_ms),
                             dt_ms_i32=int(tick_row.dt_ms_i32),
                             mode_id=int(tick_row.mode_id),
@@ -1243,14 +1795,26 @@ def finalize_frida_jsonl_to_traces(
                         payload = _TICK_ENCODER.encode(tick)
                         active_run.stream.write(len(payload).to_bytes(_FRAME_LEN_BYTES, "little", signed=False))
                         active_run.stream.write(payload)
+                        evidence_row = FridaEvidenceTick(
+                            run_id=int(tick_row.run_id),
+                            tick_index=int(tick_row.tick_index),
+                            global_tick_index=int(tick_row.global_tick_index),
+                            evidence=tick_row.evidence,
+                        )
+                        _write_framed_payload(
+                            active_run.evidence_stream,
+                            _EVIDENCE_ENCODER.encode(evidence_row),
+                            field=f"run {active_run.run_id} evidence tick {active_run.tick_count}",
+                        )
+                        active_run.evidence_count += 1
                         active_run.next_local_tick += 1
+                        active_run.next_global_tick += 1
                         active_run.tick_count += 1
                         captured_tick_count += 1
-                        if tick_row.tick_index_global is not None:
-                            global_tick = int(tick_row.tick_index_global)
-                            if active_run.global_tick_first is None:
-                                active_run.global_tick_first = global_tick
-                            active_run.global_tick_last = global_tick
+                        global_tick = int(tick_row.global_tick_index)
+                        if active_run.global_tick_first is None:
+                            active_run.global_tick_first = global_tick
+                        active_run.global_tick_last = global_tick
                         continue
                     case _RunEndRow() as run_end:
                         if active_run is None:
@@ -1284,33 +1848,40 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] run_end.ticks_written={int(run_end.ticks_written)} "
                                 f"does not match active run tick_count {int(active_run.tick_count)}",
                             )
-                        if run_end.rng_outside_tail is None:
+                        if active_run.global_tick_last is None:
                             raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].rng_outside_tail is required",
+                                f"{raw_path}.lines[{line_no}] run_end cannot close an empty run",
+                            )
+                        if int(run_end.global_tick_index) != int(active_run.global_tick_last):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] run_end.global_tick_index="
+                                f"{int(run_end.global_tick_index)} does not match last tick "
+                                f"{int(active_run.global_tick_last)}",
                             )
                         _merge_outside_rng_bag(active_run, run_end.rng_outside_tail)
-                        traces.append(
-                            _write_run_trace(
-                                raw_path=raw_path,
-                                output_dir=output_root,
-                                raw_fingerprint=raw_fingerprint,
-                                session_start=session_start,
-                                run=active_run,
-                                counters=run_counters,
-                            ),
-                        )
+                        active_run.stream.flush()
+                        active_run.stream.close()
+                        active_run.evidence_stream.flush()
+                        active_run.evidence_stream.close()
+                        closed_runs.append(active_run)
                         active_run = None
                         continue
                     case _ErrorRow() as error_row:
                         location = f"{raw_path}.lines[{line_no}]"
-                        if error_row.tick_index_global is None:
+                        if error_row.global_tick_index is None:
                             raise FridaFinalizeError(f"{location} capture error={error_row.error!r}")
                         raise FridaFinalizeError(
                             f"{location} capture error={error_row.error!r} "
-                            f"tick_index_global={int(error_row.tick_index_global)}",
+                            f"global_tick_index={int(error_row.global_tick_index)}",
                         )
-                    case _RunErrorRow():
-                        continue
+                    case _RunErrorRow() as run_error:
+                        location = f"{raw_path}.lines[{line_no}]"
+                        suffix = (
+                            ""
+                            if run_error.global_tick_index is None
+                            else f" global_tick_index={int(run_error.global_tick_index)}"
+                        )
+                        raise FridaFinalizeError(f"{location} run error={run_error.error!r}{suffix}")
                     case _SessionEndRow():
                         if active_run is not None:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] session_end while run is active")
@@ -1331,27 +1902,37 @@ def finalize_frida_jsonl_to_traces(
         if session_start is None:
             raise FridaFinalizeError(f"{raw_path} missing session_start")
         if active_run is not None:
-            # Allow abrupt host/process shutdown to still produce a usable run.
-            # We already validated all parsed rows and can finalize the in-flight spool.
-            traces.append(
-                _write_run_trace(
-                    raw_path=raw_path,
-                    output_dir=output_root,
-                    raw_fingerprint=raw_fingerprint,
-                    session_start=session_start,
-                    run=active_run,
-                    counters=run_counters,
-                ),
-            )
-            active_run = None
-        if not session_ended and not traces:
+            raise FridaFinalizeError(f"{raw_path} ended with active run {int(active_run.run_id)}")
+        if not session_ended:
             raise FridaFinalizeError(f"{raw_path} missing session_end")
-        if not traces:
+        if not closed_runs:
             raise FridaFinalizeError(f"{raw_path} had no finalized runs")
+        staged_output_root = temp_root / "output"
+        staged_output_root.mkdir()
+        staged_traces = [
+            _write_run_trace(
+                raw_path=raw_path,
+                output_dir=staged_output_root,
+                raw_fingerprint=raw_fingerprint,
+                session_start=session_start,
+                run=run,
+                counters=run_counters,
+            )
+            for run in closed_runs
+        ]
+        traces.extend(
+            _publish_staged_traces(
+                staged_traces,
+                output_root=output_root,
+                temp_root=temp_root,
+            ),
+        )
     finally:
         if active_run is not None:
             with suppress(Exception):
                 active_run.stream.close()
+            with suppress(Exception):
+                active_run.evidence_stream.close()
         with suppress(OSError):
             temp_dir_obj.cleanup()
 

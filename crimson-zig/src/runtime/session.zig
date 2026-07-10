@@ -54,13 +54,13 @@ pub const SessionConfig = struct {
             .world_size = header.world_size,
             .tick_rate = header.tick_rate,
             .detail_preset = header.detail_preset,
-            .gore_disabled = header.gore_disabled,
+            .gore_disabled = header.violence_disabled,
             .hardcore = header.hardcore,
             .preserve_bugs = header.preserve_bugs,
-            .quest_fail_retry_count = header.difficulty_level,
+            .quest_fail_retry_count = header.quest_fail_retry_count,
             .status_quest_unlock_index = header.status.quest_unlock_index,
             .status_quest_unlock_index_full = header.status.quest_unlock_index_full,
-            .initial_creature_pool = header.initial_creature_pool,
+            .initial_creature_pool = header.initial_creature_pool orelse &.{},
         };
 
         for (header.status.weapon_usage_counts, 0..) |count, idx| {
@@ -79,7 +79,6 @@ pub const SessionConfig = struct {
 
 pub const SessionInitOptions = struct {
     strict_events: bool = true,
-    inter_tick_rand_draws: i32 = 0,
     defer_menu_open_events: bool = false,
     apply_world_dt_steps: bool = true,
     capture_spawn_events_authoritative: bool = false,
@@ -131,7 +130,6 @@ pub const DeterministicSession = struct {
     dt_nominal: f32,
 
     strict_events: bool,
-    inter_tick_rand_draws: i32,
     defer_menu_open_events: bool,
     apply_world_dt_steps: bool,
     capture_spawn_events_authoritative: bool,
@@ -198,7 +196,6 @@ pub const DeterministicSession = struct {
             .terrain_size = @max(@as(i32, 1), @as(i32, @intFromFloat(terrain_size_floor))),
             .dt_nominal = 1.0 / @as(f32, @floatFromInt(config.tick_rate)),
             .strict_events = options.strict_events,
-            .inter_tick_rand_draws = options.inter_tick_rand_draws,
             .defer_menu_open_events = options.defer_menu_open_events,
             .apply_world_dt_steps = options.apply_world_dt_steps,
             .capture_spawn_events_authoritative = options.capture_spawn_events_authoritative,
@@ -335,15 +332,13 @@ fn testHeader(game_mode: game_ids.GameModeId) replay_codec.ReplayHeader {
         .seed = 0xBEEF,
         .replay_format_version = replay_codec.replay_format_version,
         .quest_level = @constCast("2.7"),
-        .bootstrap_kind = @constCast("none"),
-        .bootstrap_seed = 0,
         .game_version = @constCast("test"),
         .tick_rate = 60,
-        .difficulty_level = 0,
+        .quest_fail_retry_count = 0,
         .hardcore = false,
         .preserve_bugs = false,
         .detail_preset = 5,
-        .gore_disabled = 1,
+        .violence_disabled = 1,
         .world_size = 1024.0,
         .player_count = 1,
         .status = .{},

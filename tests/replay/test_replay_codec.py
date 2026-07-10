@@ -23,11 +23,17 @@ from crimson.replay import (
     warn_on_game_version_mismatch,
 )
 from crimson.replay import types as replay_types
-from crimson.replay.types import REPLAY_FORMAT_VERSION, WEAPON_USAGE_COUNT, current_replay_game_version
+from crimson.replay.types import (
+    REPLAY_FORMAT_VERSION,
+    ReplayCreatureSlotResidue,
+    ReplayVec2,
+    current_replay_game_version,
+)
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
     PerkMenuOpenCommand,
     PerkPickCommand,
+    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -37,28 +43,16 @@ from grim.geom import Vec2
 
 
 def _minimal_wire_replay_obj() -> dict[str, object]:
-    return {
-        "header": {
-            "game_mode_id": 1,
-            "seed": 1,
-            "replay_format_version": int(REPLAY_FORMAT_VERSION),
-            "player_count": 1,
-            "status": {
-                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
-            },
-            "claimed_stats": {
-                "complete": False,
-                "ticks": 0,
-                "elapsed_ms": 0,
-                "score_xp": 0,
-                "kills": 0,
-                "most_used_weapon_id": 0,
-                "shots_fired": 0,
-                "shots_hit": 0,
-            },
-        },
-        "ticks": [{"dt": 1 / 60, "inputs": [[0.0, 0.0, 0.0, 0.0, 0]]}],
-    }
+    recorder = ReplayRecorder(ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1))
+    recorder.record_tick([PlayerInput()])
+    payload = zstd.ZstdDecompressor().decompress(dump_replay(recorder.finish()))
+    value = msgspec.msgpack.decode(payload)
+    assert isinstance(value, dict)
+    return value
+
+
+def _dump_wire(value: object) -> bytes:
+    return zstd.ZstdCompressor(level=19).compress(msgspec.msgpack.encode(value))
 
 
 def test_replay_codec_roundtrip() -> None:
@@ -98,7 +92,8 @@ def test_replay_codec_roundtrip() -> None:
     assert len(decoded.ticks) == 2
     assert decoded.ticks[0].inputs == replay.ticks[0].inputs
     assert decoded.ticks[1].inputs == replay.ticks[1].inputs
-    assert decoded.ticks[1].commands == [PerkPickCommand(player_index=0, choice_index=2)]
+    assert decoded.ticks[1].prelude == [PerkPickCommand(player_index=0, choice_index=2)]
+    assert decoded.ticks[1].commands == []
 
 
 def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
@@ -112,7 +107,22 @@ def test_replay_codec_roundtrip_perk_menu_open_command() -> None:
     replay = rec.finish()
 
     decoded = load_replay(dump_replay(replay))
-    assert decoded.ticks[1].commands == [PerkMenuOpenCommand(player_index=0)]
+    assert decoded.ticks[1].prelude == [PerkMenuOpenCommand(player_index=0)]
+    assert decoded.ticks[1].commands == []
+
+
+def test_replay_codec_roundtrip_postlude_menu_open() -> None:
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=0x1234, player_count=1)
+    recorder = ReplayRecorder(header)
+    recorder.record_tick(
+        [PlayerInput()],
+        postlude=[PerkMenuOpenCommand(player_index=0)],
+    )
+
+    decoded = load_replay(dump_replay(recorder.finish()))
+    assert decoded.ticks[0].prelude == []
+    assert decoded.ticks[0].postlude == [PerkMenuOpenCommand(player_index=0)]
+    assert decoded.ticks[0].commands == []
 
 
 def test_replay_codec_roundtrip_typo_commands_and_name_sources() -> None:
@@ -185,20 +195,63 @@ def test_replay_codec_rejects_invalid_claimed_stats() -> None:
         "shots_hit": 2,
     }
     with pytest.raises(ReplayCodecError, match="claimed_stats.shots_hit must be <= claimed_stats.shots_fired"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
 
 
 @pytest.mark.parametrize("bad_dt", [-1.0, float("inf"), float("nan")])
 def test_replay_codec_rejects_invalid_dt_rows(bad_dt: float) -> None:
     replay_obj = _minimal_wire_replay_obj()
-    replay_obj["ticks"] = [{"inputs": [[0.0, 0.0, 0.0, 0.0, 0]], "dt": bad_dt}]
+    replay_obj["ticks"] = [
+        {
+            "inputs": [[0.0, 0.0, 0.0, 0.0, 0]],
+            "dt": bad_dt,
+            "prelude": [],
+            "postlude": [],
+            "commands": [],
+        },
+    ]
     with pytest.raises(ReplayCodecError, match="must be finite and >= 0"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
 
 
-def test_replay_codec_rejects_legacy_json_payload() -> None:
-    with pytest.raises(ReplayCodecError, match="legacy JSON replay format is unsupported"):
+@pytest.mark.parametrize("bad_input", [float("inf"), float("-inf"), float("nan"), 1e100])
+def test_replay_codec_rejects_inputs_outside_f32(bad_input: float) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_obj["ticks"] = [
+        {
+            "inputs": [[bad_input, 0.0, 0.0, 0.0, 0]],
+            "dt": 1 / 60,
+            "prelude": [],
+            "postlude": [],
+            "commands": [],
+        },
+    ]
+    with pytest.raises(ReplayCodecError, match="must be finite|outside the f32 range"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_dump_rejects_nonfinite_input() -> None:
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput()])
+    replay = rec.finish()
+    replay.ticks[0].inputs[0][2] = float("nan")
+
+    with pytest.raises(ReplayCodecError, match="aim_x must be finite"):
+        dump_replay(replay)
+
+
+def test_replay_codec_rejects_noncanonical_envelope() -> None:
+    with pytest.raises(ReplayCodecError, match="canonical zstd envelope"):
         load_replay(b'{"header":{"game_mode_id":1,"seed":1}}')
+
+
+def test_replay_codec_rejects_unreplayable_demo_mode() -> None:
+    recorder = ReplayRecorder(ReplayHeader(game_mode_id=GameMode.DEMO, seed=1))
+    recorder.record_tick([PlayerInput()])
+
+    with pytest.raises(ReplayCodecError, match="unsupported replay game_mode_id"):
+        dump_replay(recorder.finish())
 
 
 def test_replay_codec_rejects_invalid_zstd_payload() -> None:
@@ -206,10 +259,28 @@ def test_replay_codec_rejects_invalid_zstd_payload() -> None:
         load_replay(b"\x28\xb5\x2f\xfdnot-a-zstd-stream")
 
 
+@pytest.mark.parametrize(
+    "suffix",
+    [b"trailing-garbage", zstd.ZstdCompressor().compress(b"second-frame")],
+)
+def test_replay_codec_rejects_data_after_zstd_frame(suffix: bytes) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    with pytest.raises(ReplayCodecError, match="invalid replay zstd payload"):
+        load_replay(_dump_wire(replay_obj) + suffix)
+
+
 def test_replay_codec_rejects_zstd_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(replay_codec_mod, "_DEFAULT_MAX_REPLAY_PAYLOAD_BYTES", 4)
+    monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_PAYLOAD_BYTES", 4)
     payload = zstd.ZstdCompressor(level=19).compress(b"12345")
     with pytest.raises(ReplayCodecError, match="payload too large"):
+        load_replay(payload)
+
+
+def test_replay_codec_rejects_file_over_compressed_envelope_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    payload = zstd.ZstdCompressor(level=19).compress(b"12345")
+    monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_FILE_BYTES", len(payload) - 1)
+
+    with pytest.raises(ReplayCodecError, match="replay file too large"):
         load_replay(payload)
 
 
@@ -222,7 +293,51 @@ def test_replay_dump_is_stable() -> None:
     assert dump_replay(replay) == dump_replay(replay)
 
 
-def test_replay_load_accepts_plain_msgpack_bytes() -> None:
+def test_replay_dump_canonicalizes_input_values_to_f32() -> None:
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
+    rec = ReplayRecorder(header)
+    rec.record_tick([PlayerInput()])
+    replay = rec.finish()
+    value = 0.123456789123
+    replay.ticks[0].inputs[0][0] = value
+
+    raw = zstd.ZstdDecompressor().decompress(dump_replay(replay))
+    payload = cast("dict[str, object]", msgspec.msgpack.decode(raw))
+    tick = cast("dict[str, object]", cast("list[object]", payload["ticks"])[0])
+    packed = cast("list[list[float | int]]", tick["inputs"])[0]
+
+    assert float(packed[0]) == float(f32(value))
+
+
+def test_replay_dump_canonicalizes_header_and_pool_values_to_f32() -> None:
+    value = 1.0000000000000002
+    header = ReplayHeader(
+        game_mode_id=GameMode.SURVIVAL,
+        seed=1,
+        player_count=1,
+        world_size=value,
+        initial_creature_pool=(
+            ReplayCreatureSlotResidue(
+                index=0,
+                phase_seed=value,
+                pos=ReplayVec2(x=value, y=-value),
+            ),
+        ),
+    )
+    recorder = ReplayRecorder(header)
+    recorder.record_tick([PlayerInput()])
+
+    replay = load_replay(dump_replay(recorder.finish()))
+
+    assert replay.header.world_size == float(f32(value))
+    assert replay.header.initial_creature_pool is not None
+    residue = replay.header.initial_creature_pool[0]
+    assert residue.phase_seed == float(f32(value))
+    assert residue.pos.x == float(f32(value))
+    assert residue.pos.y == float(f32(-value))
+
+
+def test_replay_load_rejects_plain_msgpack_bytes() -> None:
     header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
     rec = ReplayRecorder(header)
     rec.record_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(123.0, 456.0))])
@@ -230,8 +345,8 @@ def test_replay_load_accepts_plain_msgpack_bytes() -> None:
 
     blob = dump_replay(replay)
     plain = zstd.ZstdDecompressor().decompress(blob)
-    decoded = load_replay(plain)
-    assert decoded.header == header
+    with pytest.raises(ReplayCodecError, match="canonical zstd envelope"):
+        load_replay(plain)
 
 
 def test_replay_load_rejects_older_format_version() -> None:
@@ -240,7 +355,51 @@ def test_replay_load_rejects_older_format_version() -> None:
     replay_header["replay_format_version"] = 9
 
     with pytest.raises(ReplayCodecError, match="unsupported replay format version: 9"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_load_rejects_unknown_and_missing_current_fields() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    header = cast("dict[str, object]", replay_obj["header"])
+    header["bootstrap_kind"] = "none"
+    with pytest.raises(ReplayCodecError, match=r"unknown=\['bootstrap_kind'\]"):
+        load_replay(_dump_wire(replay_obj))
+
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    del tick["commands"]
+    with pytest.raises(ReplayCodecError, match=r"missing=\['commands'\]"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_load_rejects_reserved_input_flag_bits() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    inputs = cast("list[list[float | int]]", tick["inputs"])
+    inputs[0][4] = 1 << 31
+
+    with pytest.raises(ReplayCodecError, match="flags contain unsupported bits"):
+        load_replay(_dump_wire(replay_obj))
+
+
+@pytest.mark.parametrize(
+    "flags",
+    [
+        1 << 4,
+        1 << 9,
+        (1 << 8) | (6 << 9),
+        1 << 13,
+        (1 << 12) | (6 << 13),
+    ],
+)
+def test_replay_load_rejects_noncanonical_input_flag_payloads(flags: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    inputs = cast("list[list[float | int]]", tick["inputs"])
+    inputs[0][4] = flags
+
+    with pytest.raises(ReplayCodecError, match="flags"):
+        load_replay(_dump_wire(replay_obj))
 
 
 def test_replay_load_rejects_missing_quest_level_for_quest_mode() -> None:
@@ -249,7 +408,7 @@ def test_replay_load_rejects_missing_quest_level_for_quest_mode() -> None:
     replay_header["game_mode_id"] = int(GameMode.QUESTS)
 
     with pytest.raises(ReplayCodecError, match="quest replays require a valid header.quest_level"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
 
 
 def test_replay_load_rejects_typo_multiplayer() -> None:
@@ -259,7 +418,7 @@ def test_replay_load_rejects_typo_multiplayer() -> None:
     replay_header["player_count"] = 2
 
     with pytest.raises(ReplayCodecError, match="Typ-o replays require player_count == 1"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
 
 
 def test_replay_load_rejects_out_of_range_player_count_via_msgspec_constraints() -> None:
@@ -268,55 +427,161 @@ def test_replay_load_rejects_out_of_range_player_count_via_msgspec_constraints()
     replay_header["player_count"] = 0
 
     with pytest.raises(ReplayCodecError, match="invalid replay msgpack payload"):
-        load_replay(msgspec.msgpack.encode(replay_obj))
+        load_replay(_dump_wire(replay_obj))
 
 
-def test_replay_load_quantizes_inputs_when_header_requests_f32() -> None:
+@pytest.mark.parametrize("seed", [-1, 1 << 32])
+def test_replay_codec_rejects_seed_outside_uint32(seed: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header["seed"] = seed
+
+    with pytest.raises(ReplayCodecError, match="seed must be a uint32"):
+        load_replay(_dump_wire(replay_obj))
+
+    header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=seed, player_count=1)
+    recorder = ReplayRecorder(header)
+    recorder.record_tick([PlayerInput()])
+    with pytest.raises(ReplayCodecError, match="seed must be a uint32"):
+        dump_replay(recorder.finish())
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["tick_rate", "quest_fail_retry_count", "detail_preset", "violence_disabled"],
+)
+def test_replay_codec_rejects_header_integers_outside_zig_i32(field: str) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    replay_header = cast("dict[str, object]", replay_obj["header"])
+    replay_header[field] = 1 << 31
+
+    with pytest.raises(ReplayCodecError, match=field):
+        load_replay(_dump_wire(replay_obj))
+
+
+@pytest.mark.parametrize("player_index", [-1, 1])
+def test_replay_codec_rejects_prelude_player_outside_header_count(player_index: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["prelude"] = [{"type": "perk_menu_open", "player_index": player_index}]
+
+    with pytest.raises(ReplayCodecError, match="player_index"):
+        load_replay(_dump_wire(replay_obj))
+
+
+@pytest.mark.parametrize("player_index", [-1, 1])
+def test_replay_codec_rejects_postlude_player_outside_header_count(player_index: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["postlude"] = [{"type": "perk_menu_open", "player_index": player_index}]
+
+    with pytest.raises(ReplayCodecError, match="postlude.*player_index"):
+        load_replay(_dump_wire(replay_obj))
+
+
+@pytest.mark.parametrize("choice_index", [-1, 7])
+def test_replay_codec_rejects_invalid_perk_choice_index(choice_index: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["prelude"] = [{"type": "perk_pick", "player_index": 0, "choice_index": choice_index}]
+
+    with pytest.raises(ReplayCodecError, match="choice_index must be in 0..6"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_load_rejects_noncanonical_f32_inputs() -> None:
     move_x = 0.123456789123
     move_y = -0.987654321987
     aim_x = 321.123456789123
     aim_y = -654.987654321987
 
-    replay_obj: dict[str, object] = {
-        "header": {
-            "game_mode_id": 1,
-            "seed": 1,
-            "replay_format_version": int(REPLAY_FORMAT_VERSION),
-            "player_count": 1,
-            "input_quantization": "f32",
-            "status": {
-                "weapon_usage_counts": [0] * int(WEAPON_USAGE_COUNT),
-            },
-            "claimed_stats": {
-                "complete": False,
-                "ticks": 1,
-                "elapsed_ms": 16,
-                "score_xp": 0,
-                "kills": 0,
-                "most_used_weapon_id": 0,
-                "shots_fired": 0,
-                "shots_hit": 0,
-            },
+    replay_obj = _minimal_wire_replay_obj()
+    replay_obj["ticks"] = [
+        {
+            "dt": 1 / 60,
+            "inputs": [[move_x, move_y, aim_x, aim_y, 0]],
+            "prelude": [],
+            "postlude": [],
+            "commands": [],
         },
-        "ticks": [{"dt": 1 / 60, "inputs": [[move_x, move_y, aim_x, aim_y, 0]]}],
-    }
+    ]
 
-    replay = load_replay(msgspec.msgpack.encode(replay_obj))
+    with pytest.raises(ReplayCodecError, match="must be canonical f32"):
+        load_replay(_dump_wire(replay_obj))
 
-    packed = replay.ticks[0].inputs[0]
-    move_x_loaded = packed[0]
-    move_y_loaded = packed[1]
-    aim_x_loaded = packed[2]
-    aim_y_loaded = packed[3]
-    assert isinstance(move_x_loaded, int | float)
-    assert isinstance(move_y_loaded, int | float)
-    assert isinstance(aim_x_loaded, int | float)
-    assert isinstance(aim_y_loaded, int | float)
 
-    assert float(move_x_loaded) == float(f32(move_x))
-    assert float(move_y_loaded) == float(f32(move_y))
-    assert float(aim_x_loaded) == float(f32(aim_x))
-    assert float(aim_y_loaded) == float(f32(aim_y))
+def test_replay_codec_preserves_ordered_prelude() -> None:
+    recorder = ReplayRecorder(ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1))
+    recorder.record_tick(
+        [PlayerInput()],
+        prelude=[RngBurnOperation(draws=2)],
+        commands=[
+            PerkMenuOpenCommand(player_index=0),
+            PerkPickCommand(player_index=0, choice_index=6),
+        ],
+    )
+
+    replay = load_replay(dump_replay(recorder.finish()))
+
+    assert replay.ticks[0].prelude == [
+        RngBurnOperation(draws=2),
+        PerkMenuOpenCommand(player_index=0),
+        PerkPickCommand(player_index=0, choice_index=6),
+    ]
+
+
+@pytest.mark.parametrize("draws", [0, -1])
+def test_replay_codec_rejects_nonpositive_rng_burn(draws: int) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["prelude"] = [{"type": "rng_burn", "draws": draws}]
+
+    with pytest.raises(ReplayCodecError, match="draws must be in 1"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_codec_rejects_perk_operation_in_tick_commands() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["commands"] = [{"type": "perk_menu_open", "player_index": 0}]
+
+    with pytest.raises(ReplayCodecError, match="unsupported type 'perk_menu_open'"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_codec_rejects_rng_burn_in_postlude() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick["postlude"] = [{"type": "rng_burn", "draws": 1}]
+
+    with pytest.raises(ReplayCodecError, match="postlude.*unsupported type 'rng_burn'"):
+        load_replay(_dump_wire(replay_obj))
+
+
+def test_replay_codec_requires_postlude_field() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    tick.pop("postlude")
+
+    with pytest.raises(ReplayCodecError, match=r"missing=\['postlude'\]"):
+        load_replay(_dump_wire(replay_obj))
+
+
+@pytest.mark.parametrize("field", ["dt", "move_x", "world_size"])
+def test_replay_codec_rejects_integer_tokens_for_f32_fields(field: str) -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    header = cast("dict[str, object]", replay_obj["header"])
+    tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
+    if field == "world_size":
+        header["world_size"] = 1024
+    elif field == "dt":
+        tick["dt"] = 0
+    else:
+        packed = cast("list[object]", cast("list[object]", tick["inputs"])[0])
+        packed[0] = 0
+
+    with pytest.raises(ReplayCodecError, match="msgpack float"):
+        load_replay(_dump_wire(replay_obj))
 
 
 def test_replay_recorder_validates_player_count() -> None:

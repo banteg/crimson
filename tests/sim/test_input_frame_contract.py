@@ -110,7 +110,6 @@ def test_survival_runner_multiplayer_input_contract_is_deterministic() -> None:
     assert [len(ck.players) for ck in checkpoints0] == [2, 2, 2, 2, 2]
     diff = compare_checkpoints(checkpoints0, checkpoints1)
     assert diff.ok
-    assert diff.first_rng_only_tick is None
 
 
 def test_host_lockstep_canonical_frame_is_one_input_per_peer_in_slot_order() -> None:

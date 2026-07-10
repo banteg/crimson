@@ -12,25 +12,29 @@ from .input import PlayerInput
 TypoChar: TypeAlias = Annotated[str, msgspec.Meta(min_length=1, max_length=1)]
 
 
-class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True):
+class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True, forbid_unknown_fields=True):
     player_index: int
 
 
-class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True):
+class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True, forbid_unknown_fields=True):
     player_index: int
     choice_index: int
 
 
-class TypoCharCommand(msgspec.Struct, tag="typo_char", frozen=True):
+class RngBurnOperation(msgspec.Struct, tag="rng_burn", frozen=True, forbid_unknown_fields=True):
+    draws: int
+
+
+class TypoCharCommand(msgspec.Struct, tag="typo_char", frozen=True, forbid_unknown_fields=True):
     player_index: int
     ch: TypoChar
 
 
-class TypoBackspaceCommand(msgspec.Struct, tag="typo_backspace", frozen=True):
+class TypoBackspaceCommand(msgspec.Struct, tag="typo_backspace", frozen=True, forbid_unknown_fields=True):
     player_index: int
 
 
-class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True):
+class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True, forbid_unknown_fields=True):
     player_index: int
 
 
@@ -41,6 +45,10 @@ GameCommand: TypeAlias = (
     | TypoBackspaceCommand
     | TypoSubmitCommand
 )
+
+ReplayPreludeOperation: TypeAlias = RngBurnOperation | PerkMenuOpenCommand | PerkPickCommand
+ReplayPostludeOperation: TypeAlias = PerkMenuOpenCommand
+ReplayTickCommand: TypeAlias = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 
 
 class FrameContext(msgspec.Struct, frozen=True):
@@ -62,6 +70,8 @@ class ResolvedTick(msgspec.Struct, frozen=True):
     tick_index: int
     dt_seconds: float
     inputs: tuple[PlayerInput, ...] = ()
+    prelude: tuple[ReplayPreludeOperation, ...] = ()
+    postlude: tuple[ReplayPostludeOperation, ...] = ()
     commands: tuple[GameCommand, ...] = ()
 
 

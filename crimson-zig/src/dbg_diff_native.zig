@@ -279,8 +279,10 @@ fn traceDiffErrorDetail(err: anyerror) []const u8 {
         error.InvalidTraceFooter,
         error.InvalidTraceBlockOffset,
         error.InvalidTraceChecksum,
+        error.InvalidTraceChunkLayout,
         => "invalid CDT trace",
         error.UnsupportedTraceFormatVersion => "unsupported CDT trace format version",
+        error.UnsupportedTraceSchemaVersion => "unsupported CDT trace schema version",
         error.UnsupportedTraceCompression => "compressed CDT trace chunks are not supported",
         error.OutOfMemory => "out of memory",
         error.FileBusy => @errorName(err),
@@ -331,7 +333,7 @@ test "dbg diff summarizes matching native CDT traces" {
     const base_dir = try std.fs.path.join(allocator, &.{ ".zig-cache", "tmp", &tmp.sub_path });
     defer allocator.free(base_dir);
 
-    const replay_bytes = try replay_codec.buildSmokeTestReplayPayload(allocator);
+    const replay_bytes = try replay_codec.buildSmokeTestReplayFile(allocator);
     defer allocator.free(replay_bytes);
     const replay_path = try std.fs.path.join(allocator, &.{ base_dir, "smoke.crd" });
     defer allocator.free(replay_path);

@@ -21,7 +21,6 @@ from ._helpers import (
     write_current_missing_perk_choice_replay,
     write_current_typo_event_replay,
     write_current_unknown_command_replay,
-    write_legacy_out_of_order_event_replay,
     write_replay,
 )
 
@@ -286,7 +285,10 @@ def test_zig_replay_benchmark_reports_event_shape_detail(tmp_path: Path) -> None
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert "replay benchmark failed: replay event perk_pick missing choice_index: tick=0 event_index=0" in result.stderr
+    assert (
+        "replay benchmark failed: replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
+        in result.stderr
+    )
     assert "canonical wire shape" not in result.stderr
 
 
@@ -303,23 +305,8 @@ def test_zig_replay_benchmark_reports_event_player_index_detail(tmp_path: Path) 
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay benchmark failed: replay event player_index out of range: 1 "
+        "replay benchmark failed: replay prelude player_index out of range: 1 "
         "(player_count=1, tick=0, event=perk_menu_open)"
-    ) in result.stderr
-    assert "native replay benchmark" not in result.stderr
-
-
-def test_zig_replay_benchmark_reports_event_ordering_detail(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
-    replay_path = write_legacy_out_of_order_event_replay(tmp_path, replay=replay, name="event-order.crd")
-
-    result = _run_zig_replay_benchmark([str(replay_path), "--runs", "1", "--warmup-runs", "0"])
-
-    assert result.returncode == 1
-    assert result.stdout == ""
-    assert (
-        "replay benchmark failed: replay events are not ordered in canonical tick order: "
-        "tick=1 follows tick=2 (event_index=1, event=perk_menu_open)"
     ) in result.stderr
     assert "native replay benchmark" not in result.stderr
 
@@ -333,8 +320,8 @@ def test_zig_replay_benchmark_reports_event_kind_detail(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay benchmark failed: replay event kind invalid for game mode: "
-        "event=typo_char tick=0 event_index=0 game_mode=survival"
+        "replay benchmark failed: replay command invalid for game mode: "
+        "type=typo_char tick=0 command_index=0 game_mode=survival"
     ) in result.stderr
     assert "replay events include invalid kinds or values for this mode" not in result.stderr
 
@@ -348,8 +335,8 @@ def test_zig_replay_benchmark_reports_unknown_command_as_replay_failure(tmp_path
     assert result.returncode == 1
     assert result.stdout == ""
     assert (
-        "replay benchmark failed: replay event command kind is unknown: "
-        "type=network_ping tick=0 event_index=0"
+        "replay benchmark failed: replay command type is unknown: "
+        "type=network_ping tick=0 command_index=0"
     ) in result.stderr
     assert "native replay benchmark" not in result.stderr
 

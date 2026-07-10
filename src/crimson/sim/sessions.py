@@ -18,6 +18,7 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
+from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..weapon_runtime import weapon_assign_player
@@ -29,6 +30,9 @@ from .input_providers import (
     GameCommand,
     PerkMenuOpenCommand,
     PerkPickCommand,
+    ReplayPostludeOperation,
+    ReplayPreludeOperation,
+    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -365,6 +369,70 @@ class DeterministicSession(msgspec.Struct):
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _session_timing(self.world.state, dt)
 
+    def apply_replay_prelude(
+        self,
+        *,
+        dt: float,
+        operations: list[ReplayPreludeOperation],
+    ) -> list[SfxId]:
+        """Apply ordered between-tick replay operations outside the tick RNG trace."""
+
+        post_apply_sfx: list[SfxId] = []
+        for operation in operations:
+            match operation:
+                case RngBurnOperation(draws=draws):
+                    if int(draws) <= 0:
+                        raise RuntimeError(f"replay rng_burn draws must be > 0, got {draws}")
+                    for _ in range(int(draws)):
+                        self.world.state.rng.rand_tagged(
+                            RngCallerStatic.REPLAY_PRELUDE_RNG_BURN,
+                        )
+                case PerkPickCommand(choice_index=choice_index):
+                    # Earlier prelude operations may change time scaling, so
+                    # derive the native apply delta at this exact position in
+                    # the ordered stream.
+                    timing = self.timing_for_dt(dt)
+                    picked = perk_selection_pick(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        choice_index,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                        dt=timing.dt_sim,
+                        creatures=self.world.creatures.entries,
+                        refresh_choices=False,
+                    )
+                    if picked is not None:
+                        post_apply_sfx.append(SfxId.UI_BONUS)
+                case PerkMenuOpenCommand():
+                    perk_selection_open_choices(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                    )
+                case _:
+                    raise RuntimeError(f"unhandled replay prelude operation: {type(operation).__name__}")
+        return post_apply_sfx
+
+    def apply_replay_postlude(self, *, operations: list[ReplayPostludeOperation]) -> None:
+        """Apply operations observed after simulation but before the native tick returns."""
+
+        for operation in operations:
+            match operation:
+                case PerkMenuOpenCommand():
+                    perk_selection_open_choices(
+                        self.world.state,
+                        self.world.players,
+                        self.world.state.perk_selection,
+                        game_mode=self.game_mode,
+                        player_count=len(self.world.players),
+                    )
+                case _:
+                    raise RuntimeError(f"unhandled replay postlude operation: {type(operation).__name__}")
+
     def step_tick(
         self,
         *,
@@ -372,12 +440,13 @@ class DeterministicSession(msgspec.Struct):
         inputs: list[PlayerInput] | None,
         trace_rng: bool = False,
         commands: list[GameCommand] | None = None,
+        prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
         timing = self.timing_for_dt(dt)
         mode_runtime = self.mode_runtime
         mode_runtime.before_step()
 
-        post_apply_sfx: list[SfxId] = []
+        post_apply_sfx = list(prelude_post_apply_sfx or ())
         for cmd in (commands or ()):
             match cmd:
                 case PerkPickCommand(choice_index=ci):
@@ -390,7 +459,7 @@ class DeterministicSession(msgspec.Struct):
                         player_count=len(self.world.players),
                         dt=timing.dt_sim,
                         creatures=self.world.creatures.entries,
-                        refresh_choices=True,
+                        refresh_choices=False,
                     )
                     if picked is not None:
                         post_apply_sfx.append(SfxId.UI_BONUS)

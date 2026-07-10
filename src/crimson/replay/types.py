@@ -16,11 +16,11 @@ from ..movement_controls import MovementControlType, movement_control_type_from_
 from ..msgspec_types import NonNegativeInt, PlayerCount, PositiveFloat, PositiveInt
 from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
-from ..sim.input_providers import GameCommand
+from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 12
+REPLAY_FORMAT_VERSION = 15
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -39,6 +39,42 @@ MOVE_MODE_MASK = 0x7
 AIM_SCHEME_PRESENT_FLAG = 1 << 12
 AIM_SCHEME_SHIFT = 13
 AIM_SCHEME_MASK = 0x7
+
+SUPPORTED_INPUT_FLAGS_MASK = (
+    FIRE_DOWN_FLAG
+    | FIRE_PRESSED_FLAG
+    | RELOAD_PRESSED_FLAG
+    | RELOAD_DOWN_FLAG
+    | MOVE_KEYS_PRESENT_FLAG
+    | MOVE_FORWARD_FLAG
+    | MOVE_BACKWARD_FLAG
+    | TURN_LEFT_FLAG
+    | TURN_RIGHT_FLAG
+    | MOVE_MODE_PRESENT_FLAG
+    | (MOVE_MODE_MASK << MOVE_MODE_SHIFT)
+    | AIM_SCHEME_PRESENT_FLAG
+    | (AIM_SCHEME_MASK << AIM_SCHEME_SHIFT)
+)
+
+
+def input_flags_validation_error(flags: int) -> str | None:
+    value = int(flags)
+    if value < 0 or value > 0xFFFFFFFF or value & ~SUPPORTED_INPUT_FLAGS_MASK:
+        return "contain unsupported bits"
+    move_key_bits = MOVE_FORWARD_FLAG | MOVE_BACKWARD_FLAG | TURN_LEFT_FLAG | TURN_RIGHT_FLAG
+    if not value & MOVE_KEYS_PRESENT_FLAG and value & move_key_bits:
+        return "set movement-key values without MOVE_KEYS_PRESENT"
+    move_mode_value = (value >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK
+    if not value & MOVE_MODE_PRESENT_FLAG and move_mode_value != 0:
+        return "set a movement mode without MOVE_MODE_PRESENT"
+    if value & MOVE_MODE_PRESENT_FLAG and move_mode_value > 5:
+        return "contain an invalid movement mode"
+    aim_scheme_value = (value >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
+    if not value & AIM_SCHEME_PRESENT_FLAG and aim_scheme_value != 0:
+        return "set an aim scheme without AIM_SCHEME_PRESENT"
+    if value & AIM_SCHEME_PRESENT_FLAG and aim_scheme_value not in {0, 1, 2, 3, 4, 5, 7}:
+        return "contain an invalid aim scheme"
+    return None
 
 InputQuantization: TypeAlias = Literal["f32"]
 
@@ -224,7 +260,7 @@ def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float,
     return mx, my, ax, ay, flags
 
 
-class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
+class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     complete: bool = False
     ticks: NonNegativeInt = 0
     elapsed_ms: NonNegativeInt = 0
@@ -235,12 +271,12 @@ class ReplayClaimedStatsSnapshot(msgspec.Struct, frozen=True):
     shots_hit: NonNegativeInt = 0
 
 
-class ReplayVec2(msgspec.Struct, frozen=True):
+class ReplayVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     x: float = 0.0
     y: float = 0.0
 
 
-class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True):
+class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     """Persistent creature-slot state inherited at run start.
 
     Native `creature_reset_all` (0x4281e0) clears only `active`; every other
@@ -284,7 +320,7 @@ class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True):
     anim_phase: float = 0.0
 
 
-class ReplayHeader(msgspec.Struct, frozen=True):
+class ReplayHeader(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     game_mode_id: GameMode
     seed: int
     replay_format_version: int = REPLAY_FORMAT_VERSION
@@ -304,17 +340,19 @@ class ReplayHeader(msgspec.Struct, frozen=True):
     status: GameStatusData = msgspec.field(default_factory=GameStatusData)
     claimed_stats: ReplayClaimedStatsSnapshot = msgspec.field(default_factory=ReplayClaimedStatsSnapshot)
     input_quantization: InputQuantization = "f32"
-    # Creature pool residue at run start (capture v15+); None for port-recorded
-    # replays, which start from a fresh pool.
+    # Creature pool residue at run start for original captures; None for
+    # port-recorded replays, which start from a fresh pool.
     initial_creature_pool: tuple[ReplayCreatureSlotResidue, ...] | None = None
 
 
-class ReplayTick(msgspec.Struct, frozen=True):
+class ReplayTick(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     dt: float
     inputs: PackedTickInputs
-    commands: list[GameCommand] = []
+    prelude: list[ReplayPreludeOperation] = []
+    postlude: list[ReplayPostludeOperation] = []
+    commands: list[ReplayTickCommand] = []
 
 
-class Replay(msgspec.Struct):
+class Replay(msgspec.Struct, forbid_unknown_fields=True):
     header: ReplayHeader
     ticks: list[ReplayTick]
