@@ -11,7 +11,7 @@ older sessions are historical investigation notes; their recordings predate the
 current owned formats and are not expected to load. Do not add compatibility
 code for them.
 
-Start a current session only from a fresh Frida format 18 capture finalized as
+Start a current session only from a fresh Frida format 19 capture finalized as
 CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
 
 ## Session template
@@ -19,7 +19,7 @@ CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
 - **Title:** `Session <N> (YYYY-MM-DD)`
 - **Capture set:** `<native.cdt>`, `<run.crd>`, `<rng_evidence.json>`,
   `<evidence.msgpack.zst>`
-- **Capture versions:** `Frida 18 / CDT 2+14 / CRD 15 / evidence 1`
+- **Capture versions:** `Frida 19 / CDT 2+14 / CRD 15 / evidence 2`
 - **Capture SHA256:** `<sha256 for every artifact>`
 - **Replay trace:** `<python-or-zig.cdt>`
 - **Commands:** `<exact health, record, diff, bisect, or focus commands>`
@@ -47,8 +47,8 @@ CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
 - Keep the `.cdt`, `.crd`, `.rng_evidence.json`, and `.evidence.msgpack.zst`
   files together as the canonical native artifact set. Log their SHA256 values
   and every capture knob that changes coverage.
-- Reject and regenerate any artifact that is not Frida 18, CDT 2/schema 14,
-  CRD 15, and evidence 1. These files are throwaway and there is no migration
+- Reject and regenerate any artifact that is not Frida 19, CDT 2/schema 14,
+  CRD 15, and evidence 2. These files are throwaway and there is no migration
   path.
 - Run `dbg health` on the native trace and the replay-recorded trace before
   reading a diff. Stop if either selected window is not parity-ready.

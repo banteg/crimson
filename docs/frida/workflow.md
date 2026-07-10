@@ -72,7 +72,7 @@ just frida-gameplay-diff-capture
 
 The host attaches, captures until Ctrl+C / game exit, then finalizes and deletes
 the raw JSONL (pass `--keep-raw` to keep it). To finalize a leftover raw file
-without the game running: `uv run --with frida python
+without the game running: `uv run --with frida==17.15.4 python
 scripts/frida/gameplay_diff_capture_host.py --finalize-only --raw-path <jsonl>`.
 Pass host flags through the `just` recipe after `--`, for example
 `just frida-gameplay-diff-capture -- --keep-raw`.

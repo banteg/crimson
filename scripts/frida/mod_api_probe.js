@@ -1,6 +1,6 @@
 'use strict';
 
-// Mod API runtime probe for Crimsonland (Frida 17.5.2+).
+// Mod API runtime probe for Crimsonland (Frida 17.15.4).
 //
 // Goal: confirm mod API vtable slots (log/cvar/texture/sound/music/key/exec + unknowns)
 // and capture arguments/returns in one pass while running mods.

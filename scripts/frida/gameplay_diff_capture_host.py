@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import os
 import signal
 import sys
 import threading
 import time
 from pathlib import Path
+from typing import cast
 
-from crimson.dbg.frida_finalize import FridaFinalizeError, finalize_frida_jsonl_to_traces
+from crimson.dbg.frida_finalize import (
+    FRIDA_RUNTIME_VERSION,
+    FridaFinalizeError,
+    finalize_frida_jsonl_to_traces,
+)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -78,16 +84,25 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         print(
             "[capture-host] missing dependency: frida. "
-            "Run with `uv run --with frida python scripts/frida/gameplay_diff_capture_host.py ...`.",
+            f"Run with `uv run --with frida=={FRIDA_RUNTIME_VERSION} python "
+            "scripts/frida/gameplay_diff_capture_host.py ...`.",
             file=sys.stderr,
         )
         raise SystemExit(2) from exc
+    frida_version = importlib.metadata.version("frida")
+    if frida_version != FRIDA_RUNTIME_VERSION:
+        print(
+            f"[capture-host] unsupported frida={frida_version}; expected {FRIDA_RUNTIME_VERSION}",
+            file=sys.stderr,
+        )
+        return 2
+    print(f"[capture-host] frida={frida_version}", flush=True)
 
     stop_event = threading.Event()
     failure: list[str] = []
     start_ts = time.time()
 
-    device = frida.get_local_device()
+    device = frida.get_local_device()  # ty: ignore[unresolved-attribute]
     target = int(args.pid) if args.pid is not None else str(args.process)
     print(f"[capture-host] attaching target={target}", flush=True)
     session = device.attach(target)
@@ -104,6 +119,19 @@ def main(argv: list[str] | None = None) -> int:
                 failure.append(str(message))
             stop_event.set()
             return
+        if message_type == "send":
+            payload = message.get("payload")
+            if isinstance(payload, dict):
+                payload_dict = cast(dict[str, object], payload)
+                payload_event = payload_dict.get("event")
+                payload_error = payload_dict.get("error")
+            else:
+                payload_event = None
+                payload_error = None
+            if payload_event == "capture_startup_error":
+                failure.append(f"agent startup failed: {payload_error or 'unknown'}")
+                stop_event.set()
+                return
         if data is not None:
             _ = len(data)
 

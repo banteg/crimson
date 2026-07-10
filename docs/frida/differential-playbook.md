@@ -22,7 +22,7 @@ Frida host capture now finalizes directly to `.cdt` traces plus matching `.crd` 
 If only raw JSONL exists, finalize it offline (no game process needed):
 
 ```bash
-uv run --with frida python scripts/frida/gameplay_diff_capture_host.py \
+uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py \
   --finalize-only \
   --raw-path artifacts/frida/share/gameplay_diff_capture.jsonl \
   --output-dir analysis/frida/traces

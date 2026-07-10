@@ -8,7 +8,7 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 18. The host finalizes each completed run into the same
+raw capture format 19. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
 - CDT container 2, schema 14
@@ -25,7 +25,7 @@ The host is the normal entry point because it attaches, collects the JSONL, and
 finalizes it in one workflow:
 
 ```text
-uv run --with frida python scripts/frida/gameplay_diff_capture_host.py \
+uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py \
   --process crimsonland.exe \
   --script scripts\frida\gameplay_diff_capture.js \
   --output-dir C:\share\frida
@@ -210,6 +210,6 @@ It then writes versioned provenance to `manifest.json`. A stale or inconsistent
 pair aborts the import instead of being skipped.
 
 The importer and fixture tests accept only the current capture/CDT/CRD contract.
-Old checked-in recordings should be deleted and replaced with a fresh format 18
+Old checked-in recordings should be deleted and replaced with a fresh format 19
 capture. Fixture parity is a strict diff assertion; known mismatches are not
 hidden behind a blanket `xfail`.

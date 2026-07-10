@@ -54,8 +54,9 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 18
-FRIDA_EVIDENCE_FORMAT_VERSION = 1
+FRIDA_CAPTURE_FORMAT_VERSION = 19
+FRIDA_EVIDENCE_FORMAT_VERSION = 2
+FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
 _EVIDENCE_DECODE_SPOOL_MAX_MEMORY = 8 * 1024 * 1024
 _EVIDENCE_COMPRESSED_READ_BYTES = 1024 * 1024
@@ -198,6 +199,7 @@ class _SessionStartRow(
     out_path: str
     platform: str
     arch: str
+    frida_version: str
     script_version: str
     config: _SessionConfigRow
     session_fingerprint: _SessionFingerprintRow
@@ -357,6 +359,7 @@ class FridaEvidenceHeader(
     capture_format_version: int
     trace_format_version: int
     trace_schema_version: int
+    frida_version: str
     session_id: str
     ptrs_hash: str
     module_hash: str | None
@@ -1081,6 +1084,7 @@ def _write_run_evidence(
         capture_format_version=int(FRIDA_CAPTURE_FORMAT_VERSION),
         trace_format_version=int(TRACE_FORMAT_VERSION),
         trace_schema_version=int(TRACE_SCHEMA_VERSION),
+        frida_version=str(session_start.frida_version),
         session_id=str(session_start.session_id),
         ptrs_hash=str(session_start.session_fingerprint.ptrs_hash),
         module_hash=session_start.session_fingerprint.module_hash,
@@ -1625,6 +1629,11 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].platform must be non-empty")
                         if not str(session_row.arch):
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].arch must be non-empty")
+                        if str(session_row.frida_version) != FRIDA_RUNTIME_VERSION:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].frida_version="
+                                f"{str(session_row.frida_version)!r}; expected {FRIDA_RUNTIME_VERSION!r}",
+                            )
                         if not str(session_row.script_version):
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].script_version must be non-empty")
                         if str(session_row.config.out_path) != str(session_row.out_path):

@@ -163,7 +163,7 @@ def cmd_dbg_health(
 def cmd_dbg_verify() -> None:
     """Verify dbg schema/replay parity contract wiring."""
     from ..dbg.format_contract import format_contract_errors
-    from ..dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION
+    from ..dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION, FRIDA_RUNTIME_VERSION
     from ..dbg.schema import TRACE_FORMAT_VERSION, TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
     from ..replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
     from ..replay.types import REPLAY_FORMAT_VERSION
@@ -176,6 +176,7 @@ def cmd_dbg_verify() -> None:
     typer.echo(f"checkpoint_format_version={int(CHECKPOINT_FORMAT_VERSION)}")
     typer.echo(f"frida_capture_format_version={int(FRIDA_CAPTURE_FORMAT_VERSION)}")
     typer.echo(f"frida_evidence_format_version={int(FRIDA_EVIDENCE_FORMAT_VERSION)}")
+    typer.echo(f"frida_runtime_version={FRIDA_RUNTIME_VERSION}")
     typer.echo("required_channels=" + ",".join(channels))
     errors = format_contract_errors()
     if errors:

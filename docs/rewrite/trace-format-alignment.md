@@ -22,8 +22,8 @@ all consumers see the same typed tick data and no producer-specific aliases.
 
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
-| Frida raw JSONL | 18 | `scripts/frida/gameplay_diff_capture.js` |
-| Frida evidence sidecar | 1 | `src/crimson/dbg/frida_finalize.py` |
+| Frida raw JSONL | 19 | `scripts/frida/gameplay_diff_capture.js` |
+| Frida evidence sidecar | 2 | `src/crimson/dbg/frida_finalize.py` |
 | CDT container | 2 | `src/crimson/dbg/schema.py` |
 | CDT payload schema | 14 | `src/crimson/dbg/schema.py` |
 | CRD replay | 15 | `src/crimson/replay/types.py` |
@@ -111,7 +111,7 @@ supported.
 
 ### Frida original capture
 
-Capture format 18 emits typed lifecycle rows and canonical tick channels. The
+Capture format 19 emits typed lifecycle rows and canonical tick channels. The
 finalizer validates them, writes one CDT/CRD pair per completed run, and writes
 a sibling typed evidence sidecar containing the producer-only rows used to
 explain how canonical values were derived. The CDT, CRD, RNG report, and typed

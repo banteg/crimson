@@ -10,6 +10,8 @@ import zstandard as zstd
 
 from crimson.dbg.canonical_channels import entity_uid
 from crimson.dbg.frida_finalize import (
+    FRIDA_CAPTURE_FORMAT_VERSION,
+    FRIDA_RUNTIME_VERSION,
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
     load_frida_evidence_file,
@@ -20,7 +22,7 @@ from crimson.replay.codec import load_replay_file
 from crimson.replay.types import quantize_f32
 from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, RngBurnOperation
 
-CAPTURE_FORMAT_VERSION = 18
+CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> Path:
@@ -137,6 +139,7 @@ def _session_start_row(*, capture_format_version: int = CAPTURE_FORMAT_VERSION) 
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
         "platform": "windows",
         "arch": "x86",
+        "frida_version": FRIDA_RUNTIME_VERSION,
         "script_version": str(CAPTURE_FORMAT_VERSION),
         "config": _session_config_stub(),
         "session_fingerprint": _session_fingerprint_stub(),
@@ -825,6 +828,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
 
     evidence = load_frida_evidence_file(out_trace.evidence_path)
     assert evidence.header.capture_format_version == CAPTURE_FORMAT_VERSION
+    assert evidence.header.frida_version == FRIDA_RUNTIME_VERSION
     assert evidence.header.session_id == "session-test"
     assert evidence.header.ptrs_hash == "deadbeef"
     assert evidence.header.module_hash == "cafebabe"
@@ -1272,7 +1276,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            _session_start_row(capture_format_version=17),
+            _session_start_row(capture_format_version=18),
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -1289,7 +1293,16 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=17; expected 18"):
+    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=18; expected 19"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_other_frida_runtime(tmp_path: Path) -> None:
+    session_start = _session_start_row()
+    session_start["frida_version"] = "17.5.2"
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", [session_start])
+
+    with pytest.raises(FridaFinalizeError, match=r"frida_version='17\.5\.2'; expected '17\.15\.4'"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1331,8 +1344,8 @@ def _pool_residue_slot_stub(index: int, **overrides: object) -> dict[str, object
     return row
 
 
-def _v18_session_start_row() -> dict[str, object]:
-    return _session_start_row(capture_format_version=18)
+def _current_session_start_row() -> dict[str, object]:
+    return _session_start_row()
 
 
 def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(tmp_path: Path) -> None:
@@ -1350,7 +1363,7 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            _v18_session_start_row(),
+            _current_session_start_row(),
             run_start,
             {
                 "event": "tick",
@@ -1378,13 +1391,13 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
     assert pool[1].link_index == 0
 
 
-def test_finalize_frida_jsonl_to_traces_requires_pool_residue_for_v17(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_requires_pool_residue(tmp_path: Path) -> None:
     run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_at_run_setup=777)
     run_start.pop("pool_residue")
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            _v18_session_start_row(),
+            _current_session_start_row(),
             run_start,
         ],
     )
@@ -1398,7 +1411,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_active_pool_residue_slot(tmp_pat
     run_start["pool_residue"] = [_pool_residue_slot_stub(0, active=1)]
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
-        [_v18_session_start_row(), run_start],
+        [_current_session_start_row(), run_start],
     )
 
     with pytest.raises(FridaFinalizeError, match="active at run start"):

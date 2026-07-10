@@ -1,6 +1,6 @@
 # Frida GumJS cheatsheet
 
-Use this for writing **agent scripts** (code that runs *inside* the target process) with Frida **17.5.2**.
+Use this for writing **agent scripts** (code that runs *inside* the target process) with Frida **17.15.4**.
 
 ---
 
@@ -451,4 +451,3 @@ Use CModule to move the heaviest hook logic into C (less JS overhead):
 
   * Old: `Module.getExportByName('libc.so', 'open')`
   * New: `Process.getModuleByName('libc.so').getExportByName('open')` ([Frida][1])
-

@@ -6,8 +6,9 @@ const replay_codec = @import("replay_codec.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
-pub const frida_capture_format_version: i32 = 18;
-pub const frida_evidence_format_version: i32 = 1;
+pub const frida_capture_format_version: i32 = 19;
+pub const frida_evidence_format_version: i32 = 2;
+pub const frida_runtime_version = "17.15.4";
 
 pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !CommandOutput {
     if (args.len != 0) {
@@ -25,6 +26,7 @@ pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !Com
         \\checkpoint_format_version={d}
         \\frida_capture_format_version={d}
         \\frida_evidence_format_version={d}
+        \\frida_runtime_version={s}
         \\required_channels={s}
         \\result=ok
         \\
@@ -35,6 +37,7 @@ pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !Com
         checkpoint_diff_native.checkpoints_format_version,
         frida_capture_format_version,
         frida_evidence_format_version,
+        frida_runtime_version,
         cdt_trace.trace_required_channels,
     });
 
@@ -72,8 +75,9 @@ test "dbg verify emits complete ordered format contract" {
         \\trace_schema_version=14
         \\replay_format_version=15
         \\checkpoint_format_version=5
-        \\frida_capture_format_version=18
-        \\frida_evidence_format_version=1
+        \\frida_capture_format_version=19
+        \\frida_evidence_format_version=2
+        \\frida_runtime_version=17.15.4
         \\required_channels=replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples
         \\result=ok
         \\

@@ -106,7 +106,7 @@ Every `ReplayTick` carries:
   tick RNG tracing remains active
 - `commands`: Typ-o commands applied as part of the tick
 
-Frida capture format 18 writes the same five values in each raw tick's
+Frida capture format 19 writes the same five values in each raw tick's
 `channels.replay_step`. Finalization uses that channel to build the CRD sidecar,
 and CDT schema 14 preserves it for direct comparison with replay-recorded
 traces.
@@ -135,7 +135,7 @@ inputs point at capture or replay-driving data.
 ## Latest-only policy
 
 - CRD loaders require replay format 15.
-- Frida finalization requires raw capture format 18.
+- Frida finalization requires raw capture format 19.
 - CDT readers require container 2 and schema 14.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.

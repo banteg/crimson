@@ -214,7 +214,7 @@ frida-gameplay-state-capture process="crimsonland.exe":
 
 [windows]
 frida-gameplay-diff-capture *host_args:
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; uv run --with frida python scripts/frida/gameplay_diff_capture_host.py {{host_args}}
+    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py {{host_args}}
 
 [windows]
 frida-survival-autoplay process="crimsonland.exe":

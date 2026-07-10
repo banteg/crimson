@@ -20,7 +20,54 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 18;
+const CAPTURE_FORMAT_VERSION = 19;
+const REQUIRED_FRIDA_VERSION = "17.15.4";
+// Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
+// compares every field set with the authoritative Python msgspec structs.
+// BEGIN CAPTURE_FIELD_SETS
+const CAPTURE_FIELD_SETS = {
+  "session_start": ["event", "capture_format_version", "session_id", "out_path", "platform", "arch", "frida_version", "script_version", "config", "session_fingerprint"],
+  "session_start.config": ["out_path", "capture_profile", "config_env_overrides", "log_mode", "console_all_events", "console_events", "include_caller", "include_backtrace", "emit_ticks_outside_tracked_states", "tracked_states", "player_count_override", "focus_tick", "focus_radius", "heartbeat_ms", "flush_capture_writes", "max_head_per_kind", "max_events_per_tick", "max_rng_head_per_tick", "max_rng_caller_kinds", "enable_rng_roll_log", "max_rng_roll_log_events", "max_rng_outside_tick_head", "enable_rng_state_mirror", "max_creature_delta_ids", "creature_sample_limit", "projectile_sample_limit", "secondary_projectile_sample_limit", "bonus_sample_limit", "enable_input_hooks", "enable_rng_hooks", "enable_sfx_hooks", "enable_damage_hooks", "enable_effect_hooks", "creature_damage_projectile_only", "enable_spawn_hooks", "enable_creature_spawn_hook", "enable_creature_death_hook", "enable_bonus_spawn_hook", "enable_creature_lifecycle_digest", "enable_creature_micro_hooks", "creature_micro_slots", "creature_micro_tick_start", "creature_micro_tick_end", "creature_micro_max_head_per_tick"],
+  "session_start.session_fingerprint": ["session_id", "ptrs_hash", "module_hash"],
+  "run_start": ["event", "run_id", "mode_id", "seed", "player_count", "reason", "quest_stage_major", "quest_stage_minor", "seed_source", "global_tick_index", "rng_state_at_run_setup", "rng_setup_caller_static", "pool_residue", "settings"],
+  "run_start.settings": ["tick_rate", "quest_fail_retry_count", "hardcore", "detail_preset", "violence_disabled", "world_size", "status"],
+  "run_start.settings.status": ["quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts", "quest_play_counts", "mode_play_survival", "mode_play_rush", "mode_play_typo", "mode_play_other", "game_sequence_id", "unknown_tail"],
+  "run_start.pool_residue[]": ["index", "active", "phase_seed", "state_flag", "collision_flag", "collision_timer", "lifecycle_stage", "pos", "vel", "hp", "max_hp", "heading", "target_heading", "size", "hit_flash_timer", "tint", "force_target", "target", "contact_damage", "move_speed", "attack_cooldown", "reward_value", "type_id", "target_player", "link_index", "target_offset", "orbit_angle", "orbit_radius_u32", "flags", "ai_mode", "anim_phase"],
+  "tick": ["event", "run_id", "tick_index", "global_tick_index", "elapsed_ms", "dt_ms_i32", "mode_id", "channels", "quest_stage_major", "quest_stage_minor", "rng_calls", "rng_outside_before", "rng_state_enter_u32", "rng_state_leave_u32", "evidence"],
+  "tick.evidence": ["event_counts", "event_overflow", "event_heads", "diagnostics", "input_queries", "input_player_keys", "input_approx", "before", "after", "samples", "frame_dt_ms", "frame_dt_ms_i32", "checkpoint_private", "clocks"],
+  "tick.evidence.checkpoint_private": ["elapsed_ms", "deaths", "events"],
+  "tick.evidence.checkpoint_private.events": ["hit_count", "pickup_count", "sfx_count", "sfx_head", "hit_head"],
+  "tick.evidence.clocks": ["time_played_ms_raw", "quest_spawn_timeline_raw", "summed_replay_clock_ms", "canonical_elapsed_ms"],
+  "tick.channels": ["replay_step", "checkpoint", "sim_state", "entity_samples", "rng_stream", "timing_samples"],
+  "tick.channels.replay_step": ["dt", "inputs", "prelude", "postlude", "commands"],
+  "tick.channels.replay_step.inputs[]": ["move_x", "move_y", "aim_x", "aim_y", "flags"],
+  "tick.channels.checkpoint": ["tick_index", "rng_state", "elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending", "players", "bonus_timers", "deaths", "perk", "events", "tutorial", "typo"],
+  "tick.channels.checkpoint.players[]": ["pos", "health", "weapon_id", "ammo", "experience", "level"],
+  "tick.channels.checkpoint.deaths[]": ["creature_index", "type_id", "reward_value", "xp_awarded", "owner_id"],
+  "tick.channels.checkpoint.perk": ["pending_count", "choices_dirty", "choices", "player_nonzero_counts"],
+  "tick.channels.checkpoint.events": ["hit_count", "pickup_count", "sfx_count", "sfx_head", "hit_head"],
+  "tick.channels.sim_state": ["gameplay", "players"],
+  "tick.channels.sim_state.gameplay": ["mode_id", "quest_stage_major", "quest_stage_minor", "perk_pending_count", "perk_choices_dirty", "bonus_timers"],
+  "tick.channels.sim_state.gameplay.bonus_timers": ["weapon_power_up_ms", "reflex_boost_ms", "energizer_ms", "double_experience_ms", "freeze_ms"],
+  "tick.channels.sim_state.players[]": ["index", "pos", "heading", "move_speed", "move_phase", "aim", "aim_heading", "health", "weapon", "experience", "level"],
+  "tick.channels.sim_state.players[].weapon": ["weapon_id", "ammo", "clip_size", "reload_active", "reload_timer", "reload_timer_max", "shot_cooldown"],
+  "tick.channels.entity_samples": ["creatures", "projectiles", "secondary_projectiles", "bonuses"],
+  "tick.channels.entity_samples.creatures[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "hp", "pos", "flags", "ai_mode", "link_index", "force_target", "target", "target_player", "target_offset", "heading", "target_heading", "collision_timer", "attack_cooldown", "orbit_angle", "orbit_radius", "lifecycle_stage", "vel", "move_speed"],
+  "tick.channels.entity_samples.projectiles[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "angle", "pos", "vel", "life_timer", "speed_scale", "damage_pool", "hit_radius", "travel_budget", "owner_id"],
+  "tick.channels.entity_samples.secondary_projectiles[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "angle", "pos", "vel", "speed", "trail_timer", "owner_id", "target_id"],
+  "tick.channels.entity_samples.bonuses[]": ["uid", "generation", "pool_kind", "index", "active", "bonus_id", "picked", "time_left", "time_max", "pos", "amount"],
+  "tick.channels.rng_stream[]": ["tick_call_index", "value_15", "state_before_u32", "state_after_u32", "caller"],
+  "tick.channels.timing_samples[]": ["tick_index", "gameplay_frame", "phase", "write_kind", "frame_dt_f32", "frame_dt_ms_i32", "frame_dt_ms_f32", "time_scale_active_entry", "time_scale_active_current", "time_scale_factor", "bonus_reflex_boost_timer", "mode_fn", "player_index"],
+  "tick.rng_outside_before": ["calls", "dropped", "caller_counts", "head"],
+  "tick.rng_outside_before.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static"],
+  "run_end": ["event", "run_id", "mode_id", "quest_stage_major", "quest_stage_minor", "ticks_written", "reason", "global_tick_index", "rng_outside_tail"],
+  "run_end.rng_outside_tail": ["calls", "dropped", "caller_counts", "head"],
+  "run_end.rng_outside_tail.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static"],
+  "run_error": ["event", "error", "run_id", "mode_id", "quest_stage_major", "quest_stage_minor", "global_tick_index"],
+  "error": ["event", "error", "run_id", "global_tick_index"],
+  "session_end": ["event", "session_id", "ticks_written"]
+};
+// END CAPTURE_FIELD_SETS
 // First rng caller of native run setup (terrain_generate prelude roll 1). The
 // rand state observed before this draw is the state a replay must seed from to
 // reproduce the run's setup draws (terrain stamps, quest build) value-for-value.
@@ -890,8 +937,65 @@ function _captureWrite(text, flushNow) {
   }
 }
 
+function captureContractValuesAtPath(row, path) {
+  const parts = String(path).split(".");
+  let values = [row];
+  for (let i = 1; i < parts.length; i++) {
+    const part = parts[i];
+    const isArray = part.endsWith("[]");
+    const field = isArray ? part.slice(0, -2) : part;
+    const next = [];
+    for (let j = 0; j < values.length; j++) {
+      const parent = values[j];
+      if (!parent || typeof parent !== "object" || Array.isArray(parent)) {
+        failCaptureContract(path + " parent must be an object");
+      }
+      const value = parent[field];
+      if (isArray) {
+        if (!Array.isArray(value)) failCaptureContract(path + " must be an array");
+        for (let k = 0; k < value.length; k++) next.push(value[k]);
+      } else {
+        next.push(value);
+      }
+    }
+    values = next;
+  }
+  return values;
+}
+
+function validateCaptureRowFieldSets(row) {
+  if (!row || typeof row !== "object" || Array.isArray(row)) {
+    failCaptureContract("capture row must be an object");
+  }
+  const event = row.event == null ? "" : String(row.event);
+  const paths = Object.keys(CAPTURE_FIELD_SETS).filter(function (path) {
+    return path === event || path.startsWith(event + ".");
+  });
+  if (paths.length <= 0) failCaptureContract("unsupported capture row event: " + event);
+  for (let i = 0; i < paths.length; i++) {
+    const path = paths[i];
+    const expected = CAPTURE_FIELD_SETS[path].slice().sort();
+    const values = captureContractValuesAtPath(row, path);
+    for (let j = 0; j < values.length; j++) {
+      const value = values[j];
+      if (!value || typeof value !== "object" || Array.isArray(value)) {
+        failCaptureContract(path + " must be an object");
+      }
+      const actual = Object.keys(value)
+        .filter(function (key) { return value[key] !== undefined; })
+        .sort();
+      if (actual.length !== expected.length || actual.some(function (key, index) { return key !== expected[index]; })) {
+        failCaptureContract(
+          path + " fields mismatch: actual=" + actual.join(",") + " expected=" + expected.join(",")
+        );
+      }
+    }
+  }
+}
+
 function _captureWriteJsonLine(obj, flushNow) {
   if (!obj) return false;
+  validateCaptureRowFieldSets(obj);
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
 }
 
@@ -934,6 +1038,9 @@ function emitStartupContractError(errorCode, extra) {
     extra || {}
   );
   writeLine(row);
+  try {
+    send({ event: "capture_startup_error", error: row.error, details: row });
+  } catch (_) {}
   return false;
 }
 
@@ -1025,6 +1132,12 @@ function replayConfigReadinessErrors() {
 }
 
 function validateStartupReadiness(ptrs) {
+  if (String(Frida.version) !== REQUIRED_FRIDA_VERSION) {
+    return emitStartupContractError("unsupported_frida_version", {
+      actual: String(Frida.version),
+      expected: REQUIRED_FRIDA_VERSION,
+    });
+  }
   const invalidConfigDetails = CONFIG_PARSE_ERRORS.concat(replayConfigReadinessErrors());
   if (invalidConfigDetails.length > 0) {
     return emitStartupContractError("invalid_config", {
@@ -1075,6 +1188,7 @@ function emitSessionStartRow(meta, outPath) {
     out_path: outPath || CONFIG.outPath,
     platform: String(processObj.platform),
     arch: String(processObj.arch),
+    frida_version: String(processObj.frida_version),
     script_version: String(CAPTURE_FORMAT_VERSION),
     config: meta.config,
     session_fingerprint: meta.session_fingerprint,
@@ -4614,7 +4728,10 @@ function checkpointDeathsFromEventHeads(eventHeadsByKind) {
     out.push({
       creature_index: creatureIndex,
       type_id: typeId,
-      reward_value: intOr(payload.reward_value, 0),
+      reward_value:
+        before.reward_value == null
+          ? 0
+          : requireFiniteScalar(before.reward_value, "event_heads.creature_death[" + i + "].before.reward_value"),
       xp_awarded: intOr(payload.xp_awarded, 0),
       owner_id: intOr(payload.owner_id, -1),
     });
@@ -4897,7 +5014,7 @@ function finalizeTick() {
           ? null
           : captureNumber(decodeCapturedF32(globals.frame_dt) * 1000);
   const frameDtMsI32 = globals.frame_dt_ms_i32 == null ? null : globals.frame_dt_ms_i32;
-  const out = {
+  const out = Object.assign({}, tick, {
     tick_index: tick.tick_index,
     gameplay_frame: tick.gameplay_frame,
     focus_tick: focused,
@@ -4915,7 +5032,6 @@ function finalizeTick() {
     checkpoint: checkpoint,
     event_counts: tick.event_counts,
     event_overflow: tick.overflow,
-    event_heads: tick.event_heads,
     timing_samples: timingSamplesFromTick({
       tick_index: tick.tick_index,
       gameplay_frame: tick.gameplay_frame,
@@ -4927,8 +5043,6 @@ function finalizeTick() {
       query_hash: toHex(tick.input_hash_state >>> 0, 8),
     },
     input_player_keys: tick.input_player_keys,
-    replay_prelude: tick.replay_prelude,
-    replay_postlude: tick.replay_postlude,
     rng_stream: tick.rng.head,
     rng_calls: tick.rng.calls | 0,
     rng_outside_before: {
@@ -4952,7 +5066,7 @@ function finalizeTick() {
       secondary_projectiles: readActiveSecondaryProjectileSample(CONFIG.secondaryProjectileSampleLimit),
       bonuses: readActiveBonusSample(CONFIG.bonusSampleLimit),
     },
-  };
+  });
 
   writeCaptureTick(out);
   writeLine({

@@ -7,7 +7,11 @@ import msgspec
 
 from crimson.dbg.canonical_channels import ReplayStepSnapshot
 from crimson.dbg.format_contract import format_contract_errors
-from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION
+from crimson.dbg.frida_finalize import (
+    FRIDA_CAPTURE_FORMAT_VERSION,
+    FRIDA_EVIDENCE_FORMAT_VERSION,
+    FRIDA_RUNTIME_VERSION,
+)
 from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
 from crimson.replay.types import REPLAY_FORMAT_VERSION, ReplayTick
@@ -25,7 +29,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 14, 15, 5, 18, 1)
+    ) == (2, 14, 15, 5, 19, 2)
 
 
 def test_cross_language_format_contract_is_wired() -> None:
@@ -44,6 +48,15 @@ def test_frida_agent_uses_the_python_capture_format_version() -> None:
 
     assert match is not None
     assert int(match.group(1)) == FRIDA_CAPTURE_FORMAT_VERSION
+
+
+def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:
+    root = Path(__file__).parents[2]
+    source = (root / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+    justfile = (root / "justfile").read_text()
+
+    assert f'const REQUIRED_FRIDA_VERSION = "{FRIDA_RUNTIME_VERSION}";' in source
+    assert f"uv run --with frida=={FRIDA_RUNTIME_VERSION}" in justfile
 
 
 def test_frida_agent_does_not_require_callable_rng_state_accessor_as_hook() -> None:
@@ -80,7 +93,5 @@ def test_frida_agent_forwards_tick_context_to_tick_contract() -> None:
         1,
     )[0]
 
-    assert "replay_prelude: tick.replay_prelude" in finalize_tick
-    assert "replay_postlude: tick.replay_postlude" in finalize_tick
-    assert "event_heads: tick.event_heads" in finalize_tick
+    assert "const out = Object.assign({}, tick, {" in finalize_tick
     assert "buildCaptureEventHeads" not in source
