@@ -994,7 +994,9 @@ def test_replay_verify_checkpoints_rejects_removed_elapsed_mask(tmp_path: Path) 
     )
 
     assert result.exit_code == 2
-    assert "No such option: --skip-elapsed-mismatch" in result.output
+    output = unstyle(result.output)
+    assert "No such option" in output
+    assert "--skip-elapsed-mismatch" in output
 
 
 def test_replay_verify_checkpoints_rejects_removed_lenient_integrity_flag(tmp_path: Path) -> None:
