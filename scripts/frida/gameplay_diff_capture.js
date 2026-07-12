@@ -5936,6 +5936,7 @@ function installHooks() {
       const projectile = readProjectileEntryByPosPtr(queryPosPtr);
       const shockChainProjectileId = readDataI32("shock_chain_projectile_id");
       const shockChainLinksLeft = readDataI32("shock_chain_links_left");
+      const x87ControlWord = readX87ControlWord();
       this._ctx = {
         pos: {
           x: captureNumber(safeReadF32(queryPosPtr)),
@@ -5949,6 +5950,9 @@ function installHooks() {
         projectile_hit_radius: projectile && projectile.hit_radius != null ? projectile.hit_radius : null,
         shock_chain_projectile_id: shockChainProjectileId == null ? null : shockChainProjectileId,
         shock_chain_links_left: shockChainLinksLeft == null ? null : shockChainLinksLeft,
+        x87_control_word: x87ControlWord,
+        x87_precision_control: x87ControlWord == null ? null : (x87ControlWord >>> 8) & 3,
+        x87_rounding_control: x87ControlWord == null ? null : (x87ControlWord >>> 10) & 3,
         caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
         caller_static: callerStatic == null ? null : toHex(callerStatic, 8),
         backtrace: maybeBacktrace(this.context),
@@ -5980,6 +5984,9 @@ function installHooks() {
         player_find_skipped: playerFindSkipped,
         shock_chain_projectile_id: ctx.shock_chain_projectile_id,
         shock_chain_links_left: ctx.shock_chain_links_left,
+        x87_control_word: ctx.x87_control_word,
+        x87_precision_control: ctx.x87_precision_control,
+        x87_rounding_control: ctx.x87_rounding_control,
         caller: ctx.caller,
         caller_static: ctx.caller_static,
         backtrace: ctx.backtrace,

@@ -57,6 +57,7 @@ def test_frida_agent_records_x87_environment_evidence() -> None:
     assert "x87_control_word: x87ControlWord" in source
     assert "x87_precision_control:" in source
     assert "x87_rounding_control:" in source
+    assert "x87_control_word: ctx.x87_control_word" in source
 
 
 def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:
