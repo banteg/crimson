@@ -393,8 +393,10 @@ class SecondaryProjectilePool:
                     entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            trail_decay = float(f32((abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01))
-            entry.trail_timer = float(f32(float(entry.trail_timer) - float(trail_decay)))
+            trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
+            trail_decay = x87_pc24_mul(trail_speed, dt)
+            trail_decay = x87_pc24_mul(trail_decay, 0.01)
+            entry.trail_timer = x87_pc24_sub(entry.trail_timer, trail_decay)
             if float(entry.trail_timer) < 0.0:
                 direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0

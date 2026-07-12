@@ -423,6 +423,31 @@ def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
     assert impulse == Vec2(3916.34716796875, 4689.19384765625)
 
 
+def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(750.26220703125, 714.5313110351562),
+            angle=-3.6826539039611816,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+    projectile = pool.entries[idx]
+    projectile.vel = Vec2(-65.83425903320312, -83.56523895263672)
+    projectile.target_id = 0
+    projectile.trail_timer = f32(0.06)
+    creatures = [_creature(pos=Vec2(813.2255859375, 819.3178100585938), hp=1000.0)]
+
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.06200000271201134,
+            creatures=creatures,
+        ),
+    )
+
+    assert projectile.trail_timer == 0.009637407958507538
+
+
 def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
