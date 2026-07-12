@@ -103,3 +103,11 @@ def test_frida_agent_closes_runs_at_terminal_state_transition() -> None:
     assert "isTerminalRunTransition(payload.before.id, payload.after.id)" in source
     assert 'outState.pendingRunCloseReason = "run_end"' in source
     assert "closeActiveRun(pendingRunCloseReason, out)" in source
+
+
+def test_frida_agent_records_transition_frame_rng_burn_in_first_tick_prelude() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    assert 'const FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7";' in source
+    assert "rollRow.caller_static === FRAME_DISCARDED_RNG_CALLER_STATIC" in source
+    assert "outState.runSetupRngActive = false;" in source

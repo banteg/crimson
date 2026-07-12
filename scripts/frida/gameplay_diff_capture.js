@@ -72,6 +72,7 @@ const CAPTURE_FIELD_SETS = {
 // rand state observed before this draw is the state a replay must seed from to
 // reproduce the run's setup draws (terrain stamps, quest build) value-for-value.
 const RUN_SETUP_FIRST_RNG_CALLER_STATIC = "0x004181cc";
+const FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7";
 const PERK_SELECTION_APPLY_RETURN_STATIC = 0x004060fa;
 const LINK_BASE = ptr("0x00400000");
 const GAME_MODULE = "crimsonland.exe";
@@ -4644,6 +4645,17 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     // The pool is stable between creature_reset_all and the run's first tick;
     // snapshot the residue the run will inherit alongside the rng latch.
     outState.pendingRunPoolResidue = readCreaturePoolResidue();
+  }
+
+  if (
+    !tick &&
+    outState.runSetupRngActive &&
+    rollRow.caller_static === FRAME_DISCARDED_RNG_CALLER_STATIC
+  ) {
+    // The state-transition frame consumes one shared-CRT draw after run setup
+    // and before gameplay tick 0. It belongs in tick 0's replay prelude; the
+    // terrain/setup window before it is reproduced by normal initialization.
+    outState.runSetupRngActive = false;
   }
 
   if (!tick) {

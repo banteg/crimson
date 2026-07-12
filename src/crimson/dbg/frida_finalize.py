@@ -25,7 +25,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2, quantize_f32
-from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
+from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand, RngBurnOperation
 from .canonical_channels import (
     EntitySamplesSnapshot,
     ReplayStepSnapshot,
@@ -67,6 +67,7 @@ _SEED_SOURCES = frozenset(("unknown", "crt_srand"))
 # Replay seeds are derived from the rand state latched at run-setup entry
 # (before the first terrain draw), not from the stale session-wide srand seed.
 _RUN_SETUP_SEED_SOURCE = "run_setup_rng_state"
+_FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7"
 _LCG_GAP_SEARCH_LIMIT = 1 << 16
 _SUPPORTED_CAPTURE_MODES = frozenset((int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)))
 
@@ -521,6 +522,7 @@ class _OpenRun(msgspec.Struct):
     quest_stage_major: int
     quest_stage_minor: int
     replay_seed: int
+    rng_setup_caller_static: str
     replay_player_count: int
     next_global_tick: int
     temp_path: Path
@@ -1025,6 +1027,62 @@ def _replay_tick_inputs_from_step(
         flags = _capture_u32(sample.flags, field=f"{player_field}.flags")
         out.append([float(sample.move_x), float(sample.move_y), float(sample.aim_x), float(sample.aim_y), flags])
     return out
+
+
+def _canonical_replay_prelude(
+    run: _OpenRun,
+    tick_row: _TickRow,
+    *,
+    field: str,
+) -> list[ReplayPreludeOperation]:
+    prelude = list(tick_row.channels.replay_step.prelude)
+    if int(tick_row.tick_index) != 0:
+        return prelude
+
+    outside = tick_row.rng_outside_before
+    setup_index = next(
+        (
+            index
+            for index, row in enumerate(outside.head)
+            if str(row.caller_static) == str(run.rng_setup_caller_static)
+            and int(row.state_before_u32) == int(run.replay_seed)
+        ),
+        None,
+    )
+    if setup_index is None:
+        return prelude
+    frame_index = next(
+        (
+            index
+            for index in range(setup_index + 1, len(outside.head))
+            if str(outside.head[index].caller_static) == _FRAME_DISCARDED_RNG_CALLER_STATIC
+        ),
+        None,
+    )
+    if frame_index is None:
+        return prelude
+
+    setup_tail = outside.head[frame_index:]
+    previous_after: int | None = None
+    for index, row in enumerate(setup_tail):
+        state_before = _capture_u32(row.state_before_u32, field=f"{field}.rng_outside_before.head[{frame_index + index}]")
+        state_after = _capture_u32(row.state_after_u32, field=f"{field}.rng_outside_before.head[{frame_index + index}]")
+        if previous_after is not None and state_before != previous_after:
+            raise FridaFinalizeError(f"{field}.rng_outside_before setup-tail state chain is discontinuous")
+        previous_after = state_after
+    if previous_after != int(tick_row.rng_state_enter_u32):
+        raise FridaFinalizeError(f"{field}.rng_outside_before setup-tail does not reach tick RNG entry state")
+
+    expected_burns = len(setup_tail)
+    recorded_burns = sum(int(operation.draws) for operation in prelude if isinstance(operation, RngBurnOperation))
+    if recorded_burns == expected_burns:
+        return prelude
+    if recorded_burns != 0:
+        raise FridaFinalizeError(
+            f"{field}.channels.replay_step.prelude records {recorded_burns} RNG burns; "
+            f"raw setup-tail evidence requires {expected_burns}",
+        )
+    return [RngBurnOperation(draws=expected_burns), *prelude]
 
 
 def _validate_tick_channels(
@@ -1844,6 +1902,7 @@ def finalize_frida_jsonl_to_traces(
                             quest_stage_major=int(run_start.quest_stage_major),
                             quest_stage_minor=int(run_start.quest_stage_minor),
                             replay_seed=int(run_start.rng_state_at_run_setup),
+                            rng_setup_caller_static=str(run_start.rng_setup_caller_static),
                             replay_player_count=int(run_start.player_count),
                             next_global_tick=int(run_start.global_tick_index),
                             temp_path=spool_path,
@@ -1916,10 +1975,19 @@ def finalize_frida_jsonl_to_traces(
                             expected_players=int(active_run.replay_player_count),
                             field=f"{raw_path}.lines[{line_no}].channels.replay_step",
                         )
+                        replay_prelude = _canonical_replay_prelude(
+                            active_run,
+                            tick_row,
+                            field=f"{raw_path}.lines[{line_no}]",
+                        )
                         channels = _canonical_channels_payload(
                             channels=tick_row.channels,
                             evidence=tick_row.evidence,
                             field=f"{raw_path}.lines[{line_no}].channels",
+                        )
+                        channels = msgspec.structs.replace(
+                            channels,
+                            replay_step=msgspec.structs.replace(channels.replay_step, prelude=replay_prelude),
                         )
                         _account_tick_rng_evidence(
                             active_run,
@@ -1929,7 +1997,7 @@ def finalize_frida_jsonl_to_traces(
                         )
                         active_run.replay_inputs.append(list(replay_inputs))
                         active_run.replay_dt.append(float(tick_row.channels.replay_step.dt))
-                        active_run.replay_prelude.append(list(tick_row.channels.replay_step.prelude))
+                        active_run.replay_prelude.append(list(replay_prelude))
                         active_run.replay_postlude.append(list(tick_row.channels.replay_step.postlude))
                         active_run.replay_commands.append(list(tick_row.channels.replay_step.commands))
                         tick = TickRecord(
