@@ -412,7 +412,7 @@ pub fn emitBonusPickupEffects(
 ) void {
     for (pickups) |pickup| {
         if (pickup.bonus_id != .nuke) {
-            effects.spawnBurst(
+            effects.spawnBurstWithCallers(
                 state,
                 pickup.pos,
                 12,
@@ -420,6 +420,7 @@ pub fn emitBonusPickupEffects(
                 0.4,
                 0.1,
                 .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+                effects_mod.EffectPool.bonus_pickup_burst_callers,
             );
         }
         switch (pickup.bonus_id) {

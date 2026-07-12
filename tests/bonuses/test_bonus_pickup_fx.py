@@ -3,10 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
 from crimson.gameplay import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
+from tests.support.helpers import ScriptedCrand
 from tests.support.world_runtime import WorldRuntimeHost
+
+
+def test_bonus_pickup_burst_tags_inlined_native_callers() -> None:
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
+
+    emit_bonus_pickup_effects(
+        state=state,
+        pickups=[BonusPickupEvent(player_index=0, bonus_id=BonusId.POINTS, amount=1, pos=Vec2())],
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
+    ] * 12
 
 
 def test_bonus_pickup_spawns_burst_effect() -> None:
