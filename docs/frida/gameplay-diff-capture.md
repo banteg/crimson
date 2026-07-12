@@ -38,6 +38,13 @@ after `--`, for example:
 just frida-gameplay-diff-capture -- --keep-raw
 ```
 
+Terminal gameplay transitions close the active run before the game-over or
+quest-results screen. If process teardown destroys the injected agent before it
+can write `session_end`, the host appends that transport marker. It may also
+recover `run_end` only when the final tick itself proves a native terminal
+transition (`9 -> 7`, `9 -> 8`, or `9 -> 12`); an arbitrary active run remains
+a hard error.
+
 Useful host options:
 
 - `--raw-path <path>`: override the JSONL path

@@ -15,6 +15,7 @@ from crimson.dbg.frida_finalize import (
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
     load_frida_evidence_file,
+    seal_frida_jsonl_after_detach,
 )
 from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, UNKNOWN_TAIL_SIZE, WEAPON_USAGE_COUNT
@@ -2073,6 +2074,51 @@ def _single_tick_rows(
         _run_end_row(run_id=1, mode_id=1, ticks_written=1) if run_end is None else run_end,
         _session_end_row(ticks_written=1),
     ]
+
+
+def _set_terminal_transition(tick: dict[str, object], *, before_state: int = 9, after_state: int = 7) -> None:
+    evidence = cast(dict[str, object], tick["evidence"])
+    evidence["after"] = {"globals": {"game_state_id": int(after_state)}}
+    event_heads = cast(dict[str, list[object]], evidence["event_heads"])
+    event_heads["state_transition"] = [
+        {
+            "target_state": int(after_state),
+            "before": {"id": int(before_state)},
+            "after": {"id": int(after_state)},
+        },
+    ]
+
+
+def test_seal_frida_jsonl_after_detach_recovers_proven_terminal_run(tmp_path: Path) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:3]
+    tick = rows[-1]
+    _set_terminal_transition(tick)
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    assert seal_frida_jsonl_after_detach(raw_path) == ("run_end", "session_end")
+    sealed_rows = [json.loads(line) for line in raw_path.read_text().splitlines()]
+    assert [row["event"] for row in sealed_rows[-2:]] == ["run_end", "session_end"]
+    assert sealed_rows[-2]["ticks_written"] == 1
+    assert sealed_rows[-2]["rng_outside_tail"] == {"calls": 0, "dropped": 0, "caller_counts": {}, "head": []}
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    assert result.traces[0].tick_count == 1
+
+
+def test_seal_frida_jsonl_after_detach_adds_only_missing_session_end(tmp_path: Path) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:-1]
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    assert seal_frida_jsonl_after_detach(raw_path) == ("session_end",)
+    assert seal_frida_jsonl_after_detach(raw_path) == ()
+
+
+def test_seal_frida_jsonl_after_detach_rejects_unproven_active_run(tmp_path: Path) -> None:
+    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:3]
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    with pytest.raises(FridaFinalizeError, match="without a proven terminal transition"):
+        seal_frida_jsonl_after_detach(raw_path)
 
 
 def test_finalize_frida_jsonl_to_traces_seeds_replay_from_run_setup_rng_state(tmp_path: Path) -> None:

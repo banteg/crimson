@@ -14,6 +14,7 @@ from crimson.dbg.frida_finalize import (
     FRIDA_RUNTIME_VERSION,
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
+    seal_frida_jsonl_after_detach,
 )
 
 
@@ -167,14 +168,16 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         try:
             try:
-                script.exports_sync.stop("host_shutdown")
-            except Exception:
-                pass
+                stopped_ticks = script.exports_sync.stop("host_shutdown")
+                print(f"[capture-host] agent stopped ticks={stopped_ticks}", flush=True)
+            except Exception as exc:
+                print(f"[capture-host] agent stop unavailable: {exc}", file=sys.stderr, flush=True)
             try:
                 stats_obj = script.exports_sync.stats()
                 if isinstance(stats_obj, dict):
                     stats = dict(stats_obj)
-            except Exception:
+            except Exception as exc:
+                print(f"[capture-host] agent stats unavailable: {exc}", file=sys.stderr, flush=True)
                 stats = {}
             time.sleep(0.15)
             try:
@@ -215,14 +218,27 @@ def _finalize_and_report(
     if isinstance(last_hook, dict) and last_hook:
         print(f"[capture-host] last_hook={last_hook}", flush=True)
     try:
-        result = finalize_frida_jsonl_to_traces(
-            raw_path,
-            output_dir=(None if args.output_dir is None else Path(args.output_dir)),
-            delete_raw=(not bool(args.keep_raw)),
-        )
+        sealed_rows = seal_frida_jsonl_after_detach(raw_path)
     except FridaFinalizeError as exc:
-        failure.append(f"finalize failed: {exc}")
+        failure.append(f"capture sealing failed: {exc}")
+        sealed_rows = ()
+        sealing_failed = True
+    else:
+        sealing_failed = False
+        if sealed_rows:
+            print(f"[capture-host] sealed rows={','.join(sealed_rows)}", flush=True)
+    if sealing_failed:
         result = None
+    else:
+        try:
+            result = finalize_frida_jsonl_to_traces(
+                raw_path,
+                output_dir=(None if args.output_dir is None else Path(args.output_dir)),
+                delete_raw=(not bool(args.keep_raw)),
+            )
+        except FridaFinalizeError as exc:
+            failure.append(f"finalize failed: {exc}")
+            result = None
 
     elapsed = max(0.0, time.time() - start_ts)
     if result is not None:

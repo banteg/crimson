@@ -7,7 +7,7 @@ from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import SpooledTemporaryFile, TemporaryDirectory
-from typing import Any, BinaryIO, Protocol
+from typing import Any, BinaryIO, Protocol, cast
 
 import msgspec
 import zstandard as zstd
@@ -714,6 +714,144 @@ def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
         return _CAPTURE_ROW_DECODER.decode(line)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
         raise FridaFinalizeError(f"{field} invalid capture row: {exc}") from exc
+
+
+def _mapping_int(value: object, key: str) -> int | None:
+    if not isinstance(value, dict):
+        return None
+    raw = cast(dict[str, object], value).get(key)
+    if isinstance(raw, bool) or not isinstance(raw, int):
+        return None
+    return int(raw)
+
+
+def _terminal_transition_is_proven(tick: _TickRow) -> bool:
+    mode_id = int(tick.mode_id)
+    if mode_id in (int(GameMode.SURVIVAL), int(GameMode.RUSH)):
+        terminal_states = frozenset((7,))
+    elif mode_id == int(GameMode.QUESTS):
+        terminal_states = frozenset((8, 12))
+    else:
+        return False
+
+    after_globals = tick.evidence.after.get("globals")
+    after_state = _mapping_int(after_globals, "game_state_id")
+    if after_state not in terminal_states:
+        return False
+    transitions = tick.evidence.event_heads.get("state_transition", [])
+    for transition in reversed(transitions):
+        if not isinstance(transition, dict):
+            continue
+        before_state = _mapping_int(transition.get("before"), "id")
+        transition_after = _mapping_int(transition.get("after"), "id")
+        if before_state == 9 and transition_after == after_state:
+            return True
+    return False
+
+
+def seal_frida_jsonl_after_detach(raw_path: Path) -> tuple[str, ...]:
+    """Append only transport closure rows that are provable from captured state.
+
+    Process teardown can destroy the injected agent before it writes JSONL
+    terminators. A terminal gameplay transition proves the run boundary; a
+    closed run proves the session boundary. No simulation rows are synthesized.
+    """
+
+    raw_path = Path(raw_path)
+    if not raw_path.is_file():
+        raise FridaFinalizeError(f"raw frida trace not found: {raw_path}")
+
+    session_start: _SessionStartRow | None = None
+    active_run: _RunStartRow | None = None
+    active_tick_count = 0
+    captured_tick_count = 0
+    last_tick: _TickRow | None = None
+    last_row: _CaptureRow | None = None
+    with raw_path.open("rb") as handle:
+        for line_no, raw_line in enumerate(handle, start=1):
+            line = bytes(raw_line).strip()
+            if not line:
+                continue
+            row = _decode_capture_row(line, field=f"{raw_path}.lines[{line_no}]")
+            last_row = row
+            match row:
+                case _SessionStartRow() as session_row:
+                    if session_start is not None:
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] duplicate session_start")
+                    session_start = session_row
+                case _RunStartRow() as run_start:
+                    if active_run is not None:
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
+                    active_run = run_start
+                    active_tick_count = 0
+                    last_tick = None
+                case _TickRow() as tick:
+                    if active_run is None or int(tick.run_id) != int(active_run.run_id):
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] tick outside matching run")
+                    active_tick_count += 1
+                    captured_tick_count += 1
+                    last_tick = tick
+                case _RunEndRow() as run_end:
+                    if active_run is None or int(run_end.run_id) != int(active_run.run_id):
+                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_end outside matching run")
+                    active_run = None
+                    active_tick_count = 0
+                    last_tick = None
+                case _SessionEndRow():
+                    return ()
+                case _ErrorRow() as error:
+                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] capture error={error.error!r}")
+                case _RunErrorRow() as error:
+                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run error={error.error!r}")
+
+    if session_start is None:
+        raise FridaFinalizeError(f"{raw_path} missing session_start")
+
+    rows_to_append: list[dict[str, object]] = []
+    sealed: list[str] = []
+    if active_run is not None:
+        if last_tick is None or not _terminal_transition_is_proven(last_tick):
+            raise FridaFinalizeError(
+                f"{raw_path} ended with active run {int(active_run.run_id)} without a proven terminal transition; "
+                "stop the capture host before terminating the game",
+            )
+        rows_to_append.append(
+            {
+                "event": "run_end",
+                "run_id": int(active_run.run_id),
+                "mode_id": int(active_run.mode_id),
+                "quest_stage_major": int(active_run.quest_stage_major),
+                "quest_stage_minor": int(active_run.quest_stage_minor),
+                "ticks_written": int(active_tick_count),
+                "reason": "run_end",
+                "global_tick_index": int(last_tick.global_tick_index),
+                "rng_outside_tail": {"calls": 0, "dropped": 0, "caller_counts": {}, "head": []},
+            },
+        )
+        sealed.append("run_end")
+    elif not isinstance(last_row, _RunEndRow):
+        raise FridaFinalizeError(f"{raw_path} cannot prove a closed run at end of stream")
+
+    rows_to_append.append(
+        {
+            "event": "session_end",
+            "session_id": str(session_start.session_id),
+            "ticks_written": int(captured_tick_count),
+        },
+    )
+    sealed.append("session_end")
+
+    with raw_path.open("ab") as handle:
+        if raw_path.stat().st_size > 0:
+            with raw_path.open("rb") as source:
+                source.seek(-1, 2)
+                if source.read(1) != b"\n":
+                    handle.write(b"\n")
+        for row in rows_to_append:
+            handle.write(json.dumps(row, separators=(",", ":")).encode("utf-8"))
+            handle.write(b"\n")
+        handle.flush()
+    return tuple(sealed)
 
 
 def _canonical_channels_payload(

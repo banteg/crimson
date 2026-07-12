@@ -95,3 +95,11 @@ def test_frida_agent_forwards_tick_context_to_tick_contract() -> None:
 
     assert "const out = Object.assign({}, tick, {" in finalize_tick
     assert "buildCaptureEventHeads" not in source
+
+
+def test_frida_agent_closes_runs_at_terminal_state_transition() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    assert "isTerminalRunTransition(payload.before.id, payload.after.id)" in source
+    assert 'outState.pendingRunCloseReason = "run_end"' in source
+    assert "closeActiveRun(pendingRunCloseReason, out)" in source

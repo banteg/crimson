@@ -82,6 +82,10 @@ const GAME_MODE_RUSH = 2;
 const GAME_MODE_QUESTS = 3;
 const GAME_MODE_TYPO = 4;
 const GAME_MODE_TUTORIAL = 8;
+const GAME_STATE_GAME_OVER = 7;
+const GAME_STATE_QUEST_RESULTS = 8;
+const GAME_STATE_GAMEPLAY = 9;
+const GAME_STATE_QUEST_FAILED = 12;
 const MOVE_MODE_UNKNOWN = 0;
 const MOVE_MODE_RELATIVE = 1;
 const MOVE_MODE_STATIC = 2;
@@ -637,6 +641,7 @@ const outState = {
   currentRunElapsedRawStartMs: null,
   currentRunElapsedRawLastMs: null,
   currentRunElapsedNormalizedMs: null,
+  pendingRunCloseReason: null,
   lastTickIndexGlobal: null,
   shutdownComplete: false,
   gameplayFrame: 0,
@@ -1269,6 +1274,7 @@ function resetCurrentRunState() {
   outState.currentRunElapsedRawStartMs = null;
   outState.currentRunElapsedRawLastMs = null;
   outState.currentRunElapsedNormalizedMs = null;
+  outState.pendingRunCloseReason = null;
   outState.pendingReplayPrelude = [];
   outState.replayPreludeSuppressionDepthByTid = {};
   resetEntityUidStates();
@@ -3864,6 +3870,18 @@ function shouldCaptureTickForState(stateId) {
   return CONFIG.trackedStates.has(stateId);
 }
 
+function isTerminalRunTransition(beforeState, afterState) {
+  if ((beforeState | 0) !== GAME_STATE_GAMEPLAY) return false;
+  const modeId = outState.currentRunModeId | 0;
+  if (modeId === GAME_MODE_SURVIVAL || modeId === GAME_MODE_RUSH) {
+    return (afterState | 0) === GAME_STATE_GAME_OVER;
+  }
+  if (modeId === GAME_MODE_QUESTS) {
+    return (afterState | 0) === GAME_STATE_QUEST_RESULTS || (afterState | 0) === GAME_STATE_QUEST_FAILED;
+  }
+  return false;
+}
+
 function makeCoreSnapshot() {
   resolvePlayerCount();
   return {
@@ -5080,6 +5098,11 @@ function finalizeTick() {
   if (afterElapsedMs != null) outState.lastTickElapsedMs = afterElapsedMs;
   outState.lastTickGameplayFrame = tick.gameplay_frame;
   outState.currentTick = null;
+  const pendingRunCloseReason = outState.pendingRunCloseReason;
+  outState.pendingRunCloseReason = null;
+  if (pendingRunCloseReason && outState.runActive) {
+    closeActiveRun(pendingRunCloseReason, out);
+  }
 }
 
 function finalizeTickOrReport() {
@@ -5184,6 +5207,16 @@ function installHooks() {
         "gs:" + payload.before.id + "->" + payload.target_state
       );
       emitRawEvent(Object.assign({ event: "game_state_set" }, payload));
+      if (
+        outState.runActive &&
+        isTerminalRunTransition(payload.before.id, payload.after.id)
+      ) {
+        if (outState.currentTick) {
+          outState.pendingRunCloseReason = "run_end";
+        } else {
+          closeActiveRun("run_end", null);
+        }
+      }
     },
   });
 
