@@ -12,10 +12,12 @@ from grim.rand import CrandLike
 
 from ..math_parity import (
     NATIVE_HALF_PI,
+    NATIVE_PI,
     NATIVE_TAU,
     f32,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
@@ -460,11 +462,15 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             # (reachable via Regression Bullets / Ammunition Within).
             clip_ammo = float(player.weapon.ammo)
             rocket_count = math.ceil(clip_ammo) if clip_ammo > 0.0 else 0
-            if bool(state.preserve_bugs):
-                # Native bug: step scales by ammo (`ammo * pi/3`), which aliases to identical headings
-                # for some clip sizes (e.g. 6 rockets), causing visible clumping.
-                step = clip_ammo * (math.pi / 3.0)
-                angle = (shot_angle - math.pi) - step * clip_ammo * 0.5
+            preserve_swarmer_bug = bool(state.preserve_bugs)
+            if preserve_swarmer_bug:
+                # Native bug: step scales by ammo (`ammo * pi/3`), which aliases
+                # to near-identical headings for common clip sizes.
+                step = x87_pc24_mul(clip_ammo, f32(1.0471976))
+                angle = x87_pc24_sub(
+                    x87_pc24_sub(shot_angle, NATIVE_PI),
+                    x87_pc24_mul(x87_pc24_mul(step, clip_ammo), 0.5),
+                )
             else:
                 spread = math.pi * (2.0 / 3.0)
                 step = 0.0 if rocket_count <= 1 else spread / float(rocket_count - 1)
@@ -481,7 +487,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                         preserve_bugs=bool(state.preserve_bugs),
                     ),
                 )
-                angle += step
+                angle = x87_pc24_add(angle, step) if preserve_swarmer_bug else angle + step
             # Native subtracts the full clip value, zeroing the ammo even when
             # the clip was fractional or negative.
             ammo_cost = clip_ammo
