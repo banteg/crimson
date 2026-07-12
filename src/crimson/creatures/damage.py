@@ -272,8 +272,11 @@ def creature_apply_damage(
     for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
         step(ctx)
 
-    creature.hp -= float(ctx.damage)
-    creature.vel = creature.vel - ctx.impulse
+    creature.hp = f32(float(creature.hp) - float(ctx.damage))
+    creature.vel = Vec2(
+        f32(float(creature.vel.x) - float(ctx.impulse.x)),
+        f32(float(creature.vel.y) - float(ctx.impulse.y)),
+    )
 
     if creature.hp <= 0.0:
         if dt > 0.0:
@@ -282,7 +285,10 @@ def creature_apply_damage(
             )
         else:
             creature.lifecycle_stage = float(f32(float(creature.lifecycle_stage) - 0.001))
-        creature.vel = creature.vel - impulse * 2.0
+        creature.vel = Vec2(
+            f32(float(creature.vel.x) - float(f32(float(impulse.x) * 2.0))),
+            f32(float(creature.vel.y) - float(f32(float(impulse.y) * 2.0))),
+        )
         return True
 
     return False

@@ -80,7 +80,7 @@
 # name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
   dict({
     'creature_hp': list([
-      44.532257,
+      44.532261,
     ]),
     'hits': list([
       dict({

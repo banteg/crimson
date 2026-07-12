@@ -90,6 +90,19 @@ _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTemplateId, ProjectileC
 }
 
 
+def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
+    """Mirror native PC_24 arithmetic stores in the projectile damage formula."""
+
+    distance = f32(float(dist))
+    if distance < 50.0:
+        distance = 50.0
+    damage = f32(100.0 / float(distance))
+    damage = f32(float(damage) * float(f32(float(damage_scale))))
+    damage = f32(float(damage) * 30.0)
+    damage = f32(float(damage) + 10.0)
+    return f32(float(damage) * float(f32(0.95)))
+
+
 def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCollisionProfile:
     return _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID.get(
         type_id,
@@ -228,15 +241,6 @@ class ProjectilePool:
             dy = float(f32(float(origin.y) - float(pos.y)))
             dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
             return float(f32(math.sqrt(float(dist_sq))))
-
-        def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
-            # `projectile_update` computes this from float locals (`fVar11/fVar23`),
-            # so keep the damage path rounded through float32.
-            dist_f32 = float(f32(float(dist)))
-            if dist_f32 < 50.0:
-                dist_f32 = 50.0
-            damage_scale_f32 = float(f32(float(damage_scale)))
-            return float(f32(((100.0 / float(dist_f32)) * float(damage_scale_f32) * 30.0 + 10.0) * 0.95))
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)
@@ -455,7 +459,8 @@ class ProjectilePool:
                         proj.damage_pool = remaining
                         # Native `projectile_update` writes both impulse components from the
                         # same cosine term (`cos(angle - pi/2) * speed_scale`).
-                        impulse_axis = f32(math.cos(float(proj.angle) - NATIVE_HALF_PI) * float(proj.speed_scale))
+                        impulse_angle = f32(float(proj.angle) - NATIVE_HALF_PI)
+                        impulse_axis = f32(math.cos(float(impulse_angle)) * float(proj.speed_scale))
                         impulse = Vec2(float(impulse_axis), float(impulse_axis))
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:

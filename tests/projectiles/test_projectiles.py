@@ -5,6 +5,7 @@ from typing import Any
 
 from syrupy import SnapshotAssertion
 
+import crimson.projectiles.runtime.projectile_pool as projectile_pool_runtime
 from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
@@ -35,6 +36,15 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def _fixed_rng(value: int) -> ScriptedCrand:
     return ScriptedCrand(value, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+
+def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> None:
+    damage = projectile_pool_runtime._projectile_damage_amount_f32(
+        331.64129638671875,
+        4.1,
+    )
+
+    assert damage == 44.73385238647461
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:
