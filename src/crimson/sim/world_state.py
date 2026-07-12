@@ -51,6 +51,7 @@ class WorldEvents(msgspec.Struct):
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
     sfx: list[SfxId]
+    secondary_hit_count: int = 0
     trigger_game_tune: bool = False
     hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
 
@@ -229,9 +230,16 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             deaths=self.deaths,
         )
 
-    def build_events(self, *, hits: list[ProjectileHit], pickups: list[BonusPickupEvent]) -> WorldEvents:
+    def build_events(
+        self,
+        *,
+        hits: list[ProjectileHit],
+        secondary_hit_count: int,
+        pickups: list[BonusPickupEvent],
+    ) -> WorldEvents:
         return WorldEvents(
             hits=hits,
+            secondary_hit_count=int(secondary_hit_count),
             deaths=tuple(self.deaths),
             pickups=pickups,
             sfx=self.sfx,
@@ -358,7 +366,7 @@ class WorldState(msgspec.Struct):
                 ),
             ),
         )
-        self.state.secondary_projectiles.step(
+        secondary_hit_count = self.state.secondary_projectiles.step(
             SecondaryStepCtx(
                 dt=float(dt),
                 creatures=self.creatures.entries,
@@ -455,7 +463,11 @@ class WorldState(msgspec.Struct):
         # Player-damage VO RNG work lives inside `player_take_damage` for native
         # ordering parity (VO draw before heading-jitter draw).
         self.state.player_death_hook_skip_indices.clear()
-        return step_runtime.build_events(hits=hits, pickups=pickups)
+        return step_runtime.build_events(
+            hits=hits,
+            secondary_hit_count=int(secondary_hit_count),
+            pickups=pickups,
+        )
 
     def _run_player_death_hooks(
         self,

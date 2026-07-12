@@ -102,6 +102,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
                 )
                 for _ in range(2)
             ],
+            secondary_hit_count=1,
             deaths=(),
             pickups=[
                 BonusPickupEvent(
@@ -124,7 +125,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
     assert decoded == checkpoints
     assert decoded.checkpoints[0].deaths[0].owner_id == -1
-    assert decoded.checkpoints[0].events.hit_count == 2
+    assert decoded.checkpoints[0].events.hit_count == 3
     assert len(decoded.checkpoints[0].events.hit_head) == 2
     assert decoded.checkpoints[0].events.hit_head[0].type_id == int(ProjectileTemplateId.PISTOL)
 

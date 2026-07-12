@@ -394,6 +394,35 @@ def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
     assert projectile.vel == Vec2(161.8461151123047, 99.52806091308594)
 
 
+def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(193.97930908203125, 971.7576904296875),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+    projectile = pool.entries[idx]
+    projectile.vel = Vec2(254.46153259277344, 234.05662536621094)
+    projectile.target_id = 0
+    projectile.trail_timer = 1.0
+    creatures = [_creature(pos=Vec2(202.13153076171875, 991.8573608398438), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    hit_count = pool.step(
+        SecondaryStepCtx(
+            dt=0.05700000375509262,
+            creatures=creatures,
+            creature_damage_runtime=damage_runtime,
+        ),
+    )
+
+    assert hit_count == 1
+    impulse = damage_runtime.calls[0][3]
+    assert impulse == Vec2(3916.34716796875, 4689.19384765625)
+
+
 def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
@@ -444,7 +473,7 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
         },
     )
 
-    assert_float_close(abs(float(pool.entries[0].vel.x)), 0.0)
+    assert pool.entries[0].vel == Vec2(f32(0.3), 1.0)
 
 
 def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
@@ -462,7 +491,15 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue))
+    hit_count = pool.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+    )
+
+    entry = pool.entries[0]
+    assert hit_count == 1
+    assert entry.type_id == SecondaryProjectileTypeId.DETONATION
+    assert entry.vel == Vec2(0.0, 1.0)
+    assert entry.trail_timer == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
@@ -508,7 +545,15 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue))
+    hit_count = pool.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+    )
+
+    entry = pool.entries[0]
+    assert hit_count == 1
+    assert entry.type_id == SecondaryProjectileTypeId.DETONATION
+    assert entry.vel == Vec2(0.0, f32(0.35))
+    assert entry.trail_timer == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
