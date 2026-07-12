@@ -463,8 +463,8 @@ fn tryFireWeaponWithForce(
 
     // Native float sequence: half the f32 aim distance is spilled, the
     // spread/magnitude product chain stays in extended precision, the jittered
-    // aim x is spilled while y feeds atan2 unspilled, and the heading is
-    // (float)(atan2(pos - jitter) - 1.5707964).
+    // aim x is spilled, and the y addition rounds in x87's 24-bit precision
+    // mode before atan2. The heading is stored once as float32.
     const half_len: f32 = aim_delta.length() * 0.5;
     const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
@@ -472,10 +472,10 @@ fn tryFireWeaponWithForce(
         @as(f64, @floatFromInt(mag_roll & 0x1ff)) * 0.001953125;
     const dir_angle: f32 = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const aim_jitter_x: f32 = @floatCast(@cos(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.x));
-    const aim_jitter_y: f64 = @sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y);
+    const aim_jitter_y: f32 = @floatCast(@sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y));
     const native_half_pi_f32: f32 = native_math.roundF32(native_math.native_half_pi);
     const shot_angle: f32 = @floatCast(std.math.atan2(
-        @as(f64, player.pos.y) - aim_jitter_y,
+        @as(f64, player.pos.y) - @as(f64, aim_jitter_y),
         @as(f64, player.pos.x) - @as(f64, aim_jitter_x),
     ) - @as(f64, native_half_pi_f32));
     var particle_angle = directionFromHeading(shot_angle).toAngle();

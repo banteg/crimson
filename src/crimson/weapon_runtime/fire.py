@@ -139,8 +139,8 @@ def _native_shot_angle_with_jitter(
     # disc-spread direction and magnitude before the later projectile work.
     # Float sequence per the decompile: half the f32 aim distance is spilled,
     # the spread/magnitude product chain stays in extended precision, the
-    # jittered aim x is spilled while y feeds atan2 unspilled, and the heading
-    # is `(float)(atan2(pos - jitter) - 1.5707964)`.
+    # jittered aim x is spilled and the y addition rounds in x87's 24-bit
+    # precision mode before atan2. The heading is stored once as float32.
     aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
     aim_dy = float(f32(float(aim.y) - float(player_pos.y)))
     dist_sq = float(f32(float(f32(float(aim_dx) * float(aim_dx))) + float(f32(float(aim_dy) * float(aim_dy)))))
@@ -152,7 +152,7 @@ def _native_shot_angle_with_jitter(
     dir_angle = float(f32(dir_draw * float(f32(float(NATIVE_TAU) / 512.0))))
 
     aim_jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim.x)))
-    aim_jitter_y = math.sin(dir_angle) * offset_term + float(aim.y)
+    aim_jitter_y = float(f32(math.sin(dir_angle) * offset_term + float(aim.y)))
 
     return float(
         f32(

@@ -1140,8 +1140,8 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     rand_mag = expected_rng.rand()
 
     # Mirror the native float sequence: half the f32 aim distance is spilled,
-    # the spread/magnitude product stays extended, jittered aim x is spilled
-    # while y feeds atan2 unspilled, heading = f32(atan2(pos - jitter) - half_pi).
+    # the spread/magnitude product stays extended, and both jittered aim
+    # coordinates round before atan2.
     dx = float(f32(float(aim_x) - float(player.pos.x)))
     dy = float(f32(float(aim_y) - float(player.pos.y)))
     dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
@@ -1149,7 +1149,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     offset_term = half_len * float(player.spread_heat) * float(rand_mag & 0x1FF) * 0.001953125
     dir_angle = float(f32(float(rand_dir & 0x1FF) * float(f32(float(NATIVE_TAU) / 512.0))))
     jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim_x)))
-    jitter_y = math.sin(dir_angle) * offset_term + float(aim_y)
+    jitter_y = float(f32(math.sin(dir_angle) * offset_term + float(aim_y)))
     expected_angle = float(
         f32(math.atan2(float(player.pos.y) - jitter_y, float(player.pos.x) - jitter_x) - float(NATIVE_HALF_PI)),
     )
