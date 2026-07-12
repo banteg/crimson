@@ -10,7 +10,7 @@ from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32
+from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
@@ -45,6 +45,18 @@ def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> Non
     )
 
     assert damage == 44.73385238647461
+
+
+def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
+    angle = -2.5405335426330566
+    dt = 0.04500000178813934
+    radians = f32(angle - NATIVE_HALF_PI)
+
+    step_x = f32(math.cos(radians) * dt * 20.0) * 3.0
+    step_y = f32(math.sin(radians) * dt * 20.0) * 3.0
+
+    assert f32(step_x) == -1.5268936157226562
+    assert f32(step_y) == 2.2267906665802
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:
