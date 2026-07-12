@@ -14,6 +14,7 @@ from crimson.gameplay import (
     GameplayState,
     _direction_from_heading_native,
     _player_heading_approach_target_with_delta,
+    _player_turn_aligned_velocity_native,
     player_update,
 )
 from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
@@ -1013,6 +1014,22 @@ def test_player_direction_heading_subtraction_uses_native_f32_store() -> None:
 
     assert direction.x == math.cos(radians)
     assert direction.y == math.sin(radians)
+
+
+def test_player_turn_aligned_velocity_uses_native_intermediate_f32_stores() -> None:
+    # Tick 197 boundary from gameplay_diff_capture: retaining the full product
+    # until the final velocity store moves x one ULP too far left.
+    direction = _direction_from_heading_native(3.9270143508911133)
+
+    velocity = _player_turn_aligned_velocity_native(
+        direction=direction,
+        move_speed=2.0,
+        angle_diff=3.0040740966796875e-05,
+        speed_multiplier=2.0,
+    )
+
+    assert velocity == Vec2(-70.7116470336914, 70.7083511352539)
+    assert f32(302.53350830078125 + f32(0.04400000348687172 * velocity.x)) == 299.4222106933594
 
 
 def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:

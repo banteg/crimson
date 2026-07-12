@@ -478,6 +478,28 @@ def _player_move_delta_from_heading(
     )
 
 
+def _player_turn_aligned_velocity_native(
+    *,
+    direction: Vec2,
+    move_speed: float,
+    angle_diff: float,
+    speed_multiplier: float,
+) -> Vec2:
+    # `player_update` evaluates this x87 chain in the game's 24-bit precision
+    # mode. In particular, the direction*speed and subsequent alignment
+    # product round before the remaining multipliers; keeping the whole chain
+    # wide is one ULP too large at the tick-197 backward-left boundary.
+    alignment = f32(float(NATIVE_PI) - float(angle_diff))
+
+    def component(value: float) -> float:
+        result = f32(float(value) * float(move_speed))
+        result = f32(float(result) * float(alignment))
+        result = f32(float(result) * float(speed_multiplier))
+        return f32(float(result) * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE))
+
+    return Vec2(component(direction.x), component(direction.y))
+
+
 def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radius: float = _AIM_POINT_RADIUS) -> Vec2:
     aim_dir = _direction_from_heading_native(float(heading))
     return Vec2(
@@ -764,17 +786,14 @@ def player_update(
                 _player_accelerate_move_speed(player, movement_dt)
                 _player_apply_move_speed_caps(player)
                 move = _direction_from_heading_native(float(player.heading))
-                turn_align = (
-                    (float(NATIVE_PI) - float(angle_diff))
-                    * float(speed_multiplier)
-                    * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
+                turn_aligned_velocity = _player_turn_aligned_velocity_native(
+                    direction=move,
+                    move_speed=float(player.move_speed),
+                    angle_diff=float(angle_diff),
+                    speed_multiplier=float(speed_multiplier),
                 )
-                move_dx = float(
-                    f32(float(move.x) * float(player.move_speed) * float(turn_align)),
-                )
-                move_dy = float(
-                    f32(float(move.y) * float(player.move_speed) * float(turn_align)),
-                )
+                move_dx = float(turn_aligned_velocity.x)
+                move_dy = float(turn_aligned_velocity.y)
 
             move_delta_override = Vec2(
                 f32(float(movement_dt) * float(move_dx)),
