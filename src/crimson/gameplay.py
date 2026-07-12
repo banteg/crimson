@@ -86,7 +86,6 @@ class BonusTimers(msgspec.Struct):
     freeze: float = 0.0
 
 
-_RELOAD_PRELOAD_UNDERFLOW_EPS = 1e-7
 _RELATIVE_MOVE_HEADING_NONE = -1.0
 _RELATIVE_MOVE_HEADING_FORWARD = 0.0
 _RELATIVE_MOVE_HEADING_FORWARD_RIGHT = float(f32(0.7853982))
@@ -628,8 +627,6 @@ def player_update(
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
     next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
-    if 0.0 < float(player.weapon.shot_cooldown) < 1e-6:
-        player.weapon.shot_cooldown = 0.0
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
@@ -868,7 +865,7 @@ def player_update(
     player.move_phase = f32(float(player.move_phase) + float(phase_sign) * float(phase_step))
 
     move_delta = player.pos - prev_pos
-    reload_stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0
     if not reload_stationary:
         # Native clears these post-perk-tick timers after movement when position changed.
         player.man_bomb_timer = 0.0
@@ -897,12 +894,7 @@ def player_update(
         preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
 
     reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
-    # Native can complete reload and fire on the same frame when held fire
-    # meets an almost-zero reload boundary. Treat near-zero underflow as
-    # completion for fire-held ticks to avoid a spurious empty-shot reload loop.
-    preload_crossed = reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
-    preload_fire_boundary = input_state.fire_down and reload_preload_underflow <= _RELOAD_PRELOAD_UNDERFLOW_EPS
-    if player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary):
+    if player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
         player.weapon.ammo = float(player.weapon.clip_size)
 
     if player.weapon.reload_timer > 0.0:

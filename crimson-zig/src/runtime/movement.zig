@@ -229,7 +229,7 @@ pub fn updatePlayerFromGameInput(
     playerApplyMoveWithSpawnAvoidance(player, delta, creatures);
 
     const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
-    const reload_stationary = @abs(move_delta.x) <= 1e-9 and @abs(move_delta.y) <= 1e-9;
+    const reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0;
     player.reload_stationary_latch = reload_stationary;
     if (!reload_stationary) {
         // Native clears these post-perk-tick timers after movement when position changed.

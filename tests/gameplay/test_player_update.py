@@ -59,17 +59,17 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     assert_float_close(player.weapon.shot_cooldown, 0.25)
 
 
-def test_player_update_shot_cooldown_decay_snaps_tiny_residual_to_zero() -> None:
+def test_player_update_shot_cooldown_decay_keeps_tiny_positive_residual() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
-        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.03400000000000056),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.034000005573034286),
     )
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034, state)
 
-    assert player.weapon.shot_cooldown == 0.0
+    assert player.weapon.shot_cooldown == 3.725290298461914e-09
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
@@ -211,7 +211,7 @@ def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None
     assert_float_close(player.weapon.ammo, -1.0)
 
 
-def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
+def test_player_update_preloads_ammo_on_tiny_negative_reload_crossing() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
@@ -229,7 +229,29 @@ def test_player_update_does_not_preload_ammo_on_tiny_underflow() -> None:
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844, state)
 
+    assert_float_close(player.weapon.ammo, 6.0)
+
+
+def test_player_update_does_not_preload_ammo_on_tiny_positive_reload_residual() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon=WeaponSlot(
+            weapon_id=WeaponId.ION_CANNON,
+            clip_size=6,
+            ammo=-1.0,
+            reload_active=True,
+            reload_timer=0.10000000894069672,
+            reload_timer_max=3.0,
+            shot_cooldown=0.5,
+        ),
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True), 0.10000000149011612, state)
+
     assert_float_close(player.weapon.ammo, -1.0)
+    assert player.weapon.reload_timer == 7.450580596923828e-09
 
 
 def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reload() -> None:

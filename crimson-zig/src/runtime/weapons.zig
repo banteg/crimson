@@ -29,7 +29,6 @@ const PerkId = perks.PerkId;
 
 pub const WeaponRuntimeError = error{};
 
-const reload_preload_underflow_eps: f32 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
 const MuzzleSpriteSpec = struct {
@@ -177,9 +176,6 @@ pub fn stepPlayerForTickWithEffects(
         @as(f64, @floatCast(player.weapon.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
     );
     player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
-    if (player.weapon.shot_cooldown > 0.0 and player.weapon.shot_cooldown < 1e-6) {
-        player.weapon.shot_cooldown = 0.0;
-    }
 
     const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(player, PerkId.stationary_reloader))
         3.0
@@ -199,9 +195,7 @@ pub fn stepPlayerForTickWithEffects(
         preload_dt = narrowF32(reload_scale * dt);
     }
     const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
-    const preload_crossed = reload_preload_underflow < -reload_preload_underflow_eps;
-    const preload_fire_boundary = input_flags.fire_down and reload_preload_underflow <= reload_preload_underflow_eps;
-    if (player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary)) {
+    if (player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0) {
         player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 
