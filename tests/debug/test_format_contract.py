@@ -29,7 +29,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 14, 15, 5, 19, 2)
+    ) == (2, 14, 15, 5, 20, 2)
 
 
 def test_cross_language_format_contract_is_wired() -> None:
@@ -48,6 +48,15 @@ def test_frida_agent_uses_the_python_capture_format_version() -> None:
 
     assert match is not None
     assert int(match.group(1)) == FRIDA_CAPTURE_FORMAT_VERSION
+
+
+def test_frida_agent_records_x87_environment_evidence() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    assert "initializeX87ControlWordReader()" in source
+    assert "x87_control_word: x87ControlWord" in source
+    assert "x87_precision_control:" in source
+    assert "x87_rounding_control:" in source
 
 
 def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:

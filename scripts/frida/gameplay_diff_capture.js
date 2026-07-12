@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 19;
+const CAPTURE_FORMAT_VERSION = 20;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -621,6 +621,8 @@ const srandContextByTid = {};
 const bloodSplatterContextByTid = {};
 const creatureUpdateMicroContextByTid = {};
 const angleApproachContextByTid = {};
+let x87ControlWordReader = null;
+let x87ControlWordCode = null;
 const outState = {
   outFile: null,
   outWarned: false,
@@ -691,6 +693,31 @@ const outState = {
   lastHookActivity: null,
   lastException: null,
 };
+
+function initializeX87ControlWordReader() {
+  if (Process.arch !== "ia32") return;
+  try {
+    const code = Memory.alloc(Process.pageSize);
+    if (!Memory.protect(code, Process.pageSize, "rwx")) return;
+    // push eax; fnstcw [esp]; pop eax; and eax, 0xffff; ret
+    code.writeByteArray([0x50, 0xd9, 0x3c, 0x24, 0x58, 0x25, 0xff, 0xff, 0x00, 0x00, 0xc3]);
+    Memory.protect(code, Process.pageSize, "r-x");
+    x87ControlWordCode = code;
+    x87ControlWordReader = new NativeFunction(code, "uint32", []);
+  } catch (_) {
+    x87ControlWordReader = null;
+    x87ControlWordCode = null;
+  }
+}
+
+function readX87ControlWord() {
+  if (x87ControlWordReader == null) return null;
+  try {
+    return x87ControlWordReader() & 0xffff;
+  } catch (_) {
+    return null;
+  }
+}
 
 function _diagIntOrNull(value) {
   return typeof value === "number" && Number.isFinite(value) ? value | 0 : null;
@@ -2929,6 +2956,7 @@ function resolvePointers(exeModule, grimModule) {
 }
 
 function readGameplayGlobalsCompact() {
+  const x87ControlWord = readX87ControlWord();
   return {
     config_game_mode: readDataI32("config_game_mode"),
     config_hardcore: readDataU8("config_hardcore"),
@@ -2971,6 +2999,9 @@ function readGameplayGlobalsCompact() {
     bonus_weapon_power_up_timer: readDataF32("bonus_weapon_power_up_timer"),
     bonus_energizer_timer: readDataF32("bonus_energizer_timer"),
     bonus_double_xp_timer: readDataF32("bonus_double_xp_timer"),
+    x87_control_word: x87ControlWord,
+    x87_precision_control: x87ControlWord == null ? null : (x87ControlWord >>> 8) & 3,
+    x87_rounding_control: x87ControlWord == null ? null : (x87ControlWord >>> 10) & 3,
   };
 }
 
@@ -6679,6 +6710,7 @@ function main() {
   }
 
   resolvePointers(exeModule, grimModule);
+  initializeX87ControlWordReader();
   updateCurrentStateFromMemory();
   if (CONFIG.enableCreatureLifecycleDigest) {
     outState.lastCreatureDigest = captureCreatureDigest();

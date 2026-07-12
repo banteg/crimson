@@ -1277,7 +1277,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            _session_start_row(capture_format_version=18),
+            _session_start_row(capture_format_version=CAPTURE_FORMAT_VERSION - 1),
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -1294,7 +1294,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=18; expected 19"):
+    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=19; expected 20"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
