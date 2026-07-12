@@ -723,9 +723,7 @@ fn applyBonus(
             state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.weapon.shot_cooldown = 0.0;
-            player.weapon.reload_active = false;
             player.weapon.reload_timer = 0.0;
-            player.weapon.reload_timer_max = 0.0;
             player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
         .double_experience => {
@@ -735,9 +733,7 @@ fn applyBonus(
             state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
             for (players) |*target| {
                 target.weapon.ammo = @floatFromInt(target.weapon.clip_size);
-                target.weapon.reload_active = false;
                 target.weapon.reload_timer = 0.0;
-                target.weapon.reload_timer_max = 0.0;
             }
         },
         .shield => {
@@ -759,9 +755,7 @@ fn applyBonus(
             player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
             player.weapon_reset_latch = 0;
             player.weapon.shot_cooldown = 0.0;
-            player.weapon.reload_active = false;
             player.weapon.reload_timer = 0.0;
-            player.weapon.reload_timer_max = 0.0;
             player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
         .weapon => {

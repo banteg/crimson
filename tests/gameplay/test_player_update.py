@@ -1363,6 +1363,34 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     assert not any(slot.active and slot.bonus_id == BonusId.WEAPON_POWER_UP for slot in state.bonus_hud.slots)
 
 
+@pytest.mark.parametrize(
+    "bonus_id",
+    [BonusId.WEAPON_POWER_UP, BonusId.REFLEX_BOOST, BonusId.FIRE_BULLETS],
+)
+def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    player.weapon.clip_size = 8
+    player.weapon.ammo = 3.0
+    player.weapon.reload_active = True
+    player.weapon.reload_timer = 0.5
+    player.weapon.reload_timer_max = f32(1.2)
+
+    bonus_apply(
+        state,
+        player,
+        bonus_id,
+        origin=player.pos,
+        creatures=[],
+        players=[player],
+    )
+
+    assert player.weapon.ammo == 8.0
+    assert player.weapon.reload_timer == 0.0
+    assert player.weapon.reload_active is True
+    assert player.weapon.reload_timer_max == f32(1.2)
+
+
 def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     pool = ProjectilePool(size=8)
     state = GameplayState(projectiles=pool)

@@ -32,9 +32,7 @@ def apply_fire_bullets(ctx: BonusApplyCtx) -> None:
     )
     ctx.player.weapon_reset_latch = 0
     ctx.player.weapon.shot_cooldown = 0.0
-    ctx.player.weapon.reload_active = False
     ctx.player.weapon.reload_timer = 0.0
-    ctx.player.weapon.reload_timer_max = 0.0
     ctx.player.weapon.ammo = float(ctx.player.weapon.clip_size)
 
 
