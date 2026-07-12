@@ -487,7 +487,7 @@ def _player_turn_aligned_velocity_native(
     # `player_update` evaluates this x87 chain in the game's 24-bit precision
     # mode. In particular, the direction*speed and subsequent alignment
     # product round before the remaining multipliers; keeping the whole chain
-    # wide is one ULP too large at the tick-197 backward-left boundary.
+    # wide can move a backward-diagonal step one ULP too far.
     alignment = f32(float(NATIVE_PI) - float(angle_diff))
 
     def component(value: float) -> float:

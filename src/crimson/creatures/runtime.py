@@ -37,7 +37,6 @@ from ..math_parity import (
     f32,
     f32_vec2,
     heading_add_pi_f32,
-    heading_to_direction_f32,
 )
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
@@ -1575,13 +1574,19 @@ class CreaturePool:
         creature.lifecycle_stage = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
-                # Match float-local multiply chain in `creature_update_all`:
-                # slide = (float)((float)(hitbox * dt) * 9.0f)
-                slide = f32(f32(float(new_hitbox) * float(dt_f32)) * f32(CREATURE_DEATH_SLIDE_SCALE))
-                direction = heading_to_direction_f32(float(creature.heading))
+                # Preserve native x87 operation order for the death-slide
+                # velocity: trig * lifecycle * frame_dt * 9, narrowing after
+                # each multiply in the game's 24-bit precision mode.
+                radians = f32(float(f32(creature.heading)) - NATIVE_HALF_PI)
+                vel_x = f32(math.cos(radians) * float(new_hitbox))
+                vel_x = f32(float(vel_x) * float(dt_f32))
+                vel_x = f32(float(vel_x) * f32(CREATURE_DEATH_SLIDE_SCALE))
+                vel_y = f32(math.sin(radians) * float(new_hitbox))
+                vel_y = f32(float(vel_y) * float(dt_f32))
+                vel_y = f32(float(vel_y) * f32(CREATURE_DEATH_SLIDE_SCALE))
                 creature.vel = Vec2(
-                    f32(float(direction.x) * float(slide)),
-                    f32(float(direction.y) * float(slide)),
+                    vel_x,
+                    vel_y,
                 )
                 creature.pos = Vec2(
                     f32(float(creature.pos.x) - float(creature.vel.x)),

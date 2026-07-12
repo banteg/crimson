@@ -300,8 +300,8 @@ class ProjectilePool:
             #   local_c8 += (float)(sin(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
             # Keep the float32 cast before `* speed_scale * 3.0`.
             # The game leaves x87 in 24-bit precision mode, so the angle-minus-
-            # half-pi subtraction rounds before fcos/fsin. Keeping it wide drifts
-            # a pistol projectile one ULP at capture tick 201.
+            # half-pi subtraction rounds before fcos/fsin. Keeping it wide can
+            # drift projectile integration by one ULP.
             heading_radians = f32(float(proj.angle) - NATIVE_HALF_PI)
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)

@@ -58,3 +58,10 @@ def test_heading_to_direction_matches_native_heading_basis() -> None:
     assert_float_close(direction.y, 0.0)
     assert direction.x == f32(direction.x)
     assert direction.y == f32(direction.y)
+
+
+def test_heading_to_direction_rounds_angle_subtraction_before_trig() -> None:
+    direction = heading_to_direction_f32(6.330781936645508)
+
+    assert direction.x == 0.04757849872112274
+    assert direction.y == -0.9988675117492676

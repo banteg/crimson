@@ -1039,8 +1039,8 @@ def test_player_direction_heading_subtraction_uses_native_f32_store() -> None:
 
 
 def test_player_turn_aligned_velocity_uses_native_intermediate_f32_stores() -> None:
-    # Tick 197 boundary from gameplay_diff_capture: retaining the full product
-    # until the final velocity store moves x one ULP too far left.
+    # Retaining the full product until the final velocity store moves this
+    # backward-diagonal step one ULP too far left.
     direction = _direction_from_heading_native(3.9270143508911133)
 
     velocity = _player_turn_aligned_velocity_native(
@@ -1102,8 +1102,8 @@ def test_player_heading_approach_target_spills_scaled_product_to_float32() -> No
     def _bits_f32(value: float) -> int:
         return struct.unpack("<I", struct.pack("<f", float(value)))[0]
 
-    # Tick 137 boundary from gameplay_diff_capture:
-    # without a float32 spill of `frame_dt * diff` this turns 1 ULP too far.
+    # Without a float32 spill of `frame_dt * diff`, this opposite-heading
+    # boundary turns one ULP too far.
     heading_before = _f32_from_bits(0x40966A37)
     dt = _f32_from_bits(0x3D75C290)
 

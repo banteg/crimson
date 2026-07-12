@@ -1563,7 +1563,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     corpse.lifecycle_stage = 12.640003204345703
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
-    # 38 ms frame from gameplay_diff_capture tick 3636.
+    # Captured 38 ms self-damage boundary.
     pool.update(
         0.03800000250339508,
         options=make_creature_update_options(
@@ -1575,6 +1575,26 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
+
+
+def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
+    pool = CreaturePool()
+    corpse = pool.entries[4]
+    corpse.active = True
+    corpse.hp = -42.440147399902344
+    corpse.lifecycle_stage = 15.908000946044922
+    corpse.heading = 6.330781936645508
+
+    pool._tick_dead(
+        corpse,
+        dt=0.05900000408291817,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+
+    assert corpse.lifecycle_stage == 14.256000518798828
+    assert corpse.vel == Vec2(0.3601662218570709, -7.56136417388916)
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:

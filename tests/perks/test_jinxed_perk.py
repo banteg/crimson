@@ -320,7 +320,7 @@ def test_perks_update_effects_jinxed_retries_inactive_creature_pick() -> None:
 
 
 def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> None:
-    # Capture boundary from gameplay_diff_capture tick 5163:
+    # Captured Jinxed reroll boundary:
     # native decrements to a tiny positive value and does not proc Jinxed this tick.
     dt = 0.03400000184774399
 

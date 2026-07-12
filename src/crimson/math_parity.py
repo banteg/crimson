@@ -83,5 +83,5 @@ def heading_add_pi_f32(heading: float) -> float:
 
 
 def heading_to_direction_f32(heading: float) -> Vec2:
-    radians = float(f32(heading)) - NATIVE_HALF_PI
+    radians = f32(float(f32(heading)) - NATIVE_HALF_PI)
     return Vec2(cos_f32(radians), sin_f32(radians))
