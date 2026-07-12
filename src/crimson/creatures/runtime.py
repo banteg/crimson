@@ -184,7 +184,7 @@ def _movement_delta_from_heading_f32(
     # precision internally, so their rounding lands in the first multiply
     # (`creature_update_all` 0x426dab..0x426de6, validated against v14 capture
     # vel channels: 164/166 walker ticks reproduce bit-exactly).
-    radians = float(f32(heading)) - NATIVE_HALF_PI
+    radians = f32(float(f32(heading)) - NATIVE_HALF_PI)
 
     # Preserve native multiply order:
     # `vel = trig(heading - half_pi) * frame_dt * move_scale * move_speed * 30.0`
@@ -1477,7 +1477,6 @@ class CreaturePool:
             # the recycled slot (capture lifecycle shows added entries retaining
             # prior target_heading values).
             entry.heading = f32(float(init.heading))
-        entry.target = f32_vec2(init.pos)
         entry.phase_seed = f32(float(init.phase_seed))
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).

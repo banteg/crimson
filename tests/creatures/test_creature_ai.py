@@ -118,3 +118,41 @@ def test_ai_targets_and_heading_are_float32_quantized() -> None:
     assert_float_close(c.target.x, f32(c.target.x))
     assert_float_close(c.target.y, f32(c.target.y))
     assert_float_close(c.target_heading, f32(c.target_heading))
+
+
+def test_ai_orbit_distance_uses_native_per_operation_f32_rounding() -> None:
+    c = StubCreature(
+        pos=Vec2(-40.0, 305.0),
+        ai_mode=CreatureAiMode.ORBIT_PLAYER,
+        phase_seed=50.0,
+    )
+
+    creature_ai_update_target(
+        c,
+        player_pos=Vec2(506.59539794921875, 535.6737060546875),
+        creatures=[c],
+        dt=0.03200000151991844,
+    )
+
+    assert c.target.x == 2.31048583984375
+    assert c.target.y == 535.673583984375
+    assert c.target_heading == 2.9601876735687256
+
+
+def test_ai_orbit_target_keeps_trig_wide_until_first_multiply() -> None:
+    c = StubCreature(
+        pos=Vec2(-30.34019660949707, 845.064208984375),
+        ai_mode=CreatureAiMode.ORBIT_PLAYER,
+        phase_seed=316.0,
+    )
+
+    creature_ai_update_target(
+        c,
+        player_pos=Vec2(364.858154296875, 678.1124267578125),
+        creatures=[c],
+        dt=0.04100000113248825,
+    )
+
+    assert c.target.x == 69.8948974609375
+    assert c.target.y == 463.69183349609375
+    assert c.target_heading == 0.25701460242271423

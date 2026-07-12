@@ -15,7 +15,7 @@ from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
-from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
+from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
@@ -303,7 +303,6 @@ class WorldState(msgspec.Struct):
             for step in _WORLD_DT_STEPS:
                 dt = float(step(dt=dt, players=self.players))
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
-        prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
         # Native Freeze pickup shatters corpses that existed at tick start;
         # same-tick kills are not included in that pass.
@@ -417,7 +416,6 @@ class WorldState(msgspec.Struct):
         dt = float(player_dt)
         if dt > 0.0:
             self._advance_creature_anim(dt)
-            self._advance_player_anim(dt, prev_positions)
         if mid_step_runtime is not None:
             mid_step_runtime.run_mid_step()
         if not bool(defer_camera_shake_update):
@@ -606,25 +604,4 @@ class WorldState(msgspec.Struct):
                 local_scale=float(creature.move_scale),
                 flags=creature.flags,
                 ai_mode=int(creature.ai_mode),
-            )
-
-    def _advance_player_anim(self, dt: float, prev_positions: list[tuple[float, float]]) -> None:
-        info = CREATURE_ANIM.get(CreatureTypeId.TROOPER)
-        if info is None:
-            return
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_positions):
-                continue
-            prev_x, prev_y = prev_positions[idx]
-            speed = Vec2(player.pos.x - prev_x, player.pos.y - prev_y).length()
-            move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
-            player.move_phase, _ = creature_anim_advance_phase(
-                player.move_phase,
-                anim_rate=info.anim_rate,
-                move_speed=move_speed,
-                dt=dt,
-                size=float(player.size),
-                local_scale=1.0,
-                flags=CreatureFlags(0),
-                ai_mode=CreatureAiMode.ORBIT_PLAYER,
             )

@@ -89,24 +89,29 @@ def resolve_live_link(creatures: Sequence[CreatureAIStateLike], link_index: int)
 
 
 def _distance_f32(a: Vec2, b: Vec2) -> float:
-    # Native computes deltas into float locals, then runs the distance math in
-    # x87 precision and stores only the final sqrt back to float.
+    # Gameplay leaves x87 in 24-bit precision mode: the deltas, squares, and
+    # sum each round to f32 before fsqrt stores the final distance.
     dx = f32(float(b.x) - float(a.x))
     dy = f32(float(b.y) - float(a.y))
-    dist_sq = float(dx) * float(dx) + float(dy) * float(dy)
+    dx_sq = f32(float(dx) * float(dx))
+    dy_sq = f32(float(dy) * float(dy))
+    dist_sq = f32(float(dx_sq) + float(dy_sq))
     return f32(math.sqrt(float(dist_sq)))
 
 
 def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
-    orbit_dist = f32(f32(float(dist)) * f32(float(scale)))
+    orbit_dist = f32(float(dist))
+    orbit_scale = f32(float(scale))
     phase = f32(float(orbit_phase))
     px = f32(float(player_pos.x))
     py = f32(float(player_pos.y))
-    orbit_x = f32(math.cos(float(phase)))
-    orbit_y = f32(math.sin(float(phase)))
+    orbit_x = f32(math.cos(float(phase)) * float(orbit_dist))
+    orbit_x = f32(float(orbit_x) * float(orbit_scale))
+    orbit_y = f32(math.sin(float(phase)) * float(orbit_dist))
+    orbit_y = f32(float(orbit_y) * float(orbit_scale))
     return Vec2(
-        f32(f32(float(orbit_x) * float(orbit_dist)) + px),
-        f32(f32(float(orbit_y) * float(orbit_dist)) + py),
+        f32(float(orbit_x) + px),
+        f32(float(orbit_y) + py),
     )
 
 

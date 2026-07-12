@@ -402,9 +402,8 @@ def _player_apply_move_with_spawn_avoidance(
 
 def _direction_from_heading_native(heading: float) -> Vec2:
     # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal),
-    # but this path keeps x87-style precision for trig and rounds at downstream
-    # float32 storage boundaries (delta/aim writes), not inside this helper.
-    radians = float(heading) - float(NATIVE_HALF_PI)
+    # with gameplay's x87 arithmetic in 24-bit precision before the trig op.
+    radians = f32(float(heading) - float(NATIVE_HALF_PI))
     return Vec2(math.cos(radians), math.sin(radians))
 
 
@@ -439,19 +438,22 @@ def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
     dt = float(f32(float(dt)))
     if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
         if player.move_speed < 2.0:
-            player.move_speed = float(f32(float(player.move_speed) + float(dt) * 4.0))
+            acceleration = f32(float(dt) * 4.0)
+            player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         player.move_speed = float(f32(float(player.move_speed) + float(dt)))
         if player.move_speed > 2.8:
             player.move_speed = 2.8
     else:
-        player.move_speed = float(f32(float(player.move_speed) + float(dt) * 5.0))
+        acceleration = f32(float(dt) * 5.0)
+        player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         if player.move_speed > 2.0:
             player.move_speed = 2.0
 
 
 def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
     dt = float(f32(float(dt)))
-    player.move_speed = float(f32(float(player.move_speed) - float(dt) * 15.0))
+    deceleration = f32(float(dt) * 15.0)
+    player.move_speed = float(f32(float(player.move_speed) - float(deceleration)))
     if player.move_speed < 0.0:
         player.move_speed = 0.0
 
@@ -842,7 +844,9 @@ def player_update(
         creatures=creatures,
     )
 
-    player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
+    phase_speed_dt = f32(float(movement_dt) * float(player.move_speed))
+    phase_step = f32(float(phase_speed_dt) * 19.0)
+    player.move_phase = f32(float(player.move_phase) + float(phase_sign) * float(phase_step))
 
     move_delta = player.pos - prev_pos
     reload_stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
@@ -1000,9 +1004,9 @@ def player_update(
     )
 
     while player.move_phase > 14.0:
-        player.move_phase -= 14.0
+        player.move_phase = f32(float(player.move_phase) - 14.0)
     while player.move_phase < 0.0:
-        player.move_phase += 14.0
+        player.move_phase = f32(float(player.move_phase) + 14.0)
 
     half_size = max(0.0, float(player.size) * 0.5)
     clamped_pos = player.pos.clamp_rect(

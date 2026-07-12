@@ -12,6 +12,7 @@ from crimson.bonuses.hud import bonus_hud_update
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     GameplayState,
+    _direction_from_heading_native,
     _player_heading_approach_target_with_delta,
     player_update,
 )
@@ -973,6 +974,45 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
     assert_float_close(player.pos.x, 100.0)
     assert_float_close(player.pos.y, 100.0)
     assert player.heading > 0.0
+
+
+def test_player_update_move_phase_uses_native_intermediate_f32_store() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+
+    player_update(
+        player,
+        PlayerInput(move=Vec2(0.0, 1.0), aim=Vec2(512.0, 512.0)),
+        0.03200000151991844,
+        state,
+    )
+
+    assert player.move_speed == f32(0.1600000113248825)
+    assert player.move_phase == f32(f32(0.03200000151991844 * player.move_speed) * 19.0)
+
+
+def test_player_update_move_speed_uses_native_acceleration_f32_store() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), move_speed=0.4750000238418579)
+
+    player_update(
+        player,
+        PlayerInput(move=Vec2(0.0, 1.0), aim=Vec2(512.0, 512.0)),
+        0.032999999821186066,
+        state,
+    )
+
+    assert player.move_speed == 0.6399999856948853
+
+
+def test_player_direction_heading_subtraction_uses_native_f32_store() -> None:
+    heading = 3.93251371383667
+
+    direction = _direction_from_heading_native(heading)
+    radians = f32(heading - NATIVE_HALF_PI)
+
+    assert direction.x == math.cos(radians)
+    assert direction.y == math.sin(radians)
 
 
 def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
