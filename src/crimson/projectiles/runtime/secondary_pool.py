@@ -256,7 +256,8 @@ class SecondaryProjectilePool:
 
                 radius = scale * t * 80.0
                 radius_sq = radius * radius
-                damage = dt * scale * 700.0
+                damage = x87_pc24_mul(dt, scale)
+                damage = x87_pc24_mul(damage, 700.0)
                 for creature_idx in creature_spatial.candidate_indices(pos=entry.pos, radius=float(radius)):
                     creature = creatures[int(creature_idx)]
                     if not _creature_is_collidable(creature):

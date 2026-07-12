@@ -476,6 +476,30 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
     assert pool.entries[0].vel == Vec2(f32(0.3), 1.0)
 
 
+def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=0.5,
+        ),
+    )
+    creatures = [_creature(pos=Vec2(), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.06100000441074371,
+            creatures=creatures,
+            creature_damage_runtime=damage_runtime,
+        ),
+    )
+
+    assert damage_runtime.calls[0][1] == 21.35000228881836
+
+
 def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
     return [RngCallerStatic(record.caller) for record in rng.records_since() if record.caller in allowed]
 
