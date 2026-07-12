@@ -304,29 +304,25 @@ pub const SecondaryProjectilePool = struct {
 
                 if (target_id >= 0 and target_id < creatures.entries.len) {
                     const target = creatures.entries[@intCast(target_id)];
-                    // Native steering: angle = atan2(pos - target) kept in
-                    // extended precision; the stored f32 angle is atan - pi/2.
-                    // vel_x adds cos((atan - pi/2) - pi/2) from the extended
-                    // angle; vel_y (and the over-cap subtraction for both
-                    // components) recompute from the stored f32 angle, so the
-                    // add-then-subtract is not an exact identity.
-                    const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
-                    const atan_ext: f64 = std.math.atan2(
-                        @as(f64, entry.pos.y) - @as(f64, target.pos.y),
-                        @as(f64, entry.pos.x) - @as(f64, target.pos.x),
-                    );
-                    entry.angle = @floatCast(atan_ext - @as(f64, half_pi));
-                    const accel_scale: f64 = @as(f64, dt_f32) * 800.0;
+                    const half_pi: f32 = native_math.native_half_pi;
+                    const dy = narrowF32(entry.pos.y - target.pos.y);
+                    const dx = narrowF32(entry.pos.x - target.pos.x);
+                    const atan_ext = native_math.fpatan(dy, dx);
+                    entry.angle = narrowF32(atan_ext - @as(f64, half_pi));
+                    const heading = narrowF32(entry.angle - half_pi);
+                    const accel_x_dt = narrowF32(std.math.cos(@as(f64, heading)) * @as(f64, dt_f32));
+                    const accel_y_dt = narrowF32(std.math.sin(@as(f64, heading)) * @as(f64, dt_f32));
+                    const accel_x = narrowF32(accel_x_dt * 800.0);
+                    const accel_y = narrowF32(accel_y_dt * 800.0);
                     entry.vel = .{
-                        .x = @floatCast(@cos(atan_ext - @as(f64, half_pi) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.x)),
-                        .y = @floatCast(@sin(@as(f64, entry.angle) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.y)),
+                        .x = narrowF32(entry.vel.x + accel_x),
+                        .y = narrowF32(entry.vel.y + accel_y),
                     };
                     const speed_after = @sqrt(@as(f64, entry.vel.x) * @as(f64, entry.vel.x) + @as(f64, entry.vel.y) * @as(f64, entry.vel.y));
                     if (speed_after > 350.0) {
-                        const heading: f64 = @as(f64, entry.angle) - @as(f64, half_pi);
                         entry.vel = .{
-                            .x = @floatCast(@as(f64, entry.vel.x) - @cos(heading) * accel_scale),
-                            .y = @floatCast(@as(f64, entry.vel.y) - @sin(heading) * accel_scale),
+                            .x = narrowF32(entry.vel.x - accel_x),
+                            .y = narrowF32(entry.vel.y - accel_y),
                         };
                     }
                 }

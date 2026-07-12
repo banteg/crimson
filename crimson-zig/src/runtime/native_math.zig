@@ -25,6 +25,10 @@ pub inline fn atan2Native(y: f32, x: f32) f32 {
     return @floatCast(std.math.atan2(@as(f64, @floatCast(y)), @as(f64, @floatCast(x))));
 }
 
+pub inline fn fpatan(y: f32, x: f32) f64 {
+    return std.math.atan2(@as(f64, @floatCast(y)), @as(f64, @floatCast(x)));
+}
+
 pub inline fn wrapAngle0Tau(value: f32) f32 {
     var angle = roundF32(value);
     // Keep iterative wrapping to match decompiled native behavior for finite values.
@@ -78,4 +82,12 @@ test "heading from delta keeps atan2+half_pi wide until final narrow" {
     const dy: f32 = -21.1148681640625;
     const heading = headingFromDeltaNative(dx, dy);
     try std.testing.expectEqual(@as(u32, 0x3fa8ca7d), @as(u32, @bitCast(heading)));
+}
+
+test "fpatan consumes pc24 rounded subtraction operands" {
+    const dy = roundF32(@as(f32, 868.6661376953125) - @as(f32, 597.0));
+    const dx = roundF32(@as(f32, 275.0183410644531) - @as(f32, 821.0));
+    const atan = fpatan(dy, dx);
+    const heading = roundF32(atan - @as(f64, native_half_pi));
+    try std.testing.expectEqual(@as(u32, 0x3f8df6b7), @as(u32, @bitCast(heading)));
 }

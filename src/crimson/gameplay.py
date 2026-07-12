@@ -23,6 +23,7 @@ from .math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
     f32,
+    x87_fpatan,
     x87_pc24_mul_chain,
     x87_pc24_sub,
 )
@@ -519,10 +520,9 @@ def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radiu
 
 def _aim_heading_from_aim_point_native(player_pos: Vec2, aim_pos: Vec2) -> float:
     # `player_update` (0x004136b0): aim_heading = (float)(fpatan(pos_y-aim_y, pos_x-aim_x) - 1.5707964)
-    # Keep atan2 wide and narrow once at store to mirror x87-style rounding.
-    dy = float(player_pos.y) - float(aim_pos.y)
-    dx = float(player_pos.x) - float(aim_pos.x)
-    return float(f32(math.atan2(float(dy), float(dx)) - float(NATIVE_HALF_PI)))
+    dy = x87_pc24_sub(player_pos.y, aim_pos.y)
+    dx = x87_pc24_sub(player_pos.x, aim_pos.x)
+    return x87_pc24_sub(x87_fpatan(dy, dx), NATIVE_HALF_PI)
 
 
 def _player_update_aim_by_scheme(

@@ -416,11 +416,9 @@ fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
 fn aimHeadingFromAimPointNative(player_pos: state_mod.Vec2, aim_pos: state_mod.Vec2) f32 {
     // player_update (0x004136b0) computes:
     // aim_heading = (float)(fpatan(pos_y - aim_y, pos_x - aim_x) - 1.5707964).
-    // Keep atan2 wide and narrow once on store to match x87-style rounding.
-    const dy = @as(f64, @floatCast(player_pos.y)) - @as(f64, @floatCast(aim_pos.y));
-    const dx = @as(f64, @floatCast(player_pos.x)) - @as(f64, @floatCast(aim_pos.x));
-    const half_pi = @as(f64, @floatCast(native_half_pi));
-    return narrowF32(std.math.atan2(dy, dx) - half_pi);
+    const dy = narrowF32(player_pos.y - aim_pos.y);
+    const dx = narrowF32(player_pos.x - aim_pos.x);
+    return narrowF32(native_math.fpatan(dy, dx) - @as(f64, native_half_pi));
 }
 
 fn playerAccelerateMoveSpeed(

@@ -19,6 +19,7 @@ __all__ = [
     "heading_from_delta_f32",
     "heading_to_direction_f32",
     "x87_pc24_add",
+    "x87_fpatan",
     "x87_pc24_cos_mul",
     "x87_pc24_mul",
     "x87_pc24_mul_chain",
@@ -52,6 +53,12 @@ def x87_pc24_add(lhs: float, rhs: float) -> float:
     """Add using the game's x87 24-bit significand precision."""
 
     return f32(float(lhs) + float(rhs))
+
+
+def x87_fpatan(y: float, x: float) -> float:
+    """Evaluate ``fpatan`` while keeping its result wide for follow-up math."""
+
+    return math.atan2(float(y), float(x))
 
 
 def x87_pc24_sub(lhs: float, rhs: float) -> float:

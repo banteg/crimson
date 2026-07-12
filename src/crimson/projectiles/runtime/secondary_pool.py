@@ -19,6 +19,7 @@ from ...effects_atlas import EffectId
 from ...math_parity import (
     NATIVE_HALF_PI,
     f32,
+    x87_fpatan,
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_mul,
@@ -337,11 +338,11 @@ class SecondaryProjectilePool:
                         # angle; vel_y (and the over-cap subtraction for both
                         # components) recompute from the stored f32 angle, so the
                         # add-then-subtract is not an exact identity.
-                        atan_ext = math.atan2(
-                            float(entry.pos.y) - float(target.pos.y),
-                            float(entry.pos.x) - float(target.pos.x),
+                        atan_ext = x87_fpatan(
+                            x87_pc24_sub(entry.pos.y, target.pos.y),
+                            x87_pc24_sub(entry.pos.x, target.pos.x),
                         )
-                        entry.angle = float(f32(atan_ext - float(NATIVE_HALF_PI)))
+                        entry.angle = x87_pc24_sub(atan_ext, NATIVE_HALF_PI)
                         heading_ext = x87_pc24_sub(
                             x87_pc24_sub(atan_ext, NATIVE_HALF_PI),
                             NATIVE_HALF_PI,
