@@ -15,6 +15,13 @@ def ftol_ms_i32(dt_seconds: float) -> int:
     return int(math.trunc(float(scaled_ms_f32)))
 
 
+def nearest_ms_i32(seconds: float) -> int:
+    """Encode canonical f32 seconds using Frida's nearest-millisecond rule."""
+
+    seconds_f32 = f32(float(seconds))
+    return int(math.floor(float(seconds_f32) * 1000.0 + 0.5))
+
+
 class FrameTiming(msgspec.Struct, frozen=True):
     dt: float
     time_scale_active_entry: bool

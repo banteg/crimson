@@ -14,6 +14,7 @@ from crimson.dbg.canonical_channels import (
     SnapshotPlayer,
     SnapshotVec2,
     SnapshotWeapon,
+    bonus_timer_ms,
 )
 from crimson.dbg.schema import TRACE_SCHEMA_VERSION
 from crimson.dbg.trace import load_trace
@@ -29,6 +30,12 @@ from crimson.replay.checkpoints import (
 from crimson.replay.types import Replay, ReplayHeader, ReplayTick
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapons import WeaponId
+
+
+def test_bonus_timer_ms_matches_frida_nearest_millisecond_encoding() -> None:
+    assert bonus_timer_ms(8.811999320983887) == 8812
+    assert bonus_timer_ms(0.0005) == 1
+    assert bonus_timer_ms(-1.0) == 0
 
 
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:

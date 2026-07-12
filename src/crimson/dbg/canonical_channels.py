@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand
-from ..sim.timing import ftol_ms_i32
+from ..sim.timing import nearest_ms_i32
 
 
 class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -204,4 +204,4 @@ def entity_uid(*, pool_kind: str, index: int, generation: int) -> int:
 
 
 def bonus_timer_ms(value: float) -> int:
-    return max(0, int(ftol_ms_i32(float(value))))
+    return max(0, nearest_ms_i32(value))

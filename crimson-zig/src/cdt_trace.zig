@@ -2900,10 +2900,16 @@ fn dtSecondsToMsI32(dt_seconds: f32) !i32 {
 }
 
 fn bonusTimerMs(value: f32) i32 {
-    const scaled_ms = @as(f32, value * 1000.0);
-    const truncated = @as(i64, @intFromFloat(@trunc(scaled_ms)));
-    if (truncated < 0) return 0;
-    return std.math.cast(i32, truncated) orelse std.math.maxInt(i32);
+    const scaled_ms = @as(f64, @floatCast(value)) * 1000.0;
+    const rounded = @as(i64, @intFromFloat(@floor(scaled_ms + 0.5)));
+    if (rounded < 0) return 0;
+    return std.math.cast(i32, rounded) orelse std.math.maxInt(i32);
+}
+
+test "bonus timer encoding matches Frida nearest milliseconds" {
+    try std.testing.expectEqual(@as(i32, 8812), bonusTimerMs(8.811999320983887));
+    try std.testing.expectEqual(@as(i32, 1), bonusTimerMs(0.0005));
+    try std.testing.expectEqual(@as(i32, 0), bonusTimerMs(-1.0));
 }
 
 fn writeI32Le(out: *std.Io.Writer, value: i32) !void {

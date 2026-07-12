@@ -12,7 +12,7 @@ from ..creatures.runtime import CreatureDeath
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..sim.state_types import PlayerState
-from ..sim.timing import ftol_ms_i32
+from ..sim.timing import nearest_ms_i32
 from ..sim.world_state import WorldEvents, WorldState
 from ..weapons import WeaponId
 
@@ -225,7 +225,7 @@ def _validate_checkpoint_wire_floats(payload: bytes) -> None:
 
 def _bonus_timer_ms(value: float) -> int:
     # Keep checkpoint values compact/stable: ms resolution is enough for divergence detection.
-    ms = int(ftol_ms_i32(float(value)))
+    ms = nearest_ms_i32(value)
     if ms < 0:
         return 0
     return ms
