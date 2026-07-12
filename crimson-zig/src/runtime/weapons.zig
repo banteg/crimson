@@ -418,12 +418,16 @@ fn tryFireWeaponWithForce(
     if (shot_count <= 0) return false;
 
     const aim_delta = state_mod.Vec2.sub(player.aim, player.pos);
-    const aim_heading = if (aim_delta.lengthSq() > 1e-9)
-        aim_delta.toHeading()
-    else
-        player.aim_dir.toHeading();
-    const muzzle_dir = rotateVec(directionFromHeading(aim_heading), -0.150915);
-    const muzzle = state_mod.Vec2.add(player.pos, muzzle_dir.mul(16.0));
+    const aim_heading = player.aim_heading;
+    const muzzle_radians = narrowF32(narrowF32(aim_heading - native_math.native_half_pi) - narrowF32(0.150915));
+    const muzzle_offset: state_mod.Vec2 = .{
+        .x = narrowF32(std.math.cos(@as(f64, muzzle_radians)) * 16.0),
+        .y = narrowF32(std.math.sin(@as(f64, muzzle_radians)) * 16.0),
+    };
+    const muzzle: state_mod.Vec2 = .{
+        .x = narrowF32(player.pos.x + muzzle_offset.x),
+        .y = narrowF32(player.pos.y + muzzle_offset.y),
+    };
     // Native encodes friendly fire in the owner id (-1 - player_index): with
     // the cvar enabled, primary player shots can hit other players.
     const projectile_owner = if (state.friendly_fire_enabled)
@@ -431,7 +435,6 @@ fn tryFireWeaponWithForce(
     else
         owner_ref.OwnerRef.fromLocalPlayer(0);
     const projectile_hits_players = state.friendly_fire_enabled;
-    const secondary_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
@@ -528,7 +531,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 narrowF32(shot_angle),
                 mode.type_id,
-                secondary_owner,
+                projectile_owner,
                 2.0,
                 target_hint,
                 if (target_hint != null) creatures else null,
@@ -589,7 +592,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     angle,
                     secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                    secondary_owner,
+                    projectile_owner,
                     2.0,
                     player.aim,
                     creatures,

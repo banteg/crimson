@@ -18,6 +18,12 @@ __all__ = [
     "heading_add_pi_f32",
     "heading_from_delta_f32",
     "heading_to_direction_f32",
+    "x87_pc24_add",
+    "x87_pc24_cos_mul",
+    "x87_pc24_mul",
+    "x87_pc24_mul_chain",
+    "x87_pc24_sin_mul",
+    "x87_pc24_sub",
 ]
 
 
@@ -40,6 +46,45 @@ NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
 
 def f32(value: float) -> float:
     return _F32_UNPACK(_F32_PACK(float(value)))[0]
+
+
+def x87_pc24_add(lhs: float, rhs: float) -> float:
+    """Add using the game's x87 24-bit significand precision."""
+
+    return f32(float(lhs) + float(rhs))
+
+
+def x87_pc24_sub(lhs: float, rhs: float) -> float:
+    """Subtract using the game's x87 24-bit significand precision."""
+
+    return f32(float(lhs) - float(rhs))
+
+
+def x87_pc24_mul(lhs: float, rhs: float) -> float:
+    """Multiply using the game's x87 24-bit significand precision."""
+
+    return f32(float(lhs) * float(rhs))
+
+
+def x87_pc24_mul_chain(first: float, *factors: float) -> float:
+    """Multiply left-to-right, rounding after every x87 PC=24 operation."""
+
+    result = float(first)
+    for factor in factors:
+        result = x87_pc24_mul(result, factor)
+    return result
+
+
+def x87_pc24_cos_mul(radians: float, *factors: float) -> float:
+    """Evaluate cosine wide, then multiply with PC=24 rounding."""
+
+    return x87_pc24_mul_chain(math.cos(float(radians)), *factors)
+
+
+def x87_pc24_sin_mul(radians: float, *factors: float) -> float:
+    """Evaluate sine wide, then multiply with PC=24 rounding."""
+
+    return x87_pc24_mul_chain(math.sin(float(radians)), *factors)
 
 
 _NATIVE_LEFT_AXIS_HEADING_POS = f32(NATIVE_TAU - NATIVE_HALF_PI)

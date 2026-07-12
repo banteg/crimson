@@ -174,7 +174,7 @@
       'damage_type': 3,
       'idx': 0,
       'impulse': list([
-        0.0,
+        -5.1e-05,
         -1169.999924,
       ]),
       'owner': dict({
@@ -234,14 +234,14 @@
       'detonation_scale': 1.0,
       'detonation_t': 0.0,
       'pos': list([
-        0.0,
+        -0.0,
         -1.9,
       ]),
       'target_id': 1,
       'trail_timer': 0.06,
       'type_id': 2,
       'vel': list([
-        7.999986,
+        7.999977,
         -189.984802,
       ]),
     }),

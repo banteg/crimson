@@ -32,6 +32,7 @@ from crimson.weapon_runtime import (
     fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapon_runtime.fire import _native_muzzle_pos
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -1178,6 +1179,34 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
         RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
         RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
     ]
+
+
+def test_player_fire_weapon_uses_native_muzzle_arithmetic() -> None:
+    muzzle = _native_muzzle_pos(
+        Vec2(137.84991455078125, 935.0262451171875),
+        -4.14423131942749,
+    )
+
+    assert muzzle == Vec2(152.47727966308594, 941.5100708007812)
+
+
+def test_player_fire_weapon_secondary_owner_uses_native_friendly_fire_encoding() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    weapon_assign_player(player, WeaponId.SEEKER_ROCKETS, state=state)
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
+            dt=0.0,
+            state=state,
+            creatures=[],
+        ),
+    )
+
+    projectile = state.secondary_projectiles.iter_active()[0]
+    assert projectile.owner.to_legacy() == -100
 
 
 @pytest.mark.parametrize(

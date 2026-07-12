@@ -10,7 +10,15 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..math_parity import NATIVE_HALF_PI, NATIVE_TAU, f32, heading_from_delta_f32
+from ..math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_TAU,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime
@@ -102,6 +110,17 @@ class WeaponFireResult(msgspec.Struct, frozen=True):
     ammo_cost: float = 0.0
 
 
+def _native_muzzle_pos(player_pos: Vec2, aim_heading: float) -> Vec2:
+    radians = x87_pc24_sub(float(aim_heading), NATIVE_HALF_PI)
+    radians = x87_pc24_sub(radians, f32(0.150915))
+    offset_x = x87_pc24_cos_mul(radians, 16.0)
+    offset_y = x87_pc24_sin_mul(radians, 16.0)
+    return Vec2(
+        x87_pc24_add(float(player_pos.x), offset_x),
+        x87_pc24_add(float(player_pos.y), offset_y),
+    )
+
+
 def _spawn_native_fire_muzzle_sprites(
     *,
     state: GameplayState,
@@ -152,7 +171,7 @@ def _native_shot_angle_with_jitter(
     dir_angle = float(f32(dir_draw * float(f32(float(NATIVE_TAU) / 512.0))))
 
     aim_jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim.x)))
-    aim_jitter_y = float(f32(math.sin(dir_angle) * offset_term + float(aim.y)))
+    aim_jitter_y = x87_pc24_add(math.sin(dir_angle) * offset_term, float(aim.y))
 
     return float(
         f32(
@@ -267,10 +286,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
     aim = input_state.aim
-    aim_delta = aim - player.pos
-    aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
+    # `player_update` computes and stores aim_heading before entering the fire
+    # branch; later muzzle and presentation math reload that exact float field.
+    aim_heading = float(f32(player.aim_heading))
 
-    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle = _native_muzzle_pos(player.pos, aim_heading)
     weapon_flags = int(weapon.flags or 0)
     if weapon_flags & 0x1:
         # Native gameplay fire uses four exact `player_update` RNG sites for
@@ -389,7 +409,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=shot_angle,
                     type_id=type_id,
-                    owner=owner,
+                    owner=projectile_owner,
                     target_hint=target_hint,
                     creatures=spawn_creatures,
                     preserve_bugs=bool(state.preserve_bugs),
@@ -455,7 +475,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                         pos=muzzle,
                         angle=angle,
                         type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-                        owner=owner,
+                        owner=projectile_owner,
                         target_hint=aim,
                         creatures=creatures,
                         preserve_bugs=bool(state.preserve_bugs),

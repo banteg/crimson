@@ -18,7 +18,14 @@ from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
-from .math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
+from .math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_PI,
+    NATIVE_TAU,
+    f32,
+    x87_pc24_mul_chain,
+    x87_pc24_sub,
+)
 from .movement_controls import MovementControlType
 from .perks import PerkId
 from .perks.helpers import perk_active
@@ -402,7 +409,7 @@ def _player_apply_move_with_spawn_avoidance(
 def _direction_from_heading_native(heading: float) -> Vec2:
     # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal),
     # with gameplay's x87 arithmetic in 24-bit precision before the trig op.
-    radians = f32(float(heading) - float(NATIVE_HALF_PI))
+    radians = x87_pc24_sub(float(heading), float(NATIVE_HALF_PI))
     return Vec2(math.cos(radians), math.sin(radians))
 
 
@@ -488,13 +495,16 @@ def _player_turn_aligned_velocity_native(
     # mode. In particular, the direction*speed and subsequent alignment
     # product round before the remaining multipliers; keeping the whole chain
     # wide can move a backward-diagonal step one ULP too far.
-    alignment = f32(float(NATIVE_PI) - float(angle_diff))
+    alignment = x87_pc24_sub(float(NATIVE_PI), float(angle_diff))
 
     def component(value: float) -> float:
-        result = f32(float(value) * float(move_speed))
-        result = f32(float(result) * float(alignment))
-        result = f32(float(result) * float(speed_multiplier))
-        return f32(float(result) * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE))
+        return x87_pc24_mul_chain(
+            float(value),
+            float(move_speed),
+            float(alignment),
+            float(speed_multiplier),
+            float(_RELATIVE_MOVE_TURN_ALIGN_SCALE),
+        )
 
     return Vec2(component(direction.x), component(direction.y))
 
@@ -605,7 +615,7 @@ def player_update(
                     rng=state.rng,
                     detail_preset=int(detail_preset),
                     violence_disabled=0,
-            )
+                )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
                 state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
             ]

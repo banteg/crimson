@@ -14,7 +14,7 @@ from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDam
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, f32
+from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
@@ -302,7 +302,7 @@ class ProjectilePool:
             # The game leaves x87 in 24-bit precision mode, so the angle-minus-
             # half-pi subtraction rounds before fcos/fsin. Keeping it wide can
             # drift projectile integration by one ULP.
-            heading_radians = f32(float(proj.angle) - NATIVE_HALF_PI)
+            heading_radians = x87_pc24_sub(float(proj.angle), NATIVE_HALF_PI)
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)
             acc = Vec2()

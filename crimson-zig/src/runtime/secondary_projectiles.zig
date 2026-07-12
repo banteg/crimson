@@ -92,11 +92,20 @@ pub const SecondaryProjectilePool = struct {
             return index;
         }
 
-        var base_speed: f32 = 90.0;
+        const radians = narrowF32(entry.angle - native_math.native_half_pi);
+        const cos_ext = std.math.cos(@as(f64, radians));
+        const sin_ext = std.math.sin(@as(f64, radians));
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
-            base_speed = 190.0;
+            entry.vel = .{
+                .x = narrowF32(narrowF32(cos_ext) * 190.0),
+                .y = narrowF32(narrowF32(sin_ext) * 190.0),
+            };
+        } else {
+            entry.vel = .{
+                .x = narrowF32(cos_ext * 90.0),
+                .y = narrowF32(sin_ext * 90.0),
+            };
         }
-        entry.vel = runtime_helpers.directionFromHeading(entry.angle).mul(base_speed);
         entry.speed = time_to_live;
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
@@ -556,4 +565,20 @@ fn creatureFindNearestAlive(
         }
     }
     return best_idx;
+}
+
+test "homing rocket spawn preserves native trig store order" {
+    var pool: SecondaryProjectilePool = .{};
+    const index = pool.spawn(
+        .{ .x = 152.47727966308594, .y = 941.5100708007812 },
+        -4.161045551300049,
+        .homing_rocket,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        2.0,
+        null,
+        null,
+    );
+
+    try std.testing.expectEqual(@as(f32, 161.8461151123047), pool.entries[index].vel.x);
+    try std.testing.expectEqual(@as(f32, 99.52806091308594), pool.entries[index].vel.y);
 }

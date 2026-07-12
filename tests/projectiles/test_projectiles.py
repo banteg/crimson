@@ -379,6 +379,21 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     )
 
 
+def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
+    pool = SecondaryProjectilePool(size=1)
+
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(152.47727966308594, 941.5100708007812),
+            angle=-4.161045551300049,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+
+    projectile = pool.entries[idx]
+    assert projectile.vel == Vec2(161.8461151123047, 99.52806091308594)
+
+
 def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
@@ -460,21 +475,26 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_1,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_2,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_2,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_3,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
-    ] + [
-        caller
-        for _ in range(20)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_1,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_2,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_2,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_3,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
+        ]
+        + [
+            caller
+            for _ in range(20)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
@@ -495,14 +515,18 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        caller
-        for _ in range(10)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            caller
+            for _ in range(10)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
@@ -523,14 +547,18 @@ def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        caller
-        for _ in range(3)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            caller
+            for _ in range(3)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
@@ -551,8 +579,15 @@ def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
-    ] * 4 + [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
-    ] * 8 + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
+        ]
+        * 4
+        + [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
+        ]
+        * 8
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
