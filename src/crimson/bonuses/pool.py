@@ -9,6 +9,7 @@ from grim.geom import Vec2
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
+from ..math_parity import f32
 from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
@@ -388,8 +389,8 @@ class BonusPool:
             if _bonus_entry_is_empty(entry):
                 continue
 
-            decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
-            entry.time_left -= decay
+            decay = f32(float(f32(dt)) * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0))
+            entry.time_left = f32(float(f32(entry.time_left)) - float(decay))
             if not entry.picked and state.game_mode == GameMode.TUTORIAL:
                 entry.time_left = 5.0
             expired_to_unused = False

@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
+from crimson.gameplay import GameplayState
+from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -54,10 +56,28 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     assert {effect.effect_id for effect in active} == {0}
 
 
-def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
-    from crimson.gameplay import GameplayState
-    from crimson.sim.state_types import PlayerState
+def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
+    state = GameplayState()
+    entry = state.bonus_pool.spawn_at(
+        pos=Vec2(100.0, 100.0),
+        bonus_id=BonusId.POINTS,
+        state=state,
+        emit_burst=False,
+    )
+    assert entry is not None
+    entry.time_left = 9.85200023651123
 
+    state.bonus_pool.update(
+        0.04400000348687172,
+        state=state,
+        players=[PlayerState(index=0, pos=Vec2(500.0, 500.0))],
+        creatures=[],
+    )
+
+    assert entry.time_left == 9.808000564575195
+
+
+def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
     state = GameplayState()
     entry = state.bonus_pool.spawn_at(
         pos=Vec2(500.0, 500.0),
