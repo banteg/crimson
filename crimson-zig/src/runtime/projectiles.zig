@@ -458,7 +458,7 @@ pub const ProjectilePool = struct {
                 if (dist < 50.0) dist = 50.0;
                 const damage_scale = damageScaleFromRawId(proj.type_id);
                 const damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95;
-                const impulse_axis = narrowF32(math.cos(proj.angle - native_half_pi) * proj.speed_scale);
+                const impulse_axis = projectileImpulseAxisF32(proj.angle, proj.speed_scale);
                 const impulse: state_mod.Vec2 = .{
                     .x = impulse_axis,
                     .y = impulse_axis,
@@ -1045,6 +1045,14 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 
+fn projectileImpulseAxisF32(angle: f32, speed_scale: f32) f32 {
+    const impulse_angle = native_math.pc24Sub(angle, native_half_pi);
+    return native_math.pc24Mul(
+        std.math.cos(@as(f64, @floatCast(impulse_angle))),
+        speed_scale,
+    );
+}
+
 fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
 }
@@ -1062,6 +1070,15 @@ test "projectile spawn keeps trig wide until velocity store" {
 
     try std.testing.expectEqual(@as(f32, 0.2425672858953476), pool.entries[index].vel.x);
     try std.testing.expectEqual(@as(f32, -1.4802571535110474), pool.entries[index].vel.y);
+}
+
+test "projectile impulse keeps trig wide until scale multiply" {
+    const impulse = projectileImpulseAxisF32(4.929999828338623, 0.8400000333786011);
+    try std.testing.expectEqual(@as(f32, -0.8201895356178284), impulse);
+    try std.testing.expectEqual(
+        @as(f32, 3.125081777572632),
+        native_math.pc24Sub(2.3048923015594482, impulse),
+    );
 }
 
 test "projectile hit consumes hit-presentation rng" {
