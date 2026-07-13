@@ -45,6 +45,7 @@ from .spawn_ids import (
 from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_NAME, SpawnTemplate
 
 _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
+NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
     "CreatureAiMode",
@@ -53,6 +54,7 @@ __all__ = [
     "CreatureInit",
     "CreatureTypeId",
     "HAS_SPAWN_SLOT_FLAG",
+    "NATIVE_SPAWN_SLOT_COUNT",
     "RANDOM_HEADING_SENTINEL",
     "SpawnId",
     "SPAWN_ID_TO_TEMPLATE",

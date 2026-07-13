@@ -64,6 +64,7 @@ from .lifecycle import (
 )
 from .spawn import (
     HAS_SPAWN_SLOT_FLAG,
+    NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
@@ -842,17 +843,20 @@ class CreaturePool:
         for slot in plan.spawn_slots:
             owner_plan = int(slot.owner_creature)
             owner_pool = mapping[owner_plan] if 0 <= owner_plan < len(mapping) else -1
-            self.spawn_slots.append(
-                SpawnSlotInit(
-                    owner_creature=int(owner_pool),
-                    timer=float(slot.timer),
-                    count=int(slot.count),
-                    limit=int(slot.limit),
-                    interval=float(slot.interval),
-                    child_template_id=slot.child_template_id,
-                ),
+            runtime_slot = SpawnSlotInit(
+                owner_creature=int(owner_pool),
+                timer=float(slot.timer),
+                count=int(slot.count),
+                limit=int(slot.limit),
+                interval=float(slot.interval),
+                child_template_id=slot.child_template_id,
             )
-            slot_mapping.append(len(self.spawn_slots) - 1)
+            slot_index = self._alloc_spawn_slot()
+            if slot_index == len(self.spawn_slots):
+                self.spawn_slots.append(runtime_slot)
+            else:
+                self.spawn_slots[slot_index] = runtime_slot
+            slot_mapping.append(slot_index)
 
         # 3) Patch link indices now that we have global indices.
         for plan_idx, pool_idx in enumerate(mapping):
@@ -1564,9 +1568,17 @@ class CreaturePool:
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
             return
-        slot = self.spawn_slots[slot_index]
-        slot.owner_creature = -1
-        slot.limit = 0
+        self.spawn_slots[slot_index].owner_creature = -1
+
+    def _alloc_spawn_slot(self) -> int:
+        for slot_index, slot in enumerate(self.spawn_slots):
+            if slot_index >= NATIVE_SPAWN_SLOT_COUNT:
+                break
+            if int(slot.owner_creature) < 0:
+                return slot_index
+        if len(self.spawn_slots) < NATIVE_SPAWN_SLOT_COUNT:
+            return len(self.spawn_slots)
+        return NATIVE_SPAWN_SLOT_COUNT - 1
 
     def _tick_dead(
         self,

@@ -20,6 +20,16 @@ const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
 
 pub const max_creatures: usize = 0x180;
+pub const max_spawn_slots: usize = 0x20;
+
+const empty_spawn_slot: spawn_mod.SpawnSlotInit = .{
+    .owner_creature = -1,
+    .timer = 0.0,
+    .count = 0,
+    .limit = 0,
+    .interval = 0.0,
+    .child_template_id = 0,
+};
 
 const creature_speed_scale: f32 = 30.0;
 const creature_turn_rate_scale: f32 = native_math.native_turn_rate_scale;
@@ -159,16 +169,7 @@ pub const CreaturePool = struct {
     quest_fail_retry_count: i32 = 0,
     effects: ?*effects_mod.EffectPool = null,
     single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
-    spawn_slots: [max_creatures]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{
-        .{
-            .owner_creature = 0,
-            .timer = 0.0,
-            .count = 0,
-            .limit = 0,
-            .interval = 0.0,
-            .child_template_id = 0,
-        },
-    } ** max_creatures,
+    spawn_slots: [max_spawn_slots]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{empty_spawn_slot} ** max_spawn_slots,
     spawn_slot_count: usize = 0,
 
     pub fn reset(self: *CreaturePool) void {
@@ -180,6 +181,7 @@ pub const CreaturePool = struct {
         self.quest_fail_retry_count = 0;
         self.effects = null;
         self.single_player_dormant_target = .{ .index = 1, .pos = .{} };
+        self.spawn_slots = [_]spawn_mod.SpawnSlotInit{empty_spawn_slot} ** max_spawn_slots;
         self.spawn_slot_count = 0;
     }
 
@@ -275,8 +277,6 @@ pub const CreaturePool = struct {
         for (self.entries, 0..) |creature, idx| {
             was_active[idx] = creature.active;
         }
-        const spawn_slot_count_before = self.spawn_slot_count;
-
         switch (call.template_id) {
             @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12) => {
                 // Parent.
@@ -1896,7 +1896,8 @@ pub const CreaturePool = struct {
                 const link_index = self.entries[primary_idx].link_index;
                 if (link_index < 0) break :blk null;
                 const slot_idx: usize = @intCast(link_index);
-                if (slot_idx < spawn_slot_count_before or slot_idx >= self.spawn_slot_count) break :blk null;
+                if (slot_idx >= self.spawn_slot_count) break :blk null;
+                if (self.spawn_slots[slot_idx].owner_creature != @as(i32, @intCast(primary_idx))) break :blk null;
                 break :blk slot_idx;
             };
             applySpawnDifficultyAdjustments(
@@ -2548,6 +2549,7 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
         }
         if (!death_start_needed) return 0;
+        self.disableSpawnSlotForCreature(creature);
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
@@ -2765,8 +2767,11 @@ pub const CreaturePool = struct {
         interval: f32,
         child_template_id: i32,
     ) i32 {
-        if (self.spawn_slot_count >= self.spawn_slots.len) return -1;
-        const slot_idx = self.spawn_slot_count;
+        var slot_idx: usize = 0;
+        while (slot_idx < self.spawn_slots.len and self.spawn_slots[slot_idx].owner_creature >= 0) : (slot_idx += 1) {}
+        if (slot_idx == self.spawn_slots.len) {
+            slot_idx = self.spawn_slots.len - 1;
+        }
         self.spawn_slots[slot_idx] = .{
             .owner_creature = @intCast(owner_idx),
             .timer = timer,
@@ -2775,8 +2780,14 @@ pub const CreaturePool = struct {
             .interval = interval,
             .child_template_id = child_template_id,
         };
-        self.spawn_slot_count += 1;
+        self.spawn_slot_count = @max(self.spawn_slot_count, slot_idx + 1);
         return @intCast(slot_idx);
+    }
+
+    fn disableSpawnSlotForCreature(self: *CreaturePool, creature: *const CreatureState) void {
+        if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) return;
+        if (creature.link_index < 0 or creature.link_index >= @as(i32, @intCast(self.spawn_slots.len))) return;
+        self.spawn_slots[@intCast(creature.link_index)].owner_creature = -1;
     }
 
     fn applySpawnDifficultyAdjustments(
@@ -2997,6 +3008,7 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage -= 0.001;
         }
         if (!death_start_needed) return 0;
+        self.disableSpawnSlotForCreature(creature);
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
@@ -4008,6 +4020,17 @@ test "bloody mess quick learner reward is still doubled by double experience bon
         .reward_value = 12.7,
         .contact_damage = 0.0,
     });
+    pool.entries[0].flags = spawn_mod.CreatureFlags.anim_ping_pong;
+    pool.entries[0].link_index = 0;
+    pool.spawn_slot_count = 1;
+    pool.spawn_slots[0] = .{
+        .owner_creature = 0,
+        .timer = 1.0,
+        .count = 0,
+        .limit = 1,
+        .interval = 1.0,
+        .child_template_id = 0x1D,
+    };
 
     const xp_gained = pool.applyDamage(
         &state,
@@ -4024,6 +4047,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
 
     try std.testing.expectEqual(@as(i32, 32), xp_gained);
     try std.testing.expectEqual(@as(i32, 132), players[0].experience);
+    try std.testing.expectEqual(@as(i32, -1), pool.spawn_slots[0].owner_creature);
 }
 
 test "split-on-death children use original source when first child reuses source slot" {
@@ -5340,6 +5364,29 @@ test "template spawn rejects invalid template ids" {
             &rng,
         ),
     );
+}
+
+test "spawn slot allocator reuses free entries and overwrites the final entry" {
+    var pool: CreaturePool = .{};
+    var slot_index: usize = 0;
+    while (slot_index < max_spawn_slots) : (slot_index += 1) {
+        try std.testing.expectEqual(
+            @as(i32, @intCast(slot_index)),
+            pool.registerSpawnSlot(slot_index, 1.0, 2, 3.0, 4),
+        );
+    }
+    try std.testing.expectEqual(max_spawn_slots, pool.spawn_slot_count);
+
+    pool.spawn_slots[5].owner_creature = -1;
+    try std.testing.expectEqual(@as(i32, 5), pool.registerSpawnSlot(123, 5.0, 6, 7.0, 8));
+    try std.testing.expectEqual(@as(i32, 123), pool.spawn_slots[5].owner_creature);
+    try std.testing.expectEqual(max_spawn_slots, pool.spawn_slot_count);
+
+    try std.testing.expectEqual(
+        @as(i32, max_spawn_slots - 1),
+        pool.registerSpawnSlot(321, 9.0, 10, 11.0, 12),
+    );
+    try std.testing.expectEqual(@as(i32, 321), pool.spawn_slots[max_spawn_slots - 1].owner_creature);
 }
 
 test "runtime-context template spawn enqueues presentation burst" {

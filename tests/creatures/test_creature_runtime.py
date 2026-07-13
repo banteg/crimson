@@ -9,6 +9,7 @@ from crimson.bonuses.pool import BonusEntry
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
+    NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
@@ -100,6 +101,53 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
     assert pool.entries[owner_idx].spawn_slot_index == new_slot_idx
     assert pool.entries[owner_idx].link_index == new_slot_idx
     assert pool.spawn_slots[new_slot_idx].owner_creature == owner_idx
+
+
+def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaustion() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
+    pool = CreaturePool()
+    empty_slot = SpawnSlotInit(
+        owner_creature=-1,
+        timer=9.0,
+        count=9,
+        limit=9,
+        interval=9.0,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
+    )
+    pool.spawn_slots.append(empty_slot)
+
+    mapping, _ = pool.spawn_plan(plan)
+
+    assert len(pool.spawn_slots) == 1
+    assert pool.entries[mapping[0]].spawn_slot_index == 0
+    assert pool.spawn_slots[0].owner_creature == mapping[0]
+
+    pool = CreaturePool()
+    for owner_index in range(NATIVE_SPAWN_SLOT_COUNT):
+        pool.spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=owner_index,
+                timer=0.0,
+                count=0,
+                limit=1,
+                interval=1.0,
+                child_template_id=SpawnId.ALIEN_RANDOM_1D,
+            ),
+        )
+
+    mapping, _ = pool.spawn_plan(plan)
+
+    assert len(pool.spawn_slots) == NATIVE_SPAWN_SLOT_COUNT
+    assert pool.entries[mapping[0]].spawn_slot_index == NATIVE_SPAWN_SLOT_COUNT - 1
+    assert pool.spawn_slots[-1].owner_creature == mapping[0]
 
 
 def test_spawn_plan_materialization_spawns_burst_fx() -> None:
