@@ -1814,9 +1814,12 @@ vertex struct.
 
 ## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
 
-- Ghidra signature: `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)`
-- Suggested signature: `void grim_submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)`
-- Notes: writes `DAT_10059e34[4] = *color;` (packed ARGB)
+- Confirmed name: `submit_vertices_offset_color`
+- Confirmed C++ signature: `void __thiscall IGrim2D::submit_vertices_offset_color(float *verts, int count, float *offset, unsigned long *color)`
+- Ghidra signature (color incorrectly typed as float): `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)`
+- Notes: bulk-copies seven-dword vertices, adds an XY offset, and overwrites
+  field 4 with `*color` as packed ARGB. Live integer loads/stores establish the
+  corrected color-pointer type; `retn 0x10` establishes the member ABI.
 - Call sites: 3 (unique funcs: 1)
 - Sample calls: ui_element_render (`FUN_00446c40`):L30006; ui_element_render (`FUN_00446c40`):L30014; ui_element_render (`FUN_00446c40`):L30018
 - First callsite: ui_element_render (`FUN_00446c40`) (line 32142)
@@ -1837,6 +1840,11 @@ grim.dll body:
   DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
   DAT_10059e34[4] = *color;
 ```
+
+The recovered VC6.5 source matches all 54 instructions and all 9 masked
+references. Its ordinary bulk copy, local XY temporaries, packed-color dword
+assignment, pointer advance, and low-word capacity check recover the complete
+native loop.
 
 
 ## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0

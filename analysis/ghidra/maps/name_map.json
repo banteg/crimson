@@ -5803,7 +5803,7 @@
     "program": "grim.dll",
     "address": "0x10008430",
     "name": "grim_submit_vertices_offset_color",
-    "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, float *color)",
+    "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, unsigned int *color)",
     "comment": "Grim2D vtable 0x130: translate + apply color"
   },
   {

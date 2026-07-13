@@ -236,7 +236,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0xa4` | 2 | `grim_get_joystick_pov` | `int grim_get_joystick_pov(int index)` |
 | `0xcc` | 2 | `grim_draw_fullscreen_color` | `void grim_draw_fullscreen_color(float r, float g, float b, float a)` |
 | `0xb4` | 3 | `grim_load_texture` | `int grim_load_texture(char * name, char * path)` |
-| `0x130` | 3 | `grim_submit_vertices_offset_color` | `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)` |
+| `0x130` | 3 | `grim_submit_vertices_offset_color` | `void grim_submit_vertices_offset_color(float *verts, int count, float *offset, const uint32_t *color)` |
 | `0x140` | 3 | `grim_draw_text_mono_fmt` | `void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)` |
 
 ## Input-ish offsets (evidence)
