@@ -125,6 +125,9 @@ parallel. A cache entry is invalidated by the scratch source/config, compiler
 arguments and binary, `cl.sh`, the transitive local-header graph, the target
 image and symbol maps, or the matcher itself. This keeps repeat status runs
 cheap without allowing stale objects or scores to survive an input change.
+Compiler/CFLAGS profiles use separate digest-named build directories, and
+objects plus cache metadata are published atomically, so concurrent profile
+comparisons cannot overwrite the canonical build.
 
 Compare another compiler profile without editing scratches:
 

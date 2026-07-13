@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+import subprocess
 from dataclasses import replace
 from pathlib import Path
 
@@ -28,6 +29,7 @@ from crimson.match import (
     collect_image_totals,
     collect_scratch_statuses,
     common_prefix_length,
+    compile_scratch,
     diff_regions,
     disassemble_normalized_function,
     extract_object_function,
@@ -461,6 +463,51 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
     inner.write_text("#define VALUE 2\n", encoding="utf-8")
     after = _scratch_build_key(config, match_root, include_resolver=resolver)
     assert after != before
+
+
+def test_compile_scratch_isolates_profiles_and_resolves_match_root(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    match_root = tmp_path / "match"
+    scratch = tmp_path / "scratch"
+    compiler = match_root / "compilers" / "msvc6.5" / "Bin"
+    scratch.mkdir()
+    compiler.mkdir(parents=True)
+    (scratch / "scratch.c").write_text("void foo(void) {}\n", encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    (match_root / "cl.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    (compiler / "CL.EXE").write_bytes(b"compiler")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2 /GB",
+        source="scratch.c",
+        end_va=None,
+        symbol="foo",
+        note="",
+    )
+    commands: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        cwd = Path(str(kwargs["cwd"]))
+        (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.chdir(tmp_path)
+
+    optimized = compile_scratch(config, Path("match"))
+    unoptimized = compile_scratch(replace(config, cflags="/Od"), Path("match"))
+
+    assert optimized != unoptimized
+    assert optimized.parent != unoptimized.parent
+    assert optimized.read_bytes() != unoptimized.read_bytes()
+    assert Path(commands[0][0]).is_absolute()
+    assert commands[0][0] == str((match_root / "cl.sh").resolve())
 
 
 def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPatch) -> None:

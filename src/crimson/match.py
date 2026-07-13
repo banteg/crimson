@@ -1310,6 +1310,44 @@ def _scratch_build_key(
     }
 
 
+def _scratch_profile_digest(config: ScratchConfig) -> str:
+    payload = {
+        "compiler": config.compiler,
+        "cflags": shlex.split(config.cflags),
+        "source": config.source,
+        "image": config.image,
+        "function": config.function,
+        "end_va": config.end_va,
+        "symbol": config.symbol,
+    }
+    encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def _scratch_build_directory(config: ScratchConfig) -> Path:
+    return config.directory / "build" / config.compiler / _scratch_profile_digest(config)
+
+
+def _write_text_atomic(path: Path, text: str) -> None:
+    import tempfile
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as handle:
+        handle.write(text)
+        temp_path = Path(handle.name)
+    try:
+        os.replace(temp_path, path)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
 def _scratch_object_is_current(
     obj_path: Path,
     config: ScratchConfig,
@@ -1339,10 +1377,12 @@ def compile_scratch(
 ) -> Path:
     import shutil
     import subprocess
+    import tempfile
 
+    match_root = match_root.resolve()
     source = config.directory / config.source
     validate_scratch_source(source)
-    build_dir = config.directory / "build" / config.compiler
+    build_dir = _scratch_build_directory(config)
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
     if _scratch_object_is_current(
@@ -1353,22 +1393,29 @@ def compile_scratch(
     ):
         return obj_path
 
-    build_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy(source, build_dir / Path(config.source).name)
+    build_dir.parent.mkdir(parents=True, exist_ok=True)
     command = list(_scratch_compile_argv(config, match_root))
-    completed = subprocess.run(
-        command,
-        cwd=build_dir,
-        env={**os.environ, "MSVC_VER": config.compiler},
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if completed.returncode != 0 or not obj_path.exists():
-        raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
-    (build_dir / "scratch-build.json").write_text(
+    with tempfile.TemporaryDirectory(dir=build_dir.parent, prefix=f".{build_dir.name}.") as temp_name:
+        temp_dir = Path(temp_name)
+        temp_source = temp_dir / Path(config.source).name
+        temp_obj = temp_dir / obj_name
+        shutil.copyfile(source, temp_source)
+        completed = subprocess.run(
+            command,
+            cwd=temp_dir,
+            env={**os.environ, "MSVC_VER": config.compiler},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0 or not temp_obj.exists():
+            raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
+        build_dir.mkdir(parents=True, exist_ok=True)
+        os.replace(temp_source, build_dir / Path(config.source).name)
+        os.replace(temp_obj, obj_path)
+    _write_text_atomic(
+        build_dir / "scratch-build.json",
         json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
-        encoding="utf-8",
     )
     return obj_path
 
@@ -1387,7 +1434,7 @@ def _manifest_digest(manifest: FunctionManifest) -> str:
 
 
 def _scratch_cache_path(config: ScratchConfig) -> Path:
-    return config.directory / "build" / config.compiler / "match-cache.json"
+    return _scratch_build_directory(config) / "match-cache.json"
 
 
 def _scratch_cache_key(
@@ -1534,7 +1581,8 @@ def _store_cached_status(
         "masked_unresolved": status.masked_unresolved,
         "masked_mismatches": status.masked_mismatches,
     }
-    cache_path.write_text(
+    _write_text_atomic(
+        cache_path,
         json.dumps(
             {
                 "key": _scratch_cache_key(
@@ -1550,7 +1598,6 @@ def _store_cached_status(
             separators=(",", ":"),
             sort_keys=True,
         ),
-        encoding="utf-8",
     )
 
 
@@ -1563,6 +1610,7 @@ def collect_scratch_statuses(
 ) -> list[ScratchStatus]:
     if jobs < 1:
         raise ValueError("jobs must be positive")
+    match_root = match_root.resolve()
 
     configs: list[ScratchConfig] = []
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
