@@ -121,9 +121,10 @@ def load_reference_catalog(
 ) -> ReferenceCatalog:
     """Build the conservative symbol oracle used to audit masked image addresses.
 
-    Only exact function and data-map addresses are named. References into an
-    unknown object or to an unlabelled import stay unresolved instead of being
-    accepted on the strength of an ``ADDR`` placeholder.
+    Only exact function, import-table, and data-map addresses are named.
+    References into an unknown object or to an unlabelled import stay
+    unresolved instead of being accepted on the strength of an ``ADDR``
+    placeholder.
     """
     names: dict[int, list[str]] = {}
     for function in manifest.functions:
@@ -135,6 +136,16 @@ def load_reference_catalog(
             name = str(entry["name"])
             if address > 0 and name not in names.setdefault(address, []):
                 names[address].append(name)
+    imports_path = raw_functions_path.with_name("imports.json")
+    if imports_path.exists():
+        for module in json.loads(imports_path.read_text(encoding="utf-8")):
+            for entry in module.get("entries", []):
+                address = parse_int(entry["address"])
+                name = str(entry.get("name") or "")
+                if not name:
+                    continue
+                if address > 0 and name not in names.setdefault(address, []):
+                    names[address].append(name)
     if data_map_path.exists():
         payload = json.loads(data_map_path.read_text(encoding="utf-8"))
         for entry in payload.get("entries", []):
@@ -151,10 +162,7 @@ def load_reference_catalog(
             addresses_by_name.setdefault(_symbol_lookup_name(name), []).append(address)
     return ReferenceCatalog(
         names_by_address,
-        {
-            name: tuple(dict.fromkeys(addresses))
-            for name, addresses in addresses_by_name.items()
-        },
+        {name: tuple(dict.fromkeys(addresses)) for name, addresses in addresses_by_name.items()},
     )
 
 
@@ -756,9 +764,7 @@ def disassemble_normalized_function(
     for insn in md.disasm(data, base_address):
         insn_offset = insn.address - base_address
         is_branch = capstone.CS_GRP_JUMP in insn.groups or capstone.CS_GRP_CALL in insn.groups
-        imm_relocation = (
-            relocation_in_span(insn_offset + insn.imm_offset, insn.imm_size) if insn.imm_offset else None
-        )
+        imm_relocation = relocation_in_span(insn_offset + insn.imm_offset, insn.imm_size) if insn.imm_offset else None
         imm_masked = (
             any(
                 insn_offset + rel_offset in relocation_offsets
@@ -1496,9 +1502,7 @@ def _audit_payload(audit: MaskedOperandAudit) -> list[dict[str, Any]]:
             "candidate_address": entry.candidate_address,
             "instruction": entry.instruction,
             "target_references": [_masked_reference_payload(reference) for reference in entry.target_references],
-            "candidate_references": [
-                _masked_reference_payload(reference) for reference in entry.candidate_references
-            ],
+            "candidate_references": [_masked_reference_payload(reference) for reference in entry.candidate_references],
             "status": entry.status,
         }
         for entry in audit.entries
@@ -1517,12 +1521,10 @@ def _audit_from_payload(payload: list[dict[str, Any]]) -> MaskedOperandAudit:
                 candidate_address=int(entry["candidate_address"]),
                 instruction=str(entry["instruction"]),
                 target_references=tuple(
-                    _masked_reference_from_payload(reference)
-                    for reference in entry["target_references"]
+                    _masked_reference_from_payload(reference) for reference in entry["target_references"]
                 ),
                 candidate_references=tuple(
-                    _masked_reference_from_payload(reference)
-                    for reference in entry["candidate_references"]
+                    _masked_reference_from_payload(reference) for reference in entry["candidate_references"]
                 ),
                 status=str(entry["status"]),
             )

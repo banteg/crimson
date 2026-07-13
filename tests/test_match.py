@@ -34,6 +34,7 @@ from crimson.match import (
     disassemble_normalized_function,
     extract_object_function,
     load_function_manifest,
+    load_reference_catalog,
     match_function,
     normalize_function,
     parse_coff_object,
@@ -99,6 +100,32 @@ def test_resolve_function_accepts_address() -> None:
     )
     function, _, _ = resolve_function(manifest, "0x004136b0")
     assert function.name == "player_update"
+
+
+def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text("[]\n", encoding="utf-8")
+    (tmp_path / "imports.json").write_text(
+        '[{"module":"MSVCRT","entries":[{"address":"0x1004C0B4","name":"vsprintf","ordinal":0}]}]\n',
+        encoding="utf-8",
+    )
+    manifest = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
+
+    catalog = load_reference_catalog(
+        manifest,
+        functions_path=functions_path,
+        data_map_path=tmp_path / "missing-data-map.json",
+    )
+
+    assert catalog.keys_for_address(0x1004C0B4) == (
+        "address:0x1004c0b4",
+        "name:vsprintf",
+    )
+    assert catalog.knows_name("__imp__vsprintf")
+    assert catalog.keys_for_object_reference("__imp__vsprintf", 0) == (
+        "name:vsprintf",
+        "address:0x1004c0b4",
+    )
 
 
 def test_parse_and_extract_object_function() -> None:
