@@ -24,6 +24,7 @@ from .math_parity import (
     NATIVE_TAU,
     f32,
     x87_fpatan,
+    x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sub,
 )
@@ -967,7 +968,10 @@ def player_update(
     if perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = 0.02
     else:
-        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
+        player.spread_heat = max(
+            0.01,
+            x87_pc24_sub(player.spread_heat, x87_pc24_mul(dt, f32(0.4))),
+        )
 
     fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0
 

@@ -243,26 +243,36 @@ pub const ProjectilePool = struct {
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
-            const heading_radians = proj.angle - native_half_pi;
+            const heading_radians = native_math.pc24Sub(proj.angle, native_half_pi);
             const dir_x_ext = std.math.cos(@as(f64, @floatCast(heading_radians)));
             const dir_y_ext = std.math.sin(@as(f64, @floatCast(heading_radians)));
+            const step_x = native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(
+                        native_math.pc24Mul(dir_x_ext, dt),
+                        @as(f32, 20.0),
+                    ),
+                    proj.speed_scale,
+                ),
+                @as(f32, 3.0),
+            );
+            const step_y = native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(
+                        native_math.pc24Mul(dir_y_ext, dt),
+                        @as(f32, 20.0),
+                    ),
+                    proj.speed_scale,
+                ),
+                @as(f32, 3.0),
+            );
             var acc: state_mod.Vec2 = .{};
 
             var step: i32 = 0;
             while (step < steps) : (step += 3) {
-                const step_x = narrowF32(
-                    @as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(dt)) * 20.0)) *
-                        proj.speed_scale *
-                        3.0,
-                );
-                const step_y = narrowF32(
-                    @as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(dt)) * 20.0)) *
-                        proj.speed_scale *
-                        3.0,
-                );
                 acc = .{
-                    .x = narrowF32(acc.x + step_x),
-                    .y = narrowF32(acc.y + step_y),
+                    .x = native_math.pc24Add(acc.x, step_x),
+                    .y = native_math.pc24Add(acc.y, step_y),
                 };
 
                 if (!(acc.length() >= 4.0 or steps <= step + 3)) continue;

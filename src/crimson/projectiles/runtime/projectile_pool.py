@@ -14,7 +14,14 @@ from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDam
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
+from ...math_parity import (
+    NATIVE_HALF_PI,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
@@ -298,33 +305,32 @@ class ProjectilePool:
             # Decompile parity (`projectile_update`, 0x00420b90):
             #   local_cc += (float)(cos(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
             #   local_c8 += (float)(sin(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
-            # Keep the float32 cast before `* speed_scale * 3.0`.
-            # The game leaves x87 in 24-bit precision mode, so the angle-minus-
-            # half-pi subtraction rounds before fcos/fsin. Keeping it wide can
-            # drift projectile integration by one ULP.
+            # The game leaves x87 in 24-bit precision mode, so every arithmetic
+            # operation in the integration chain rounds to a 24-bit significand.
+            # Transcendental results stay wide until the first multiply.
             heading_radians = x87_pc24_sub(float(proj.angle), NATIVE_HALF_PI)
+            step_x = x87_pc24_cos_mul(
+                heading_radians,
+                dt,
+                20.0,
+                proj.speed_scale,
+                3.0,
+            )
+            step_y = x87_pc24_sin_mul(
+                heading_radians,
+                dt,
+                20.0,
+                proj.speed_scale,
+                3.0,
+            )
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)
             acc = Vec2()
             step = 0
             while step < steps:
                 acc = Vec2(
-                    float(
-                        f32(
-                            float(acc.x)
-                            + float(
-                                f32(float(dir_x) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
-                            ),
-                        ),
-                    ),
-                    float(
-                        f32(
-                            float(acc.y)
-                            + float(
-                                f32(float(dir_y) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
-                            ),
-                        ),
-                    ),
+                    x87_pc24_add(acc.x, step_x),
+                    x87_pc24_add(acc.y, step_y),
                 )
 
                 if acc.length() >= 4.0 or steps <= step + 3:

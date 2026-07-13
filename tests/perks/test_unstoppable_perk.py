@@ -6,6 +6,7 @@ from crimson.gameplay import (
     GameplayState,
     player_update,
 )
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.sim.input import PlayerInput
@@ -23,7 +24,7 @@ def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unsto
     assert applied == 10.0
     assert player.health == 90.0
     assert_float_close(player.heading, -1.0)  # (0 % 100 - 50) * 0.04 == -2.0
-    assert_float_close(player.spread_heat, 0.2)
+    assert player.spread_heat == x87_pc24_add(0.1, x87_pc24_mul(10.0, f32(0.01)))
 
 
 def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unstoppable() -> None:

@@ -59,6 +59,27 @@ def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
     assert f32(step_y) == 2.2267906665802
 
 
+def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(-49.92948532104492, 681.1566772460938),
+        angle=-0.8641037344932556,
+        type_id=ProjectileTemplateId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
+        travel_budget=55.0,
+    )
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.06000000238418579,
+            creatures=(),
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert pool.entries[idx].pos == Vec2(-101.94862365722656, 636.7431030273438)
+
+
 def _normalize_vec2(vec: Vec2) -> list[float]:
     return [round(float(vec.x), 6), round(float(vec.y), 6)]
 

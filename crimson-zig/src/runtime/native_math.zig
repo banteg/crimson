@@ -13,6 +13,18 @@ pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
 }
 
+pub inline fn pc24Add(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) + @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Sub(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) - @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Mul(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) * @as(f64, @floatCast(rhs)));
+}
+
 pub inline fn sinNative(value: f32) f32 {
     return @floatCast(std.math.sin(@as(f64, @floatCast(value))));
 }
@@ -90,4 +102,21 @@ test "fpatan consumes pc24 rounded subtraction operands" {
     const atan = fpatan(dy, dx);
     const heading = roundF32(atan - @as(f64, native_half_pi));
     try std.testing.expectEqual(@as(u32, 0x3f8df6b7), @as(u32, @bitCast(heading)));
+}
+
+test "pc24 helpers round every arithmetic operation" {
+    const radians = pc24Sub(@as(f32, -0.8641037344932556), native_half_pi);
+    const cosine = std.math.cos(@as(f64, @floatCast(radians)));
+    const step = pc24Mul(
+        pc24Mul(
+            pc24Mul(
+                pc24Mul(cosine, @as(f32, 0.06000000238418579)),
+                @as(f32, 20.0),
+            ),
+            @as(f32, 1.0),
+        ),
+        @as(f32, 3.0),
+    );
+
+    try std.testing.expectEqual(@as(f32, -2.737848997116089), step);
 }

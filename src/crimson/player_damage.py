@@ -12,7 +12,7 @@ import msgspec
 
 from grim.sfx_map import SfxId
 
-from .math_parity import f32
+from .math_parity import f32, x87_pc24_add, x87_pc24_mul
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .rng_caller_static import RngCallerStatic
@@ -119,7 +119,13 @@ def player_take_damage(
         if not perk_active(player, PerkId.UNSTOPPABLE):
             player.heading += float((state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50) * 0.04
             # Native uses post-Tough-Reloader damage (before Thick Skinned) for spread heat growth.
-            player.spread_heat = min(0.48, float(player.spread_heat) + spread_heat_damage * 0.01)
+            player.spread_heat = min(
+                0.48,
+                x87_pc24_add(
+                    player.spread_heat,
+                    x87_pc24_mul(spread_heat_damage, f32(0.01)),
+                ),
+            )
 
         if player.health <= 20.0 and (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH) & 7) == 3:
             player.low_health_timer = 0.0
