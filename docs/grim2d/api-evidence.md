@@ -1013,13 +1013,19 @@ grim.dll body:
 
 ## 0xc4 — grim_bind_texture @ 0x10007830
 
-- Provisional name: `bind_texture` (high)
-- Guess: `void bind_texture(int handle, int stage)`
-- Notes: often called with handle,0
+- Confirmed name: `bind_texture`
+- Confirmed C++ signature: `void __thiscall IGrim2D::bind_texture(int handle, int stage)`
+- Notes: negative handles, empty slots, and slots with a null texture pointer
+  return without touching D3D state. A valid slot supplies its `+4` texture
+  field to `IDirect3DDevice8::SetTexture(stage, texture)`, then becomes the
+  current bound handle. Live disassembly calls D3D vtable slot `0xf4` and
+  returns with `retn 0x8`.
 - Ghidra signature: `void grim_bind_texture(int handle, int stage)`
 - Call sites: 66 (unique funcs: 22)
 - Sample calls: ui_draw_clock_gauge:L3882; ui_draw_clock_gauge:L3891; ui_render_aim_indicators:L5641; ui_render_aim_indicators:L5663; ui_draw_textured_quad:L9120; terrain_generate (`FUN_00417b80`):L9220; terrain_generate (`FUN_00417b80`):L9265; terrain_generate (`FUN_00417b80`):L9296
 - First callsite: ui_draw_clock_gauge (line 3882)
+- Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 44,536
+  `grim_bind_texture` events.
 
 
 ```c
@@ -1039,6 +1045,10 @@ grim.dll body:
     _DAT_10053060 = handle;
   }
 ```
+
+The recovered VC6.5 source matches all 20 instructions and all 3 masked
+references. A minimal two-field texture-slot view recovers the validated
+`+4` texture pointer without inventing the rest of the resource layout.
 
 
 ## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
