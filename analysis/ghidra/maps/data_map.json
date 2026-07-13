@@ -6697,6 +6697,13 @@
     },
     {
       "address": "0x004ab1bc",
+      "comment": "Canonical effect template block base",
+      "name": "effect_template",
+      "program": "crimsonland.exe",
+      "type": "effect_template_t"
+    },
+    {
+      "address": "0x004ab1bc",
       "comment": "Effect template vel_x (effect template block base)",
       "name": "effect_template_vel_x",
       "program": "crimsonland.exe"

@@ -883,6 +883,28 @@ typedef struct bonus_entry_t {
 
 typedef bonus_entry_t bonus_pool_t[0x10];
 
+typedef struct effect_color_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} effect_color_t;
+
+typedef struct effect_template_t {
+    float vel_x;
+    float vel_y;
+    float rotation;
+    float scale;
+    float half_width;
+    float half_height;
+    float age;
+    float lifetime;
+    int flags;
+    effect_color_t color;
+    float rotation_step;
+    float scale_step;
+} effect_template_t;
+
 typedef struct bonus_hud_slot_slide_x_block_t {
     float slide_x;
     float field_0x08;
