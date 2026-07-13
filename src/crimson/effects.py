@@ -54,6 +54,7 @@ FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
 
 _NATIVE_PARTICLE_SPIN_SCALE = f32(0.01)
+_NATIVE_SPRITE_ROTATION_SCALE = f32(0.01)
 
 
 def _native_particle_velocity(angle: float, speed: float) -> Vec2:
@@ -457,15 +458,13 @@ class SpriteEffectPool:
         entry = self._entries[idx]
         entry.active = True
         entry.color = RGBA() if color is None else color
-        entry.rotation = (
-            float(
-                self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628,
-            )
-            * 0.01
+        entry.rotation = x87_pc24_mul(
+            float(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628),
+            _NATIVE_SPRITE_ROTATION_SCALE,
         )
-        entry.pos = pos
-        entry.vel = vel
-        entry.scale = float(scale)
+        entry.pos = f32_vec2(pos)
+        entry.vel = f32_vec2(vel)
+        entry.scale = f32(scale)
         return idx
 
     def iter_active(self) -> list[SpriteEffect]:

@@ -96,6 +96,22 @@ def test_sprite_effect_pool_tags_exact_native_callers() -> None:
     ]
 
 
+def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
+    pool = SpriteEffectPool(size=1, rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+
+    idx = pool.spawn(
+        pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
+        vel=Vec2(3.0 + 1e-8, 4.0 + 1e-8),
+        scale=5.0 + 1e-8,
+    )
+    entry = pool.entries[idx]
+
+    assert entry.pos == Vec2(1.0, 2.0)
+    assert entry.vel == Vec2(3.0, 4.0)
+    assert entry.scale == 5.0
+    assert entry.rotation == 0.009999999776482582
+
+
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
