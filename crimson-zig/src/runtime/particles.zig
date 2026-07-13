@@ -15,6 +15,20 @@ const narrowF32 = native_math.roundF32;
 
 pub const particle_pool_size: usize = 0x80;
 
+fn nativeParticleVelocity(angle: f32, speed: f32) state_mod.Vec2 {
+    return .{
+        .x = native_math.pc24Mul(@cos(@as(f64, angle)), speed),
+        .y = native_math.pc24Mul(@sin(@as(f64, angle)), speed),
+    };
+}
+
+fn nativeParticleSpin(draw: u32) f32 {
+    return native_math.pc24Mul(
+        @as(f32, @floatFromInt(draw % 0x274)),
+        @as(f32, 0.01),
+    );
+}
+
 pub const ParticleStyleId = enum(i32) {
     flamethrower = 0,
     blow_torch = 1,
@@ -63,14 +77,14 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = runtime_helpers.directionFromAngle(angle).mul(90.0),
+            .vel = nativeParticleVelocity(angle, 90.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
             .intensity = intensity,
             .angle = angle,
-            .spin = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.fx_spawn_particle_spin) % 0x274)) * 0.01,
+            .spin = nativeParticleSpin(state.rng.randTagged(rng_callers.fx_spawn_particle_spin)),
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
             .owner = owner,
@@ -94,14 +108,14 @@ pub const ParticlePool = struct {
                 .x = narrowF32(pos.x),
                 .y = narrowF32(pos.y),
             },
-            .vel = runtime_helpers.directionFromAngle(angle).mul(30.0),
+            .vel = nativeParticleVelocity(angle, 30.0),
             .scale_x = 1.0,
             .scale_y = 1.0,
             .scale_z = 1.0,
             .age = 0.0,
             .intensity = 1.0,
             .angle = angle,
-            .spin = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.fx_spawn_particle_slow_spin) % 0x274)) * 0.01,
+            .spin = nativeParticleSpin(state.rng.randTagged(rng_callers.fx_spawn_particle_slow_spin)),
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
             .owner = owner,
@@ -334,4 +348,15 @@ fn creatureFindInRadius(
 
 fn wrapAngle(angle: f32) f32 {
     return native_math.wrapAngle0Tau(angle);
+}
+
+test "particle spawn math keeps native x87 operation boundaries" {
+    const fast = nativeParticleVelocity(@bitCast(@as(u32, 0x3ab78034)), 90.0);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x42b3fff4))), fast.x);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3e010622))), fast.y);
+
+    const slow = nativeParticleVelocity(@bitCast(@as(u32, 0x3a6bedfa)), 30.0);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x41effffa))), slow.x);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3cdd2f18))), slow.y);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3d4ccccc))), nativeParticleSpin(5));
 }

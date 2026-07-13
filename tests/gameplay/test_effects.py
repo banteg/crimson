@@ -60,6 +60,28 @@ def test_particle_pool_tags_exact_native_callers() -> None:
     ]
 
 
+def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
+    rng = ScriptedCrand([5, 5])
+    pool = ParticlePool(size=2, rng=rng)
+
+    fast_idx = pool.spawn_particle(
+        pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
+        angle=f32(0.0014),
+        intensity=1.0 + 1e-8,
+    )
+    slow_idx = pool.spawn_particle_slow(pos=Vec2(), angle=f32(0.0009))
+
+    fast = pool.entries[fast_idx]
+    assert fast.pos == Vec2(1.0, 2.0)
+    assert fast.vel == Vec2(89.99990844726562, 0.12599995732307434)
+    assert fast.intensity == 1.0
+    assert fast.spin == 0.04999999701976776
+
+    slow = pool.entries[slow_idx]
+    assert slow.vel == Vec2(29.999988555908203, 0.02699999511241913)
+    assert slow.spin == 0.04999999701976776
+
+
 def test_sprite_effect_pool_tags_exact_native_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     pool = SpriteEffectPool(size=1, rng=rng)

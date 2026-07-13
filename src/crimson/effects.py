@@ -15,7 +15,7 @@ from grim.rand import CallerStatic, Crand, CrandLike
 from .creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
-from .math_parity import NATIVE_TAU, f32
+from .math_parity import NATIVE_TAU, f32, f32_vec2, x87_pc24_cos_mul, x87_pc24_mul, x87_pc24_sin_mul
 from .owner_ref import OwnerRef
 from .rng_caller_static import RngCallerStatic
 
@@ -52,6 +52,20 @@ FX_QUEUE_MAX_COUNT = 0x7F
 
 FX_QUEUE_ROTATED_CAPACITY = 0x40
 FX_QUEUE_ROTATED_MAX_COUNT = 0x3F
+
+_NATIVE_PARTICLE_SPIN_SCALE = f32(0.01)
+
+
+def _native_particle_velocity(angle: float, speed: float) -> Vec2:
+    angle_f32 = f32(angle)
+    return Vec2(
+        x87_pc24_cos_mul(angle_f32, speed),
+        x87_pc24_sin_mul(angle_f32, speed),
+    )
+
+
+def _native_particle_spin(draw: int) -> float:
+    return x87_pc24_mul(float(draw % 0x274), _NATIVE_PARTICLE_SPIN_SCALE)
 
 
 class ParticleStyleId(IntEnum):
@@ -117,17 +131,18 @@ class ParticlePool:
 
         idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC)
         entry = self._entries[idx]
+        angle_f32 = f32(angle)
         entry.active = True
         entry.render_flag = True
-        entry.pos = pos
-        entry.vel = Vec2.from_angle(angle) * 90.0
+        entry.pos = f32_vec2(pos)
+        entry.vel = _native_particle_velocity(angle_f32, 90.0)
         entry.scale_x = 1.0
         entry.scale_y = 1.0
         entry.scale_z = 1.0
         entry.age = 0.0
-        entry.intensity = float(intensity)
-        entry.angle = float(angle)
-        entry.spin = float(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN) % 628) * 0.01
+        entry.intensity = f32(intensity)
+        entry.angle = angle_f32
+        entry.spin = _native_particle_spin(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner = owner
@@ -144,17 +159,18 @@ class ParticlePool:
 
         idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC)
         entry = self._entries[idx]
+        angle_f32 = f32(angle)
         entry.active = True
         entry.render_flag = True
-        entry.pos = pos
-        entry.vel = Vec2.from_angle(angle) * 30.0
+        entry.pos = f32_vec2(pos)
+        entry.vel = _native_particle_velocity(angle_f32, 30.0)
         entry.scale_x = 1.0
         entry.scale_y = 1.0
         entry.scale_z = 1.0
         entry.age = 0.0
         entry.intensity = 1.0
-        entry.angle = float(angle)
-        entry.spin = float(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN) % 628) * 0.01
+        entry.angle = angle_f32
+        entry.spin = _native_particle_spin(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner = owner
