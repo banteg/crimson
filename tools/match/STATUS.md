@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 20/986 | 1555/385754 | 0.4% | 20/31 |
+| crimsonland.exe | 20/986 | 1555/385754 | 0.4% | 20/32 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**20/986** functions, **1555/385754** bytes (**0.4%**), **20/31** scratches verified.
+**20/986** functions, **1555/385754** bytes (**0.4%**), **20/32** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -48,6 +48,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 | match | float_near_equal | 0x00452ef0 | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
+| wip | vec2_normalize_safe | 0x00455587 | 141 | 57/57 | 96.49% | 5/57 | 3/0/0 | msvc6.5pp /O1 /Oi /GB /W3 /GR- | vector-safe-normalize |
 
 ## grim.dll
 
