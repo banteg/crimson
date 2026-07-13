@@ -114,6 +114,7 @@ extern "C" {
 #endif
 
 extern int perk_id_fastloader;
+extern int perk_id_antiperk;
 extern int perk_id_instant_winner;
 extern int perk_id_alternate_weapon;
 extern int perk_id_regression_bullets;
@@ -129,6 +130,9 @@ extern int perk_id_dodger;
 extern int perk_id_ninja;
 extern int perk_id_death_clock;
 extern int perk_id_tough_reloader;
+extern int perk_id_man_bomb;
+extern int perk_id_fire_caugh;
+extern int perk_id_living_fortress;
 extern int perk_id_max;
 
 extern player_state_t player_state_table[];
