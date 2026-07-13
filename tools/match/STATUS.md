@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 27/986 | 3166/385754 | 0.8% | 27/39 |
+| crimsonland.exe | 27/986 | 3166/385754 | 0.8% | 27/40 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**27/986** functions, **3166/385754** bytes (**0.8%**), **27/39** scratches verified.
+**27/986** functions, **3166/385754** bytes (**0.8%**), **27/40** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -21,6 +21,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
+| wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |

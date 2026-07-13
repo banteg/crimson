@@ -120,6 +120,7 @@ extern int perk_id_regression_bullets;
 extern int perk_id_ammunition_within;
 extern int perk_id_bonus_economist;
 extern int perk_id_final_revenge;
+extern int perk_id_my_favourite_weapon;
 extern int perk_id_unstoppable;
 extern int perk_id_thick_skinned;
 extern int perk_id_highlander;
