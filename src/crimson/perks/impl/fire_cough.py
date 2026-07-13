@@ -6,6 +6,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
+from ...math_parity import x87_pc24_add, x87_pc24_sub
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
@@ -19,7 +20,7 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
         ctx.player.fire_cough_timer = 0.0
         return
 
-    ctx.player.fire_cough_timer += ctx.dt
+    ctx.player.fire_cough_timer = x87_pc24_add(ctx.player.fire_cough_timer, ctx.dt)
     if ctx.player.fire_cough_timer <= ctx.state.perk_intervals.fire_cough:
         return
 
@@ -54,7 +55,10 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     vel = Vec2.from_angle(aim_heading) * 25.0
     ctx.state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
 
-    ctx.player.fire_cough_timer -= ctx.state.perk_intervals.fire_cough
+    ctx.player.fire_cough_timer = x87_pc24_sub(
+        ctx.player.fire_cough_timer,
+        ctx.state.perk_intervals.fire_cough,
+    )
     interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET)
     ctx.state.perk_intervals.fire_cough = float(interval_roll % 4) + 2.0
 

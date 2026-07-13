@@ -10,6 +10,7 @@ from grim.geom import Vec2
 __all__ = [
     "NATIVE_HALF_PI",
     "NATIVE_PI",
+    "NATIVE_QUARTER_PI",
     "NATIVE_TAU",
     "NATIVE_TURN_RATE_SCALE",
     "atan2_f32",
@@ -43,6 +44,7 @@ _F32_UNPACK = _F32_STRUCT.unpack
 # Native movement/heading code uses these exact float32 literals.
 NATIVE_PI = _f32_from_bits(0x40490FDB)
 NATIVE_HALF_PI = _f32_from_bits(0x3FC90FDB)
+NATIVE_QUARTER_PI = _f32_from_bits(0x3F490FDB)
 NATIVE_TAU = _f32_from_bits(0x40C90FDB)
 NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
 

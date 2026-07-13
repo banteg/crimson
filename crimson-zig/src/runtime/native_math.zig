@@ -2,6 +2,7 @@ const std = @import("std");
 
 pub const native_pi: f32 = @bitCast(@as(u32, 0x40490FDB));
 pub const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
+pub const native_quarter_pi: f32 = @bitCast(@as(u32, 0x3F490FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 

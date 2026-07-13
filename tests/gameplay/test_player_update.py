@@ -1401,10 +1401,10 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     pool = ProjectilePool(size=16)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.35)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.08400000631809235, state)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -1412,6 +1412,17 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_RIFLE)) == 4
+    assert [entry.angle for entry in pool.entries if entry.active] == [
+        0.0,
+        0.7853981852531433,
+        1.5707963705062866,
+        2.356194496154785,
+        3.1415927410125732,
+        3.9269909858703613,
+        4.71238899230957,
+        5.4977874755859375,
+    ]
+    assert player.hot_tempered_timer == 0.03400003910064697
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
     ]

@@ -761,7 +761,7 @@ fn tickFireCaugh(
         return;
     }
 
-    player.fire_cough_timer += dt;
+    player.fire_cough_timer = native_math.pc24Add(player.fire_cough_timer, dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
     const owner = if (!state.friendly_fire_enabled)
@@ -807,7 +807,7 @@ fn tickFireCaugh(
         .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = 0.413 },
     );
 
-    player.fire_cough_timer -= state.perk_interval_fire_cough;
+    player.fire_cough_timer = native_math.pc24Sub(player.fire_cough_timer, state.perk_interval_fire_cough);
     state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_fire_cough_interval_reset) % 4)) + 2.0;
 }
 
@@ -822,7 +822,7 @@ fn tickHotTempered(
         return;
     }
 
-    player.hot_tempered_timer += dt;
+    player.hot_tempered_timer = native_math.pc24Add(player.hot_tempered_timer, dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
     const owner = if (state.friendly_fire_enabled)
@@ -834,7 +834,7 @@ fn tickHotTempered(
             .plasma_minigun
         else
             .plasma_rifle;
-        const angle = @as(f32, @floatFromInt(idx)) * (native_pi / 4.0);
+        const angle = native_math.pc24Mul(@as(f32, @floatFromInt(idx)), native_math.native_quarter_pi);
         spawnPerkProjectile(
             state,
             player,
@@ -847,7 +847,7 @@ fn tickHotTempered(
     }
     state.sfx_queue.append(.explosion_small);
 
-    player.hot_tempered_timer -= state.perk_interval_hot_tempered;
+    player.hot_tempered_timer = native_math.pc24Sub(player.hot_tempered_timer, state.perk_interval_hot_tempered);
     state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_hot_tempered_interval_reset) % 8)) + 2.0;
 }
 
