@@ -112,6 +112,46 @@ def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
     assert entry.rotation == 0.009999999776482582
 
 
+def test_effect_pool_spawn_canonicalizes_native_f32_fields() -> None:
+    pool = EffectPool(size=1)
+
+    idx = pool.spawn(
+        effect_id=3,
+        pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
+        vel=Vec2(3.0 + 1e-8, 4.0 + 1e-8),
+        rotation=5.0 + 1e-8,
+        scale=6.0 + 1e-8,
+        half_width=7.0 + 1e-8,
+        half_height=8.0 + 1e-8,
+        age=0.1,
+        lifetime=0.2,
+        flags=0x1D,
+        color=RGBA(0.1, 0.2, 0.3, 0.4),
+        rotation_step=9.0 + 1e-8,
+        scale_step=10.0 + 1e-8,
+        detail_preset=5,
+    )
+
+    assert idx == 0
+    entry = pool.entries[idx]
+    assert entry.pos == Vec2(1.0, 2.0)
+    assert entry.vel == Vec2(3.0, 4.0)
+    assert entry.rotation == 5.0
+    assert entry.scale == 6.0
+    assert entry.half_width == 7.0
+    assert entry.half_height == 8.0
+    assert entry.age == 0.10000000149011612
+    assert entry.lifetime == 0.20000000298023224
+    assert entry.color == RGBA(
+        0.10000000149011612,
+        0.20000000298023224,
+        0.30000001192092896,
+        0.4000000059604645,
+    )
+    assert entry.rotation_step == 9.0
+    assert entry.scale_step == 10.0
+
+
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated(capacity=2, max_count=2)
     assert q.add(
@@ -386,7 +426,87 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
     assert_float_close(first.color.r, 1.0)
     assert_float_close(first.color.g, 1.0)
     assert_float_close(first.color.b, 1.0)
-    assert_float_close(first.color.a, 0.8)
+    assert first.color.a == f32(0.8)
+
+
+def test_effect_pool_update_keeps_native_f32_lifetime_boundary() -> None:
+    pool = EffectPool(size=1)
+    idx = pool.spawn(
+        effect_id=1,
+        pos=Vec2(),
+        vel=Vec2(),
+        rotation=0.0,
+        scale=1.0,
+        half_width=1.0,
+        half_height=1.0,
+        age=0.1,
+        lifetime=1.0,
+        flags=0x19,
+        color=RGBA(),
+        rotation_step=0.0,
+        scale_step=0.0,
+        detail_preset=5,
+    )
+
+    assert idx == 0
+    entry = pool.entries[idx]
+    dt = f32(1.0 / 60.0)
+    for _ in range(54):
+        pool.update(dt)
+
+    assert entry.flags == 0x19
+    assert entry.age == 0.9999997019767761
+
+    pool.update(dt)
+    assert entry.flags == 0
+
+
+def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
+    pool = EffectPool(size=1)
+    expired_idx = pool.spawn(
+        effect_id=0,
+        pos=Vec2(),
+        vel=Vec2(),
+        rotation=0.0,
+        scale=1.0,
+        half_width=1.0,
+        half_height=1.0,
+        age=1.0,
+        lifetime=1.0,
+        flags=1,
+        color=RGBA(),
+        rotation_step=0.0,
+        scale_step=0.0,
+        detail_preset=5,
+    )
+
+    assert expired_idx == 0
+    expired = pool.entries[expired_idx]
+    pool.update(0.0)
+    assert expired.flags == 0
+
+    fade_idx = pool.spawn(
+        effect_id=0,
+        pos=Vec2(),
+        vel=Vec2(),
+        rotation=0.0,
+        scale=1.0,
+        half_width=1.0,
+        half_height=1.0,
+        age=0.0,
+        lifetime=1e-12,
+        flags=0x10,
+        color=RGBA(1.0, 1.0, 1.0, 0.25),
+        rotation_step=0.0,
+        scale_step=0.0,
+        detail_preset=5,
+    )
+
+    assert fade_idx == 0
+    fading = pool.entries[fade_idx]
+    pool.update(0.0)
+    assert fading.flags == 0x10
+    assert fading.color.a == 1.0
 
 
 def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
@@ -424,18 +544,20 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
 
     active = pool.iter_active()
     assert len(active) == 1
-    assert active[0].effect_id == 0x12
-    assert active[0].flags == 0x1C5
-    assert_float_close(active[0].lifetime, 0.15)
+    effect = active[0]
+    assert effect.effect_id == 0x12
+    assert effect.flags == 0x1C5
+    assert effect.lifetime == f32(0.15)
 
     pool.update(0.2, fx_queue=q)
     assert q.count == 1
+    assert effect.color.a == f32(0.35)
 
     entry = q.iter_active()[0]
     assert entry.effect_id == 0x12
     assert_float_close(entry.width, 4.0)
     assert_float_close(entry.height, 4.0)
-    assert_float_close(entry.color.a, 0.35)
+    assert entry.color.a == f32(0.35)
 
 
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
@@ -456,7 +578,7 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
         assert_float_close(entry.half_height, 32.0)
         assert entry.flags == 0x1D
         assert_float_close(entry.lifetime, 0.5)
-        assert_float_close(entry.scale_step, 0.1)
+        assert entry.scale_step == f32(0.1)
 
 
 def test_spawn_burst_tags_exact_native_callers() -> None:

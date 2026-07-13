@@ -729,19 +729,19 @@ class EffectPool:
             return None
 
         entry = self._entries[idx]
-        entry.pos = pos
+        entry.pos = f32_vec2(pos)
         entry.effect_id = int(effect_id)
-        entry.vel = vel
-        entry.rotation = float(rotation)
-        entry.scale = float(scale)
-        entry.half_width = float(half_width)
-        entry.half_height = float(half_height)
-        entry.age = float(age)
-        entry.lifetime = float(lifetime)
+        entry.vel = f32_vec2(vel)
+        entry.rotation = f32(rotation)
+        entry.scale = f32(scale)
+        entry.half_width = f32(half_width)
+        entry.half_height = f32(half_height)
+        entry.age = f32(age)
+        entry.lifetime = f32(lifetime)
         entry.flags = int(flags)
-        entry.color = color
-        entry.rotation_step = float(rotation_step)
-        entry.scale_step = float(scale_step)
+        entry.color = RGBA(f32(color.r), f32(color.g), f32(color.b), f32(color.a))
+        entry.rotation_step = f32(rotation_step)
+        entry.scale_step = f32(scale_step)
         return idx
 
     def free(self, idx: int) -> None:
@@ -754,40 +754,47 @@ class EffectPool:
     def update(self, dt: float, *, fx_queue: FxQueue | None = None) -> None:
         """Advance active effects and enqueue terrain decals on expiry."""
 
-        if dt <= 0.0:
-            return
+        dt_f32 = f32(dt)
 
         for idx, entry in enumerate(self._entries):
             flags = int(entry.flags)
             if not flags:
                 continue
 
-            age = float(entry.age) + float(dt)
+            age = f32(f32(entry.age) + dt_f32)
             entry.age = age
-            lifetime = float(entry.lifetime)
+            lifetime = f32(entry.lifetime)
 
             if age < lifetime:
                 if age >= 0.0:
-                    entry.pos = entry.pos + entry.vel * float(dt)
+                    move_x = f32(dt_f32 * f32(entry.vel.x))
+                    move_y = f32(dt_f32 * f32(entry.vel.y))
+                    entry.pos = Vec2(
+                        f32(f32(entry.pos.x) + move_x),
+                        f32(f32(entry.pos.y) + move_y),
+                    )
                     if flags & 0x4:
-                        entry.rotation += float(entry.rotation_step) * float(dt)
+                        rotation_delta = f32(dt_f32 * f32(entry.rotation_step))
+                        entry.rotation = f32(f32(entry.rotation) + rotation_delta)
                     if flags & 0x8:
-                        entry.scale += float(entry.scale_step) * float(dt)
+                        scale_delta = f32(dt_f32 * f32(entry.scale_step))
+                        entry.scale = f32(f32(entry.scale) + scale_delta)
                     if flags & 0x10:
-                        next_alpha = 1.0 - age / lifetime if lifetime > 1e-9 else 0.0
+                        next_alpha = f32(1.0 - f32(age / lifetime))
                         entry.color = entry.color.with_alpha(next_alpha)
                 continue
 
             if fx_queue is not None and (flags & 0x80):
                 # On expiry, the native code overrides alpha before queuing.
-                alpha = 0.35 if (flags & 0x100) else 0.8
+                alpha = f32(0.35 if (flags & 0x100) else 0.8)
+                entry.color = entry.color.with_alpha(alpha)
                 fx_queue.add(
                     effect_id=int(entry.effect_id),
                     pos=entry.pos,
-                    width=float(entry.half_width) * 2.0,
-                    height=float(entry.half_height) * 2.0,
-                    rotation=float(entry.rotation),
-                    rgba=entry.color.with_alpha(alpha),
+                    width=f32(f32(entry.half_width) + f32(entry.half_width)),
+                    height=f32(f32(entry.half_height) + f32(entry.half_height)),
+                    rotation=f32(entry.rotation),
+                    rgba=entry.color,
                 )
 
             self.free(idx)

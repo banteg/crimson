@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
@@ -170,7 +171,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
 
     ring = rings[0]
     assert_float_close(float(ring.scale_step), -4.0)
-    assert_float_close(float(ring.lifetime), 0.3)
+    assert ring.lifetime == f32(0.3)
     assert_float_close(float(ring.half_width), 36.0)
 
     assert_float_close(float(creature.size), 32.5)
