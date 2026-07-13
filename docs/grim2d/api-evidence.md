@@ -2044,11 +2044,14 @@ grim.dll body:
 
 ## 0x148 — grim_draw_text_small_fmt @ 0x10009980
 
-- Provisional name: `draw_text_small_fmt` (high)
-- Guess: `void draw_text_small_fmt(float x, float y, const char *fmt, ...)`
-- Notes: `vsprintf` wrapper that forwards to `0x144` (small font draw)
-- Ghidra signature: `void grim_draw_text_small_fmt(float x, float y, char *fmt)`
-- Suggested signature: `void grim_draw_text_small_fmt(float x, float y, const char *fmt, ...)`
+- Confirmed name: `draw_text_small_fmt`
+- Confirmed C++ signature: `void __cdecl IGrim2D::draw_text_small_fmt(float x, float y, char *fmt, ...)`
+- Notes: the varargs member uses the cdecl member ABI, so `self` is an explicit
+  first stack argument and the function returns with plain `ret`. It passes the
+  argument tail beginning after `fmt` to the imported `vsprintf`, writes into
+  `grim_printf_buffer_alt`, then dispatches `(x, y, buffer)` through vtable
+  slot `0x144`.
+- Ghidra signature: `void grim_draw_text_small_fmt(IGrim2D *self, float x, float y, char *fmt, ...)`
 - Call sites: 86 (unique funcs: 15)
 - Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3140; demo_trial_overlay_render (`FUN_004047c0`):L3193; demo_trial_overlay_render (`FUN_004047c0`):L3197; demo_trial_overlay_render (`FUN_004047c0`):L3201; demo_trial_overlay_render (`FUN_004047c0`):L3206; demo_trial_overlay_render (`FUN_004047c0`):L3211; demo_trial_overlay_render (`FUN_004047c0`):L3214; demo_trial_overlay_render (`FUN_004047c0`):L3217
 - First callsite: demo_trial_overlay_render (`FUN_004047c0`) (line 3140)
@@ -2068,6 +2071,11 @@ grim.dll body:
   vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
   (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
 ```
+
+The recovered VC6.5 source matches all 16 instructions and all 3 masked
+references. The reference audit independently identifies both uses of
+`grim_printf_buffer_alt` and the `vsprintf` IAT slot at `0x1004c0b4`; no
+address-only placeholder is accepted.
 
 
 ## 0x14c — grim_measure_text_width @ 0x100096c0

@@ -163,8 +163,9 @@ byte-shaped source.
 Instruction normalization replaces relocated and in-image addresses with
 `ADDR`, but an `ADDR` token is not proof that the operands refer to the same
 thing. The matcher retains the hidden reference on both sides and audits it
-against function symbols, `analysis/ghidra/maps/data_map.json`, exact resolved
-base-plus-addend addresses, and compiler-generated constant contents.
+against function symbols, the per-image IDA import manifest,
+`analysis/ghidra/maps/data_map.json`, exact resolved base-plus-addend addresses,
+and compiler-generated constant contents.
 
 A scratch is `match` only when its normalized instruction score is 100% and
 all aligned masked references are proven equal. A 100% instruction score with
