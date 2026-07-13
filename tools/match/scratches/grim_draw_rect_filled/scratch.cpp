@@ -1,10 +1,4 @@
-// Wine's D3D8 headers use post-VC6 Win32 aliases that are absent from the
-// compiler's bundled platform SDK.
-typedef int WINBOOL;
-typedef void *HMONITOR;
-
-#include <d3d8.h>
-
+#include "grim_d3d8.h"
 #include "grim2d_cpp.h"
 
 extern IDirect3DDevice8 *grim_d3d_device;

@@ -65,9 +65,9 @@ public:
     virtual void grim_draw_circle_outline(float x, float y, float radius) = 0;
     virtual void grim_draw_line(float *p0, float *p1, float thickness) = 0;
     virtual void grim_draw_line_quad(float *p0, float *p1, float *half_vec) = 0;
-    virtual void grim_begin_batch(void) = 0;
-    virtual void grim_flush_batch(void) = 0;
-    virtual void grim_end_batch(void) = 0;
+    virtual void grim_begin_batch(void);
+    virtual void grim_flush_batch(void);
+    virtual void grim_end_batch(void);
     virtual void grim_submit_vertex_raw(float *vertex) = 0;
     virtual void grim_submit_quad_raw(float *vertices) = 0;
     virtual void grim_set_rotation(float radians) = 0;

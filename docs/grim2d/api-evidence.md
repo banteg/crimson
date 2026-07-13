@@ -1243,6 +1243,11 @@ grim.dll body:
 
 ## 0xe8 — grim_begin_batch @ 0x10007ac0
 
+- Confirmed name: `begin_batch`
+- Confirmed C++ signature: `void __thiscall IGrim2D::begin_batch(void)`
+- Notes: marks the batch active, begins a D3D8 scene, locks the dynamic vertex
+  buffer with flags `0x2800`, and resets the low-word vertex count. Lock
+  failure clears the device-ready byte.
 - Ghidra signature: `void grim_begin_batch(void)`
 - Call sites: 79 (unique funcs: 23)
 - Sample calls: ui_draw_clock_gauge:L3887; ui_draw_clock_gauge:L3892; ui_render_aim_indicators:L5683; FUN_00417b80:L9228; FUN_00417b80:L9271; FUN_00417b80:L9299; terrain_generate_random:L9464; terrain_generate_random:L9506
@@ -1257,12 +1262,17 @@ grim.dll body:
   (**(code **)(*DAT_0048083c + 0xf0))();
 ```
 
+The recovered VC6.5 source matches all 27 instructions and all 9 masked
+references. `0x2800` is the documented D3D8 combination
+`D3DLOCK_DISCARD | D3DLOCK_NOSYSLOCK`.
+
 
 ## 0xec — grim_flush_batch @ 0x100083c0
 
-- Provisional name: `flush_batch` (high)
-- Guess: `void flush_batch(void)`
-- Notes: submits vertex buffer when filled
+- Confirmed name: `flush_batch`
+- Confirmed C++ signature: `void __thiscall IGrim2D::flush_batch(void)`
+- Notes: unlocks and submits the current vertex buffer, then relocks it for
+  continued batching. Only a successful relock clears the low-word count.
 - Ghidra signature: `void grim_flush_batch(void)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
@@ -1283,9 +1293,18 @@ grim.dll body:
   }
 ```
 
+The recovered VC6.5 source matches all 37 instructions and all 8 masked
+references. It uses ordinary D3D8 `Unlock`, `DrawIndexedPrimitive`, and `Lock`
+calls; native code submits even when the current count is zero.
+
 
 ## 0xf0 — grim_end_batch @ 0x10007b20
 
+- Confirmed name: `end_batch`
+- Confirmed C++ signature: `void __thiscall IGrim2D::end_batch(void)`
+- Notes: unlocks the vertex buffer, conditionally submits a nonempty triangle
+  list, ends the D3D8 scene, and clears the active flag. If device readiness is
+  lost after unlock, native code returns without clearing the active flag.
 - Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
 - Sample calls: FUN_00401dd0:L753; demo_trial_overlay_render (`FUN_004047c0`):L3134; ui_draw_clock_gauge:L3889; ui_draw_clock_gauge:L3895; ui_render_aim_indicators:L5702; demo_purchase_screen_update (`FUN_0040b740`):L6346; ui_draw_textured_quad:L9125; terrain_generate (`FUN_00417b80`):L9261
@@ -1299,6 +1318,10 @@ grim.dll body:
     (**(code **)(*DAT_0048083c + 0x20))(0x15,2);
     (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);
 ```
+
+The recovered VC6.5 source matches all 36 instructions and all 8 masked
+references. It derives the D3D primitive count as half of the low-word vertex
+count and skips only the draw call for an empty batch.
 
 
 ## 0xf4 — grim_submit_vertex_raw @ 0x10008e30
