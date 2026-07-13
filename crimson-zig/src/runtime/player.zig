@@ -145,27 +145,26 @@ pub fn resetPlayers(
     if (players.len == 0) return;
 
     const base = spawn_pos orelse Vec2{
-        .x = world_size * 0.5,
-        .y = world_size * 0.5,
+        .x = narrowF32(world_size * 0.5),
+        .y = narrowF32(world_size * 0.5),
     };
 
-    if (players.len == 1) {
-        players[0] = .{
-            .index = 0,
-            .pos = base.clampRect(0.0, 0.0, world_size, world_size),
-        };
-        resetPlayerWeaponNative(&players[0]);
-        initDefaultAltWeapon(&players[0]);
-        return;
-    }
-
-    const radius: f32 = 32.0;
-    const step = std.math.tau / @as(f32, @floatFromInt(players.len));
     for (players, 0..) |*player, idx| {
-        const offset = Vec2.fromAngle(@as(f32, @floatFromInt(idx)) * step).mul(radius);
+        const offset: f32 = @floatFromInt(idx * 0x50);
+        const pos = if (idx % 2 == 0)
+            Vec2{
+                .x = narrowF32(base.x + offset),
+                .y = narrowF32(base.y + offset),
+            }
+        else
+            Vec2{
+                .x = narrowF32(base.x - offset),
+                .y = narrowF32(base.y - offset),
+            };
         player.* = .{
             .index = @intCast(idx),
-            .pos = Vec2.add(base, offset).clampRect(0.0, 0.0, world_size, world_size),
+            .pos = pos,
+            .spread_heat = 0.0,
         };
         resetPlayerWeaponNative(player);
         initDefaultAltWeapon(player);
@@ -237,4 +236,18 @@ test "reset players preloads alternate pistol slot" {
     try std.testing.expectApproxEqAbs(@as(f32, 12.0), players[0].alt_weapon.?.ammo, 1e-6);
     try std.testing.expect(!players[0].alt_weapon.?.reload_active);
     try std.testing.expectApproxEqAbs(@as(f32, 1.2), players[0].alt_weapon.?.reload_timer_max, 1e-6);
+}
+
+test "reset players uses native alternating 80-unit layout" {
+    var players = [_]PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+
+    resetPlayers(players[0..], 1024.0, null);
+
+    try std.testing.expectEqual(.{ .x = 512.0, .y = 512.0 }, players[0].pos);
+    try std.testing.expectEqual(.{ .x = 432.0, .y = 432.0 }, players[1].pos);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].spread_heat);
+    try std.testing.expectEqual(@as(f32, 0.0), players[1].spread_heat);
 }

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import struct
 from collections.abc import Sequence
 from typing import cast
@@ -14,6 +13,7 @@ from ..creatures.runtime import CreatureAiMode, CreaturePool, CreatureState, Cre
 from ..creatures.spawn import SpawnEnv
 from ..creatures.spawn_ids import CreatureFlags
 from ..gameplay import GameplayState
+from ..math_parity import f32
 from ..replay.types import ReplayCreatureSlotResidue
 from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.state_types import PlayerState
@@ -110,18 +110,20 @@ def reset_world_players(
 ) -> None:
     players.clear()
 
-    base = Vec2(float(world_size) * 0.5, float(world_size) * 0.5) if spawn_pos is None else spawn_pos
-    count = max(1, int(player_count))
-    if count <= 1:
-        offsets = [Vec2()]
+    if spawn_pos is None:
+        center = f32(float(world_size) * 0.5)
+        base = Vec2(center, center)
     else:
-        radius = 32.0
-        step = math.tau / float(count)
-        offsets = [Vec2.from_angle(float(idx) * step) * radius for idx in range(count)]
+        base = Vec2(f32(spawn_pos.x), f32(spawn_pos.y))
+    count = max(1, int(player_count))
 
     for idx in range(count):
-        pos = (base + offsets[idx]).clamp_rect(0.0, 0.0, float(world_size), float(world_size))
-        player = PlayerState(index=idx, pos=pos)
+        offset = f32(float(idx * 0x50))
+        if idx % 2:
+            pos = Vec2(f32(base.x - offset), f32(base.y - offset))
+        else:
+            pos = Vec2(f32(base.x + offset), f32(base.y + offset))
+        player = PlayerState(index=idx, pos=pos, spread_heat=0.0)
         _reset_player_weapon_native(player)
         init_default_alt_weapon(player)
         players.append(player)
