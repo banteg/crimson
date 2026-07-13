@@ -139,8 +139,6 @@ pub fn perksRebuildAvailable(
     state: *state_mod.GameplayState,
     quest_unlock_index: i32,
 ) void {
-    if (state.perk_available_unlock_index == quest_unlock_index) return;
-
     state.perk_available = state_mod.PerkAvailability.initFill(false);
 
     var perk_id: i32 = 1;
@@ -1049,18 +1047,6 @@ fn isDeathClockBlocked(perk_id: PerkId) bool {
         perk_id == PerkId.bandage;
 }
 
-fn setOnlyPerksAvailable(
-    state: *state_mod.GameplayState,
-    unlock_index: i32,
-    perk_ids: []const PerkId,
-) void {
-    state.perk_available = state_mod.PerkAvailability.initFill(false);
-    for (perk_ids) |perk_id| {
-        state.perk_available.set(perk_id, true);
-    }
-    state.perk_available_unlock_index = unlock_index;
-}
-
 test "perk menu open consumes rng and caches choices" {
     var state = state_mod.GameplayState.init(0x1234);
     var players = [_]state_mod.PlayerState{
@@ -1101,6 +1087,18 @@ test "antiperk is excluded by availability rather than offer predicate" {
         1,
     ));
     try std.testing.expect(!buildPerkAvailabilityForUnlockIndex(0).contains(.antiperk));
+}
+
+test "perk availability rebuild clears stale state at the same unlock index" {
+    var state = state_mod.GameplayState.init(1);
+    state.perk_available_unlock_index = 0;
+    state.perk_available.set(PerkId.antiperk, true);
+    state.perk_available.set(PerkId.sharpshooter, false);
+
+    perksRebuildAvailable(&state, 0);
+
+    try std.testing.expect(!state.perk_available.get(PerkId.antiperk));
+    try std.testing.expect(state.perk_available.get(PerkId.sharpshooter));
 }
 
 test "perk pick decrements pending and refreshes choices" {
@@ -1176,23 +1174,12 @@ test "perk generate choices rejects pyromaniac when no player has flamethrower" 
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = game_ids.WeaponId.pistol } },
     };
-    setOnlyPerksAvailable(&state, 0, &.{
-        PerkId.pyromaniac,
-        PerkId.sharpshooter,
-        PerkId.fastloader,
-        PerkId.lean_mean_exp_machine,
-        PerkId.long_distance_runner,
-        PerkId.pyrokinetic,
-        PerkId.instant_winner,
-        PerkId.grim_deal,
-    });
-
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
         .survival,
         1,
-        0,
+        49,
     );
     for (choices) |perk_id| {
         try std.testing.expect(perk_id != PerkId.pyromaniac);
@@ -1208,23 +1195,12 @@ test "perk generate choices blocks jinxed when death clock is active" {
         },
     };
     players[0].perk_counts.set(PerkId.death_clock, 1);
-    setOnlyPerksAvailable(&state, 0, &.{
-        PerkId.jinxed,
-        PerkId.sharpshooter,
-        PerkId.fastloader,
-        PerkId.lean_mean_exp_machine,
-        PerkId.long_distance_runner,
-        PerkId.pyrokinetic,
-        PerkId.instant_winner,
-        PerkId.pyromaniac,
-    });
-
     const choices = perkSelectionCurrentChoices(
         &state,
         players[0..],
         .survival,
         1,
-        0,
+        49,
     );
     for (choices) |perk_id| {
         try std.testing.expect(perk_id != PerkId.jinxed);
