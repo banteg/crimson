@@ -213,11 +213,11 @@ pub const ProjectilePool = struct {
                     resetShockChainIfOwner(state, proj_idx);
                 }
                 const linger_decay: f32 = switch (proj.type_id) {
-                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => dt * 0.1,
-                    @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
+                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => native_math.pc24Mul(dt, @as(f32, 0.1)),
+                    @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => native_math.pc24Mul(dt, @as(f32, 0.7)),
                     else => dt,
                 };
-                proj.life_timer = narrowF32(proj.life_timer - linger_decay);
+                proj.life_timer = native_math.pc24Sub(proj.life_timer, linger_decay);
                 applyIonLingerDamage(
                     state,
                     players,

@@ -80,6 +80,27 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
     assert pool.entries[idx].pos == Vec2(-101.94862365722656, 636.7431030273438)
 
 
+def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTemplateId.GAUSS_GUN,
+        owner=OwnerRef.from_local_player(0),
+    )
+    pool.entries[idx].life_timer = 0.011000030674040318
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.08000000566244125,
+            creatures=(),
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert pool.entries[idx].life_timer == 0.003000030294060707
+
+
 def _normalize_vec2(vec: Vec2) -> list[float]:
     return [round(float(vec.x), 6), round(float(vec.y), 6)]
 
