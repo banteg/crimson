@@ -70,7 +70,7 @@ public:
     virtual void grim_end_batch(void);
     virtual void grim_submit_vertex_raw(float *vertex) = 0;
     virtual void grim_submit_quad_raw(float *vertices) = 0;
-    virtual void grim_set_rotation(float radians) = 0;
+    virtual void grim_set_rotation(float radians);
     virtual void grim_set_uv(float u0, float v0, float u1, float v1);
     virtual void grim_set_atlas_frame(int atlas_size, int frame) = 0;
     virtual void grim_set_sub_rect(int atlas_size, int width, int height, int frame) = 0;

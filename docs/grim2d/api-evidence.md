@@ -1403,13 +1403,18 @@ grim.dll body:
 
 ## 0xfc — grim_set_rotation @ 0x10007f30
 
-- Provisional name: `set_rotation` (high)
-- Guess: `void set_rotation(float radians)`
-- Notes: stores radians and precomputes rotation matrix terms
+- Confirmed name: `set_rotation`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_rotation(float radians)`
+- Notes: stores the supplied angle and evaluates sine/cosine at
+  `radians + 0.7853982f`. The resulting row-major matrix is
+  `{cos, sin, -sin, cos}`. Live Binary Ninja shows the one-argument member ABI,
+  x87 `fcos`/`fsin`, seven scalar global writes, and `retn 0x4`.
 - Ghidra signature: `void grim_set_rotation(float radians)`
 - Call sites: 65 (unique funcs: 17)
 - Sample calls: FUN_00401dd0:L736; ui_draw_clock_gauge:L3886; ui_draw_clock_gauge:L3893; ui_render_aim_indicators:L5662; demo_purchase_screen_update (`FUN_0040b740`):L6325; terrain_render (`FUN_004188a0`):L9599; terrain_render (`FUN_004188a0`):L9630; creature_render_type (`FUN_00418b60`):L9718
 - First callsite: FUN_00401dd0 (line 736)
+- Runtime evidence: the checked-in `ui_render_trace_summary.json` contains
+  53,352 `grim_set_rotation` events.
 
 
 ```c
@@ -1427,6 +1432,11 @@ grim.dll precompute:
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
   grim_rotation_cos = (float)fVar1;
 ```
+
+The recovered VC6.5 source matches all 19 instructions and all 11 masked
+references. Ordinary repeated trig expressions plus row-major assignments
+produce the native x87 schedule and register allocation without volatile
+state, copies, or layout-only expressions.
 
 
 ## 0x100 — grim_set_uv @ 0x10008350
