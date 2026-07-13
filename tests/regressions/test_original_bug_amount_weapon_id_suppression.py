@@ -53,7 +53,7 @@ def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
     assert entry is None
 
 
-def test_original_amount_weapon_id_suppression_does_not_trigger_for_native_zero_nuke_amount() -> None:
+def test_original_amount_weapon_id_suppression_triggers_for_native_nuke_amount() -> None:
     # Force the non-pistol-special drop path and a Nuke roll:
     # - rand#1: pistol special-case gate -> skip ((v & 3) >= 3)
     # - rand#2: base_roll where base_roll % 9 != 1
@@ -65,11 +65,10 @@ def test_original_amount_weapon_id_suppression_does_not_trigger_for_native_zero_
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is not None
-    assert entry.bonus_id == BonusId.NUKE
+    assert entry is None
 
 
-def test_original_amount_weapon_id_suppression_does_not_trigger_for_native_zero_double_xp_amount() -> None:
+def test_original_amount_weapon_id_suppression_triggers_for_native_double_xp_amount() -> None:
     # Force the non-pistol-special path and a Double Experience roll:
     # - rand#1: pistol special-case gate -> skip ((v & 3) >= 3)
     # - rand#2: base_roll where base_roll % 9 == 1
@@ -80,5 +79,4 @@ def test_original_amount_weapon_id_suppression_does_not_trigger_for_native_zero_
 
     player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is not None
-    assert entry.bonus_id == BonusId.DOUBLE_EXPERIENCE
+    assert entry is None

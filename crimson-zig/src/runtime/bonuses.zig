@@ -172,12 +172,9 @@ pub const BonusPool = struct {
             return null;
         }
 
-        if (entry.bonus_id == .weapon) {
-            const weapon_id = weapon_data.weaponIdFromInt(entry.amount);
-            if (carriedWeaponId(players, weapon_id)) {
-                clearEntry(self, entry);
-                return null;
-            }
+        if (suppressSpawnedBonusForCarriedWeapon(entry.*, players, state.preserve_bugs)) {
+            clearEntry(self, entry);
+            return null;
         }
 
         if (slot == .sentinel) return null;
@@ -860,6 +857,36 @@ fn carriedWeaponId(players: []const state_mod.PlayerState, weapon_id: game_ids.W
         }
     }
     return false;
+}
+
+fn suppressSpawnedBonusForCarriedWeapon(
+    entry: BonusEntry,
+    players: []const state_mod.PlayerState,
+    preserve_bugs: bool,
+) bool {
+    if (preserve_bugs) {
+        if (players.len == 0) return false;
+        const amount_weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse return false;
+        return players[0].weapon.weapon_id == amount_weapon_id;
+    }
+    if (entry.bonus_id != .weapon) return false;
+    const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse return false;
+    return carriedWeaponId(players, weapon_id);
+}
+
+test "preserved bonus suppression treats amount as weapon id" {
+    const players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{},
+        .weapon = .{ .weapon_id = .multi_plasma },
+    }};
+    const entry: BonusEntry = .{
+        .bonus_id = .weapon_power_up,
+        .amount = 10,
+    };
+
+    try std.testing.expect(suppressSpawnedBonusForCarriedWeapon(entry, players[0..], true));
+    try std.testing.expect(!suppressSpawnedBonusForCarriedWeapon(entry, players[0..], false));
 }
 
 fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
