@@ -3245,7 +3245,7 @@ fn movementDeltaFromHeadingF32(
     // velocity chain rounds to f32, while fsin/fcos evaluate in extended
     // precision internally so their rounding lands in the first multiply
     // (creature_update_all 0x426dab).
-    const radians = @as(f64, @floatCast(narrowF32(heading))) - @as(f64, @floatCast(native_half_pi));
+    const radians = @as(f64, @floatCast(native_math.pc24Sub(heading, native_half_pi)));
 
     var vx = narrowF32(std.math.cos(radians) * @as(f64, @floatCast(dt)));
     vx = narrowF32(vx * move_scale);
@@ -3261,6 +3261,18 @@ fn movementDeltaFromHeadingF32(
         .x = vx,
         .y = vy,
     };
+}
+
+test "creature movement narrows heading subtraction before trig" {
+    const delta = movementDeltaFromHeadingF32(
+        0.49451950192451477,
+        0.03400000184774399,
+        1.0,
+        1.1699999570846558,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.566398024559021), delta.x);
+    try std.testing.expectEqual(@as(f32, -1.0504270792007446), delta.y);
 }
 
 fn advancePosByDeltaF32(
