@@ -10,7 +10,6 @@ extern "C" int fx_spawn_secondary_projectile(
 )
 {
     int index = 0;
-    float shot_angle;
     float vel_x;
     float vel_y;
     secondary_projectile_t *projectile = secondary_projectile_pool;
@@ -24,9 +23,7 @@ extern "C" int fx_spawn_secondary_projectile(
     index = 0x3f;
 
 found:
-    shot_angle = angle - 1.57079637f;
     ++highscore_record_shots_fired;
-    vel_x = (float)cos(shot_angle);
 
     projectile = &secondary_projectile_pool[index];
     projectile->active = 1;
@@ -37,10 +34,9 @@ found:
     projectile->pos.vx.vy.trail_timer = 0.0f;
     projectile->pos.vx.vy.type_id = type_id;
 
-    projectile->pos.vx.vel_x = vel_x * 90.0f;
+    projectile->pos.vx.vel_x = (vel_x = (float)cos(angle - 1.57079637f)) * 90.0f;
 
-    vel_y = (float)sin(shot_angle);
-    projectile->pos.vx.vy.vel_y = vel_y * 90.0f;
+    projectile->pos.vx.vy.vel_y = (vel_y = (float)sin(angle - 1.57079637f)) * 90.0f;
 
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
         projectile->pos.vx.vy.target_id =

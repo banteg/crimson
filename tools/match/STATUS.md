@@ -40,7 +40,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 74.44% | 7/89 | 3/0/1 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
-| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 66/65 | 91.60% | 35/65 | 13/0/0 |  | gameplay-secondary-projectile |
+| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 67.21% | 0/126 | 11/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
 | wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 83.48% | 11/57 | 4/0/2 |  | gameplay-radius-damage |
