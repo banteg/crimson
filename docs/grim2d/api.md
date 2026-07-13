@@ -319,7 +319,7 @@ These offsets appear with keycodes or input-related values:
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |
 | `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | high | batch draw fullscreen quad |
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | high | alpha>0 draws a fullscreen color quad |
-| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h)` | high | UI panel fill / background quad |
+| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h, const float *rgba)` | confirmed | UI panel fill / background quad with explicit color |
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |
 | `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | high | builds circle fan with sin/cos |
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | high | builds ring with sin/cos |

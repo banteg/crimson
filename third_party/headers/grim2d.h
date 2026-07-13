@@ -62,7 +62,7 @@ struct IGrim2D_vtbl {
     /* 0x0c4 */ void (__stdcall *grim_bind_texture)(int handle, int stage);
     /* 0x0c8 */ void (__stdcall *grim_draw_fullscreen_quad)(void);
     /* 0x0cc */ void (__stdcall *grim_draw_fullscreen_color)(float r, float g, float b, float a);
-    /* 0x0d0 */ void (__stdcall *grim_draw_rect_filled)(float * xy, float w, float h);
+    /* 0x0d0 */ void (__stdcall *grim_draw_rect_filled)(float * xy, float w, float h, float * rgba);
     /* 0x0d4 */ void (__stdcall *grim_draw_rect_outline)(float * xy, float w, float h);
     /* 0x0d8 */ void (__stdcall *grim_draw_circle_filled)(float x, float y, float radius);
     /* 0x0dc */ void (__stdcall *grim_draw_circle_outline)(float x, float y, float radius);

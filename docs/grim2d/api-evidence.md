@@ -1097,11 +1097,13 @@ grim.dll body:
 
 ## 0xd0 — grim_draw_rect_filled @ 0x100078e0
 
-- Provisional name: `draw_rect_filled` (high)
-- Guess: `void draw_rect_filled(const float *xy, float w, float h)`
-- Notes: used for UI panel backgrounds before setting color
-- Ghidra signature: `void grim_draw_rect_filled(float *xy, float w, float h)`
-- Suggested signature: `void grim_draw_rect_filled(const float *xy, float w, float h)`
+- Confirmed name: `draw_rect_filled`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_rect_filled(float *xy, float w, float h, float *rgba)`
+- Notes: draws UI panel backgrounds with an explicit RGBA pointer. Live Binary
+  Ninja disassembly loads the fourth stack argument, tests `rgba[3]`, receives
+  `this` in `ECX`, and returns with `retn 0x10`. This corrects the prior
+  three-argument Ghidra prototype.
+- Ghidra signature (missing fourth argument): `void grim_draw_rect_filled(float *xy, float w, float h)`
 - Call sites: 24 (unique funcs: 14)
 - Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; demo_trial_overlay_render (`FUN_004047c0`):L3096; ui_render_keybind_help:L3369; tutorial_prompt_dialog (`FUN_00408530`):L5029; demo_purchase_screen_update (`FUN_0040b740`):L6476; demo_purchase_screen_update (`FUN_0040b740`):L6480
 - First callsite: FUN_00401dd0 (line 740)
@@ -1126,6 +1128,11 @@ grim.dll body:
     (**(code **)(*in_ECX + 0xf0))();
   }
 ```
+
+The recovered VC6.5 source matches all 72 instructions and all 6 masked
+references. For positive alpha it selects untextured D3D8 color/alpha state,
+forwards `rgba` to `set_color_ptr`, clears rotation, brackets one quad with
+`begin_batch`/`end_batch`, and restores the normal modulate state.
 
 
 ## 0xd4 — grim_draw_rect_outline @ 0x10008f10

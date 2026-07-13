@@ -5684,8 +5684,8 @@
     "program": "grim.dll",
     "address": "0x100078e0",
     "name": "grim_draw_rect_filled",
-    "signature": "void grim_draw_rect_filled(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0xd0: UI panel fill/quad"
+    "signature": "void grim_draw_rect_filled(float *xy, float w, float h, float *rgba)",
+    "comment": "Grim2D vtable 0xd0: UI panel fill/quad with explicit RGBA pointer"
   },
   {
     "program": "grim.dll",
