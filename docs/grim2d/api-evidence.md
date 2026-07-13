@@ -2296,6 +2296,19 @@ offsets `0x20` (`Unacquire`) and `0x08` (`Release`). Ordinary C++ reproduces
 all 19 native instructions, full prefix, and references `5/0/0` with MSVC 6.5.
 
 
+## grim.dll — mouse init helper @ 0x1000a5a0
+
+- Confirmed name: `grim_mouse_init`
+- Confirmed C++ signature: `bool grim_mouse_init(void)`
+- Notes: lazily creates the DirectInput8 interface and system-mouse device,
+  installs the Mouse2 data format, acquires it, and performs an initial poll.
+
+Live Binary Ninja identifies a 194-byte function using `IID_IDirectInput8A`,
+`GUID_SysMouse`, `c_dfDIMouse2`, and cooperative flags 5. Ordinary C++
+reproduces all 71 instructions, full prefix, and references `18/0/0`. As in
+keyboard initialization, the null-window `GetDesktopWindow` result is ignored.
+
+
 ## grim.dll — mouse shutdown helper @ 0x1000a7d0
 
 - Confirmed name: `grim_mouse_shutdown`

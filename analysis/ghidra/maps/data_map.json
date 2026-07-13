@@ -9162,9 +9162,23 @@
       "type": "DIDATAFORMAT"
     },
     {
+      "address": "0x10050284",
+      "comment": "DirectInput Mouse2 data format passed to SetDataFormat.",
+      "name": "c_dfDIMouse2",
+      "program": "grim.dll",
+      "type": "DIDATAFORMAT"
+    },
+    {
       "address": "0x1005029c",
       "comment": "DirectInput system-keyboard device GUID.",
       "name": "GUID_SysKeyboard",
+      "program": "grim.dll",
+      "type": "GUID"
+    },
+    {
+      "address": "0x100502ac",
+      "comment": "DirectInput system-mouse device GUID.",
+      "name": "GUID_SysMouse",
       "program": "grim.dll",
       "type": "GUID"
     },

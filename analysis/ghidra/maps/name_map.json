@@ -5979,8 +5979,8 @@
     "program": "grim.dll",
     "address": "0x1000a5a0",
     "name": "grim_mouse_init",
-    "signature": "int grim_mouse_init(void)",
-    "comment": "initializes DirectInput mouse device and acquires it"
+    "signature": "bool grim_mouse_init(void)",
+    "comment": "lazily creates/configures the DirectInput8 mouse device, acquires it, and performs an initial poll"
   },
   {
     "program": "grim.dll",
