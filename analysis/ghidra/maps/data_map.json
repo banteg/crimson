@@ -5729,7 +5729,7 @@
     },
     {
       "address": "0x00490f4c",
-      "comment": "Alternate primary fire key (checked by input_primary_is_down)",
+      "comment": "Player 2 / alternate single-player fire key (player_state_table[1].input.fire_key); always checked by input_primary_is_down.",
       "name": "player_alt_fire_key",
       "program": "crimsonland.exe",
       "type": "int"

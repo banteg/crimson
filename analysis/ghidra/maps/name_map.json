@@ -3062,7 +3062,7 @@
     "address": "0x004460f0",
     "name": "input_primary_is_down",
     "signature": "int input_primary_is_down(void)",
-    "comment": "returns true while primary action is held (mouse button 0 or primary fire keys)"
+    "comment": "pure held-state query: mouse button 0 or either fixed player-record fire binding"
   },
   {
     "program": "crimsonland.exe",

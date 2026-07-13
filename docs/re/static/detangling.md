@@ -344,8 +344,10 @@ for the field layout used by `sfx_entry_table` and `music_entry_table`.
     `0xd8`). Used across UI click/confirm paths and player fire/selection logic.
 
 - `FUN_004460f0` -> `input_primary_is_down`
-  - Evidence: returns true while the primary action is held (mouse button 0, `player_fire_key`,
-    or `player_alt_fire_key`), used by UI scroll/drag handling.
+  - Evidence: exact source returns true while mouse button 0 or the `fire_key` field in either
+    fixed player record is held, with no player-count read or edge-latch mutation. The second
+    record doubles as `player_alt_fire_key` in one-player configuration. Used by UI scroll/drag
+    handling.
 
 - `FUN_00446000` -> `input_any_key_pressed`
   - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
@@ -415,7 +417,7 @@ Defaults are set in `config_load_presets`.
 | `DAT_00490f40` | `0xd0` (Down) | alt move backward (`player_alt_move_key_backward`) | used via `is_key_down` when `config_player_count == 1` |
 | `DAT_00490f44` | `0xcb` (Left) | alt turn left (`player_alt_turn_key_left`) | used via `is_key_down` when `config_player_count == 1` |
 | `DAT_00490f48` | `0xcd` (Right) | alt turn right (`player_alt_turn_key_right`) | used via `is_key_down` when `config_player_count == 1` |
-| `DAT_00490f4c` | `0x9d` (RControl) | alt primary fire (`player_alt_fire_key`) | checked in `input_primary_is_down` |
+| `DAT_00490f4c` | `0x9d` (RControl) | player 2 / alt primary fire (`player_alt_fire_key`) | `player_state_table[1].input.fire_key`; always checked in `input_primary_is_down` |
 | `DAT_00490f50` | `0x11` (W) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f54` | `0x1f` (S) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f58` | `0xd3` (Delete) | unused/reserved | defaults set; no callsites yet |
