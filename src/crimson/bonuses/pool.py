@@ -9,7 +9,7 @@ from grim.geom import Vec2
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
-from ..math_parity import f32
+from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
@@ -200,11 +200,14 @@ class BonusPool:
         entry = self._alloc_slot_or_sentinel()
 
         bonus_id = bonus_pick_random_type(self, state, players)
-        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
         for active_entry in self._entries:
             if active_entry.bonus_id == BonusId.UNUSED:
                 continue
-            if Vec2.distance_sq(pos, active_entry.pos) < min_dist_sq:
+            distance = x87_pc24_hypot(
+                x87_pc24_sub(pos.x, active_entry.pos.x),
+                x87_pc24_sub(pos.y, active_entry.pos.y),
+            )
+            if distance < BONUS_SPAWN_MIN_DISTANCE:
                 entry = self._sentinel
                 break
 

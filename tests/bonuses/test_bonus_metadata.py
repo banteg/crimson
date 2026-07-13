@@ -29,3 +29,20 @@ def test_bonus_spawn_uses_native_constructor_default_amount(bonus_id: BonusId) -
 
     assert entry is not None
     assert entry.amount == 1
+
+
+def test_bonus_spawn_spacing_uses_native_pc24_hypotenuse_boundary() -> None:
+    pool = BonusPool(size=2)
+    active = pool.entries[0]
+    active.bonus_id = BonusId.POINTS
+    active.pos = Vec2(100.0, 100.0)
+
+    spawned = pool.spawn_at_pos(
+        Vec2(123.16073417663574, 122.08122253417969),
+        state=GameplayState(),
+        players=[],
+    )
+
+    # Double-precision dx²+dy² is just below 32², but native PC=24 math
+    # rounds the hypotenuse to exactly 32 and therefore permits the spawn.
+    assert not pool._is_sentinel_entry(spawned)

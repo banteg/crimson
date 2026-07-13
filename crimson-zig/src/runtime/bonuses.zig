@@ -1219,10 +1219,13 @@ fn spawnAtPos(
     var slot = allocSlotOrSentinel(self);
     const bonus_id = bonusPickRandomType(self, state, players);
 
-    const min_dist_sq = bonus_spawn_min_distance * bonus_spawn_min_distance;
     for (self.entries) |active| {
         if (active.bonus_id == .unused) continue;
-        if (distanceSq(pos, active.pos) < min_dist_sq) {
+        const distance = native_math.pc24Hypot(
+            native_math.pc24Sub(pos.x, active.pos.x),
+            native_math.pc24Sub(pos.y, active.pos.y),
+        );
+        if (distance < bonus_spawn_min_distance) {
             slot = .sentinel;
             break;
         }
@@ -1244,6 +1247,26 @@ fn spawnAtPos(
     }
 
     return slot;
+}
+
+test "bonus spawn spacing uses native pc24 hypotenuse boundary" {
+    var state = state_mod.GameplayState.init(1);
+    var pool: BonusPool = .{};
+    pool.entries[0].bonus_id = .points;
+    pool.entries[0].pos = .{ .x = 100.0, .y = 100.0 };
+
+    const slot = spawnAtPos(
+        &pool,
+        .{ .x = 123.16073417663574, .y = 122.08122253417969 },
+        &state,
+        &.{},
+        1024.0,
+    );
+
+    try std.testing.expect(switch (slot) {
+        .index => true,
+        .sentinel => false,
+    });
 }
 
 test "bonus pool spawn-on-kill can materialize weapon drop" {
