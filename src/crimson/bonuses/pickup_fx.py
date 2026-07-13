@@ -6,6 +6,7 @@ from collections.abc import Callable
 
 from grim.color import RGBA
 
+from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, GameplayState
 from .freeze import apply_freeze_pickup_fx
 from .ids import BonusId
@@ -25,6 +26,9 @@ def _apply_default_pickup_burst(*, state: GameplayState, pickup: BonusPickupEven
         lifetime=0.4,
         scale_step=0.1,
         color=RGBA(0.4, 0.5, 1.0, 0.5),
+        rotation_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
+        vel_x_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
+        vel_y_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
     )
 
 

@@ -5,11 +5,12 @@ from typing import Any
 
 from syrupy import SnapshotAssertion
 
+import crimson.projectiles.runtime.projectile_pool as projectile_pool_runtime
 from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32
+from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
@@ -35,6 +36,27 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def _fixed_rng(value: int) -> ScriptedCrand:
     return ScriptedCrand(value, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+
+def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> None:
+    damage = projectile_pool_runtime._projectile_damage_amount_f32(
+        331.64129638671875,
+        4.1,
+    )
+
+    assert damage == 44.73385238647461
+
+
+def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
+    angle = -2.5405335426330566
+    dt = 0.04500000178813934
+    radians = f32(angle - NATIVE_HALF_PI)
+
+    step_x = f32(math.cos(radians) * dt * 20.0) * 3.0
+    step_y = f32(math.sin(radians) * dt * 20.0) * 3.0
+
+    assert f32(step_x) == -1.5268936157226562
+    assert f32(step_y) == 2.2267906665802
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:
@@ -357,6 +379,75 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     )
 
 
+def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
+    pool = SecondaryProjectilePool(size=1)
+
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(152.47727966308594, 941.5100708007812),
+            angle=-4.161045551300049,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+
+    projectile = pool.entries[idx]
+    assert projectile.vel == Vec2(161.8461151123047, 99.52806091308594)
+
+
+def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(193.97930908203125, 971.7576904296875),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+    projectile = pool.entries[idx]
+    projectile.vel = Vec2(254.46153259277344, 234.05662536621094)
+    projectile.target_id = 0
+    projectile.trail_timer = 1.0
+    creatures = [_creature(pos=Vec2(202.13153076171875, 991.8573608398438), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    hit_count = pool.step(
+        SecondaryStepCtx(
+            dt=0.05700000375509262,
+            creatures=creatures,
+            creature_damage_runtime=damage_runtime,
+        ),
+    )
+
+    assert hit_count == 1
+    impulse = damage_runtime.calls[0][3]
+    assert impulse == Vec2(3916.34716796875, 4689.19384765625)
+
+
+def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(750.26220703125, 714.5313110351562),
+            angle=-3.6826539039611816,
+            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
+        ),
+    )
+    projectile = pool.entries[idx]
+    projectile.vel = Vec2(-65.83425903320312, -83.56523895263672)
+    projectile.target_id = 0
+    projectile.trail_timer = f32(0.06)
+    creatures = [_creature(pos=Vec2(813.2255859375, 819.3178100585938), hp=1000.0)]
+
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.06200000271201134,
+            creatures=creatures,
+        ),
+    )
+
+    assert projectile.trail_timer == 0.009637407958507538
+
+
 def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
@@ -407,7 +498,31 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
         },
     )
 
-    assert_float_close(abs(float(pool.entries[0].vel.x)), 0.0)
+    assert pool.entries[0].vel == Vec2(f32(0.3), 1.0)
+
+
+def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=0.5,
+        ),
+    )
+    creatures = [_creature(pos=Vec2(), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.06100000441074371,
+            creatures=creatures,
+            creature_damage_runtime=damage_runtime,
+        ),
+    )
+
+    assert damage_runtime.calls[0][1] == 21.35000228881836
 
 
 def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
@@ -425,7 +540,15 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue))
+    hit_count = pool.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+    )
+
+    entry = pool.entries[0]
+    assert hit_count == 1
+    assert entry.type_id == SecondaryProjectileTypeId.DETONATION
+    assert entry.vel == Vec2(0.0, 1.0)
+    assert entry.trail_timer == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
@@ -438,21 +561,26 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_1,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_2,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_2,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_3,
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
-    ] + [
-        caller
-        for _ in range(20)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_1,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_2,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_2,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_3,
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
+        ]
+        + [
+            caller
+            for _ in range(20)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
@@ -466,21 +594,33 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
     )
     creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue))
+    hit_count = pool.step(
+        SecondaryStepCtx(dt=0.1, creatures=creatures, runtime_state=runtime_state, fx_queue=fx_queue),
+    )
+
+    entry = pool.entries[0]
+    assert hit_count == 1
+    assert entry.type_id == SecondaryProjectileTypeId.DETONATION
+    assert entry.vel == Vec2(0.0, f32(0.35))
+    assert entry.trail_timer == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        caller
-        for _ in range(10)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            caller
+            for _ in range(10)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
@@ -501,14 +641,18 @@ def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        caller
-        for _ in range(3)
-        for caller in (
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
-            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
-        )
-    ] + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            caller
+            for _ in range(3)
+            for caller in (
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
+                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS,
+            )
+        ]
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )
 
 
 def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
@@ -529,8 +673,15 @@ def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG,
     }
-    assert _secondary_callers(rng, allowed) == [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
-    ] * 4 + [
-        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
-    ] * 8 + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    assert (
+        _secondary_callers(rng, allowed)
+        == [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
+        ]
+        * 4
+        + [
+            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE,
+        ]
+        * 8
+        + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
+    )

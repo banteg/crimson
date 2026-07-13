@@ -15,7 +15,7 @@ from ..creatures.anim import creature_anim_advance_phase
 from ..creatures.damage import creature_apply_damage_with_lethal_followup
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
-from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureTypeId, SpawnEnv
+from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
@@ -51,6 +51,7 @@ class WorldEvents(msgspec.Struct):
     deaths: tuple[CreatureDeath, ...]
     pickups: list[BonusPickupEvent]
     sfx: list[SfxId]
+    secondary_hit_count: int = 0
     trigger_game_tune: bool = False
     hit_sfx: list[SfxId] = msgspec.field(default_factory=list)
 
@@ -229,9 +230,16 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             deaths=self.deaths,
         )
 
-    def build_events(self, *, hits: list[ProjectileHit], pickups: list[BonusPickupEvent]) -> WorldEvents:
+    def build_events(
+        self,
+        *,
+        hits: list[ProjectileHit],
+        secondary_hit_count: int,
+        pickups: list[BonusPickupEvent],
+    ) -> WorldEvents:
         return WorldEvents(
             hits=hits,
+            secondary_hit_count=int(secondary_hit_count),
             deaths=tuple(self.deaths),
             pickups=pickups,
             sfx=self.sfx,
@@ -303,7 +311,6 @@ class WorldState(msgspec.Struct):
             for step in _WORLD_DT_STEPS:
                 dt = float(step(dt=dt, players=self.players))
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
-        prev_positions = [(player.pos.x, player.pos.y) for player in self.players]
         prev_health = [float(player.health) for player in self.players]
         # Native Freeze pickup shatters corpses that existed at tick start;
         # same-tick kills are not included in that pass.
@@ -359,7 +366,7 @@ class WorldState(msgspec.Struct):
                 ),
             ),
         )
-        self.state.secondary_projectiles.step(
+        secondary_hit_count = self.state.secondary_projectiles.step(
             SecondaryStepCtx(
                 dt=float(dt),
                 creatures=self.creatures.entries,
@@ -417,7 +424,6 @@ class WorldState(msgspec.Struct):
         dt = float(player_dt)
         if dt > 0.0:
             self._advance_creature_anim(dt)
-            self._advance_player_anim(dt, prev_positions)
         if mid_step_runtime is not None:
             mid_step_runtime.run_mid_step()
         if not bool(defer_camera_shake_update):
@@ -457,7 +463,11 @@ class WorldState(msgspec.Struct):
         # Player-damage VO RNG work lives inside `player_take_damage` for native
         # ordering parity (VO draw before heading-jitter draw).
         self.state.player_death_hook_skip_indices.clear()
-        return step_runtime.build_events(hits=hits, pickups=pickups)
+        return step_runtime.build_events(
+            hits=hits,
+            secondary_hit_count=int(secondary_hit_count),
+            pickups=pickups,
+        )
 
     def _run_player_death_hooks(
         self,
@@ -606,25 +616,4 @@ class WorldState(msgspec.Struct):
                 local_scale=float(creature.move_scale),
                 flags=creature.flags,
                 ai_mode=int(creature.ai_mode),
-            )
-
-    def _advance_player_anim(self, dt: float, prev_positions: list[tuple[float, float]]) -> None:
-        info = CREATURE_ANIM.get(CreatureTypeId.TROOPER)
-        if info is None:
-            return
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_positions):
-                continue
-            prev_x, prev_y = prev_positions[idx]
-            speed = Vec2(player.pos.x - prev_x, player.pos.y - prev_y).length()
-            move_speed = speed / dt / 120.0 if dt > 0.0 else 0.0
-            player.move_phase, _ = creature_anim_advance_phase(
-                player.move_phase,
-                anim_rate=info.anim_rate,
-                move_speed=move_speed,
-                dt=dt,
-                size=float(player.size),
-                local_scale=1.0,
-                flags=CreatureFlags(0),
-                ai_mode=CreatureAiMode.ORBIT_PLAYER,
             )

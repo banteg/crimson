@@ -16,7 +16,16 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool, FxQueue, SpriteEffectPool
 from ...effects_atlas import EffectId
-from ...math_parity import NATIVE_HALF_PI, f32
+from ...math_parity import (
+    NATIVE_HALF_PI,
+    f32,
+    x87_fpatan,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
@@ -92,8 +101,8 @@ class SecondaryProjectilePool:
             entry.active = False
 
     def spawn_from_spec(self, spec: SecondarySpawnSpec) -> int:
-        pos = spec.pos
-        angle = float(spec.angle)
+        pos = Vec2(f32(spec.pos.x), f32(spec.pos.y))
+        angle = f32(spec.angle)
         type_id = SecondaryProjectileTypeId(spec.type_id)
         owner = spec.owner
         time_to_live = float(spec.time_to_live)
@@ -127,6 +136,7 @@ class SecondaryProjectilePool:
                 # Detonation uses explicit timer/scale fields now.
                 entry.detonation_t = 0.0
                 entry.detonation_scale = float(time_to_live)
+                entry.vel = Vec2(0.0, f32(time_to_live))
                 entry.speed = float(f32(float(time_to_live)))
                 return index
             case (
@@ -136,7 +146,19 @@ class SecondaryProjectilePool:
                     base_speed=base_speed,
                 )
             ):
-                entry.vel = Vec2.from_heading(float(angle)) * float(base_speed)
+                radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
+                if isinstance(rule, HomingRocketRule):
+                    # Native stores each trig result as float32 before the
+                    # seeker-specific 190x velocity override.
+                    entry.vel = Vec2(
+                        x87_pc24_cos_mul(radians, 1.0, float(base_speed)),
+                        x87_pc24_sin_mul(radians, 1.0, float(base_speed)),
+                    )
+                else:
+                    entry.vel = Vec2(
+                        x87_pc24_cos_mul(radians, float(base_speed)),
+                        x87_pc24_sin_mul(radians, float(base_speed)),
+                    )
                 entry.speed = float(f32(float(time_to_live)))
 
         if isinstance(rule, HomingRocketRule):
@@ -155,7 +177,7 @@ class SecondaryProjectilePool:
     def iter_active(self) -> list[SecondaryProjectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def step(self, ctx: SecondaryStepCtx) -> None:
+    def step(self, ctx: SecondaryStepCtx) -> int:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
         dt = float(ctx.dt)
         creatures = ctx.creatures
@@ -167,7 +189,7 @@ class SecondaryProjectilePool:
             creature_damage_runtime = DirectCreatureDamageRuntime(creatures=creatures)
 
         if dt <= 0.0:
-            return
+            return 0
 
         def _apply_secondary_damage(
             creature_index: int,
@@ -204,6 +226,7 @@ class SecondaryProjectilePool:
             return creature_lifecycle_is_collidable(creature.lifecycle_stage)
 
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
+        hit_count = 0
 
         for entry in self._entries:
             if not entry.active:
@@ -215,7 +238,8 @@ class SecondaryProjectilePool:
                 if runtime_state is not None:
                     runtime_state.camera_shake_pulses = 4
 
-                entry.detonation_t += dt * 3.0
+                entry.detonation_t = x87_pc24_add(entry.detonation_t, x87_pc24_mul(dt, 3.0))
+                entry.vel = Vec2(entry.detonation_t, entry.detonation_scale)
                 t = float(entry.detonation_t)
                 scale = float(entry.detonation_scale)
                 if t > 1.0:
@@ -232,7 +256,8 @@ class SecondaryProjectilePool:
 
                 radius = scale * t * 80.0
                 radius_sq = radius * radius
-                damage = dt * scale * 700.0
+                damage = x87_pc24_mul(dt, scale)
+                damage = x87_pc24_mul(damage, 700.0)
                 for creature_idx in creature_spatial.candidate_indices(pos=entry.pos, radius=float(radius)):
                     creature = creatures[int(creature_idx)]
                     if not _creature_is_collidable(creature):
@@ -272,12 +297,17 @@ class SecondaryProjectilePool:
             # Update velocity + countdown.
             speed_mag = math.sqrt(float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y))
             match rule:
-                case RocketRule(
-                    accel_factor_scale=accel_factor_scale, speed_cap=speed_cap, ttl_decay_scale=ttl_decay_scale,
-                ) | RocketMinigunRule(
-                    accel_factor_scale=accel_factor_scale,
-                    speed_cap=speed_cap,
-                    ttl_decay_scale=ttl_decay_scale,
+                case (
+                    RocketRule(
+                        accel_factor_scale=accel_factor_scale,
+                        speed_cap=speed_cap,
+                        ttl_decay_scale=ttl_decay_scale,
+                    )
+                    | RocketMinigunRule(
+                        accel_factor_scale=accel_factor_scale,
+                        speed_cap=speed_cap,
+                        ttl_decay_scale=ttl_decay_scale,
+                    )
                 ):
                     if speed_mag < float(speed_cap):
                         factor = float(f32(float(dt) * float(accel_factor_scale) + 1.0))
@@ -287,7 +317,9 @@ class SecondaryProjectilePool:
                         )
                     entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
                 case HomingRocketRule(
-                    target_accel=target_accel, max_velocity=max_velocity, ttl_decay_scale=ttl_decay_scale,
+                    target_accel=target_accel,
+                    max_velocity=max_velocity,
+                    ttl_decay_scale=ttl_decay_scale,
                 ):
                     # Type 2: homing projectile.
                     target_id = entry.target_id
@@ -307,24 +339,31 @@ class SecondaryProjectilePool:
                         # angle; vel_y (and the over-cap subtraction for both
                         # components) recompute from the stored f32 angle, so the
                         # add-then-subtract is not an exact identity.
-                        atan_ext = math.atan2(
-                            float(entry.pos.y) - float(target.pos.y),
-                            float(entry.pos.x) - float(target.pos.x),
+                        atan_ext = x87_fpatan(
+                            x87_pc24_sub(entry.pos.y, target.pos.y),
+                            x87_pc24_sub(entry.pos.x, target.pos.x),
                         )
-                        entry.angle = float(f32(atan_ext - float(NATIVE_HALF_PI)))
-                        accel_scale = float(dt) * float(target_accel)
+                        entry.angle = x87_pc24_sub(atan_ext, NATIVE_HALF_PI)
+                        heading_ext = x87_pc24_sub(
+                            x87_pc24_sub(atan_ext, NATIVE_HALF_PI),
+                            NATIVE_HALF_PI,
+                        )
+                        heading_stored = x87_pc24_sub(entry.angle, NATIVE_HALF_PI)
                         entry.vel = Vec2(
-                            float(
-                                f32(
-                                    math.cos((atan_ext - float(NATIVE_HALF_PI)) - float(NATIVE_HALF_PI))
-                                    * accel_scale
-                                    + float(entry.vel.x),
+                            x87_pc24_add(
+                                entry.vel.x,
+                                x87_pc24_cos_mul(
+                                    heading_ext,
+                                    dt,
+                                    target_accel,
                                 ),
                             ),
-                            float(
-                                f32(
-                                    math.sin(float(entry.angle) - float(NATIVE_HALF_PI)) * accel_scale
-                                    + float(entry.vel.y),
+                            x87_pc24_add(
+                                entry.vel.y,
+                                x87_pc24_sin_mul(
+                                    heading_stored,
+                                    dt,
+                                    target_accel,
                                 ),
                             ),
                         )
@@ -332,17 +371,32 @@ class SecondaryProjectilePool:
                             float(entry.vel.x) * float(entry.vel.x) + float(entry.vel.y) * float(entry.vel.y),
                         )
                         if speed_after > float(max_velocity):
-                            heading = float(entry.angle) - float(NATIVE_HALF_PI)
                             entry.vel = Vec2(
-                                float(f32(float(entry.vel.x) - math.cos(heading) * accel_scale)),
-                                float(f32(float(entry.vel.y) - math.sin(heading) * accel_scale)),
+                                x87_pc24_sub(
+                                    entry.vel.x,
+                                    x87_pc24_cos_mul(
+                                        heading_stored,
+                                        dt,
+                                        target_accel,
+                                    ),
+                                ),
+                                x87_pc24_sub(
+                                    entry.vel.y,
+                                    x87_pc24_sin_mul(
+                                        heading_stored,
+                                        dt,
+                                        target_accel,
+                                    ),
+                                ),
                             )
 
                     entry.speed = float(f32(float(entry.speed) - float(dt) * float(ttl_decay_scale)))
 
             # Rocket smoke trail (`trail_timer` in crimsonland.exe).
-            trail_decay = float(f32((abs(entry.vel.x) + abs(entry.vel.y)) * dt * 0.01))
-            entry.trail_timer = float(f32(float(entry.trail_timer) - float(trail_decay)))
+            trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
+            trail_decay = x87_pc24_mul(trail_speed, dt)
+            trail_decay = x87_pc24_mul(trail_decay, 0.01)
+            entry.trail_timer = x87_pc24_sub(entry.trail_timer, trail_decay)
             if float(entry.trail_timer) < 0.0:
                 direction = Vec2.from_heading(entry.angle)
                 spawn_pos = entry.pos - direction * 9.0
@@ -374,6 +428,7 @@ class SecondaryProjectilePool:
                     hit_idx = idx
                     break
             if hit_idx is not None:
+                hit_count += 1
                 if runtime_state is not None:
                     owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
                     if owner_player_index is not None and creature_lifecycle_is_alive(
@@ -446,10 +501,15 @@ class SecondaryProjectilePool:
                 if freeze_active:
                     if effects is not None:
                         for _ in range(4):
-                            shard_angle = float(
-                                rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE)
-                                % 612,
-                            ) * 0.01
+                            shard_angle = (
+                                float(
+                                    rng.rand_tagged(
+                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
+                                    )
+                                    % 612,
+                                )
+                                * 0.01
+                            )
                             effects.spawn_freeze_shard(
                                 pos=entry.pos,
                                 angle=shard_angle,
@@ -477,20 +537,27 @@ class SecondaryProjectilePool:
 
                 # Native `projectile_update` applies hit visuals before
                 # `creature_apply_damage` for secondary projectiles.
-                damage = entry.speed * float(damage_speed_mul) + float(damage_base)
+                damage = x87_pc24_add(
+                    x87_pc24_mul(entry.speed, float(damage_speed_mul)),
+                    float(damage_base),
+                )
+                inv_dt = f32(1.0 / float(dt))
+                impulse = Vec2(
+                    x87_pc24_mul(inv_dt, entry.vel.x),
+                    x87_pc24_mul(inv_dt, entry.vel.y),
+                )
                 _apply_secondary_damage(
                     hit_idx,
                     damage,
                     owner=entry.owner,
-                    impulse=entry.vel / float(dt),
+                    impulse=impulse,
                 )
                 creature_spatial.sync_index(int(hit_idx))
 
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel = Vec2()
+                entry.vel = Vec2(0.0, f32(det_scale))
                 entry.detonation_t = 0.0
-                entry.detonation_scale = float(det_scale)
-                entry.trail_timer = 0.0
+                entry.detonation_scale = f32(det_scale)
 
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
@@ -540,9 +607,13 @@ class SecondaryProjectilePool:
                 if sprite_effects is not None:
                     step = math.tau / 10.0
                     for idx in range(10):
-                        mag = float(
-                            rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG) % 800,
-                        ) * 0.1
+                        mag = (
+                            float(
+                                rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG)
+                                % 800,
+                            )
+                            * 0.1
+                        )
                         ang = float(idx) * step
                         velocity = Vec2.from_angle(ang) * mag
                         sprite_effects.spawn(
@@ -558,7 +629,7 @@ class SecondaryProjectilePool:
             # exactly-zero TTL detonates this tick (<=, not <).
             if entry.speed <= 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
-                entry.vel = Vec2()
+                entry.vel = Vec2(0.0, 0.5)
                 entry.detonation_t = 0.0
                 entry.detonation_scale = 0.5
-                entry.trail_timer = 0.0
+        return hit_count

@@ -18,7 +18,15 @@ from .bonuses.hud import BonusHudState
 from .bonuses.pool import BonusPool
 from .effects import EffectPool, ParticlePool, SpriteEffectPool
 from .game_modes import GameMode
-from .math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
+from .math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_PI,
+    NATIVE_TAU,
+    f32,
+    x87_fpatan,
+    x87_pc24_mul_chain,
+    x87_pc24_sub,
+)
 from .movement_controls import MovementControlType
 from .perks import PerkId
 from .perks.helpers import perk_active
@@ -86,7 +94,6 @@ class BonusTimers(msgspec.Struct):
     freeze: float = 0.0
 
 
-_RELOAD_PRELOAD_UNDERFLOW_EPS = 1e-7
 _RELATIVE_MOVE_HEADING_NONE = -1.0
 _RELATIVE_MOVE_HEADING_FORWARD = 0.0
 _RELATIVE_MOVE_HEADING_FORWARD_RIGHT = float(f32(0.7853982))
@@ -402,9 +409,8 @@ def _player_apply_move_with_spawn_avoidance(
 
 def _direction_from_heading_native(heading: float) -> Vec2:
     # Native uses `fcos/fsin(heading - 1.5707964f)` (float32 half-pi literal),
-    # but this path keeps x87-style precision for trig and rounds at downstream
-    # float32 storage boundaries (delta/aim writes), not inside this helper.
-    radians = float(heading) - float(NATIVE_HALF_PI)
+    # with gameplay's x87 arithmetic in 24-bit precision before the trig op.
+    radians = x87_pc24_sub(float(heading), float(NATIVE_HALF_PI))
     return Vec2(math.cos(radians), math.sin(radians))
 
 
@@ -439,19 +445,22 @@ def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
     dt = float(f32(float(dt)))
     if perk_active(player, PerkId.LONG_DISTANCE_RUNNER):
         if player.move_speed < 2.0:
-            player.move_speed = float(f32(float(player.move_speed) + float(dt) * 4.0))
+            acceleration = f32(float(dt) * 4.0)
+            player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         player.move_speed = float(f32(float(player.move_speed) + float(dt)))
         if player.move_speed > 2.8:
             player.move_speed = 2.8
     else:
-        player.move_speed = float(f32(float(player.move_speed) + float(dt) * 5.0))
+        acceleration = f32(float(dt) * 5.0)
+        player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         if player.move_speed > 2.0:
             player.move_speed = 2.0
 
 
 def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
     dt = float(f32(float(dt)))
-    player.move_speed = float(f32(float(player.move_speed) - float(dt) * 15.0))
+    deceleration = f32(float(dt) * 15.0)
+    player.move_speed = float(f32(float(player.move_speed) - float(deceleration)))
     if player.move_speed < 0.0:
         player.move_speed = 0.0
 
@@ -476,6 +485,31 @@ def _player_move_delta_from_heading(
     )
 
 
+def _player_turn_aligned_velocity_native(
+    *,
+    direction: Vec2,
+    move_speed: float,
+    angle_diff: float,
+    speed_multiplier: float,
+) -> Vec2:
+    # `player_update` evaluates this x87 chain in the game's 24-bit precision
+    # mode. In particular, the direction*speed and subsequent alignment
+    # product round before the remaining multipliers; keeping the whole chain
+    # wide can move a backward-diagonal step one ULP too far.
+    alignment = x87_pc24_sub(float(NATIVE_PI), float(angle_diff))
+
+    def component(value: float) -> float:
+        return x87_pc24_mul_chain(
+            float(value),
+            float(move_speed),
+            float(alignment),
+            float(speed_multiplier),
+            float(_RELATIVE_MOVE_TURN_ALIGN_SCALE),
+        )
+
+    return Vec2(component(direction.x), component(direction.y))
+
+
 def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radius: float = _AIM_POINT_RADIUS) -> Vec2:
     aim_dir = _direction_from_heading_native(float(heading))
     return Vec2(
@@ -486,10 +520,9 @@ def _player_aim_point_from_heading(player: PlayerState, heading: float, *, radiu
 
 def _aim_heading_from_aim_point_native(player_pos: Vec2, aim_pos: Vec2) -> float:
     # `player_update` (0x004136b0): aim_heading = (float)(fpatan(pos_y-aim_y, pos_x-aim_x) - 1.5707964)
-    # Keep atan2 wide and narrow once at store to mirror x87-style rounding.
-    dy = float(player_pos.y) - float(aim_pos.y)
-    dx = float(player_pos.x) - float(aim_pos.x)
-    return float(f32(math.atan2(float(dy), float(dx)) - float(NATIVE_HALF_PI)))
+    dy = x87_pc24_sub(player_pos.y, aim_pos.y)
+    dx = x87_pc24_sub(player_pos.x, aim_pos.x)
+    return x87_pc24_sub(x87_fpatan(dy, dx), NATIVE_HALF_PI)
 
 
 def _player_update_aim_by_scheme(
@@ -582,7 +615,7 @@ def player_update(
                     rng=state.rng,
                     detail_preset=int(detail_preset),
                     violence_disabled=0,
-            )
+                )
             bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
                 state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
             ]
@@ -604,8 +637,6 @@ def player_update(
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
     next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
-    if 0.0 < float(player.weapon.shot_cooldown) < 1e-6:
-        player.weapon.shot_cooldown = 0.0
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
@@ -762,17 +793,14 @@ def player_update(
                 _player_accelerate_move_speed(player, movement_dt)
                 _player_apply_move_speed_caps(player)
                 move = _direction_from_heading_native(float(player.heading))
-                turn_align = (
-                    (float(NATIVE_PI) - float(angle_diff))
-                    * float(speed_multiplier)
-                    * float(_RELATIVE_MOVE_TURN_ALIGN_SCALE)
+                turn_aligned_velocity = _player_turn_aligned_velocity_native(
+                    direction=move,
+                    move_speed=float(player.move_speed),
+                    angle_diff=float(angle_diff),
+                    speed_multiplier=float(speed_multiplier),
                 )
-                move_dx = float(
-                    f32(float(move.x) * float(player.move_speed) * float(turn_align)),
-                )
-                move_dy = float(
-                    f32(float(move.y) * float(player.move_speed) * float(turn_align)),
-                )
+                move_dx = float(turn_aligned_velocity.x)
+                move_dy = float(turn_aligned_velocity.y)
 
             move_delta_override = Vec2(
                 f32(float(movement_dt) * float(move_dx)),
@@ -842,10 +870,12 @@ def player_update(
         creatures=creatures,
     )
 
-    player.move_phase += phase_sign * movement_dt * player.move_speed * 19.0
+    phase_speed_dt = f32(float(movement_dt) * float(player.move_speed))
+    phase_step = f32(float(phase_speed_dt) * 19.0)
+    player.move_phase = f32(float(player.move_phase) + float(phase_sign) * float(phase_step))
 
     move_delta = player.pos - prev_pos
-    reload_stationary = abs(move_delta.x) <= 1e-9 and abs(move_delta.y) <= 1e-9
+    reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0
     if not reload_stationary:
         # Native clears these post-perk-tick timers after movement when position changed.
         player.man_bomb_timer = 0.0
@@ -874,12 +904,7 @@ def player_update(
         preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
 
     reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
-    # Native can complete reload and fire on the same frame when held fire
-    # meets an almost-zero reload boundary. Treat near-zero underflow as
-    # completion for fire-held ticks to avoid a spurious empty-shot reload loop.
-    preload_crossed = reload_preload_underflow < -_RELOAD_PRELOAD_UNDERFLOW_EPS
-    preload_fire_boundary = input_state.fire_down and reload_preload_underflow <= _RELOAD_PRELOAD_UNDERFLOW_EPS
-    if player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary):
+    if player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
         player.weapon.ammo = float(player.weapon.clip_size)
 
     if player.weapon.reload_timer > 0.0:
@@ -1000,9 +1025,9 @@ def player_update(
     )
 
     while player.move_phase > 14.0:
-        player.move_phase -= 14.0
+        player.move_phase = f32(float(player.move_phase) - 14.0)
     while player.move_phase < 0.0:
-        player.move_phase += 14.0
+        player.move_phase = f32(float(player.move_phase) + 14.0)
 
     half_size = max(0.0, float(player.size) * 0.5)
     clamped_pos = player.pos.clamp_rect(

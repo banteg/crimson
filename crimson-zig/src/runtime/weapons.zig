@@ -29,7 +29,6 @@ const PerkId = perks.PerkId;
 
 pub const WeaponRuntimeError = error{};
 
-const reload_preload_underflow_eps: f32 = 1e-7;
 const movement_control_mouse_point_click: i32 = 4;
 
 const MuzzleSpriteSpec = struct {
@@ -177,9 +176,6 @@ pub fn stepPlayerForTickWithEffects(
         @as(f64, @floatCast(player.weapon.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
     );
     player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
-    if (player.weapon.shot_cooldown > 0.0 and player.weapon.shot_cooldown < 1e-6) {
-        player.weapon.shot_cooldown = 0.0;
-    }
 
     const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(player, PerkId.stationary_reloader))
         3.0
@@ -199,9 +195,7 @@ pub fn stepPlayerForTickWithEffects(
         preload_dt = narrowF32(reload_scale * dt);
     }
     const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
-    const preload_crossed = reload_preload_underflow < -reload_preload_underflow_eps;
-    const preload_fire_boundary = input_flags.fire_down and reload_preload_underflow <= reload_preload_underflow_eps;
-    if (player.weapon.reload_active and reload_timer_now > 0.0 and (preload_crossed or preload_fire_boundary)) {
+    if (player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0) {
         player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 
@@ -424,12 +418,16 @@ fn tryFireWeaponWithForce(
     if (shot_count <= 0) return false;
 
     const aim_delta = state_mod.Vec2.sub(player.aim, player.pos);
-    const aim_heading = if (aim_delta.lengthSq() > 1e-9)
-        aim_delta.toHeading()
-    else
-        player.aim_dir.toHeading();
-    const muzzle_dir = rotateVec(directionFromHeading(aim_heading), -0.150915);
-    const muzzle = state_mod.Vec2.add(player.pos, muzzle_dir.mul(16.0));
+    const aim_heading = player.aim_heading;
+    const muzzle_radians = narrowF32(narrowF32(aim_heading - native_math.native_half_pi) - narrowF32(0.150915));
+    const muzzle_offset: state_mod.Vec2 = .{
+        .x = narrowF32(std.math.cos(@as(f64, muzzle_radians)) * 16.0),
+        .y = narrowF32(std.math.sin(@as(f64, muzzle_radians)) * 16.0),
+    };
+    const muzzle: state_mod.Vec2 = .{
+        .x = narrowF32(player.pos.x + muzzle_offset.x),
+        .y = narrowF32(player.pos.y + muzzle_offset.y),
+    };
     // Native encodes friendly fire in the owner id (-1 - player_index): with
     // the cvar enabled, primary player shots can hit other players.
     const projectile_owner = if (state.friendly_fire_enabled)
@@ -437,7 +435,6 @@ fn tryFireWeaponWithForce(
     else
         owner_ref.OwnerRef.fromLocalPlayer(0);
     const projectile_hits_players = state.friendly_fire_enabled;
-    const secondary_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
@@ -469,8 +466,8 @@ fn tryFireWeaponWithForce(
 
     // Native float sequence: half the f32 aim distance is spilled, the
     // spread/magnitude product chain stays in extended precision, the jittered
-    // aim x is spilled while y feeds atan2 unspilled, and the heading is
-    // (float)(atan2(pos - jitter) - 1.5707964).
+    // aim x is spilled, and the y addition rounds in x87's 24-bit precision
+    // mode before atan2. The heading is stored once as float32.
     const half_len: f32 = aim_delta.length() * 0.5;
     const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
@@ -478,10 +475,10 @@ fn tryFireWeaponWithForce(
         @as(f64, @floatFromInt(mag_roll & 0x1ff)) * 0.001953125;
     const dir_angle: f32 = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const aim_jitter_x: f32 = @floatCast(@cos(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.x));
-    const aim_jitter_y: f64 = @sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y);
+    const aim_jitter_y: f32 = @floatCast(@sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y));
     const native_half_pi_f32: f32 = native_math.roundF32(native_math.native_half_pi);
     const shot_angle: f32 = @floatCast(std.math.atan2(
-        @as(f64, player.pos.y) - aim_jitter_y,
+        @as(f64, player.pos.y) - @as(f64, aim_jitter_y),
         @as(f64, player.pos.x) - @as(f64, aim_jitter_x),
     ) - @as(f64, native_half_pi_f32));
     var particle_angle = directionFromHeading(shot_angle).toAngle();
@@ -534,7 +531,7 @@ fn tryFireWeaponWithForce(
                 muzzle,
                 narrowF32(shot_angle),
                 mode.type_id,
-                secondary_owner,
+                projectile_owner,
                 2.0,
                 target_hint,
                 if (target_hint != null) creatures else null,
@@ -595,7 +592,7 @@ fn tryFireWeaponWithForce(
                     muzzle,
                     angle,
                     secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                    secondary_owner,
+                    projectile_owner,
                     2.0,
                     player.aim,
                     creatures,

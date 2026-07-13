@@ -10,7 +10,17 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..math_parity import NATIVE_HALF_PI, NATIVE_TAU, f32, heading_from_delta_f32
+from ..math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_PI,
+    NATIVE_TAU,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ..perks import PerkId
 from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime
@@ -102,6 +112,17 @@ class WeaponFireResult(msgspec.Struct, frozen=True):
     ammo_cost: float = 0.0
 
 
+def _native_muzzle_pos(player_pos: Vec2, aim_heading: float) -> Vec2:
+    radians = x87_pc24_sub(float(aim_heading), NATIVE_HALF_PI)
+    radians = x87_pc24_sub(radians, f32(0.150915))
+    offset_x = x87_pc24_cos_mul(radians, 16.0)
+    offset_y = x87_pc24_sin_mul(radians, 16.0)
+    return Vec2(
+        x87_pc24_add(float(player_pos.x), offset_x),
+        x87_pc24_add(float(player_pos.y), offset_y),
+    )
+
+
 def _spawn_native_fire_muzzle_sprites(
     *,
     state: GameplayState,
@@ -139,8 +160,8 @@ def _native_shot_angle_with_jitter(
     # disc-spread direction and magnitude before the later projectile work.
     # Float sequence per the decompile: half the f32 aim distance is spilled,
     # the spread/magnitude product chain stays in extended precision, the
-    # jittered aim x is spilled while y feeds atan2 unspilled, and the heading
-    # is `(float)(atan2(pos - jitter) - 1.5707964)`.
+    # jittered aim x is spilled and the y addition rounds in x87's 24-bit
+    # precision mode before atan2. The heading is stored once as float32.
     aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
     aim_dy = float(f32(float(aim.y) - float(player_pos.y)))
     dist_sq = float(f32(float(f32(float(aim_dx) * float(aim_dx))) + float(f32(float(aim_dy) * float(aim_dy)))))
@@ -152,7 +173,7 @@ def _native_shot_angle_with_jitter(
     dir_angle = float(f32(dir_draw * float(f32(float(NATIVE_TAU) / 512.0))))
 
     aim_jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim.x)))
-    aim_jitter_y = math.sin(dir_angle) * offset_term + float(aim.y)
+    aim_jitter_y = x87_pc24_add(math.sin(dir_angle) * offset_term, float(aim.y))
 
     return float(
         f32(
@@ -267,10 +288,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
     aim = input_state.aim
-    aim_delta = aim - player.pos
-    aim_heading = float(heading_from_delta_f32(dx=float(aim_delta.x), dy=float(aim_delta.y)))
+    # `player_update` computes and stores aim_heading before entering the fire
+    # branch; later muzzle and presentation math reload that exact float field.
+    aim_heading = float(f32(player.aim_heading))
 
-    muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle = _native_muzzle_pos(player.pos, aim_heading)
     weapon_flags = int(weapon.flags or 0)
     if weapon_flags & 0x1:
         # Native gameplay fire uses four exact `player_update` RNG sites for
@@ -389,7 +411,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=shot_angle,
                     type_id=type_id,
-                    owner=owner,
+                    owner=projectile_owner,
                     target_hint=target_hint,
                     creatures=spawn_creatures,
                     preserve_bugs=bool(state.preserve_bugs),
@@ -440,11 +462,15 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             # (reachable via Regression Bullets / Ammunition Within).
             clip_ammo = float(player.weapon.ammo)
             rocket_count = math.ceil(clip_ammo) if clip_ammo > 0.0 else 0
-            if bool(state.preserve_bugs):
-                # Native bug: step scales by ammo (`ammo * pi/3`), which aliases to identical headings
-                # for some clip sizes (e.g. 6 rockets), causing visible clumping.
-                step = clip_ammo * (math.pi / 3.0)
-                angle = (shot_angle - math.pi) - step * clip_ammo * 0.5
+            preserve_swarmer_bug = bool(state.preserve_bugs)
+            if preserve_swarmer_bug:
+                # Native bug: step scales by ammo (`ammo * pi/3`), which aliases
+                # to near-identical headings for common clip sizes.
+                step = x87_pc24_mul(clip_ammo, f32(1.0471976))
+                angle = x87_pc24_sub(
+                    x87_pc24_sub(shot_angle, NATIVE_PI),
+                    x87_pc24_mul(x87_pc24_mul(step, clip_ammo), 0.5),
+                )
             else:
                 spread = math.pi * (2.0 / 3.0)
                 step = 0.0 if rocket_count <= 1 else spread / float(rocket_count - 1)
@@ -455,13 +481,13 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                         pos=muzzle,
                         angle=angle,
                         type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-                        owner=owner,
+                        owner=projectile_owner,
                         target_hint=aim,
                         creatures=creatures,
                         preserve_bugs=bool(state.preserve_bugs),
                     ),
                 )
-                angle += step
+                angle = x87_pc24_add(angle, step) if preserve_swarmer_bug else angle + step
             # Native subtracts the full clip value, zeroing the ammo even when
             # the clip was fractional or negative.
             ammo_cost = clip_ammo

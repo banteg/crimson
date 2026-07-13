@@ -8,7 +8,6 @@ from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.factories import make_creature_update_options
-from tests.support.helpers import assert_float_close
 
 
 def test_toxic_avenger_sets_strong_self_damage_flags_on_contact_hit() -> None:
@@ -47,7 +46,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
 
     pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
 
-    assert_float_close(creature.hp, 100.0 - float(f32(float(dt))) * 180.0)
+    assert creature.hp == f32(100.0 - float(f32(float(dt))) * 180.0)
 
 
 def test_toxic_avenger_skips_when_player_shielded() -> None:

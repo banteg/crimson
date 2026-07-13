@@ -58,6 +58,12 @@ _ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
 _TRACE_CHUNK_TICKS = 256
 
 
+def _trace_f32(value: float | int) -> float:
+    """Return the canonical f32 value stored by every CDT producer."""
+
+    return float(f32(float(value)))
+
+
 class _EntityGenerationState(msgspec.Struct):
     generation_by_index: dict[int, int] = msgspec.field(default_factory=dict)
     active_indices: set[int] = msgspec.field(default_factory=set)
@@ -161,27 +167,27 @@ def _entity_samples_for_world(
                 index=index,
                 active=True,
                 type_id=int(creature.type_id),
-                hp=float(creature.hp),
-                pos=SnapshotVec2(x=float(creature.pos.x), y=float(creature.pos.y)),
+                hp=_trace_f32(creature.hp),
+                pos=SnapshotVec2(x=_trace_f32(creature.pos.x), y=_trace_f32(creature.pos.y)),
                 flags=int(creature.flags),
                 ai_mode=int(creature.ai_mode),
                 link_index=int(creature.link_index),
                 force_target=int(creature.force_target),
-                target=SnapshotVec2(x=float(creature.target.x), y=float(creature.target.y)),
+                target=SnapshotVec2(x=_trace_f32(creature.target.x), y=_trace_f32(creature.target.y)),
                 target_player=int(creature.target_player),
                 target_offset=SnapshotVec2(
-                    x=0.0 if target_offset is None else float(target_offset.x),
-                    y=0.0 if target_offset is None else float(target_offset.y),
+                    x=0.0 if target_offset is None else _trace_f32(target_offset.x),
+                    y=0.0 if target_offset is None else _trace_f32(target_offset.y),
                 ),
-                heading=float(creature.heading),
-                target_heading=float(creature.target_heading),
-                collision_timer=float(creature.collision_timer),
-                attack_cooldown=float(creature.attack_cooldown),
-                orbit_angle=float(creature.orbit_angle),
-                orbit_radius=float(creature.orbit_radius),
-                lifecycle_stage=float(creature.lifecycle_stage),
-                vel=SnapshotVec2(x=float(creature.vel.x), y=float(creature.vel.y)),
-                move_speed=float(creature.move_speed),
+                heading=_trace_f32(creature.heading),
+                target_heading=_trace_f32(creature.target_heading),
+                collision_timer=_trace_f32(creature.collision_timer),
+                attack_cooldown=_trace_f32(creature.attack_cooldown),
+                orbit_angle=_trace_f32(creature.orbit_angle),
+                orbit_radius=_trace_f32(creature.orbit_radius),
+                lifecycle_stage=_trace_f32(creature.lifecycle_stage),
+                vel=SnapshotVec2(x=_trace_f32(creature.vel.x), y=_trace_f32(creature.vel.y)),
+                move_speed=_trace_f32(creature.move_speed),
             ),
         )
 
@@ -198,14 +204,14 @@ def _entity_samples_for_world(
                 index=index,
                 active=True,
                 type_id=int(projectile.type_id),
-                angle=float(projectile.angle),
-                pos=SnapshotVec2(x=float(projectile.pos.x), y=float(projectile.pos.y)),
-                vel=SnapshotVec2(x=float(projectile.vel.x), y=float(projectile.vel.y)),
-                life_timer=float(projectile.life_timer),
-                speed_scale=float(projectile.speed_scale),
-                damage_pool=float(projectile.damage_pool),
-                hit_radius=float(projectile.hit_radius),
-                travel_budget=float(projectile.travel_budget),
+                angle=_trace_f32(projectile.angle),
+                pos=SnapshotVec2(x=_trace_f32(projectile.pos.x), y=_trace_f32(projectile.pos.y)),
+                vel=SnapshotVec2(x=_trace_f32(projectile.vel.x), y=_trace_f32(projectile.vel.y)),
+                life_timer=_trace_f32(projectile.life_timer),
+                speed_scale=_trace_f32(projectile.speed_scale),
+                damage_pool=_trace_f32(projectile.damage_pool),
+                hit_radius=_trace_f32(projectile.hit_radius),
+                travel_budget=_trace_f32(projectile.travel_budget),
                 owner_id=int(projectile.owner.to_legacy()),
             ),
         )
@@ -223,11 +229,11 @@ def _entity_samples_for_world(
                 index=index,
                 active=True,
                 type_id=int(projectile.type_id),
-                angle=float(projectile.angle),
-                pos=SnapshotVec2(x=float(projectile.pos.x), y=float(projectile.pos.y)),
-                vel=SnapshotVec2(x=float(projectile.vel.x), y=float(projectile.vel.y)),
-                speed=float(projectile.speed),
-                trail_timer=float(projectile.trail_timer),
+                angle=_trace_f32(projectile.angle),
+                pos=SnapshotVec2(x=_trace_f32(projectile.pos.x), y=_trace_f32(projectile.pos.y)),
+                vel=SnapshotVec2(x=_trace_f32(projectile.vel.x), y=_trace_f32(projectile.vel.y)),
+                speed=_trace_f32(projectile.speed),
+                trail_timer=_trace_f32(projectile.trail_timer),
                 owner_id=int(projectile.owner.to_legacy()),
                 target_id=int(projectile.target_id),
             ),
@@ -247,9 +253,9 @@ def _entity_samples_for_world(
                 active=True,
                 bonus_id=int(bonus.bonus_id),
                 picked=bool(bonus.picked),
-                time_left=float(bonus.time_left),
-                time_max=float(bonus.time_max),
-                pos=SnapshotVec2(x=float(bonus.pos.x), y=float(bonus.pos.y)),
+                time_left=_trace_f32(bonus.time_left),
+                time_max=_trace_f32(bonus.time_max),
+                pos=SnapshotVec2(x=_trace_f32(bonus.pos.x), y=_trace_f32(bonus.pos.y)),
                 amount=int(bonus.amount),
             ),
         )
@@ -274,21 +280,21 @@ def _sim_state_from_world(world: WorldState, *, replay: Replay) -> SimStateSnaps
         players.append(
             SnapshotPlayer(
                 index=int(player.index),
-                pos=SnapshotVec2(x=float(player.pos.x), y=float(player.pos.y)),
-                heading=float(player.heading),
-                move_speed=float(player.move_speed),
-                move_phase=float(player.move_phase),
-                aim=SnapshotVec2(x=float(player.aim.x), y=float(player.aim.y)),
-                aim_heading=float(player.aim_heading),
-                health=float(player.health),
+                pos=SnapshotVec2(x=_trace_f32(player.pos.x), y=_trace_f32(player.pos.y)),
+                heading=_trace_f32(player.heading),
+                move_speed=_trace_f32(player.move_speed),
+                move_phase=_trace_f32(player.move_phase),
+                aim=SnapshotVec2(x=_trace_f32(player.aim.x), y=_trace_f32(player.aim.y)),
+                aim_heading=_trace_f32(player.aim_heading),
+                health=_trace_f32(player.health),
                 weapon=SnapshotWeapon(
                     weapon_id=int(player.weapon.weapon_id),
-                    ammo=float(player.weapon.ammo),
+                    ammo=_trace_f32(player.weapon.ammo),
                     clip_size=int(player.weapon.clip_size),
                     reload_active=bool(player.weapon.reload_active),
-                    reload_timer=float(player.weapon.reload_timer),
-                    reload_timer_max=float(player.weapon.reload_timer_max),
-                    shot_cooldown=float(player.weapon.shot_cooldown),
+                    reload_timer=_trace_f32(player.weapon.reload_timer),
+                    reload_timer_max=_trace_f32(player.weapon.reload_timer_max),
+                    shot_cooldown=_trace_f32(player.weapon.shot_cooldown),
                 ),
                 experience=int(player.experience),
                 level=int(player.level),
@@ -364,18 +370,18 @@ def _timing_samples_for_tick(
             gameplay_frame=int(tick_index),
             phase="gpur_enter",
             write_kind="snapshot",
-            frame_dt_f32=float(f32(float(dt))),
+            frame_dt_f32=_trace_f32(dt),
             frame_dt_ms_i32=int(dt_ms_i32),
-            frame_dt_ms_f32=float(dt_ms_i32),
+            frame_dt_ms_f32=_trace_f32(dt_ms_i32),
             time_scale_active_entry=active,
             time_scale_active_current=active,
-            time_scale_factor=float(
+            time_scale_factor=_trace_f32(
                 time_scale_reflex_boost_factor(
                     reflex_boost_timer=reflex_boost_timer,
                     time_scale_active=active,
                 ),
             ),
-            bonus_reflex_boost_timer=reflex_boost_timer,
+            bonus_reflex_boost_timer=_trace_f32(reflex_boost_timer),
             mode_fn="gameplay_update_and_render",
             player_index=None,
         ),
@@ -490,13 +496,13 @@ def _record_replay_to_trace_python(
 
         channels = ReplayTickChannels(
             replay_step=ReplayStepSnapshot(
-                dt=float(f32(float(replay.ticks[tick_index].dt))),
+                dt=_trace_f32(replay.ticks[tick_index].dt),
                 inputs=[
                     ReplayInputSample(
-                        move_x=float(f32(float(packed[0]))),
-                        move_y=float(f32(float(packed[1]))),
-                        aim_x=float(f32(float(packed[2]))),
-                        aim_y=float(f32(float(packed[3]))),
+                        move_x=_trace_f32(packed[0]),
+                        move_y=_trace_f32(packed[1]),
+                        aim_x=_trace_f32(packed[2]),
+                        aim_y=_trace_f32(packed[3]),
                         flags=int(packed[4]),
                     )
                     for packed in replay.ticks[tick_index].inputs

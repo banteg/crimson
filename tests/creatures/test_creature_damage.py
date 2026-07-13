@@ -110,7 +110,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     )
 
     assert killed is True
-    assert_float_close(creature.hp, -131.92474)
+    assert creature.hp == -131.92474365234375
 
 
 def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:

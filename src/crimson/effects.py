@@ -877,16 +877,20 @@ class EffectPool:
         lifetime: float = 0.5,
         scale_step: float | None = None,
         color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
+        rotation_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION,
+        vel_x_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X,
+        vel_y_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y,
+        scale_step_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP,
     ) -> None:
         """Port of `effect_spawn_burst` (0x0042ef60)."""
 
         count = max(0, int(count))
         for _ in range(count):
-            r0 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION)
-            r1 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X)
-            r2 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y)
+            r0 = rng.rand_tagged(rotation_caller)
+            r1 = rng.rand_tagged(vel_x_caller)
+            r2 = rng.rand_tagged(vel_y_caller)
             if scale_step is None:
-                r3 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP)
+                r3 = rng.rand_tagged(scale_step_caller)
                 sampled_scale_step: int | None = r3
             else:
                 sampled_scale_step = None

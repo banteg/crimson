@@ -144,6 +144,18 @@ def test_angle_approach_wraps_tau_boundary_like_native_capture() -> None:
     assert_float_close(angle, -0.3199995458126068)
 
 
+def test_creature_movement_heading_subtraction_uses_native_f32_store() -> None:
+    delta = creature_runtime._movement_delta_from_heading_f32(
+        0.49451950192451477,
+        dt=0.03400000184774399,
+        move_scale=1.0,
+        move_speed=1.1699999570846558,
+    )
+
+    assert delta.x == 0.566398024559021
+    assert delta.y == -1.0504270792007446
+
+
 def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     state = GameplayState()
     env = SpawnEnv(
@@ -1407,6 +1419,32 @@ def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     assert_float_close(pool.entries[idx].target_heading, 2.5632283687591553)
 
 
+def test_spawn_init_preserves_stale_target_from_recycled_slot() -> None:
+    pool = CreaturePool()
+    pool.entries[0].target = Vec2(7.0, 8.0)
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0x75,
+            pos=Vec2(-40.0, 272.0),
+            heading=3.07,
+            phase_seed=0.0,
+            type_id=CreatureTypeId.SPIDER_SP1,
+            flags=CreatureFlags.AI7_LINK_TIMER,
+            ai_mode=0,
+            health=61.0,
+            max_health=61.0,
+            move_speed=1.17,
+            reward_value=0.0,
+            size=56.0,
+            contact_damage=5.0,
+        ),
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].target == Vec2(7.0, 8.0)
+
+
 def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
     pool = CreaturePool()
     pool.entries[0].link_index = -1
@@ -1525,7 +1563,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     corpse.lifecycle_stage = 12.640003204345703
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
-    # 38 ms frame from gameplay_diff_capture tick 3636.
+    # Captured 38 ms self-damage boundary.
     pool.update(
         0.03800000250339508,
         options=make_creature_update_options(
@@ -1537,6 +1575,26 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
+
+
+def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
+    pool = CreaturePool()
+    corpse = pool.entries[4]
+    corpse.active = True
+    corpse.hp = -42.440147399902344
+    corpse.lifecycle_stage = 15.908000946044922
+    corpse.heading = 6.330781936645508
+
+    pool._tick_dead(
+        corpse,
+        dt=0.05900000408291817,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue_rotated=None,
+    )
+
+    assert corpse.lifecycle_stage == 14.256000518798828
+    assert corpse.vel == Vec2(0.3601662218570709, -7.56136417388916)
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:

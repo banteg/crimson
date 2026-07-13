@@ -3,8 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.bonuses import BonusId
+from crimson.bonuses.pickup_fx import emit_bonus_pickup_effects
+from crimson.gameplay import GameplayState
+from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from grim.geom import Vec2
+from tests.support.helpers import ScriptedCrand
 from tests.support.world_runtime import WorldRuntimeHost
+
+
+def test_bonus_pickup_burst_tags_inlined_native_callers() -> None:
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
+
+    emit_bonus_pickup_effects(
+        state=state,
+        pickups=[BonusPickupEvent(player_index=0, bonus_id=BonusId.POINTS, amount=1, pos=Vec2())],
+        detail_preset=5,
+    )
+
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
+        RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
+    ] * 12
 
 
 def test_bonus_pickup_spawns_burst_effect() -> None:
@@ -54,10 +76,28 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     assert {effect.effect_id for effect in active} == {0}
 
 
-def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
-    from crimson.gameplay import GameplayState
-    from crimson.sim.state_types import PlayerState
+def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
+    state = GameplayState()
+    entry = state.bonus_pool.spawn_at(
+        pos=Vec2(100.0, 100.0),
+        bonus_id=BonusId.POINTS,
+        state=state,
+        emit_burst=False,
+    )
+    assert entry is not None
+    entry.time_left = 9.85200023651123
 
+    state.bonus_pool.update(
+        0.04400000348687172,
+        state=state,
+        players=[PlayerState(index=0, pos=Vec2(500.0, 500.0))],
+        creatures=[],
+    )
+
+    assert entry.time_left == 9.808000564575195
+
+
+def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
     state = GameplayState()
     entry = state.bonus_pool.spawn_at(
         pos=Vec2(500.0, 500.0),

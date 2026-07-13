@@ -20,6 +20,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
+    player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS, state=state)
@@ -46,7 +47,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
     spread = math.pi * (2.0 / 3.0)
     step = spread / float(player.weapon.clip_size - 1)
-    expected0 = float(shot_angle) - spread * 0.5
-    expected1 = float(shot_angle) - spread * 0.5 + step
+    expected0 = f32(float(shot_angle) - spread * 0.5)
+    expected1 = f32(float(shot_angle) - spread * 0.5 + step)
     assert_float_close(spawned[0].angle, expected0)
     assert_float_close(spawned[1].angle, expected1)

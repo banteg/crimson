@@ -92,11 +92,20 @@ pub const SecondaryProjectilePool = struct {
             return index;
         }
 
-        var base_speed: f32 = 90.0;
+        const radians = narrowF32(entry.angle - native_math.native_half_pi);
+        const cos_ext = std.math.cos(@as(f64, radians));
+        const sin_ext = std.math.sin(@as(f64, radians));
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
-            base_speed = 190.0;
+            entry.vel = .{
+                .x = narrowF32(narrowF32(cos_ext) * 190.0),
+                .y = narrowF32(narrowF32(sin_ext) * 190.0),
+            };
+        } else {
+            entry.vel = .{
+                .x = narrowF32(cos_ext * 90.0),
+                .y = narrowF32(sin_ext * 90.0),
+            };
         }
-        entry.vel = runtime_helpers.directionFromHeading(entry.angle).mul(base_speed);
         entry.speed = time_to_live;
 
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
@@ -295,29 +304,25 @@ pub const SecondaryProjectilePool = struct {
 
                 if (target_id >= 0 and target_id < creatures.entries.len) {
                     const target = creatures.entries[@intCast(target_id)];
-                    // Native steering: angle = atan2(pos - target) kept in
-                    // extended precision; the stored f32 angle is atan - pi/2.
-                    // vel_x adds cos((atan - pi/2) - pi/2) from the extended
-                    // angle; vel_y (and the over-cap subtraction for both
-                    // components) recompute from the stored f32 angle, so the
-                    // add-then-subtract is not an exact identity.
-                    const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
-                    const atan_ext: f64 = std.math.atan2(
-                        @as(f64, entry.pos.y) - @as(f64, target.pos.y),
-                        @as(f64, entry.pos.x) - @as(f64, target.pos.x),
-                    );
-                    entry.angle = @floatCast(atan_ext - @as(f64, half_pi));
-                    const accel_scale: f64 = @as(f64, dt_f32) * 800.0;
+                    const half_pi: f32 = native_math.native_half_pi;
+                    const dy = narrowF32(entry.pos.y - target.pos.y);
+                    const dx = narrowF32(entry.pos.x - target.pos.x);
+                    const atan_ext = native_math.fpatan(dy, dx);
+                    entry.angle = narrowF32(atan_ext - @as(f64, half_pi));
+                    const heading = narrowF32(entry.angle - half_pi);
+                    const accel_x_dt = narrowF32(std.math.cos(@as(f64, heading)) * @as(f64, dt_f32));
+                    const accel_y_dt = narrowF32(std.math.sin(@as(f64, heading)) * @as(f64, dt_f32));
+                    const accel_x = narrowF32(accel_x_dt * 800.0);
+                    const accel_y = narrowF32(accel_y_dt * 800.0);
                     entry.vel = .{
-                        .x = @floatCast(@cos(atan_ext - @as(f64, half_pi) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.x)),
-                        .y = @floatCast(@sin(@as(f64, entry.angle) - @as(f64, half_pi)) * accel_scale + @as(f64, entry.vel.y)),
+                        .x = narrowF32(entry.vel.x + accel_x),
+                        .y = narrowF32(entry.vel.y + accel_y),
                     };
                     const speed_after = @sqrt(@as(f64, entry.vel.x) * @as(f64, entry.vel.x) + @as(f64, entry.vel.y) * @as(f64, entry.vel.y));
                     if (speed_after > 350.0) {
-                        const heading: f64 = @as(f64, entry.angle) - @as(f64, half_pi);
                         entry.vel = .{
-                            .x = @floatCast(@as(f64, entry.vel.x) - @cos(heading) * accel_scale),
-                            .y = @floatCast(@as(f64, entry.vel.y) - @sin(heading) * accel_scale),
+                            .x = narrowF32(entry.vel.x - accel_x),
+                            .y = narrowF32(entry.vel.y - accel_y),
                         };
                     }
                 }
@@ -556,4 +561,20 @@ fn creatureFindNearestAlive(
         }
     }
     return best_idx;
+}
+
+test "homing rocket spawn preserves native trig store order" {
+    var pool: SecondaryProjectilePool = .{};
+    const index = pool.spawn(
+        .{ .x = 152.47727966308594, .y = 941.5100708007812 },
+        -4.161045551300049,
+        .homing_rocket,
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        2.0,
+        null,
+        null,
+    );
+
+    try std.testing.expectEqual(@as(f32, 161.8461151123047), pool.entries[index].vel.x);
+    try std.testing.expectEqual(@as(f32, 99.52806091308594), pool.entries[index].vel.y);
 }

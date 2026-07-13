@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
-from crimson.math_parity import NATIVE_HALF_PI, f32, heading_from_delta_f32
+from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.owner_ref import OwnerRef
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -13,6 +13,7 @@ from crimson.weapon_runtime import (
     fire_weapon,
     weapon_assign_player,
 )
+from crimson.weapon_runtime.fire import _native_muzzle_pos
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.factories import RecordingCreatureDamageRuntime
@@ -31,6 +32,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         state = GameplayState(rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
         player = PlayerState(index=0, pos=Vec2())
         player.aim_dir = Vec2(1.0, 0.0)
+        player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
         player.spread_heat = 0.0
 
         weapon_assign_player(player, weapon_id, state=state)
@@ -55,7 +57,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
             expected_shot_angle = float(f32(math.atan2(0.0, -200.0) - float(NATIVE_HALF_PI)))
         else:
             # Flamethrower-family particles use the raw aim heading.
-            expected_shot_angle = float(heading_from_delta_f32(dx=200.0, dy=0.0))
+            expected_shot_angle = float(player.aim_heading)
         expected_angle = Vec2.from_heading(expected_shot_angle).to_angle()
         assert_float_close(float(particles[0].angle), expected_angle)
 
@@ -70,6 +72,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(0.0, 1.0)
+    player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
@@ -89,10 +92,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     assert len(particles) == 1
     particle = particles[0]
 
-    aim_heading = float(
-        heading_from_delta_f32(dx=float(aim_x) - float(player.pos.x), dy=float(aim_y) - float(player.pos.y)),
-    )
-    expected_muzzle = player.pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    expected_muzzle = _native_muzzle_pos(player.pos, player.aim_heading)
 
     assert_float_close(float(particle.pos.x), float(expected_muzzle.x))
     assert_float_close(float(particle.pos.y), float(expected_muzzle.y))
@@ -107,6 +107,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     state = GameplayState(rng=ScriptedCrand([128, 511, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
+    player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.48
 
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
@@ -134,9 +135,7 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     jittered_angle = math.atan2(aim_jitter_y - float(player.pos.y), aim_jitter_x - float(player.pos.x))
 
     assert jittered_angle > 0.1
-    expected_angle = Vec2.from_heading(
-        float(heading_from_delta_f32(dx=float(aim_x) - float(player.pos.x), dy=float(aim_y) - float(player.pos.y))),
-    ).to_angle()
+    expected_angle = Vec2.from_heading(float(player.aim_heading)).to_angle()
     assert_float_close(float(particle.angle), expected_angle)
     assert abs(float(particle.angle) - jittered_angle) > 0.1
 
@@ -145,6 +144,7 @@ def test_particle_hits_damage_creatures() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
+    player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
@@ -176,6 +176,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
+    player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.BUBBLEGUN, state=state)

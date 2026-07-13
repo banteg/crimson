@@ -87,6 +87,12 @@ menus and prior startup work may already have consumed draws. The capture
 latches the real CRT state immediately before the run's first terrain draw and
 writes it as `rng_state_at_run_setup`.
 
+The state-transition frame consumes a discarded shared-CRT draw at `0x0040cac7`
+after that setup window and before gameplay tick 0. The agent records it as a
+tick-0 replay prelude burn. Finalization cross-checks the exhaustive outside-RNG
+state chain and canonicalizes the CDT and CRD prelude together, so a missing
+agent-side prelude row cannot silently shift every gameplay RNG result.
+
 Finalization uses that value for `ReplayHeader.seed` and records
 `run_start_seed_source = "run_setup_rng_state"` in CDT metadata. It also copies
 captured creature-pool residue to `ReplayHeader.initial_creature_pool`. Together

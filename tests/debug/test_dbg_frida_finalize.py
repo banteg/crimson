@@ -1277,7 +1277,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
-            _session_start_row(capture_format_version=18),
+            _session_start_row(capture_format_version=CAPTURE_FORMAT_VERSION - 1),
             _run_start_row(run_id=1, mode_id=3, seed=91, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
@@ -1294,7 +1294,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=18; expected 19"):
+    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=19; expected 20"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -2136,6 +2136,45 @@ def test_finalize_frida_jsonl_to_traces_seeds_replay_from_run_setup_rng_state(tm
     meta, _ticks, _footer = load_trace(result.traces[0].out_path)
     assert meta.source.seed == 999
     assert meta.source.run_start_seed_source == "run_setup_rng_state"
+
+
+def test_finalize_frida_jsonl_to_traces_recovers_first_tick_frame_rng_burn(tmp_path: Path) -> None:
+    seed = 100
+    setup_after = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    frame_after = (setup_after * 214013 + 2531011) & 0xFFFFFFFF
+    rows = _single_tick_rows(
+        run_start=_run_start_row(run_id=1, mode_id=1, rng_state_at_run_setup=seed),
+        tick_overrides={
+            "rng_state_enter_u32": frame_after,
+            "rng_state_leave_u32": frame_after,
+            "rng_outside_before": _rng_outside_bag_stub(
+                calls=2,
+                caller_counts={"0x004181cc": 1, "0x0040cac7": 1},
+                head=[
+                    {
+                        "state_before_u32": seed,
+                        "state_after_u32": setup_after,
+                        "value_15": (setup_after >> 16) & 0x7FFF,
+                        "caller_static": "0x004181cc",
+                    },
+                    {
+                        "state_before_u32": setup_after,
+                        "state_after_u32": frame_after,
+                        "value_15": (frame_after >> 16) & 0x7FFF,
+                        "caller_static": "0x0040cac7",
+                    },
+                ],
+            ),
+        },
+    )
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    replay = load_replay_file(result.traces[0].replay_path)
+    _meta, ticks, _footer = load_trace(result.traces[0].out_path)
+    assert replay.ticks[0].prelude == [RngBurnOperation(draws=1)]
+    assert ticks[0].channels.replay_step.prelude == replay.ticks[0].prelude
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_missing_run_setup_rng_state(tmp_path: Path) -> None:

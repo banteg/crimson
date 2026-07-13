@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import math
+
 from crimson.gameplay import GameplayState
+from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime.fire import WeaponFireCtx, fire_weapon
@@ -13,6 +16,7 @@ def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[floa
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
+        aim_heading=f32(math.atan2(0.0, -100.0) - NATIVE_HALF_PI),
         weapon=WeaponSlot(
             weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
             clip_size=int(ammo),
@@ -47,8 +51,14 @@ def test_mini_rocket_swarmer_clumping_bug_is_fixed_by_default() -> None:
 
 def test_mini_rocket_swarmer_clumping_bug_can_be_preserved() -> None:
     headings = _spawn_swarmer_burst(preserve_bugs=True, ammo=6.0)
-    assert len(headings) == 6
-    assert len(set(headings)) == 1
+    assert headings == [
+        (-1.0, 0.000001),
+        (-1.0, 0.0),
+        (-1.0, -0.0),
+        (-1.0, -0.0),
+        (-1.0, -0.0),
+        (-1.0, -0.000001),
+    ]
 
 
 def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:

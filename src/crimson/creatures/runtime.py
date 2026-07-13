@@ -37,7 +37,9 @@ from ..math_parity import (
     f32,
     f32_vec2,
     heading_add_pi_f32,
-    heading_to_direction_f32,
+    x87_pc24_cos_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
 )
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
@@ -184,19 +186,12 @@ def _movement_delta_from_heading_f32(
     # precision internally, so their rounding lands in the first multiply
     # (`creature_update_all` 0x426dab..0x426de6, validated against v14 capture
     # vel channels: 164/166 walker ticks reproduce bit-exactly).
-    radians = float(f32(heading)) - NATIVE_HALF_PI
+    radians = x87_pc24_sub(float(f32(heading)), NATIVE_HALF_PI)
 
     # Preserve native multiply order:
     # `vel = trig(heading - half_pi) * frame_dt * move_scale * move_speed * 30.0`
-    vx = f32(math.cos(radians) * float(dt))
-    vx = f32(vx * float(move_scale))
-    vx = f32(vx * float(move_speed))
-    vx = f32(vx * float(CREATURE_SPEED_SCALE))
-
-    vy = f32(math.sin(radians) * float(dt))
-    vy = f32(vy * float(move_scale))
-    vy = f32(vy * float(move_speed))
-    vy = f32(vy * float(CREATURE_SPEED_SCALE))
+    vx = x87_pc24_cos_mul(radians, float(dt), float(move_scale), float(move_speed), float(CREATURE_SPEED_SCALE))
+    vy = x87_pc24_sin_mul(radians, float(dt), float(move_scale), float(move_speed), float(CREATURE_SPEED_SCALE))
 
     return Vec2(vx, vy)
 
@@ -350,7 +345,7 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
             detail_preset=int(ctx.detail_preset),
             fx_queue=ctx.fx_queue,
             deaths=ctx.deaths,
-            )
+        )
 
 
 class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
@@ -1333,8 +1328,7 @@ class CreaturePool:
                         )
                         sfx.append(SfxId.PLASMAMINIGUN_FIRE)
                         creature.attack_cooldown = (
-                            float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3)
-                            * 0.1
+                            float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3) * 0.1
                             + float(creature.orbit_angle)
                             + float(creature.attack_cooldown)
                         )
@@ -1452,9 +1446,7 @@ class CreaturePool:
                     rng=rng,
                     detail_preset=int(detail_preset),
                 )
-            angle = (
-                float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
-            )
+            angle = float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612) * 0.01
             state.effects.spawn_freeze_shatter(
                 pos=creature_pos,
                 angle=angle,
@@ -1477,7 +1469,6 @@ class CreaturePool:
             # the recycled slot (capture lifecycle shows added entries retaining
             # prior target_heading values).
             entry.heading = f32(float(init.heading))
-        entry.target = f32_vec2(init.pos)
         entry.phase_seed = f32(float(init.phase_seed))
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
@@ -1576,13 +1567,25 @@ class CreaturePool:
         creature.lifecycle_stage = f32(new_hitbox)
         if new_hitbox > 0.0:
             if long_strip:
-                # Match float-local multiply chain in `creature_update_all`:
-                # slide = (float)((float)(hitbox * dt) * 9.0f)
-                slide = f32(f32(float(new_hitbox) * float(dt_f32)) * f32(CREATURE_DEATH_SLIDE_SCALE))
-                direction = heading_to_direction_f32(float(creature.heading))
+                # Preserve native x87 operation order for the death-slide
+                # velocity: trig * lifecycle * frame_dt * 9, narrowing after
+                # each multiply in the game's 24-bit precision mode.
+                radians = x87_pc24_sub(float(f32(creature.heading)), NATIVE_HALF_PI)
+                vel_x = x87_pc24_cos_mul(
+                    radians,
+                    float(new_hitbox),
+                    float(dt_f32),
+                    f32(CREATURE_DEATH_SLIDE_SCALE),
+                )
+                vel_y = x87_pc24_sin_mul(
+                    radians,
+                    float(new_hitbox),
+                    float(dt_f32),
+                    f32(CREATURE_DEATH_SLIDE_SCALE),
+                )
                 creature.vel = Vec2(
-                    f32(float(direction.x) * float(slide)),
-                    f32(float(direction.y) * float(slide)),
+                    vel_x,
+                    vel_y,
                 )
                 creature.pos = Vec2(
                     f32(float(creature.pos.x) - float(creature.vel.x)),

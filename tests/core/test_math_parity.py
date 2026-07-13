@@ -10,6 +10,11 @@ from crimson.math_parity import (
     heading_add_pi_f32,
     heading_from_delta_f32,
     heading_to_direction_f32,
+    x87_fpatan,
+    x87_pc24_cos_mul,
+    x87_pc24_mul_chain,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
 )
 from tests.support.helpers import assert_float_close
 
@@ -58,3 +63,27 @@ def test_heading_to_direction_matches_native_heading_basis() -> None:
     assert_float_close(direction.y, 0.0)
     assert direction.x == f32(direction.x)
     assert direction.y == f32(direction.y)
+
+
+def test_heading_to_direction_rounds_angle_subtraction_before_trig() -> None:
+    direction = heading_to_direction_f32(6.330781936645508)
+
+    assert direction.x == 0.04757849872112274
+    assert direction.y == -0.9988675117492676
+
+
+def test_x87_pc24_helpers_preserve_operation_order() -> None:
+    radians = x87_pc24_sub(6.330781936645508, NATIVE_HALF_PI)
+
+    assert radians == 4.759985446929932
+    assert x87_pc24_cos_mul(radians, 14.256000518798828, 0.05900000408291817, 9.0) == 0.3601662218570709
+    assert x87_pc24_sin_mul(radians, 14.256000518798828, 0.05900000408291817, 9.0) == -7.56136417388916
+    assert x87_pc24_mul_chain(-0.7071233067741324, 2.0, 3.1415627002716064, 2.0, 7.957746982574463) == -70.7116470336914
+
+
+def test_x87_fpatan_uses_pc24_rounded_input_arithmetic() -> None:
+    dy = x87_pc24_sub(868.6661376953125, 597.0)
+    dx = x87_pc24_sub(275.0183410644531, 821.0)
+    atan = x87_fpatan(dy, dx)
+
+    assert x87_pc24_sub(atan, NATIVE_HALF_PI) == 1.1090916395187378

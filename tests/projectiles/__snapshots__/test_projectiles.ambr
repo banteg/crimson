@@ -80,7 +80,7 @@
 # name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
   dict({
     'creature_hp': list([
-      44.532257,
+      44.532261,
     ]),
     'hits': list([
       dict({
@@ -170,12 +170,12 @@
 # name: test_secondary_projectile_impulse_callbacks_snapshot
   list([
     dict({
-      'damage': 594.999999,
+      'damage': 595.0,
       'damage_type': 3,
       'idx': 0,
       'impulse': list([
-        0.0,
-        -1169.999924,
+        -5.1e-05,
+        -1169.999878,
       ]),
       'owner': dict({
         'index': 0,
@@ -213,8 +213,8 @@
       'trail_timer': 0.0,
       'type_id': 3,
       'vel': list([
-        0.0,
-        0.0,
+        0.3,
+        1.0,
       ]),
     }),
     'fx_count': 0,
@@ -234,14 +234,14 @@
       'detonation_scale': 1.0,
       'detonation_t': 0.0,
       'pos': list([
-        0.0,
+        -0.0,
         -1.9,
       ]),
       'target_id': 1,
       'trail_timer': 0.06,
       'type_id': 2,
       'vel': list([
-        7.999986,
+        7.999978,
         -189.984802,
       ]),
     }),
