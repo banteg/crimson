@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**60/2161** functions matched, **8590/675651** code bytes (**1.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**61/2161** functions matched, **8743/675651** code bytes (**1.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 19/1175 | 2494/289897 | 0.9% | 19/19 |
+| grim.dll | 20/1175 | 2647/289897 | 0.9% | 20/20 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**19/1175** functions, **2494/289897** bytes (**0.9%**), **19/19** scratches verified.
+**20/1175** functions, **2647/289897** bytes (**0.9%**), **20/20** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -97,6 +97,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_set_uv | 0x10008350 | 74 | 17/17 | 100.00% | 17/17 | 8/0/0 |  | grim2d-uv-rectangle |
 | match | grim_set_uv_point | 0x100083a0 | 29 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | grim2d-uv-point |
 | match | grim_flush_batch | 0x100083c0 | 107 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | grim2d-batch-lifecycle |
+| match | grim_submit_vertices_offset | 0x10008680 | 153 | 50/50 | 100.00% | 50/50 | 8/0/0 |  | grim2d-vertex-submit-offset |
 | match | grim_draw_quad_xy | 0x10008720 | 34 | 14/14 | 100.00% | 14/14 | 0/0/0 |  | grim2d-quad-xy-wrapper |
 | match | grim_draw_quad | 0x10008b10 | 800 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |

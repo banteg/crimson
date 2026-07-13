@@ -83,7 +83,8 @@ public:
     virtual void grim_draw_quad_xy(float *xy, float w, float h);
     virtual void grim_draw_quad_rotated_matrix(float x, float y, float w, float h) = 0;
     virtual void grim_submit_vertices_transform(float *vertices, int count, float *offset, float *matrix) = 0;
-    virtual void grim_submit_vertices_offset(float *vertices, int count, float *offset) = 0;
+    virtual void grim_submit_vertices_offset(
+        float *vertices, int count, float *offset);
     virtual void grim_submit_vertices_offset_color(float *vertices, int count, float *offset, float *color) = 0;
     virtual void grim_submit_vertices_transform_color(float *vertices, int count, float *offset, float *matrix, float *color) = 0;
     virtual void grim_draw_quad_points(

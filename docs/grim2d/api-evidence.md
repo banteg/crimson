@@ -1777,9 +1777,13 @@ grim.dll inner loop (stride + matrix):
 
 ## 0x12c — grim_submit_vertices_offset @ 0x10008680
 
+- Confirmed name: `submit_vertices_offset`
+- Confirmed C++ signature: `void __thiscall IGrim2D::submit_vertices_offset(float *verts, int count, float *offset)`
 - Ghidra signature: `void grim_submit_vertices_offset(float * verts, int count, float * offset)`
-- Suggested signature: `void grim_submit_vertices_offset(const float *verts, int count, const float *offset)`
-- Notes: decompiler emits decimal offset `+ 300` (0x12c)
+- Notes: copies a generic seven-float vertex stream, adds XY offsets in place,
+  advances the global batch pointer, and flushes at capacity. The decompiler
+  emits decimal vtable offset `+ 300` (0x12c). Live disassembly receives `this`
+  in `ECX` and returns with `retn 0xc`.
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: ui_element_render (`FUN_00446c40`):L30035; ui_element_render (`FUN_00446c40`):L30042; ui_element_render (`FUN_00446c40`):L30045; ui_element_render (`FUN_00446c40`):L30074
 - First callsite: ui_element_render (`FUN_00446c40`) (line 32196)
@@ -1801,6 +1805,11 @@ grim.dll body:
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
+
+The recovered VC6.5 source matches all 50 instructions and all 8 masked
+references. An ordinary `memcpy(count * 0x1c)` produces the native bulk-copy
+sequence; a local float pointer then updates X/Y without imposing an invented
+vertex struct.
 
 
 ## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
