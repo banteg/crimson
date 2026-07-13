@@ -299,7 +299,7 @@ These offsets appear with keycodes or input-related values:
 | `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | high | overrides time accumulator |
 | `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | high | clamped frame delta |
 | `0x40` | `get_fps` | `float get_fps(void)` | high | frame rate estimate |
-| `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
+| `0x44` | `is_key_down` | `uint8_t is_key_down(uint32_t key)` | high | low-byte-indexed 0/1 keyboard-state query |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | press edge plus timed held repeats |
 | `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |

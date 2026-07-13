@@ -31,7 +31,7 @@ struct IGrim2D_vtbl {
     /* 0x038 */ void (__stdcall *grim_set_time_ms)(int ms);
     /* 0x03c */ float (__stdcall *grim_get_frame_dt)(void);
     /* 0x040 */ float (__stdcall *grim_get_fps)(void);
-    /* 0x044 */ int (__stdcall *grim_is_key_down)(unsigned int key);
+    /* 0x044 */ unsigned char (__stdcall *grim_is_key_down)(unsigned int key);
     /* 0x048 */ unsigned char (__stdcall *grim_was_key_pressed)(unsigned int key);
     /* 0x04c */ void (__stdcall *grim_flush_input)(void);
     /* 0x050 */ int (__stdcall *grim_get_key_char)(void);

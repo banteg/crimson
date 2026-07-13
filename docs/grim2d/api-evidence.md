@@ -376,11 +376,11 @@ grim.dll body:
 
 ## 0x44 — grim_is_key_down @ 0x10007320
 
-- Provisional name: `is_key_down` (high)
-- Guess: `bool is_key_down(uint32_t key)`
-- Notes: Ctrl/arrow keycodes
-- Ghidra signature: `int grim_is_key_down(unsigned int key)`
-- Suggested signature: `bool grim_is_key_down(uint32_t key)`
+- Confirmed name: `is_key_down`
+- Confirmed C++ signature: `unsigned char __thiscall IGrim2D::is_key_down(unsigned int key)`
+- Previous Ghidra signature: `int grim_is_key_down(unsigned int key)`
+- Notes: byte-sized 0/1 predicate; the underlying helper aliases keys by their
+  low byte before reading the 256-byte keyboard state.
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: console_update (`FUN_00401a40`):L509; console_update (`FUN_00401a40`):L511; console_update (`FUN_00401a40`):L526; console_update (`FUN_00401a40`):L528; ui_focus_update (`FUN_0043d830`):L26638; ui_focus_update (`FUN_0043d830`):L26639
 - First callsite: console_update (`FUN_00401a40`) (line 509)
@@ -393,6 +393,12 @@ grim.dll body:
   if (cVar2 == '\0') {
     cVar2 = (**(code **)(*DAT_0048083c + 0x44))(0x9d);
 ```
+
+Live callers load `ECX=this`, push one key, call vtable slot `+0x44`, and test
+only `AL`. The callee forwards to `grim_keyboard_key_down`, ignores `this`, and
+uses `retn 4`. Modeling both functions with byte returns compiles to all five
+native instructions, full prefix, and masked references `1/0/0`; declaring the
+wrapper as `int` or native C++ `bool` adds a widening/normalization sequence.
 
 
 ## 0x48 — grim_was_key_pressed @ 0x10007390

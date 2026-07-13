@@ -5502,8 +5502,8 @@
     "program": "grim.dll",
     "address": "0x10007320",
     "name": "grim_is_key_down",
-    "signature": "int grim_is_key_down(unsigned int key)",
-    "comment": "Grim2D vtable 0x44 (provisional)"
+    "signature": "unsigned char grim_is_key_down(unsigned int key)",
+    "comment": "Grim2D vtable 0x44: byte-predicate wrapper over low-byte-indexed cached keyboard state"
   },
   {
     "program": "grim.dll",

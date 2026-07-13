@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**79/2161** functions matched, **11050/675651** code bytes (**1.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**80/2161** functions matched, **11066/675651** code bytes (**1.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 38/1175 | 4954/289897 | 1.7% | 38/38 |
+| grim.dll | 39/1175 | 4970/289897 | 1.7% | 39/39 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**38/1175** functions, **4954/289897** bytes (**1.7%**), **38/38** scratches verified.
+**39/1175** functions, **4970/289897** bytes (**1.7%**), **39/39** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -86,6 +86,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_frame_dt | 0x10006e60 | 33 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | branch-x87 |
+| match | grim_is_key_down | 0x10007320 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-key-state |
 | match | grim_flush_input | 0x10007330 | 91 | 34/34 | 100.00% | 34/34 | 5/0/0 |  | grim2d-input-flush |
 | match | grim_was_key_pressed | 0x10007390 | 119 | 31/31 | 100.00% | 31/31 | 10/0/0 |  | grim2d-key-repeat |
 | match | grim_is_mouse_button_down | 0x10007410 | 38 | 11/11 | 100.00% | 11/11 | 3/0/0 |  | grim2d-mouse-button-state |
