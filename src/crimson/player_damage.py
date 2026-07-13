@@ -12,7 +12,7 @@ import msgspec
 
 from grim.sfx_map import SfxId
 
-from .math_parity import f32, x87_pc24_add, x87_pc24_mul
+from .math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from .perks import PerkId
 from .perks.helpers import perk_active
 from .rng_caller_static import RngCallerStatic
@@ -44,9 +44,7 @@ def player_take_damage(
 ) -> float:
     """Apply damage to a player, returning the actual damage applied."""
 
-    raw_damage = float(damage)
-    if raw_damage <= 0.0:
-        return 0.0
+    raw_damage = float(f32(damage))
     if state.debug_god_mode:
         return 0.0
 
@@ -55,7 +53,7 @@ def player_take_damage(
 
     damage_scaled = float(raw_damage)
     if perk_active(player, PerkId.TOUGH_RELOADER) and player.weapon.reload_active:
-        damage_scaled *= 0.5
+        damage_scaled = x87_pc24_mul(damage_scaled, f32(0.5))
     spread_heat_damage = float(damage_scaled)
 
     state.survival_reward_damage_seen = True
@@ -86,7 +84,7 @@ def player_take_damage(
             if (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER) % 10) == 0:
                 player.health = 0.0
         else:
-            player.health = float(f32(float(player.health) - float(damage_scaled)))
+            player.health = x87_pc24_sub(f32(player.health), damage_scaled)
 
     # Native routes exact-zero Highlander kills through the pain branch; default
     # rewrite mode treats `health == 0` as lethal here.
@@ -97,7 +95,10 @@ def player_take_damage(
     # health branch: a dodged hit on an already-dead player keeps decrementing
     # the death-animation timer.
     if lethal_hit and dt is not None and float(dt) > 0.0:
-        player.death_timer -= float(dt) * 28.0
+        player.death_timer = x87_pc24_sub(
+            f32(player.death_timer),
+            x87_pc24_mul(f32(dt), f32(28.0)),
+        )
 
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.
     if not lethal_hit:

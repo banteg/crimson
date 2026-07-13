@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
@@ -120,7 +120,7 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
 
     assert applied == 10.0
     assert player.health == -5.0
-    assert player.death_timer == 16.0 - 0.1 * 28.0
+    assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
 
 
 def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None:
@@ -133,7 +133,7 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
 
     assert applied == 100.0
     assert player.health == 0.0
-    assert player.death_timer == 16.0 - 0.1 * 28.0
+    assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
     assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
@@ -184,6 +184,24 @@ def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> No
     assert state.survival_reward_damage_seen is True
 
 
+def test_player_take_damage_zero_contact_damage_preserves_native_side_effects() -> None:
+    rng = ScriptedCrand([1, 50])
+    state = GameplayState(rng=rng)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0)
+
+    applied = player_take_damage(state, player, 0.0, dt=0.1)
+
+    assert applied == 0.0
+    assert player.health == 100.0
+    assert player.heading == 1.0
+    assert state.survival_reward_damage_seen is True
+    assert state.sfx_queue == [SfxId.TROOPER_INPAIN_02]
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
+    ]
+
+
 def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
     state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
@@ -193,7 +211,7 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
 
     assert applied == 10.0
     assert player2.health == -5.0
-    assert player2.death_timer == 16.0 - 0.1 * 28.0
+    assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
     assert state.sfx_queue == [SfxId.TROOPER_DIE_01]
 
 
@@ -206,5 +224,5 @@ def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
 
     assert applied == 10.0
     assert player2.health == -5.0
-    assert player2.death_timer == 16.0 - 0.1 * 28.0
+    assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
     assert state.sfx_queue == []

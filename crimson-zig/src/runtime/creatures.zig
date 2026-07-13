@@ -3873,7 +3873,6 @@ fn applyPlayerContactDamageWithAliveSource(
     dt: f32,
     alive_source: *const state_mod.PlayerState,
 ) void {
-    if (!(damage > 0.0)) return;
     if (perkActive(player, PerkId.death_clock)) return;
 
     var damage_scaled: f32 = damage;
@@ -3908,7 +3907,10 @@ fn applyPlayerContactDamageWithAliveSource(
     }
 
     if (player.health < 0.0 and dt > 0.0) {
-        player.death_timer = narrowF32(player.death_timer - dt * 28.0);
+        player.death_timer = native_math.pc24Sub(
+            player.death_timer,
+            native_math.pc24Mul(dt, @as(f32, 28.0)),
+        );
     }
 
     if (player.health >= 0.0) {
@@ -6019,6 +6021,26 @@ test "tough reloader halves damage while reloading" {
     );
 
     try expectFloatClose(95.0, player.health);
+}
+
+test "zero contact damage preserves native side effects and rng" {
+    var state = state_mod.GameplayState.init(1);
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .health = 100.0,
+        .heading = 1.0,
+    };
+    var expected_rng = state.rng;
+    _ = expected_rng.rand();
+    _ = expected_rng.rand();
+
+    applyPlayerContactDamage(&state, &player, 0.0, 0.1);
+
+    try expectFloatClose(100.0, player.health);
+    try std.testing.expect(state.survival_reward_damage_seen);
+    try std.testing.expectEqual(@as(usize, 1), state.sfx_queue.items.len);
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
 
 test "dead primary suppresses dormant target post-hit effects" {
