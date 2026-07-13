@@ -212,8 +212,8 @@ def test_perk_mode_3_flag_allows_perk_in_survival_and_quest_modes() -> None:
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=1) is True
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=2) is False
     assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=2) is False
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=4) is False
-    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=4) is False
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.SURVIVAL, player_count=4) is True
+    assert perk_can_offer(state, player, PerkId.ALTERNATE_WEAPON, game_mode=GameMode.QUESTS, player_count=4) is True
 
 
 def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
@@ -229,7 +229,7 @@ def test_perk_without_mode_3_flag_is_rejected_in_quest_mode() -> None:
 @pytest.mark.parametrize(
     ("perk_id", "expected"),
     [
-        (PerkId.RANDOM_WEAPON, (True, True, False, False, False, False)),
+        (PerkId.RANDOM_WEAPON, (True, True, False, False, True, True)),
         (PerkId.BREATHING_ROOM, (True, False, True, False, True, False)),
     ],
     ids=["random-weapon", "breathing-room"],
@@ -264,7 +264,7 @@ def test_mode_flag_gated_perks_reject_quest_and_multiplayer() -> None:
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=1) is False
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=2) is False
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=2) is False
-        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=4) is False
+        assert perk_can_offer(state, player, perk_id, game_mode=GameMode.SURVIVAL, player_count=4) is True
         assert perk_can_offer(state, player, perk_id, game_mode=GameMode.QUESTS, player_count=4) is False
 
 

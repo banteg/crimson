@@ -54,9 +54,6 @@ def perk_can_offer(
     Modeled after `perk_can_offer` (0x0042fb10).
     """
 
-    if perk_id == PerkId.ANTIPERK:
-        return False
-
     # Hardcore quest 2-10 blocks poison-related perks.
     if (
         game_mode == GameMode.QUESTS
@@ -75,11 +72,11 @@ def perk_can_offer(
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
     # - in multiplayer, offered perks must have bit 0x2 set
-    # The original game only had 1p/2p, but the port extends this gate to all
-    # multiplayer counts for consistent 3p/4p behavior.
+    # The native branch is specifically `player_count == 2`; unsupported
+    # higher counts fall through without applying the two-player allow-list.
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if player_count > 1 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
+    if player_count == 2 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
     if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):

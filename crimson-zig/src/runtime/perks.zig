@@ -983,8 +983,6 @@ fn perkCanOffer(
     player_count: i32,
 ) bool {
     _ = state;
-    if (perk_id == .antiperk) return false;
-
     const flags = perkFlags(perk_id);
     if (game_mode == .quests and !flags.contains(.quest_mode_allowed)) {
         return false;
@@ -1089,19 +1087,20 @@ test "quest unlock perk lookup exposes exact reward table rows" {
     try std.testing.expectEqual(@as(?PerkId, null), questUnlockPerkForIndex(50));
 }
 
-test "antiperk is never offerable" {
+test "antiperk is excluded by availability rather than offer predicate" {
     var state = state_mod.GameplayState.init(1);
     const player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
     };
-    try std.testing.expect(!perkCanOffer(
+    try std.testing.expect(perkCanOffer(
         &state,
         &player,
         PerkId.antiperk,
         .survival,
         1,
     ));
+    try std.testing.expect(!buildPerkAvailabilityForUnlockIndex(0).contains(.antiperk));
 }
 
 test "perk pick decrements pending and refreshes choices" {
