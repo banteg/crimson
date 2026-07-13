@@ -237,7 +237,10 @@ extern float effect_template_rotation;
 extern float effect_template_vel_x;
 extern float effect_template_vel_y;
 extern float effect_template_scale_step;
+extern effect_entry_t effect_discard_entry;
+extern effect_pool_t effect_pool;
 extern effect_entry_t *effect_free_list_head;
+extern effect_id_entry_t effect_id_table[];
 
 int perk_count_get(int perk_id);
 unsigned char perk_can_offer(int perk_id);
@@ -256,7 +259,9 @@ void bonus_hud_slot_activate(char *label, int icon_id, float *timer, float *alt_
 void weapon_assign_player(int player_index, int weapon_id);
 void effect_init_entry(effect_entry_t *entry);
 void effect_free(effect_entry_t *entry);
-void effect_spawn(int effect_id, float *pos);
+effect_entry_t *effect_spawn(int effect_id, float *pos);
+void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
+void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_freeze_shard(float *pos, float angle);
 void effect_spawn_freeze_shatter(float *pos, float angle);
 void effect_spawn_explosion_burst(float *pos, float scale);

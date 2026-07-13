@@ -6723,6 +6723,13 @@
       "type": "char"
     },
     {
+      "address": "0x004ab1b0",
+      "comment": "Two-float effect position/default block zeroed by effect_defaults_reset; no other direct references are known.",
+      "name": "effect_template_position",
+      "program": "crimsonland.exe",
+      "type": "effect_vec2_t"
+    },
+    {
       "address": "0x004ab1bc",
       "comment": "Canonical effect template block base",
       "name": "effect_template",
@@ -6818,6 +6825,13 @@
       "comment": "Effect template scale step (effect_template_vel_x + 0x38)",
       "name": "effect_template_scale_step",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004ab268",
+      "comment": "Reserved effect state word zeroed by effect_defaults_reset; no read references are known.",
+      "name": "effect_defaults_reserved_zero",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004ab330",
@@ -6939,6 +6953,13 @@
       "comment": "Effect pool free list head pointer",
       "name": "effect_free_list_head",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c2b34",
+      "comment": "Reserved effect-pool state word zeroed by effect_defaults_reset; no read references are known.",
+      "name": "effect_pool_reserved_zero",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004c2b38",

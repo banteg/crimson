@@ -548,6 +548,8 @@ typedef struct effect_entry_t {
     struct effect_entry_t *next_free;
 } effect_entry_t;
 
+typedef effect_entry_t effect_pool_t[0x200];
+
 typedef void (*ui_element_callback_t)(void);
 
 typedef struct ui_element_t {

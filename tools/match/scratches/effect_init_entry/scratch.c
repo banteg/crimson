@@ -1,5 +1,6 @@
 #include "crimsonland_gameplay.h"
 
+// Aggregate locals reproduce the native VC6 store schedule without padding.
 void effect_init_entry(effect_entry_t *entry)
 {
     entry->flags = 0;
