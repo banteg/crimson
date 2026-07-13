@@ -25,6 +25,7 @@ from .math_parity import (
     f32,
     x87_fpatan,
     x87_pc24_add,
+    x87_pc24_div,
     x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sub,
@@ -192,8 +193,14 @@ def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, refle
     if time_scale_factor <= 0.0:
         return float(dt_f32)
 
-    movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(dt_f32)))
-    roundtrip_dt = float(f32(float(time_scale_factor) * float(movement_dt) * 1.6666666))
+    movement_dt = x87_pc24_mul(
+        x87_pc24_div(f32(0.6), time_scale_factor),
+        dt_f32,
+    )
+    roundtrip_dt = x87_pc24_mul(
+        x87_pc24_mul(time_scale_factor, movement_dt),
+        f32(1.6666666),
+    )
     return float(roundtrip_dt)
 
 
@@ -661,7 +668,10 @@ def player_update(
         if time_scale_factor > 0.0:
             # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
             # and stores back to float before movement/heading logic.
-            movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
+            movement_dt = x87_pc24_mul(
+                x87_pc24_div(f32(0.6), time_scale_factor),
+                movement_dt,
+            )
 
     perk_tick_stationary = abs(float(player.move_speed)) <= 1e-9
     apply_player_perk_ticks(

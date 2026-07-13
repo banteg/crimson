@@ -1294,7 +1294,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=19; expected 20"):
+    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=20; expected 21"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 

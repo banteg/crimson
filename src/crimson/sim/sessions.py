@@ -523,7 +523,6 @@ class DeterministicSession(msgspec.Struct):
         events = self.world.step(
             timing.dt_sim,
             apply_world_dt_steps=self.apply_world_dt_steps,
-            dt_player_local=timing.dt_player_local,
             defer_camera_shake_update=self.defer_camera_shake_update,
             defer_freeze_corpse_fx=False,
             mid_step_runtime=mid_step_runtime,

@@ -418,12 +418,22 @@ def _build_trace_meta(
     )
 
 
+def _canonical_elapsed_ms_by_tick(replay: Replay) -> list[int]:
+    elapsed_ms = 0
+    out: list[int] = []
+    for tick in replay.ticks:
+        elapsed_ms += int(ftol_ms_i32(tick.dt))
+        out.append(elapsed_ms)
+    return out
+
+
 def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
+    canonical_elapsed_ms = _canonical_elapsed_ms_by_tick(replay)
 
     replay_tick_count = len(replay.ticks)
     checkpoint_ticks = set(range(replay_tick_count))
@@ -460,7 +470,13 @@ def _record_replay_to_trace_python(
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
             tick_index = int(tick_result.source_tick.tick_index)
             if tick_index in checkpoint_ticks:
-                checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
+                checkpoint = driver.build_checkpoint(tick_result=tick_result)
+                checkpoints.append(
+                    msgspec.structs.replace(
+                        checkpoint,
+                        elapsed_ms=int(canonical_elapsed_ms[tick_index]),
+                    ),
+                )
             entity_samples_by_tick[tick_index] = _entity_samples_for_world(
                 world,
                 creature_state=creature_state,

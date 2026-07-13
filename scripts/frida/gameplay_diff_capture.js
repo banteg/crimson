@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 20;
+const CAPTURE_FORMAT_VERSION = 21;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -407,6 +407,7 @@ const DATA = {
   quest_spawn_timeline: 0x00486fd0,
   quest_stage_major: 0x00487004,
   quest_stage_minor: 0x00487008,
+  time_scale_active: 0x0048700e,
   bonus_reflex_boost_timer: 0x00487014,
   bonus_freeze_timer: 0x00487018,
   bonus_weapon_power_up_timer: 0x0048701c,
@@ -530,6 +531,7 @@ const REQUIRED_REPLAY_DATA_NAMES = [
   "game_state_pending",
   "frame_dt",
   "frame_dt_ms",
+  "time_scale_active",
   "time_played_ms",
   "quest_fail_retry_count",
   "creature_active_count",
@@ -2972,6 +2974,7 @@ function readGameplayGlobalsCompact() {
     // The native global is an i32; emit its numeric value (a float read of
     // the same address yields a denormal bit pattern).
     frame_dt_ms_f32: readDataI32("frame_dt_ms"),
+    time_scale_active: readDataU8("time_scale_active"),
     time_played_ms: readDataI32("time_played_ms"),
     quest_fail_retry_count: readDataI32("quest_fail_retry_count"),
     creature_active_count: readDataI32("creature_active_count"),
@@ -4051,7 +4054,7 @@ function makeTickContext() {
   outState.pendingReplayPrelude = [];
   const tickIndex = Math.max(0, outState.gameplayFrame - 1);
   const beforeGlobals = before && before.globals && typeof before.globals === "object" ? before.globals : {};
-  const timingEntryActive = _timeScaleActiveFromBonusTimer(beforeGlobals.bonus_reflex_boost_timer);
+  const timingEntryActive = _timeScaleActiveFromGlobals(beforeGlobals);
   const timingEntryFactor = _timeScaleFactorFromBonusTimer(
     beforeGlobals.bonus_reflex_boost_timer,
     timingEntryActive
@@ -4279,10 +4282,9 @@ function emitRawEvent(obj) {
   writeLine(obj);
 }
 
-function _timeScaleActiveFromBonusTimer(timerValue) {
-  const timer = decodeCapturedF32(timerValue);
-  if (timer == null) return null;
-  return timer > 0.0;
+function _timeScaleActiveFromGlobals(globalsObj) {
+  if (!globalsObj || globalsObj.time_scale_active == null) return null;
+  return (globalsObj.time_scale_active | 0) !== 0;
 }
 
 function _timeScaleFactorFromBonusTimer(timerValue, active) {
@@ -4303,9 +4305,7 @@ function _buildTimingSampleRow(tick, phase, writeKind, payload) {
     globalsObj && globalsObj.bonus_reflex_boost_timer != null
       ? decodeCapturedF32(globalsObj.bonus_reflex_boost_timer)
       : null;
-  const activeCurrent = _timeScaleActiveFromBonusTimer(
-    globalsObj ? globalsObj.bonus_reflex_boost_timer : null
-  );
+  const activeCurrent = _timeScaleActiveFromGlobals(globalsObj);
   const entryActive =
     payload && payload.time_scale_active_entry != null
       ? !!payload.time_scale_active_entry

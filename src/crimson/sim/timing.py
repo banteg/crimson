@@ -37,12 +37,6 @@ class FrameTiming(msgspec.Struct, frozen=True):
     def dt_sim_ms_i32(self) -> int:
         return int(ftol_ms_i32(self.dt_sim))
 
-    @property
-    def dt_player_local(self) -> float:
-        if not self.time_scale_active_entry:
-            return float(self.dt_sim)
-        return float(f32((0.600000024 / float(self.time_scale_factor)) * float(self.dt_sim)))
-
     @staticmethod
     def compute(
         dt: float,

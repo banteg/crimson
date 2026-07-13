@@ -46,7 +46,10 @@ pub fn updatePlayerFromGameInput(
             time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
         }
         if (time_scale_factor > 0.0) {
-            movement_dt = narrowF32((0.6 / time_scale_factor) * movement_dt);
+            movement_dt = native_math.pc24Mul(
+                native_math.pc24Div(@as(f32, 0.6), time_scale_factor),
+                movement_dt,
+            );
         }
     }
 
@@ -538,8 +541,14 @@ pub fn playerFrameDtAfterRoundtrip(
         return dt;
     }
 
-    const movement_dt = narrowF32((0.6 / time_scale_factor) * dt);
-    return narrowF32(time_scale_factor * movement_dt * 1.6666666);
+    const movement_dt = native_math.pc24Mul(
+        native_math.pc24Div(@as(f32, 0.6), time_scale_factor),
+        dt,
+    );
+    return native_math.pc24Mul(
+        native_math.pc24Mul(time_scale_factor, movement_dt),
+        @as(f32, 1.6666666),
+    );
 }
 
 test "long distance runner ramps speed above base cap and coasts on release" {

@@ -289,7 +289,6 @@ class WorldState(msgspec.Struct):
         dt: float,
         *,
         apply_world_dt_steps: bool = True,
-        dt_player_local: float | None = None,
         defer_camera_shake_update: bool = False,
         defer_freeze_corpse_fx: bool = False,
         mid_step_runtime: WorldMidStepRuntime | None = None,
@@ -398,8 +397,6 @@ class WorldState(msgspec.Struct):
         )
         reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         player_dt = float(dt)
-        if dt_player_local is not None:
-            player_dt = float(dt_player_local)
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
             player_update(
@@ -415,12 +412,11 @@ class WorldState(msgspec.Struct):
                 player_death_runtime=step_runtime,
                 reload_active_any=bool(reload_active_any),
             )
-            if dt_player_local is None:
-                player_dt = player_frame_dt_after_roundtrip(
-                    dt=player_dt,
-                    time_scale_active=bool(self.state.time_scale_active),
-                    reflex_boost_timer=float(self.state.bonuses.reflex_boost),
-                )
+            player_dt = player_frame_dt_after_roundtrip(
+                dt=player_dt,
+                time_scale_active=bool(self.state.time_scale_active),
+                reflex_boost_timer=float(self.state.bonuses.reflex_boost),
+            )
         dt = float(player_dt)
         if dt > 0.0:
             self._advance_creature_anim(dt)

@@ -38,6 +38,23 @@ def test_bonus_timer_ms_matches_frida_nearest_millisecond_encoding() -> None:
     assert bonus_timer_ms(-1.0) == 0
 
 
+def test_canonical_elapsed_ms_uses_unscaled_replay_clock() -> None:
+    replay = Replay(
+        header=ReplayHeader(
+            game_mode_id=GameMode.SURVIVAL,
+            seed=0x1234,
+            status=GameStatusData(),
+        ),
+        ticks=[
+            ReplayTick(dt=0.1, inputs=[]),
+            ReplayTick(dt=0.09, inputs=[]),
+            ReplayTick(dt=0.087, inputs=[]),
+        ],
+    )
+
+    assert dbg_record._canonical_elapsed_ms_by_tick(replay) == [100, 190, 277]
+
+
 def test_record_replay_to_trace_dispatches_python_impl(monkeypatch, tmp_path: Path) -> None:
     replay_path = tmp_path / "sample.crd"
     out_path = tmp_path / "sample.cdt"
