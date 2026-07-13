@@ -181,6 +181,20 @@ def test_spawn_plan_seed_stability(default_spawn_env: SpawnEnv) -> None:
     assert baseline != changed_seed
 
 
+def test_ring_formation_uses_native_angle_stores_and_fallthrough(default_spawn_env: SpawnEnv) -> None:
+    plan = build_spawn_plan(
+        SpawnId.FORMATION_RING_ALIEN_8_12,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+
+    assert plan.creatures[3].target_offset == Vec2(-4.371138857095502e-06, 100.0)
+    assert plan.creatures[6].target_offset == Vec2(-70.71066284179688, -70.710693359375)
+    assert plan.creatures[-1].health == 20.0
+
+
 def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: SpawnEnv) -> None:
     with pytest.raises(UnsupportedSpawnTemplateError, match=r"unsupported spawn template id: 0x2"):
         build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)

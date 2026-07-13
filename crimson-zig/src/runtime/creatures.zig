@@ -139,6 +139,17 @@ const CreatureAiUpdate = struct {
     self_damage: ?f32 = null,
 };
 
+fn formationOffset(index: usize, angle_step: f32, radius: f32) state_mod.Vec2 {
+    const angle = native_math.pc24Mul(
+        @as(f32, @floatFromInt(index)),
+        angle_step,
+    );
+    return .{
+        .x = native_math.pc24Mul(@cos(@as(f64, @floatCast(angle))), radius),
+        .y = native_math.pc24Mul(@sin(@as(f64, @floatCast(angle))), radius),
+    };
+}
+
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
@@ -198,6 +209,8 @@ pub const CreaturePool = struct {
         const stale_link_index = self.entries[slot].link_index;
         const stale_target_heading = self.entries[slot].target_heading;
         const stale_heading = self.entries[slot].heading;
+        const stale_force_target = self.entries[slot].force_target;
+        const stale_target_offset = self.entries[slot].target_offset;
 
         self.entries[slot] = .{
             .active = true,
@@ -210,13 +223,14 @@ pub const CreaturePool = struct {
                 .x = narrowF32(init.pos.x),
                 .y = narrowF32(init.pos.y),
             },
+            .target_offset = stale_target_offset,
             .heading = if (init.set_heading) narrowF32(init.heading) else stale_heading,
             .target_heading = stale_target_heading,
             .phase_seed = narrowF32(init.phase_seed),
             .anim_phase = 0.0,
             .vel = .{},
             .move_scale = 1.0,
-            .force_target = 0,
+            .force_target = if (init.preserve_force_target) stale_force_target else 0,
             .ai_mode = init.ai_mode,
             .link_index = stale_link_index,
             .hp = narrowF32(init.health),
@@ -279,14 +293,16 @@ pub const CreaturePool = struct {
                 );
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
-                const transient_heading = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314)) * 0.01;
+                const transient_heading = native_math.pc24Mul(
+                    @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314)),
+                    @as(f32, 0.01),
+                );
                 self.entries[parent_idx].heading = transient_heading;
 
-                const angle_step = std.math.pi / 4.0;
+                const angle_step: f32 = std.math.pi / 4.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..8) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
+                    const offset = formationOffset(idx, angle_step, 100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -314,6 +330,7 @@ pub const CreaturePool = struct {
                     primary_child_idx = child_idx;
                 }
                 self.entries[primary_child_idx].heading = narrowF32(call.heading);
+                self.entries[primary_child_idx].hp = 20.0;
             },
             0x03 => {
                 self.spawnBasicRandomTemplate(
@@ -518,11 +535,10 @@ pub const CreaturePool = struct {
                     0x1C,
                 );
 
-                const angle_step = std.math.pi / 12.0;
+                const angle_step: f32 = std.math.pi / 12.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..24) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
+                    const offset = formationOffset(idx, angle_step, 100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -605,8 +621,7 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
-                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
+                    const offset = formationOffset(2 + idx * 2, @as(f32, std.math.pi / 8.0), 256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -721,8 +736,11 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..10) |idx| {
-                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
+                    const offset = formationOffset(
+                        2 + idx * 2,
+                        @as(f32, 20.0 * std.math.pi / 180.0),
+                        256.0,
+                    );
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1291,10 +1309,9 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
-                const angle_step = (2.0 * std.math.pi) / 5.0;
+                const angle_step: f32 = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(110.0);
+                    const offset = formationOffset(idx, angle_step, 110.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -2143,7 +2160,7 @@ pub const CreaturePool = struct {
             if (creature.attack_cooldown <= 0.0) {
                 creature.attack_cooldown = 0.0;
             } else {
-                creature.attack_cooldown = narrowF32(creature.attack_cooldown - dt_f32);
+                creature.attack_cooldown = native_math.pc24Sub(creature.attack_cooldown, dt_f32);
             }
 
             // Native gates on the global perk count and only fires the pulse
@@ -2210,8 +2227,8 @@ pub const CreaturePool = struct {
             }
 
             if (target_dist_sq < 20.0 * 20.0) {
-                var reverted_x = creature.pos.x - creature.vel.x;
-                var reverted_y = creature.pos.y - creature.vel.y;
+                var reverted_x = native_math.pc24Sub(creature.pos.x, creature.vel.x);
+                var reverted_y = native_math.pc24Sub(creature.pos.y, creature.vel.y);
                 if (reverted_x < 0.0) {
                     reverted_x = 0.0;
                 } else if (reverted_x > world_size) {
@@ -2702,6 +2719,7 @@ pub const CreaturePool = struct {
             .heading = heading,
             .set_heading = set_heading,
             .phase_seed = phase_seed,
+            .preserve_force_target = true,
             .type_id = stats.type_id,
             .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
             .flags = flags,
@@ -4096,6 +4114,30 @@ test "template spawn supports survival early-stage templates" {
     try expectFloatClose(4.0, child.contact_damage);
     try expectFloatClose(100.0, child.target_offset.x);
     try expectFloatClose(0.0, child.target_offset.y);
+    try std.testing.expectEqual(@as(u32, 0xb692abcc), @as(u32, @bitCast(pool.entries[3].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[6].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[6].target_offset.y)));
+    try expectFloatClose(20.0, pool.entries[8].hp);
+}
+
+test "spawn init preserves recycled force target" {
+    var pool: CreaturePool = .{};
+    pool.entries[0].force_target = 1;
+    pool.entries[0].target_offset = .{ .x = -70.71066284179688, .y = -70.710693359375 };
+
+    const idx = pool.spawnInit(.{
+        .origin_template_id = @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12),
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .preserve_force_target = true,
+        .type_id = .alien,
+        .health = 40.0,
+        .max_health = 40.0,
+    });
+
+    try std.testing.expectEqual(@as(usize, 0), idx);
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].force_target);
+    try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[idx].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[idx].target_offset.y)));
 }
 
 test "template spawn supports survival late-stage templates" {
@@ -5308,6 +5350,39 @@ test "creature update applies contact damage and movement" {
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
     try expectFloatClose(1.0, pool.entries[0].attack_cooldown);
+}
+
+test "creature attack cooldown stores native precision" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .health = 100.0,
+        },
+    };
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 60.0,
+        .contact_damage = 7.0,
+    });
+    pool.entries[0].attack_cooldown = 1.0;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    const expected = native_math.pc24Sub(native_math.pc24Sub(1.0, @as(f32, 0.1)), @as(f32, 0.1));
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].attack_cooldown)));
 }
 
 test "veins of poison sets self-damage flag on contact hit" {

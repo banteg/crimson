@@ -184,8 +184,8 @@ def _movement_delta_from_heading_f32(
     # init does not pass D3DCREATE_FPU_PRESERVE), so every multiply in the
     # velocity chain rounds to f32; fsin/fcos still evaluate in extended
     # precision internally, so their rounding lands in the first multiply
-    # (`creature_update_all` 0x426dab..0x426de6, validated against v14 capture
-    # vel channels: 164/166 walker ticks reproduce bit-exactly).
+    # (`creature_update_all` 0x426dab..0x426de6, validated against captured
+    # walker velocity channels).
     radians = x87_pc24_sub(float(f32(heading)), NATIVE_HALF_PI)
 
     # Preserve native multiply order:
@@ -441,7 +441,10 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     # Native stores `vel` as per-tick delta (not per-second). It applies movement
     # as `pos += vel`, so reverting the just-applied movement subtracts `vel`
     # with no bounds clamp.
-    creature.pos = creature.pos - creature.vel
+    creature.pos = Vec2(
+        x87_pc24_sub(creature.pos.x, creature.vel.x),
+        x87_pc24_sub(creature.pos.y, creature.vel.y),
+    )
 
     # Native reverts the just-applied movement whenever a creature gets within
     # 20 units of the target player, regardless of Energizer.
@@ -1265,7 +1268,7 @@ class CreaturePool:
             if creature.attack_cooldown <= 0.0:
                 creature.attack_cooldown = 0.0
             else:
-                creature.attack_cooldown -= dt
+                creature.attack_cooldown = x87_pc24_sub(creature.attack_cooldown, dt)
 
             # Native radioactive contact pulse runs after movement/AI/cooldown
             # synthesis inside the live-creature branch. The distance is measured
@@ -1473,7 +1476,8 @@ class CreaturePool:
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
         entry.vel = Vec2()
-        entry.force_target = 0
+        if not init.preserve_force_target:
+            entry.force_target = 0
 
         entry.flags = init.flags or CreatureFlags(0)
         entry.ai_mode = CreatureAiMode(init.ai_mode)
@@ -1489,7 +1493,8 @@ class CreaturePool:
         entry.size = f32(float(init.size or 50.0))
         entry.contact_damage = f32(float(init.contact_damage or 0.0))
 
-        entry.target_offset = f32_vec2(init.target_offset) if init.target_offset is not None else None
+        if init.target_offset is not None:
+            entry.target_offset = f32_vec2(init.target_offset)
         entry.orbit_angle = f32(float(init.orbit_angle or 0.0))
         if init.orbit_radius is not None:
             orbit_radius = float(init.orbit_radius)

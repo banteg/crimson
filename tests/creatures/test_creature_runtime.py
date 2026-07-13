@@ -315,6 +315,28 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     assert_float_close(creature.pos.y, 1088.0)
 
 
+def test_attack_cooldown_is_stored_at_native_precision() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.pos = Vec2(128.0, 128.0)
+    creature.attack_cooldown = 1.0
+
+    options = make_creature_update_options(state=state, players=[player])
+    pool.update(0.1, options=options)
+    pool.update(0.1, options=options)
+
+    expected = f32(f32(1.0 - f32(0.1)) - f32(0.1))
+    assert creature.attack_cooldown == expected
+
+
 def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -464,6 +486,31 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     assert [record.caller for record in rng.records_since() if record.caller is not None][:1] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX,
     ]
+
+
+def test_near_player_movement_rollback_is_stored_at_native_precision() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        health=100.0,
+        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
+    )
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.move_speed = 1.3
+    creature.size = 45.0
+    creature.pos = Vec2(110.0, 100.0)
+    creature.target_player = 0
+
+    pool.update(0.1, options=make_creature_update_options(state=state, players=[player]))
+
+    assert creature.pos.x == f32(creature.pos.x)
+    assert creature.pos.y == f32(creature.pos.y)
 
 
 def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
@@ -1391,6 +1438,27 @@ def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
     assert pool.entries[idx].link_index == -1
 
 
+def test_spawn_init_preserves_stale_force_target_from_recycled_slot() -> None:
+    pool = CreaturePool()
+    pool.entries[0].force_target = 1
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=0x12,
+            pos=Vec2(100.0, 200.0),
+            heading=0.0,
+            phase_seed=0.0,
+            preserve_force_target=True,
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            max_health=40.0,
+        ),
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].force_target == 1
+
+
 def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
     pool = CreaturePool()
     pool.entries[0].target_heading = 2.5632283687591553
@@ -1443,6 +1511,26 @@ def test_spawn_init_preserves_stale_target_from_recycled_slot() -> None:
 
     assert idx == 0
     assert pool.entries[idx].target == Vec2(7.0, 8.0)
+
+
+def test_spawn_init_preserves_stale_target_offset_from_recycled_slot() -> None:
+    pool = CreaturePool()
+    pool.entries[0].target_offset = Vec2(-70.71066284179688, -70.710693359375)
+
+    idx = pool.spawn_init(
+        CreatureInit(
+            origin_template_id=-1,
+            pos=Vec2(100.0, 200.0),
+            heading=0.0,
+            phase_seed=0.0,
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            max_health=40.0,
+        ),
+    )
+
+    assert idx == 0
+    assert pool.entries[idx].target_offset == Vec2(-70.71066284179688, -70.710693359375)
 
 
 def test_spawn_init_ai_timer_still_overrides_link_index() -> None:

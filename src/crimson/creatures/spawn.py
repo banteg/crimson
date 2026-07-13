@@ -23,7 +23,13 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..bonuses import BonusId
-from ..math_parity import f32
+from ..math_parity import (
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+)
 from ..rng_caller_static import RngCallerStatic
 from .spawn_ids import (
     HAS_SPAWN_SLOT_FLAG,
@@ -622,6 +628,7 @@ RING_FORMATIONS: dict[SpawnId, RingFormationSpec] = {
         count=8,
         angle_step=math.pi / 4.0,
         radius=100.0,
+        apply_fallback=True,
     ),
     SpawnId.FORMATION_RING_ALIEN_5_19: RingFormationSpec(
         parent=ConstantSpawnSpec(
@@ -684,6 +691,8 @@ class CreatureInit(msgspec.Struct):
     heading: float | None
 
     phase_seed: float
+
+    preserve_force_target: bool = False
 
     type_id: CreatureTypeId | None = None
     flags: CreatureFlags = CreatureFlags(0)
@@ -854,12 +863,16 @@ def spawn_ring_children(
         child = alloc_creature(template_id, pos, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
-        angle = float(i) * angle_step
-        # Keep template authoring math simple here; runtime init quantizes
-        # `target_offset`/`pos` through float32 (`CreaturePool._apply_init`).
-        child.target_offset = Vec2.from_angle(angle) * radius
+        angle = x87_pc24_mul(f32(float(i)), f32(angle_step))
+        child.target_offset = Vec2(
+            x87_pc24_cos_mul(angle, f32(radius)),
+            x87_pc24_sin_mul(angle, f32(radius)),
+        )
         if set_position:
-            child.pos = pos + (child.target_offset or Vec2())
+            child.pos = Vec2(
+                x87_pc24_add(f32(pos.x), child.target_offset.x),
+                x87_pc24_add(f32(pos.y), child.target_offset.y),
+            )
         if heading_override is not None:
             child.heading = heading_override
         apply_child_spec(child, child_spec)
@@ -948,7 +961,10 @@ class PlanBuilder(msgspec.Struct):
             final_heading = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628) * 0.01
 
         # Base initialization always consumes one rand() for a transient heading value.
-        creatures[0].heading = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING) % 314) * 0.01
+        creatures[0].heading = x87_pc24_mul(
+            f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING) % 314)),
+            f32(0.01),
+        )
 
         return cls(
             template_id=template_id,
@@ -1070,7 +1086,13 @@ def alloc_creature(
     phase_seed = float(rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F)
     # Native `creature_alloc_slot` does not clear heading; some template child paths
     # intentionally keep stale heading from the recycled slot.
-    return CreatureInit(origin_template_id=template_id, pos=pos, heading=None, phase_seed=phase_seed)
+    return CreatureInit(
+        origin_template_id=template_id,
+        pos=pos,
+        heading=None,
+        phase_seed=phase_seed,
+        preserve_force_target=True,
+    )
 
 
 def clamp01(value: float) -> float:
@@ -1115,6 +1137,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     xp = int(player_experience)
 
     c = alloc_creature(-1, pos, rng)
+    c.preserve_force_target = False
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     r10 = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL) % 10
@@ -1558,6 +1581,7 @@ def build_rush_mode_spawn_creature(
     elapsed_ms = int(survival_elapsed_ms)
 
     c = alloc_creature(-1, pos, rng)
+    c.preserve_force_target = False
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
