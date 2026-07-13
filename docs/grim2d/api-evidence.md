@@ -1862,12 +1862,18 @@ native loop.
 
 ## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0
 
-- Ghidra signature: `void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)`
-- Suggested signature: `void grim_submit_vertices_transform_color(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color)`
-- Notes: applies 2x2 matrix + offset, then overwrites vertex color from `*color`
+- Confirmed name: `submit_vertices_transform_color`
+- Confirmed C++ signature: `void __thiscall IGrim2D::submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, unsigned long *color)`
+- Ghidra signature (color incorrectly typed as float): `void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)`
+- Notes: the copy and matrix/offset loop match the non-color transform sibling,
+  then an integer load/store overwrites dword field 4 with `*color` as packed
+  ARGB. The integer operation corrects the stale color-pointer prototype;
+  `retn 0x14` confirms the five-argument member ABI.
 - Call sites: 5 (unique funcs: 2)
 - Sample calls: effects_render (`FUN_0042e820`):L20025; effects_render (`FUN_0042e820`):L20053; ui_element_render (`FUN_00446c40`):L29953; ui_element_render (`FUN_00446c40`):L29959; ui_element_render (`FUN_00446c40`):L29962
 - First callsite: effects_render (`FUN_0042e820`) (line 22162)
+- Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 7,202
+  `grim_submit_vertices` events with `kind: transform_color`.
 
 
 ```c
@@ -1887,6 +1893,11 @@ grim.dll body:
   DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
   DAT_10059e34[4] = *color;
 ```
+
+The recovered VC6.5 source matches all 72 instructions and all 10 masked
+references. Its scalar rotation accumulators, packed-color dword assignment,
+and ordinary batch accounting reproduce the full native function without
+inline assembly, dummy references, or layout-only branches.
 
 
 ## 0x138 — grim_draw_quad_points @ 0x10009080

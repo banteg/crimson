@@ -5810,7 +5810,7 @@
     "program": "grim.dll",
     "address": "0x100084e0",
     "name": "grim_submit_vertices_transform_color",
-    "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)",
+    "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, unsigned int *color)",
     "comment": "Grim2D vtable 0x134: rotate + translate + apply color"
   },
   {

@@ -91,7 +91,12 @@ public:
         int count,
         float *offset,
         unsigned long *color);
-    virtual void grim_submit_vertices_transform_color(float *vertices, int count, float *offset, float *matrix, float *color) = 0;
+    virtual void grim_submit_vertices_transform_color(
+        float *vertices,
+        int count,
+        float *offset,
+        float *matrix,
+        unsigned long *color);
     virtual void grim_draw_quad_points(
         float x0,
         float y0,

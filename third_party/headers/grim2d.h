@@ -87,7 +87,7 @@ struct IGrim2D_vtbl {
     /* 0x128 */ void (__stdcall *grim_submit_vertices_transform)(float * verts, int count, float * offset, float * matrix);
     /* 0x12c */ void (__stdcall *grim_submit_vertices_offset)(float * verts, int count, float * offset);
     /* 0x130 */ void (__stdcall *grim_submit_vertices_offset_color)(float * verts, int count, float * offset, unsigned long * color);
-    /* 0x134 */ void (__stdcall *grim_submit_vertices_transform_color)(float * verts, int count, float * offset, float * matrix, float * color);
+    /* 0x134 */ void (__stdcall *grim_submit_vertices_transform_color)(float * verts, int count, float * offset, float * matrix, unsigned long * color);
     /* 0x138 */ void (__stdcall *grim_draw_quad_points)(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
     /* 0x13c */ void (__stdcall *grim_draw_text_mono)(float x, float y, char * text);
     /* 0x140 */ void (*grim_draw_text_mono_fmt)(IGrim2D *self, float x, float y, char * fmt, ...);

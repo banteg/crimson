@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**63/2161** functions matched, **9103/675651** code bytes (**1.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**64/2161** functions matched, **9321/675651** code bytes (**1.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 22/1175 | 3007/289897 | 1.0% | 22/22 |
+| grim.dll | 23/1175 | 3225/289897 | 1.1% | 23/23 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**22/1175** functions, **3007/289897** bytes (**1.0%**), **22/22** scratches verified.
+**23/1175** functions, **3225/289897** bytes (**1.1%**), **23/23** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -98,6 +98,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_set_uv_point | 0x100083a0 | 29 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | grim2d-uv-point |
 | match | grim_flush_batch | 0x100083c0 | 107 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | grim2d-batch-lifecycle |
 | match | grim_submit_vertices_offset_color | 0x10008430 | 168 | 54/54 | 100.00% | 54/54 | 9/0/0 |  | grim2d-vertex-submit-offset-color |
+| match | grim_submit_vertices_transform_color | 0x100084e0 | 218 | 72/72 | 100.00% | 72/72 | 10/0/0 |  | grim2d-vertex-submit-transform-color |
 | match | grim_submit_vertices_transform | 0x100085c0 | 192 | 64/64 | 100.00% | 64/64 | 9/0/0 |  | grim2d-vertex-submit-transform |
 | match | grim_submit_vertices_offset | 0x10008680 | 153 | 50/50 | 100.00% | 50/50 | 8/0/0 |  | grim2d-vertex-submit-offset |
 | match | grim_draw_quad_xy | 0x10008720 | 34 | 14/14 | 100.00% | 14/14 | 0/0/0 |  | grim2d-quad-xy-wrapper |
