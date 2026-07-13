@@ -1381,9 +1381,11 @@ grim.dll precompute:
 
 ## 0x100 — grim_set_uv @ 0x10008350
 
-- Provisional name: `set_uv` (high)
-- Guess: `void set_uv(float u0, float v0, float u1, float v1)`
-- Notes: sets all 4 UV pairs (u0/v0/u1/v1) used by draw calls
+- Confirmed name: `set_uv`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_uv(float u0, float v0, float u1, float v1)`
+- Notes: expands opposite UV corners into the four clockwise pairs consumed by
+  draw calls. The vtable slot and `retn 0x10` establish the member ABI even
+  though the body does not otherwise read `this`.
 - Ghidra signature: `void grim_set_uv(float u0, float v0, float u1, float v1)`
 - Call sites: 59 (unique funcs: 23)
 - Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3126; ui_draw_clock_gauge:L3884; ui_render_aim_indicators:L5635; ui_render_aim_indicators:L5642; ui_render_aim_indicators:L5664; demo_purchase_screen_update (`FUN_0040b740`):L6331; ui_draw_textured_quad:L9121; terrain_generate (`FUN_00417b80`):L9206
@@ -1406,6 +1408,10 @@ grim.dll UV assignment:
   DAT_1005b298 = u1;
   DAT_1005b29c = v0;
 ```
+
+The recovered VC6.5 source matches all 17 instructions and all 8 masked
+references. It consists solely of ordinary field assignments to the same
+four-element UV array recovered independently in the exact quad renderers.
 
 
 ## 0x104 — grim_set_atlas_frame @ 0x10008230
