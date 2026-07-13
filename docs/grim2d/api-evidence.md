@@ -1598,7 +1598,12 @@ order without matching-only constructs.
 
 ## 0x118 — grim_set_color_slot @ 0x100081c0
 
-- Notes: packs RGBA into color slot `index` (0..3); draw_quad reads slots 0..3
+- Confirmed name: `set_color_slot`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_color_slot(int index, float r, float g, float b, float a)`
+- Notes: packs RGBA directly into color slot `index`; draw calls consume slots
+  0..3. The method performs no channel clamp and no index bounds check. Its
+  vtable slot and `retn 0x14` establish the member ABI even though the body
+  does not otherwise read `this`.
 - Ghidra signature: `void grim_set_color_slot(int index, float r, float g, float b, float a)`
 - Call sites: 12 (unique funcs: 2)
 - Sample calls: demo_purchase_screen_update (`FUN_0040b740`):L6302; demo_purchase_screen_update (`FUN_0040b740`):L6308; demo_purchase_screen_update (`FUN_0040b740`):L6315; demo_purchase_screen_update (`FUN_0040b740`):L6322; projectile_render (`FUN_00422c70`):L15993; projectile_render (`FUN_00422c70`):L16000; projectile_render (`FUN_00422c70`):L16068; projectile_render (`FUN_00422c70`):L16075
@@ -1618,6 +1623,10 @@ grim.dll slot write:
 ```c
   (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
 ```
+
+The recovered VC6.5 source matches all 27 instructions and all 9 masked
+references. It uses the same ordinary ARGB expression as the exact all-slot
+setter, then writes the result through the caller-provided array index.
 
 
 ## 0x11c — grim_draw_quad @ 0x10008b10

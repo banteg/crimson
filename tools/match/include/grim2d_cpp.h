@@ -77,7 +77,8 @@ public:
     virtual void grim_set_uv_point(int index, float u, float v) = 0;
     virtual void grim_set_color_ptr(float *rgba);
     virtual void grim_set_color(float r, float g, float b, float a);
-    virtual void grim_set_color_slot(int index, float r, float g, float b, float a) = 0;
+    virtual void grim_set_color_slot(
+        int index, float r, float g, float b, float a);
     virtual void grim_draw_quad(float x, float y, float w, float h);
     virtual void grim_draw_quad_xy(float *xy, float w, float h) = 0;
     virtual void grim_draw_quad_rotated_matrix(float x, float y, float w, float h) = 0;

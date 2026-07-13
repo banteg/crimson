@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**54/2161** functions matched, **8113/675651** code bytes (**1.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**55/2161** functions matched, **8222/675651** code bytes (**1.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 13/1175 | 2017/289897 | 0.7% | 13/13 |
+| grim.dll | 14/1175 | 2126/289897 | 0.7% | 14/14 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**13/1175** functions, **2017/289897** bytes (**0.7%**), **13/13** scratches verified.
+**14/1175** functions, **2126/289897** bytes (**0.7%**), **14/14** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -91,6 +91,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_draw_rect_filled | 0x100078e0 | 205 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
 | match | grim_set_color | 0x10007f90 | 166 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
 | match | grim_set_color_ptr | 0x10008040 | 104 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |
+| match | grim_set_color_slot | 0x100081c0 | 109 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-packed-color-slot |
 | match | grim_set_uv | 0x10008350 | 74 | 17/17 | 100.00% | 17/17 | 8/0/0 |  | grim2d-uv-rectangle |
 | match | grim_draw_quad | 0x10008b10 | 800 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
