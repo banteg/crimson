@@ -253,6 +253,7 @@ void sfx_play(int sfx_id, float volume);
 void sfx_play_panned(int sfx_id, float *pos, float volume);
 void bonus_hud_slot_activate(char *label, int icon_id, float *timer, float *alt_timer);
 void weapon_assign_player(int player_index, int weapon_id);
+void effect_init_entry(effect_entry_t *entry);
 void effect_spawn(int effect_id, float *pos);
 void effect_spawn_freeze_shard(float *pos, float angle);
 void effect_spawn_freeze_shatter(float *pos, float angle);

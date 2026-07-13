@@ -264,6 +264,25 @@ Spawn/update helpers:
 ### Struct view (effect_entry_t)
 
 ```c
+typedef struct effect_color_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} effect_color_t;
+
+typedef struct effect_vec2_t {
+    float x;
+    float y;
+} effect_vec2_t;
+
+typedef struct effect_vertex_t {
+    effect_vec2_t pos;
+    effect_vec2_t zrhw;
+    unsigned int color;
+    effect_vec2_t tex;
+} effect_vertex_t;
+
 typedef struct effect_entry_t {
     float pos_x;
     float pos_y;
@@ -278,15 +297,17 @@ typedef struct effect_entry_t {
     float age;
     float lifetime;
     int flags;
-    float color_r;
-    float color_g;
-    float color_b;
-    float color_a;
+    effect_color_t color;
     float rotation_step;
     float scale_step;
-    float quad_data[29];
+    effect_vertex_t vertices[4];
+    struct effect_entry_t *next_free;
 } effect_entry_t;
 ```
+
+The four vertices begin at `0x48` with a `0x1c` stride. The initializer writes
+`zrhw = (0.5, 1.0)` and opaque white to each vertex; the spawner fills `pos` and
+`tex`. `next_free` at `0xb8` links inactive entries.
 
 Layout (partial):
 

@@ -508,6 +508,25 @@ typedef struct effect_id_entry_t {
     int frame;
 } effect_id_entry_t;
 
+typedef struct effect_color_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} effect_color_t;
+
+typedef struct effect_vec2_t {
+    float x;
+    float y;
+} effect_vec2_t;
+
+typedef struct effect_vertex_t {
+    effect_vec2_t pos;
+    effect_vec2_t zrhw;
+    unsigned int color;
+    effect_vec2_t tex;
+} effect_vertex_t;
+
 typedef struct effect_entry_t {
     float pos_x;
     float pos_y;
@@ -522,13 +541,11 @@ typedef struct effect_entry_t {
     float age;
     float lifetime;
     int flags;
-    float color_r;
-    float color_g;
-    float color_b;
-    float color_a;
+    effect_color_t color;
     float rotation_step;
     float scale_step;
-    float quad_data[29];
+    effect_vertex_t vertices[4];
+    struct effect_entry_t *next_free;
 } effect_entry_t;
 
 typedef void (*ui_element_callback_t)(void);
@@ -883,13 +900,6 @@ typedef struct bonus_entry_t {
 } bonus_entry_t;
 
 typedef bonus_entry_t bonus_pool_t[0x10];
-
-typedef struct effect_color_t {
-    float r;
-    float g;
-    float b;
-    float a;
-} effect_color_t;
 
 typedef struct effect_template_t {
     float vel_x;
