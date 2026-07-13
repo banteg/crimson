@@ -5958,8 +5958,8 @@
     "program": "grim.dll",
     "address": "0x1000a4a0",
     "name": "grim_keyboard_poll",
-    "signature": "int grim_keyboard_poll(void)",
-    "comment": "polls the keyboard device and updates cached key state"
+    "signature": "bool grim_keyboard_poll(void)",
+    "comment": "acquires the DirectInput keyboard, snapshots 256 key bytes, and applies buffered events"
   },
   {
     "program": "grim.dll",

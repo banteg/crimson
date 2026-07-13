@@ -2254,6 +2254,21 @@ grim.dll body:
 ```
 
 
+## grim.dll — keyboard poll helper @ 0x1000a4a0
+
+- Confirmed name: `grim_keyboard_poll`
+- Confirmed C++ signature: `bool grim_keyboard_poll(void)`
+- Notes: acquires the DirectInput keyboard, snapshots its 256-byte state, and
+  applies the returned 20-byte buffered events.
+
+Live Binary Ninja identifies a 165-byte function. It retries `Acquire` only
+for `DIERR_INPUTLOST` and `DIERR_NOTACQUIRED`, ignores the `GetDeviceState`
+HRESULT, and gates event application on the `GetDeviceData` HRESULT and a
+positive signed count. The native loop trusts both the returned count and each
+event offset. Ordinary C++ reproduces all 60 native instructions, full prefix,
+and references `9/0/0` with the stock MSVC 6.5 profile.
+
+
 ## grim.dll — coordinate space conversion helper @ 0x10016944
 
 - Provisional name: `grim_convert_vertex_space` (medium)
