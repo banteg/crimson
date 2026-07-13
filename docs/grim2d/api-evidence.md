@@ -1509,8 +1509,8 @@ four-element UV array recovered independently in the exact quad renderers.
 
 ## 0x104 — grim_set_atlas_frame @ 0x10008230
 
-- Provisional name: `set_atlas_frame` (high)
-- Guess: `void set_atlas_frame(int atlas_size, int frame)`
+- Confirmed name: `set_atlas_frame`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_atlas_frame(int atlas_size, int frame)`
 - Notes: atlas size (cells per side) + frame index
 - Ghidra signature: `void grim_set_atlas_frame(int atlas_size, int frame)`
 - Call sites: 25 (unique funcs: 6)
@@ -1526,11 +1526,17 @@ four-element UV array recovered independently in the exact quad renderers.
           else {
 ```
 
+Live Binary Ninja shows `ECX=this`, two stack parameters, and `retn 0x8`.
+The recovered source initializes four UV corners from the indexed atlas origin,
+then advances the right and bottom edges by one cell (`1 / atlas_size`). VC6.5
+reproduces all 31 instructions and all 15 masked references without codegen
+scaffolding.
+
 
 ## 0x108 — grim_set_sub_rect @ 0x100082c0
 
-- Provisional name: `set_sub_rect` (high)
-- Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
+- Confirmed name: `set_sub_rect`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Notes: atlas grid sub-rect; `atlas_size` indexes a pointer table with entries at 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
 - Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Call sites: 6 (unique funcs: 3)
@@ -1553,6 +1559,12 @@ Explicit parameterized call (bonus_render (`FUN_004295f0`)):
                   (8,2,1,(&DAT_004d7a90)[(int)pfVar7[4] * 0x1f] << 1);
         (**(code **)(*DAT_0048083c + 0x11c))();
 ```
+
+Live Binary Ninja shows `ECX=this`, four stack parameters, and `retn 0x10`.
+The recovered source loads one `(u, v)` origin, initializes all four current
+UV corners, then advances the right edge by `width / atlas_size` and the
+bottom edge by `height / atlas_size`. VC6.5 reproduces all 31 instructions and
+all 15 masked references without codegen scaffolding.
 
 Atlas pointer table setup (grim.dll init):
 

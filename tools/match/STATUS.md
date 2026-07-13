@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**72/2161** functions matched, **10394/675651** code bytes (**1.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**74/2161** functions matched, **10676/675651** code bytes (**1.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 31/1175 | 4298/289897 | 1.5% | 31/31 |
+| grim.dll | 33/1175 | 4580/289897 | 1.6% | 33/33 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**31/1175** functions, **4298/289897** bytes (**1.5%**), **31/31** scratches verified.
+**33/1175** functions, **4580/289897** bytes (**1.6%**), **33/33** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -99,6 +99,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_set_color | 0x10007f90 | 166 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
 | match | grim_set_color_ptr | 0x10008040 | 104 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |
 | match | grim_set_color_slot | 0x100081c0 | 109 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-packed-color-slot |
+| match | grim_set_atlas_frame | 0x10008230 | 139 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-frame |
+| match | grim_set_sub_rect | 0x100082c0 | 143 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-sub-rectangle |
 | match | grim_set_uv | 0x10008350 | 74 | 17/17 | 100.00% | 17/17 | 8/0/0 |  | grim2d-uv-rectangle |
 | match | grim_set_uv_point | 0x100083a0 | 29 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | grim2d-uv-point |
 | match | grim_flush_batch | 0x100083c0 | 107 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | grim2d-batch-lifecycle |
