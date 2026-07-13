@@ -336,7 +336,7 @@ test "aggregate dbg health summarizes native CDT trace" {
     try std.testing.expectEqual(@as(u8, 0), health_output.exit_code);
     try std.testing.expectEqualStrings("", health_output.stderr);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"status\":\"ok\"") != null);
-    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":15") != null);
+    try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"trace_schema_version\":16") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ticks_in_window\":") != null);
     try std.testing.expect(std.mem.indexOf(u8, health_output.stdout, "\"ok_for_parity_analysis\":true") != null);
 

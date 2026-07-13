@@ -7035,6 +7035,34 @@ fn drawPlayers(
     }
 }
 
+fn creatureRenderTint(
+    base_tint: [4]f32,
+    max_hp: f32,
+    energizer_timer: f32,
+    lifecycle_stage: f32,
+) [4]f32 {
+    var tint = base_tint;
+    if (energizer_timer > 0.0 and max_hp < 500.0) {
+        const t = @min(energizer_timer, 1.0);
+        tint[0] += (0.5 - tint[0]) * t;
+        tint[1] += (0.5 - tint[1]) * t;
+        tint[2] += (1.0 - tint[2]) * t;
+        tint[3] += (1.0 - tint[3]) * t;
+    }
+    if (lifecycle_stage < 0.0) {
+        tint[3] = @max(0.0, tint[3] + lifecycle_stage * 0.1);
+    }
+    return tint;
+}
+
+test "creature render tint preserves native tint and fade order" {
+    const tint = creatureRenderTint(.{ 0.25, 0.5, 0.75, 0.5 }, 100.0, 0.25, -1.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3125), tint[0], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), tint[1], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8125), tint[2], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.525), tint[3], 1e-6);
+}
+
 fn drawCreatures(
     runner: *const live_runner.LiveRunner,
     runtime_assets: ?*const window_assets.RuntimeAssets,
@@ -7063,21 +7091,16 @@ fn drawCreatures(
                 const cell = @as(f32, @floatFromInt(texture.width)) / 8.0;
                 if (cell > 0.0) {
                     const base_scale = creature.size / cell;
-                    var tint = rl.Color.white;
-                    if (runner.session.state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) {
-                        tint = colorLerp(
-                            rl.Color.white,
-                            rl.Color.init(128, 128, 255, 255),
-                            @min(runner.session.state.bonuses.energizer, 1.0),
-                        );
-                    }
-                    if (creature.lifecycle_stage < 0.0) {
-                        tint = colorWithAlpha(tint, @max(0.0, 1.0 + creature.lifecycle_stage * 0.1));
-                    }
+                    const tint = creatureRenderTint(
+                        creature.tint,
+                        creature.max_hp,
+                        runner.session.state.bonuses.energizer,
+                        creature.lifecycle_stage,
+                    );
                     const shadow_enabled = !monster_vision_active;
                     if (shadow_enabled and fx_detail_0) {
                         const is_long = runtime_anim.creatureAnimIsLongStrip(creature.flags);
-                        var shadow_alpha: f32 = 0.4;
+                        var shadow_alpha: f32 = creature.tint[3] * 0.4;
                         if (creature.lifecycle_stage < 0.0) {
                             shadow_alpha = @max(
                                 @as(f32, 0.0),
@@ -7095,7 +7118,7 @@ fn drawCreatures(
                                 },
                                 base_scale * 1.07,
                                 creature.heading - std.math.pi / 2.0,
-                                colorWithAlpha(rl.Color.black, shadow_alpha),
+                                colorWithAlpha(rl.Color.black, shadow_alpha * entity_alpha),
                             );
                         }
                     }
@@ -7106,7 +7129,7 @@ fn drawCreatures(
                         toRlVec(creature.pos),
                         base_scale,
                         creature.heading - std.math.pi / 2.0,
-                        colorWithAlpha(tint, entity_alpha),
+                        colorFromUnitRgba(tint[0], tint[1], tint[2], tint[3] * entity_alpha),
                     );
                     continue;
                 }

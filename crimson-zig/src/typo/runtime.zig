@@ -152,6 +152,7 @@ pub fn midStep(
             .reward_value = 1.0,
             .size = size,
             .contact_damage = 100.0,
+            .tint = .{ call.tint_r, call.tint_g, call.tint_b, 1.0 },
         });
         active_mask[creature_idx] = true;
         _ = state.typo.names.assignRandom(

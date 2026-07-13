@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 23;
+const CAPTURE_FORMAT_VERSION = 24;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -57,7 +57,7 @@ const CAPTURE_FIELD_SETS = {
   "tick.channels.sim_state.players[]": ["index", "pos", "heading", "move_speed", "move_phase", "aim", "aim_heading", "health", "weapon", "experience", "level"],
   "tick.channels.sim_state.players[].weapon": ["weapon_id", "ammo", "clip_size", "reload_active", "reload_timer", "reload_timer_max", "shot_cooldown"],
   "tick.channels.entity_samples": ["creatures", "projectiles", "secondary_projectiles", "bonuses"],
-  "tick.channels.entity_samples.creatures[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "hp", "pos", "flags", "ai_mode", "link_index", "force_target", "target", "target_player", "target_offset", "heading", "target_heading", "collision_timer", "attack_cooldown", "orbit_angle", "orbit_radius", "lifecycle_stage", "vel", "move_speed"],
+  "tick.channels.entity_samples.creatures[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "hp", "pos", "tint", "flags", "ai_mode", "link_index", "force_target", "target", "target_player", "target_offset", "heading", "target_heading", "collision_timer", "attack_cooldown", "orbit_angle", "orbit_radius", "lifecycle_stage", "vel", "move_speed"],
   "tick.channels.entity_samples.projectiles[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "angle", "pos", "vel", "life_timer", "speed_scale", "damage_pool", "hit_radius", "travel_budget", "owner_id"],
   "tick.channels.entity_samples.secondary_projectiles[]": ["uid", "generation", "pool_kind", "index", "active", "type_id", "angle", "pos", "vel", "speed", "trail_timer", "owner_id", "target_id"],
   "tick.channels.entity_samples.bonuses[]": ["uid", "generation", "pool_kind", "index", "active", "bonus_id", "picked", "time_left", "time_max", "pos", "amount"],
@@ -1939,6 +1939,7 @@ function entitySamplesFromTick(tickObj) {
     const index = requireNonNegativeInt(row.index, "samples.creatures[" + i + "].index");
     const uidState = nextEntityUid("creature", index);
     const pos = requireObject(row.pos, "samples.creatures[" + i + "].pos");
+    const tint = requireObject(row.tint, "samples.creatures[" + i + "].tint");
     const target = requireObject(row.target, "samples.creatures[" + i + "].target");
     const targetOffset = requireObject(row.target_offset, "samples.creatures[" + i + "].target_offset");
     creatures.push({
@@ -1952,6 +1953,12 @@ function entitySamplesFromTick(tickObj) {
       pos: {
         x: requireFiniteScalar(pos.x, "samples.creatures[" + i + "].pos.x"),
         y: requireFiniteScalar(pos.y, "samples.creatures[" + i + "].pos.y"),
+      },
+      tint: {
+        r: requireFiniteScalar(tint.r, "samples.creatures[" + i + "].tint.r"),
+        g: requireFiniteScalar(tint.g, "samples.creatures[" + i + "].tint.g"),
+        b: requireFiniteScalar(tint.b, "samples.creatures[" + i + "].tint.b"),
+        a: requireFiniteScalar(tint.a, "samples.creatures[" + i + "].tint.a"),
       },
       flags: requireInt(row.flags, "samples.creatures[" + i + "].flags"),
       ai_mode: requireInt(row.ai_mode, "samples.creatures[" + i + "].ai_mode"),
@@ -3411,6 +3418,12 @@ function readCreatureEntry(index) {
     pos: {
       x: captureNumber(safeReadF32(base.add(0x14))),
       y: captureNumber(safeReadF32(base.add(0x18))),
+    },
+    tint: {
+      r: captureNumber(safeReadF32(base.add(0x3c))),
+      g: captureNumber(safeReadF32(base.add(0x40))),
+      b: captureNumber(safeReadF32(base.add(0x44))),
+      a: captureNumber(safeReadF32(base.add(0x48))),
     },
     vel: {
       x: captureNumber(safeReadF32(base.add(0x1c))),

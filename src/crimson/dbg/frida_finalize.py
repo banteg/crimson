@@ -41,6 +41,7 @@ from .canonical_channels import (
     SnapshotBonusTimers,
     SnapshotGameplay,
     SnapshotPlayer,
+    SnapshotRgba,
     TimingSampleRow,
 )
 from .schema import (
@@ -60,7 +61,7 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 23
+FRIDA_CAPTURE_FORMAT_VERSION = 24
 FRIDA_EVIDENCE_FORMAT_VERSION = 3
 FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
@@ -235,13 +236,6 @@ class _CaptureVec2Row(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     y: float
 
 
-class _CaptureTintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    r: float
-    g: float
-    b: float
-    a: float
-
-
 class _CapturePoolResidueRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     index: int
     active: int
@@ -258,7 +252,7 @@ class _CapturePoolResidueRow(msgspec.Struct, frozen=True, forbid_unknown_fields=
     target_heading: float
     size: float
     hit_flash_timer: float
-    tint: _CaptureTintRow
+    tint: SnapshotRgba
     force_target: int
     target: _CaptureVec2Row
     contact_damage: float

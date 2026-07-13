@@ -10,7 +10,7 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v2\n";
 pub const trace_format_version: u32 = 2;
-pub const trace_schema_version: i32 = 15;
+pub const trace_schema_version: i32 = 16;
 pub const trace_required_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 
@@ -423,6 +423,13 @@ const SnapshotVec2 = struct {
     y: f32,
 };
 
+const SnapshotRgba = struct {
+    r: f32,
+    g: f32,
+    b: f32,
+    a: f32,
+};
+
 const SnapshotWeapon = struct {
     weapon_id: i32,
     ammo: f32,
@@ -621,6 +628,7 @@ const CreatureEntitySample = struct {
     type_id: i32,
     hp: f32,
     pos: SnapshotVec2,
+    tint: SnapshotRgba,
     flags: i32,
     ai_mode: i32,
     link_index: i32,
@@ -2131,6 +2139,12 @@ fn buildEntitySamples(
             .type_id = creature.type_id,
             .hp = creature.hp,
             .pos = .{ .x = creature.pos.x, .y = creature.pos.y },
+            .tint = .{
+                .r = creature.tint[0],
+                .g = creature.tint[1],
+                .b = creature.tint[2],
+                .a = creature.tint[3],
+            },
             .flags = @bitCast(creature.flags),
             .ai_mode = creature.ai_mode,
             .link_index = creature.link_index,

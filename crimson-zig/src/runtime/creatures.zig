@@ -87,6 +87,7 @@ pub const CreatureState = struct {
     move_speed: f32 = 0.0,
     reward_value: f32 = 0.0,
     size: f32 = 0.0,
+    tint: [4]f32 = .{ 1.0, 1.0, 1.0, 1.0 },
     contact_damage: f32 = 0.0,
     plague_infected: bool = false,
     collision_timer: f32 = plague_collision_period,
@@ -128,6 +129,7 @@ pub fn applyPoolResidue(
             .move_speed = slot.move_speed,
             .reward_value = slot.reward_value,
             .size = slot.size,
+            .tint = .{ slot.tint_r, slot.tint_g, slot.tint_b, slot.tint_a },
             .contact_damage = slot.contact_damage,
             .plague_infected = slot.collision_flag != 0,
             .collision_timer = slot.collision_timer,
@@ -242,6 +244,12 @@ pub const CreaturePool = struct {
             .move_speed = narrowF32(init.move_speed),
             .reward_value = narrowF32(init.reward_value),
             .size = narrowF32(init.size),
+            .tint = .{
+                narrowF32(init.tint[0]),
+                narrowF32(init.tint[1]),
+                narrowF32(init.tint[2]),
+                narrowF32(init.tint[3]),
+            },
             .contact_damage = narrowF32(init.contact_damage),
             .plague_infected = false,
             .collision_timer = 0.0,
@@ -4288,6 +4296,33 @@ test "spawn init preserves recycled force target" {
     try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].target_player);
     try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[idx].target_offset.x)));
     try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[idx].target_offset.y)));
+}
+
+test "spawn init stores creature tint" {
+    var pool: CreaturePool = .{};
+    const tint = [4]f32{ 0.25, 0.5, 0.75, 0.125 };
+
+    const idx = pool.spawnInit(.{
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .tint = tint,
+    });
+
+    try std.testing.expectEqual(tint, pool.entries[idx].tint);
+}
+
+test "pool residue restores creature tint" {
+    var pool: CreaturePool = .{};
+    const tint = [4]f32{ 0.125, 0.25, 0.5, 0.75 };
+
+    applyPoolResidue(&pool, &.{.{
+        .index = 3,
+        .tint_r = tint[0],
+        .tint_g = tint[1],
+        .tint_b = tint[2],
+        .tint_a = tint[3],
+    }});
+
+    try std.testing.expectEqual(tint, pool.entries[3].tint);
 }
 
 test "template spawn supports survival late-stage templates" {

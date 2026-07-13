@@ -320,6 +320,7 @@ def _creature_sample(
         "type_id": 0,
         "hp": 1.0,
         "pos": {"x": 0.0, "y": 0.0},
+        "tint": {"r": 0.25, "g": 0.5, "b": 0.75, "a": 0.125},
         "flags": 0,
         "ai_mode": 0,
         "link_index": -1,
@@ -827,6 +828,10 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert creatures0[0].force_target == 1
     assert creatures0[0].target.x == 5.0
     assert creatures0[0].target_offset.y == -0.5
+    assert creatures0[0].tint.r == 0.25
+    assert creatures0[0].tint.g == 0.5
+    assert creatures0[0].tint.b == 0.75
+    assert creatures0[0].tint.a == 0.125
     assert creatures0[0].collision_timer == 0.125
     assert creatures0[0].attack_cooldown == 0.75
     assert ticks[0].channels.checkpoint.deaths == []

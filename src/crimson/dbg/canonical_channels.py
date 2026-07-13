@@ -11,6 +11,13 @@ class SnapshotVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     y: float
 
 
+class SnapshotRgba(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    r: float
+    g: float
+    b: float
+    a: float
+
+
 class SnapshotWeapon(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     weapon_id: int
     ammo: float
@@ -106,6 +113,7 @@ class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     type_id: int
     hp: float
     pos: SnapshotVec2
+    tint: SnapshotRgba
     flags: int
     ai_mode: int
     link_index: int
