@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**34/2161** functions matched, **3280/675651** code bytes (**0.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**35/2161** functions matched, **3465/675651** code bytes (**0.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 27/986 | 3166/385754 | 0.8% | 27/42 |
+| crimsonland.exe | 28/986 | 3351/385754 | 0.9% | 28/43 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**27/986** functions, **3166/385754** bytes (**0.8%**), **27/42** scratches verified.
+**28/986** functions, **3351/385754** bytes (**0.9%**), **28/43** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -48,6 +48,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
+| match | perk_can_offer | 0x0042fb10 | 185 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
 | match | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
 | wip | perks_rebuild_available | 0x0042fc30 | 181 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
