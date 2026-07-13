@@ -5951,8 +5951,8 @@
     "program": "grim.dll",
     "address": "0x1000a390",
     "name": "grim_keyboard_init",
-    "signature": "int grim_keyboard_init(int hwnd)",
-    "comment": "initializes DirectInput keyboard device and acquires it"
+    "signature": "bool grim_keyboard_init(HWND hwnd)",
+    "comment": "lazily creates/configures a buffered DirectInput8 keyboard device, acquires it, and performs an initial poll"
   },
   {
     "program": "grim.dll",

@@ -2254,6 +2254,21 @@ grim.dll body:
 ```
 
 
+## grim.dll — keyboard init helper @ 0x1000a390
+
+- Confirmed name: `grim_keyboard_init`
+- Confirmed C++ signature: `bool grim_keyboard_init(HWND hwnd)`
+- Notes: lazily creates the DirectInput8 interface and system-keyboard device,
+  installs a ten-event buffer, acquires it, and performs an initial poll.
+
+Live Binary Ninja identifies a 272-byte function. The recovered ordinary C++
+uses `IID_IDirectInput8A`, `GUID_SysKeyboard`, `c_dfDIKeyboard`, cooperative
+flags `0x16`, and a 20-byte device-scoped dword property with value 10. It
+reproduces all 89 native instructions, full prefix, and references `18/0/0`.
+The unusual null-window fallback is also preserved: `GetDesktopWindow` is
+called but its return value is not assigned to the original argument.
+
+
 ## grim.dll — keyboard poll helper @ 0x1000a4a0
 
 - Confirmed name: `grim_keyboard_poll`

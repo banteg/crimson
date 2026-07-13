@@ -9155,6 +9155,27 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005007c",
+      "comment": "DirectInput keyboard data format passed to SetDataFormat.",
+      "name": "c_dfDIKeyboard",
+      "program": "grim.dll",
+      "type": "DIDATAFORMAT"
+    },
+    {
+      "address": "0x1005029c",
+      "comment": "DirectInput system-keyboard device GUID.",
+      "name": "GUID_SysKeyboard",
+      "program": "grim.dll",
+      "type": "GUID"
+    },
+    {
+      "address": "0x1005034c",
+      "comment": "Interface identifier requested from DirectInput8Create.",
+      "name": "IID_IDirectInput8A",
+      "program": "grim.dll",
+      "type": "GUID"
+    },
+    {
       "address": "0x10053044",
       "comment": "Base key-repeat delay used by grim_was_key_pressed (held repeat uses 20% of this value).",
       "name": "grim_key_repeat_delay",
