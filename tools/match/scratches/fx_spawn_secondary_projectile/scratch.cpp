@@ -26,6 +26,7 @@ extern "C" int fx_spawn_secondary_projectile(
 found:
     shot_angle = angle - 1.57079637f;
     ++highscore_record_shots_fired;
+    vel_x = (float)cos(shot_angle);
 
     projectile = &secondary_projectile_pool[index];
     projectile->active = 1;
@@ -36,7 +37,6 @@ found:
     projectile->pos.vx.vy.trail_timer = 0.0f;
     projectile->pos.vx.vy.type_id = type_id;
 
-    vel_x = (float)cos(shot_angle);
     projectile->pos.vx.vel_x = vel_x * 90.0f;
 
     vel_y = (float)sin(shot_angle);
