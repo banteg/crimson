@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
 from crimson.persistence import save_status
@@ -98,6 +100,16 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
 
     assert picked == WeaponId.PISTOL
     assert isinstance(picked, WeaponId)
+
+
+def test_weapon_pick_random_available_rejects_uninitialized_availability() -> None:
+    rng = _SeqRng([0])
+    state = GameplayState(rng=_as_rng(rng))
+
+    with pytest.raises(RuntimeError, match="call prepare_weapon_availability"):
+        weapon_pick_random_available(state)
+
+    assert rng._idx == 0
 
 
 def test_weapon_pick_random_available_has_no_synthetic_retry_cap() -> None:

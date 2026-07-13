@@ -63,6 +63,15 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
     """
 
     status = state.status
+    suppress_ion_cannon = state.game_mode == GameMode.QUESTS and state.quest_level == QuestLevel(5, 10)
+    has_eligible_weapon = any(
+        weapon_id < len(state.weapon_available)
+        and state.weapon_available[weapon_id]
+        and not (suppress_ion_cannon and weapon_id == WeaponId.ION_CANNON)
+        for weapon_id in range(1, WEAPON_DROP_ID_COUNT + 1)
+    )
+    if not has_eligible_weapon:
+        raise RuntimeError("weapon availability has no eligible drop; call prepare_weapon_availability()")
 
     while True:
         base_rand = state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_PICK)
@@ -72,9 +81,7 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
         if status is not None:
             usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
             if usage_slot is not None and status.weapon_usage_count_slot(usage_slot) != 0:
-                if (
-                    state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE) & 1
-                ) == 0:
+                if (state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE) & 1) == 0:
                     base_rand = state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
                     weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
@@ -84,11 +91,7 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
             continue
 
         # Quest 5-10 special-case: suppress Ion Cannon.
-        if (
-            state.game_mode == GameMode.QUESTS
-            and state.quest_level == QuestLevel(5, 10)
-            and weapon_id == WeaponId.ION_CANNON
-        ):
+        if suppress_ion_cannon and weapon_id == WeaponId.ION_CANNON:
             continue
 
         return weapon_id

@@ -27,6 +27,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.weapon_runtime import prepare_weapon_availability
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -1896,6 +1897,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
 
 def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
+    prepare_weapon_availability(state)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     pool = CreaturePool()
 
