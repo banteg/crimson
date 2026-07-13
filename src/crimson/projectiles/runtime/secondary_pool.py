@@ -267,8 +267,11 @@ class SecondaryProjectilePool:
                     d_sq = Vec2.distance_sq(entry.pos, creature.pos)
                     if d_sq < radius_sq:
                         hp_before = float(creature.hp)
-                        impulse_dir = entry.pos.direction_to(creature.pos)
-                        impulse = impulse_dir * 0.1
+                        impulse_dir = (creature.pos - entry.pos).normalized()
+                        impulse = Vec2(
+                            f32(float(impulse_dir.x) * 0.1),
+                            f32(float(impulse_dir.y) * 0.1),
+                        )
                         _apply_secondary_damage(
                             creature_idx,
                             damage,

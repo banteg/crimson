@@ -20,7 +20,6 @@ class PlayerPerkTickCtx(msgspec.Struct):
     player_pos_before_move: Vec2
     players: list[PlayerState] | None
     dt: float
-    stationary: bool
     owner_ref_for_player: OwnerRefForPlayerFn
     owner_ref_for_player_projectiles: OwnerRefForPlayerProjectilesFn
     projectile_spawn: ProjectileSpawnFn

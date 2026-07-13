@@ -1109,6 +1109,24 @@ def test_player_update_move_speed_uses_native_acceleration_f32_store() -> None:
     assert player.move_speed == 0.6399999856948853
 
 
+def test_player_update_normalizes_analog_move_with_native_safe_helper() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), heading=0.0, aim_heading=0.0)
+
+    player_update(
+        player,
+        PlayerInput(
+            move=Vec2(0.19850380718708038, -0.9801002740859985),
+            aim=Vec2(513.0, 512.0),
+            move_mode=MovementControlType.DUAL_ACTION_PAD,
+        ),
+        0.1,
+        state,
+    )
+
+    assert player.heading == 0.0999155342578888
+
+
 def test_player_direction_heading_subtraction_uses_native_f32_store() -> None:
     heading = 3.93251371383667
 

@@ -637,6 +637,30 @@ def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
     assert damage_runtime.calls[0][1] == 21.35000228881836
 
 
+def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.DETONATION,
+            time_to_live=0.5,
+        ),
+    )
+    creatures = [_creature(pos=Vec2(1.0, 0.0001), hp=1000.0)]
+    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+
+    pool.step(
+        SecondaryStepCtx(
+            dt=0.1,
+            creatures=creatures,
+            creature_damage_runtime=damage_runtime,
+        ),
+    )
+
+    assert damage_runtime.calls[0][3] == Vec2(0.10000000149011612, 9.999999747378752e-06)
+
+
 def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
     return [RngCallerStatic(record.caller) for record in rng.records_since() if record.caller in allowed]
 

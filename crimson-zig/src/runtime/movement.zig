@@ -177,8 +177,7 @@ pub fn updatePlayerFromGameInput(
             const moving_input = raw_mag > 0.2;
             var turn_alignment_scale: f32 = 1.0;
             if (moving_input) {
-                const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
-                raw_move = raw_move.mul(inv);
+                raw_move = normalizeVec2SafeNative(raw_move);
                 const target_heading = normalizeHeading(raw_move.toHeading());
                 const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
                 move_ext = directionFromHeadingNativeExt(player.heading);
@@ -201,8 +200,7 @@ pub fn updatePlayerFromGameInput(
         const moving_input = raw_mag > move_input_threshold;
         var turn_alignment_scale: f32 = 1.0;
         if (moving_input) {
-            const inv = if (raw_mag > 1e-9) 1.0 / raw_mag else 0.0;
-            raw_move = raw_move.mul(inv);
+            raw_move = normalizeVec2SafeNative(raw_move);
             const target_heading = normalizeHeading(raw_move.toHeading());
             const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
             move_ext = directionFromHeadingNativeExt(player.heading);
@@ -369,17 +367,10 @@ fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32)
 }
 
 fn normalizeVec2SafeNative(value: state_mod.Vec2) state_mod.Vec2 {
-    const magnitude_sq = native_math.pc24Add(
-        native_math.pc24Mul(value.y, value.y),
-        native_math.pc24Mul(value.x, value.x),
-    );
-    if (native_math.floatNearEqual(magnitude_sq, 1.0)) return value;
-    if (!(magnitude_sq > native_math.native_float_min)) return .{};
-
-    const inv_magnitude = native_math.pc24Div(1.0, native_math.pc24Sqrt(magnitude_sq));
+    const normalized = native_math.normalizeVec2Safe(value.x, value.y);
     return .{
-        .x = native_math.pc24Mul(inv_magnitude, value.x),
-        .y = native_math.pc24Mul(inv_magnitude, value.y),
+        .x = normalized[0],
+        .y = normalized[1],
     };
 }
 

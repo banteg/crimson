@@ -534,12 +534,18 @@ pub const SecondaryProjectilePool = struct {
 
 fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
     const delta = state_mod.Vec2.sub(target, origin);
-    const len = delta.length();
-    if (!(len > 1e-6)) return .{};
+    const normalized = native_math.normalizeVec2Safe(delta.x, delta.y);
     return .{
-        .x = narrowF32(delta.x / len),
-        .y = narrowF32(delta.y / len),
+        .x = normalized[0],
+        .y = normalized[1],
     };
+}
+
+test "secondary impulse direction uses native safe normalization" {
+    try std.testing.expectEqual(
+        @as(state_mod.Vec2, .{ .x = 1.0, .y = @bitCast(@as(u32, 0x38d1b717)) }),
+        directionTo(.{}, .{ .x = 1.0, .y = 0.0001 }),
+    );
 }
 
 fn creatureFindNearestSeekerTarget(

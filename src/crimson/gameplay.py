@@ -673,14 +673,12 @@ def player_update(
                 movement_dt,
             )
 
-    perk_tick_stationary = abs(float(player.move_speed)) <= 1e-9
     apply_player_perk_ticks(
         player=player,
         player_pos_before_move=prev_pos,
         dt=dt,
         state=state,
         players=players,
-        stationary=perk_tick_stationary,
         owner_ref_for_player=_owner_ref_for_player,
         owner_ref_for_player_projectiles=_owner_ref_for_player_projectiles,
         projectile_spawn=_projectile_spawn,
@@ -822,8 +820,7 @@ def player_update(
             moving_input = raw_mag > (0.0 if move_mode == MovementControlType.MOUSE_POINT_CLICK else 0.2)
             turn_alignment_scale = 1.0
             if moving_input:
-                inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-                move = raw_move * inv
+                move = raw_move.normalized()
                 target_heading = _normalize_heading_angle(move.to_heading())
                 angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
                 move = _direction_from_heading_native(float(player.heading))
@@ -845,8 +842,7 @@ def player_update(
 
         turn_alignment_scale = 1.0
         if moving_input:
-            inv = 1.0 / raw_mag if raw_mag > 1e-9 else 0.0
-            move = raw_move * inv
+            move = raw_move.normalized()
             # Native normalizes this heading into [0, 2pi] before calling
             # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
             target_heading = _normalize_heading_angle(move.to_heading())

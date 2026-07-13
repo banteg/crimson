@@ -42,6 +42,18 @@ pub inline fn floatNearEqual(lhs: f32, rhs: f32) bool {
     return difference >= -native_float_epsilon and difference <= native_float_epsilon;
 }
 
+pub inline fn normalizeVec2Safe(x: f32, y: f32) [2]f32 {
+    const magnitude_sq = pc24Add(pc24Mul(y, y), pc24Mul(x, x));
+    if (floatNearEqual(magnitude_sq, 1.0)) return .{ x, y };
+    if (!(magnitude_sq > native_float_min)) return .{ 0.0, 0.0 };
+
+    const inv_magnitude = pc24Div(1.0, pc24Sqrt(magnitude_sq));
+    return .{
+        pc24Mul(inv_magnitude, x),
+        pc24Mul(inv_magnitude, y),
+    };
+}
+
 pub inline fn sinNative(value: f32) f32 {
     return @floatCast(std.math.sin(@as(f64, @floatCast(value))));
 }
@@ -146,4 +158,12 @@ test "float near equal uses inclusive native f32 epsilon" {
     try std.testing.expect(floatNearEqual(1.0, 1.0 + native_float_epsilon));
     try std.testing.expect(!floatNearEqual(1.0, 1.0 + 2.0 * native_float_epsilon));
     try std.testing.expect(!floatNearEqual(std.math.nan(f32), 1.0));
+}
+
+test "safe vec2 normalization preserves near-unit and rejects subnormal lengths" {
+    try std.testing.expectEqual(
+        [2]f32{ 1.0, @bitCast(@as(u32, 0x38d1b717)) },
+        normalizeVec2Safe(1.0, 0.0001),
+    );
+    try std.testing.expectEqual([2]f32{ 0.0, 0.0 }, normalizeVec2Safe(1e-20, 0.0));
 }
