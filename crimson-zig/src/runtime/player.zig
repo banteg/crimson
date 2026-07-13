@@ -112,7 +112,7 @@ pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
     if (state.bonuses.weapon_power_up > 0.0) {
         reload_time = narrowF32(reload_time * 0.6);
     }
-    player.weapon.reload_timer = @max(0.0, reload_time);
+    player.weapon.reload_timer = reload_time;
     player.weapon.reload_timer_max = player.weapon.reload_timer;
 }
 

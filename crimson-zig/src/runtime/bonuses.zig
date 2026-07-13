@@ -970,7 +970,7 @@ pub fn questUnlockWeaponForIndex(global_index: i32) ?game_ids.WeaponId {
 pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.WeaponId {
     weaponRefreshAvailable(state);
 
-    for (0..1000) |_| {
+    while (true) {
         var base_rand = state.rng.randTagged(rng_callers.weapon_pick_random_available_pick);
         var weapon_id: i32 = @intCast(base_rand % weapon_drop_id_count + 1);
         var weapon_enum = weapon_data.weaponIdFromInt(weapon_id);
@@ -994,7 +994,6 @@ pub fn weaponPickRandomAvailable(state: *state_mod.GameplayState) game_ids.Weapo
         }
         return weapon_enum;
     }
-    return .pistol;
 }
 
 fn bonusPickRandomType(

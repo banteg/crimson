@@ -90,6 +90,13 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     assert isinstance(picked, WeaponId)
 
 
+def test_weapon_pick_random_available_has_no_synthetic_retry_cap() -> None:
+    state = GameplayState(rng=_as_rng(_SeqRng([1] * 1001 + [0])))
+    state.weapon_available[WeaponId.PISTOL] = True
+
+    assert weapon_pick_random_available(state) == WeaponId.PISTOL
+
+
 def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     status = _status_default()
     status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL)

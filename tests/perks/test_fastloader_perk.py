@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import player_start_reload
@@ -29,3 +30,19 @@ def test_fastloader_scales_reload_timer() -> None:
     assert_float_close(base.weapon.reload_timer, reload_time)
     assert_float_close(perk.weapon.reload_timer, reload_time * 0.7)
     assert_float_close(perk.weapon.reload_timer_max, perk.weapon.reload_timer)
+
+
+def test_fastloader_spills_before_weapon_power_up_scaling() -> None:
+    weapon_id = WeaponId.PISTOL
+    reload_time = f32(WEAPON_BY_ID[weapon_id].reload_time)
+    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))
+    player.perk_counts[int(PerkId.FASTLOADER)] = 1
+    state = GameplayState()
+    state.bonuses.weapon_power_up = 1.0
+
+    player_start_reload(player, state)
+
+    expected = x87_pc24_mul(x87_pc24_mul(reload_time, f32(0.7)), f32(0.6))
+    assert player.weapon.reload_timer == expected
+    assert player.weapon.reload_timer_max == expected
+    assert expected != f32(float(reload_time) * 0.7 * 0.6)

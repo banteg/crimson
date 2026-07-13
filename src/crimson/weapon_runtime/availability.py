@@ -66,7 +66,7 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
 
     status = state.status
 
-    for _ in range(1000):
+    while True:
         base_rand = state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_PICK)
         weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
@@ -94,5 +94,3 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
             continue
 
         return weapon_id
-
-    return WeaponId.PISTOL
