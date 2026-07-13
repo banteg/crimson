@@ -62,6 +62,7 @@ pub const window_atlas = @import("window_atlas.zig");
 pub const version = "0.1.0-dev";
 
 test {
+    _ = effects;
     _ = net;
     _ = quest_level;
 }

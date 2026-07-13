@@ -229,7 +229,6 @@ pub const EffectPool = struct {
     }
 
     pub fn update(self: *EffectPool, dt: f32, fx_queue: ?*terrain_fx_mod.FxQueue) void {
-        if (!(dt > 0.0)) return;
         for (&self.entries, 0..) |*entry, idx| {
             const flags = entry.flags;
             if (flags == 0) continue;
@@ -248,11 +247,7 @@ pub const EffectPool = struct {
                         entry.scale = narrowF32(entry.scale + entry.scale_step * dt);
                     }
                     if ((flags & 0x10) != 0) {
-                        const next_alpha = if (entry.lifetime > 1e-9)
-                            narrowF32(1.0 - entry.age / entry.lifetime)
-                        else
-                            0.0;
-                        entry.color.a = next_alpha;
+                        entry.color.a = narrowF32(1.0 - entry.age / entry.lifetime);
                     }
                 }
                 continue;
@@ -260,6 +255,7 @@ pub const EffectPool = struct {
             if (fx_queue) |queue| {
                 if ((flags & 0x80) != 0) {
                     const alpha: f32 = if ((flags & 0x100) != 0) 0.35 else 0.8;
+                    entry.color.a = alpha;
                     _ = queue.add(
                         entry.effect_id,
                         entry.pos,
@@ -270,7 +266,7 @@ pub const EffectPool = struct {
                             .r = entry.color.r,
                             .g = entry.color.g,
                             .b = entry.color.b,
-                            .a = alpha,
+                            .a = entry.color.a,
                         },
                     );
                 }
@@ -648,3 +644,55 @@ pub const EffectPool = struct {
         }
     }
 };
+
+test "effect update runs at zero dt without a lifetime epsilon" {
+    var pool: EffectPool = .{};
+    pool.entries[0] = .{
+        .age = 1.0,
+        .lifetime = 1.0,
+        .flags = 1,
+    };
+
+    pool.update(0.0, null);
+    try std.testing.expectEqual(@as(i32, 0), pool.entries[0].flags);
+
+    pool.entries[1] = .{
+        .age = 0.0,
+        .lifetime = 1e-12,
+        .flags = 0x10,
+        .color = .{ .a = 0.25 },
+    };
+    pool.update(0.0, null);
+
+    try std.testing.expectEqual(@as(i32, 0x10), pool.entries[1].flags);
+    try std.testing.expectEqual(@as(f32, 1.0), pool.entries[1].color.a);
+}
+
+test "effect expiry stores terrain decal alpha before queueing" {
+    var pool: EffectPool = .{};
+    var queue: terrain_fx_mod.FxQueue = .{};
+    pool.entries[0] = .{
+        .effect_id = @intFromEnum(EffectId.casing),
+        .age = 1.0,
+        .lifetime = 1.0,
+        .flags = 0x80,
+        .color = .{ .a = 0.25 },
+    };
+    pool.entries[1] = .{
+        .effect_id = @intFromEnum(EffectId.casing),
+        .age = 1.0,
+        .lifetime = 1.0,
+        .flags = 0x180,
+        .color = .{ .a = 0.25 },
+    };
+
+    pool.update(0.0, &queue);
+
+    try std.testing.expectEqual(@as(i32, 0), pool.entries[0].flags);
+    try std.testing.expectEqual(@as(i32, 0), pool.entries[1].flags);
+    try std.testing.expectEqual(@as(f32, 0.8), pool.entries[0].color.a);
+    try std.testing.expectEqual(@as(f32, 0.35), pool.entries[1].color.a);
+    try std.testing.expectEqual(@as(usize, 2), queue.count);
+    try std.testing.expectEqual(@as(f32, 0.8), queue.entries[0].color.a);
+    try std.testing.expectEqual(@as(f32, 0.35), queue.entries[1].color.a);
+}
