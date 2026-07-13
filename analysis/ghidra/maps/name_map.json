@@ -5677,8 +5677,8 @@
     "program": "grim.dll",
     "address": "0x10007870",
     "name": "grim_draw_fullscreen_quad",
-    "signature": "void grim_draw_fullscreen_quad(void)",
-    "comment": "Grim2D vtable 0xc8: full-screen quad with current texture"
+    "signature": "void grim_draw_fullscreen_quad(int unused)",
+    "comment": "Grim2D vtable 0xc8: full-screen quad with current texture; caller passes unused zero"
   },
   {
     "program": "grim.dll",

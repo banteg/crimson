@@ -1053,11 +1053,18 @@ references. A minimal two-field texture-slot view recovers the validated
 
 ## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
 
-- Ghidra signature: `void grim_draw_fullscreen_quad(void)`
-- Notes: decompiler shows an extra `0` argument; grim.dll just batches a full-screen quad
+- Confirmed name: `draw_fullscreen_quad`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_fullscreen_quad(int unused)`
+- Ghidra signature (missing unused argument): `void grim_draw_fullscreen_quad(void)`
+- Notes: the sole EXE call pushes zero, and live Binary Ninja shows `retn 0x4`,
+  proving one unused stack argument. The method clears rotation, batches one
+  current-texture quad from the origin to the unsigned-at-use backbuffer
+  dimensions, and ends the batch.
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: terrain_render (`FUN_004188a0`):L11783
 - First callsite: terrain_render (`FUN_004188a0`) (line 11783)
+- Runtime evidence: `evidence_summary.json` records 6,902 entry/exit events and
+  3,451 `begin_batch`/`end_batch` pairs.
 
 
 ```c
@@ -1072,6 +1079,11 @@ grim.dll body:
   (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
   (**(code **)(*in_ECX + 0xf0))();
 ```
+
+The recovered VC6.5 source matches all 32 instructions and both masked
+references. Explicit unsigned casts of the signed dimension globals naturally
+produce the native qword `fild` stack schedule; the corrected parameter
+accounts for the native stack cleanup without an ABI shim.
 
 
 ## 0xcc — grim_draw_fullscreen_color @ 0x100079b0

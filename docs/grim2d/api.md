@@ -228,7 +228,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x28` | 1 | `grim_get_error_text` | `char * grim_get_error_text(void)` |
 | `0x50` | 1 | `grim_get_key_char` | `int grim_get_key_char(void)` |
 | `0xac` | 1 | `grim_create_texture` | `int grim_create_texture(char * name, int width, int height)` |
-| `0xc8` | 1 | `grim_draw_fullscreen_quad` | `void grim_draw_fullscreen_quad(void)` |
+| `0xc8` | 1 | `grim_draw_fullscreen_quad` | `void grim_draw_fullscreen_quad(int unused)` |
 | `0xd8` | 1 | `grim_draw_circle_filled` | `void grim_draw_circle_filled(float x, float y, float radius)` |
 | `0xdc` | 1 | `grim_draw_circle_outline` | `void grim_draw_circle_outline(float x, float y, float radius)` |
 | `0x54` | 2 | `grim_set_key_char_buffer` | `void grim_set_key_char_buffer(uchar * buffer, int * count, int size)` |
@@ -317,7 +317,7 @@ These offsets appear with keycodes or input-related values:
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |
-| `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | high | batch draw fullscreen quad |
+| `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(int unused)` | confirmed | caller passes zero; batch draws current texture fullscreen |
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | high | alpha>0 draws a fullscreen color quad |
 | `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h, const float *rgba)` | confirmed | UI panel fill / background quad with explicit color |
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |

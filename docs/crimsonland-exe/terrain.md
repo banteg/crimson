@@ -629,7 +629,7 @@ v1 = (screen_height / 1024.0f) + v0;
 ```
 
 5. `grim_set_uv(u0,v0,u1,v1)`
-6. draw one fullscreen quad (`grim_draw_fullscreen_quad()`):
+6. draw one fullscreen quad (`grim_draw_fullscreen_quad(0)`):
 
 * geometry is screen-sized
 * UV picks the camera window out of the big terrain texture
