@@ -1,11 +1,26 @@
 from __future__ import annotations
 
 import math
+import struct
 from typing import TYPE_CHECKING, Protocol
 
 import msgspec
 
 from .math import clamp
+
+_F32 = struct.Struct("<f")
+_F32_MAX = 3.4028234663852886e38
+_FLOAT_EPSILON = 1.1920928955078125e-7
+_FLOAT_MIN = 1.1754943508222875e-38
+
+
+def _f32(value: float) -> float:
+    narrowed = float(value)
+    if narrowed > _F32_MAX:
+        return math.inf
+    if narrowed < -_F32_MAX:
+        return -math.inf
+    return _F32.unpack(_F32.pack(narrowed))[0]
 
 if TYPE_CHECKING:
     from grim.raylib_api import rl
@@ -51,11 +66,16 @@ class Vec2(msgspec.Struct, frozen=True):
         return (self.x + self.y) * 0.5
 
     def normalized(self) -> Vec2:
-        magnitude_sq = self.length_sq()
-        if magnitude_sq <= 0.0:
+        x = _f32(self.x)
+        y = _f32(self.y)
+        magnitude_sq = _f32(_f32(y * y) + _f32(x * x))
+        difference = _f32(magnitude_sq - 1.0)
+        if -_FLOAT_EPSILON <= difference <= _FLOAT_EPSILON:
+            return Vec2(x, y)
+        if not magnitude_sq > _FLOAT_MIN:
             return Vec2()
-        inv_magnitude = 1.0 / math.sqrt(magnitude_sq)
-        return Vec2(self.x * inv_magnitude, self.y * inv_magnitude)
+        inv_magnitude = _f32(1.0 / _f32(math.sqrt(magnitude_sq)))
+        return Vec2(_f32(inv_magnitude * x), _f32(inv_magnitude * y))
 
     def normalized_with_length(self, *, epsilon: float = 1e-6) -> tuple[Vec2, float]:
         magnitude = self.length()

@@ -244,10 +244,8 @@ pub fn updatePlayerFromGameInput(
         .x = narrowF32(input.aim_x),
         .y = narrowF32(input.aim_y),
     };
-    var aim_dir = state_mod.Vec2.sub(player.aim, player.pos);
-    const aim_len_sq = aim_dir.lengthSq();
-    if (aim_len_sq > 0.0) {
-        aim_dir = aim_dir.mul(1.0 / std.math.sqrt(aim_len_sq));
+    const aim_dir = normalizeVec2SafeNative(state_mod.Vec2.sub(player.aim, player.pos));
+    if (aim_dir.lengthSq() > 0.0) {
         player.aim_dir = aim_dir;
         player.aim_heading = aimHeadingFromAimPointNative(player.pos, player.aim);
     }
@@ -367,6 +365,21 @@ fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32)
     return .{
         .x = narrowF32(dt_wide * @as(f64, @floatCast(move_dx))),
         .y = narrowF32(dt_wide * @as(f64, @floatCast(move_dy))),
+    };
+}
+
+fn normalizeVec2SafeNative(value: state_mod.Vec2) state_mod.Vec2 {
+    const magnitude_sq = native_math.pc24Add(
+        native_math.pc24Mul(value.y, value.y),
+        native_math.pc24Mul(value.x, value.x),
+    );
+    if (native_math.floatNearEqual(magnitude_sq, 1.0)) return value;
+    if (!(magnitude_sq > native_math.native_float_min)) return .{};
+
+    const inv_magnitude = native_math.pc24Div(1.0, native_math.pc24Sqrt(magnitude_sq));
+    return .{
+        .x = native_math.pc24Mul(inv_magnitude, value.x),
+        .y = native_math.pc24Mul(inv_magnitude, value.y),
     };
 }
 
@@ -710,6 +723,17 @@ test "aim heading from aim point matches native fpatan rounding path" {
     const aim_pos: state_mod.Vec2 = .{ .x = 333.0390625, .y = 391.1640625 };
     const heading = aimHeadingFromAimPointNative(player_pos, aim_pos);
     try std.testing.expectEqual(@as(u32, 0xbf7a1659), @as(u32, @bitCast(heading)));
+}
+
+test "safe normalization preserves native near-unit vector" {
+    const normalized = normalizeVec2SafeNative(.{ .x = 1.0, .y = 0.0001 });
+
+    try std.testing.expectEqual(@as(f32, 1.0), normalized.x);
+    try std.testing.expectEqual(@as(u32, 0x38d1b717), @as(u32, @bitCast(normalized.y)));
+}
+
+test "safe normalization zeros native subnormal length" {
+    try std.testing.expectEqual(@as(state_mod.Vec2, .{}), normalizeVec2SafeNative(.{ .x = 1e-20, .y = 0.0 }));
 }
 
 test "static movement narrows x87 direction and alignment operations" {

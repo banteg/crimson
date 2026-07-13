@@ -6,6 +6,8 @@ pub const native_quarter_pi: f32 = @bitCast(@as(u32, 0x3F490FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 pub const native_creature_spawn_elapsed_scale: f32 = @bitCast(@as(u32, 0x3727C5AD));
+pub const native_float_epsilon: f32 = @bitCast(@as(u32, 0x34000000));
+pub const native_float_min: f32 = @bitCast(@as(u32, 0x00800000));
 
 pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
@@ -33,6 +35,11 @@ pub inline fn pc24Sqrt(value: anytype) f32 {
 
 pub inline fn pc24Hypot(x: anytype, y: anytype) f32 {
     return pc24Sqrt(pc24Add(pc24Mul(x, x), pc24Mul(y, y)));
+}
+
+pub inline fn floatNearEqual(lhs: f32, rhs: f32) bool {
+    const difference = pc24Sub(lhs, rhs);
+    return difference >= -native_float_epsilon and difference <= native_float_epsilon;
 }
 
 pub inline fn sinNative(value: f32) f32 {
@@ -133,4 +140,10 @@ test "pc24 helpers round every arithmetic operation" {
     const distance_sq = pc24Add(pc24Mul(@as(f32, 58.63446044921875), @as(f32, 58.63446044921875)), pc24Mul(@as(f32, -209.81591796875), @as(f32, -209.81591796875)));
     const distance = pc24Sqrt(distance_sq);
     try std.testing.expectEqual(@as(f32, 217.8548126220703), distance);
+}
+
+test "float near equal uses inclusive native f32 epsilon" {
+    try std.testing.expect(floatNearEqual(1.0, 1.0 + native_float_epsilon));
+    try std.testing.expect(!floatNearEqual(1.0, 1.0 + 2.0 * native_float_epsilon));
+    try std.testing.expect(!floatNearEqual(std.math.nan(f32), 1.0));
 }

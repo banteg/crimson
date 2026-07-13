@@ -19,9 +19,8 @@ def test_vec2_normalized_returns_unit_vector_without_mutating_original() -> None
     normalized = vec.normalized()
 
     assert normalized is not vec
-    assert_float_close(normalized.x, 0.6)
-    assert_float_close(normalized.y, 0.8)
-    assert_float_close(normalized.length(), 1.0)
+    assert normalized == Vec2(0.6000000238418579, 0.800000011920929)
+    assert normalized.length() == 1.000000023841858
     assert_float_close(vec.x, 3.0)
     assert_float_close(vec.y, 4.0)
 
@@ -33,6 +32,16 @@ def test_vec2_normalization_of_zero_vector_returns_zero() -> None:
 
     assert_float_close(normalized.x, 0.0)
     assert_float_close(normalized.y, 0.0)
+
+
+def test_vec2_normalization_preserves_native_near_unit_vector() -> None:
+    normalized = Vec2(1.0, 0.0001).normalized()
+
+    assert normalized == Vec2(1.0, 9.999999747378752e-05)
+
+
+def test_vec2_normalization_zeros_native_subnormal_length() -> None:
+    assert Vec2(1e-20, 0.0).normalized() == Vec2()
 
 
 def test_vec2_angle_helpers_round_trip() -> None:
@@ -207,4 +216,3 @@ def test_rect_conversion_helpers() -> None:
     assert round_trip == rect
     assert from_top_left == rect
     assert from_center == rect
-
