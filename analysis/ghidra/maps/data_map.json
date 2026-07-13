@@ -3456,6 +3456,13 @@
       "type": "float"
     },
     {
+      "address": "0x00487028",
+      "comment": "Reserved run-state word cleared by gameplay_run_state_init; no other accesses are currently known.",
+      "name": "gameplay_run_reserved_zero",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048702c",
       "comment": "Screen-fade ramp direction flag in the frame loop (0=fade out, nonzero=fade in).",
       "name": "screen_fade_ramp_flag",
