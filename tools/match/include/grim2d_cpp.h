@@ -107,7 +107,7 @@ public:
         float x3,
         float y3);
     virtual void grim_draw_text_mono(float x, float y, char *text) = 0;
-    virtual void grim_draw_text_mono_fmt(float x, float y, char *fmt, ...) = 0;
+    virtual void grim_draw_text_mono_fmt(float x, float y, char *fmt, ...);
     virtual void grim_draw_text_small(float x, float y, char *text) = 0;
     virtual void grim_draw_text_small_fmt(float x, float y, char *fmt, ...);
 };

@@ -1982,9 +1982,13 @@ grim.dll body:
 
 ## 0x140 — grim_draw_text_mono_fmt @ 0x10009940
 
-- Notes: printf-style wrapper around 0x13c
-- Ghidra signature: `void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)`
-- Suggested signature: `void grim_draw_text_mono_fmt(float x, float y, const char *fmt, ...)`
+- Confirmed name: `draw_text_mono_fmt`
+- Confirmed C++ signature: `void __cdecl IGrim2D::draw_text_mono_fmt(float x, float y, char *fmt, ...)`
+- Notes: this cdecl varargs member passes the argument tail after `fmt` to the
+  imported `vsprintf`, writes into `grim_printf_buffer`, and dispatches
+  `(x, y, buffer)` through the mono-font draw slot at `0x13c`. Live Binary
+  Ninja disassembly confirms the explicit stack `self` and plain `ret`.
+- Ghidra signature: `void grim_draw_text_mono_fmt(IGrim2D *self, float x, float y, char *fmt, ...)`
 - Call sites: 3 (unique funcs: 3)
 - Sample calls: ui_render_keybind_help:L3374; FUN_00406350:L3950; ui_render_hud (`FUN_0041aed0`):L11281
 - First callsite: ui_render_keybind_help (line 3374)
@@ -2004,6 +2008,10 @@ grim.dll body:
   vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
   (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
 ```
+
+The recovered VC6.5 source matches all 16 instructions and all 3 masked
+references, including both `grim_printf_buffer` operands and the imported
+`vsprintf` IAT slot.
 
 
 ## 0x144 — grim_draw_text_small @ 0x10009730
