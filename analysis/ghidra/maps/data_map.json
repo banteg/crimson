@@ -10175,7 +10175,8 @@
       "address": "0x1005d958",
       "comment": "Keyboard event buffer (DIDEVICEOBJECTDATA[10]).",
       "name": "grim_keyboard_event_buffer",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "DIDEVICEOBJECTDATA[10]"
     },
     {
       "address": "0x1005da20",
@@ -10195,7 +10196,8 @@
       "address": "0x1005da28",
       "comment": "Keyboard state buffer (256-byte key array).",
       "name": "grim_keyboard_state",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char[256]"
     },
     {
       "address": "0x1005db28",

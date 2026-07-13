@@ -5510,7 +5510,7 @@
     "address": "0x10007330",
     "name": "grim_flush_input",
     "signature": "void grim_flush_input(void)",
-    "comment": "Grim2D vtable 0x4c (provisional): clear buffered input/device state"
+    "comment": "Grim2D vtable 0x4c: clear keyboard state, drain buffered DirectInput events, and clear the key-char queue"
   },
   {
     "program": "grim.dll",

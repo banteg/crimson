@@ -110,6 +110,9 @@ Validation highlights (see the evidence appendix for snippets):
   an ID and hidden result buffer, then consume the returned buffer pointer;
   invalid IDs receive the zero-filled default record.
 
+- `grim_flush_input` zeroes the 256-byte keyboard state before and after
+  draining 20-byte DirectInput8 events, then clears the buffered key-char FIFO.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 

@@ -418,7 +418,11 @@ LAB_00401add:
 
 ## 0x4c — grim_flush_input @ 0x10007330
 
+- Confirmed name: `flush_input`
+- Confirmed C++ signature: `void __thiscall IGrim2D::flush_input(void)`
 - Ghidra signature: `void grim_flush_input(void)`
+- Notes: clears the 256-byte keyboard state, drains queued DirectInput events,
+  clears the state again, and empties the key-char FIFO.
 - Call sites: 12 (unique funcs: 10)
 - Sample calls: console_set_open (`FUN_004018b0`):L346; quest_mode_update:L4357; tutorial_prompt_dialog (`FUN_00408530`):L5083; tutorial_prompt_dialog (`FUN_00408530`):L5104; gameplay_update_and_render:L5879; game_over_screen_update:L7055; quest_failed_screen_update:L7326; quest_results_screen_update (`FUN_00410d20`):L7702
 - First callsite: console_set_open (`FUN_004018b0`) (line 346)
@@ -431,6 +435,17 @@ LAB_00401add:
   return;
 }
 ```
+
+Live Binary Ninja identifies a 91-byte function at the vtable's `+0x4c` slot.
+It zeroes `grim_keyboard_state[256]`, initializes an event count to 10, and
+calls the keyboard device's `GetDeviceData` slot with 20-byte events. The call
+is repeated while the returned unsigned count is nonzero, with a 101-call
+safety cap. The function then zeroes the keyboard state again and clears
+`grim_key_char_queue_count`.
+
+The recovered C++ source compiles with MSVC 6.5 to all 34 native instructions,
+with full prefix and masked references `5/0/0`. The five references resolve to
+the keyboard device, event buffer, keyboard state (twice), and key-char count.
 
 
 ## 0x50 — grim_get_key_char @ 0x10005c40
