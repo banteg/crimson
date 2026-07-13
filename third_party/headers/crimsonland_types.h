@@ -231,7 +231,7 @@ typedef struct player_state_t {
     float living_fortress_timer;
     float fire_cough_timer;
     int experience;
-    unsigned char _pad5[4];
+    int reset_reserved_a0;
     int level;
     int perk_counts[0x80];
     float spread_heat;
@@ -252,7 +252,7 @@ typedef struct player_state_t {
     float alt_reload_timer;
     float alt_shot_cooldown;
     float alt_reload_timer_max;
-    unsigned char _pad7[4];
+    int reset_reserved_zero;
     float muzzle_flash_alpha;
     float aim_heading;
     float turn_speed;

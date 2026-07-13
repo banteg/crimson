@@ -5374,6 +5374,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00490960",
+      "comment": "Unknown per-player reset slot at offset 0xa0; player_reset_all is its only observed access.",
+      "name": "player_reset_reserved_a0",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00490964",
       "comment": "Per-player level/perk tier; increments when XP crosses thresholds and gates survival wave milestones.",
       "name": "player_level",
@@ -5474,6 +5481,13 @@
       "comment": "Per-player alt reload timer max (player_health + 0x2d0)",
       "name": "player_alt_reload_timer_max",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00490ba8",
+      "comment": "Unknown per-player reset slot at offset 0x2e8; player_reset_all is its only observed access.",
+      "name": "player_reset_reserved_2e8",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00490bac",
@@ -6578,6 +6592,13 @@
       "name": "bonus_update_phase_accumulator",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x004aaf30",
+      "comment": "Unknown player-reset global; player_reset_all is its only observed access and clears it once per player slot.",
+      "name": "player_reset_reserved_zero",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf34",
