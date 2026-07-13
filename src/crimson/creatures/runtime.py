@@ -1122,10 +1122,15 @@ class CreaturePool:
                         # Do not run `_tick_dead` immediately here.
                         pass
 
-            target_player = self._resolve_target_player_index(creature, players)
+            uses_dormant_target = (
+                single_player_dead_target_pos is not None
+                and float(players[0].health) <= 0.0
+                and int(creature.target_player) == 1
+            )
+            target_player = 1 if uses_dormant_target else self._resolve_target_player_index(creature, players)
             # Native only updates player auto-target feedback inside the
             # `creature_update_tick % 0x46 != 0` retarget cadence block.
-            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            if not uses_dormant_target and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                 self._update_player_auto_target(
                     players=players,
                     preserve_bugs=bool(state.preserve_bugs),
@@ -1133,9 +1138,12 @@ class CreaturePool:
                     creature_index=int(idx),
                     creature=creature,
                 )
-            player = players[target_player]
+            player = players[0] if uses_dormant_target else players[target_player]
+            distance_player_pos = single_player_dead_target_pos if uses_dormant_target else player.pos
             player_pos = player.pos
             if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:
+                # Native calculates distance before redirecting creatures from
+                # the dead player to the dormant second-player position.
                 creature.target_player = 1
                 player_pos = single_player_dead_target_pos
 
@@ -1150,6 +1158,7 @@ class CreaturePool:
             ai = creature_ai_update_target(
                 creature,
                 player_pos=player_pos,
+                distance_player_pos=distance_player_pos,
                 creatures=self._entries,
                 dt=dt,
             )
@@ -1278,7 +1287,7 @@ class CreaturePool:
             # count (any player), the kill XP is credited to player 1, and the
             # timer-fire requires the creature to still be alive (hp > 0).
             if players and any(perk_active(p, PerkId.RADIOACTIVE) for p in players):
-                dist = (creature.pos - player.pos).length()
+                dist = (creature.pos - player_pos).length()
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
                     if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
@@ -1299,7 +1308,7 @@ class CreaturePool:
             # Decompile parity (`creature_update_all`, 0x00426220): compute
             # creature->target-player distance once, then reuse that value for
             # ranged attacks and all contact/eat checks in this creature tick.
-            target_dist_sq = Vec2.distance_sq(creature.pos, player.pos)
+            target_dist_sq = Vec2.distance_sq(creature.pos, player_pos)
             target_dist = math.sqrt(float(target_dist_sq))
 
             if (not frozen_by_evil_eyes) and (

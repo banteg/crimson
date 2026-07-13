@@ -2023,9 +2023,18 @@ pub const CreaturePool = struct {
                 creature.force_target = 0;
                 continue;
             }
+            const distance_player_pos = if (single_player_dead_target_pos) |dead_target|
+                if (creature.target_player == 1) dead_target else player.pos
+            else
+                player.pos;
+            if (single_player_dead_target_pos != null) {
+                creature.target_player = 1;
+            }
+            const target_player_pos = if (single_player_dead_target_pos) |dead_target| dead_target else player.pos;
             const ai_update = creatureAiUpdateTarget(
                 creature,
-                if (single_player_dead_target_pos) |dead_target| dead_target else player.pos,
+                target_player_pos,
+                distance_player_pos,
                 self.entries[0..],
                 dt_f32,
             );
@@ -2166,7 +2175,7 @@ pub const CreaturePool = struct {
             // Native gates on the global perk count and only fires the pulse
             // while the creature is still alive (hp > 0).
             if (anyPlayerHasPerk(players, PerkId.radioactive)) {
-                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
+                const dist = state_mod.Vec2.sub(creature.pos, target_player_pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt_f32 * 1.5;
                     if (creature.collision_timer < 0.0 and creature.hp > 0.0) {
@@ -2189,7 +2198,7 @@ pub const CreaturePool = struct {
             // Decompile parity (`creature_update_all`, 0x00426220): compute
             // creature->target-player distance once and reuse it for ranged,
             // eat, and contact checks inside this creature tick.
-            const to_player = state_mod.Vec2.sub(creature.pos, player.pos);
+            const to_player = state_mod.Vec2.sub(creature.pos, target_player_pos);
             const target_dist_sq = to_player.lengthSq();
             const target_dist = std.math.sqrt(target_dist_sq);
 
@@ -3016,10 +3025,11 @@ pub const CreaturePool = struct {
 fn creatureAiUpdateTarget(
     creature: *CreatureState,
     player_pos: state_mod.Vec2,
+    distance_player_pos: state_mod.Vec2,
     creatures: []const CreatureState,
     dt: f32,
 ) CreatureAiUpdate {
-    const dist_to_player = distanceF32(creature.pos, player_pos);
+    const dist_to_player = distanceF32(creature.pos, distance_player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale: f32 = 3.7;
     const orbit_phase = (@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi;
@@ -6735,7 +6745,7 @@ test "single-player dead player uses dead-target AI position" {
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
-            .pos = .{ .x = 900.0, .y = 900.0 },
+            .pos = .{ .x = 660.0, .y = 520.0 },
             .health = 0.0,
         },
     };
@@ -6748,24 +6758,21 @@ test "single-player dead player uses dead-target AI position" {
         .type_id = .alien,
         .flags = 0,
         .size = 45.0,
-        .move_speed = 2.0,
+        .move_speed = 0.0,
         .health = 50.0,
         .max_health = 50.0,
         .reward_value = 10.0,
         .contact_damage = 0.0,
     });
 
-    const start_pos = pool.entries[0].pos;
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
 
-    const expected_dead_target: state_mod.Vec2 = .{
-        .x = 1024.0 * (27.0 / 64.0),
-        .y = 1024.0 * (27.0 / 64.0),
-    };
-    const creature = pool.entries[0];
-    const dead_target_dist_sq = state_mod.Vec2.sub(creature.target, expected_dead_target).lengthSq();
-    const dead_player_dist_sq = state_mod.Vec2.sub(creature.target, players[0].pos).lengthSq();
-    try std.testing.expect(dead_target_dist_sq < dead_player_dist_sq);
-    try std.testing.expect(creature.pos.y < start_pos.y);
+    const creature = &pool.entries[0];
+    try std.testing.expectEqual(@as(i32, 1), creature.target_player);
+    try std.testing.expectEqual(@as(f32, 569.058349609375), creature.target.x);
+    try std.testing.expectEqual(@as(f32, 432.0), creature.target.y);
+    try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+    try std.testing.expectEqual(@as(f32, 513.7415771484375), creature.target.x);
+    try std.testing.expectEqual(@as(f32, 432.0), creature.target.y);
     try expectFloatClose(0.0, players[0].health);
 }

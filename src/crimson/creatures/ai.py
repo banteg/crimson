@@ -126,6 +126,7 @@ def creature_ai_update_target(
     creature: CreatureAIStateLike,
     *,
     player_pos: Vec2,
+    distance_player_pos: Vec2 | None = None,
     creatures: Sequence[CreatureAIStateLike],
     dt: float,
 ) -> CreatureAIUpdate:
@@ -139,7 +140,8 @@ def creature_ai_update_target(
     - `orbit_radius` (AI7 non-link timer uses it as a countdown)
     """
 
-    dist_to_player = _distance_f32(creature.pos, player_pos)
+    distance_pos = player_pos if distance_player_pos is None else distance_player_pos
+    dist_to_player = _distance_f32(creature.pos, distance_pos)
     orbit_phase = f32(f32(float(int(creature.phase_seed)) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
     self_damage: float | None = None

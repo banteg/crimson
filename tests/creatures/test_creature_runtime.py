@@ -584,7 +584,7 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
 
     dead_player = PlayerState(
         index=0,
-        pos=Vec2(900.0, 900.0),
+        pos=Vec2(660.0, 520.0),
         health=0.0,
         weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
     )
@@ -595,13 +595,12 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
     creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
-    creature.move_speed = 2.0
+    creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 0.0
     creature.target_player = 0
     creature.pos = Vec2(500.0, 500.0)
 
-    start_pos = creature.pos
     pool.update(
         1.0 / 60.0,
         options=make_creature_update_options(
@@ -613,8 +612,18 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
-    assert Vec2.distance_sq(creature.target, expected_dead_target) < Vec2.distance_sq(creature.target, dead_player.pos)
-    assert creature.pos.y < start_pos.y
+    assert creature.target == Vec2(569.058349609375, expected_dead_target.y)
+
+    pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(
+            state=state,
+            players=[dead_player],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert creature.target == Vec2(513.7415771484375, expected_dead_target.y)
 
 
 def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() -> None:
@@ -651,7 +660,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
-    assert Vec2.distance_sq(creature.target, expected_dead_target) < Vec2.distance_sq(creature.target, dead_player.pos)
+    assert creature.target == expected_dead_target
     assert_float_close(dead_player.health, 0.0)
 
 
