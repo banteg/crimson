@@ -120,6 +120,10 @@ Validation highlights (see the evidence appendix for snippets):
   refreshes its release latch from a second state query; cached mode preserves
   the same short-circuit behavior without polling DirectInput.
 
+- `grim_get_key_char` pops an eight-int internal FIFO, while
+  `grim_set_key_char_buffer` installs a separate caller-owned text buffer,
+  count pointer, and capacity used by the window-message input path.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 

@@ -468,10 +468,11 @@ the keyboard device, event buffer, keyboard state (twice), and key-char count.
 
 ## 0x50 — grim_get_key_char @ 0x10005c40
 
-- Provisional name: `get_key_char` (high)
-- Guess: `int get_key_char(void)`
-- Notes: console text input
+- Confirmed name: `get_key_char`
+- Confirmed C++ signature: `int __thiscall IGrim2D::get_key_char(void)`
 - Ghidra signature: `int grim_get_key_char(void)`
+- Notes: pops the oldest entry from the internal eight-int key-character FIFO,
+  shifts the remaining entries down, and returns zero when empty.
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: console_input_poll (`FUN_00401060`):L33
 - First callsite: console_input_poll (`FUN_00401060`) (line 33)
@@ -485,12 +486,20 @@ the keyboard device, event buffer, keyboard state (twice), and key-char count.
     if ((iVar1 != 0) && (DAT_0047ea58 == '\0')) {
 ```
 
+Live Binary Ninja shows `grim_key_char_queue[8]` at `0x1005d3c4` and its count
+at `0x1005d3e4`. The enqueue path caps the count below 7, leaving the eighth
+slot available to the getter's shift. The recovered snapshot-and-do/while
+source compiles to all 22 native instructions, full prefix, and references
+`4/0/0`.
+
 
 ## 0x54 — grim_set_key_char_buffer @ 0x10005c20
 
+- Confirmed name: `set_key_char_buffer`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_key_char_buffer(unsigned char *buffer, int *count, int size)`
 - Ghidra signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
-- Notes: stores pointers to the caller-managed ring buffer + count
-- Suggested signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
+- Notes: installs a caller-owned text buffer, its count pointer, and capacity;
+  native code performs no null or size validation here.
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: crimsonland_main (`FUN_0042c450`):L19559; ui_text_input_update (`FUN_0043ecf0`):L27394
 - First callsite: crimsonland_main (`FUN_0042c450`) (line 21696)
@@ -503,6 +512,11 @@ the keyboard device, event buffer, keyboard state (twice), and key-char count.
   FUN_0041ec60();
   puVar13 = &DAT_00490be0;
 ```
+
+The three arguments are stored verbatim at `0x10053048`, `0x1005304c`, and
+`0x10053050`, immediately after the unrelated key-repeat delay. Three ordinary
+global assignments compile to all seven native instructions, full prefix, and
+references `3/0/0`; the member ignores `this` and removes 12 argument bytes.
 
 
 ## 0x58 — grim_is_mouse_button_down @ 0x10007410

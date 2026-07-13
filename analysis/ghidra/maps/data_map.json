@@ -9160,6 +9160,27 @@
       "type": "float"
     },
     {
+      "address": "0x10053048",
+      "comment": "Caller-owned key-character buffer installed by grim_set_key_char_buffer.",
+      "name": "grim_key_char_buffer",
+      "program": "grim.dll",
+      "type": "unsigned char *"
+    },
+    {
+      "address": "0x1005304c",
+      "comment": "Pointer to the caller-owned key-character buffer count.",
+      "name": "grim_key_char_buffer_count",
+      "program": "grim.dll",
+      "type": "int *"
+    },
+    {
+      "address": "0x10053050",
+      "comment": "Capacity of the caller-owned key-character buffer.",
+      "name": "grim_key_char_buffer_size",
+      "program": "grim.dll",
+      "type": "int"
+    },
+    {
       "address": "0x10053054",
       "comment": "Config-dialog selected display width parsed from the mode combo string.",
       "name": "grim_config_selected_width",
