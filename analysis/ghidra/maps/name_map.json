@@ -5994,7 +5994,7 @@
     "address": "0x1000a7d0",
     "name": "grim_mouse_shutdown",
     "signature": "void grim_mouse_shutdown(void)",
-    "comment": "releases DirectInput mouse objects"
+    "comment": "unacquires and releases the mouse device, then releases the parent DirectInput interface"
   },
   {
     "program": "grim.dll",

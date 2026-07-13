@@ -68,7 +68,8 @@ We also generate an evidence appendix with callsite snippets:
   Shutdown unacquires/releases the device before releasing the parent DirectInput interface.
 
 - `grim_mouse_init` (`0x1000a5a0`) / `grim_mouse_poll` (`0x1000a670`) / `grim_mouse_shutdown`
-  (`0x1000a7d0`) manage the DirectInput mouse device.
+  (`0x1000a7d0`) manage the DirectInput mouse device. Shutdown mirrors the keyboard path:
+  unacquire/release the device, then release the parent DirectInput interface.
 
 - `grim_joystick_init` (`0x1000a1c0`) / `grim_joystick_poll` (`0x1000a2b0`) manage the DirectInput
   joystick device.

@@ -2281,6 +2281,18 @@ offsets `0x20` (`Unacquire`) and `0x08` (`Release`). Ordinary C++ reproduces
 all 19 native instructions, full prefix, and references `5/0/0` with MSVC 6.5.
 
 
+## grim.dll — mouse shutdown helper @ 0x1000a7d0
+
+- Confirmed name: `grim_mouse_shutdown`
+- Confirmed C++ signature: `void grim_mouse_shutdown(void)`
+- Notes: unacquires and releases the mouse device, nulls it, then releases and
+  nulls the parent DirectInput interface.
+
+Live Binary Ninja identifies the same 62-byte lifecycle shape as keyboard
+shutdown, using vtable offsets `0x20` and `0x08`. The natural mouse-specific
+source reproduces all 19 instructions, full prefix, and references `5/0/0`.
+
+
 ## grim.dll — coordinate space conversion helper @ 0x10016944
 
 - Provisional name: `grim_convert_vertex_space` (medium)
