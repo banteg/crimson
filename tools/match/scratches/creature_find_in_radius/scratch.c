@@ -3,24 +3,23 @@
 
 int creature_find_in_radius(float *pos, float radius, int start_index)
 {
-    creature_t *creature;
+    int index = start_index;
 
-    if (start_index < 0x180) {
-        creature = &creature_pool[start_index];
+    if (index < 0x180) {
         do {
+            creature_t *creature = &creature_pool[index];
             if (creature->active) {
-                if ((float)sqrt(
-                        (creature->pos_x - pos[0]) * (creature->pos_x - pos[0])
-                        + (creature->pos_y - pos[1]) * (creature->pos_y - pos[1])
-                    ) - radius < creature->size * 0.14285715f + 3.0f) {
+                float dx = creature->pos_x - pos[0];
+                float dy = creature->pos_y - pos[1];
+                float distance = (float)sqrt(dx * dx + dy * dy);
+                if (distance - radius < creature->size * 0.14285715f + 3.0f) {
                     if (creature->lifecycle_stage > 5.0f) {
-                        return start_index;
+                        return index;
                     }
                 }
             }
-            ++creature;
-            ++start_index;
-        } while ((int)creature < (int)&creature_pool[0x180]);
+            ++index;
+        } while (index < 0x180);
     }
     return -1;
 }
