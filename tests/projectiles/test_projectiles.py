@@ -111,6 +111,29 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
     assert pool.entries[idx].life_timer == 0.003000030294060707
 
 
+def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTemplateId.ION_RIFLE,
+        owner=OwnerRef.from_local_player(0),
+    )
+    pool.entries[idx].life_timer = 0.39
+    creature = _creature(pos=Vec2(), hp=12.0)
+    dt = f32(0.0950000062584877)
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=dt,
+            creatures=[creature],
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert creature.hp == f32(12.0 - f32(dt * 100.0))
+
+
 def _normalize_vec2(vec: Vec2) -> list[float]:
     return [round(float(vec.x), 6), round(float(vec.y), 6)]
 

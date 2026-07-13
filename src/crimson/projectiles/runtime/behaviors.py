@@ -104,10 +104,10 @@ def _linger_ion_aoe(
     damage_per_second: float,
     base_radius: float,
 ) -> None:
-    decay = x87_pc24_mul(ctx.dt, life_decay_scale)
+    decay = x87_pc24_mul(ctx.dt, f32(life_decay_scale))
     proj.life_timer = _life_timer_sub_f32(proj.life_timer, decay)
-    damage = float(ctx.dt) * float(damage_per_second)
-    radius = float(ctx.ion_scale) * float(base_radius)
+    damage = x87_pc24_mul(ctx.dt, f32(damage_per_second))
+    radius = x87_pc24_mul(f32(ctx.ion_scale), f32(base_radius))
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue

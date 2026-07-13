@@ -560,7 +560,7 @@ class ProjectilePool:
 
             if proj.life_timer < 0.4:
                 if proj.type_id == ProjectileTemplateId.ION_RIFLE:
-                    damage = dt * 100.0
+                    damage = x87_pc24_mul(dt, f32(100.0))
                     radius = 88.0
                     for creature in creatures:
                         if creature.hp <= 0.0:
@@ -568,9 +568,9 @@ class ProjectilePool:
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            creature.hp = x87_pc24_sub(creature.hp, damage)
                 elif proj.type_id == ProjectileTemplateId.ION_MINIGUN:
-                    damage = dt * 40.0
+                    damage = x87_pc24_mul(dt, f32(40.0))
                     radius = 60.0
                     for creature in creatures:
                         if creature.hp <= 0.0:
@@ -578,7 +578,7 @@ class ProjectilePool:
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            creature.hp = x87_pc24_sub(creature.hp, damage)
                 proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 

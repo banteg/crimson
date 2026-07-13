@@ -610,16 +610,16 @@ fn applyIonLingerDamage(
     var radius: f32 = 0.0;
     switch (proj.type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => {
-            damage = dt * 40.0;
-            radius = ion_scale * 60.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 40.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 60.0));
         },
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => {
-            damage = dt * 100.0;
-            radius = ion_scale * 88.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 100.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 88.0));
         },
         @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => {
-            damage = dt * 300.0;
-            radius = ion_scale * 128.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 300.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 128.0));
         },
         else => return,
     }
@@ -1427,6 +1427,52 @@ test "barrel greaser doubles pistol projectile movement steps" {
     try expectFloatClose(18.240001678466797, base_x);
     try expectFloatClose(35.519996643066406, greased_x);
     try std.testing.expect(greased_x > base_x);
+}
+
+test "ion linger damage stores rate product at native precision" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{},
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 12.0,
+        .max_health = 12.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+    var pool: ProjectilePool = .{};
+    const idx = pool.spawn(
+        .{},
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        45.0,
+        false,
+    );
+    pool.entries[idx].life_timer = 0.39;
+
+    const dt: f32 = 0.0950000062584877;
+    _ = pool.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        dt,
+        10_000.0,
+    );
+
+    const damage = native_math.pc24Mul(dt, @as(f32, 100.0));
+    const expected = native_math.pc24Sub(@as(f32, 12.0), damage);
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(creatures.entries[0].hp)));
 }
 
 test "ion gun master increases ion rifle linger radius" {
