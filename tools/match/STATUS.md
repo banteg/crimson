@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**69/2161** functions matched, **9924/675651** code bytes (**1.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**70/2161** functions matched, **10183/675651** code bytes (**1.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 28/1175 | 3828/289897 | 1.3% | 28/28 |
+| grim.dll | 29/1175 | 4087/289897 | 1.4% | 29/29 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**28/1175** functions, **3828/289897** bytes (**1.3%**), **28/28** scratches verified.
+**29/1175** functions, **4087/289897** bytes (**1.4%**), **29/29** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -90,6 +90,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |
 | match | grim_bind_texture | 0x10007830 | 58 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_rect_filled | 0x100078e0 | 205 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
+| match | grim_draw_fullscreen_color | 0x100079b0 | 259 | 83/83 | 100.00% | 83/83 | 8/0/0 |  | grim2d-fullscreen-color |
 | match | grim_begin_batch | 0x10007ac0 | 94 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-batch-lifecycle |
 | match | grim_end_batch | 0x10007b20 | 104 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | grim2d-batch-lifecycle |
 | match | grim_set_rotation | 0x10007f30 | 85 | 19/19 | 100.00% | 19/19 | 11/0/0 |  | grim2d-rotation-matrix |

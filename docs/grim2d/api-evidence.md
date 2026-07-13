@@ -1076,11 +1076,18 @@ grim.dll body:
 
 ## 0xcc — grim_draw_fullscreen_color @ 0x100079b0
 
+- Confirmed name: `draw_fullscreen_color`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_fullscreen_color(float r, float g, float b, float a)`
 - Ghidra signature: `void grim_draw_fullscreen_color(float r, float g, float b, float a)`
-- Notes: draws only when `a > 0`, binds texture stage 0 to null, then batches a full-screen quad
+- Notes: positive alpha selects untextured D3D8 color/alpha state, forwards the
+  RGBA scalars to `set_color`, clears rotation, and draws one quad from the
+  origin to the unsigned backbuffer dimensions. Non-positive alpha returns
+  before changing state; the normal modulate state is restored after drawing.
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: gameplay_render_world (`FUN_00405960`):L3696; FUN_00406af0:L4120
 - First callsite: gameplay_render_world (`FUN_00405960`) (line 3696)
+- Runtime evidence: `evidence_summary.json` records 60 calls, of which 30
+  positive-alpha paths begin and end a batch.
 
 
 ```c
@@ -1103,6 +1110,11 @@ grim.dll body:
     (**(code **)(*in_ECX + 0xf0))();
   }
 ```
+
+The recovered VC6.5 source matches all 83 instructions and all 8 masked
+references. Declaring the backbuffer dimensions as unsigned naturally produces
+the native qword `fild` conversions; live Binary Ninja confirms the four-float
+member ABI and `retn 0x10`.
 
 
 ## 0xd0 — grim_draw_rect_filled @ 0x100078e0

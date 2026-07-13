@@ -57,7 +57,7 @@ public:
     virtual int grim_get_texture_handle(char *name) = 0;
     virtual void grim_bind_texture(int handle, int stage);
     virtual void grim_draw_fullscreen_quad(void) = 0;
-    virtual void grim_draw_fullscreen_color(float r, float g, float b, float a) = 0;
+    virtual void grim_draw_fullscreen_color(float r, float g, float b, float a);
     virtual void grim_draw_rect_filled(
         float *xy, float width, float height, float *rgba);
     virtual void grim_draw_rect_outline(float *xy, float width, float height);
