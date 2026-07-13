@@ -1485,8 +1485,12 @@ Atlas pointer table setup (grim.dll init):
 
 ## 0x10c — grim_set_uv_point @ 0x100083a0
 
+- Confirmed name: `set_uv_point`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_uv_point(int index, float u, float v)`
 - Ghidra signature: `void grim_set_uv_point(int index, float u, float v)`
-- Notes: called as four consecutive `set_uv_point` calls (indices 0..3) to override per-corner UVs; u=0.625, v in {0, 0.25}
+- Notes: called as four consecutive `set_uv_point` calls (indices 0..3) to
+  override per-corner UVs; u=0.625, v in {0, 0.25}. The native method performs
+  no bounds check. Its vtable slot and `retn 0xc` establish the member ABI.
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: projectile_render (`FUN_00422c70`):L16721; projectile_render (`FUN_00422c70`):L16725; projectile_render (`FUN_00422c70`):L16728; projectile_render (`FUN_00422c70`):L16729
 - First callsite: projectile_render (`FUN_00422c70`) (line 18858)
@@ -1506,6 +1510,10 @@ Atlas pointer table setup (grim.dll init):
               (**(code **)(*DAT_0048083c + 0x10c))(3,0x3f200000,0);
               pfVar7 = &fStack_274;
 ```
+
+The recovered VC6.5 source matches all 6 instructions and both masked
+references. It consists solely of indexed U/V field assignments through the
+same eight-byte UV array recovered by `grim_set_uv`.
 
 
 ## 0x110 — grim_set_color_ptr @ 0x10008040
@@ -1665,9 +1673,12 @@ approximation of `0.5 * sqrt(length_sq)`, not a CRT `sqrt` call.
 
 ## 0x120 — grim_draw_quad_xy @ 0x10008720
 
-- Notes: wrapper around `draw_quad` using `xy` pointer
+- Confirmed name: `draw_quad_xy`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_quad_xy(float *xy, float w, float h)`
+- Notes: direct wrapper around `draw_quad` using an XY pointer. Live
+  disassembly receives `this` in `ECX`, forwards through slot `0x11c`, and
+  returns with `retn 0xc`.
 - Ghidra signature: `void grim_draw_quad_xy(float *xy, float w, float h)`
-- Suggested signature: `void grim_draw_quad_xy(const float *xy, float w, float h)`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; terrain_generate_random:L9491; terrain_generate_random:L9524; terrain_generate_random:L9547
 - First callsite: terrain_generate (`FUN_00417b80`) (line 11392)
@@ -1686,6 +1697,9 @@ grim.dll body:
 ```c
   (**(code **)(*in_ECX + 0x11c))(*xy,xy[1],w,h);
 ```
+
+The recovered VC6.5 source matches all 14 instructions with no masked-reference
+debt. Its body is exactly `draw_quad(xy[0], xy[1], w, h)`.
 
 
 ## 0x124 — grim_draw_quad_rotated_matrix @ 0x10008750

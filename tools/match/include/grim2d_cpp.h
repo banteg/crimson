@@ -74,13 +74,13 @@ public:
     virtual void grim_set_uv(float u0, float v0, float u1, float v1);
     virtual void grim_set_atlas_frame(int atlas_size, int frame) = 0;
     virtual void grim_set_sub_rect(int atlas_size, int width, int height, int frame) = 0;
-    virtual void grim_set_uv_point(int index, float u, float v) = 0;
+    virtual void grim_set_uv_point(int index, float u, float v);
     virtual void grim_set_color_ptr(float *rgba);
     virtual void grim_set_color(float r, float g, float b, float a);
     virtual void grim_set_color_slot(
         int index, float r, float g, float b, float a);
     virtual void grim_draw_quad(float x, float y, float w, float h);
-    virtual void grim_draw_quad_xy(float *xy, float w, float h) = 0;
+    virtual void grim_draw_quad_xy(float *xy, float w, float h);
     virtual void grim_draw_quad_rotated_matrix(float x, float y, float w, float h) = 0;
     virtual void grim_submit_vertices_transform(float *vertices, int count, float *offset, float *matrix) = 0;
     virtual void grim_submit_vertices_offset(float *vertices, int count, float *offset) = 0;
