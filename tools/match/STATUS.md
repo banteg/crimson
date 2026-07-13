@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 29/986 | 3523/385754 | 0.9% | 29/44 |
+| crimsonland.exe | 29/986 | 3523/385754 | 0.9% | 29/45 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**29/986** functions, **3523/385754** bytes (**0.9%**), **29/44** scratches verified.
+**29/986** functions, **3523/385754** bytes (**0.9%**), **29/45** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -32,6 +32,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 66.17% | 1/131 | 7/0/1 |  | gameplay-movement |
 | match | vec2_add_inplace | 0x0041e400 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
+| wip | bonus_spawn_at_pos | 0x0041f790 | 309 | 100/99 | 88.44% | 0/99 | 14/0/0 |  | gameplay-bonus-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 74.44% | 7/89 | 3/0/1 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
