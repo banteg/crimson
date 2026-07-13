@@ -11,9 +11,10 @@ extern "C" void creatures_apply_radius_damage(float *pos, float radius, float da
     creature_t *creature = creature_pool;
     do {
         if (creature->active) {
-            float dx = creature->pos_x - pos[0];
-            float dy = creature->pos_y - pos[1];
-            if ((float)sqrt(dx * dx + dy * dy) - radius < creature->size * 0.14285715f + 3.0f
+            if ((float)sqrt(
+                    (creature->pos_x - pos[0]) * (creature->pos_x - pos[0])
+                    + (creature->pos_y - pos[1]) * (creature->pos_y - pos[1])
+                ) - radius < creature->size * 0.14285715f + 3.0f
                 && creature->hitbox_size > 5.0f) {
                 creature_apply_damage(creature_id, damage, damage_type, impulse);
             }

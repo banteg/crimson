@@ -29,12 +29,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 72.22% | 7/89 | 3/0/1 |  | gameplay-target-search |
-| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 67/65 | 80.30% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
+| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 67.21% | 0/126 | 11/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
-| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 74.78% | 11/57 | 4/0/1 |  | gameplay-radius-damage |
-| wip | creature_find_in_radius | 0x004206a0 | 133 | 51/47 | 40.82% | 0/47 | 3/0/1 |  | gameplay-target-search |
-| wip | player_find_in_radius | 0x00420730 | 133 | 54/54 | 64.81% | 9/54 | 4/0/1 |  | gameplay-target-search |
+| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 59/57 | 81.03% | 11/57 | 4/0/1 |  | gameplay-radius-damage |
+| wip | creature_find_in_radius | 0x004206a0 | 133 | 52/47 | 46.46% | 0/47 | 3/0/1 |  | gameplay-target-search |
+| wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 75.23% | 9/54 | 4/0/1 |  | gameplay-target-search |
 | wip | player_take_damage | 0x00425e50 | 969 | 266/267 | 77.67% | 9/267 | 62/0/2 |  | gameplay-player-damage |
 | wip | creature_reset_all | 0x004281e0 | 46 | 13/13 | 92.31% | 2/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
