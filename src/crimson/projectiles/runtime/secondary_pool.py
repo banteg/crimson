@@ -124,7 +124,6 @@ class SecondaryProjectilePool:
         entry.type_id = type_id
         entry.pos = pos
         entry.owner = owner
-        entry.target_id = -1
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -164,6 +163,7 @@ class SecondaryProjectilePool:
         if isinstance(rule, HomingRocketRule):
             # Native `fx_spawn_secondary_projectile` seeds seeker target_id at spawn via
             # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
+            entry.target_id = -1
             if creatures is not None:
                 origin = target_hint if target_hint is not None else pos
                 entry.target_id = _creature_find_nearest_for_secondary(

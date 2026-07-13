@@ -491,6 +491,21 @@ def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
     assert projectile.vel == Vec2(161.8461151123047, 99.52806091308594)
 
 
+def test_non_homing_spawn_preserves_reused_slot_target_id() -> None:
+    pool = SecondaryProjectilePool(size=1)
+    pool.entries[0].target_id = 37
+
+    idx = pool.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+        ),
+    )
+
+    assert pool.entries[idx].target_id == 37
+
+
 def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
     pool = SecondaryProjectilePool(size=1)
     idx = pool.spawn_from_spec(
