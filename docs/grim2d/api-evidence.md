@@ -1510,11 +1510,13 @@ Atlas pointer table setup (grim.dll init):
 
 ## 0x110 — grim_set_color_ptr @ 0x10008040
 
-- Provisional name: `set_color_ptr` (high)
-- Guess: `void set_color_ptr(float *rgba)`
-- Notes: pointer to RGBA floats (0..1); values are clamped before call
+- Confirmed name: `set_color_ptr`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_color_ptr(float *rgba)`
+- Notes: converts a four-float RGBA vector directly to packed ARGB and copies
+  it to all four corner slots. This method does not clamp; relevant callers
+  clamp inputs when needed. The vtable slot and `retn 0x4` establish the member
+  ABI even though the body does not otherwise read `this`.
 - Ghidra signature: `void grim_set_color_ptr(float *rgba)`
-- Suggested signature: `void grim_set_color_ptr(const float *rgba)`
 - Call sites: 20 (unique funcs: 10)
 - Sample calls: game_over_screen_update:L7098; game_over_screen_update:L7171; quest_results_screen_update (`FUN_00410d20`):L7782; quest_results_screen_update (`FUN_00410d20`):L7851; creature_render_type (`FUN_00418b60`):L9717; creature_render_type (`FUN_00418b60`):L9772; creature_render_type (`FUN_00418b60`):L9832; creature_render_type (`FUN_00418b60`):L9894
 - First callsite: game_over_screen_update (line 7485)
@@ -1551,6 +1553,11 @@ Clamped RGBA example (input_primary_just_pressed (`FUN_00446030`)):
         }
         (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 2);
 ```
+
+The recovered VC6.5 source matches all 25 instructions and all 12 masked
+references. A four-byte color union accounts for the native per-channel byte
+writes; VC6 reuses the dead parameter home for that local after preserving the
+input pointer in `ESI`.
 
 
 ## 0x114 — grim_set_color @ 0x10007f90
