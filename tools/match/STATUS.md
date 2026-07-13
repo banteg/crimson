@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**26/2161** functions matched, **1624/675651** code bytes (**0.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**27/2161** functions matched, **1669/675651** code bytes (**0.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 19/986 | 1510/385754 | 0.4% | 19/30 |
+| crimsonland.exe | 20/986 | 1555/385754 | 0.4% | 20/31 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**19/986** functions, **1510/385754** bytes (**0.4%**), **19/30** scratches verified.
+**20/986** functions, **1555/385754** bytes (**0.4%**), **20/31** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -44,9 +44,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-spawn-slots |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 306/4/1 |  | gameplay-spawn-switch |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/2/1 |  | gameplay-spawn-switch |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
+| match | float_near_equal | 0x00452ef0 | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
 
 ## grim.dll
 
