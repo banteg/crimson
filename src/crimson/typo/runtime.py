@@ -87,8 +87,8 @@ def typo_mid_step(ctx: MidStepContext) -> None:
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
         # creature_spawn_tinted allocates via creature_alloc_slot, which seeds
-        # phase_seed = float(crt_rand() & 0x17f) before the heading/size draws.
-        phase_seed = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F)
+        # phase_seed = crt_rand() & 0x17f before the heading/size draws.
+        phase_seed = int(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
         heading = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314) * 0.01
         size = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
         flags = CreatureFlags(0)
@@ -103,7 +103,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
                 origin_template_id=0,
                 pos=call.pos,
                 heading=float(heading),
-                phase_seed=float(phase_seed),
+                phase_seed=phase_seed,
                 type_id=call.type_id,
                 flags=flags,
                 ai_mode=CreatureAiMode.CHASE_PLAYER,

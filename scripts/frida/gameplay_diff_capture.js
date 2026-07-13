@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 22;
+const CAPTURE_FORMAT_VERSION = 23;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -3334,7 +3334,7 @@ function readCreatureSlotResidue(index) {
   return {
     index: index,
     active: safeReadU8(base),
-    phase_seed: captureNumber(safeReadF32(base.add(0x04))),
+    phase_seed: safeReadS32(base.add(0x04)),
     state_flag: safeReadU8(base.add(0x08)),
     collision_flag: safeReadU8(base.add(0x09)),
     collision_timer: captureNumber(safeReadF32(base.add(0x0c))),

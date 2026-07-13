@@ -20,7 +20,7 @@ from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperatio
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 16
+REPLAY_FORMAT_VERSION = 17
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -286,7 +286,7 @@ class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fiel
     at the run-setup latch so replays can seed an identical pool."""
 
     index: int
-    phase_seed: float = 0.0
+    phase_seed: int = 0
     state_flag: int = 0
     collision_flag: int = 0
     collision_timer: float = 0.0

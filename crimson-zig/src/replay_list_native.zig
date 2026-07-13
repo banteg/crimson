@@ -598,7 +598,7 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.AccessDenied => "unable to read replay file: access denied",
         error.FileTooBig => "replay zstd envelope exceeds max file size",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
-        error.InvalidMsgpack => "replay payload does not match format 16 msgpack schema",
+        error.InvalidMsgpack => "replay payload does not match format 17 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
@@ -606,12 +606,12 @@ fn replayListRowErrorDetail(err: anyerror) []const u8 {
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
         error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 16",
-        error.UnsupportedEventShape => "replay tick operations do not match format 16",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 17",
+        error.UnsupportedEventShape => "replay tick operations do not match format 17",
         error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 16",
+        error.UnknownCommandKind => "replay tick operations do not match format 17",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.OutOfMemory => "native replay list ran out of memory while reading replay",
         else => @errorName(err),
@@ -734,7 +734,7 @@ test "modified formatting mirrors replay list display shape" {
 
 test "replay list maps invalid row errors to user details" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 16 msgpack schema",
+        "replay payload does not match format 17 msgpack schema",
         replayListRowErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -742,15 +742,15 @@ test "replay list maps invalid row errors to user details" {
         replayListRowErrorDetail(error.PayloadTooLarge),
     );
     try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 16",
+        "replay tick operations do not match format 17",
         replayListRowErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(
-        "replay tick inputs do not match format 16",
+        "replay tick inputs do not match format 17",
         replayListRowErrorDetail(error.UnsupportedInputShape),
     );
     try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 16",
+        "replay tick operations do not match format 17",
         replayListRowErrorDetail(error.UnsupportedEventShape),
     );
     try std.testing.expectEqualStrings(

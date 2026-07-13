@@ -1299,7 +1299,7 @@ def _pool_residue_slot_stub(index: int, **overrides: object) -> dict[str, object
     row: dict[str, object] = {
         "index": int(index),
         "active": 0,
-        "phase_seed": 0.0,
+        "phase_seed": 0,
         "state_flag": 0,
         "collision_flag": 0,
         "collision_timer": 0.0,
@@ -1344,7 +1344,7 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
         player_count=1,
     )
     run_start["pool_residue"] = [
-        _pool_residue_slot_stub(0, link_index=3, target_heading=4.044, type_id=2),
+        _pool_residue_slot_stub(0, phase_seed=383, link_index=3, target_heading=4.044, type_id=2),
         _pool_residue_slot_stub(1),
     ]
     raw_path = _write_jsonl(
@@ -1371,6 +1371,7 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
     pool = replay.header.initial_creature_pool
     assert pool is not None
     assert len(pool) == 2
+    assert pool[0].phase_seed == 383
     assert pool[0].link_index == 3
     assert pool[0].type_id == 2
     assert abs(pool[0].target_heading - 4.044) < 1e-6

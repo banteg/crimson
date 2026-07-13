@@ -100,7 +100,7 @@ def _normalize_plan(
                 "type_id": None if creature.type_id is None else int(creature.type_id),
                 "pos": [round(float(creature.pos.x), 6), round(float(creature.pos.y), 6)],
                 "heading": _round_or_none(creature.heading),
-                "phase_seed": round(float(creature.phase_seed), 6),
+                "phase_seed": int(creature.phase_seed),
                 "flags": int(creature.flags),
                 "ai_mode": int(creature.ai_mode),
                 "health": _round_or_none(creature.health),

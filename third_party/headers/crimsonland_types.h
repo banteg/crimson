@@ -323,7 +323,7 @@ typedef union creature_orbit_radius_t {
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
-    float phase_seed;
+    int phase_seed;
     unsigned char state_flag;
     unsigned char collision_flag;
     unsigned char _pad1[2];

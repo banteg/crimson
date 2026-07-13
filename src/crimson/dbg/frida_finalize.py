@@ -60,8 +60,8 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 22
-FRIDA_EVIDENCE_FORMAT_VERSION = 2
+FRIDA_CAPTURE_FORMAT_VERSION = 23
+FRIDA_EVIDENCE_FORMAT_VERSION = 3
 FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
 _EVIDENCE_DECODE_SPOOL_MAX_MEMORY = 8 * 1024 * 1024
@@ -245,7 +245,7 @@ class _CaptureTintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class _CapturePoolResidueRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     index: int
     active: int
-    phase_seed: float
+    phase_seed: int
     state_flag: int
     collision_flag: int
     collision_timer: float
@@ -607,7 +607,7 @@ def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tupl
         out.append(
             ReplayCreatureSlotResidue(
                 index=i,
-                phase_seed=_residue_float(row.phase_seed, field=f"{slot_field}.phase_seed"),
+                phase_seed=_residue_int(row.phase_seed, field=f"{slot_field}.phase_seed"),
                 state_flag=_residue_int(row.state_flag, field=f"{slot_field}.state_flag"),
                 collision_flag=_residue_int(row.collision_flag, field=f"{slot_field}.collision_flag"),
                 collision_timer=_residue_float(row.collision_timer, field=f"{slot_field}.collision_timer"),

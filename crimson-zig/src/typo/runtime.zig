@@ -126,8 +126,8 @@ pub fn midStep(
 
     for (batch.slice()) |call| {
         // creature_spawn_tinted allocates via creature_alloc_slot, which seeds
-        // phase_seed = float(crt_rand() & 0x17f) before the heading/size draws.
-        const phase_seed = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+        // phase_seed = crt_rand() & 0x17f before the heading/size draws.
+        const phase_seed: i32 = @intCast(state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f);
         const heading = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_heading) % 314)) * 0.01;
         var size = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_spawn_tinted_size) % 20 + 47));
         var flags: i32 = 0;

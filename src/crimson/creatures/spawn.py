@@ -690,7 +690,7 @@ class CreatureInit(msgspec.Struct):
     # The base template path writes heading explicitly at tail (`final_heading`).
     heading: float | None
 
-    phase_seed: float
+    phase_seed: int
 
     preserve_force_target: bool = False
 
@@ -1082,8 +1082,8 @@ def alloc_creature(
 ) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
-    # - seeds phase_seed = float(crt_rand() & 0x17f)
-    phase_seed = float(rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F)
+    # - seeds the int32 phase_seed with `crt_rand() & 0x17f`
+    phase_seed = int(rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
     # Native `creature_alloc_slot` does not clear heading; some template child paths
     # intentionally keep stale heading from the recycled slot.
     return CreatureInit(

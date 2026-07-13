@@ -118,7 +118,7 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
         origin_template_id=0,
         pos=Vec2(),
         heading=0.0,
-        phase_seed=0.0,
+        phase_seed=0,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         ai_mode=2,
         ranged_projectile_type=26,

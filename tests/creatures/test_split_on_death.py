@@ -41,8 +41,8 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     assert child1.active and child2.active
     assert child1.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
     assert child2.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
-    assert child1.phase_seed == float(0x123 & 0xFF)
-    assert child2.phase_seed == float(0x456 & 0xFF)
+    assert child1.phase_seed == 0x123 & 0xFF
+    assert child2.phase_seed == 0x456 & 0xFF
     assert_float_close(child1.heading, -NATIVE_HALF_PI)
     assert_float_close(child2.heading, NATIVE_HALF_PI)
     assert child1.hp == parent.max_hp * 0.25

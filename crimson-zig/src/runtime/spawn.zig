@@ -217,7 +217,7 @@ pub const CreatureInit = struct {
     pos: Vec2,
     heading: f32 = 0.0,
     set_heading: bool = true,
-    phase_seed: f32 = 0.0,
+    phase_seed: i32 = 0,
     preserve_force_target: bool = false,
     type_id: CreatureTypeId = .alien,
     ai_mode: CreatureAiMode = .orbit_player,
@@ -1157,7 +1157,7 @@ pub fn advanceSurvivalSpawnStage(
 }
 
 fn allocCreature(template_id: i32, pos: Vec2, rng: *Crand) CreatureInit {
-    const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+    const phase_seed: i32 = @intCast(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f);
     return .{
         .origin_template_id = template_id,
         .pos = pos,

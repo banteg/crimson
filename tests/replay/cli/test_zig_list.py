@@ -208,7 +208,7 @@ def test_zig_replay_list_rejects_string_quest_level(tmp_path: Path) -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "quest-string-level.crd invalid - - - - -" in result.stdout
-    assert "warning: quest-string-level.crd: replay payload does not match format 16 msgpack schema" in result.stdout
+    assert "warning: quest-string-level.crd: replay payload does not match format 17 msgpack schema" in result.stdout
     assert "count=1 parsed=0 errors=1" in result.stdout
 
 
@@ -294,7 +294,7 @@ def test_zig_replay_list_rejects_legacy_bootstrap_fields(tmp_path: Path) -> None
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "bad-bootstrap-seed.crd invalid - - - - -" in result.stdout
-    assert ("warning: bad-bootstrap-seed.crd: replay payload does not match format 16 msgpack schema") in result.stdout
+    assert ("warning: bad-bootstrap-seed.crd: replay payload does not match format 17 msgpack schema") in result.stdout
     assert "native runtime limitation" not in result.stdout
 
 

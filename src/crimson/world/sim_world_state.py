@@ -48,7 +48,7 @@ def apply_creature_pool_residue(
             continue
         entry = creatures[idx]
         entry.active = False
-        entry.phase_seed = float(slot.phase_seed)
+        entry.phase_seed = int(slot.phase_seed)
         entry.plague_infected = bool(slot.collision_flag)
         entry.collision_timer = float(slot.collision_timer)
         entry.lifecycle_stage = float(slot.lifecycle_stage)

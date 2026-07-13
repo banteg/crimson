@@ -2,7 +2,7 @@ const std = @import("std");
 const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 16;
+pub const replay_format_version: i32 = 17;
 pub const weapon_usage_count: usize = 53;
 pub const quest_play_count: usize = 91;
 pub const status_unknown_tail_size: usize = 16;
@@ -927,7 +927,7 @@ pub const ReplayVec2 = struct {
 
 const ReplayCreatureSlotResidueWire = struct {
     index: i32,
-    phase_seed: f64,
+    phase_seed: i32,
     state_flag: i32,
     collision_flag: i32,
     collision_timer: f64,
@@ -963,7 +963,7 @@ const ReplayCreatureSlotResidueWire = struct {
 
 pub const ReplayCreatureSlotResidue = struct {
     index: i32,
-    phase_seed: f32 = 0.0,
+    phase_seed: i32 = 0,
     state_flag: i32 = 0,
     collision_flag: i32 = 0,
     collision_timer: f32 = 0.0,
@@ -2168,7 +2168,7 @@ fn buildCreaturePoolResidue(
         if (idx > 0 and wire.index <= wire_pool[idx - 1].index) return error.InvalidHeaderValue;
         pool[idx] = .{
             .index = wire.index,
-            .phase_seed = canonicalF32(wire.phase_seed) orelse return error.InvalidHeaderValue,
+            .phase_seed = wire.phase_seed,
             .state_flag = wire.state_flag,
             .collision_flag = wire.collision_flag,
             .collision_timer = canonicalF32(wire.collision_timer) orelse return error.InvalidHeaderValue,
@@ -2702,10 +2702,10 @@ test "current replay rejects noncanonical f32 wire values" {
 
     const residue: ReplayCreatureSlotResidueWire = .{
         .index = 0,
-        .phase_seed = 0.1,
+        .phase_seed = 383,
         .state_flag = 0,
         .collision_flag = 0,
-        .collision_timer = 0.0,
+        .collision_timer = 0.1,
         .lifecycle_stage = 0.0,
         .pos = .{ .x = 0.0, .y = 0.0 },
         .vel = .{ .x = 0.0, .y = 0.0 },
@@ -2742,7 +2742,11 @@ test "current replay rejects noncanonical f32 wire values" {
 
     var first = residue;
     first.index = 1;
-    first.phase_seed = 0.0;
+    first.collision_timer = 0.0;
+    const pool = try buildCreaturePoolResidue(std.testing.allocator, &.{first});
+    defer std.testing.allocator.free(pool);
+    try std.testing.expectEqual(@as(i32, 383), pool[0].phase_seed);
+
     var duplicate = first;
     duplicate.index = 1;
     try std.testing.expectError(

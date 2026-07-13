@@ -6,8 +6,8 @@ const replay_codec = @import("replay_codec.zig");
 const verify_native = @import("verify_native.zig");
 
 pub const CommandOutput = verify_native.CommandOutput;
-pub const frida_capture_format_version: i32 = 22;
-pub const frida_evidence_format_version: i32 = 2;
+pub const frida_capture_format_version: i32 = 23;
+pub const frida_evidence_format_version: i32 = 3;
 pub const frida_runtime_version = "17.15.4";
 
 pub fn runDbgVerify(allocator: std.mem.Allocator, args: []const []const u8) !CommandOutput {
@@ -73,10 +73,10 @@ test "dbg verify emits complete ordered format contract" {
     try std.testing.expectEqualStrings(
         \\trace_format_version=2
         \\trace_schema_version=15
-        \\replay_format_version=16
+        \\replay_format_version=17
         \\checkpoint_format_version=5
-        \\frida_capture_format_version=22
-        \\frida_evidence_format_version=2
+        \\frida_capture_format_version=23
+        \\frida_evidence_format_version=3
         \\frida_runtime_version=17.15.4
         \\required_channels=replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples
         \\result=ok

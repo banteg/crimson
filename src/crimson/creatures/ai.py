@@ -34,7 +34,7 @@ class CreatureAIStateLike(Protocol):
     ai_mode: CreatureAiMode
     link_index: int
     target_offset: Vec2 | None
-    phase_seed: float
+    phase_seed: int
     orbit_angle: float
     orbit_radius: float
     heading: float
@@ -142,7 +142,7 @@ def creature_ai_update_target(
 
     distance_pos = player_pos if distance_player_pos is None else distance_player_pos
     dist_to_player = _distance_f32(creature.pos, distance_pos)
-    orbit_phase = f32(f32(float(int(creature.phase_seed)) * f32(3.7)) * NATIVE_PI)
+    orbit_phase = f32(f32(float(creature.phase_seed) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
     self_damage: float | None = None
 

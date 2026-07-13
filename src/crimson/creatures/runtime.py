@@ -251,7 +251,8 @@ class CreatureState(msgspec.Struct):
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
-    phase_seed: float = 0.0
+    # Native stores this as int32 and uses `fild` when forming orbit phase.
+    phase_seed: int = 0
     move_scale: float = 1.0
 
     # Combat / timers.
@@ -1499,7 +1500,7 @@ class CreaturePool:
             # the recycled slot (capture lifecycle shows added entries retaining
             # prior target_heading values).
             entry.heading = f32(float(init.heading))
-        entry.phase_seed = f32(float(init.phase_seed))
+        entry.phase_seed = int(init.phase_seed)
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
         entry.vel = Vec2()
@@ -1718,7 +1719,7 @@ class CreaturePool:
                 # draw itself matters for the stream.
                 rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)
                 child = msgspec.structs.replace(creature)
-                child.phase_seed = float(int(rng.rand_tagged(phase_seed_caller)) & 0xFF)
+                child.phase_seed = int(rng.rand_tagged(phase_seed_caller)) & 0xFF
                 # Native stores `heading +- 1.5707964f` unwrapped and leaves
                 # `target_heading` as the parent's stale copy.
                 child.heading = float(f32(float(creature.heading) + float(heading_offset)))

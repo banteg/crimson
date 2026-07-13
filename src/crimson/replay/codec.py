@@ -66,7 +66,6 @@ _COMMAND_TYPES = {
 }
 
 _RESIDUE_F32_FIELDS = (
-    "phase_seed",
     "collision_timer",
     "lifecycle_stage",
     "hp",
@@ -89,6 +88,7 @@ _RESIDUE_F32_FIELDS = (
 
 _RESIDUE_I32_FIELDS = (
     "index",
+    "phase_seed",
     "state_flag",
     "collision_flag",
     "force_target",

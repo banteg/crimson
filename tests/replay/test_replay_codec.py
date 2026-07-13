@@ -309,7 +309,7 @@ def test_replay_dump_canonicalizes_input_values_to_f32() -> None:
     assert float(packed[0]) == float(f32(value))
 
 
-def test_replay_dump_canonicalizes_header_and_pool_values_to_f32() -> None:
+def test_replay_dump_canonicalizes_header_and_pool_values() -> None:
     value = 1.0000000000000002
     header = ReplayHeader(
         game_mode_id=GameMode.SURVIVAL,
@@ -319,7 +319,7 @@ def test_replay_dump_canonicalizes_header_and_pool_values_to_f32() -> None:
         initial_creature_pool=(
             ReplayCreatureSlotResidue(
                 index=0,
-                phase_seed=value,
+                phase_seed=383,
                 pos=ReplayVec2(x=value, y=-value),
             ),
         ),
@@ -332,9 +332,22 @@ def test_replay_dump_canonicalizes_header_and_pool_values_to_f32() -> None:
     assert replay.header.world_size == float(f32(value))
     assert replay.header.initial_creature_pool is not None
     residue = replay.header.initial_creature_pool[0]
-    assert residue.phase_seed == float(f32(value))
+    assert residue.phase_seed == 383
     assert residue.pos.x == float(f32(value))
     assert residue.pos.y == float(f32(-value))
+
+
+def test_replay_load_rejects_float_phase_seed() -> None:
+    replay_obj = _minimal_wire_replay_obj()
+    header = cast("dict[str, object]", replay_obj["header"])
+    header["initial_creature_pool"] = [
+        msgspec.to_builtins(ReplayCreatureSlotResidue(index=0, phase_seed=383)),
+    ]
+    residue = cast("dict[str, object]", cast("list[object]", header["initial_creature_pool"])[0])
+    residue["phase_seed"] = 383.0
+
+    with pytest.raises(ReplayCodecError, match="invalid replay msgpack payload"):
+        load_replay(_dump_wire(replay_obj))
 
 
 def test_replay_load_rejects_plain_msgpack_bytes() -> None:

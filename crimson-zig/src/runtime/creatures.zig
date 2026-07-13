@@ -60,7 +60,7 @@ pub const CreatureState = struct {
     target_offset: state_mod.Vec2 = .{},
     heading: f32 = 0.0,
     target_heading: f32 = 0.0,
-    phase_seed: f32 = 0.0,
+    phase_seed: i32 = 0,
     anim_phase: f32 = 0.0,
     vel: state_mod.Vec2 = .{},
     move_scale: f32 = 1.0,
@@ -227,7 +227,7 @@ pub const CreaturePool = struct {
             .target_offset = stale_target_offset,
             .heading = if (init.set_heading) narrowF32(init.heading) else stale_heading,
             .target_heading = stale_target_heading,
-            .phase_seed = narrowF32(init.phase_seed),
+            .phase_seed = init.phase_seed,
             .anim_phase = 0.0,
             .vel = .{},
             .move_scale = 1.0,
@@ -1392,7 +1392,7 @@ pub const CreaturePool = struct {
             @intFromEnum(spawn_mod.SpawnId.spider_sp2_random_35) => {
                 // Match Python/native plan builder ordering:
                 // allocCreature phase seed, transient heading draw, then template randoms.
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp2_random_35_size, 10, 1.0, 30.0);
@@ -1440,7 +1440,7 @@ pub const CreaturePool = struct {
                 self.entries[idx].orbit_radius = 1.5;
             },
             0x37 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 const size = @as(f32, @floatFromInt((rng.randTagged(rng_callers.creature_spawn_template_spider_sp2_ranged_variant_37_size) & 3) + 41));
 
@@ -1462,7 +1462,7 @@ pub const CreaturePool = struct {
                 });
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38) => {
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 const size = @as(f32, @floatFromInt((rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_ai7_timer_38_size) & 3) + 41));
 
@@ -1485,7 +1485,7 @@ pub const CreaturePool = struct {
                 self.entries[idx].link_index = 0;
             },
             0x39 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_ai7_timer_weak_39_size) % 4 + 26));
 
@@ -1752,7 +1752,7 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3D => {
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_tint) % 20;
                 const size = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_spider_sp1_random_3d_size) % 7 + 45));
@@ -1828,7 +1828,7 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x41 => {
-                const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+                const phase_seed = drawAllocPhaseSeed(rng);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
@@ -2734,7 +2734,7 @@ pub const CreaturePool = struct {
         flags: u32,
         set_heading: bool,
     ) usize {
-        const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+        const phase_seed = drawAllocPhaseSeed(rng);
         return self.spawnInit(.{
             .origin_template_id = -1,
             .pos = .{
@@ -2858,7 +2858,7 @@ pub const CreaturePool = struct {
         template_id: i32,
         creature_type: spawn_mod.CreatureTypeId,
     ) void {
-        const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+        const phase_seed = drawAllocPhaseSeed(rng);
         _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
         const callers: BasicRandomCallers = switch (template_id) {
@@ -3043,9 +3043,8 @@ fn creatureAiUpdateTarget(
     dt: f32,
 ) CreatureAiUpdate {
     const dist_to_player = distanceF32(creature.pos, distance_player_pos);
-    const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale: f32 = 3.7;
-    const orbit_phase = (@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi;
+    const orbit_phase = (@as(f32, @floatFromInt(creature.phase_seed)) * phase_scale) * native_pi;
 
     creature.force_target = 0;
     var move_scale: f32 = 1.0;
@@ -3334,8 +3333,12 @@ fn randfTagged(
     return @as(f32, @floatFromInt(rng.randTagged(caller) % mod)) * scale + base;
 }
 
-fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) f32 {
-    const phase_seed = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f));
+fn drawAllocPhaseSeed(rng: *spawn_mod.Crand) i32 {
+    return @intCast(rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f);
+}
+
+fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) i32 {
+    const phase_seed = drawAllocPhaseSeed(rng);
     _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
     return phase_seed;
 }
@@ -3586,7 +3589,7 @@ fn spawnSplitChildrenOnDeath(
         _ = state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed);
         var child = source;
         child.active = true;
-        child.phase_seed = @floatFromInt(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
+        child.phase_seed = @intCast(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
         child.heading = wrapAngle(narrowF32(source.heading + heading_offset));
         child.target_heading = child.heading;
         child.hp = narrowF32(source.max_hp * 0.25);
@@ -3968,7 +3971,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
         .origin_template_id = -1,
         .pos = .{ .x = 140.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = 0,
         .size = 44.0,
@@ -5432,7 +5435,7 @@ test "creature update applies contact damage and movement" {
         .origin_template_id = -1,
         .pos = .{ .x = 120.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 44.0,
         .move_speed = 1.0,
@@ -5463,7 +5466,7 @@ test "creature attack cooldown stores native precision" {
         .origin_template_id = -1,
         .pos = .{ .x = 128.0, .y = 128.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 45.0,
         .move_speed = 0.0,
@@ -5498,7 +5501,7 @@ test "veins of poison sets self-damage flag on contact hit" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5532,7 +5535,7 @@ test "veins of poison skips self-damage flag when shielded" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5565,7 +5568,7 @@ test "toxic avenger sets strong self-damage flags on contact hit" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5598,7 +5601,7 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong |
             spawn_mod.CreatureFlags.self_damage_tick |
@@ -5631,7 +5634,7 @@ test "self damage product stores native precision" {
         .origin_template_id = -1,
         .pos = .{ .x = 128.0, .y = 128.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.self_damage_tick,
         .size = 45.0,
@@ -5664,7 +5667,7 @@ test "lethal self damage still advances ai7 link timer" {
         .origin_template_id = -1,
         .pos = .{ .x = 128.0, .y = 128.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .spider_sp1,
         .flags = spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.ai7_link_timer,
         .size = 45.0,
@@ -5700,7 +5703,7 @@ test "toxic avenger skips strong self-damage flag when shielded" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5734,7 +5737,7 @@ test "radioactive tick deals damage and wraps collision timer" {
         .origin_template_id = -1,
         .pos = .{ .x = 46.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5775,7 +5778,7 @@ test "radioactive kill awards base xp without death multipliers" {
         .origin_template_id = -1,
         .pos = .{ .x = 46.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5813,7 +5816,7 @@ test "radioactive sets hp to one for lizard type creatures" {
         .origin_template_id = -1,
         .pos = .{ .x = 46.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .lizard,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -5850,7 +5853,7 @@ test "mr melee damages attacking creature on contact tick" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 44.0,
         .move_speed = 0.0,
@@ -5882,7 +5885,7 @@ test "mr melee does not prevent player damage when attacker dies" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 44.0,
         .move_speed = 0.0,
@@ -5913,7 +5916,7 @@ test "mr melee is inert when perk is not active" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 44.0,
         .move_speed = 0.0,
@@ -5945,7 +5948,7 @@ test "evil eyes freezes targeted creature movement" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 1.0,
@@ -5980,7 +5983,7 @@ test "ai7 link timer consumes rng when timer crosses zero" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .spider_sp1,
         .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
         .flags = spawn_mod.CreatureFlags.ai7_link_timer,
@@ -6167,7 +6170,7 @@ test "doctor increases projectile damage by 20 percent" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6207,7 +6210,7 @@ test "pyromaniac increases fire damage and consumes rng" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6249,7 +6252,7 @@ test "fire damage without pyromaniac keeps base damage and rng state" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6292,7 +6295,7 @@ test "living fortress scales projectile damage by alive player timers" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6330,7 +6333,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6369,7 +6372,7 @@ test "ion gun master increases ion damage by 20 percent" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6408,7 +6411,7 @@ test "uranium filled bullets doubles projectile damage" {
         .origin_template_id = -1,
         .pos = .{ .x = 10.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 50.0,
         .move_speed = 0.0,
@@ -6446,7 +6449,7 @@ test "split on death spawns two smaller children" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 200.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .spider_sp2,
         .flags = spawn_mod.CreatureFlags.split_on_death,
         .size = 40.0,
@@ -6473,8 +6476,8 @@ test "split on death spawns two smaller children" {
     try std.testing.expect(child1.active and child2.active);
     try expectFloatClose(creature_lifecycle.alive, child1.lifecycle_stage);
     try expectFloatClose(creature_lifecycle.alive, child2.lifecycle_stage);
-    try std.testing.expect(child1.phase_seed >= 0.0 and child1.phase_seed <= 255.0);
-    try std.testing.expect(child2.phase_seed >= 0.0 and child2.phase_seed <= 255.0);
+    try std.testing.expect(child1.phase_seed >= 0 and child1.phase_seed <= 255);
+    try std.testing.expect(child2.phase_seed >= 0 and child2.phase_seed <= 255);
     try expectFloatClose(-native_half_pi, child1.heading);
     try expectFloatClose(native_half_pi, child2.heading);
     try expectFloatClose(100.0, child1.hp);
@@ -6502,7 +6505,7 @@ test "kill no corpse awards player zero for non-player owner" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 200.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 40.0,
         .move_speed = 2.0,
@@ -6543,7 +6546,7 @@ test "ranged shock creature queues projectile along heading not direct aim" {
         .origin_template_id = -1,
         .pos = .{ .x = 0.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .ai_mode = spawn_mod.CreatureAiMode.chase_player,
         .flags = spawn_mod.CreatureFlags.ranged_attack_shock,
@@ -6585,7 +6588,7 @@ test "ranged shock creature does not fire when too close" {
         .origin_template_id = -1,
         .pos = .{ .x = 0.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .ai_mode = spawn_mod.CreatureAiMode.chase_player,
         .flags = spawn_mod.CreatureFlags.ranged_attack_shock,
@@ -6617,7 +6620,7 @@ test "ranged variant uses explicit projectile type and random cooldown" {
         .origin_template_id = -1,
         .pos = .{ .x = 0.0, .y = 0.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .spider_sp1,
         .ai_mode = spawn_mod.CreatureAiMode.chase_player,
         .flags = spawn_mod.CreatureFlags.ranged_attack_variant,
@@ -6653,7 +6656,7 @@ test "freeze stops creature movement" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 200.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .size = 44.0,
         .move_speed = 1.0,
@@ -6690,7 +6693,7 @@ test "plaguebearer infects weak creatures near player" {
         .origin_template_id = -1,
         .pos = .{ .x = 120.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -6720,7 +6723,7 @@ test "plaguebearer infection timer wrap applies damage" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -6754,7 +6757,7 @@ test "plaguebearer spreads between nearby creatures" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -6768,7 +6771,7 @@ test "plaguebearer spreads between nearby creatures" {
         .origin_template_id = -1,
         .pos = .{ .x = 130.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -6800,7 +6803,7 @@ test "plaguebearer infection kill increments global count" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
         .size = 44.0,
@@ -6834,7 +6837,7 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 100.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = spawn_mod.CreatureFlags.anim_ping_pong | spawn_mod.CreatureFlags.split_on_death,
         .size = 48.0,
@@ -6885,7 +6888,7 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
         .origin_template_id = -1,
         .pos = .{ .x = 120.0, .y = 370.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = 0,
         .size = 44.0,
@@ -6919,7 +6922,7 @@ test "single-player dead player uses dead-target AI position" {
         .origin_template_id = -1,
         .pos = .{ .x = 500.0, .y = 500.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = 0,
         .size = 45.0,
@@ -6958,7 +6961,7 @@ test "single-player dormant target receives creature contact" {
         .origin_template_id = -1,
         .pos = .{ .x = 432.0, .y = 432.0 },
         .heading = 0.0,
-        .phase_seed = 0.0,
+        .phase_seed = 0,
         .type_id = .alien,
         .flags = 0,
         .size = 45.0,

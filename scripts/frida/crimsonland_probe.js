@@ -712,7 +712,7 @@ function readCreature(idx) {
     index: idx,
     base: b.toString(),
     active_u8: tryReadU8(b.add(0x00)),
-    phase_seed_f32: tryReadFloat(b.add(0x04)),
+    phase_seed_i32: tryReadS32(b.add(0x04)),
     state_flag_u8: tryReadU8(b.add(0x08)),
     collision_flag_u8: tryReadU8(b.add(0x09)),
     collision_timer_f32: tryReadFloat(b.add(0x0c)),
