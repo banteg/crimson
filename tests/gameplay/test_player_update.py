@@ -83,6 +83,20 @@ def test_player_update_shot_cooldown_decay_keeps_tiny_positive_residual() -> Non
     assert player.weapon.shot_cooldown == 3.725290298461914e-09
 
 
+def test_player_update_spread_floor_is_native_f32() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        spread_heat=f32(0.01),
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), f32(0.1), state)
+
+    assert player.spread_heat == f32(0.01)
+    assert player.spread_heat != 0.01
+
+
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
     rng = ScriptedCrand(0)
     state = GameplayState(rng=rng)
@@ -748,6 +762,29 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
     assert_float_close(player.weapon.ammo, -2.0)
     assert player.weapon.reload_active
     assert_float_close(player.weapon.reload_timer, 3.0)
+
+
+def test_player_fire_weapon_spread_cap_is_native_f32() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
+        spread_heat=f32(0.47),
+    )
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
+            dt=0.0,
+            state=state,
+        ),
+    )
+
+    assert player.spread_heat == f32(0.48)
+    assert player.spread_heat != 0.48
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:

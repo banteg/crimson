@@ -510,7 +510,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         )
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = min(0.48, max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
+        player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
 
     muzzle_inc = weapon_spread_heat
     if is_fire_bullets and pellet_count == 1:

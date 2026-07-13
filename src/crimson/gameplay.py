@@ -966,10 +966,10 @@ def player_update(
     # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
     # sampling order while still applying cooldown before `player_fire_weapon`.
     if perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = 0.02
+        player.spread_heat = f32(0.02)
     else:
         player.spread_heat = max(
-            0.01,
+            f32(0.01),
             x87_pc24_sub(player.spread_heat, x87_pc24_mul(dt, f32(0.4))),
         )
 

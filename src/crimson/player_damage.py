@@ -120,7 +120,7 @@ def player_take_damage(
             player.heading += float((state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50) * 0.04
             # Native uses post-Tough-Reloader damage (before Thick Skinned) for spread heat growth.
             player.spread_heat = min(
-                0.48,
+                f32(0.48),
                 x87_pc24_add(
                     player.spread_heat,
                     x87_pc24_mul(spread_heat_damage, f32(0.01)),
