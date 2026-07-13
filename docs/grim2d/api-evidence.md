@@ -1548,9 +1548,13 @@ Clamped RGBA example (input_primary_just_pressed (`FUN_00446030`)):
 
 ## 0x114 — grim_set_color @ 0x10007f90
 
-- Provisional name: `set_color` (high)
-- Guess: `void set_color(float r, float g, float b, float a)`
-- Notes: RGBA floats
+- Confirmed name: `set_color`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_color(float r, float g, float b, float a)`
+- Notes: clamps alpha to `[0, 1]`, converts four channels with the native x87
+  `_ftol` path, packs ARGB, and propagates the value to all four corner slots.
+  RGB is not clamped inside this method. The vtable slot and `retn 0x10`
+  establish the member ABI even though the body does not otherwise read
+  `this`.
 - Ghidra signature: `void grim_set_color(float r, float g, float b, float a)`
 - Call sites: 203 (unique funcs: 37)
 - Sample calls: FUN_00401dd0:L733; FUN_00401dd0:L741; FUN_00401dd0:L756; FUN_00401dd0:L764; FUN_00401dd0:L769; FUN_00401dd0:L787; FUN_00401dd0:L833; FUN_00402d50:L1451
@@ -1571,6 +1575,11 @@ grim.dll packing:
   DAT_1005bc04 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
   DAT_1005bc10 = DAT_1005bc04;
 ```
+
+The recovered VC6.5 source matches all 42 instructions and all 16 masked
+references. Its ordinary alpha clamp, unsigned byte packing, and chained color
+slot assignment reproduce the native compare, conversion, shift, and store
+order without matching-only constructs.
 
 
 ## 0x118 — grim_set_color_slot @ 0x100081c0
