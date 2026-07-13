@@ -39,6 +39,7 @@ from ..math_parity import (
     heading_add_pi_f32,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sub,
@@ -663,12 +664,15 @@ class CreaturePool:
             if not creature.active:
                 continue
 
-            if Vec2.distance_sq(creature.pos, origin.pos) < 45.0 * 45.0:
-                if creature.plague_infected and float(origin.hp) < 150.0:
-                    origin.plague_infected = True
-                if origin.plague_infected and float(creature.hp) < 150.0:
-                    creature.plague_infected = True
-                return
+            dx = x87_pc24_sub(creature.pos.x, origin.pos.x)
+            dy = x87_pc24_sub(creature.pos.y, origin.pos.y)
+            if x87_pc24_hypot(dx, dy) >= 45.0:
+                continue
+            if creature.plague_infected and float(origin.hp) < 150.0:
+                origin.plague_infected = True
+            if origin.plague_infected and float(creature.hp) < 150.0:
+                creature.plague_infected = True
+            return
 
     def _alloc_slot(self) -> int | None:
         for i, entry in enumerate(self._entries):

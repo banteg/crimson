@@ -3438,8 +3438,10 @@ fn spreadPlagueInfection(
 ) void {
     for (creatures) |*target| {
         if (!target.active) continue;
-        const dist_sq = state_mod.Vec2.sub(target.pos, origin.pos).lengthSq();
-        if (dist_sq >= 45.0 * 45.0) continue;
+        const dx = native_math.pc24Sub(target.pos.x, origin.pos.x);
+        const dy = native_math.pc24Sub(target.pos.y, origin.pos.y);
+        const distance = native_math.pc24Hypot(dx, dy);
+        if (distance >= 45.0) continue;
         if (target.plague_infected and origin.hp < 150.0) {
             origin.plague_infected = true;
         }
@@ -6785,6 +6787,25 @@ test "plaguebearer spreads between nearby creatures" {
 
     try pool.update(&state, players[0..], 0.016, 1024.0, &bonuses);
     try std.testing.expect(pool.entries[1].plague_infected);
+}
+
+test "plaguebearer spread rejects distance rounded to native radius" {
+    var creatures = [_]CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 14.757906913757324, .y = -42.51122283935547 },
+            .hp = 100.0,
+        },
+        .{
+            .active = true,
+            .plague_infected = true,
+            .hp = 100.0,
+        },
+    };
+
+    spreadPlagueInfection(creatures[0..], &creatures[1]);
+
+    try std.testing.expect(!creatures[0].plague_infected);
 }
 
 test "plaguebearer infection kill increments global count" {

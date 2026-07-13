@@ -90,6 +90,24 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     assert other.plague_infected
 
 
+def test_plaguebearer_spread_rejects_distance_rounded_to_native_radius() -> None:
+    pool = CreaturePool(size=2)
+    target = pool.entries[0]
+    target.active = True
+    target.pos = Vec2(14.757906913757324, -42.51122283935547)
+    target.hp = 100.0
+
+    origin = pool.entries[1]
+    origin.active = True
+    origin.plague_infected = True
+    origin.pos = Vec2()
+    origin.hp = 100.0
+
+    pool._plaguebearer_spread_infection(1)
+
+    assert not target.plague_infected
+
+
 def test_plaguebearer_infection_kill_increments_global_count() -> None:
     dt = 0.2
     state = GameplayState()
