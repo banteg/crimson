@@ -25,6 +25,7 @@ from grim.rand import CrandLike
 from ..bonuses import BonusId
 from ..math_parity import (
     f32,
+    f32_from_bits,
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_mul,
@@ -42,6 +43,8 @@ from .spawn_ids import (
     TintRGBA,
 )
 from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_NAME, SpawnTemplate
+
+_NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
 
 __all__ = [
     "CreatureAiMode",
@@ -1588,7 +1591,7 @@ def build_rush_mode_spawn_creature(
     elapsed_f32 = f32(float(elapsed_ms))
     c.health = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-4)), 10.0)
     c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
-    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-5)), 2.5)
+    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
     c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
 
     c.tint = tint_rgba
@@ -1596,7 +1599,7 @@ def build_rush_mode_spawn_creature(
 
     if c.health is not None:
         c.max_health = c.health
-    c.size = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-5)), 47.0)
+    c.size = x87_pc24_add(x87_pc24_mul(elapsed_f32, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 47.0)
 
     return c
 

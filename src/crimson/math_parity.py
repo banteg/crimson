@@ -15,6 +15,7 @@ __all__ = [
     "NATIVE_TURN_RATE_SCALE",
     "atan2_f32",
     "f32",
+    "f32_from_bits",
     "f32_vec2",
     "heading_add_pi_f32",
     "heading_from_delta_f32",
@@ -32,7 +33,7 @@ __all__ = [
 ]
 
 
-def _f32_from_bits(bits: int) -> float:
+def f32_from_bits(bits: int) -> float:
     return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
 
 
@@ -43,11 +44,11 @@ _F32_UNPACK = _F32_STRUCT.unpack
 
 
 # Native movement/heading code uses these exact float32 literals.
-NATIVE_PI = _f32_from_bits(0x40490FDB)
-NATIVE_HALF_PI = _f32_from_bits(0x3FC90FDB)
-NATIVE_QUARTER_PI = _f32_from_bits(0x3F490FDB)
-NATIVE_TAU = _f32_from_bits(0x40C90FDB)
-NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
+NATIVE_PI = f32_from_bits(0x40490FDB)
+NATIVE_HALF_PI = f32_from_bits(0x3FC90FDB)
+NATIVE_QUARTER_PI = f32_from_bits(0x3F490FDB)
+NATIVE_TAU = f32_from_bits(0x40C90FDB)
+NATIVE_TURN_RATE_SCALE = f32_from_bits(0x3FAAAAAB)
 
 
 def f32(value: float) -> float:

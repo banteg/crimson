@@ -58,8 +58,8 @@ def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
     )
 
     assert health_case.health == 10.047399520874023
-    assert speed_case.move_speed == 2.5023698806762695
-    assert size_case.size == 47.03791809082031
+    assert speed_case.move_speed == 2.5023701190948486
+    assert size_case.size == 47.03792190551758
 
 
 def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:

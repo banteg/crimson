@@ -749,7 +749,7 @@ pub fn buildRushModeSpawnCreature(
         const heading_scaled: f32 = heading_base * 0.01;
         creature.heading = heading_scaled;
     }
-    creature.move_speed = narrowF32(elapsed_f32 * 1e-5 + 2.5);
+    creature.move_speed = narrowF32(elapsed_f32 * native_math.native_creature_spawn_elapsed_scale + 2.5);
     creature.reward_value = @floatFromInt(rng.randTagged(rng_callers.creature_spawn_reward) % 30 + 140);
 
     creature.tint = .{
@@ -760,7 +760,7 @@ pub fn buildRushModeSpawnCreature(
     };
     creature.contact_damage = 4.0;
     creature.max_health = creature.health;
-    creature.size = narrowF32(elapsed_f32 * 1e-5 + 47.0);
+    creature.size = narrowF32(elapsed_f32 * native_math.native_creature_spawn_elapsed_scale + 47.0);
 
     return creature;
 }
@@ -1700,6 +1700,16 @@ test "rush wave no trigger" {
     try expectFloatClose(84.0, out.cooldown);
     try std.testing.expectEqual(@as(usize, 0), out.spawns.len);
     try std.testing.expectEqual(@as(u32, 1), rng.state);
+}
+
+test "rush spawn uses exact native elapsed scale" {
+    var speed_rng = Crand.init(1);
+    const speed = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &speed_rng, .alien, 237);
+    try std.testing.expectEqual(@as(u32, 0x402026D5), @as(u32, @bitCast(speed.move_speed)));
+
+    var size_rng = Crand.init(1);
+    const size = buildRushModeSpawnCreature(.{ .x = 0.0, .y = 0.0 }, .{ 1.0, 1.0, 1.0, 1.0 }, &size_rng, .alien, 2458);
+    try std.testing.expectEqual(@as(u32, 0x423C192C), @as(u32, @bitCast(size.size)));
 }
 
 test "rush wave triggers two creatures" {
