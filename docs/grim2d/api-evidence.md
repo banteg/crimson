@@ -177,10 +177,11 @@ grim.dll body:
 
 ## 0x20 — grim_set_config_var @ 0x10006580
 
-- Provisional name: `set_config_var` (high)
-- Guess: `void set_config_var(uint32_t id, uint32_t value, ...)`
-- Notes: config/state dispatcher; some IDs map to D3D render/texture stage state, others update config tables or trigger side effects
-- Ghidra signature: `void grim_set_config_var(unsigned int id, unsigned int value)`
+- Confirmed name: `set_config_var`
+- Confirmed C++ signature: `void __thiscall IGrim2D::set_config_var(unsigned int id, grim_config_value_t value)`
+- Previous Ghidra signature: `void grim_set_config_var(unsigned int id, unsigned int value)`
+- Notes: config/state dispatcher; some IDs map to D3D render/texture stage
+  state, while others update the table or consume pointer/callback fields.
 - Call sites: 206 (unique funcs: 35)
 - Sample calls: FUN_00401dd0:L754; FUN_00401dd0:L755; FUN_00401dd0:L847; FUN_00402d50:L1438; FUN_00402d50:L1460; demo_trial_overlay_render (`FUN_004047c0`):L3147; ui_render_keybind_help:L3373; ui_render_keybind_help:L3377
 - First callsite: FUN_00401dd0 (line 754)
@@ -193,6 +194,13 @@ grim.dll body:
     (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);
     (**(code **)(*DAT_0048083c + 0x114))
 ```
+
+The vtable entry is exactly `0x10006580`. Live Binary Ninja shows five stack
+dwords (`id` plus the four record words) at every path and `retn 0x14` on all
+returns. A representative caller reserves 16 bytes, initializes only word 0,
+pushes ID `0x15`, and calls slot `+0x20`; the callee removes the entire 20-byte
+argument block. Other recovered callers initialize all four words. This is
+MSVC's ordinary by-value aggregate ABI, not a variadic two-word API.
 
 
 ## 0x24 — grim_get_config_var @ 0x10006c30

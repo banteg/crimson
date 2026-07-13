@@ -22,7 +22,7 @@ struct IGrim2D_vtbl {
     /* 0x014 */ int (__stdcall *grim_init_system)(void);
     /* 0x018 */ void (__stdcall *grim_shutdown)(void);
     /* 0x01c */ void (__stdcall *grim_apply_settings)(void);
-    /* 0x020 */ void (*grim_set_config_var)(unsigned int id, unsigned int value, ...);
+    /* 0x020 */ void (__stdcall *grim_set_config_var)(unsigned int id, grim_config_value_t value);
     /* 0x024 */ grim_config_value_t * (__stdcall *grim_get_config_var)(grim_config_value_t * out, int id);
     /* 0x028 */ char * (__stdcall *grim_get_error_text)(void);
     /* 0x02c */ void (__stdcall *grim_clear_color)(float r, float g, float b, float a);

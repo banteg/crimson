@@ -18,7 +18,7 @@ public:
     virtual int grim_init_system(void) = 0;
     virtual void grim_shutdown(void) = 0;
     virtual void grim_apply_settings(void) = 0;
-    virtual void grim_set_config_var(unsigned int id, unsigned int value, ...) = 0;
+    virtual void grim_set_config_var(unsigned int id, grim_config_value_t value) = 0;
     virtual grim_config_value_t grim_get_config_var(int id) = 0;
     virtual char *grim_get_error_text(void) = 0;
     virtual void grim_clear_color(float r, float g, float b, float a) = 0;

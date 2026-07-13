@@ -102,8 +102,9 @@ Use them to prioritize runtime validation and signature cleanup.
 
 Validation highlights (see the evidence appendix for snippets):
 
-- `grim_set_config_var` callsites pass `(id, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`;
-  some IDs map to D3D render/texture stage state, while others drive config side effects.
+- `grim_set_config_var` callsites pass an ID plus a 16-byte config record by
+  value. Many callsites initialize only its first word (for example ID `0x15`
+  with value `2`), while richer IDs consume the remaining fields.
 
 - `grim_get_config_var` is logically a 16-byte structure return. Callers push
   an ID and hidden result buffer, then consume the returned buffer pointer;
@@ -279,7 +280,7 @@ These offsets appear with keycodes or input-related values:
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
-| `0x20` | `set_config_var` | `void set_config_var(uint32_t id, uint32_t value, ...)` | high | config/state dispatcher; some IDs map to D3D render/texture stage state |
+| `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | high | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
 | `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
