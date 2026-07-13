@@ -1039,19 +1039,26 @@ fn bonusPickSuppressed(
     }
 
     if (bonus_id == .freeze and state.bonuses.freeze > 0.0) return true;
-    if (bonus_id == .shield and anyShieldActive(players)) return true;
+    // Native reads both shield slots directly, but perk_count_get reads only
+    // player 0. Preserve that asymmetry for larger port-side player slices.
+    if (bonus_id == .shield and nativeShieldActive(players)) return true;
     if (bonus_id == .weapon and has_fire_bullets_drop) return true;
-    if (bonus_id == .weapon and anyPerkActive(players, PerkId.my_favourite_weapon)) return true;
-    if (bonus_id == .medikit and anyPerkActive(players, PerkId.death_clock)) return true;
+    if (bonus_id == .weapon and primaryPlayerPerkActive(players, PerkId.my_favourite_weapon)) return true;
+    if (bonus_id == .medikit and primaryPlayerPerkActive(players, PerkId.death_clock)) return true;
     if (bonus_id == .unused) return true;
     return false;
 }
 
-fn anyShieldActive(players: []const state_mod.PlayerState) bool {
-    for (players) |player| {
+fn nativeShieldActive(players: []const state_mod.PlayerState) bool {
+    for (players[0..@min(players.len, 2)]) |player| {
         if (player.shield_timer > 0.0) return true;
     }
     return false;
+}
+
+fn primaryPlayerPerkActive(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
+    if (players.len == 0) return false;
+    return players[0].perk_counts.get(perk_id) > 0;
 }
 
 fn bonusIdFromRoll(
@@ -1466,6 +1473,29 @@ test "bonus pick random type quest suppression parity" {
         10,
         .freeze,
     );
+}
+
+test "bonus suppression keeps native player slot asymmetry" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+        .{ .index = 2, .pos = .{}, .shield_timer = 1.0 },
+    };
+
+    players[1].perk_counts.set(PerkId.my_favourite_weapon, 1);
+    players[1].perk_counts.set(PerkId.death_clock, 1);
+    try std.testing.expect(!bonusPickSuppressed(&state, players[0..], .weapon, false));
+    try std.testing.expect(!bonusPickSuppressed(&state, players[0..], .medikit, false));
+    try std.testing.expect(!bonusPickSuppressed(&state, players[0..], .shield, false));
+
+    players[0].perk_counts.set(PerkId.my_favourite_weapon, 1);
+    players[0].perk_counts.set(PerkId.death_clock, 1);
+    try std.testing.expect(bonusPickSuppressed(&state, players[0..], .weapon, false));
+    try std.testing.expect(bonusPickSuppressed(&state, players[0..], .medikit, false));
+
+    players[1].shield_timer = 1.0;
+    try std.testing.expect(bonusPickSuppressed(&state, players[0..], .shield, false));
 }
 
 test "weapon refresh available includes survival defaults" {

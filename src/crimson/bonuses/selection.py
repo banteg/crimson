@@ -34,13 +34,20 @@ def _bonus_pick_suppressed(
         return True
     if bonus_id == BonusId.FREEZE and state.bonuses.freeze > 0.0:
         return True
-    if bonus_id == BonusId.SHIELD and any(player.shield_timer > 0.0 for player in players):
+    # Native reads both shield slots directly, but its global perk helper only
+    # reads player 0. Preserve that asymmetry even if the port has more players.
+    if bonus_id == BonusId.SHIELD and any(player.shield_timer > 0.0 for player in players[:2]):
         return True
     if bonus_id == BonusId.WEAPON and has_fire_bullets_drop:
         return True
-    if bonus_id == BonusId.WEAPON and any(perk_active(player, PerkId.MY_FAVOURITE_WEAPON) for player in players):
+    primary_player = players[0] if players else None
+    if (
+        bonus_id == BonusId.WEAPON
+        and primary_player is not None
+        and perk_active(primary_player, PerkId.MY_FAVOURITE_WEAPON)
+    ):
         return True
-    if bonus_id == BonusId.MEDIKIT and any(perk_active(player, PerkId.DEATH_CLOCK) for player in players):
+    if bonus_id == BonusId.MEDIKIT and primary_player is not None and perk_active(primary_player, PerkId.DEATH_CLOCK):
         return True
     level = state.quest_level
     if state.game_mode != GameMode.QUESTS or level is None or level.minor != 10:
