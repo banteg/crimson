@@ -197,10 +197,12 @@ grim.dll body:
 
 ## 0x24 — grim_get_config_var @ 0x10006c30
 
-- Provisional name: `get_config_var` (high)
-- Guess: `void get_config_var(uint32_t *out, int id)`
-- Notes: grim.dll writes 4 dwords from a config table for `id` in `0..0x7f`
-- Ghidra signature: `void grim_get_config_var(unsigned int *out, int id)`
+- Confirmed name: `get_config_var`
+- Confirmed C++ signature: `grim_config_value_t __thiscall IGrim2D::get_config_var(int id)`
+- ABI-level analyzer signature: `grim_config_value_t *grim_get_config_var(grim_config_value_t *out, int id)`
+- Previous Ghidra signature: `void grim_get_config_var(unsigned int *out, int id)`
+- Notes: grim.dll returns one 16-byte record from `grim_config_values` for IDs
+  in `0..127`; all other IDs return the zero-filled `grim_config_default`.
 - Call sites: 17 (unique funcs: 4)
 - Sample calls: config_sync_from_grim (`FUN_0041ec60`):L13402; config_sync_from_grim (`FUN_0041ec60`):L13410; config_sync_from_grim (`FUN_0041ec60`):L13413; config_sync_from_grim (`FUN_0041ec60`):L13415; config_sync_from_grim (`FUN_0041ec60`):L13417; config_sync_from_grim (`FUN_0041ec60`):L13419; crimsonland_main (`FUN_0042c450`):L19456; crimsonland_main (`FUN_0042c450`):L19458
 - First callsite: config_sync_from_grim (`FUN_0041ec60`) (line 15539)
@@ -218,6 +220,13 @@ grim.dll body:
   puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4a8,0x2a);
   DAT_00480508 = *puVar3;
 ```
+
+Live Binary Ninja resolves the apparent `out` argument as MSVC's hidden
+structure-return buffer: callers push the ID and a 16-byte destination, the
+method returns with `retn 8`, and callers immediately read through the pointer
+left in `EAX`. A natural by-value return compiles with VC6.5 to all 32 native
+instructions and all five masked data references, including the four
+base-plus-offset reads from the fallback record.
 
 
 ## 0x28 — grim_get_error_text @ 0x10006ca0

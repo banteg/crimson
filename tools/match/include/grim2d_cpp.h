@@ -1,6 +1,10 @@
 #ifndef GRIM2D_CPP_H
 #define GRIM2D_CPP_H
 
+struct grim_config_value_t {
+    unsigned int words[4];
+};
+
 // Recovered C++ view of the Grim2D interface through the primary quad slot.
 // The C ABI view lives in third_party/headers/grim2d.h; this declaration is
 // used when reproducing the original __thiscall virtual dispatch.
@@ -15,7 +19,7 @@ public:
     virtual void grim_shutdown(void) = 0;
     virtual void grim_apply_settings(void) = 0;
     virtual void grim_set_config_var(unsigned int id, unsigned int value, ...) = 0;
-    virtual void grim_get_config_var(unsigned int *out, int id) = 0;
+    virtual grim_config_value_t grim_get_config_var(int id) = 0;
     virtual char *grim_get_error_text(void) = 0;
     virtual void grim_clear_color(float r, float g, float b, float a) = 0;
     virtual int grim_set_render_target(int target_index) = 0;

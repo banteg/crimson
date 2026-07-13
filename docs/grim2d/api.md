@@ -105,6 +105,10 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_set_config_var` callsites pass `(id, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`;
   some IDs map to D3D render/texture stage state, while others drive config side effects.
 
+- `grim_get_config_var` is logically a 16-byte structure return. Callers push
+  an ID and hidden result buffer, then consume the returned buffer pointer;
+  invalid IDs receive the zero-filled default record.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 
@@ -276,7 +280,7 @@ These offsets appear with keycodes or input-related values:
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
 | `0x20` | `set_config_var` | `void set_config_var(uint32_t id, uint32_t value, ...)` | high | config/state dispatcher; some IDs map to D3D render/texture stage state |
-| `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
+| `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |

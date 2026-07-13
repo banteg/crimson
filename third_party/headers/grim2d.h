@@ -5,6 +5,10 @@
 typedef struct IGrim2D_vtbl IGrim2D_vtbl;
 typedef struct IGrim2D IGrim2D;
 
+typedef struct grim_config_value_t {
+    unsigned int words[4];
+} grim_config_value_t;
+
 struct IGrim2D {
     IGrim2D_vtbl *vtable;
 };
@@ -19,7 +23,7 @@ struct IGrim2D_vtbl {
     /* 0x018 */ void (__stdcall *grim_shutdown)(void);
     /* 0x01c */ void (__stdcall *grim_apply_settings)(void);
     /* 0x020 */ void (*grim_set_config_var)(unsigned int id, unsigned int value, ...);
-    /* 0x024 */ void (__stdcall *grim_get_config_var)(unsigned int * out, int id);
+    /* 0x024 */ grim_config_value_t * (__stdcall *grim_get_config_var)(grim_config_value_t * out, int id);
     /* 0x028 */ char * (__stdcall *grim_get_error_text)(void);
     /* 0x02c */ void (__stdcall *grim_clear_color)(float r, float g, float b, float a);
     /* 0x030 */ int (__stdcall *grim_set_render_target)(int target_index);

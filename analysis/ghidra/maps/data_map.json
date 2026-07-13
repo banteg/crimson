@@ -9498,6 +9498,13 @@
       "type": "char"
     },
     {
+      "address": "0x1005a478",
+      "comment": "Zero-filled fallback returned by grim_get_config_var for IDs outside 0..127.",
+      "name": "grim_config_default",
+      "program": "grim.dll",
+      "type": "grim_config_value_t"
+    },
+    {
       "address": "0x1005a488",
       "comment": "D3D texture format used for CreateTexture.",
       "name": "grim_texture_format",
@@ -9884,27 +9891,10 @@
     },
     {
       "address": "0x1005cb88",
-      "comment": "Config var table element 0 (id * 4; used by grim_get_config_var).",
-      "name": "grim_config_var0_table",
-      "program": "grim.dll"
-    },
-    {
-      "address": "0x1005cb8c",
-      "comment": "Config var table element 1 (id * 4; used by grim_get_config_var).",
-      "name": "grim_config_var1_table",
-      "program": "grim.dll"
-    },
-    {
-      "address": "0x1005cb90",
-      "comment": "Config var table element 2 (id * 0x10; used by grim_get_config_var).",
-      "name": "grim_config_var2_table",
-      "program": "grim.dll"
-    },
-    {
-      "address": "0x1005cb94",
-      "comment": "Config var table element 3 (id * 0x10; used by grim_get_config_var).",
-      "name": "grim_config_var3_table",
-      "program": "grim.dll"
+      "comment": "128-entry table of 16-byte config values returned by grim_get_config_var.",
+      "name": "grim_config_values",
+      "program": "grim.dll",
+      "type": "grim_config_value_t[128]"
     },
     {
       "address": "0x1005cc08",
