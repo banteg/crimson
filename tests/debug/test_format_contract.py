@@ -29,7 +29,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 14, 15, 5, 21, 2)
+    ) == (2, 15, 16, 5, 22, 2)
 
 
 def test_cross_language_format_contract_is_wired() -> None:
@@ -123,9 +123,32 @@ def test_frida_agent_closes_runs_at_terminal_state_transition() -> None:
     assert "closeActiveRun(pendingRunCloseReason, out)" in source
 
 
-def test_frida_agent_records_transition_frame_rng_burn_in_first_tick_prelude() -> None:
+def test_frida_agent_records_transition_frame_rng_advance_in_first_tick_prelude() -> None:
     source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
 
     assert 'const FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7";' in source
     assert "rollRow.caller_static === FRAME_DISCARDED_RNG_CALLER_STATIC" in source
     assert "outState.runSetupRngActive = false;" in source
+    assert re.search(
+        r'appendReplayPreludeOp\(null,\s*\{\s*type: "game_frame_rng_advance",\s*frames: 1,?\s*\}\)',
+        source,
+    )
+
+
+def test_frida_pipeline_has_no_legacy_rng_or_lifecycle_recovery() -> None:
+    root = Path(__file__).parents[2]
+    agent_source = (root / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+    host_source = (root / "scripts" / "frida" / "gameplay_diff_capture_host.py").read_text()
+    finalizer_source = (root / "src" / "crimson" / "dbg" / "frida_finalize.py").read_text()
+
+    for removed_token in ("rng_burn", "session_end", "CRIMSON_FRIDA_APPEND"):
+        assert removed_token not in agent_source
+    assert "seal_frida_jsonl_after_detach" not in host_source
+    assert "seal_frida_jsonl_after_detach" not in finalizer_source
+    assert "CRIMSON_CAPTURE_HOST_CONFIG" in host_source
+    assert "missing_real_rng_state_before_draw" in agent_source
+    assert "unclassified_outside_rng_caller" in agent_source
+    assert "replay_operation_index" in agent_source
+    assert "trailing_prelude" in agent_source
+    assert "capture_runtime_error" in agent_source
+    assert "_captureForceFlush" not in agent_source

@@ -11,15 +11,15 @@ older sessions are historical investigation notes; their recordings predate the
 current owned formats and are not expected to load. Do not add compatibility
 code for them.
 
-Start a current session only from a fresh Frida format 19 capture finalized as
-CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
+Start a current session only from a fresh Frida format 22 capture finalized as
+CDT container 2/schema 15 with its CRD replay 16 and evidence sidecars.
 
 ## Session template
 
 - **Title:** `Session <N> (YYYY-MM-DD)`
 - **Capture set:** `<native.cdt>`, `<run.crd>`, `<rng_evidence.json>`,
   `<evidence.msgpack.zst>`
-- **Capture versions:** `Frida 19 / CDT 2+14 / CRD 15 / evidence 2`
+- **Capture versions:** `Frida 22 / CDT 2+15 / CRD 16 / evidence 2`
 - **Capture SHA256:** `<sha256 for every artifact>`
 - **Replay trace:** `<python-or-zig.cdt>`
 - **Commands:** `<exact health, record, diff, bisect, or focus commands>`
@@ -47,8 +47,8 @@ CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
 - Keep the `.cdt`, `.crd`, `.rng_evidence.json`, and `.evidence.msgpack.zst`
   files together as the canonical native artifact set. Log their SHA256 values
   and every capture knob that changes coverage.
-- Reject and regenerate any artifact that is not Frida 19, CDT 2/schema 14,
-  CRD 15, and evidence 2. These files are throwaway and there is no migration
+- Reject and regenerate any artifact that is not Frida 22, CDT 2/schema 15,
+  CRD 16, and evidence 2. These files are throwaway and there is no migration
   path.
 - Run `dbg health` on the native trace and the replay-recorded trace before
   reading a diff. Stop if either selected window is not parity-ready.
@@ -60,8 +60,8 @@ CDT container 2/schema 14 with its CRD replay 15 and evidence sidecars.
 - Log `channel_first_diagnostics` separately. In particular, an RNG
   caller-attribution-only difference is useful localization evidence but not a
   behavioral mismatch.
-- If the capture SHA is unchanged, append to its existing session. Start a new
-  session after recapturing or changing the comparison implementation.
+- If the capture SHA is unchanged, continue its existing investigation notes.
+  Start a new session after recapturing or changing the comparison implementation.
 - Fixture parity is strict. Do not blanket-`xfail` a known mismatch; record the
   exact first mismatch and fix or isolate the responsible behavior.
 
@@ -74,9 +74,9 @@ uv run crimson dbg health <candidate.cdt>
 uv run crimson dbg diff <native.cdt> <candidate.cdt>
 ```
 
-The raw JSONL lifecycle is strict. A capture error, tick discontinuity,
-unfinished run, or missing `session_end` means recapture; finalization does not
-salvage a partial session.
+The raw JSONL lifecycle is strict. A capture error, tick discontinuity, or EOF
+with an unfinished run means recapture. EOF after `run_end` is complete;
+finalization never appends or salvages lifecycle rows.
 
 ---
 

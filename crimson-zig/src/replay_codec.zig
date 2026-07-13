@@ -2,7 +2,7 @@ const std = @import("std");
 const msgpack = @import("msgpack");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 15;
+pub const replay_format_version: i32 = 16;
 pub const weapon_usage_count: usize = 53;
 pub const quest_play_count: usize = 91;
 pub const status_unknown_tail_size: usize = 16;
@@ -320,9 +320,9 @@ pub const PerkMenuOpenEvent = struct {
     player_index: i32,
 };
 
-pub const RngBurnPrelude = struct {
+pub const GameFrameRngAdvancePrelude = struct {
     tick_index: usize,
-    draws: u32,
+    frames: u32,
 };
 
 pub const PerkMenuOpenPrelude = struct {
@@ -337,7 +337,7 @@ pub const PerkPickPrelude = struct {
 };
 
 pub const ReplayPreludeOp = union(enum) {
-    rng_burn: RngBurnPrelude,
+    game_frame_rng_advance: GameFrameRngAdvancePrelude,
     perk_menu_open: PerkMenuOpenPrelude,
     perk_pick: PerkPickPrelude,
 
@@ -743,7 +743,7 @@ fn replayEventKindName(event: ReplayEvent) []const u8 {
 
 pub const ReplayEventSummary = struct {
     total_count: usize = 0,
-    rng_burn_count: usize = 0,
+    game_frame_rng_advance_count: usize = 0,
     perk_menu_open_count: usize = 0,
     perk_pick_count: usize = 0,
     typo_char_count: usize = 0,
@@ -1115,8 +1115,8 @@ const ReplayInputWire = struct {
     }
 };
 
-const RngBurnPreludeWire = struct {
-    draws: i32,
+const GameFrameRngAdvancePreludeWire = struct {
+    frames: i32,
 };
 
 const PerkMenuOpenPreludeWire = struct {
@@ -1129,7 +1129,7 @@ const PerkPickPreludeWire = struct {
 };
 
 const ReplayPreludeCurrentWire = union(enum) {
-    rng_burn: RngBurnPreludeWire,
+    game_frame_rng_advance: GameFrameRngAdvancePreludeWire,
     perk_menu_open: PerkMenuOpenPreludeWire,
     perk_pick: PerkPickPreludeWire,
 
@@ -1622,7 +1622,7 @@ fn parseCurrentEventSummary(
 
 fn countReplayPrelude(summary: *ReplayEventSummary, op: ReplayPreludeOp) void {
     switch (op) {
-        .rng_burn => summary.rng_burn_count += 1,
+        .game_frame_rng_advance => summary.game_frame_rng_advance_count += 1,
         .perk_menu_open => summary.perk_menu_open_count += 1,
         .perk_pick => summary.perk_pick_count += 1,
     }
@@ -1755,11 +1755,11 @@ fn parseCurrentPrelude(
     player_count: i32,
 ) ReplayCodecError!ReplayPreludeOp {
     return switch (wire_op) {
-        .rng_burn => |op| blk: {
-            if (op.draws <= 0) return error.UnsupportedEventShape;
-            break :blk .{ .rng_burn = .{
+        .game_frame_rng_advance => |op| blk: {
+            if (op.frames <= 0) return error.UnsupportedEventShape;
+            break :blk .{ .game_frame_rng_advance = .{
                 .tick_index = tick_index,
-                .draws = @intCast(op.draws),
+                .frames = @intCast(op.frames),
             } };
         },
         .perk_menu_open => |op| blk: {
@@ -1860,12 +1860,12 @@ fn currentReplayEventShapeFailureDetail(
     for (decoded.value.ticks, 0..) |tick, tick_index| {
         for (tick.prelude, 0..) |wire_op, operation_index| {
             switch (wire_op) {
-                .rng_burn => |op| {
-                    if (op.draws <= 0) {
+                .game_frame_rng_advance => |op| {
+                    if (op.frames <= 0) {
                         return std.fmt.allocPrint(
                             allocator,
-                            "replay prelude rng_burn draws must be > 0: draws={d} tick={d} operation_index={d}",
-                            .{ op.draws, tick_index, operation_index },
+                            "replay prelude game_frame_rng_advance frames must be > 0: frames={d} tick={d} operation_index={d}",
+                            .{ op.frames, tick_index, operation_index },
                         ) catch return error.OutOfMemory;
                     }
                 },
@@ -2492,7 +2492,7 @@ test "parse current replay preserves typo metadata and commands" {
         .{
             .dt = canonical_tick_dt_f64,
             .inputs = tick_inputs[0..],
-            .prelude = &.{.{ .rng_burn = .{ .draws = 2 } }},
+            .prelude = &.{.{ .game_frame_rng_advance = .{ .frames = 2 } }},
             .postlude = &.{.{ .perk_menu_open = .{ .player_index = 0 } }},
             .commands = &.{
                 .{
@@ -2542,8 +2542,8 @@ test "parse current replay preserves typo metadata and commands" {
     try std.testing.expectEqualStrings("amber", replay.header.typo_dictionary_words[0]);
     try std.testing.expectEqualStrings("ALPHA", replay.header.typo_highscore_names[0]);
     try std.testing.expectEqual(@as(usize, 1), replay.prelude.len);
-    try std.testing.expect(replay.prelude[0] == .rng_burn);
-    try std.testing.expectEqual(@as(u32, 2), replay.prelude[0].rng_burn.draws);
+    try std.testing.expect(replay.prelude[0] == .game_frame_rng_advance);
+    try std.testing.expectEqual(@as(u32, 2), replay.prelude[0].game_frame_rng_advance.frames);
     try std.testing.expectEqual(@as(usize, 1), replay.postlude.len);
     try std.testing.expectEqual(@as(i32, 0), replay.postlude[0].player_index);
     try std.testing.expectEqual(@as(usize, 3), replay.events.len);
@@ -2554,7 +2554,7 @@ test "parse current replay preserves typo metadata and commands" {
 
     const replay_summary = replay.summarizeEvents();
     try std.testing.expectEqual(@as(usize, 5), replay_summary.total_count);
-    try std.testing.expectEqual(@as(usize, 1), replay_summary.rng_burn_count);
+    try std.testing.expectEqual(@as(usize, 1), replay_summary.game_frame_rng_advance_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_char_count);
     try std.testing.expectEqual(@as(usize, 1), replay_summary.typo_backspace_count);
@@ -2563,7 +2563,7 @@ test "parse current replay preserves typo metadata and commands" {
     const parsed_summary = try parseReplaySummary(allocator, writer.written());
     defer parsed_summary.deinit(allocator);
     try std.testing.expectEqual(@as(usize, 5), parsed_summary.events.total_count);
-    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.rng_burn_count);
+    try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.game_frame_rng_advance_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.perk_menu_open_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_char_count);
     try std.testing.expectEqual(@as(usize, 1), parsed_summary.events.typo_backspace_count);
@@ -2638,7 +2638,7 @@ test "current replay separates ordered prelude from typo commands" {
     );
     try std.testing.expectError(
         error.UnsupportedEventShape,
-        parseCurrentPrelude(.{ .rng_burn = .{ .draws = 0 } }, 0, 1),
+        parseCurrentPrelude(.{ .game_frame_rng_advance = .{ .frames = 0 } }, 0, 1),
     );
     try std.testing.expectError(
         error.UnsupportedEventShape,

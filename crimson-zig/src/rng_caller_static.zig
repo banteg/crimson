@@ -354,7 +354,7 @@ pub const Caller = enum(u32) {
     weapon_pick_random_available_reroll_gate = 0x00452CF1,
     weapon_pick_random_available_reroll_pick = 0x00452CFA,
     rewrite_jinxed_accident_target_pick = 0xF1000001,
-    replay_prelude_rng_burn = 0xF1000004,
+    game_frame_update_discarded = 0x0040CAC7,
     rewrite_stats_menu_easter_roll = 0xF1000006,
     rewrite_stats_menu_easter_text_x = 0xF1000007,
 };
@@ -714,6 +714,6 @@ pub const weapon_pick_random_available_pick: Caller = .weapon_pick_random_availa
 pub const weapon_pick_random_available_reroll_gate: Caller = .weapon_pick_random_available_reroll_gate;
 pub const weapon_pick_random_available_reroll_pick: Caller = .weapon_pick_random_available_reroll_pick;
 pub const rewrite_jinxed_accident_target_pick: Caller = .rewrite_jinxed_accident_target_pick;
-pub const replay_prelude_rng_burn: Caller = .replay_prelude_rng_burn;
+pub const game_frame_update_discarded: Caller = .game_frame_update_discarded;
 pub const rewrite_stats_menu_easter_roll: Caller = .rewrite_stats_menu_easter_roll;
 pub const rewrite_stats_menu_easter_text_x: Caller = .rewrite_stats_menu_easter_text_x;

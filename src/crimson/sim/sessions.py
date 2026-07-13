@@ -28,11 +28,11 @@ from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .input_providers import (
     GameCommand,
+    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     PerkPickCommand,
     ReplayPostludeOperation,
     ReplayPreludeOperation,
-    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -53,6 +53,7 @@ RUSH_FORCED_AMMO = 30.0
 # Tick result types
 # ---------------------------------------------------------------------------
 
+
 class DeterministicSessionTick(msgspec.Struct):
     step: DeterministicStepResult
     elapsed_ms: float
@@ -63,6 +64,7 @@ class DeterministicSessionTick(msgspec.Struct):
 # ---------------------------------------------------------------------------
 # Mode runtime system
 # ---------------------------------------------------------------------------
+
 
 class MidStepContext(msgspec.Struct, frozen=True):
     """Context passed to mid-step spawn hooks during deterministic stepping."""
@@ -210,10 +212,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
 
 
 def rush_input_transform(inputs: list[PlayerInput]) -> list[PlayerInput]:
-    return [
-        msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp
-        for inp in inputs
-    ]
+    return [msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp for inp in inputs]
 
 
 class SessionModeRuntime(msgspec.Struct):
@@ -316,6 +315,7 @@ class _SessionWorldMidStepRuntime(WorldMidStepRuntime):
 # Shared timing helper
 # ---------------------------------------------------------------------------
 
+
 def _session_timing(state: object, dt: float) -> FrameTiming:
     """Compute frame timing from world state. Used by all session types."""
     return FrameTiming.compute(
@@ -328,9 +328,11 @@ def _session_timing(state: object, dt: float) -> FrameTiming:
         zero_gate_active=False,
     )
 
+
 # ---------------------------------------------------------------------------
 # Unified deterministic session (replaces Survival/Rush/Tutorial/Typo/WorldTick)
 # ---------------------------------------------------------------------------
+
 
 class DeterministicSession(msgspec.Struct):
     # Core state
@@ -379,12 +381,14 @@ class DeterministicSession(msgspec.Struct):
         post_apply_sfx: list[SfxId] = []
         for operation in operations:
             match operation:
-                case RngBurnOperation(draws=draws):
-                    if int(draws) <= 0:
-                        raise RuntimeError(f"replay rng_burn draws must be > 0, got {draws}")
-                    for _ in range(int(draws)):
+                case GameFrameRngAdvanceOperation(frames=frames):
+                    if int(frames) <= 0:
+                        raise RuntimeError(
+                            f"replay game_frame_rng_advance frames must be > 0, got {frames}",
+                        )
+                    for _ in range(int(frames)):
                         self.world.state.rng.rand_tagged(
-                            RngCallerStatic.REPLAY_PRELUDE_RNG_BURN,
+                            RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED,
                         )
                 case PerkPickCommand(choice_index=choice_index):
                     # Earlier prelude operations may change time scaling, so
@@ -446,7 +450,7 @@ class DeterministicSession(msgspec.Struct):
         mode_runtime.before_step()
 
         post_apply_sfx = list(prelude_post_apply_sfx or ())
-        for cmd in (commands or ()):
+        for cmd in commands or ():
             match cmd:
                 case PerkPickCommand(choice_index=ci):
                     picked = perk_selection_pick(

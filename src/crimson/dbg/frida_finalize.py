@@ -7,7 +7,7 @@ from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import SpooledTemporaryFile, TemporaryDirectory
-from typing import Any, BinaryIO, Protocol, cast
+from typing import Any, BinaryIO, Protocol
 
 import msgspec
 import zstandard as zstd
@@ -25,7 +25,14 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.codec import dump_replay_file
 from ..replay.header_settings import replay_header_from_session_settings
 from ..replay.types import Replay, ReplayCreatureSlotResidue, ReplayTick, ReplayVec2, quantize_f32
-from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperation, ReplayTickCommand, RngBurnOperation
+from ..sim.input_providers import (
+    GameFrameRngAdvanceOperation,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+    ReplayPostludeOperation,
+    ReplayPreludeOperation,
+    ReplayTickCommand,
+)
 from .canonical_channels import (
     EntitySamplesSnapshot,
     ReplayStepSnapshot,
@@ -36,7 +43,6 @@ from .canonical_channels import (
     SnapshotPlayer,
     TimingSampleRow,
 )
-from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_SCHEMA_VERSION,
@@ -54,7 +60,7 @@ _EVIDENCE_FRAME_LEN_BYTES = 4
 _TICK_ENCODER = msgspec.msgpack.Encoder()
 _TICK_DECODER = msgspec.msgpack.Decoder(type=TickRecord)
 _GAME_MODE_QUESTS = 3
-FRIDA_CAPTURE_FORMAT_VERSION = 21
+FRIDA_CAPTURE_FORMAT_VERSION = 22
 FRIDA_EVIDENCE_FORMAT_VERSION = 2
 FRIDA_RUNTIME_VERSION = "17.15.4"
 _EVIDENCE_ZSTD_LEVEL = 10
@@ -63,12 +69,9 @@ _EVIDENCE_COMPRESSED_READ_BYTES = 1024 * 1024
 _TRACE_CHUNK_TICKS = 256
 _RUN_START_REASONS = frozenset(("run_start", "first_tick", "quest_attempt", "mode_or_stage_change"))
 _RUN_END_REASONS = frozenset(("run_end", "quest_attempt", "mode_or_stage_change", "shutdown"))
-_SEED_SOURCES = frozenset(("unknown", "crt_srand"))
-# Replay seeds are derived from the rand state latched at run-setup entry
-# (before the first terrain draw), not from the stale session-wide srand seed.
-_RUN_SETUP_SEED_SOURCE = "run_setup_rng_state"
+# Replay RNG starts from the state latched before the first bootstrap draw.
+_RUN_SETUP_SEED_SOURCE = "rng_state_before_bootstrap"
 _FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7"
-_LCG_GAP_SEARCH_LIMIT = 1 << 16
 _SUPPORTED_CAPTURE_MODES = frozenset((int(GameMode.SURVIVAL), int(GameMode.RUSH), int(GameMode.QUESTS)))
 
 
@@ -76,14 +79,21 @@ def _lcg_step_u32(state: int) -> int:
     return (state * 214013 + 2531011) & 0xFFFFFFFF
 
 
-def _lcg_distance_u32(start: int, target: int, *, limit: int = _LCG_GAP_SEARCH_LIMIT) -> int | None:
-    state = int(start) & 0xFFFFFFFF
-    goal = int(target) & 0xFFFFFFFF
-    for steps in range(limit):
-        if state == goal:
-            return steps
-        state = _lcg_step_u32(state)
-    return None
+def _lcg_advance_u32(state: int, steps: int) -> int:
+    """Advance the MSVC LCG exactly in logarithmic time."""
+    remaining = int(steps)
+    multiplier = 214013
+    increment = 2531011
+    accumulated_multiplier = 1
+    accumulated_increment = 0
+    while remaining > 0:
+        if remaining & 1:
+            accumulated_multiplier = (accumulated_multiplier * multiplier) & 0xFFFFFFFF
+            accumulated_increment = (accumulated_increment * multiplier + increment) & 0xFFFFFFFF
+        increment = (increment * (multiplier + 1)) & 0xFFFFFFFF
+        multiplier = (multiplier * multiplier) & 0xFFFFFFFF
+        remaining >>= 1
+    return (accumulated_multiplier * int(state) + accumulated_increment) & 0xFFFFFFFF
 
 
 _MODE_LABEL_BY_ID = {
@@ -143,9 +153,9 @@ class _SessionFingerprintRow(msgspec.Struct, frozen=True, forbid_unknown_fields=
 
 class _SessionConfigRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     out_path: str
+    out_path_source: str
     capture_profile: str
     config_env_overrides: list[str]
-    log_mode: str
     console_all_events: bool
     console_events: list[str]
     include_caller: bool
@@ -156,7 +166,6 @@ class _SessionConfigRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True)
     focus_tick: int
     focus_radius: int
     heartbeat_ms: int
-    flush_capture_writes: bool
     max_head_per_kind: int
     max_events_per_tick: int
     max_rng_head_per_tick: int
@@ -209,8 +218,9 @@ class _SessionStartRow(
 class _OutsideRngHeadRow(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     state_before_u32: int
     state_after_u32: int
-    value_15: int | None
-    caller_static: str | None
+    value_15: int
+    caller_static: str
+    replay_operation_index: int
 
 
 class _OutsideRngBag(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -298,15 +308,14 @@ class _RunStartRow(
 ):
     run_id: int
     mode_id: int
-    seed: int
     player_count: int
     reason: str
     quest_stage_major: int
     quest_stage_minor: int
-    seed_source: str
     global_tick_index: int
-    rng_state_at_run_setup: int
-    rng_setup_caller_static: str
+    rng_state_before_bootstrap: int
+    rng_state_after_bootstrap: int
+    rng_bootstrap_calls: int
     pool_residue: list[_CapturePoolResidueRow]
     settings: _RunSettingsRow
 
@@ -451,6 +460,7 @@ class _RunEndRow(
     ticks_written: int
     reason: str
     global_tick_index: int
+    trailing_prelude: list[ReplayPreludeOperation]
     rng_outside_tail: _OutsideRngBag
 
 
@@ -481,18 +491,7 @@ class _RunErrorRow(
     global_tick_index: int | None = None
 
 
-class _SessionEndRow(
-    msgspec.Struct,
-    frozen=True,
-    forbid_unknown_fields=True,
-    tag_field="event",
-    tag="session_end",
-):
-    session_id: str
-    ticks_written: int
-
-
-type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _ErrorRow | _RunErrorRow | _SessionEndRow
+type _CaptureRow = _SessionStartRow | _RunStartRow | _TickRow | _RunEndRow | _ErrorRow | _RunErrorRow
 
 
 _CAPTURE_ROW_DECODER = msgspec.json.Decoder(type=_CaptureRow)
@@ -522,14 +521,21 @@ class _OpenRun(msgspec.Struct):
     quest_stage_major: int
     quest_stage_minor: int
     replay_seed: int
-    rng_setup_caller_static: str
     replay_player_count: int
     next_global_tick: int
     temp_path: Path
     stream: BinaryIO
     evidence_temp_path: Path
     evidence_stream: BinaryIO
-    replay_seed_source: str = "unknown"
+    replay_seed_source: str
+    status: GameStatusData
+    tick_rate: int
+    quest_fail_retry_count: int
+    hardcore: bool
+    detail_preset: int
+    violence_disabled: int
+    world_size: float
+    pool_residue: tuple[ReplayCreatureSlotResidue, ...]
     tick_count: int = 0
     next_local_tick: int = 0
     replay_inputs: list[list[list[float | int]]] = msgspec.field(default_factory=list)
@@ -537,58 +543,33 @@ class _OpenRun(msgspec.Struct):
     replay_prelude: list[list[ReplayPreludeOperation]] = msgspec.field(default_factory=list)
     replay_postlude: list[list[ReplayPostludeOperation]] = msgspec.field(default_factory=list)
     replay_commands: list[list[ReplayTickCommand]] = msgspec.field(default_factory=list)
-    status: GameStatusData = msgspec.field(default_factory=GameStatusData)
-    tick_rate: int = 60
-    quest_fail_retry_count: int = 0
-    hardcore: bool = False
-    detail_preset: int = 5
-    violence_disabled: int = 0
-    world_size: float = 1024.0
     evidence_count: int = 0
     global_tick_first: int | None = None
     global_tick_last: int | None = None
     rng_outside_calls: int = 0
     rng_outside_dropped: int = 0
     rng_outside_caller_counts: dict[str, int] = msgspec.field(default_factory=dict)
-    rng_unhooked_in_tick: int = 0
-    rng_unhooked_boundary: int = 0
-    rng_unhooked_unresolved: int = 0
-    rng_unhooked_gap_neighbors: dict[str, int] = msgspec.field(default_factory=dict)
-    rng_setup_draw_distance: int | None = None
+    rng_state_after_bootstrap: int = 0
+    rng_bootstrap_calls: int = 0
     rng_prev_leave_state: int | None = None
-    pool_residue: tuple[ReplayCreatureSlotResidue, ...] = ()
 
 
-def _fingerprint(path: Path) -> BuiltinObject:
+class _RawFingerprint(msgspec.Struct, frozen=True):
+    path: str
+    sha256: str
+    size: int
+    mtime_ns: int
+
+
+def _fingerprint(path: Path) -> _RawFingerprint:
     stat = path.stat()
     raw = path.read_bytes()
-    return {
-        "path": str(path),
-        "sha256": hashlib.sha256(raw).hexdigest(),
-        "size": int(stat.st_size),
-        "mtime_ns": int(stat.st_mtime_ns),
-    }
-
-
-def _builtin_text(payload: BuiltinObject, key: str, default: str = "") -> str:
-    value = payload.get(key)
-    if value is None:
-        return default
-    if isinstance(value, str):
-        return value
-    if isinstance(value, (bool, int, float)):
-        return str(value)
-    return default
-
-
-def _builtin_int(payload: BuiltinObject, key: str, default: int = 0) -> int:
-    value = payload.get(key)
-    if isinstance(value, (bool, int, float, str)):
-        try:
-            return int(value)
-        except ValueError:
-            return default
-    return default
+    return _RawFingerprint(
+        path=str(path),
+        sha256=hashlib.sha256(raw).hexdigest(),
+        size=int(stat.st_size),
+        mtime_ns=int(stat.st_mtime_ns),
+    )
 
 
 def _residue_float(value: float | None, *, field: str) -> float:
@@ -718,144 +699,6 @@ def _decode_capture_row(line: bytes, *, field: str) -> _CaptureRow:
         raise FridaFinalizeError(f"{field} invalid capture row: {exc}") from exc
 
 
-def _mapping_int(value: object, key: str) -> int | None:
-    if not isinstance(value, dict):
-        return None
-    raw = cast(dict[str, object], value).get(key)
-    if isinstance(raw, bool) or not isinstance(raw, int):
-        return None
-    return int(raw)
-
-
-def _terminal_transition_is_proven(tick: _TickRow) -> bool:
-    mode_id = int(tick.mode_id)
-    if mode_id in (int(GameMode.SURVIVAL), int(GameMode.RUSH)):
-        terminal_states = frozenset((7,))
-    elif mode_id == int(GameMode.QUESTS):
-        terminal_states = frozenset((8, 12))
-    else:
-        return False
-
-    after_globals = tick.evidence.after.get("globals")
-    after_state = _mapping_int(after_globals, "game_state_id")
-    if after_state not in terminal_states:
-        return False
-    transitions = tick.evidence.event_heads.get("state_transition", [])
-    for transition in reversed(transitions):
-        if not isinstance(transition, dict):
-            continue
-        before_state = _mapping_int(transition.get("before"), "id")
-        transition_after = _mapping_int(transition.get("after"), "id")
-        if before_state == 9 and transition_after == after_state:
-            return True
-    return False
-
-
-def seal_frida_jsonl_after_detach(raw_path: Path) -> tuple[str, ...]:
-    """Append only transport closure rows that are provable from captured state.
-
-    Process teardown can destroy the injected agent before it writes JSONL
-    terminators. A terminal gameplay transition proves the run boundary; a
-    closed run proves the session boundary. No simulation rows are synthesized.
-    """
-
-    raw_path = Path(raw_path)
-    if not raw_path.is_file():
-        raise FridaFinalizeError(f"raw frida trace not found: {raw_path}")
-
-    session_start: _SessionStartRow | None = None
-    active_run: _RunStartRow | None = None
-    active_tick_count = 0
-    captured_tick_count = 0
-    last_tick: _TickRow | None = None
-    last_row: _CaptureRow | None = None
-    with raw_path.open("rb") as handle:
-        for line_no, raw_line in enumerate(handle, start=1):
-            line = bytes(raw_line).strip()
-            if not line:
-                continue
-            row = _decode_capture_row(line, field=f"{raw_path}.lines[{line_no}]")
-            last_row = row
-            match row:
-                case _SessionStartRow() as session_row:
-                    if session_start is not None:
-                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] duplicate session_start")
-                    session_start = session_row
-                case _RunStartRow() as run_start:
-                    if active_run is not None:
-                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_start while run is active")
-                    active_run = run_start
-                    active_tick_count = 0
-                    last_tick = None
-                case _TickRow() as tick:
-                    if active_run is None or int(tick.run_id) != int(active_run.run_id):
-                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] tick outside matching run")
-                    active_tick_count += 1
-                    captured_tick_count += 1
-                    last_tick = tick
-                case _RunEndRow() as run_end:
-                    if active_run is None or int(run_end.run_id) != int(active_run.run_id):
-                        raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run_end outside matching run")
-                    active_run = None
-                    active_tick_count = 0
-                    last_tick = None
-                case _SessionEndRow():
-                    return ()
-                case _ErrorRow() as error:
-                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] capture error={error.error!r}")
-                case _RunErrorRow() as error:
-                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] run error={error.error!r}")
-
-    if session_start is None:
-        raise FridaFinalizeError(f"{raw_path} missing session_start")
-
-    rows_to_append: list[dict[str, object]] = []
-    sealed: list[str] = []
-    if active_run is not None:
-        if last_tick is None or not _terminal_transition_is_proven(last_tick):
-            raise FridaFinalizeError(
-                f"{raw_path} ended with active run {int(active_run.run_id)} without a proven terminal transition; "
-                "stop the capture host before terminating the game",
-            )
-        rows_to_append.append(
-            {
-                "event": "run_end",
-                "run_id": int(active_run.run_id),
-                "mode_id": int(active_run.mode_id),
-                "quest_stage_major": int(active_run.quest_stage_major),
-                "quest_stage_minor": int(active_run.quest_stage_minor),
-                "ticks_written": int(active_tick_count),
-                "reason": "run_end",
-                "global_tick_index": int(last_tick.global_tick_index),
-                "rng_outside_tail": {"calls": 0, "dropped": 0, "caller_counts": {}, "head": []},
-            },
-        )
-        sealed.append("run_end")
-    elif not isinstance(last_row, _RunEndRow):
-        raise FridaFinalizeError(f"{raw_path} cannot prove a closed run at end of stream")
-
-    rows_to_append.append(
-        {
-            "event": "session_end",
-            "session_id": str(session_start.session_id),
-            "ticks_written": int(captured_tick_count),
-        },
-    )
-    sealed.append("session_end")
-
-    with raw_path.open("ab") as handle:
-        if raw_path.stat().st_size > 0:
-            with raw_path.open("rb") as source:
-                source.seek(-1, 2)
-                if source.read(1) != b"\n":
-                    handle.write(b"\n")
-        for row in rows_to_append:
-            handle.write(json.dumps(row, separators=(",", ":")).encode("utf-8"))
-            handle.write(b"\n")
-        handle.flush()
-    return tuple(sealed)
-
-
 def _canonical_channels_payload(
     *,
     channels: _TickChannels,
@@ -885,24 +728,25 @@ def _canonical_channels_payload(
         raise FridaFinalizeError(f"{field} event counts must be non-negative")
     if owner_collision_count > raw_hit_count:
         raise FridaFinalizeError(
-            f"{field} projectile owner-collision count {owner_collision_count} "
-            f"exceeds raw hit count {raw_hit_count}",
+            f"{field} projectile owner-collision count {owner_collision_count} exceeds raw hit count {raw_hit_count}",
         )
-    checkpoint = msgspec.structs.replace(
-        checkpoint,
-        deaths=[],
-        events=msgspec.structs.replace(
-            checkpoint.events,
-            hit_count=raw_hit_count - owner_collision_count,
-            pickup_count=pickup_count,
-            # Native audio hooks cover a broader surface than the rewrite's
-            # gameplay event queue. Keep the native count in evidence, but do
-            # not compare unlike counters in the producer-neutral CDT channel.
-            sfx_count=0,
-            sfx_head=[],
-            hit_head=[],
-        ),
-    )
+    expected_hit_count = raw_hit_count - owner_collision_count
+    if checkpoint.deaths:
+        raise FridaFinalizeError(f"{field}.checkpoint.deaths must be empty; raw deaths belong in evidence")
+    if int(checkpoint.events.hit_count) != expected_hit_count:
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.events.hit_count={int(checkpoint.events.hit_count)} "
+            f"does not match canonical count {expected_hit_count}",
+        )
+    if int(checkpoint.events.pickup_count) != pickup_count:
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.events.pickup_count={int(checkpoint.events.pickup_count)} "
+            f"does not match canonical count {pickup_count}",
+        )
+    if int(checkpoint.events.sfx_count) != 0 or checkpoint.events.sfx_head or checkpoint.events.hit_head:
+        raise FridaFinalizeError(
+            f"{field}.checkpoint.events must not mix producer-specific SFX/hit details into canonical channels",
+        )
     return ReplayTickChannels(
         replay_step=channels.replay_step,
         checkpoint=checkpoint,
@@ -928,6 +772,17 @@ def _capture_u32(value: int, *, field: str) -> int:
     if not (0 <= out <= 0xFFFFFFFF):
         raise FridaFinalizeError(f"{field} must be a uint32")
     return out
+
+
+def _capture_static_caller(value: str, *, field: str) -> str:
+    caller = str(value)
+    try:
+        parsed = int(caller, 16)
+    except ValueError as exc:
+        raise FridaFinalizeError(f"{field} must be a canonical static uint32 address") from exc
+    if not (0 <= parsed <= 0xFFFFFFFF) or caller != f"0x{parsed:08x}":
+        raise FridaFinalizeError(f"{field} must be a canonical static uint32 address")
+    return caller
 
 
 def _capture_status(row: _CaptureGameStatusRow, *, field: str) -> GameStatusData:
@@ -1029,60 +884,132 @@ def _replay_tick_inputs_from_step(
     return out
 
 
-def _canonical_replay_prelude(
-    run: _OpenRun,
+def _validate_replay_prelude(
     tick_row: _TickRow,
     *,
+    expected_players: int,
     field: str,
 ) -> list[ReplayPreludeOperation]:
     prelude = list(tick_row.channels.replay_step.prelude)
-    if int(tick_row.tick_index) != 0:
-        return prelude
-
-    outside = tick_row.rng_outside_before
-    setup_index = next(
-        (
-            index
-            for index, row in enumerate(outside.head)
-            if str(row.caller_static) == str(run.rng_setup_caller_static)
-            and int(row.state_before_u32) == int(run.replay_seed)
-        ),
-        None,
+    _validate_replay_prelude_operations(
+        prelude,
+        expected_players=expected_players,
+        field=f"{field}.channels.replay_step.prelude",
     )
-    if setup_index is None:
-        return prelude
-    frame_index = next(
-        (
-            index
-            for index in range(setup_index + 1, len(outside.head))
-            if str(outside.head[index].caller_static) == _FRAME_DISCARDED_RNG_CALLER_STATIC
-        ),
-        None,
-    )
-    if frame_index is None:
-        return prelude
+    return prelude
 
-    setup_tail = outside.head[frame_index:]
-    previous_after: int | None = None
-    for index, row in enumerate(setup_tail):
-        state_before = _capture_u32(row.state_before_u32, field=f"{field}.rng_outside_before.head[{frame_index + index}]")
-        state_after = _capture_u32(row.state_after_u32, field=f"{field}.rng_outside_before.head[{frame_index + index}]")
-        if previous_after is not None and state_before != previous_after:
-            raise FridaFinalizeError(f"{field}.rng_outside_before setup-tail state chain is discontinuous")
-        previous_after = state_after
-    if previous_after != int(tick_row.rng_state_enter_u32):
-        raise FridaFinalizeError(f"{field}.rng_outside_before setup-tail does not reach tick RNG entry state")
 
-    expected_burns = len(setup_tail)
-    recorded_burns = sum(int(operation.draws) for operation in prelude if isinstance(operation, RngBurnOperation))
-    if recorded_burns == expected_burns:
-        return prelude
-    if recorded_burns != 0:
+def _validate_replay_prelude_operations(
+    prelude: list[ReplayPreludeOperation],
+    *,
+    expected_players: int,
+    field: str,
+) -> None:
+    for operation_index, operation in enumerate(prelude):
+        operation_field = f"{field}[{operation_index}]"
+        if isinstance(operation, GameFrameRngAdvanceOperation):
+            if int(operation.frames) <= 0:
+                raise FridaFinalizeError(f"{operation_field}.frames must be positive")
+            continue
+        if not isinstance(operation, (PerkMenuOpenCommand, PerkPickCommand)):
+            raise FridaFinalizeError(f"{operation_field} has unsupported replay operation")
+        if not (0 <= int(operation.player_index) < int(expected_players)):
+            raise FridaFinalizeError(
+                f"{operation_field}.player_index={int(operation.player_index)} "
+                f"is outside 0..{int(expected_players) - 1}",
+            )
+        if isinstance(operation, PerkPickCommand) and not (0 <= int(operation.choice_index) < 7):
+            raise FridaFinalizeError(f"{operation_field}.choice_index must be in 0..6")
+
+
+def _validate_rng_transition(
+    *,
+    state_before_u32: int,
+    state_after_u32: int,
+    value_15: int,
+    field: str,
+) -> None:
+    before = _capture_u32(state_before_u32, field=f"{field}.state_before_u32")
+    after = _capture_u32(state_after_u32, field=f"{field}.state_after_u32")
+    expected_after = _lcg_step_u32(before)
+    if after != expected_after:
         raise FridaFinalizeError(
-            f"{field}.channels.replay_step.prelude records {recorded_burns} RNG burns; "
-            f"raw setup-tail evidence requires {expected_burns}",
+            f"{field}.state_after_u32={after} does not match CRT transition {expected_after}",
         )
-    return [RngBurnOperation(draws=expected_burns), *prelude]
+    value = int(value_15)
+    expected_value = (after >> 16) & 0x7FFF
+    if value != expected_value:
+        raise FridaFinalizeError(f"{field}.value_15={value} does not match CRT output {expected_value}")
+
+
+def _validate_outside_rng_bag(
+    bag: _OutsideRngBag,
+    *,
+    prelude: list[ReplayPreludeOperation],
+    field: str,
+    expected_start: int | None = None,
+    expected_end: int | None = None,
+) -> None:
+    calls = int(bag.calls)
+    dropped = int(bag.dropped)
+    rows = list(bag.head)
+    if dropped != 0 or calls != len(rows):
+        raise FridaFinalizeError(
+            f"{field} must contain every outside RNG row (calls={calls} dropped={dropped} head={len(rows)})",
+        )
+    actual_counts: dict[str, int] = {}
+    calls_by_operation: dict[int, int] = {}
+    previous_operation_index: int | None = None
+    previous_after = None if expected_start is None else _capture_u32(expected_start, field=f"{field}.start")
+    for index, row in enumerate(rows):
+        row_field = f"{field}.head[{index}]"
+        caller = _capture_static_caller(row.caller_static, field=f"{row_field}.caller_static")
+        operation_index = int(row.replay_operation_index)
+        if not (0 <= operation_index < len(prelude)):
+            raise FridaFinalizeError(
+                f"{row_field}.replay_operation_index={operation_index} is outside 0..{len(prelude) - 1}",
+            )
+        if previous_operation_index is not None and operation_index < previous_operation_index:
+            raise FridaFinalizeError(
+                f"{row_field}.replay_operation_index={operation_index} precedes prior operation "
+                f"{previous_operation_index}",
+            )
+        previous_operation_index = operation_index
+        operation = prelude[operation_index]
+        if isinstance(operation, GameFrameRngAdvanceOperation) and caller != _FRAME_DISCARDED_RNG_CALLER_STATIC:
+            raise FridaFinalizeError(f"{row_field} frame operation has caller {caller!r}")
+        actual_counts[caller] = actual_counts.get(caller, 0) + 1
+        calls_by_operation[operation_index] = calls_by_operation.get(operation_index, 0) + 1
+        if previous_after is not None and int(row.state_before_u32) != previous_after:
+            raise FridaFinalizeError(
+                f"{row_field}.state_before_u32={int(row.state_before_u32)} "
+                f"does not continue prior RNG state {previous_after}",
+            )
+        _validate_rng_transition(
+            state_before_u32=int(row.state_before_u32),
+            state_after_u32=int(row.state_after_u32),
+            value_15=int(row.value_15),
+            field=row_field,
+        )
+        previous_after = int(row.state_after_u32)
+    declared_counts = {str(key): int(value) for key, value in bag.caller_counts.items()}
+    if declared_counts != actual_counts:
+        raise FridaFinalizeError(
+            f"{field}.caller_counts={declared_counts!r} does not match captured rows {actual_counts!r}",
+        )
+    for operation_index, operation in enumerate(prelude):
+        if isinstance(operation, GameFrameRngAdvanceOperation):
+            captured_calls = calls_by_operation.get(operation_index, 0)
+            if captured_calls != int(operation.frames):
+                raise FridaFinalizeError(
+                    f"{field} frame operation {operation_index} records {int(operation.frames)} frame(s), "
+                    f"but {captured_calls} RNG row(s) reference it",
+                )
+    if expected_end is not None:
+        expected = _capture_u32(expected_end, field=f"{field}.end")
+        actual = previous_after if previous_after is not None else expected_start
+        if actual is not None and int(actual) != expected:
+            raise FridaFinalizeError(f"{field} ends at RNG state {int(actual)}, expected {expected}")
 
 
 def _validate_tick_channels(
@@ -1266,7 +1193,7 @@ def _iter_framed_payloads(stream: _BinaryReader, *, field: str):
 def _write_run_evidence(
     path: Path,
     *,
-    raw_fingerprint: BuiltinObject,
+    raw_fingerprint: _RawFingerprint,
     session_start: _SessionStartRow,
     run: _OpenRun,
     trace_sha256: str,
@@ -1289,7 +1216,7 @@ def _write_run_evidence(
         quest_stage_major=int(run.quest_stage_major),
         quest_stage_minor=int(run.quest_stage_minor),
         tick_count=int(run.tick_count),
-        raw_sha256=_builtin_text(raw_fingerprint, "sha256"),
+        raw_sha256=raw_fingerprint.sha256,
         trace_sha256=str(trace_sha256),
         replay_sha256=str(replay_sha256),
     )
@@ -1426,7 +1353,7 @@ def _run_output_path(
 
 def _build_meta(
     *,
-    raw_fingerprint: BuiltinObject,
+    raw_fingerprint: _RawFingerprint,
     session_start: _SessionStartRow,
     run: _OpenRun,
     tick_count: int,
@@ -1453,10 +1380,10 @@ def _build_meta(
             arch=producer_arch,
         ),
         source=TraceSource(
-            path=_builtin_text(raw_fingerprint, "path"),
-            sha256=_builtin_text(raw_fingerprint, "sha256"),
-            size=_builtin_int(raw_fingerprint, "size"),
-            mtime_ns=_builtin_int(raw_fingerprint, "mtime_ns"),
+            path=raw_fingerprint.path,
+            sha256=raw_fingerprint.sha256,
+            size=raw_fingerprint.size,
+            mtime_ns=raw_fingerprint.mtime_ns,
             kind="capture",
             replay_sha256=str(replay_sha256),
             tick_rate=int(replay_tick_rate),
@@ -1494,12 +1421,7 @@ def _account_tick_rng_evidence(
     rng_stream: list[RngStreamRow],
     field: str,
 ) -> None:
-    """Track rand draws the crt_rand hook never observed.
-
-    Real memory states (gpur enter/leave plus per-call state_before) expose
-    unhooked draws as LCG chain gaps; the per-caller counts say which hooked
-    callers bracket each gap so the report points at what the port misses.
-    """
+    """Require a complete, contiguous CRT stream for one captured tick."""
     bag = tick_row.rng_outside_before
     if int(tick_row.rng_calls) != len(rng_stream):
         raise FridaFinalizeError(
@@ -1507,41 +1429,37 @@ def _account_tick_rng_evidence(
         )
     enter = _capture_u32(tick_row.rng_state_enter_u32, field=f"{field}.rng_state_enter_u32")
     leave = _capture_u32(tick_row.rng_state_leave_u32, field=f"{field}.rng_state_leave_u32")
+    _validate_outside_rng_bag(
+        bag,
+        prelude=list(tick_row.channels.replay_step.prelude),
+        field=f"{field}.rng_outside_before",
+        expected_start=run.rng_prev_leave_state,
+        expected_end=enter,
+    )
     _merge_outside_rng_bag(run, bag)
 
-    if run.rng_prev_leave_state is None:
-        # First tick of the run: the distance from the replay seed (run-setup
-        # rand state) to gpur enter is the run's setup draw count.
-        run.rng_setup_draw_distance = _lcg_distance_u32(int(run.replay_seed), enter)
-    else:
-        # Between gpur windows: hooked outside draws are counted in the bag;
-        # any excess chain distance is unhooked draws.
-        total = _lcg_distance_u32(run.rng_prev_leave_state, enter)
-        if total is None:
-            run.rng_unhooked_unresolved += 1
-        else:
-            unhooked = total - int(bag.calls)
-            if unhooked < 0:
-                run.rng_unhooked_unresolved += 1
-            else:
-                run.rng_unhooked_boundary += unhooked
-
     prev = enter
-    for row in rng_stream:
-        gap = _lcg_distance_u32(prev, int(row.state_before_u32))
-        if gap is None:
-            run.rng_unhooked_unresolved += 1
-        elif gap > 0:
-            run.rng_unhooked_in_tick += gap
-            neighbor = "unknown" if row.caller is None else f"0x{int(row.caller):08x}"
-            run.rng_unhooked_gap_neighbors[neighbor] = run.rng_unhooked_gap_neighbors.get(neighbor, 0) + gap
+    for index, row in enumerate(rng_stream):
+        row_field = f"{field}.rng_stream[{index}]"
+        if int(row.tick_call_index) != index + 1:
+            raise FridaFinalizeError(
+                f"{row_field}.tick_call_index={int(row.tick_call_index)} does not match {index + 1}",
+            )
+        if row.caller is None:
+            raise FridaFinalizeError(f"{row_field}.caller must be present")
+        if int(row.state_before_u32) != prev:
+            raise FridaFinalizeError(
+                f"{row_field}.state_before_u32={int(row.state_before_u32)} does not continue prior RNG state {prev}",
+            )
+        _validate_rng_transition(
+            state_before_u32=int(row.state_before_u32),
+            state_after_u32=int(row.state_after_u32),
+            value_15=int(row.value_15),
+            field=row_field,
+        )
         prev = int(row.state_after_u32)
-    tail_gap = _lcg_distance_u32(prev, leave)
-    if tail_gap is None:
-        run.rng_unhooked_unresolved += 1
-    elif tail_gap > 0:
-        run.rng_unhooked_in_tick += tail_gap
-        run.rng_unhooked_gap_neighbors["tick_tail"] = run.rng_unhooked_gap_neighbors.get("tick_tail", 0) + tail_gap
+    if prev != leave:
+        raise FridaFinalizeError(f"{field}.rng_stream ends at RNG state {prev}, expected leave state {leave}")
     run.rng_prev_leave_state = leave
 
 
@@ -1550,17 +1468,13 @@ def _write_rng_evidence_report(out_path: Path, run: _OpenRun) -> None:
         "run_id": int(run.run_id),
         "mode_id": int(run.mode_id),
         "replay_seed": int(run.replay_seed),
-        "setup_draw_distance": run.rng_setup_draw_distance,
+        "bootstrap_state_before": int(run.replay_seed),
+        "bootstrap_state_after": int(run.rng_state_after_bootstrap),
+        "bootstrap_calls": int(run.rng_bootstrap_calls),
         "outside_calls": int(run.rng_outside_calls),
         "outside_dropped": int(run.rng_outside_dropped),
         "outside_caller_counts": dict(
             sorted(run.rng_outside_caller_counts.items(), key=lambda kv: -kv[1]),
-        ),
-        "unhooked_in_tick": int(run.rng_unhooked_in_tick),
-        "unhooked_boundary": int(run.rng_unhooked_boundary),
-        "unhooked_unresolved": int(run.rng_unhooked_unresolved),
-        "unhooked_gap_neighbors": dict(
-            sorted(run.rng_unhooked_gap_neighbors.items(), key=lambda kv: -kv[1]),
         ),
     }
     evidence_path = Path(out_path).with_suffix(".rng_evidence.json")
@@ -1571,7 +1485,7 @@ def _write_run_trace(
     *,
     raw_path: Path,
     output_dir: Path,
-    raw_fingerprint: BuiltinObject,
+    raw_fingerprint: _RawFingerprint,
     session_start: _SessionStartRow,
     run: _OpenRun,
     counters: dict[str, int],
@@ -1789,11 +1703,9 @@ def finalize_frida_jsonl_to_traces(
     traces: list[FinalizedTrace] = []
     run_counters: dict[str, int] = {}
     session_start: _SessionStartRow | None = None
-    session_ended = False
     active_run: _OpenRun | None = None
     closed_runs: list[_OpenRun] = []
     seen_run_ids: set[int] = set()
-    captured_tick_count = 0
 
     temp_dir_obj = TemporaryDirectory(prefix=".crimson-frida-finalize-", dir=output_root)
     temp_root = Path(temp_dir_obj.name)
@@ -1804,9 +1716,6 @@ def finalize_frida_jsonl_to_traces(
                 if not line:
                     continue
                 row = _decode_capture_row(line, field=f"{raw_path}.lines[{line_no}]")
-                if session_ended:
-                    raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] row after session_end")
-
                 match row:
                     case _SessionStartRow() as session_row:
                         if session_start is not None:
@@ -1830,11 +1739,18 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}].frida_version="
                                 f"{str(session_row.frida_version)!r}; expected {FRIDA_RUNTIME_VERSION!r}",
                             )
-                        if not str(session_row.script_version):
-                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].script_version must be non-empty")
+                        if str(session_row.script_version) != str(FRIDA_CAPTURE_FORMAT_VERSION):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].script_version={session_row.script_version!r}; "
+                                f"expected {str(FRIDA_CAPTURE_FORMAT_VERSION)!r}",
+                            )
                         if str(session_row.config.out_path) != str(session_row.out_path):
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].config.out_path must match out_path",
+                            )
+                        if str(session_row.config.out_path_source) not in {"host", "environment", "default"}:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].config.out_path_source is invalid",
                             )
                         if str(session_row.session_fingerprint.session_id) != str(session_row.session_id):
                             raise FridaFinalizeError(
@@ -1855,10 +1771,6 @@ def finalize_frida_jsonl_to_traces(
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].reason must be one of {sorted(_RUN_START_REASONS)!r}",
                             )
-                        if str(run_start.seed_source) not in _SEED_SOURCES:
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].seed_source must be one of {sorted(_SEED_SOURCES)!r}",
-                            )
                         mode_id = int(run_start.mode_id)
                         if mode_id not in _SUPPORTED_CAPTURE_MODES:
                             supported = sorted(_SUPPORTED_CAPTURE_MODES)
@@ -1871,20 +1783,33 @@ def finalize_frida_jsonl_to_traces(
                                 f"{raw_path}.lines[{line_no}] duplicate run_id={int(run_start.run_id)}",
                             )
                         seen_run_ids.add(int(run_start.run_id))
-                        if int(run_start.seed) < 0:
-                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].seed must be >= 0")
                         if int(run_start.player_count) <= 0:
                             raise FridaFinalizeError(f"{raw_path}.lines[{line_no}].player_count must be positive")
                         if int(run_start.global_tick_index) < 0:
                             raise FridaFinalizeError(
                                 f"{raw_path}.lines[{line_no}].global_tick_index must be >= 0",
                             )
-                        # The session srand seed is stale by run start (menus and
-                        # earlier runs already consumed draws); the rand state
-                        # latched at run-setup entry is the replayable seed.
-                        if not (0 <= int(run_start.rng_state_at_run_setup) <= 0xFFFFFFFF):
+                        if not (0 <= int(run_start.rng_state_before_bootstrap) <= 0xFFFFFFFF):
                             raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].rng_state_at_run_setup must be u32",
+                                f"{raw_path}.lines[{line_no}].rng_state_before_bootstrap must be u32",
+                            )
+                        if not (0 <= int(run_start.rng_state_after_bootstrap) <= 0xFFFFFFFF):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].rng_state_after_bootstrap must be u32",
+                            )
+                        if int(run_start.rng_bootstrap_calls) < 0:
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}].rng_bootstrap_calls must be >= 0",
+                            )
+                        expected_after_bootstrap = _lcg_advance_u32(
+                            int(run_start.rng_state_before_bootstrap),
+                            int(run_start.rng_bootstrap_calls),
+                        )
+                        if expected_after_bootstrap != int(run_start.rng_state_after_bootstrap):
+                            raise FridaFinalizeError(
+                                f"{raw_path}.lines[{line_no}] bootstrap RNG boundary does not match "
+                                f"rng_bootstrap_calls={int(run_start.rng_bootstrap_calls)}: "
+                                f"expected {expected_after_bootstrap}, got {int(run_start.rng_state_after_bootstrap)}",
                             )
                         pool_residue = _pool_residue_from_run_start(
                             run_start,
@@ -1901,8 +1826,7 @@ def finalize_frida_jsonl_to_traces(
                             mode_id=mode_id,
                             quest_stage_major=int(run_start.quest_stage_major),
                             quest_stage_minor=int(run_start.quest_stage_minor),
-                            replay_seed=int(run_start.rng_state_at_run_setup),
-                            rng_setup_caller_static=str(run_start.rng_setup_caller_static),
+                            replay_seed=int(run_start.rng_state_before_bootstrap),
                             replay_player_count=int(run_start.player_count),
                             next_global_tick=int(run_start.global_tick_index),
                             temp_path=spool_path,
@@ -1918,6 +1842,9 @@ def finalize_frida_jsonl_to_traces(
                             violence_disabled=int(run_start.settings.violence_disabled),
                             world_size=float(run_start.settings.world_size),
                             pool_residue=pool_residue,
+                            rng_state_after_bootstrap=int(run_start.rng_state_after_bootstrap),
+                            rng_bootstrap_calls=int(run_start.rng_bootstrap_calls),
+                            rng_prev_leave_state=int(run_start.rng_state_after_bootstrap),
                         )
                         continue
                     case _TickRow() as tick_row:
@@ -1975,9 +1902,9 @@ def finalize_frida_jsonl_to_traces(
                             expected_players=int(active_run.replay_player_count),
                             field=f"{raw_path}.lines[{line_no}].channels.replay_step",
                         )
-                        replay_prelude = _canonical_replay_prelude(
-                            active_run,
+                        replay_prelude = _validate_replay_prelude(
                             tick_row,
+                            expected_players=int(active_run.replay_player_count),
                             field=f"{raw_path}.lines[{line_no}]",
                         )
                         channels = _canonical_channels_payload(
@@ -2025,7 +1952,6 @@ def finalize_frida_jsonl_to_traces(
                         active_run.next_local_tick += 1
                         active_run.next_global_tick += 1
                         active_run.tick_count += 1
-                        captured_tick_count += 1
                         global_tick = int(tick_row.global_tick_index)
                         if active_run.global_tick_first is None:
                             active_run.global_tick_first = global_tick
@@ -2073,6 +1999,18 @@ def finalize_frida_jsonl_to_traces(
                                 f"{int(run_end.global_tick_index)} does not match last tick "
                                 f"{int(active_run.global_tick_last)}",
                             )
+                        trailing_prelude = list(run_end.trailing_prelude)
+                        _validate_replay_prelude_operations(
+                            trailing_prelude,
+                            expected_players=int(active_run.replay_player_count),
+                            field=f"{raw_path}.lines[{line_no}].trailing_prelude",
+                        )
+                        _validate_outside_rng_bag(
+                            run_end.rng_outside_tail,
+                            prelude=trailing_prelude,
+                            field=f"{raw_path}.lines[{line_no}].rng_outside_tail",
+                            expected_start=active_run.rng_prev_leave_state,
+                        )
                         _merge_outside_rng_bag(active_run, run_end.rng_outside_tail)
                         active_run.stream.flush()
                         active_run.stream.close()
@@ -2097,20 +2035,6 @@ def finalize_frida_jsonl_to_traces(
                             else f" global_tick_index={int(run_error.global_tick_index)}"
                         )
                         raise FridaFinalizeError(f"{location} run error={run_error.error!r}{suffix}")
-                    case _SessionEndRow():
-                        if active_run is not None:
-                            raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] session_end while run is active")
-                        if str(row.session_id) != str(session_start.session_id):
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].session_id must match session_start.session_id",
-                            )
-                        if int(row.ticks_written) != int(captured_tick_count):
-                            raise FridaFinalizeError(
-                                f"{raw_path}.lines[{line_no}].ticks_written={int(row.ticks_written)} "
-                                f"does not match parsed tick_count {int(captured_tick_count)}",
-                            )
-                        session_ended = True
-                        continue
                     case _:
                         raise FridaFinalizeError(f"{raw_path}.lines[{line_no}] unsupported capture row")
 
@@ -2118,8 +2042,6 @@ def finalize_frida_jsonl_to_traces(
             raise FridaFinalizeError(f"{raw_path} missing session_start")
         if active_run is not None:
             raise FridaFinalizeError(f"{raw_path} ended with active run {int(active_run.run_id)}")
-        if not session_ended:
-            raise FridaFinalizeError(f"{raw_path} missing session_end")
         if not closed_runs:
             raise FridaFinalizeError(f"{raw_path} had no finalized runs")
         staged_output_root = temp_root / "output"

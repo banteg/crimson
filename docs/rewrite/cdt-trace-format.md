@@ -18,7 +18,7 @@ workflow details, see
 ## Versioning
 
 - `trace_format_version = 2`: container and envelope
-- `trace_schema_version = 14`: typed tick payloads
+- `trace_schema_version = 15`: typed tick payloads
 
 The reader requires both exact versions. There is no compatibility path for an
 older CDT because traces are cheap to record again.
@@ -92,7 +92,7 @@ represent a selected window and therefore need not start at zero. The health
 report exposes gaps so a user can decide whether the selected evidence is
 suitable for a comparison.
 
-## Channel contract (schema 14)
+## Channel contract (schema 15)
 
 Every tick requires all six channels:
 
@@ -112,7 +112,7 @@ The replay step is the authoritative driving evidence for the tick:
 - `dt`: finite, non-negative f32 frame delta
 - `inputs`: a non-empty row per player containing `move_x`, `move_y`, `aim_x`,
   `aim_y`, and uint32 `flags`
-- `prelude`: ordered RNG burns and perk operations applied before simulation
+- `prelude`: ordered native frame-RNG advances and perk operations applied before simulation
 - `postlude`: perk-menu generation applied after simulation while tick RNG
   tracing remains active
 - `commands`: Typ-o commands applied as part of the tick
@@ -157,9 +157,9 @@ Each row contains:
 - `state_after_u32`
 - optional static `caller`
 
-Every row must be a valid CRT LCG transition and `value_15` must derive from the
-after-state. A gap between consecutive hooked rows is allowed because it is
-evidence of native draws that bypassed the hook.
+Every row must be a valid CRT LCG transition, `value_15` must derive from the
+after-state, and consecutive rows must form one contiguous chain. A gap is an
+incomplete capture, not replay input.
 
 The caller is diagnostic attribution. Equal values and states with different
 callers produce a caller-attribution diagnostic, not an RNG behavior mismatch.
@@ -175,9 +175,9 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 The intended comparison set is:
 
-1. Frida capture format 19 finalized into CDT v2/schema 14.
-2. Python CRD v15 replay recording.
-3. Zig CRD v15 replay recording.
+1. Frida capture format 22 finalized into CDT v2/schema 15.
+2. Python CRD v16 replay recording.
+3. Zig CRD v16 replay recording.
 
 All emit the same durable channel semantics. A producer may keep additional
 diagnostics before finalization, but it may not add aliases or optional channel

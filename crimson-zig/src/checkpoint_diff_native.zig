@@ -2049,7 +2049,7 @@ fn replayFileLoadErrorDetail(err: anyerror) []const u8 {
 
 fn replayLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
+        error.InvalidMsgpack => "replay payload does not match format 16 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
@@ -2057,11 +2057,11 @@ fn replayLoadErrorDetail(err: anyerror) []const u8 {
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
         error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
-        error.UnsupportedEventShape => "replay tick operations do not match format 15",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 16",
+        error.UnsupportedEventShape => "replay tick operations do not match format 16",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 15",
+        error.UnknownCommandKind => "replay tick operations do not match format 16",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay load ran out of memory",
@@ -2640,7 +2640,7 @@ test "checkpoint vec2 requires exactly x and y" {
 
 test "checkpoint verify maps replay load and runner errors to user details" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 15 msgpack schema",
+        "replay payload does not match format 16 msgpack schema",
         replayLoadErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -2648,7 +2648,7 @@ test "checkpoint verify maps replay load and runner errors to user details" {
         replayLoadErrorDetail(error.PayloadTooLarge),
     );
     try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 15",
+        "replay tick operations do not match format 16",
         replayLoadErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(

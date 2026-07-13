@@ -7,7 +7,11 @@ from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, RngBurnOperation
+from crimson.sim.input_providers import (
+    GameFrameRngAdvanceOperation,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+)
 from grim.rand import CallerStatic, Crand, CrtRand
 from tests.support.replay_runner_helpers import (
     ReplayRngTraceRecorder,
@@ -44,14 +48,16 @@ def test_survival_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
-def test_survival_runner_rng_burn_prelude_shifts_rng_state() -> None:
+def test_survival_runner_game_frame_rng_advance_prelude_shifts_rng_state() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
 
     baseline = _run_verify_playback(replay)
     shifted_replay = msgspec.structs.replace(
         replay,
-        ticks=[msgspec.structs.replace(tick, prelude=[RngBurnOperation(draws=1)]) for tick in replay.ticks],
+        ticks=[
+            msgspec.structs.replace(tick, prelude=[GameFrameRngAdvanceOperation(frames=1)]) for tick in replay.ticks
+        ],
     )
     shifted = _run_verify_playback(shifted_replay)
     shifted_again = _run_verify_playback(shifted_replay)
@@ -67,9 +73,9 @@ def test_survival_replay_prelude_finishes_before_tick_rng_trace() -> None:
     replay.ticks[0] = msgspec.structs.replace(
         replay.ticks[0],
         prelude=[
-            RngBurnOperation(draws=1),
+            GameFrameRngAdvanceOperation(frames=1),
             PerkPickCommand(player_index=0, choice_index=0),
-            RngBurnOperation(draws=3),
+            GameFrameRngAdvanceOperation(frames=3),
         ],
     )
     driver = PlaybackDriver(replay, trace_rng=True, strict_rng_trace=True)
@@ -88,9 +94,9 @@ def test_survival_replay_prelude_finishes_before_tick_rng_trace() -> None:
     driver.step_tick(0)
 
     callers = [row[3] for row in prelude_draws]
-    assert callers[0] == RngCallerStatic.REPLAY_PRELUDE_RNG_BURN
+    assert callers[0] == RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED
     assert RngCallerStatic.PERK_APPLY_BANDAGE_HEAL in callers
-    assert callers[-3:] == [RngCallerStatic.REPLAY_PRELUDE_RNG_BURN] * 3
+    assert callers[-3:] == [RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED] * 3
     assert driver._last_tick_rng_rows
     assert int(driver._last_tick_rng_rows[0][0]) == int(prelude_draws[-1][1])
 

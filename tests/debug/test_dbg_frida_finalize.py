@@ -15,13 +15,16 @@ from crimson.dbg.frida_finalize import (
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
     load_frida_evidence_file,
-    seal_frida_jsonl_after_detach,
 )
 from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, UNKNOWN_TAIL_SIZE, WEAPON_USAGE_COUNT
 from crimson.replay.codec import load_replay_file
 from crimson.replay.types import quantize_f32
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, RngBurnOperation
+from crimson.sim.input_providers import (
+    GameFrameRngAdvanceOperation,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+)
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 
@@ -46,9 +49,9 @@ def _session_fingerprint_stub() -> dict[str, object]:
 def _session_config_stub() -> dict[str, object]:
     return {
         "out_path": "C:\\share\\frida\\gameplay_diff_capture.jsonl",
+        "out_path_source": "host",
         "capture_profile": "exhaustive_default",
         "config_env_overrides": [],
-        "log_mode": "truncate",
         "console_all_events": False,
         "console_events": ["start", "ready", "capture_shutdown", "error", "hook_error", "hook_skip", "tickless_event"],
         "include_caller": True,
@@ -59,7 +62,6 @@ def _session_config_stub() -> dict[str, object]:
         "focus_tick": -1,
         "focus_radius": 0,
         "heartbeat_ms": 1000,
-        "flush_capture_writes": False,
         "max_head_per_kind": -1,
         "max_events_per_tick": -1,
         "max_rng_head_per_tick": -1,
@@ -416,13 +418,14 @@ def _run_start_row(
     *,
     run_id: int,
     mode_id: int,
-    seed: int = 123,
+    seed: int = 0,
     player_count: int = 1,
     quest_stage_major: int = 0,
     quest_stage_minor: int = 0,
-    seed_source: str = "crt_srand",
-    rng_state_at_run_setup: int | None = None,
-    include_rng_state_at_run_setup: bool = True,
+    rng_state_before_bootstrap: int | None = None,
+    rng_state_after_bootstrap: int | None = None,
+    rng_bootstrap_calls: int = 0,
+    include_rng_state_before_bootstrap: bool = True,
     global_tick_index: int = 0,
     pool_residue: list[dict[str, object]] | None = None,
     settings: dict[str, object] | None = None,
@@ -432,8 +435,6 @@ def _run_start_row(
         "run_id": int(run_id),
         "reason": "run_start",
         "mode_id": int(mode_id),
-        "seed": int(seed),
-        "seed_source": str(seed_source),
         "player_count": int(player_count),
         "quest_stage_major": int(quest_stage_major),
         "quest_stage_minor": int(quest_stage_minor),
@@ -441,9 +442,13 @@ def _run_start_row(
         "pool_residue": [_pool_residue_slot_stub(0)] if pool_residue is None else list(pool_residue),
         "settings": _run_settings_stub() if settings is None else settings,
     }
-    if include_rng_state_at_run_setup:
-        row["rng_state_at_run_setup"] = int(seed if rng_state_at_run_setup is None else rng_state_at_run_setup)
-        row["rng_setup_caller_static"] = "0x004181cc"
+    if include_rng_state_before_bootstrap:
+        before = int(seed if rng_state_before_bootstrap is None else rng_state_before_bootstrap)
+        row["rng_state_before_bootstrap"] = before
+        row["rng_state_after_bootstrap"] = int(
+            before if rng_state_after_bootstrap is None else rng_state_after_bootstrap,
+        )
+        row["rng_bootstrap_calls"] = int(rng_bootstrap_calls)
     return row
 
 
@@ -600,6 +605,7 @@ def _run_end_row(
     quest_stage_minor: int = 0,
     ticks_written: int = 0,
     reason: str = "run_end",
+    trailing_prelude: list[dict[str, object]] | None = None,
     rng_outside_tail: dict[str, object] | None = None,
     include_rng_outside_tail: bool = True,
     global_tick_index: int | None = None,
@@ -613,21 +619,16 @@ def _run_end_row(
         "quest_stage_minor": int(quest_stage_minor),
         "ticks_written": int(ticks_written),
         "global_tick_index": int(max(0, int(ticks_written) - 1) if global_tick_index is None else global_tick_index),
+        "trailing_prelude": [] if trailing_prelude is None else trailing_prelude,
     }
     if include_rng_outside_tail:
         row["rng_outside_tail"] = _rng_outside_bag_stub() if rng_outside_tail is None else rng_outside_tail
     return row
 
 
-def _session_end_row(*, session_id: str = "session-test", ticks_written: int = 0) -> dict[str, object]:
-    return {
-        "event": "session_end",
-        "session_id": str(session_id),
-        "ticks_written": int(ticks_written),
-    }
-
-
 def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(tmp_path: Path) -> None:
+    frame_state_1 = (777 * 214013 + 2531011) & 0xFFFFFFFF
+    frame_state_2 = (frame_state_1 * 214013 + 2531011) & 0xFFFFFFFF
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
@@ -651,6 +652,28 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
+                "rng_outside_before": _rng_outside_bag_stub(
+                    calls=2,
+                    caller_counts={"0x0040cac7": 2},
+                    head=[
+                        {
+                            "state_before_u32": 777,
+                            "state_after_u32": frame_state_1,
+                            "value_15": (frame_state_1 >> 16) & 0x7FFF,
+                            "caller_static": "0x0040cac7",
+                            "replay_operation_index": 0,
+                        },
+                        {
+                            "state_before_u32": frame_state_1,
+                            "state_after_u32": frame_state_2,
+                            "value_15": (frame_state_2 >> 16) & 0x7FFF,
+                            "caller_static": "0x0040cac7",
+                            "replay_operation_index": 0,
+                        },
+                    ],
+                ),
+                "rng_state_enter_u32": frame_state_2,
+                "rng_state_leave_u32": frame_state_2,
                 **_tick_identity_stub(tick_index=0, global_tick_index=100),
                 "run_id": 1,
                 "elapsed_ms": 0,
@@ -677,32 +700,17 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                         ),
                     ],
                     prelude=[
-                        {"type": "rng_burn", "draws": 2},
+                        {"type": "game_frame_rng_advance", "frames": 2},
                     ],
                     postlude=[{"type": "perk_menu_open", "player_index": 0}],
                     checkpoint_overrides={
-                        "deaths": [
-                            {
-                                "creature_index": 7,
-                                "type_id": 18,
-                                "reward_value": 75.0,
-                                "xp_awarded": 10,
-                                "owner_id": -1,
-                            },
-                        ],
+                        "deaths": [],
                         "events": {
-                            "hit_count": 3,
+                            "hit_count": 2,
                             "pickup_count": 2,
-                            "sfx_count": 4,
-                            "sfx_head": ["10", "11"],
-                            "hit_head": [
-                                {
-                                    "type_id": 4,
-                                    "origin": {"x": 1.0, "y": 2.0},
-                                    "hit": {"x": 3.0, "y": 4.0},
-                                    "target": {"x": 5.0, "y": 6.0},
-                                },
-                            ],
+                            "sfx_count": 0,
+                            "sfx_head": [],
+                            "hit_head": [],
                         },
                     },
                 ),
@@ -710,7 +718,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                     raw_hit_count=3,
                     owner_collision_count=1,
                     pickup_count=2,
-                    raw_sfx_count=4,
+                    raw_sfx_count=0,
                     deaths=[
                         {
                             "creature_index": 7,
@@ -720,13 +728,15 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                             "owner_id": -1,
                         },
                     ],
-                    sfx_head=["10", "11"],
-                    hit_head=[{"creature_index": 7}],
+                    sfx_head=[],
+                    hit_head=[],
                 ),
             },
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
+                "rng_state_enter_u32": frame_state_2,
+                "rng_state_leave_u32": frame_state_2,
                 **_tick_identity_stub(tick_index=1, global_tick_index=101),
                 "run_id": 1,
                 "elapsed_ms": 16,
@@ -748,7 +758,6 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
                 ),
             },
             _run_end_row(run_id=1, mode_id=1, ticks_written=2, global_tick_index=101),
-            _session_end_row(ticks_written=2),
         ],
     )
 
@@ -790,7 +799,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert ticks[1].channels.checkpoint.tick_index == 1
     assert ticks[0].channels.replay_step.dt == quantize_f32(0.016)
     assert ticks[0].channels.replay_step.prelude == [
-        RngBurnOperation(draws=2),
+        GameFrameRngAdvanceOperation(frames=2),
     ]
     assert ticks[0].channels.replay_step.postlude == [PerkMenuOpenCommand(player_index=0)]
     assert ticks[1].channels.replay_step.prelude == [PerkPickCommand(player_index=0, choice_index=1)]
@@ -840,8 +849,8 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_replay_and_deletes_raw(
     assert evidence.footer.global_tick_last == 101
     private = evidence.ticks[0].evidence.checkpoint_private
     assert cast(dict[str, object], private.deaths[0])["owner_id"] == -1
-    assert private.events.sfx_count == 4
-    assert private.events.sfx_head == ["10", "11"]
+    assert private.events.sfx_count == 0
+    assert private.events.sfx_head == []
 
     # The producer emits run-local timing rows directly; finalize preserves them.
     timing0 = ticks[0].channels.timing_samples[0]
@@ -871,7 +880,7 @@ def test_finalize_frida_jsonl_to_traces_preserves_menu_postlude_then_next_tick_p
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=1, seed=777, player_count=1),
+            _run_start_row(run_id=1, mode_id=1, player_count=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
@@ -891,7 +900,6 @@ def test_finalize_frida_jsonl_to_traces_preserves_menu_postlude_then_next_tick_p
                 channels=tick1_channels,
             ),
             _run_end_row(run_id=1, mode_id=1, ticks_written=2, global_tick_index=1),
-            _session_end_row(ticks_written=2),
         ],
     )
 
@@ -916,7 +924,7 @@ def test_finalize_frida_jsonl_to_traces_preserves_numeric_rng_caller(tmp_path: P
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=1, seed=777, player_count=1),
+            _run_start_row(run_id=1, mode_id=1, seed=2427270273, player_count=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
@@ -926,9 +934,10 @@ def test_finalize_frida_jsonl_to_traces_preserves_numeric_rng_caller(tmp_path: P
                 mode_id=1,
                 player_count=1,
                 channels=channels,
+                rng_state_enter_u32=2427270273,
+                rng_state_leave_u32=3985917248,
             ),
             _run_end_row(run_id=1, mode_id=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -938,12 +947,12 @@ def test_finalize_frida_jsonl_to_traces_preserves_numeric_rng_caller(tmp_path: P
     assert ticks[0].channels.rng_stream[0].caller == 0x00430B88
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_run_closed(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_accepts_eof_after_run_end(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=1, seed=11, player_count=1),
+            _run_start_row(run_id=1, mode_id=1, player_count=1),
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
@@ -958,10 +967,9 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_run_clo
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="missing session_end"):
-        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
-    assert not list((tmp_path / "out").glob("*.cdt"))
-    assert not list((tmp_path / "out").glob("*.crd"))
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    assert result.traces[0].tick_count == 1
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_active_run_when_capture_abruptly_ends(tmp_path: Path) -> None:
@@ -969,7 +977,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_active_run_when_capture_abruptly
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=4, mode_id=2, seed=22, player_count=1),
+            _run_start_row(run_id=4, mode_id=2, player_count=1),
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
@@ -1037,10 +1045,10 @@ def test_finalize_frida_jsonl_to_traces_rejects_noncontiguous_global_tick_index(
     assert not list((tmp_path / "out").glob("*.crd"))
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_missing_session_end_when_no_runs(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_capture_with_no_finalized_runs(tmp_path: Path) -> None:
     raw_path = _write_jsonl(tmp_path / "capture.jsonl", [_session_start_row()])
 
-    with pytest.raises(FridaFinalizeError, match="missing session_end"):
+    with pytest.raises(FridaFinalizeError, match="had no finalized runs"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1049,7 +1057,7 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=31, player_count=1, quest_stage_major=1, quest_stage_minor=5),
+            _run_start_row(run_id=1, mode_id=3, player_count=1, quest_stage_major=1, quest_stage_minor=5),
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
@@ -1072,7 +1080,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
             _run_start_row(
                 run_id=2,
                 mode_id=2,
-                seed=32,
                 player_count=1,
                 quest_stage_major=1,
                 quest_stage_minor=5,
@@ -1107,7 +1114,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
             _run_start_row(
                 run_id=3,
                 mode_id=1,
-                seed=33,
                 player_count=1,
                 quest_stage_major=1,
                 quest_stage_minor=5,
@@ -1141,7 +1147,6 @@ def test_finalize_frida_jsonl_to_traces_names_runs_by_mode_not_stale_quest_stage
                 ticks_written=1,
                 global_tick_index=2,
             ),
-            _session_end_row(ticks_written=3),
         ],
     )
 
@@ -1197,7 +1202,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_pat
                 },
             },
             _run_end_row(run_id=1, mode_id=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -1206,41 +1210,31 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_rng_marks_channel(tmp_pat
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_null_run_start_seed_with_actionable_error(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=1)
+    run_start["rng_state_before_bootstrap"] = None
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            {
-                "event": "run_start",
-                "run_id": 1,
-                "mode_id": 1,
-                "seed": None,
-                "player_count": 1,
-                "quest_stage_major": -1,
-                "quest_stage_minor": -1,
-            },
+            run_start,
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="Expected `int`, got `null` - at `\\$\\.seed`"):
+    with pytest.raises(
+        FridaFinalizeError,
+        match=r"Expected `int`, got `null` - at `\$\.rng_state_before_bootstrap`",
+    ):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_legacy_bootstrap_kind_field(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=1)
+    run_start["bootstrap_kind"] = "terrain_v1"
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            {
-                "event": "run_start",
-                "run_id": 1,
-                "mode_id": 1,
-                "seed": 7,
-                "player_count": 1,
-                "quest_stage_major": -1,
-                "quest_stage_minor": -1,
-                "bootstrap_kind": "terrain_v1",
-            },
+            run_start,
         ],
     )
 
@@ -1249,21 +1243,13 @@ def test_finalize_frida_jsonl_to_traces_rejects_legacy_bootstrap_kind_field(tmp_
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_legacy_bootstrap_seed_field(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=1)
+    run_start["bootstrap_seed"] = 7
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            {
-                "event": "run_start",
-                "run_id": 1,
-                "mode_id": 1,
-                "seed": 7,
-                "bootstrap_seed": 7,
-                "seed_source": "crt_srand",
-                "player_count": 1,
-                "quest_stage_major": -1,
-                "quest_stage_minor": -1,
-            },
+            run_start,
         ],
     )
 
@@ -1290,11 +1276,13 @@ def test_finalize_frida_jsonl_to_traces_rejects_previous_capture_format_version(
                 "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=3),
             },
             _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"unsupported capture_format_version=20; expected 21"):
+    with pytest.raises(
+        FridaFinalizeError,
+        match=rf"unsupported capture_format_version={CAPTURE_FORMAT_VERSION - 1}; expected {CAPTURE_FORMAT_VERSION}",
+    ):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1353,9 +1341,7 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
     run_start = _run_start_row(
         run_id=1,
         mode_id=1,
-        seed=91,
         player_count=1,
-        rng_state_at_run_setup=777,
     )
     run_start["pool_residue"] = [
         _pool_residue_slot_stub(0, link_index=3, target_heading=4.044, type_id=2),
@@ -1377,7 +1363,6 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
                 "channels": _channels_stub(tick_index=0, elapsed_ms=16, mode_id=1),
             },
             _run_end_row(run_id=1, mode_id=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -1393,7 +1378,7 @@ def test_finalize_frida_jsonl_to_traces_carries_pool_residue_into_replay_header(
 
 
 def test_finalize_frida_jsonl_to_traces_requires_pool_residue(tmp_path: Path) -> None:
-    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_at_run_setup=777)
+    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_before_bootstrap=777)
     run_start.pop("pool_residue")
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
@@ -1408,7 +1393,7 @@ def test_finalize_frida_jsonl_to_traces_requires_pool_residue(tmp_path: Path) ->
 
 
 def test_finalize_frida_jsonl_to_traces_rejects_active_pool_residue_slot(tmp_path: Path) -> None:
-    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_at_run_setup=777)
+    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_before_bootstrap=777)
     run_start["pool_residue"] = [_pool_residue_slot_stub(0, active=1)]
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
@@ -1461,7 +1446,7 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=92, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _run_start_row(run_id=1, mode_id=3, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             {
                 "event": "tick",
                 **_rng_accounting_stub(),
@@ -1481,7 +1466,6 @@ def test_finalize_frida_jsonl_to_traces_keeps_large_first_tick_elapsed(tmp_path:
                 ),
             },
             _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -1516,7 +1500,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_missing_required_canonical_chann
                 "channels": channels,
             },
             _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -1545,7 +1528,6 @@ def test_finalize_frida_jsonl_to_traces_rejects_extra_non_canonical_channel(
                 "channels": channels,
             },
             _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
-            _session_end_row(ticks_written=1),
         ],
     )
 
@@ -1575,7 +1557,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_session_start_fingerprint_sessio
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_invalid_run_start_seed_source(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_removed_run_start_seed_source(tmp_path: Path) -> None:
     run_start = _run_start_row(
         run_id=1,
         mode_id=3,
@@ -1593,7 +1575,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_invalid_run_start_seed_source(tm
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="seed_source must be one of"):
+    with pytest.raises(FridaFinalizeError, match="unknown field `seed_source`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1804,7 +1786,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_dt_mismatch_with_gpur_enter(tmp_
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=108, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _run_start_row(run_id=1, mode_id=3, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
@@ -1929,7 +1911,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_end_tick_count_mismatch(tmp_
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=108, player_count=1, quest_stage_major=1, quest_stage_minor=1),
+            _run_start_row(run_id=1, mode_id=3, player_count=1, quest_stage_major=1, quest_stage_minor=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
@@ -1971,7 +1953,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_error_without_partial_output
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _run_start_row(run_id=1, mode_id=1, seed=108),
+            _run_start_row(run_id=1, mode_id=1),
             _tick_row(
                 run_id=1,
                 tick_index=0,
@@ -1981,7 +1963,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_error_without_partial_output
                 mode_id=1,
             ),
             _run_end_row(run_id=1, mode_id=1, ticks_written=1),
-            _run_start_row(run_id=2, mode_id=1, seed=109, global_tick_index=1),
+            _run_start_row(run_id=2, mode_id=1, global_tick_index=1),
             {
                 "event": "run_error",
                 "error": "samples.secondary_projectiles[0].speed must be finite",
@@ -2000,41 +1982,16 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_error_without_partial_output
     assert not list((tmp_path / "out").glob("*.crd"))
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_session_end_session_id_mismatch(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_removed_session_end_row(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [
             _session_start_row(),
-            _session_end_row(session_id="session-other"),
+            {"event": "session_end", "session_id": "session-test", "ticks_written": 0},
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match="session_id must match session_start.session_id"):
-        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
-
-
-def test_finalize_frida_jsonl_to_traces_rejects_session_end_tick_count_mismatch(tmp_path: Path) -> None:
-    raw_path = _write_jsonl(
-        tmp_path / "capture.jsonl",
-        [
-            _session_start_row(),
-            _run_start_row(run_id=1, mode_id=3, seed=104, player_count=1, quest_stage_major=1, quest_stage_minor=1),
-            _tick_row(
-                run_id=1,
-                tick_index=0,
-                elapsed_ms=16,
-                dt_ms_i32=16,
-                dt=0.016,
-                mode_id=3,
-                quest_stage_major=1,
-                quest_stage_minor=1,
-            ),
-            _run_end_row(run_id=1, mode_id=3, quest_stage_major=1, quest_stage_minor=1, ticks_written=1),
-            _session_end_row(ticks_written=0),
-        ],
-    )
-
-    with pytest.raises(FridaFinalizeError, match="ticks_written=0 does not match parsed tick_count 1"):
+    with pytest.raises(FridaFinalizeError, match="invalid capture row"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -2072,60 +2029,25 @@ def _single_tick_rows(
         run_start,
         tick,
         _run_end_row(run_id=1, mode_id=1, ticks_written=1) if run_end is None else run_end,
-        _session_end_row(ticks_written=1),
     ]
 
 
-def _set_terminal_transition(tick: dict[str, object], *, before_state: int = 9, after_state: int = 7) -> None:
-    evidence = cast(dict[str, object], tick["evidence"])
-    evidence["after"] = {"globals": {"game_state_id": int(after_state)}}
-    event_heads = cast(dict[str, list[object]], evidence["event_heads"])
-    event_heads["state_transition"] = [
-        {
-            "target_state": int(after_state),
-            "before": {"id": int(before_state)},
-            "after": {"id": int(after_state)},
-        },
-    ]
-
-
-def test_seal_frida_jsonl_after_detach_recovers_proven_terminal_run(tmp_path: Path) -> None:
-    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:3]
-    tick = rows[-1]
-    _set_terminal_transition(tick)
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
-
-    assert seal_frida_jsonl_after_detach(raw_path) == ("run_end", "session_end")
-    sealed_rows = [json.loads(line) for line in raw_path.read_text().splitlines()]
-    assert [row["event"] for row in sealed_rows[-2:]] == ["run_end", "session_end"]
-    assert sealed_rows[-2]["ticks_written"] == 1
-    assert sealed_rows[-2]["rng_outside_tail"] == {"calls": 0, "dropped": 0, "caller_counts": {}, "head": []}
-
-    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
-    assert result.traces[0].tick_count == 1
-
-
-def test_seal_frida_jsonl_after_detach_adds_only_missing_session_end(tmp_path: Path) -> None:
-    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:-1]
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
-
-    assert seal_frida_jsonl_after_detach(raw_path) == ("session_end",)
-    assert seal_frida_jsonl_after_detach(raw_path) == ()
-
-
-def test_seal_frida_jsonl_after_detach_rejects_unproven_active_run(tmp_path: Path) -> None:
-    rows = _single_tick_rows(run_start=_run_start_row(run_id=1, mode_id=1))[:3]
-    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
-
-    with pytest.raises(FridaFinalizeError, match="without a proven terminal transition"):
-        seal_frida_jsonl_after_detach(raw_path)
-
-
-def test_finalize_frida_jsonl_to_traces_seeds_replay_from_run_setup_rng_state(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_seeds_replay_from_pre_bootstrap_rng_state(tmp_path: Path) -> None:
+    state_before = 999
+    state_after = (state_before * 214013 + 2531011) & 0xFFFFFFFF
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         _single_tick_rows(
-            run_start=_run_start_row(run_id=1, mode_id=1, seed=123, player_count=1, rng_state_at_run_setup=999),
+            run_start=_run_start_row(
+                run_id=1,
+                mode_id=1,
+                seed=123,
+                player_count=1,
+                rng_state_before_bootstrap=state_before,
+                rng_state_after_bootstrap=state_after,
+                rng_bootstrap_calls=1,
+            ),
+            tick_overrides={"rng_state_enter_u32": state_after, "rng_state_leave_u32": state_after},
         ),
     )
 
@@ -2135,33 +2057,58 @@ def test_finalize_frida_jsonl_to_traces_seeds_replay_from_run_setup_rng_state(tm
     assert replay.header.seed == 999
     meta, _ticks, _footer = load_trace(result.traces[0].out_path)
     assert meta.source.seed == 999
-    assert meta.source.run_start_seed_source == "run_setup_rng_state"
+    assert meta.source.run_start_seed_source == "rng_state_before_bootstrap"
+    rng_evidence = json.loads(
+        result.traces[0].out_path.with_suffix(".rng_evidence.json").read_text(encoding="utf-8"),
+    )
+    assert rng_evidence["bootstrap_state_before"] == state_before
+    assert rng_evidence["bootstrap_state_after"] == state_after
+    assert rng_evidence["bootstrap_calls"] == 1
 
 
-def test_finalize_frida_jsonl_to_traces_recovers_first_tick_frame_rng_burn(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_rejects_inconsistent_bootstrap_rng_boundary(tmp_path: Path) -> None:
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [
+            _session_start_row(),
+            _run_start_row(
+                run_id=1,
+                mode_id=1,
+                rng_state_before_bootstrap=100,
+                rng_state_after_bootstrap=101,
+                rng_bootstrap_calls=0,
+            ),
+        ],
+    )
+
+    with pytest.raises(FridaFinalizeError, match="bootstrap RNG boundary does not match"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
+def test_finalize_frida_jsonl_to_traces_requires_captured_first_tick_frame_rng_advance(tmp_path: Path) -> None:
     seed = 100
-    setup_after = (seed * 214013 + 2531011) & 0xFFFFFFFF
-    frame_after = (setup_after * 214013 + 2531011) & 0xFFFFFFFF
+    frame_after = (seed * 214013 + 2531011) & 0xFFFFFFFF
     rows = _single_tick_rows(
-        run_start=_run_start_row(run_id=1, mode_id=1, rng_state_at_run_setup=seed),
+        run_start=_run_start_row(run_id=1, mode_id=1, rng_state_before_bootstrap=seed),
         tick_overrides={
             "rng_state_enter_u32": frame_after,
             "rng_state_leave_u32": frame_after,
+            "channels": _channels_stub(
+                tick_index=0,
+                elapsed_ms=0,
+                mode_id=1,
+                prelude=[{"type": "game_frame_rng_advance", "frames": 1}],
+            ),
             "rng_outside_before": _rng_outside_bag_stub(
-                calls=2,
-                caller_counts={"0x004181cc": 1, "0x0040cac7": 1},
+                calls=1,
+                caller_counts={"0x0040cac7": 1},
                 head=[
                     {
                         "state_before_u32": seed,
-                        "state_after_u32": setup_after,
-                        "value_15": (setup_after >> 16) & 0x7FFF,
-                        "caller_static": "0x004181cc",
-                    },
-                    {
-                        "state_before_u32": setup_after,
                         "state_after_u32": frame_after,
                         "value_15": (frame_after >> 16) & 0x7FFF,
                         "caller_static": "0x0040cac7",
+                        "replay_operation_index": 0,
                     },
                 ],
             ),
@@ -2173,19 +2120,89 @@ def test_finalize_frida_jsonl_to_traces_recovers_first_tick_frame_rng_burn(tmp_p
 
     replay = load_replay_file(result.traces[0].replay_path)
     _meta, ticks, _footer = load_trace(result.traces[0].out_path)
-    assert replay.ticks[0].prelude == [RngBurnOperation(draws=1)]
+    assert replay.ticks[0].prelude == [GameFrameRngAdvanceOperation(frames=1)]
     assert ticks[0].channels.replay_step.prelude == replay.ticks[0].prelude
 
 
-def test_finalize_frida_jsonl_to_traces_rejects_missing_run_setup_rng_state(tmp_path: Path) -> None:
+def test_finalize_frida_jsonl_to_traces_accepts_rng_owned_by_perk_operation(tmp_path: Path) -> None:
+    seed = 100
+    state_after = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    rows = _single_tick_rows(
+        run_start=_run_start_row(run_id=1, mode_id=1, rng_state_before_bootstrap=seed),
+        tick_overrides={
+            "rng_state_enter_u32": state_after,
+            "rng_state_leave_u32": state_after,
+            "channels": _channels_stub(
+                tick_index=0,
+                elapsed_ms=0,
+                mode_id=1,
+                prelude=[{"type": "perk_menu_open", "player_index": 0}],
+            ),
+            "rng_outside_before": _rng_outside_bag_stub(
+                calls=1,
+                caller_counts={"0x00417f00": 1},
+                head=[
+                    {
+                        "state_before_u32": seed,
+                        "state_after_u32": state_after,
+                        "value_15": (state_after >> 16) & 0x7FFF,
+                        "caller_static": "0x00417f00",
+                        "replay_operation_index": 0,
+                    },
+                ],
+            ),
+        },
+    )
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    replay = load_replay_file(result.traces[0].replay_path)
+    assert replay.ticks[0].prelude == [PerkMenuOpenCommand(player_index=0)]
+
+
+def test_finalize_frida_jsonl_to_traces_validates_rng_owned_by_trailing_operation(tmp_path: Path) -> None:
+    seed = 100
+    state_after = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    rows = _single_tick_rows(
+        run_start=_run_start_row(run_id=1, mode_id=1, rng_state_before_bootstrap=seed),
+        tick_overrides={"rng_state_enter_u32": seed, "rng_state_leave_u32": seed},
+        run_end=_run_end_row(
+            run_id=1,
+            mode_id=1,
+            ticks_written=1,
+            trailing_prelude=[{"type": "perk_menu_open", "player_index": 0}],
+            rng_outside_tail=_rng_outside_bag_stub(
+                calls=1,
+                caller_counts={"0x00417f00": 1},
+                head=[
+                    {
+                        "state_before_u32": seed,
+                        "state_after_u32": state_after,
+                        "value_15": (state_after >> 16) & 0x7FFF,
+                        "caller_static": "0x00417f00",
+                        "replay_operation_index": 0,
+                    },
+                ],
+            ),
+        ),
+    )
+    raw_path = _write_jsonl(tmp_path / "capture.jsonl", rows)
+
+    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+    assert result.traces[0].tick_count == 1
+
+
+def test_finalize_frida_jsonl_to_traces_rejects_missing_pre_bootstrap_rng_state(tmp_path: Path) -> None:
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         _single_tick_rows(
-            run_start=_run_start_row(run_id=1, mode_id=1, include_rng_state_at_run_setup=False),
+            run_start=_run_start_row(run_id=1, mode_id=1, include_rng_state_before_bootstrap=False),
         ),
     )
 
-    with pytest.raises(FridaFinalizeError, match="missing required field `rng_state_at_run_setup`"):
+    with pytest.raises(FridaFinalizeError, match="missing required field `rng_state_before_bootstrap`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -2225,32 +2242,97 @@ def test_finalize_frida_jsonl_to_traces_rejects_run_end_without_rng_outside_tail
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
-def test_finalize_frida_jsonl_to_traces_reports_unhooked_rng_draws(tmp_path: Path) -> None:
-    # enter == seed (setup distance 0); leave is one LCG step past the last
-    # observed draw, so the report must attribute one unhooked in-tick draw.
+def test_finalize_frida_jsonl_to_traces_rejects_outside_rng_caller_owned_by_wrong_operation(tmp_path: Path) -> None:
     seed = 100
-    leave = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    state_1 = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    state_2 = (state_1 * 214013 + 2531011) & 0xFFFFFFFF
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         _single_tick_rows(
-            run_start=_run_start_row(run_id=1, mode_id=1, rng_state_at_run_setup=seed),
+            run_start=_run_start_row(run_id=1, mode_id=1, rng_state_before_bootstrap=seed),
             tick_overrides={
-                "rng_state_enter_u32": seed,
-                "rng_state_leave_u32": leave,
-                "rng_outside_before": _rng_outside_bag_stub(calls=2, caller_counts={"0x00417f00": 2}),
+                "rng_state_enter_u32": state_2,
+                "rng_state_leave_u32": state_2,
+                "channels": _channels_stub(
+                    tick_index=0,
+                    elapsed_ms=0,
+                    mode_id=1,
+                    prelude=[{"type": "game_frame_rng_advance", "frames": 2}],
+                ),
+                "rng_outside_before": _rng_outside_bag_stub(
+                    calls=2,
+                    caller_counts={"0x00417f00": 2},
+                    head=[
+                        {
+                            "state_before_u32": seed,
+                            "state_after_u32": state_1,
+                            "value_15": (state_1 >> 16) & 0x7FFF,
+                            "caller_static": "0x00417f00",
+                            "replay_operation_index": 0,
+                        },
+                        {
+                            "state_before_u32": state_1,
+                            "state_after_u32": state_2,
+                            "value_15": (state_2 >> 16) & 0x7FFF,
+                            "caller_static": "0x00417f00",
+                            "replay_operation_index": 0,
+                        },
+                    ],
+                ),
             },
         ),
     )
 
-    result = finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+    with pytest.raises(FridaFinalizeError, match="frame operation has caller"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
-    evidence_path = result.traces[0].out_path.with_suffix(".rng_evidence.json")
-    report = json.loads(evidence_path.read_text(encoding="utf-8"))
-    assert report["setup_draw_distance"] == 0
-    assert report["unhooked_in_tick"] == 1
-    assert report["unhooked_gap_neighbors"] == {"tick_tail": 1}
-    assert report["outside_calls"] == 2
-    assert report["outside_caller_counts"] == {"0x00417f00": 2}
+
+def test_finalize_frida_jsonl_to_traces_rejects_out_of_order_rng_ownership(tmp_path: Path) -> None:
+    seed = 100
+    state_1 = (seed * 214013 + 2531011) & 0xFFFFFFFF
+    state_2 = (state_1 * 214013 + 2531011) & 0xFFFFFFFF
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        _single_tick_rows(
+            run_start=_run_start_row(run_id=1, mode_id=1, rng_state_before_bootstrap=seed),
+            tick_overrides={
+                "rng_state_enter_u32": state_2,
+                "rng_state_leave_u32": state_2,
+                "channels": _channels_stub(
+                    tick_index=0,
+                    elapsed_ms=0,
+                    mode_id=1,
+                    prelude=[
+                        {"type": "game_frame_rng_advance", "frames": 1},
+                        {"type": "perk_menu_open", "player_index": 0},
+                    ],
+                ),
+                "rng_outside_before": _rng_outside_bag_stub(
+                    calls=2,
+                    caller_counts={"0x0040cac7": 1, "0x00417f00": 1},
+                    head=[
+                        {
+                            "state_before_u32": seed,
+                            "state_after_u32": state_1,
+                            "value_15": (state_1 >> 16) & 0x7FFF,
+                            "caller_static": "0x00417f00",
+                            "replay_operation_index": 1,
+                        },
+                        {
+                            "state_before_u32": state_1,
+                            "state_after_u32": state_2,
+                            "value_15": (state_2 >> 16) & 0x7FFF,
+                            "caller_static": "0x0040cac7",
+                            "replay_operation_index": 0,
+                        },
+                    ],
+                ),
+            },
+        ),
+    )
+
+    with pytest.raises(FridaFinalizeError, match="precedes prior operation"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
 @pytest.mark.parametrize("mode_id", [0, 4, 8])
@@ -2370,7 +2452,6 @@ def test_finalize_frida_jsonl_to_traces_preserves_quest_native_elapsed_clock(tmp
                 quest_stage_minor=2,
                 ticks_written=1,
             ),
-            _session_end_row(ticks_written=1),
         ],
     )
 

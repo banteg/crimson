@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.metadata
+import json
 import os
 import signal
 import sys
@@ -14,7 +15,6 @@ from crimson.dbg.frida_finalize import (
     FRIDA_RUNTIME_VERSION,
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
-    seal_frida_jsonl_after_detach,
 )
 
 
@@ -27,7 +27,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     target_group = parser.add_mutually_exclusive_group()
     target_group.add_argument(
-        "--process", default="crimsonland.exe", help="target process name (default: crimsonland.exe)",
+        "--process",
+        default="crimsonland.exe",
+        help="target process name (default: crimsonland.exe)",
     )
     target_group.add_argument("--pid", type=int, default=None, help="target process id")
     parser.add_argument(
@@ -40,7 +42,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--raw-path",
         type=Path,
         default=None,
-        help="override raw JSONL capture file path (default: script stats out_path)",
+        help="raw JSONL path injected into the agent (default: CRIMSON_FRIDA_OUT_PATH or standard share path)",
     )
     parser.add_argument(
         "--output-dir",
@@ -69,11 +71,24 @@ def _default_raw_capture_path() -> Path:
     return base_dir / "gameplay_diff_capture.jsonl"
 
 
+def _normalized_path(path: Path) -> str:
+    return os.path.normcase(str(Path(path).expanduser().resolve(strict=False)))
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
+    parser = _build_parser()
+    args = parser.parse_args(argv)
 
     if args.finalize_only:
-        return _finalize_and_report(args, stats={}, failure=[], start_ts=time.time())
+        if args.raw_path is None:
+            parser.error("--finalize-only requires --raw-path")
+        return _finalize_and_report(
+            args,
+            raw_path=Path(args.raw_path).expanduser().resolve(strict=False),
+            stats={},
+            failure=[],
+            start_ts=time.time(),
+        )
 
     script_path = Path(args.script)
     if not script_path.is_file():
@@ -99,6 +114,17 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     print(f"[capture-host] frida={frida_version}", flush=True)
 
+    raw_path = (
+        (Path(args.raw_path) if args.raw_path is not None else _default_raw_capture_path())
+        .expanduser()
+        .resolve(strict=False)
+    )
+    try:
+        raw_path.unlink(missing_ok=True)
+    except OSError as exc:
+        print(f"[capture-host] cannot clear raw capture {raw_path}: {exc}", file=sys.stderr)
+        return 2
+
     stop_event = threading.Event()
     failure: list[str] = []
     start_ts = time.time()
@@ -107,7 +133,11 @@ def main(argv: list[str] | None = None) -> int:
     target = int(args.pid) if args.pid is not None else str(args.process)
     print(f"[capture-host] attaching target={target}", flush=True)
     session = device.attach(target)
-    script_source = script_path.read_text(encoding="utf-8")
+    host_config_json = json.dumps({"out_path": str(raw_path)})
+    script_source = (
+        '"use strict";\n'
+        f"globalThis.CRIMSON_CAPTURE_HOST_CONFIG = {host_config_json};\n" + script_path.read_text(encoding="utf-8")
+    )
     script = session.create_script(script_source)
 
     def on_message(message: dict[str, object], data: bytes | None) -> None:
@@ -131,6 +161,10 @@ def main(argv: list[str] | None = None) -> int:
                 payload_error = None
             if payload_event == "capture_startup_error":
                 failure.append(f"agent startup failed: {payload_error or 'unknown'}")
+                stop_event.set()
+                return
+            if payload_event == "capture_runtime_error":
+                failure.append(f"agent runtime failed: {payload_error or 'unknown'}")
                 stop_event.set()
                 return
         if data is not None:
@@ -176,6 +210,13 @@ def main(argv: list[str] | None = None) -> int:
                 stats_obj = script.exports_sync.stats()
                 if isinstance(stats_obj, dict):
                     stats = dict(stats_obj)
+                    out_path_obj = stats.get("out_path")
+                    if not isinstance(out_path_obj, str) or not out_path_obj.strip():
+                        failure.append("agent stats missing out_path")
+                    elif _normalized_path(Path(out_path_obj.strip())) != _normalized_path(raw_path):
+                        failure.append(
+                            f"agent out_path={out_path_obj.strip()!r} does not match expected {str(raw_path)!r}",
+                        )
             except Exception as exc:
                 print(f"[capture-host] agent stats unavailable: {exc}", file=sys.stderr, flush=True)
                 stats = {}
@@ -192,44 +233,37 @@ def main(argv: list[str] | None = None) -> int:
             signal.signal(signal.SIGINT, old_sigint)
             signal.signal(signal.SIGTERM, old_sigterm)
 
-    return _finalize_and_report(args, stats=stats, failure=failure, start_ts=start_ts)
+    return _finalize_and_report(
+        args,
+        raw_path=raw_path,
+        stats=stats,
+        failure=failure,
+        start_ts=start_ts,
+    )
 
 
 def _finalize_and_report(
     args: argparse.Namespace,
     *,
+    raw_path: Path,
     stats: dict[str, object],
     failure: list[str],
     start_ts: float,
 ) -> int:
-    raw_path = Path(args.raw_path) if args.raw_path is not None else None
-    if raw_path is None:
-        out_path_obj = stats.get("out_path")
-        if isinstance(out_path_obj, str) and out_path_obj.strip():
-            raw_path = Path(out_path_obj.strip())
-    if raw_path is None:
-        raw_path = _default_raw_capture_path()
-
-    print(f"[capture-host] finalizing raw={raw_path}", flush=True)
     last_exception = stats.get("last_exception")
     if isinstance(last_exception, dict) and last_exception:
         print(f"[capture-host] last_exception={last_exception}", flush=True)
+        failure.append(f"agent process exception: {last_exception}")
+    capture_failure = stats.get("capture_failure")
+    if isinstance(capture_failure, dict) and capture_failure:
+        failure.append(f"agent capture failure: {capture_failure}")
     last_hook = stats.get("last_hook")
     if isinstance(last_hook, dict) and last_hook:
         print(f"[capture-host] last_hook={last_hook}", flush=True)
-    try:
-        sealed_rows = seal_frida_jsonl_after_detach(raw_path)
-    except FridaFinalizeError as exc:
-        failure.append(f"capture sealing failed: {exc}")
-        sealed_rows = ()
-        sealing_failed = True
-    else:
-        sealing_failed = False
-        if sealed_rows:
-            print(f"[capture-host] sealed rows={','.join(sealed_rows)}", flush=True)
-    if sealing_failed:
+    if failure:
         result = None
     else:
+        print(f"[capture-host] finalizing raw={raw_path}", flush=True)
         try:
             result = finalize_frida_jsonl_to_traces(
                 raw_path,

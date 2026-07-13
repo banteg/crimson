@@ -55,7 +55,7 @@ from crimson.replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from crimson.sim.input_providers import RngBurnOperation
+from crimson.sim.input_providers import GameFrameRngAdvanceOperation
 from crimson.weapons import WeaponId
 
 
@@ -332,9 +332,9 @@ def _write_raw_trace(
             payload=msgspec.msgpack.encode(block_raw),
         )
         footer_raw = msgspec.to_builtins(
-                TraceFooter(
-                    tick_blocks=[block_index],
-                    tick_count=len(block_raw.get("ticks", [None])),
+            TraceFooter(
+                tick_blocks=[block_index],
+                tick_count=len(block_raw.get("ticks", [None])),
                 first_tick=int(block_raw["start_tick"]),
                 last_tick=int(block_raw["end_tick"]),
             ),
@@ -534,10 +534,7 @@ def test_trace_reader_rejects_integer_tokens_for_wire_f32_fields(
 
     health = summarize_trace_health(out_path)
     assert health["ok_for_parity_analysis"] is False
-    assert any(
-        f"{field} must be encoded as a msgpack float" in issue
-        for issue in _health_issues(health)
-    )
+    assert any(f"{field} must be encoded as a msgpack float" in issue for issue in _health_issues(health))
 
 
 def test_trace_reader_accepts_current_tagged_prelude_wire_map(tmp_path: Path) -> None:
@@ -545,15 +542,15 @@ def test_trace_reader_accepts_current_tagged_prelude_wire_map(tmp_path: Path) ->
     _set_wire_path(
         block_raw,
         ("ticks", 0, "channels", "replay_step", "prelude"),
-        [{"type": "rng_burn", "draws": 1}],
+        [{"type": "game_frame_rng_advance", "frames": 1}],
     )
     out_path = tmp_path / "tagged_prelude.cdt"
     _write_raw_trace(out_path, meta_raw=meta_raw, block_raw=block_raw)
 
     with TraceReader(out_path) as reader:
         operation = reader.all_ticks()[0].channels.replay_step.prelude[0]
-        assert isinstance(operation, RngBurnOperation)
-        assert operation.draws == 1
+        assert isinstance(operation, GameFrameRngAdvanceOperation)
+        assert operation.frames == 1
 
 
 @pytest.mark.parametrize(
@@ -599,10 +596,10 @@ def test_trace_reader_accepts_current_tagged_prelude_wire_map(tmp_path: Path) ->
             None,
             lambda raw: raw["ticks"][0]["channels"]["replay_step"].__setitem__(
                 "prelude",
-                [{"type": "rng_burn"}],
+                [{"type": "game_frame_rng_advance"}],
             ),
             None,
-            r"replay_step\.prelude\[0\] is missing field\(s\): draws",
+            r"replay_step\.prelude\[0\] is missing field\(s\): frames",
         ),
         (
             "command_unknown_tag",
@@ -791,10 +788,7 @@ def test_write_trace_rejects_producer_specific_checkpoint_heads(tmp_path: Path) 
 
 def test_trace_health_reports_exact_tick_spans_and_gaps(tmp_path: Path) -> None:
     tick_indices = [0, 1, 4, 5, 9]
-    rows = [
-        _row(tick_index=tick, elapsed_ms=tick * 16, score_xp=0)
-        for tick in tick_indices
-    ]
+    rows = [_row(tick_index=tick, elapsed_ms=tick * 16, score_xp=0) for tick in tick_indices]
     out_path = tmp_path / "gapped.cdt"
     _write_unchecked_trace(
         out_path,

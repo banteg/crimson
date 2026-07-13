@@ -682,7 +682,7 @@ test "crimson_info_replay_json exposes detailed replay info failures" {
         std.mem.indexOf(
             u8,
             out[0..required_len],
-            "\"message\":\"replay info failed: replay payload does not match format 15 msgpack schema\"",
+            "\"message\":\"replay info failed: replay payload does not match format 16 msgpack schema\"",
         ) != null,
     );
 }

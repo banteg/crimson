@@ -20,7 +20,7 @@ from ..sim.input_providers import ReplayPostludeOperation, ReplayPreludeOperatio
 from ..weapon_usage import WEAPON_USAGE_SLOT_COUNT
 from ..weapons import WeaponId
 
-REPLAY_FORMAT_VERSION = 15
+REPLAY_FORMAT_VERSION = 16
 
 WEAPON_USAGE_COUNT = WEAPON_USAGE_SLOT_COUNT
 
@@ -75,6 +75,7 @@ def input_flags_validation_error(flags: int) -> str | None:
     if value & AIM_SCHEME_PRESENT_FLAG and aim_scheme_value not in {0, 1, 2, 3, 4, 5, 7}:
         return "contain an invalid aim scheme"
     return None
+
 
 InputQuantization: TypeAlias = Literal["f32"]
 

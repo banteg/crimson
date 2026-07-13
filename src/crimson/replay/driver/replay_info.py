@@ -12,8 +12,8 @@ from ...perks.ids import PerkId, perk_display_name
 from ...replay import Replay
 from ...sim.hooks import TickResult
 from ...sim.input_providers import (
+    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
-    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -36,7 +36,7 @@ ReplayInfoCoreEventKind = Literal[
 ReplayInfoExtraEventKind = Literal[
     "creature_deaths",
     "perk_menu_open",
-    "rng_burn",
+    "game_frame_rng_advance",
     "typo_backspace",
     "typo_char",
     "typo_submit",
@@ -137,15 +137,15 @@ def _append_extra_replay_commands(
     if not include_extra_events:
         return
     for cmd in commands:
-        if isinstance(cmd, RngBurnOperation):
+        if isinstance(cmd, GameFrameRngAdvanceOperation):
             _append_event(
                 timeline,
                 tick_index=tick_index,
                 elapsed_ms=elapsed_ms,
-                kind="rng_burn",
+                kind="game_frame_rng_advance",
                 player_index=None,
-                detail=f"replay prelude burned {cmd.draws} RNG draw(s)",
-                data={"draws": cmd.draws},
+                detail=f"replay advanced {cmd.frames} native frame RNG side effect(s)",
+                data={"frames": cmd.frames},
                 player_filter=player_filter,
                 include_extra_events=True,
             )
@@ -396,7 +396,12 @@ def collect_replay_info(
     player_filter = _validate_player_filter(replay=replay, player_index=player_index)
     timeline: list[ReplayInfoTimelineEvent] = []
 
-    def _append_tick(tick_result: TickResult, *, after_players: list[PlayerState], before: list[_PlayerSnapshot]) -> None:
+    def _append_tick(
+        tick_result: TickResult,
+        *,
+        after_players: list[PlayerState],
+        before: list[_PlayerSnapshot],
+    ) -> None:
         source_tick = tick_result.source_tick
         tick = tick_result.payload
         after = _capture_snapshots(after_players)

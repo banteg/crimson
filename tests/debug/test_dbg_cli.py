@@ -23,10 +23,10 @@ def test_dbg_verify_reports_complete_current_format_matrix() -> None:
 
     assert result.exit_code == 0, result.output
     assert "trace_format_version=2" in result.output
-    assert "trace_schema_version=14" in result.output
-    assert "replay_format_version=15" in result.output
+    assert "trace_schema_version=15" in result.output
+    assert "replay_format_version=16" in result.output
     assert "checkpoint_format_version=5" in result.output
-    assert "frida_capture_format_version=21" in result.output
+    assert "frida_capture_format_version=22" in result.output
     assert "frida_evidence_format_version=2" in result.output
     assert "frida_runtime_version=17.15.4" in result.output
     assert "result=ok" in result.output
@@ -64,7 +64,7 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
     )
     assert health_result.exit_code == 0, health_result.output
     assert "trace_format_version=2" in health_result.output
-    assert "trace_schema_version=14" in health_result.output
+    assert "trace_schema_version=15" in health_result.output
     assert 'tick_spans=[{"end_tick": 2, "start_tick": 0, "tick_count": 3}]' in health_result.output
     assert "tick_gaps=[]" in health_result.output
     assert "replay_step_rows=3" in health_result.output

@@ -20,8 +20,10 @@ For original captures that boundary is:
 
 The session's most recent `crt_srand` argument is not sufficient. Menus and
 earlier startup work may already have consumed draws before gameplay begins.
-Frida therefore records `rng_state_at_run_setup`, and finalization stores that
-value as `ReplayHeader.seed`. Original captures always set
+Frida therefore records `rng_state_before_bootstrap`,
+`rng_state_after_bootstrap`, and `rng_bootstrap_calls`. Finalization requires
+the complete boundary to form an exact LCG chain and stores the before-state as
+`ReplayHeader.seed`. Original captures always set
 `ReplayHeader.preserve_bugs=true`; run settings are copied exactly instead of
 falling back to rewrite defaults.
 
@@ -86,7 +88,7 @@ deterministic.
 
 ## Current replay contract
 
-CRD replay format 15 is the only supported version. A `ReplayHeader` includes
+CRD replay format 16 is the only supported version. A `ReplayHeader` includes
 the run seed/state, mode, player count, status, quest settings, and optional
 initial creature-pool residue.
 The file envelope is exactly one zstd frame containing the typed msgpack replay;
@@ -100,15 +102,15 @@ Every `ReplayTick` carries:
 
 - `dt`: the exact finite, non-negative f32 delta
 - `inputs`: one f32-quantized packed input row per player
-- `prelude`: ordered `rng_burn`, `perk_menu_open`, and `perk_pick` operations
+- `prelude`: ordered `game_frame_rng_advance`, `perk_menu_open`, and `perk_pick` operations
   applied before simulation
 - `postlude`: ordered `perk_menu_open` operations applied after simulation while
   tick RNG tracing remains active
 - `commands`: Typ-o commands applied as part of the tick
 
-Frida capture format 19 writes the same five values in each raw tick's
+Frida capture format 22 writes the same five values in each raw tick's
 `channels.replay_step`. Finalization uses that channel to build the CRD sidecar,
-and CDT schema 14 preserves it for direct comparison with replay-recorded
+and CDT schema 15 preserves it for direct comparison with replay-recorded
 traces.
 
 There is no independent replay-input stream or inferred movement input.
@@ -134,9 +136,9 @@ inputs point at capture or replay-driving data.
 
 ## Latest-only policy
 
-- CRD loaders require replay format 15.
-- Frida finalization requires raw capture format 19.
-- CDT readers require container 2 and schema 14.
+- CRD loaders require replay format 16.
+- Frida finalization requires raw capture format 22.
+- CDT readers require container 2 and schema 15.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.
 

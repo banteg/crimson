@@ -463,7 +463,7 @@ fn infoJsonOutErrorDetail(err: anyerror) []const u8 {
 
 fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
+        error.InvalidMsgpack => "replay payload does not match format 16 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
@@ -471,12 +471,12 @@ fn replayCodecErrorDetail(err: replay_codec.ReplayCodecError) []const u8 {
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
         error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
-        error.UnsupportedEventShape => "replay tick operations do not match format 15",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 16",
+        error.UnsupportedEventShape => "replay tick operations do not match format 16",
         error.UnsupportedEventKind => "replay tick commands are invalid for this game mode",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 15",
+        error.UnknownCommandKind => "replay tick operations do not match format 16",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
         error.OutOfMemory => "native replay msgpack decode ran out of memory",
@@ -804,7 +804,7 @@ test "byte replay info returns detailed codec failure output" {
     try std.testing.expectEqual(@as(u8, 1), output.exit_code);
     try std.testing.expectEqualStrings("", output.stdout);
     try std.testing.expectEqualStrings(
-        "replay info failed: replay payload does not match format 15 msgpack schema\n",
+        "replay info failed: replay payload does not match format 16 msgpack schema\n",
         output.stderr,
     );
 }
@@ -857,7 +857,7 @@ test "byte replay info rejects negative player filter with CLI detail" {
 
 test "replay info exposes codec and collector detail helpers" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 15 msgpack schema",
+        "replay payload does not match format 16 msgpack schema",
         replayCodecErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -877,7 +877,7 @@ test "replay info exposes codec and collector detail helpers" {
         replayCodecErrorDetail(error.UnsupportedGameMode),
     );
     try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 15",
+        "replay tick operations do not match format 16",
         replayCodecErrorDetail(error.UnknownCommandKind),
     );
     try std.testing.expectEqualStrings(

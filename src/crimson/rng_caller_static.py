@@ -383,10 +383,11 @@ class RngCallerStatic(IntEnum):
     WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE = 0x00452CF1
     WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK = 0x00452CFA
 
+    GAME_FRAME_UPDATE_DISCARDED = 0x0040CAC7
+
     # Synthetic caller ids reserve the high range so they cannot be
     # mistaken for native return addresses from the main executable.
     REWRITE_JINXED_ACCIDENT_TARGET_PICK = 0xF1000001
-    REPLAY_PRELUDE_RNG_BURN = 0xF1000004
     REWRITE_STATS_MENU_EASTER_ROLL = 0xF1000006
     REWRITE_STATS_MENU_EASTER_TEXT_X = 0xF1000007
 

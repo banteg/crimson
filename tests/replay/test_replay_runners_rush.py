@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkPickCommand, RngBurnOperation
+from crimson.sim.input_providers import GameFrameRngAdvanceOperation, PerkPickCommand
 from tests.support.replay_runner_helpers import ReplayRngTraceRecorder, _blank_rush_replay, _run_verify_playback
 
 
@@ -35,14 +35,16 @@ def test_rush_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
-def test_rush_runner_rng_burn_prelude_shifts_rng_state() -> None:
+def test_rush_runner_game_frame_rng_advance_prelude_shifts_rng_state() -> None:
     _header, rec = _blank_rush_replay(ticks=3, seed=0x1234)
     replay = rec.finish()
 
     baseline = _run_verify_playback(replay)
     shifted_replay = msgspec.structs.replace(
         replay,
-        ticks=[msgspec.structs.replace(tick, prelude=[RngBurnOperation(draws=1)]) for tick in replay.ticks],
+        ticks=[
+            msgspec.structs.replace(tick, prelude=[GameFrameRngAdvanceOperation(frames=1)]) for tick in replay.ticks
+        ],
     )
     shifted = _run_verify_playback(shifted_replay)
     shifted_again = _run_verify_playback(shifted_replay)

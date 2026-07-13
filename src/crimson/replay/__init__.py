@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..sim.input_providers import RngBurnOperation
+from ..sim.input_providers import GameFrameRngAdvanceOperation
 from .codec import ReplayCodecError, dump_replay, dump_replay_file, load_replay, load_replay_file
 from .input_codec import pack_player_input, pack_tick_inputs, unpack_player_input, unpack_tick_inputs
 from .recorder import ReplayRecorder
@@ -52,7 +52,7 @@ __all__ = [
     "ReplayHeader",
     "ReplayRecorder",
     "ReplayTick",
-    "RngBurnOperation",
+    "GameFrameRngAdvanceOperation",
     "ReplayGameVersionError",
     "ReplayGameVersionWarning",
     "dump_replay",
