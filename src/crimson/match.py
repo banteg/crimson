@@ -1186,8 +1186,11 @@ def _mtime_ns(path: Path) -> int | None:
 
 
 class _ScratchIncludeResolver:
-    def __init__(self, match_root: Path) -> None:
-        self.include_dir = match_root / "include"
+    def __init__(self, match_root: Path, *, repo_root: Path = REPO_ROOT) -> None:
+        self.include_dirs = (
+            match_root / "include",
+            repo_root / "third_party" / "headers",
+        )
         self._direct_dependencies: dict[tuple[Path, bool], tuple[Path, ...]] = {}
 
     def direct_dependencies(self, including_path: Path, *, source: bool) -> tuple[Path, ...]:
@@ -1203,7 +1206,7 @@ class _ScratchIncludeResolver:
         seen: set[Path] = set()
         for match in LOCAL_INCLUDE_RE.finditer(text):
             include_name = Path(match.group(1).replace("\\", "/"))
-            candidates = [self.include_dir / include_name]
+            candidates = [include_dir / include_name for include_dir in self.include_dirs]
             if not source:
                 candidates.insert(0, including_path.parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)

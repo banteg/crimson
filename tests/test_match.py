@@ -401,14 +401,16 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
     match_root = tmp_path / "match"
     scratch = match_root / "scratches" / "foo"
     include = match_root / "include"
+    third_party = tmp_path / "third_party" / "headers"
     compiler = match_root / "compilers" / "msvc6.5" / "Bin"
     scratch.mkdir(parents=True)
     include.mkdir()
+    third_party.mkdir(parents=True)
     compiler.mkdir(parents=True)
     (scratch / "scratch.cpp").write_text('#include "outer.h"\n', encoding="utf-8")
     (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
     (include / "outer.h").write_text('#include "inner.h"\n', encoding="utf-8")
-    inner = include / "inner.h"
+    inner = third_party / "inner.h"
     inner.write_text("#define VALUE 1\n", encoding="utf-8")
     (match_root / "cl.sh").write_text("#!/bin/sh\n", encoding="utf-8")
     (compiler / "CL.EXE").write_bytes(b"compiler")
@@ -423,11 +425,11 @@ def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
         symbol=None,
         note="",
     )
-    resolver = _ScratchIncludeResolver(match_root)
+    resolver = _ScratchIncludeResolver(match_root, repo_root=tmp_path)
     before = _scratch_build_key(config, match_root, include_resolver=resolver)
     dependencies = {row[0] for row in before["dependencies"]}
     assert "include/outer.h" in dependencies
-    assert "include/inner.h" in dependencies
+    assert str(inner) in dependencies
     inner.write_text("#define VALUE 2\n", encoding="utf-8")
     after = _scratch_build_key(config, match_root, include_resolver=resolver)
     assert after != before
