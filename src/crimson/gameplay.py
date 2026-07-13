@@ -24,6 +24,7 @@ from .math_parity import (
     NATIVE_TAU,
     f32,
     x87_fpatan,
+    x87_pc24_add,
     x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sub,
@@ -996,7 +997,7 @@ def player_update(
                 swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
                 state.sfx_queue.append(weapon.reload_sound)
-                player.weapon.shot_cooldown = float(player.weapon.shot_cooldown) + 0.1
+                player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:
                 state.player_alt_weapon_swap_cooldown_ms = 0

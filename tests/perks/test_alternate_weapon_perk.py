@@ -6,6 +6,7 @@ from crimson.gameplay import (
     GameplayState,
     player_update,
 )
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.replay.driver.setup import reset_players
 from crimson.sim.input import PlayerInput
@@ -85,7 +86,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
 
     assert player.weapon.weapon_id == 1
     assert alt.weapon_id == 2
-    assert_float_close(player.weapon.shot_cooldown, 0.1)
+    assert player.weapon.shot_cooldown == f32(0.1)
 
 
 def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() -> None:
@@ -108,7 +109,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_move_to_cursor_mode() ->
 
     assert player.weapon.weapon_id == 1
     assert alt.weapon_id == 2
-    assert_float_close(player.weapon.shot_cooldown, 0.1)
+    assert player.weapon.shot_cooldown == f32(0.1)
 
 
 def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
@@ -180,6 +181,7 @@ def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     assert player.weapon.weapon_id == 2
     player_update(player, PlayerInput(reload_pressed=True), dt=0.05, state=state)
     assert player.weapon.weapon_id == 1
+    assert player.weapon.shot_cooldown == f32(0.1)
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
     for _ in range(3):
