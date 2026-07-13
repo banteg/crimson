@@ -34,16 +34,24 @@ so treat that as mixed-library ancestry rather than the primary compiler.
 
 ```sh
 MSVC_VER=msvc6.5
-CFLAGS="/O2 /G6 /W3 /GR-"
+CFLAGS="/O2 /GB /W3 /GR-"
 NOTE=branch-x87
 ```
 
-The current ranking is `msvc6.5`, then `msvc6.5pp`, then `msvc6.6`, with
-`msvc7.0` kept as a comparison profile. Both `msvc6.5` and `msvc6.5pp` produce
-100% matches for the checked-in smoke scratches plus representative
-x87/control-flow scratches in both images; the scratches do not distinguish
-those two profiles yet. Keep per-scratch overrides in `scratch.conf` while we
-calibrate broader coverage.
+The VC6 family and the blended `/GB` CPU schedule are supported by the current
+corpus. Switching the whole scratch set from `/G6` to `/GB` preserves every
+existing exact match and makes `player_start_reload`, `perk_select_random`, and
+`weapon_pick_random_available` exact as well. The reload function is a medium
+263-byte, 67-instruction calibration target with calls, stack arguments, x87
+operations, branches, and 28 audited references. `/GB` also improves most
+larger in-progress scratches.
+
+The compiler backend can still vary by object. `bonus_label_for_entry` is exact
+with `msvc6.5` and `msvc6.6`, but not `msvc6.5pp` or `msvc7.0`; it also rejects
+`/O1`, `/Od`, and `/Oy-`, supporting speed optimization and frame-pointer
+omission. `perk_select_random` instead requires the tested `msvc6.5pp` backend.
+Keep evidence-backed compiler overrides in `scratch.conf` while treating
+`msvc6.5 /O2 /GB` as the global starting profile.
 
 `tools/match/cl.sh` looks for the compiler in this order:
 
@@ -53,7 +61,8 @@ calibrate broader coverage.
 3. a sibling Snail Mail checkout at `../snail-mail/tools/match/compilers/$MSVC_VER/`
 
 decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
-`msvc7.0` archives. The current dashboard is generated with `msvc6.5`.
+`msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`; some
+scratches carry an evidence-backed compiler override.
 
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
@@ -96,7 +105,7 @@ SOURCE=scratch.cpp
 SYMBOL=probe
 END=0x00401156
 COMPILER=msvc6.5
-CFLAGS="/O2 /G6 /W3 /GR-"
+CFLAGS="/O2 /GB /W3 /GR-"
 ```
 
 Run one scratch:
@@ -122,6 +131,7 @@ Compare another compiler profile without editing scratches:
 ```sh
 uv run crimson match status --compiler msvc6.5pp
 uv run crimson match status --compiler msvc7.0
+uv run crimson match status --cflags "/O2 /G6 /W3 /GR-"
 ```
 
 Target function extents come from `analysis/ida/raw/<image>/functions.json`.
@@ -130,11 +140,10 @@ matched code bytes as a percentage of every manifest function extent, and then
 groups scratch rows under each tracked image. Pass `END` when the manifest
 extent includes unrelated code or misses a hand-curated boundary.
 
-Use `NOTE=smoke` for tiny plumbing checks. Treat compiler/settings calibration
-as provisional until it includes broader representative branches, calls, stack
-arguments, and x87 code from both images. For link-sensitive code, check `/MD`
-vs `/MT` first; `grim.dll`'s `MSVCRT.dll` import makes `/MD` the likely final
-link mode.
+Use `NOTE=smoke` for tiny plumbing checks. Treat compiler backend calibration
+as per-object evidence unless several representative functions establish a
+shared profile. For link-sensitive code, check `/MD` vs `/MT` first;
+`grim.dll`'s `MSVCRT.dll` import makes `/MD` the likely final link mode.
 
 ## No Fakematching
 

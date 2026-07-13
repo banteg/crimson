@@ -1087,7 +1087,7 @@ def run_match_dump(
 
 DEFAULT_SCRATCH_IMAGE = DEFAULT_IMAGE_NAME
 DEFAULT_SCRATCH_COMPILER = "msvc6.5"
-DEFAULT_SCRATCH_CFLAGS = "/O2 /G6 /W3 /GR-"
+DEFAULT_SCRATCH_CFLAGS = "/O2 /GB /W3 /GR-"
 
 
 @dataclass(frozen=True, slots=True)
