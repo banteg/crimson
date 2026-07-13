@@ -15,7 +15,7 @@ Parity status and known behavior deltas.
 - [Delta-time parity reference](delta-time.md)
 - [Parity audit 2026-06-12](audit-2026-06-12.md) - undocumented divergences found by decompile-vs-port audit
 
-## Known input helper difference
+## Known primary-input helper differences
 
 Native `input_primary_is_down` at `0x004460f0` is a pure held-state query that
 always checks mouse button 0 and the fire binding in both fixed player records;
@@ -24,3 +24,11 @@ configuration. The Python helper accepts a clamped one-to-four player count,
 checks only those supplied fire codes, and updates its shared pressed-state
 tracker. This is a port API generalization, not a literal recovery of the
 native helper.
+
+Native `input_primary_just_pressed` at `0x00446030` uses a query-driven global
+latch over those same three sources. Its first held query returns true, a
+second query returns false even in the same frame, and only a full release
+rearms it; an open console bypasses the query without touching the latch. The
+Python sentinel uses `_PressedState.pressed_cache`, so repeated queries within
+one frame return the cached edge result. Current callsites query once per
+frame, but the helper APIs are not semantically interchangeable.

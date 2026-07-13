@@ -339,9 +339,10 @@ for the field layout used by `sfx_entry_table` and `music_entry_table`.
 ### Input primary action (high confidence)
 
 - `FUN_00446030` -> `input_primary_just_pressed`
-  - Evidence: edge-detects a primary action by latching `DAT_00478e50`, checks mouse button
-    `(*DAT_0048083c + 0x58)(0)`, and scans per-player fire bindings at `player_fire_key` (stride
-    `0xd8`). Used across UI click/confirm paths and player fire/selection logic.
+  - Evidence: exact source gates on `console_open_flag`, then edge-detects mouse button 0 and
+    the `fire_key` field in both fixed 0x360-byte player records with `input_primary_latch`.
+    A held edge is returned only once and the latch clears after every source is released.
+    Used across UI click/confirm paths and player fire/selection logic.
 
 - `FUN_004460f0` -> `input_primary_is_down`
   - Evidence: exact source returns true while mouse button 0 or the `fire_key` field in either

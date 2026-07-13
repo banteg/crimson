@@ -3054,8 +3054,8 @@
     "program": "crimsonland.exe",
     "address": "0x00446030",
     "name": "input_primary_just_pressed",
-    "signature": "int input_primary_just_pressed(void)",
-    "comment": "edge-detect primary action (mouse button 0 or per-player fire key DAT_00490bec)"
+    "signature": "bool input_primary_just_pressed(void)",
+    "comment": "console-gated query latch over mouse button 0 and both fixed player-record fire bindings"
   },
   {
     "program": "crimsonland.exe",
