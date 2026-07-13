@@ -118,7 +118,7 @@ def main() -> int:
     by_pass_name: Counter[str] = Counter()
     by_type: Counter[int] = Counter()
 
-    hitbox_stats: dict[tuple[int, int], RunningStats] = defaultdict(RunningStats)  # (type_id, pass_id)
+    lifecycle_stage_stats: dict[tuple[int, int], RunningStats] = defaultdict(RunningStats)  # (type_id, pass_id)
 
     frame_mismatches = 0
     alpha_mismatches = 0
@@ -147,9 +147,9 @@ def main() -> int:
         if isinstance(pass_name, str):
             by_pass_name[pass_name] += 1
 
-        hitbox = _get_float(obj, "creature", "hitbox_size_f32")
-        if type_id is not None and pass_id is not None and hitbox is not None:
-            hitbox_stats[(type_id, pass_id)].add(hitbox)
+        lifecycle_stage = _get_float(obj, "creature", "lifecycle_stage_f32")
+        if type_id is not None and pass_id is not None and lifecycle_stage is not None:
+            lifecycle_stage_stats[(type_id, pass_id)].add(lifecycle_stage)
 
         frame_obs = _get_int(obj, "atlas", "frame")
         frame_pred = _get_int(obj, "predicted", "frame")
@@ -164,7 +164,7 @@ def main() -> int:
                         "pass_id": pass_id,
                         "frame_obs": frame_obs,
                         "frame_pred": frame_pred,
-                        "hitbox": hitbox,
+                        "lifecycle_stage": lifecycle_stage,
                     },
                 )
 
@@ -182,7 +182,7 @@ def main() -> int:
                         "pass_id": pass_id,
                         "alpha_obs": alpha_obs,
                         "alpha_pred": alpha_pred,
-                        "hitbox": hitbox,
+                        "lifecycle_stage": lifecycle_stage,
                     },
                 )
 
@@ -195,7 +195,7 @@ def main() -> int:
         per_pass[str(pass_id)] = {"events": count}
 
     per_type_pass: dict[str, Any] = {}
-    for (type_id, pass_id), stats in sorted(hitbox_stats.items()):
+    for (type_id, pass_id), stats in sorted(lifecycle_stage_stats.items()):
         key = f"type_{type_id}_pass_{pass_id}"
         per_type_pass[key] = {"lifecycle_stage": stats.as_dict()}
 

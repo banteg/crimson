@@ -27,11 +27,10 @@ tags:
   - sample-coverage/blocker reporting in divergence output.
 - Added capture telemetry:
   - secondary projectile spawn hooks and secondary sample capture.
-- Landed gameplay parity patch in `src/crimson/projectiles.py` for native-like secondary homing target semantics (active + hitbox sentinel behavior).
+- Landed gameplay parity patch in `src/crimson/projectiles.py` for native-like secondary homing target semantics (active + lifecycle-stage sentinel behavior).
 
 ### Outcome / Next Probe
 
 - Session closed when a new recording moved divergence to a later and different profile (`tick 3504` on next SHA), indicating this capture family had been exhausted.
 
 ---
-

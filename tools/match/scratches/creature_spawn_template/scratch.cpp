@@ -71,7 +71,7 @@ typedef union creature_spawn_template_locals_t {
         creature->collision_timer = 0.0f;                                                                                  \
         creature->active = 1;                                                                                              \
         creature->state_flag = 1;                                                                                          \
-        creature->hitbox_size = 16.0f;                                                                                     \
+        creature->lifecycle_stage = 16.0f;                                                                                     \
         creature->attack_cooldown = 0.0f;                                                                                  \
         creature->type_id = (child_type);                                                                                  \
         creature->move_speed = (child_speed);                                                                              \
@@ -186,7 +186,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     creature->active = 1;
     *(unsigned char *)&creature->force_target = 0;
     creature->state_flag = 1;
-    creature->hitbox_size = 16.0f;
+    creature->lifecycle_stage = 16.0f;
     creature->vel_y = 0.0f;
     random_heading_roll = crt_rand();
     creature->attack_cooldown = 0.0f;
@@ -234,7 +234,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->hitbox_size = 16.0f;
+            creature->lifecycle_stage = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 2.4f;
@@ -285,7 +285,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->hitbox_size = 16.0f;
+            creature->lifecycle_stage = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 3.8f;
@@ -339,7 +339,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 creature->collision_timer = 0.0f;
                 creature->active = 1;
                 creature->state_flag = 1;
-                creature->hitbox_size = 16.0f;
+                creature->lifecycle_stage = 16.0f;
                 creature->attack_cooldown = 0.0f;
                 creature->type_id = CREATURE_TYPE_LIZARD;
                 creature->move_speed = 2.4f;
@@ -395,7 +395,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     creature->active = 1;
                     creature->tint_a = 1.0f;
                     creature->state_flag = 1;
-                    creature->hitbox_size = 16.0f;
+                    creature->lifecycle_stage = 16.0f;
                     creature->attack_cooldown = 0.0f;
                     creature->type_id = CREATURE_TYPE_ALIEN;
                     creature->move_speed = 2.0f;
@@ -486,7 +486,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                         creature->collision_timer = 0.0f;
                         creature->active = 1;
                         creature->state_flag = 1;
-                        creature->hitbox_size = 16.0f;
+                        creature->lifecycle_stage = 16.0f;
                         creature->attack_cooldown = 0.0f;
                         creature->type_id = CREATURE_TYPE_ALIEN;
                         creature->move_speed = 4.0f;

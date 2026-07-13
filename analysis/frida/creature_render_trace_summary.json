@@ -17,7 +17,7 @@
   },
   "by_type_id_pass_id": {
     "type_2_pass_1": {
-      "hitbox_size": {
+      "lifecycle_stage": {
         "count": 60,
         "max": 15.799999237060547,
         "mean": 1.3999986052513123,
@@ -25,7 +25,7 @@
       }
     },
     "type_2_pass_5": {
-      "hitbox_size": {
+      "lifecycle_stage": {
         "count": 60,
         "max": 15.799999237060547,
         "mean": 1.3999986052513123,
@@ -33,7 +33,7 @@
       }
     },
     "type_3_pass_1": {
-      "hitbox_size": {
+      "lifecycle_stage": {
         "count": 24,
         "max": 15.799999237060547,
         "mean": 1.3999986052513123,
@@ -41,7 +41,7 @@
       }
     },
     "type_3_pass_5": {
-      "hitbox_size": {
+      "lifecycle_stage": {
         "count": 24,
         "max": 15.799999237060547,
         "mean": 1.3999986052513123,

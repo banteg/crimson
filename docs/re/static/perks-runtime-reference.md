@@ -565,7 +565,7 @@ Notes:
 
 ### Original
 
-- `perk_apply` (0x004055e0): applies health reduction, forces creature hitbox ramp, clears guard.
+- `perk_apply` (0x004055e0): applies health reduction, advances the creature lifecycle stage, clears guard.
 
 ### Rewrite
 

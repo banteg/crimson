@@ -46,7 +46,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
   creature_ptr->active = '\x01';
   *(undefined1 *)&(&creature_pool)[root_slot_idx].force_target = 0;
   (&creature_pool)[root_slot_idx].state_flag = '\x01';
-  (&creature_pool)[root_slot_idx].hitbox_size = 16.0;
+  (&creature_pool)[root_slot_idx].lifecycle_stage = 16.0;
   (&creature_pool)[root_slot_idx].vel_y = 0.0;
   random_heading_roll = crt_rand();
   (&creature_pool)[root_slot_idx].attack_cooldown = 0.0;
@@ -88,7 +88,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].collision_timer = 0.0;
       creature_ptr->active = '\x01';
       (&creature_pool)[iVar7].state_flag = '\x01';
-      (&creature_pool)[iVar7].hitbox_size = 16.0;
+      (&creature_pool)[iVar7].lifecycle_stage = 16.0;
       (&creature_pool)[iVar7].attack_cooldown = 0.0;
       (&creature_pool)[iVar7].type_id = 2;
       (&creature_pool)[iVar7].move_speed = 2.4;
@@ -139,7 +139,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
       (&creature_pool)[iVar7].collision_timer = 0.0;
       creature_ptr->active = '\x01';
       (&creature_pool)[iVar7].state_flag = '\x01';
-      (&creature_pool)[iVar7].hitbox_size = 16.0;
+      (&creature_pool)[iVar7].lifecycle_stage = 16.0;
       (&creature_pool)[iVar7].attack_cooldown = 0.0;
       (&creature_pool)[iVar7].type_id = 2;
       (&creature_pool)[iVar7].move_speed = 3.8;
@@ -196,7 +196,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
         (&creature_pool)[child_slot_idx].collision_timer = 0.0;
         creature_ptr->active = '\x01';
         (&creature_pool)[child_slot_idx].state_flag = '\x01';
-        (&creature_pool)[child_slot_idx].hitbox_size = 16.0;
+        (&creature_pool)[child_slot_idx].lifecycle_stage = 16.0;
         (&creature_pool)[child_slot_idx].attack_cooldown = 0.0;
         (&creature_pool)[child_slot_idx].type_id = 1;
         (&creature_pool)[child_slot_idx].move_speed = 2.4;
@@ -255,7 +255,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
               (&creature_pool)[iVar7].collision_timer = 0.0;
               creature_ptr->active = '\x01';
               (&creature_pool)[iVar7].state_flag = '\x01';
-              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].lifecycle_stage = 16.0;
               (&creature_pool)[iVar7].attack_cooldown = 0.0;
               (&creature_pool)[iVar7].type_id = 2;
               (&creature_pool)[iVar7].move_speed = 2.0;
@@ -314,7 +314,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
               (&creature_pool)[iVar7].collision_timer = 0.0;
               creature_ptr->active = '\x01';
               (&creature_pool)[iVar7].state_flag = '\x01';
-              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].lifecycle_stage = 16.0;
               (&creature_pool)[iVar7].attack_cooldown = 0.0;
               (&creature_pool)[iVar7].type_id = 2;
               (&creature_pool)[iVar7].move_speed = 2.0;
@@ -373,7 +373,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
               (&creature_pool)[iVar7].collision_timer = 0.0;
               creature_ptr->active = '\x01';
               (&creature_pool)[iVar7].state_flag = '\x01';
-              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].lifecycle_stage = 16.0;
               (&creature_pool)[iVar7].attack_cooldown = 0.0;
               (&creature_pool)[iVar7].type_id = 3;
               (&creature_pool)[iVar7].move_speed = 2.0;
@@ -432,7 +432,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
               (&creature_pool)[iVar7].collision_timer = 0.0;
               creature_ptr->active = '\x01';
               (&creature_pool)[iVar7].state_flag = '\x01';
-              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].lifecycle_stage = 16.0;
               (&creature_pool)[iVar7].attack_cooldown = 0.0;
               (&creature_pool)[iVar7].type_id = 1;
               (&creature_pool)[iVar7].move_speed = 2.0;
@@ -494,7 +494,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                   (&creature_pool)[iVar7].collision_timer = 0.0;
                   creature_ptr->active = '\x01';
                   (&creature_pool)[iVar7].state_flag = '\x01';
-                  (&creature_pool)[iVar7].hitbox_size = 16.0;
+                  (&creature_pool)[iVar7].lifecycle_stage = 16.0;
                   (&creature_pool)[iVar7].attack_cooldown = 0.0;
                   (&creature_pool)[iVar7].type_id = 2;
                   (&creature_pool)[iVar7].move_speed = 3.8;
@@ -629,7 +629,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
                   (&creature_pool)[iVar7].collision_timer = 0.0;
                   creature_ptr->active = '\x01';
                   (&creature_pool)[iVar7].state_flag = '\x01';
-                  (&creature_pool)[iVar7].hitbox_size = 16.0;
+                  (&creature_pool)[iVar7].lifecycle_stage = 16.0;
                   (&creature_pool)[iVar7].attack_cooldown = 0.0;
                   (&creature_pool)[iVar7].type_id = 2;
                   (&creature_pool)[iVar7].move_speed = 4.0;
@@ -1696,7 +1696,7 @@ void * creature_spawn_template(int template_id, float *pos, float heading)
         creature_ptr->active = '\x01';
         (&creature_pool)[child_slot_idx].tint_a = 1.0;
         (&creature_pool)[child_slot_idx].state_flag = '\x01';
-        (&creature_pool)[child_slot_idx].hitbox_size = 16.0;
+        (&creature_pool)[child_slot_idx].lifecycle_stage = 16.0;
         (&creature_pool)[child_slot_idx].attack_cooldown = 0.0;
         (&creature_pool)[child_slot_idx].type_id = 2;
         (&creature_pool)[child_slot_idx].move_speed = 2.0;

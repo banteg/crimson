@@ -79,7 +79,7 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       (&creature_pool)[split_clone_id].move_speed = (&creature_pool)[split_clone_id].move_speed + 0.1;
       (&creature_pool)[split_clone_id].contact_damage =
            (&creature_pool)[split_clone_id].contact_damage * 0.7;
-      (&creature_pool)[split_clone_id].hitbox_size = 16.0;
+      (&creature_pool)[split_clone_id].lifecycle_stage = 16.0;
       split_clone_id = creature_alloc_slot();
       copy_src_ptr = creature_ptr;
       copy_dst_ptr = &creature_pool + split_clone_id;
@@ -102,15 +102,15 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       (&creature_pool)[split_clone_id].move_speed = (&creature_pool)[split_clone_id].move_speed + 0.1;
       (&creature_pool)[split_clone_id].reward_value =
            (&creature_pool)[split_clone_id].reward_value * 0.6666667;
-      (&creature_pool)[split_clone_id].hitbox_size = 16.0;
+      (&creature_pool)[split_clone_id].lifecycle_stage = 16.0;
       (&creature_pool)[split_clone_id].contact_damage =
            (&creature_pool)[split_clone_id].contact_damage * 0.7;
       effect_spawn_burst(&(&creature_pool)[creature_id].pos_x,8);
     }
     /* Corpse policy: shrink lingering corpse or mark slot inactive immediately. */
     if (keep_corpse) {
-      (&creature_pool)[creature_id].hitbox_size =
-           (&creature_pool)[creature_id].hitbox_size - frame_dt;
+      (&creature_pool)[creature_id].lifecycle_stage =
+           (&creature_pool)[creature_id].lifecycle_stage - frame_dt;
     }
     else {
       creature_ptr->active = '\0';

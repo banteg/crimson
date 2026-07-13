@@ -224,7 +224,7 @@ LAB_004219f8:
                                  0.0);
                     }
                   }
-                  if ((&creature_pool)[iVar7].hitbox_size == 16.0) {
+                  if ((&creature_pool)[iVar7].lifecycle_stage == 16.0) {
                     _highscore_record_shots_hit = _highscore_record_shots_hit + 1;
                   }
                   iVar12 = perk_count_get(perk_id_bloody_mess_quick_learner);
@@ -628,7 +628,7 @@ LAB_00421d65:
         }
         iVar7 = creature_find_in_radius(pfVar13,8.0,0);
         if (iVar7 != -1) {
-          if ((&creature_pool)[iVar7].hitbox_size == 16.0) {
+          if ((&creature_pool)[iVar7].lifecycle_stage == 16.0) {
             _highscore_record_shots_hit = _highscore_record_shots_hit + 1;
           }
           if (bonus_freeze_timer <= 0.0) {

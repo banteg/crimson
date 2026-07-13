@@ -11,7 +11,7 @@ extern "C" int creature_find_nearest(float *pos, int exclude_id, float min_dist)
         creature_t *creature = creature_pool;
 
         do {
-            if (creature->active && creature->hitbox_size == 16.0f) {
+            if (creature->active && creature->lifecycle_stage == 16.0f) {
                 float dx = pos[0] - creature->pos_x;
                 float dy = pos[1] - creature->pos_y;
                 float distance = (float)sqrt(dx * dx + dy * dy);

@@ -12,7 +12,7 @@ Use it as a consistent naming scheme while preserving branch labels.
 
 - `local_7c` -> `creature_idx`
 - `pfVar14` -> `health_ptr`
-- `pfVar1` -> `hitbox_size_ptr`
+- `pfVar1` -> `lifecycle_stage_ptr`
 - `puVar2` -> `collision_flag_ptr`
 - `pfVar3` -> `attack_cooldown_ptr`
 - `piVar4` -> `target_player_ptr`

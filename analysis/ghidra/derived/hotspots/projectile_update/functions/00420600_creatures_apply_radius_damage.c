@@ -24,7 +24,7 @@ void creatures_apply_radius_damage(float *pos, float radius, float damage, int d
     if (((pcVar3->active != '\0') &&
         (fVar1 = pcVar3->pos_x - *pos, fVar2 = pcVar3->pos_y - pos[1],
         SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0)) &&
-       (5.0 < pcVar3->hitbox_size)) {
+       (5.0 < pcVar3->lifecycle_stage)) {
       creature_apply_damage(creature_id,damage,damage_type,local_8);
     }
     pcVar3 = pcVar3 + 1;

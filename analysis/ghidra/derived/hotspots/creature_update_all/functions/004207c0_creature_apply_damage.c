@@ -57,8 +57,8 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
     damage = damage * 1.2;
   }
   if ((&creature_pool)[creature_id].health <= 0.0) {
-    (&creature_pool)[creature_id].hitbox_size =
-         (&creature_pool)[creature_id].hitbox_size - frame_dt * 15.0;
+    (&creature_pool)[creature_id].lifecycle_stage =
+         (&creature_pool)[creature_id].lifecycle_stage - frame_dt * 15.0;
   }
   else {
     if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
@@ -69,8 +69,8 @@ int creature_apply_damage(int creature_id, float damage, int damage_type, float 
     (&creature_pool)[creature_id].vel_x = (&creature_pool)[creature_id].vel_x - *impulse;
     (&creature_pool)[creature_id].vel_y = (&creature_pool)[creature_id].vel_y - impulse[1];
     if ((&creature_pool)[creature_id].health <= 0.0) {
-      (&creature_pool)[creature_id].hitbox_size =
-           (&creature_pool)[creature_id].hitbox_size - frame_dt;
+      (&creature_pool)[creature_id].lifecycle_stage =
+           (&creature_pool)[creature_id].lifecycle_stage - frame_dt;
       creature_handle_death(creature_id,true);
       fVar1 = impulse[1];
       (&creature_pool)[creature_id].vel_x =

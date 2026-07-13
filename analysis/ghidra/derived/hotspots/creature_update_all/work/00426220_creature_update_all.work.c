@@ -11,7 +11,7 @@
 void creature_update_all(void)
 
 {
-  float *hitbox_size_ptr;
+  float *lifecycle_stage_ptr;
   uchar *collision_flag_ptr;
   float *attack_cooldown_ptr;
   int *target_player_ptr;
@@ -57,8 +57,8 @@ void creature_update_all(void)
         health_ptr = &(&creature_pool)[creature_idx].health;
         /* Flag-driven periodic damage (poison/self-harm lanes). */
         if (((&creature_pool)[creature_idx].health <= 0.0) &&
-           ((&creature_pool)[creature_idx].hitbox_size == 16.0)) {
-          (&creature_pool)[creature_idx].hitbox_size = (&creature_pool)[creature_idx].hitbox_size - frame_dt
+           ((&creature_pool)[creature_idx].lifecycle_stage == 16.0)) {
+          (&creature_pool)[creature_idx].lifecycle_stage = (&creature_pool)[creature_idx].lifecycle_stage - frame_dt
           ;
         }
         if (((&creature_pool)[creature_idx].flags & 2U) == 0) {
@@ -99,8 +99,8 @@ LAB_0042634c:
             }
           }
         }
-        if ((*health_ptr <= 0.0) && ((&creature_pool)[creature_idx].hitbox_size == 16.0)) {
-          (&creature_pool)[creature_idx].hitbox_size = (&creature_pool)[creature_idx].hitbox_size - frame_dt
+        if ((*health_ptr <= 0.0) && ((&creature_pool)[creature_idx].lifecycle_stage == 16.0)) {
+          (&creature_pool)[creature_idx].lifecycle_stage = (&creature_pool)[creature_idx].lifecycle_stage - frame_dt
           ;
         }
         /* Retarget logic: choose nearest live player and update player auto-target feedback. */
@@ -143,9 +143,9 @@ LAB_0042634c:
         if (*(float *)(player_state_table._pad0 + iVar9 + -0x14) <= 0.0) {
           *(char *)&(&creature_pool)[creature_idx].target_player = '\x01' - cVar10;
         }
-        hitbox_size_ptr = &(&creature_pool)[creature_idx].hitbox_size;
+        lifecycle_stage_ptr = &(&creature_pool)[creature_idx].lifecycle_stage;
         /* Active-body branch: collision pulses, AI target synthesis, movement, and attacks. */
-        if ((&creature_pool)[creature_idx].hitbox_size == 16.0) {
+        if ((&creature_pool)[creature_idx].lifecycle_stage == 16.0) {
           collision_flag_ptr = &(&creature_pool)[creature_idx].collision_flag;
           if ((&creature_pool)[creature_idx].collision_flag != '\0') {
             fVar17 = (&creature_pool)[creature_idx].collision_timer - frame_dt;
@@ -466,7 +466,7 @@ LAB_00426ac8:
                 else {
                   lVar13 = __ftol();
                   player_state_table.experience = (int)lVar13;
-                  *hitbox_size_ptr = *hitbox_size_ptr - frame_dt;
+                  *lifecycle_stage_ptr = *lifecycle_stage_ptr - frame_dt;
                 }
               }
               fx_queue_add_random(pfVar16);
@@ -552,17 +552,17 @@ LAB_0042733a:
             }
             if ((fVar17 < 30.0) && ((&creature_pool)[creature_idx].size <= 30.0)) {
               *health_ptr = 0.0;
-              *hitbox_size_ptr = *hitbox_size_ptr - frame_dt;
+              *lifecycle_stage_ptr = *lifecycle_stage_ptr - frame_dt;
             }
           }
         }
         /* Death/corpse branch: shrink, slide, spawn corpse FX, and eventually deactivate. */
-        else if (*hitbox_size_ptr <= 0.0) {
-          *hitbox_size_ptr = *hitbox_size_ptr - frame_dt * 20.0;
+        else if (*lifecycle_stage_ptr <= 0.0) {
+          *lifecycle_stage_ptr = *lifecycle_stage_ptr - frame_dt * 20.0;
         }
         else {
-          fVar17 = *hitbox_size_ptr - frame_dt * 28.0;
-          *hitbox_size_ptr = fVar17;
+          fVar17 = *lifecycle_stage_ptr - frame_dt * 28.0;
+          *lifecycle_stage_ptr = fVar17;
           if (0.0 < fVar17) {
             if ((((&creature_pool)[creature_idx].flags & 4U) == 0) ||
                (((&creature_pool)[creature_idx].flags & 0x40U) != 0)) {
@@ -606,7 +606,7 @@ LAB_0042733a:
               iVar7 = fx_queue_add_rotated
                                 (health_ptr,&(&creature_pool)[creature_idx].tint_r,fVar15,fVar17,iVar7);
               if ((char)iVar7 == '\0') {
-                *hitbox_size_ptr = 0.001;
+                *lifecycle_stage_ptr = 0.001;
                 goto LAB_004276d6;
               }
             }

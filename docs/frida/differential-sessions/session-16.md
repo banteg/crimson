@@ -18,7 +18,7 @@ tags:
 ### Key Findings
 
 - The `tick 4810` kill deficit (`kills 1041 expected vs 1040 rewrite`) tracked to creature slot `53`:
-  - capture shows `hp=0` at tick `4803` and corpse hitbox ramp crossing `<=0` at tick `4810`,
+  - capture shows `hp=0` at tick `4803` and the corpse lifecycle stage crossing `<=0` at tick `4810`,
   - no `creature_damage` or `creature_death` events were present at tick `4803`.
 - Ghidra decompile of `creature_update_all` shows a direct-contact kill path for small creatures:
   - when `dist_to_target < 30.0` and `size <= 30.0`, native sets `health = 0.0` and `lifecycle_stage -= frame_dt`,
@@ -41,4 +41,3 @@ tags:
 - Capture `999bd055` is now clean end-to-end (`4818/4818` ticks, no divergence).
 
 ---
-

@@ -197,8 +197,8 @@ class ParticlePool:
                 creature = creatures[creature_idx]
                 if not creature.active:
                     continue
-                # Native particle `creature_find_in_radius` is hitbox-gated, not
-                # HP-gated: freshly killed creatures (hp<=0, hitbox>5) can still
+                # Native particle `creature_find_in_radius` is lifecycle-gated,
+                # not HP-gated: freshly killed creatures (hp<=0, stage>5) can still
                 # receive same-tick style-0 damage callbacks.
                 if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
                     continue
@@ -345,8 +345,7 @@ class ParticlePool:
                         bounce_velocity = Vec2.from_angle(float(entry.angle)) * 82.0
                         speed_scale = f32(
                             float(
-                                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE)
-                                % 10,
+                                rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE) % 10,
                             )
                             * 0.1,
                         )
@@ -377,14 +376,10 @@ class ParticlePool:
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
                                 float(
-                                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X)
-                                    % 60
-                                    - 30,
+                                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X) % 60 - 30,
                                 ),
                                 float(
-                                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y)
-                                    % 60
-                                    - 30,
+                                    rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y) % 60 - 30,
                                 ),
                             )
                             sprite_effects.spawn(

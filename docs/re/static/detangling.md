@@ -578,7 +578,7 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 | `0x2a` | `DAT_0048706a` | Quest stage minor | Set from `quest_stage_minor` and used in quest high‑score path naming. |
 | `0x2b` | `DAT_0048706b` | Most‑used weapon id | Set to the max‑usage index in `DAT_0048708c` before save. |
 | `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `highscore_record_equals`. |
-| `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `highscore_record_equals`. |
+| `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (`lifecycle_stage == 16.0`); clamped to shots fired; compared in `highscore_record_equals`. |
 | `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
 | `0x38` | `DAT_00487078` | `uniNum` | Original `score_t::Reset` / `ResetLight` initializes this to `rand() & (16348 * 16348 - 1)`. |
 | `0x3c` | `DAT_0048707c` | Reserved | Original header names this dword `reserved`. The online submit path zeroes this dword in the 0x40-byte record copies (`highscore_record_pack_for_submit`), suggesting it is not required for leaderboard uploads. |

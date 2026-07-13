@@ -24260,7 +24260,7 @@ int creature_find_nearest(float *pos, int exclude_id, float min_dist)
     v7 = creature_pool;
     do
     {
-      if ( v7->active && LODWORD(v7->hitbox_size) == 1098907648 )
+      if ( v7->active && LODWORD(v7->lifecycle_stage) == 1098907648 )
       {
         v8 = pos[1] - v7->pos_y;
         v9 = *pos - v7->pos_x;
@@ -24578,7 +24578,7 @@ void creatures_apply_radius_damage(float *pos, float radius, float damage, int d
       v6 = v5->pos_x - *pos;
       v7 = v6 * v6;
       v8 = v5->pos_y - pos[1];
-      if ( v5->size * 0.14285715 + 3.0 > sqrt(v7 + v8 * v8) - radius && v5->hitbox_size > 5.0 )
+      if ( v5->size * 0.14285715 + 3.0 > sqrt(v7 + v8 * v8) - radius && v5->lifecycle_stage > 5.0 )
         creature_apply_damage(v4, damage, damage_type, impulse);
     }
     ++v5;
@@ -37554,7 +37554,7 @@ void *creature_spawn_template(int template_id, float *pos, float heading)
   v5->active = 1;
   LOBYTE(v5->force_target) = 0;
   v5->state_flag = 1;
-  v5->hitbox_size = 16.0;
+  v5->lifecycle_stage = 16.0;
   v5->vel_y = 0.0;
   v7 = crt_rand();
   v5->attack_cooldown = 0.0;
@@ -37593,7 +37593,7 @@ void *creature_spawn_template(int template_id, float *pos, float heading)
       v5->collision_timer = 0.0;
       v5->active = 1;
       v5->state_flag = 1;
-      v5->hitbox_size = 16.0;
+      v5->lifecycle_stage = 16.0;
       v5->attack_cooldown = 0.0;
       v5->type_id = 2;
       v5->move_speed = 2.4000001;
@@ -37644,7 +37644,7 @@ void *creature_spawn_template(int template_id, float *pos, float heading)
         v5->collision_timer = 0.0;
         v5->active = 1;
         v5->state_flag = 1;
-        v5->hitbox_size = 16.0;
+        v5->lifecycle_stage = 16.0;
         v5->attack_cooldown = 0.0;
         v5->type_id = 2;
         v5->move_speed = 3.8;
@@ -37701,7 +37701,7 @@ void *creature_spawn_template(int template_id, float *pos, float heading)
         v5->collision_timer = 0.0;
         v5->active = 1;
         v5->state_flag = 1;
-        v5->hitbox_size = 16.0;
+        v5->lifecycle_stage = 16.0;
         v5->attack_cooldown = 0.0;
         v5->type_id = 1;
         v5->move_speed = 2.4000001;
@@ -37771,7 +37771,7 @@ LABEL_14:
         v5->active = 1;
         v25[3] = 1065353216;
         v5->state_flag = 1;
-        v5->hitbox_size = 16.0;
+        v5->lifecycle_stage = 16.0;
         v5->attack_cooldown = 0.0;
         v5->type_id = 2;
         v5->move_speed = 2.0;
@@ -37828,7 +37828,7 @@ LABEL_14:
           v5->collision_timer = 0.0;
           v5->active = 1;
           v5->state_flag = 1;
-          v5->hitbox_size = 16.0;
+          v5->lifecycle_stage = 16.0;
           v5->attack_cooldown = 0.0;
           v5->type_id = 2;
           v5->move_speed = 2.0;
@@ -37885,7 +37885,7 @@ LABEL_14:
           v5->collision_timer = 0.0;
           v5->active = 1;
           v5->state_flag = 1;
-          v5->hitbox_size = 16.0;
+          v5->lifecycle_stage = 16.0;
           v5->attack_cooldown = 0.0;
           v5->type_id = 2;
           v5->move_speed = 2.0;
@@ -37942,7 +37942,7 @@ LABEL_14:
           v5->collision_timer = 0.0;
           v5->active = 1;
           v5->state_flag = 1;
-          v5->hitbox_size = 16.0;
+          v5->lifecycle_stage = 16.0;
           v5->attack_cooldown = 0.0;
           v5->type_id = 3;
           v5->move_speed = 2.0;
@@ -37999,7 +37999,7 @@ LABEL_14:
           v5->collision_timer = 0.0;
           v5->active = 1;
           v5->state_flag = 1;
-          v5->hitbox_size = 16.0;
+          v5->lifecycle_stage = 16.0;
           v5->attack_cooldown = 0.0;
           v5->type_id = 1;
           v5->move_speed = 2.0;
@@ -38077,7 +38077,7 @@ LABEL_14:
               v5->collision_timer = 0.0;
               v5->active = 1;
               v5->state_flag = 1;
-              v5->hitbox_size = 16.0;
+              v5->lifecycle_stage = 16.0;
               v5->attack_cooldown = 0.0;
               v5->type_id = 2;
               v5->move_speed = 3.8;
@@ -38207,7 +38207,7 @@ LABEL_14:
             v5->collision_timer = 0.0;
             v5->active = 1;
             v5->state_flag = 1;
-            v5->hitbox_size = 16.0;
+            v5->lifecycle_stage = 16.0;
             v5->attack_cooldown = 0.0;
             v5->type_id = 2;
             v5->move_speed = 4.0;

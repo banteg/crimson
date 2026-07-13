@@ -5,7 +5,7 @@
 /* byte_range: [645445, 646664) */
 /* creature_find_nearest @ 00420040 */
 
-/* returns nearest creature index; uses hitbox-size sentinel when exclude_id == -1 */
+/* returns nearest creature index; uses lifecycle-stage sentinel when exclude_id == -1 */
 
 int creature_find_nearest(float *pos, int exclude_id, float min_dist)
 
@@ -23,7 +23,7 @@ int creature_find_nearest(float *pos, int exclude_id, float min_dist)
     iVar5 = 0;
     pcVar4 = &creature_pool;
     do {
-      if (((pcVar4->active != '\0') && (pcVar4->hitbox_size == 16.0)) &&
+      if (((pcVar4->active != '\0') && (pcVar4->lifecycle_stage == 16.0)) &&
          (fVar2 = *pos - pcVar4->pos_x, fVar3 = pos[1] - pcVar4->pos_y,
          fVar2 = SQRT(fVar3 * fVar3 + fVar2 * fVar2), fVar2 < fVar1)) {
         iVar6 = iVar5;

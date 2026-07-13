@@ -3513,7 +3513,7 @@ function _readCreatureMicroState(index) {
   const flags = safeReadS32(base.add(0x8c));
   const linkIndex = safeReadS32(base.add(0x78));
   const targetPlayer = safeReadS32(base.add(0x70));
-  const hitboxSize = safeReadF32(base.add(0x10));
+  const lifecycleStage = safeReadF32(base.add(0x10));
   const hp = safeReadF32(base.add(0x24));
   const posX = safeReadF32(base.add(0x14));
   const posY = safeReadF32(base.add(0x18));
@@ -3581,7 +3581,7 @@ function _readCreatureMicroState(index) {
     flags: flags,
     link_index: linkIndex,
     target_player: targetPlayer,
-    lifecycle_stage: captureNumber(hitboxSize),
+    lifecycle_stage: captureNumber(lifecycleStage),
     hp: captureNumber(hp),
     force_target: forceTarget,
     ai7_timer_ms: ai7TimerMs,

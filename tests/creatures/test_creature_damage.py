@@ -135,7 +135,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     assert creature.hp == -131.92474365234375
 
 
-def test_nonlethal_damage_does_not_reset_non_alive_hitbox_size() -> None:
+def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
     creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
 
     killed = creature_apply_damage(

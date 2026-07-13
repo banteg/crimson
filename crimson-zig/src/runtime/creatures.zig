@@ -3702,15 +3702,15 @@ fn tickDead(
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
 ) void {
     if (!(dt > 0.0)) return;
-    const hitbox = narrowF32(creature.lifecycle_stage);
-    if (hitbox <= 0.0) {
-        creature.lifecycle_stage = narrowF32(hitbox - dt * 20.0);
+    const lifecycle_stage = narrowF32(creature.lifecycle_stage);
+    if (lifecycle_stage <= 0.0) {
+        creature.lifecycle_stage = narrowF32(lifecycle_stage - dt * 20.0);
         return;
     }
     const long_strip =
         (creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0 or
         (creature.flags & spawn_mod.CreatureFlags.anim_long_strip) != 0;
-    const next_lifecycle_stage = narrowF32(hitbox - dt * 28.0);
+    const next_lifecycle_stage = narrowF32(lifecycle_stage - dt * 28.0);
     creature.lifecycle_stage = narrowF32(next_lifecycle_stage);
     if (next_lifecycle_stage > 0.0) {
         if (long_strip) {

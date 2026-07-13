@@ -1676,7 +1676,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     assert len(state.effects.iter_active()) == 38
 
 
-def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> None:
+def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     pool = CreaturePool()

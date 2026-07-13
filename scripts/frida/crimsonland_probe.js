@@ -716,7 +716,7 @@ function readCreature(idx) {
     state_flag_u8: tryReadU8(b.add(0x08)),
     collision_flag_u8: tryReadU8(b.add(0x09)),
     collision_timer_f32: tryReadFloat(b.add(0x0c)),
-    hitbox_size_f32: tryReadFloat(b.add(0x10)),
+    lifecycle_stage_f32: tryReadFloat(b.add(0x10)),
     pos: [tryReadFloat(b.add(0x14)), tryReadFloat(b.add(0x18))],
     vel: [tryReadFloat(b.add(0x1c)), tryReadFloat(b.add(0x20))],
     health_f32: tryReadFloat(b.add(0x24)),

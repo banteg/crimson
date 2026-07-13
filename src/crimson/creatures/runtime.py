@@ -1586,18 +1586,22 @@ class CreaturePool:
             return
 
         dt_f32 = f32(float(dt))
-        hitbox = f32(float(creature.lifecycle_stage))
-        if hitbox <= 0.0:
-            creature.lifecycle_stage = f32(hitbox - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY))
+        lifecycle_stage = f32(float(creature.lifecycle_stage))
+        if lifecycle_stage <= 0.0:
+            creature.lifecycle_stage = f32(
+                lifecycle_stage - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY),
+            )
             return
 
         long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
             creature.flags & CreatureFlags.ANIM_LONG_STRIP
         ) != 0
 
-        new_hitbox = f32(hitbox - f32(float(dt_f32) * CREATURE_DEATH_TIMER_DECAY))
-        creature.lifecycle_stage = f32(new_hitbox)
-        if new_hitbox > 0.0:
+        next_lifecycle_stage = f32(
+            lifecycle_stage - f32(float(dt_f32) * CREATURE_DEATH_TIMER_DECAY),
+        )
+        creature.lifecycle_stage = f32(next_lifecycle_stage)
+        if next_lifecycle_stage > 0.0:
             if long_strip:
                 # Preserve native x87 operation order for the death-slide
                 # velocity: trig * lifecycle * frame_dt * 9, narrowing after
@@ -1605,13 +1609,13 @@ class CreaturePool:
                 radians = x87_pc24_sub(float(f32(creature.heading)), NATIVE_HALF_PI)
                 vel_x = x87_pc24_cos_mul(
                     radians,
-                    float(new_hitbox),
+                    float(next_lifecycle_stage),
                     float(dt_f32),
                     f32(CREATURE_DEATH_SLIDE_SCALE),
                 )
                 vel_y = x87_pc24_sin_mul(
                     radians,
-                    float(new_hitbox),
+                    float(next_lifecycle_stage),
                     float(dt_f32),
                     f32(CREATURE_DEATH_SLIDE_SCALE),
                 )

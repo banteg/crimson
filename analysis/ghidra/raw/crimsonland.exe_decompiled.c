@@ -3976,7 +3976,7 @@ void __cdecl perk_apply(int perk_id)
         pfVar4 = pfVar4 + 0xd8;
       } while (iVar6 != 0);
     }
-    pfVar4 = &creature_pool[0].hitbox_size;
+    pfVar4 = &creature_pool[0].lifecycle_stage;
     do {
       if (((creature_t *)(pfVar4 + -4))->active != '\0') {
         *pfVar4 = *pfVar4 - frame_dt;
@@ -4780,7 +4780,7 @@ void perks_update_effects(void)
       if (creature_pool[iVar2].active != '\0') {
         fVar7 = frame_dt * 20.0;
         creature_pool[iVar2].health = -1.0;
-        creature_pool[iVar2].hitbox_size = creature_pool[iVar2].hitbox_size - fVar7;
+        creature_pool[iVar2].lifecycle_stage = creature_pool[iVar2].lifecycle_stage - fVar7;
         lVar5 = __ftol();
         _player_experience = (int)lVar5;
         sfx_play_panned(sfx_trooper_inpain_01_alias_1);
@@ -5027,7 +5027,7 @@ LAB_00407611:
   iVar4 = crt_rand();
   creature_pool[iVar3].active = '\x01';
   *(undefined1 *)&creature_pool[iVar3].force_target = 0;
-  creature_pool[iVar3].hitbox_size = 16.0;
+  creature_pool[iVar3].lifecycle_stage = 16.0;
   creature_pool[iVar3].vel_x = 0.0;
   creature_pool[iVar3].vel_y = 0.0;
   creature_pool[iVar3].size = (float)(iVar4 % 0x14 + 0x2c);
@@ -14225,7 +14225,7 @@ void __cdecl creature_render_type(int type_id)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar6 = &creature_pool[0].hitbox_size;
+    pfVar6 = &creature_pool[0].lifecycle_stage;
     do {
       if ((((creature_t *)(pfVar6 + -4))->active != '\0') && (pfVar6[0x17] == fVar5)) {
         fVar5 = pfVar6[0x1f];
@@ -14433,7 +14433,7 @@ void __cdecl creature_render_type(int type_id)
   if (config_violence_disabled != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar6 = &creature_pool[0].hitbox_size;
+    pfVar6 = &creature_pool[0].lifecycle_stage;
     do {
       if (((((creature_t *)(pfVar6 + -4))->active != '\0') && (pfVar6[0x17] == fStack_38)) &&
          (0.0 < pfVar6[10])) {
@@ -14513,7 +14513,7 @@ void creature_render_all(void)
     (*grim_interface_ptr->vtable->grim_set_color)(0.0,0.0,0.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar2 = &creature_pool[0].hitbox_size;
+    pfVar2 = &creature_pool[0].lifecycle_stage;
     do {
       if (((creature_t *)(pfVar2 + -4))->active != '\0') {
         iVar1 = perk_count_get(perk_id_monster_vision);
@@ -17547,7 +17547,7 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
       creature_pool[iVar5].size = creature_pool[iVar5].size - 8.0;
       creature_pool[iVar5].move_speed = creature_pool[iVar5].move_speed + 0.1;
       creature_pool[iVar5].contact_damage = creature_pool[iVar5].contact_damage * 0.7;
-      creature_pool[iVar5].hitbox_size = 16.0;
+      creature_pool[iVar5].lifecycle_stage = 16.0;
       iVar5 = creature_alloc_slot();
       pcVar8 = pcVar1;
       pcVar9 = creature_pool + iVar5;
@@ -17569,12 +17569,12 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
       creature_pool[iVar5].size = creature_pool[iVar5].size - 8.0;
       creature_pool[iVar5].move_speed = creature_pool[iVar5].move_speed + 0.1;
       creature_pool[iVar5].reward_value = creature_pool[iVar5].reward_value * 0.6666667;
-      creature_pool[iVar5].hitbox_size = 16.0;
+      creature_pool[iVar5].lifecycle_stage = 16.0;
       creature_pool[iVar5].contact_damage = creature_pool[iVar5].contact_damage * 0.7;
       effect_spawn_burst(&creature_pool[creature_id].pos_x,8);
     }
     if (keep_corpse) {
-      creature_pool[creature_id].hitbox_size = creature_pool[creature_id].hitbox_size - frame_dt;
+      creature_pool[creature_id].lifecycle_stage = creature_pool[creature_id].lifecycle_stage - frame_dt;
     }
     else {
       pcVar1->active = '\0';
@@ -18705,7 +18705,7 @@ int __cdecl creature_find_nearest(float *pos,int exclude_id,float min_dist)
     iVar5 = 0;
     pcVar4 = creature_pool;
     do {
-      if (((pcVar4->active != '\0') && (pcVar4->hitbox_size == 16.0)) &&
+      if (((pcVar4->active != '\0') && (pcVar4->lifecycle_stage == 16.0)) &&
          (fVar2 = *pos - pcVar4->pos_x, fVar3 = pos[1] - pcVar4->pos_y,
          fVar2 = SQRT(fVar3 * fVar3 + fVar2 * fVar2), fVar2 < fVar1)) {
         iVar6 = iVar5;
@@ -19002,7 +19002,7 @@ void __cdecl creatures_apply_radius_damage(float *pos,float radius,float damage,
     if (((pcVar3->active != '\0') &&
         (fVar1 = pcVar3->pos_x - *pos, fVar2 = pcVar3->pos_y - pos[1],
         SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0)) &&
-       (5.0 < pcVar3->hitbox_size)) {
+       (5.0 < pcVar3->lifecycle_stage)) {
       creature_apply_damage(creature_id,damage,damage_type,local_8);
     }
     pcVar3 = pcVar3 + 1;
@@ -19031,7 +19031,7 @@ int __cdecl creature_find_in_radius(float *pos,float radius,int start_index)
         fVar1 = pcVar3->pos_x - *pos;
         fVar2 = pcVar3->pos_y - pos[1];
         if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0) {
-          if (5.0 < pcVar3->hitbox_size) {
+          if (5.0 < pcVar3->lifecycle_stage) {
             return start_index;
           }
         }
@@ -19132,8 +19132,8 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
     damage = damage * 1.2;
   }
   if (creature_pool[creature_id].health <= 0.0) {
-    creature_pool[creature_id].hitbox_size =
-         creature_pool[creature_id].hitbox_size - frame_dt * 15.0;
+    creature_pool[creature_id].lifecycle_stage =
+         creature_pool[creature_id].lifecycle_stage - frame_dt * 15.0;
   }
   else {
     if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
@@ -19144,7 +19144,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
     creature_pool[creature_id].vel_x = creature_pool[creature_id].vel_x - *impulse;
     creature_pool[creature_id].vel_y = creature_pool[creature_id].vel_y - impulse[1];
     if (creature_pool[creature_id].health <= 0.0) {
-      creature_pool[creature_id].hitbox_size = creature_pool[creature_id].hitbox_size - frame_dt;
+      creature_pool[creature_id].lifecycle_stage = creature_pool[creature_id].lifecycle_stage - frame_dt;
       creature_handle_death(creature_id,true);
       fVar1 = impulse[1];
       creature_pool[creature_id].vel_x = creature_pool[creature_id].vel_x - (*impulse + *impulse);
@@ -19413,7 +19413,7 @@ LAB_004219f8:
                                  0.0);
                     }
                   }
-                  if (creature_pool[iVar7].hitbox_size == 16.0) {
+                  if (creature_pool[iVar7].lifecycle_stage == 16.0) {
                     _highscore_record_shots_hit = _highscore_record_shots_hit + 1;
                   }
                   iVar12 = perk_count_get(perk_id_bloody_mess_quick_learner);
@@ -19817,7 +19817,7 @@ LAB_00421d65:
         }
         iVar7 = creature_find_in_radius(pfVar13,8.0,0);
         if (iVar7 != -1) {
-          if (creature_pool[iVar7].hitbox_size == 16.0) {
+          if (creature_pool[iVar7].lifecycle_stage == 16.0) {
             _highscore_record_shots_hit = _highscore_record_shots_hit + 1;
           }
           if (bonus_freeze_timer <= 0.0) {
@@ -21449,9 +21449,9 @@ void creature_update_all(void)
       }
       if (bonus_freeze_timer <= 0.0) {
         pfVar13 = &creature_pool[local_7c].health;
-        if ((creature_pool[local_7c].health <= 0.0) && (creature_pool[local_7c].hitbox_size == 16.0)
+        if ((creature_pool[local_7c].health <= 0.0) && (creature_pool[local_7c].lifecycle_stage == 16.0)
            ) {
-          creature_pool[local_7c].hitbox_size = creature_pool[local_7c].hitbox_size - frame_dt;
+          creature_pool[local_7c].lifecycle_stage = creature_pool[local_7c].lifecycle_stage - frame_dt;
         }
         if ((creature_pool[local_7c].flags & 2U) == 0) {
           if ((creature_pool[local_7c].flags & 1U) != 0) {
@@ -21490,8 +21490,8 @@ LAB_0042634c:
             }
           }
         }
-        if ((*pfVar13 <= 0.0) && (creature_pool[local_7c].hitbox_size == 16.0)) {
-          creature_pool[local_7c].hitbox_size = creature_pool[local_7c].hitbox_size - frame_dt;
+        if ((*pfVar13 <= 0.0) && (creature_pool[local_7c].lifecycle_stage == 16.0)) {
+          creature_pool[local_7c].lifecycle_stage = creature_pool[local_7c].lifecycle_stage - frame_dt;
         }
         cVar9 = (char)creature_pool[local_7c].target_player;
         iVar6 = (int)cVar9;
@@ -21529,8 +21529,8 @@ LAB_0042634c:
         if (*(float *)(&player_health + iVar8) <= 0.0) {
           *(char *)&creature_pool[local_7c].target_player = '\x01' - cVar9;
         }
-        pfVar1 = &creature_pool[local_7c].hitbox_size;
-        if (creature_pool[local_7c].hitbox_size == 16.0) {
+        pfVar1 = &creature_pool[local_7c].lifecycle_stage;
+        if (creature_pool[local_7c].lifecycle_stage == 16.0) {
           if (creature_pool[local_7c].collision_flag != '\0') {
             fVar16 = creature_pool[local_7c].collision_timer - frame_dt;
             creature_pool[local_7c].collision_timer = fVar16;
@@ -22407,7 +22407,7 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
   creature_pool[iVar3].active = '\x01';
   *(undefined1 *)&creature_pool[iVar3].force_target = 0;
   creature_pool[iVar3].state_flag = '\x01';
-  creature_pool[iVar3].hitbox_size = 16.0;
+  creature_pool[iVar3].lifecycle_stage = 16.0;
   fVar1 = (float)_survival_elapsed_ms;
   creature_pool[iVar3].vel_x = 0.0;
   creature_pool[iVar3].vel_y = 0.0;
@@ -27043,7 +27043,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
   pcVar10->active = '\x01';
   *(undefined1 *)&creature_pool[iVar6].force_target = 0;
   creature_pool[iVar6].state_flag = '\x01';
-  creature_pool[iVar6].hitbox_size = 16.0;
+  creature_pool[iVar6].lifecycle_stage = 16.0;
   creature_pool[iVar6].vel_y = 0.0;
   iVar7 = crt_rand();
   creature_pool[iVar6].attack_cooldown = 0.0;
@@ -27084,7 +27084,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
       creature_pool[iVar7].collision_timer = 0.0;
       pcVar10->active = '\x01';
       creature_pool[iVar7].state_flag = '\x01';
-      creature_pool[iVar7].hitbox_size = 16.0;
+      creature_pool[iVar7].lifecycle_stage = 16.0;
       creature_pool[iVar7].attack_cooldown = 0.0;
       creature_pool[iVar7].type_id = 2;
       creature_pool[iVar7].move_speed = 2.4;
@@ -27134,7 +27134,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
       creature_pool[iVar7].collision_timer = 0.0;
       pcVar10->active = '\x01';
       creature_pool[iVar7].state_flag = '\x01';
-      creature_pool[iVar7].hitbox_size = 16.0;
+      creature_pool[iVar7].lifecycle_stage = 16.0;
       creature_pool[iVar7].attack_cooldown = 0.0;
       creature_pool[iVar7].type_id = 2;
       creature_pool[iVar7].move_speed = 3.8;
@@ -27190,7 +27190,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
         creature_pool[iVar8].collision_timer = 0.0;
         pcVar10->active = '\x01';
         creature_pool[iVar8].state_flag = '\x01';
-        creature_pool[iVar8].hitbox_size = 16.0;
+        creature_pool[iVar8].lifecycle_stage = 16.0;
         creature_pool[iVar8].attack_cooldown = 0.0;
         creature_pool[iVar8].type_id = 1;
         creature_pool[iVar8].move_speed = 2.4;
@@ -27248,7 +27248,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               creature_pool[iVar7].collision_timer = 0.0;
               pcVar10->active = '\x01';
               creature_pool[iVar7].state_flag = '\x01';
-              creature_pool[iVar7].hitbox_size = 16.0;
+              creature_pool[iVar7].lifecycle_stage = 16.0;
               creature_pool[iVar7].attack_cooldown = 0.0;
               creature_pool[iVar7].type_id = 2;
               creature_pool[iVar7].move_speed = 2.0;
@@ -27307,7 +27307,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               creature_pool[iVar7].collision_timer = 0.0;
               pcVar10->active = '\x01';
               creature_pool[iVar7].state_flag = '\x01';
-              creature_pool[iVar7].hitbox_size = 16.0;
+              creature_pool[iVar7].lifecycle_stage = 16.0;
               creature_pool[iVar7].attack_cooldown = 0.0;
               creature_pool[iVar7].type_id = 2;
               creature_pool[iVar7].move_speed = 2.0;
@@ -27366,7 +27366,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               creature_pool[iVar7].collision_timer = 0.0;
               pcVar10->active = '\x01';
               creature_pool[iVar7].state_flag = '\x01';
-              creature_pool[iVar7].hitbox_size = 16.0;
+              creature_pool[iVar7].lifecycle_stage = 16.0;
               creature_pool[iVar7].attack_cooldown = 0.0;
               creature_pool[iVar7].type_id = 3;
               creature_pool[iVar7].move_speed = 2.0;
@@ -27425,7 +27425,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               creature_pool[iVar7].collision_timer = 0.0;
               pcVar10->active = '\x01';
               creature_pool[iVar7].state_flag = '\x01';
-              creature_pool[iVar7].hitbox_size = 16.0;
+              creature_pool[iVar7].lifecycle_stage = 16.0;
               creature_pool[iVar7].attack_cooldown = 0.0;
               creature_pool[iVar7].type_id = 1;
               creature_pool[iVar7].move_speed = 2.0;
@@ -27487,7 +27487,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                   creature_pool[iVar7].collision_timer = 0.0;
                   pcVar10->active = '\x01';
                   creature_pool[iVar7].state_flag = '\x01';
-                  creature_pool[iVar7].hitbox_size = 16.0;
+                  creature_pool[iVar7].lifecycle_stage = 16.0;
                   creature_pool[iVar7].attack_cooldown = 0.0;
                   creature_pool[iVar7].type_id = 2;
                   creature_pool[iVar7].move_speed = 3.8;
@@ -27621,7 +27621,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                   creature_pool[iVar7].collision_timer = 0.0;
                   pcVar10->active = '\x01';
                   creature_pool[iVar7].state_flag = '\x01';
-                  creature_pool[iVar7].hitbox_size = 16.0;
+                  creature_pool[iVar7].lifecycle_stage = 16.0;
                   creature_pool[iVar7].attack_cooldown = 0.0;
                   creature_pool[iVar7].type_id = 2;
                   creature_pool[iVar7].move_speed = 4.0;
@@ -28653,7 +28653,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
         pcVar10->active = '\x01';
         creature_pool[iVar8].tint_a = 1.0;
         creature_pool[iVar8].state_flag = '\x01';
-        creature_pool[iVar8].hitbox_size = 16.0;
+        creature_pool[iVar8].lifecycle_stage = 16.0;
         creature_pool[iVar8].attack_cooldown = 0.0;
         creature_pool[iVar8].type_id = 2;
         creature_pool[iVar8].move_speed = 2.0;
@@ -39501,7 +39501,7 @@ int __cdecl creature_spawn_tinted(float *pos,float *rgba,int type_id)
   creature_pool[iVar3].collision_timer = 0.0;
   creature_pool[iVar3].type_id = type_id;
   *(undefined1 *)&creature_pool[iVar3].force_target = 0;
-  creature_pool[iVar3].hitbox_size = 16.0;
+  creature_pool[iVar3].lifecycle_stage = 16.0;
   creature_pool[iVar3].health = 1.0;
   creature_pool[iVar3].vel_y = 0.0;
   iVar4 = crt_rand();
@@ -40211,7 +40211,7 @@ void typo_target_name_draw_labels(void)
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   text = &typo_target_name_table;
-  pfVar3 = &creature_pool[0].hitbox_size;
+  pfVar3 = &creature_pool[0].lifecycle_stage;
   do {
     if (((creature_t *)(pfVar3 + -4))->active != '\0') {
       iVar2 = (*grim_interface_ptr->vtable->grim_measure_text_width)(text);

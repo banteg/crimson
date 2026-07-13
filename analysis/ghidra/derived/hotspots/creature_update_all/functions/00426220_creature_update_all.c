@@ -55,8 +55,8 @@ void creature_update_all(void)
       if (bonus_freeze_timer <= 0.0) {
         pfVar13 = &(&creature_pool)[local_7c].health;
         if (((&creature_pool)[local_7c].health <= 0.0) &&
-           ((&creature_pool)[local_7c].hitbox_size == 16.0)) {
-          (&creature_pool)[local_7c].hitbox_size = (&creature_pool)[local_7c].hitbox_size - frame_dt
+           ((&creature_pool)[local_7c].lifecycle_stage == 16.0)) {
+          (&creature_pool)[local_7c].lifecycle_stage = (&creature_pool)[local_7c].lifecycle_stage - frame_dt
           ;
         }
         if (((&creature_pool)[local_7c].flags & 2U) == 0) {
@@ -96,8 +96,8 @@ LAB_0042634c:
             }
           }
         }
-        if ((*pfVar13 <= 0.0) && ((&creature_pool)[local_7c].hitbox_size == 16.0)) {
-          (&creature_pool)[local_7c].hitbox_size = (&creature_pool)[local_7c].hitbox_size - frame_dt
+        if ((*pfVar13 <= 0.0) && ((&creature_pool)[local_7c].lifecycle_stage == 16.0)) {
+          (&creature_pool)[local_7c].lifecycle_stage = (&creature_pool)[local_7c].lifecycle_stage - frame_dt
           ;
         }
         cVar9 = (char)(&creature_pool)[local_7c].target_player;
@@ -139,8 +139,8 @@ LAB_0042634c:
         if (*(float *)(player_state_table._pad0 + iVar8 + -0x14) <= 0.0) {
           *(char *)&(&creature_pool)[local_7c].target_player = '\x01' - cVar9;
         }
-        pfVar1 = &(&creature_pool)[local_7c].hitbox_size;
-        if ((&creature_pool)[local_7c].hitbox_size == 16.0) {
+        pfVar1 = &(&creature_pool)[local_7c].lifecycle_stage;
+        if ((&creature_pool)[local_7c].lifecycle_stage == 16.0) {
           if ((&creature_pool)[local_7c].collision_flag != '\0') {
             fVar16 = (&creature_pool)[local_7c].collision_timer - frame_dt;
             (&creature_pool)[local_7c].collision_timer = fVar16;

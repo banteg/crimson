@@ -13,7 +13,7 @@ int creature_find_in_radius(float *pos, float radius, int start_index)
                         (creature->pos_x - pos[0]) * (creature->pos_x - pos[0])
                         + (creature->pos_y - pos[1]) * (creature->pos_y - pos[1])
                     ) - radius < creature->size * 0.14285715f + 3.0f) {
-                    if (creature->hitbox_size > 5.0f) {
+                    if (creature->lifecycle_stage > 5.0f) {
                         return start_index;
                     }
                 }

@@ -21,7 +21,7 @@ extern "C" int creature_spawn(float *pos, float *tint_rgba, int type_id)
     creature_pool[slot_id].active = 1;
     creature_pool[slot_id].force_target = 0;
     creature_pool[slot_id].state_flag = 1;
-    creature_pool[slot_id].hitbox_size = 16.0f;
+    creature_pool[slot_id].lifecycle_stage = 16.0f;
     creature_pool[slot_id].vel_x = locals.f[0];
     creature_pool[slot_id].vel_y = locals.f[1];
     creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;

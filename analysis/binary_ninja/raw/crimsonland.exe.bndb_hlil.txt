@@ -27711,7 +27711,7 @@ Sections:
 
 00420034                                                              90 90 90 90 90 90 90 90 90 90 90 90                      ............
 
-00420040  // returns nearest creature index; uses hitbox-size sentinel when exclude_id ==
+00420040  // returns nearest creature index; uses lifecycle-stage sentinel when exclude_id ==
 00420040  // -1
 00420040  
 00420040    int32_t creature_find_nearest(float* pos, int32_t exclude_id, float min_dist)
@@ -112890,7 +112890,7 @@ Sections:
 0049bf41     00 00 00                                                                                       ...
 0049bf44  // Creature collision timer (creature_pool + 0x0c).
 0049bf44              00 00 00 00                                                                              ....
-0049bf48  // Creature hitbox size sentinel (creature_pool + 0x10).
+0049bf48  // Creature lifecycle stage sentinel (creature_pool + 0x10).
 0049bf48                          00 00 00 00                                                                      ....
 0049bf4c  // Creature position X (creature_pool + 0x14).
 0049bf4c                                      00 00 00 00                                                              ....

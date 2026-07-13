@@ -105,7 +105,7 @@ const SIZES = {
 
 const OFF = {
   creature_active_u8: 0x00,
-  creature_hitbox_size_f32: 0x10,
+  creature_lifecycle_stage_f32: 0x10,
   creature_pos_x_f32: 0x14,
   creature_pos_y_f32: 0x18,
   creature_health_f32: 0x24,
@@ -210,7 +210,7 @@ function readCreature(poolBase, idx) {
     active_u8: safeReadU8(b.add(OFF.creature_active_u8)),
     type_id_s32: safeReadS32(b.add(OFF.creature_type_id_s32)),
     flags_u32: safeReadU32(b.add(OFF.creature_flags_u32)),
-    hitbox_size_f32: safeReadF32(b.add(OFF.creature_hitbox_size_f32)),
+    lifecycle_stage_f32: safeReadF32(b.add(OFF.creature_lifecycle_stage_f32)),
     pos_x_f32: safeReadF32(b.add(OFF.creature_pos_x_f32)),
     pos_y_f32: safeReadF32(b.add(OFF.creature_pos_y_f32)),
     size_f32: safeReadF32(b.add(OFF.creature_size_f32)),
@@ -256,7 +256,7 @@ function predictFrameAndAlpha({ passId, creature, typeInfo }) {
   if (!creature || !typeInfo) return null;
   const flags = creature.flags_u32 >>> 0;
   const longStrip = creatureAnimIsLongStrip(flags);
-  const hitbox = creature.hitbox_size_f32;
+  const lifecycleStage = creature.lifecycle_stage_f32;
   const phase = creature.anim_phase_f32;
   const tintA = creature.tint_a_f32;
   const baseFrame = typeInfo.base_frame_s32;
@@ -272,19 +272,19 @@ function predictFrameAndAlpha({ passId, creature, typeInfo }) {
   }
 
   if (longStrip) {
-    if (hitbox == null) return null;
-    if (hitbox >= 16.0) {
+    if (lifecycleStage == null) return null;
+    if (lifecycleStage >= 16.0) {
       if (phase == null) return null;
       frame = (phase + 0.5) | 0;
       if (mirrorFlag && frame > 0x0f) frame = 0x1f - frame;
-    } else if (hitbox >= 0.0) {
+    } else if (lifecycleStage >= 0.0) {
       if (baseFrame == null) return null;
-      frame = ((baseFrame + 0x0f) - hitbox) | 0;
+      frame = ((baseFrame + 0x0f) - lifecycleStage) | 0;
     } else {
       if (baseFrame == null) return null;
       frame = (baseFrame + 0x0f) | 0;
       if (alpha != null) {
-        alpha += hitbox * (passId === 1 ? 0.5 : 0.1);
+        alpha += lifecycleStage * (passId === 1 ? 0.5 : 0.1);
         if (alpha < 0.0) alpha = 0.0;
       }
     }
@@ -294,16 +294,16 @@ function predictFrameAndAlpha({ passId, creature, typeInfo }) {
     const idx = pingPongIdx(phase);
     if (idx == null) return null;
     frame = (baseFrame + 0x10 + idx) | 0;
-    if (hitbox != null && hitbox < 0.0 && alpha != null) {
-      alpha += hitbox * 0.1;
+    if (lifecycleStage != null && lifecycleStage < 0.0 && alpha != null) {
+      alpha += lifecycleStage * 0.1;
       if (alpha < 0.0) alpha = 0.0;
     }
   }
 
-  if (passId === 5 && hitbox != null && hitbox < 0.0 && alpha != null) {
+  if (passId === 5 && lifecycleStage != null && lifecycleStage < 0.0 && alpha != null) {
     // Main-pass corpse fade always uses lifecycle_stage * 0.1 (for both strip modes).
     // Long-strip corpse uses 0.5 only in the shadow pass.
-    alpha = (tintA != null ? tintA : alpha) + hitbox * 0.1;
+    alpha = (tintA != null ? tintA : alpha) + lifecycleStage * 0.1;
     if (alpha < 0.0) alpha = 0.0;
   }
 
@@ -338,7 +338,7 @@ function findCreatureForDraw(poolBase, typeId, passId, quad, camera) {
     const c = readCreature(poolBase, idx);
     if (!c || !c.active_u8) continue;
     if (c.type_id_s32 !== typeId) continue;
-    if (CONFIG.onlyDying && !(c.hitbox_size_f32 < 16.0)) continue;
+    if (CONFIG.onlyDying && !(c.lifecycle_stage_f32 < 16.0)) continue;
 
     const exp = expectedDrawQuad(passId, c, camera);
     if (!exp) continue;
@@ -548,4 +548,3 @@ function main() {
 }
 
 setImmediate(main);
-

@@ -173,7 +173,7 @@ tags:
 ### Key Findings
 
 - Replay previously carried only a subset of lifecycle `added_head` fields (`heading/target_heading/ai_mode/link_index`).
-- Extending conversion+replay application to include full `added_head` row state (`pos/hp/hitbox/orbit/flags/type_id`) is structurally required for parity across capture families, even though it does not move this specific frontier.
+- Extending conversion+replay application to include full `added_head` row state (`pos/hp/lifecycle_stage/orbit/flags/type_id`) is structurally required for parity across capture families, even though it does not move this specific frontier.
 - `quest_1_8` remains stable at `tick 9760` after the full-field patch.
 - Focused quest probes show the same dominant profile:
   - slot `0` branch split near `tick 9694`,
@@ -188,7 +188,7 @@ tags:
   - expanded emitted quest `added_head` payload rows to carry optional `pos/hp/lifecycle_stage/orbit_angle/orbit_radius/flags/type_id`.
 - `src/crimson/sim/driver/replay_events.py`
   - switched quest `creature_spawn` replay handling to full-row parser,
-  - applied full optional `added_head` overrides to active creature entries (`pos/heading/target_heading/ai_mode/link_index/hp/hitbox/orbit/flags/type_id`).
+  - applied full optional `added_head` overrides to active creature entries (`pos/heading/target_heading/ai_mode/link_index/hp/lifecycle_stage/orbit/flags/type_id`).
 - Tests:
   - `tests/test_original_capture_conversion.py`
   - `tests/test_replay_runners.py`
@@ -288,4 +288,3 @@ tags:
   - dominant caller clusters near first sustained mismatch.
 
 ---
-

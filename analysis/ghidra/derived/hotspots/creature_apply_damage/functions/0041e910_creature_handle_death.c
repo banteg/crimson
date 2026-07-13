@@ -70,7 +70,7 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       (&creature_pool)[iVar5].size = (&creature_pool)[iVar5].size - 8.0;
       (&creature_pool)[iVar5].move_speed = (&creature_pool)[iVar5].move_speed + 0.1;
       (&creature_pool)[iVar5].contact_damage = (&creature_pool)[iVar5].contact_damage * 0.7;
-      (&creature_pool)[iVar5].hitbox_size = 16.0;
+      (&creature_pool)[iVar5].lifecycle_stage = 16.0;
       iVar5 = creature_alloc_slot();
       pcVar8 = pcVar1;
       pcVar9 = &creature_pool + iVar5;
@@ -92,13 +92,13 @@ void creature_handle_death(int creature_id, bool keep_corpse)
       (&creature_pool)[iVar5].size = (&creature_pool)[iVar5].size - 8.0;
       (&creature_pool)[iVar5].move_speed = (&creature_pool)[iVar5].move_speed + 0.1;
       (&creature_pool)[iVar5].reward_value = (&creature_pool)[iVar5].reward_value * 0.6666667;
-      (&creature_pool)[iVar5].hitbox_size = 16.0;
+      (&creature_pool)[iVar5].lifecycle_stage = 16.0;
       (&creature_pool)[iVar5].contact_damage = (&creature_pool)[iVar5].contact_damage * 0.7;
       effect_spawn_burst(&(&creature_pool)[creature_id].pos_x,8);
     }
     if (keep_corpse) {
-      (&creature_pool)[creature_id].hitbox_size =
-           (&creature_pool)[creature_id].hitbox_size - frame_dt;
+      (&creature_pool)[creature_id].lifecycle_stage =
+           (&creature_pool)[creature_id].lifecycle_stage - frame_dt;
     }
     else {
       pcVar1->active = '\0';

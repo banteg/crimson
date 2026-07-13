@@ -328,7 +328,7 @@ typedef struct creature_t {
     unsigned char collision_flag;
     unsigned char _pad1[2];
     float collision_timer;
-    float hitbox_size;
+    float lifecycle_stage;
     float pos_x;
     float pos_y;
     float vel_x;

@@ -21,7 +21,7 @@ int creature_find_in_radius(float *pos, float radius, int start_index)
         fVar1 = pcVar3->pos_x - *pos;
         fVar2 = pcVar3->pos_y - pos[1];
         if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0) {
-          if (5.0 < pcVar3->hitbox_size) {
+          if (5.0 < pcVar3->lifecycle_stage) {
             return start_index;
           }
         }
