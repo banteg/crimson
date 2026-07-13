@@ -5,7 +5,7 @@ import math
 import pytest
 
 from crimson.gameplay import GameplayState
-from crimson.math_parity import NATIVE_HALF_PI, f32
+from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_sub
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -46,18 +46,18 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     # Native heading: f32(atan2(pos - aim) - half_pi); one ulp below f32 pi/2
     # for a horizontal shot.
     shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
-    spread_small = math.pi / 10.0
-    spread_large = math.pi / 6.0
+    spread_small = f32(0.31415927)
+    spread_large = f32(0.5235988)
     expected = (
-        (shot_angle - spread_small, int(ProjectileTemplateId.PLASMA_RIFLE)),
-        (shot_angle - spread_large, int(ProjectileTemplateId.PLASMA_MINIGUN)),
+        (x87_pc24_sub(shot_angle, spread_small), int(ProjectileTemplateId.PLASMA_RIFLE)),
+        (x87_pc24_sub(shot_angle, spread_large), int(ProjectileTemplateId.PLASMA_MINIGUN)),
         (shot_angle, int(ProjectileTemplateId.PLASMA_RIFLE)),
-        (shot_angle + spread_large, int(ProjectileTemplateId.PLASMA_MINIGUN)),
-        (shot_angle + spread_small, int(ProjectileTemplateId.PLASMA_RIFLE)),
+        (x87_pc24_add(shot_angle, spread_large), int(ProjectileTemplateId.PLASMA_MINIGUN)),
+        (x87_pc24_add(shot_angle, spread_small), int(ProjectileTemplateId.PLASMA_RIFLE)),
     )
     for proj, (angle, type_id) in zip(spawned, expected, strict=True):
         assert int(getattr(proj, "type_id", -1)) == type_id
-        assert_float_close(float(getattr(proj, "angle", 0.0)), float(f32(angle)))
+        assert float(getattr(proj, "angle", 0.0)) == angle
 
 
 def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:

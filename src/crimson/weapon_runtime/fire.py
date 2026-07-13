@@ -438,19 +438,19 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         case MultiPlasmaFanMode():
             # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
             shot_count = 5
-            spread_small = math.pi / 10
-            spread_large = math.pi / 6
+            spread_small = f32(0.31415927)
+            spread_large = f32(0.5235988)
             patterns: tuple[tuple[float, ProjectileTemplateId], ...] = (
-                (-spread_small, ProjectileTemplateId.PLASMA_RIFLE),
-                (-spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
-                (0.0, ProjectileTemplateId.PLASMA_RIFLE),
-                (spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
-                (spread_small, ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_sub(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_sub(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
+                (shot_angle, ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_add(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
+                (x87_pc24_add(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
             )
-            for angle_offset, type_id in patterns:
+            for angle, type_id in patterns:
                 state.projectiles.spawn(
                     pos=muzzle,
-                    angle=shot_angle + angle_offset,
+                    angle=angle,
                     type_id=type_id,
                     owner=projectile_owner,
                     travel_budget=travel_budget_for_type_id(type_id),

@@ -588,13 +588,13 @@ fn tryFireWeaponWithForce(
         },
         .multi_plasma_fan => {
             shot_count = 5;
-            const spread_small = std.math.pi / 10.0;
-            const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            const spread_small: f32 = 0.31415927;
+            const spread_large: f32 = 0.5235988;
+            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
         },
         .swarmer_dump => {
             // Native spawns one rocket per integer counter step below the float
@@ -1833,24 +1833,24 @@ test "multi plasma fires five projectiles with fixed spread profile" {
     try std.testing.expectEqual(@as(i32, 5), state.weapon_shots_fired[0][10]);
 
     const shot_angle = std.math.pi / 2.0;
-    const spread_small = std.math.pi / 10.0;
-    const spread_large = std.math.pi / 6.0;
+    const spread_small: f32 = 0.31415927;
+    const spread_large: f32 = 0.5235988;
     const expected = [_]struct {
         angle: f32,
         type_id: i32,
     }{
-        .{ .angle = shot_angle - spread_small, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
-        .{ .angle = shot_angle - spread_large, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
+        .{ .angle = native_math.pc24Sub(shot_angle, spread_small), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
+        .{ .angle = native_math.pc24Sub(shot_angle, spread_large), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
         .{ .angle = shot_angle, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
-        .{ .angle = shot_angle + spread_large, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
-        .{ .angle = shot_angle + spread_small, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
+        .{ .angle = native_math.pc24Add(shot_angle, spread_large), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
+        .{ .angle = native_math.pc24Add(shot_angle, spread_small), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
     };
 
     for (expected, 0..) |entry, idx| {
         const proj = projectiles.entries[idx];
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(entry.type_id, proj.type_id);
-        try expectFloatClose(entry.angle, proj.angle);
+        try std.testing.expectEqual(entry.angle, proj.angle);
     }
 }
 
