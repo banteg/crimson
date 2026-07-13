@@ -181,6 +181,7 @@ extern unsigned char survival_reward_damage_seen;
 extern unsigned char creatures_any_active_flag;
 extern unsigned char demo_mode_active;
 extern int highscore_record_shots_fired;
+extern int creature_spawned_count;
 extern int shock_chain_links_left;
 extern int shock_chain_projectile_id;
 extern int camera_shake_pulses;
@@ -240,6 +241,7 @@ typedef struct cvar_float_t {
 } cvar_float_t;
 
 extern cvar_float_t *cv_friendlyFire;
+extern cvar_float_t *cv_verbose;
 
 extern char console_log_queue;
 extern char s_Unhandled_creatureType__00477758[];
