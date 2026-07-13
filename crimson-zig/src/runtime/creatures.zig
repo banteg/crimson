@@ -3705,12 +3705,7 @@ fn tickDead(
     creature.lifecycle_stage = narrowF32(next_lifecycle_stage);
     if (next_lifecycle_stage > 0.0) {
         if (long_strip) {
-            const slide = narrowF32(next_lifecycle_stage * dt * 9.0);
-            const direction = headingDirectionF32(creature.heading);
-            creature.vel = .{
-                .x = narrowF32(direction.x * slide),
-                .y = narrowF32(direction.y * slide),
-            };
+            creature.vel = deathSlideVelocityF32(creature.heading, next_lifecycle_stage, dt);
             creature.pos = .{
                 .x = narrowF32(creature.pos.x - creature.vel.x),
                 .y = narrowF32(creature.pos.y - creature.vel.y),
@@ -3777,12 +3772,35 @@ fn applySelfDamageTickToDead(
     }
 }
 
-fn headingDirectionF32(heading: f32) state_mod.Vec2 {
-    const radians = heading - native_half_pi;
+fn deathSlideVelocityF32(heading: f32, lifecycle_stage: f32, dt: f32) state_mod.Vec2 {
+    const radians = native_math.pc24Sub(heading, native_half_pi);
     return .{
-        .x = narrowF32(math.cos(radians)),
-        .y = narrowF32(math.sin(radians)),
+        .x = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(std.math.cos(@as(f64, @floatCast(radians))), lifecycle_stage),
+                dt,
+            ),
+            @as(f32, 9.0),
+        ),
+        .y = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(std.math.sin(@as(f64, @floatCast(radians))), lifecycle_stage),
+                dt,
+            ),
+            @as(f32, 9.0),
+        ),
     };
+}
+
+test "death slide rounds each x87 velocity operation" {
+    const velocity = deathSlideVelocityF32(
+        1.3476296663284302,
+        14.324000358581543,
+        0.05700000375509262,
+    );
+
+    try std.testing.expectEqual(@as(f32, 7.165987491607666), velocity.x);
+    try std.testing.expectEqual(@as(f32, -1.6262983083724976), velocity.y);
 }
 
 fn awardExperienceOnceFromReward(
