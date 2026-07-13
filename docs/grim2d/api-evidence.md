@@ -1786,7 +1786,11 @@ grim.dll body:
 
 ## 0x138 — grim_draw_quad_points @ 0x10009080
 
-- Notes: pushes quad using 4 explicit points (x0..y3)
+- Confirmed name: `draw_quad_points`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)`
+- Notes: pushes a quad using four explicit points and the current per-corner
+  color/UV slots. Live disassembly receives `this` in `ECX`, returns with
+  `retn 0x20`, and dispatches batch begin/flush through slots `0xe8`/`0xec`.
 - Ghidra signature: `void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)`
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: projectile_render (`FUN_00422c70`):L16048; projectile_render (`FUN_00422c70`):L16204; projectile_render (`FUN_00422c70`):L16755; projectile_render (`FUN_00422c70`):L16768
@@ -1810,6 +1814,12 @@ grim.dll vertex fill (color + UV slots):
     DAT_10059e34 = DAT_10059e34 + 7;
     *DAT_10059e34 = x1;
 ```
+
+The recovered VC6.5 source matches all 130 instructions and all 59 masked
+references. It reuses one two-float stack temporary for the four incoming
+points, copies Z/RHW and UV as paired aggregates, writes one packed color per
+corner, and advances the native 28-byte vertex stream before its low-word batch
+count/capacity check.
 
 
 ## 0x13c — grim_draw_text_mono @ 0x100092b0
