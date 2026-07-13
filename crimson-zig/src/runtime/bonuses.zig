@@ -920,7 +920,7 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
         state.weapon_available.set(.submachine_gun, true);
     }
 
-    if (!state.demo_mode_active and unlock_index_full >= 0x28) {
+    if (unlock_index_full >= 0x28) {
         state.weapon_available.set(.splitter_gun, true);
     }
 
@@ -931,7 +931,6 @@ fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {
 
 pub fn buildWeaponAvailabilityForStatus(
     game_mode: game_ids.GameModeId,
-    demo_mode_active: bool,
     quest_unlock_index: i32,
     quest_unlock_index_full: i32,
 ) state_mod.WeaponAvailability {
@@ -953,7 +952,7 @@ pub fn buildWeaponAvailabilityForStatus(
         availability.set(.submachine_gun, true);
     }
 
-    if (!demo_mode_active and quest_unlock_index_full >= 0x28) {
+    if (quest_unlock_index_full >= 0x28) {
         availability.set(.splitter_gun, true);
     }
 
@@ -1493,6 +1492,16 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
     try std.testing.expect(state.weapon_available.get(.pistol));
     try std.testing.expect(state.weapon_available.get(.assault_rifle));
     try std.testing.expect(!state.weapon_available.get(.shotgun));
+}
+
+test "weapon refresh keeps full version unlocks in demo mode" {
+    var state = state_mod.GameplayState.init(1);
+    state.demo_mode_active = true;
+    state.status_quest_unlock_index_full = 0x28;
+
+    weaponRefreshAvailable(&state);
+
+    try std.testing.expect(state.weapon_available.get(.splitter_gun));
 }
 
 test "weapon pick random available enforces unlock table in quests" {

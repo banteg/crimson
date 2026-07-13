@@ -164,7 +164,6 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         available = build_weapon_availability(
             status=self.state.status,
             game_mode=GameMode(self.state.config.gameplay.mode),
-            demo_mode_active=self.state.demo_enabled,
         )
         status = self.state.status
         used: list[int] = []

@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**22/2161** functions matched, **918/675651** code bytes (**0.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**23/2161** functions matched, **1079/675651** code bytes (**0.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 15/986 | 804/385754 | 0.2% | 15/29 |
+| crimsonland.exe | 16/986 | 965/385754 | 0.3% | 16/29 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**15/986** functions, **804/385754** bytes (**0.2%**), **15/29** scratches verified.
+**16/986** functions, **965/385754** bytes (**0.3%**), **16/29** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -45,7 +45,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-spawn-slots |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 306/4/1 |  | gameplay-spawn-switch |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
-| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 97.92% | 20/48 | 17/0/0 |  | gameplay-weapon-unlocks |
+| match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 
 ## grim.dll
 

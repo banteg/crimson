@@ -2202,7 +2202,6 @@ fn buildWeaponList(
 ) usize {
     const available = runtime_bonuses.buildWeaponAvailabilityForStatus(
         highScoreModeFromConfig(config, status),
-        false,
         status.quest_unlock_index,
         status.quest_unlock_index_full,
     );

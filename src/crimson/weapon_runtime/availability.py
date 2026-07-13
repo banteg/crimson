@@ -17,7 +17,6 @@ def build_weapon_availability(
     *,
     status: GameStatus | None,
     game_mode: GameMode,
-    demo_mode_active: bool,
 ) -> list[bool]:
     available = [False] * WEAPON_AVAILABLE_COUNT
     unlock_index = 0
@@ -42,7 +41,7 @@ def build_weapon_availability(
             if 0 <= weapon_id < len(available):
                 available[weapon_id] = True
 
-    if (not demo_mode_active) and unlock_index_full >= 0x28:
+    if unlock_index_full >= 0x28:
         splitter_id = WeaponId.SPLITTER_GUN
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True
@@ -54,7 +53,6 @@ def prepare_weapon_availability(state: GameplayState) -> None:
     state.weapon_available[:] = build_weapon_availability(
         status=state.status,
         game_mode=state.game_mode,
-        demo_mode_active=state.demo_mode_active,
     )
 
 

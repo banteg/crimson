@@ -24,8 +24,8 @@ void weapon_refresh_available(void)
             }
             weapon_id = *unlock_weapon_id;
             unlock_weapon_id += sizeof(quest_meta_t) / sizeof(int);
-            ++index;
             weapon_table[weapon_id].unlocked = (unsigned char)one;
+            ++index;
         }
     }
 
