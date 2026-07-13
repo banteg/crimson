@@ -134,6 +134,8 @@ pub const ReplayTickTrace = struct {
     rng_rows: []const ReplayTickRngDraw = &.{},
     timing_samples: []const ReplayTickTimingSample = &.{},
     entities: ReplayTickEntitySamples = .{},
+    event_hit_count: i32 = 0,
+    event_pickup_count: i32 = 0,
     sfx_events: state_mod.RuntimeSfxBuffer = .{},
 };
 

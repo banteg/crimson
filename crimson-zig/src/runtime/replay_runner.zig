@@ -414,6 +414,8 @@ pub fn runReplayWithTrace(
                 rng_rows,
                 timing_samples,
             );
+            row.event_hit_count = step_result.projectile_tick_stats.hit_count;
+            row.event_pickup_count = @intCast(step_result.bonus_pickups.len);
             row.sfx_events = step_result.sfx_events;
             try trace.append(trace_allocator, row);
         }

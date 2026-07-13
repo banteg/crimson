@@ -2342,6 +2342,10 @@ fn buildCheckpoint(
             .choices = perk_choices,
             .player_nonzero_counts = player_nonzero_counts,
         },
+        .events = .{
+            .hit_count = row.event_hit_count,
+            .pickup_count = row.event_pickup_count,
+        },
     };
 }
 
@@ -3067,6 +3071,43 @@ test "CDT checkpoint writer strips producer-specific event details" {
     try std.testing.expectEqual(@as(i32, 0), decoded.value.events.sfx_count);
     try std.testing.expectEqual(@as(usize, 0), decoded.value.events.sfx_head.len);
     try std.testing.expectEqual(@as(usize, 0), decoded.value.events.hit_head.len);
+}
+
+test "CDT checkpoint keeps replay event counts" {
+    const allocator = std.testing.allocator;
+    const row: replay_runner.ReplayTickTrace = .{
+        .tick_index = 0,
+        .timing = .{ .elapsed_ms = 0 },
+        .rng = .{
+            .rng_state = 0,
+            .rng_after_perk_effects = 0,
+            .rng_after_creatures = 0,
+            .rng_after_projectiles = 0,
+            .rng_after_secondary_projectiles = 0,
+            .rng_after_particles = 0,
+            .rng_after_player_update = 0,
+            .rng_after_stage_spawns = 0,
+            .rng_after_wave_spawns = 0,
+            .rng_after_spawns = 0,
+            .rng_after_bonus_update = 0,
+        },
+        .summary = .{
+            .score_xp = 0,
+            .kills = 0,
+            .shots_fired_p0 = 0,
+            .creature_count = 0,
+            .perk_pending = 0,
+        },
+        .gameplay_state = state_mod.GameplayState.init(1),
+        .player_state = .{ .index = 0, .pos = .{} },
+        .event_hit_count = 2,
+        .event_pickup_count = 3,
+    };
+    const checkpoint = try buildCheckpoint(allocator, row, 0);
+    defer deinitCheckpoint(allocator, &checkpoint);
+
+    try std.testing.expectEqual(@as(i32, 2), checkpoint.events.hit_count);
+    try std.testing.expectEqual(@as(i32, 3), checkpoint.events.pickup_count);
 }
 
 test "CDT checkpoint perk choices preserve all seven raw slots" {
