@@ -9,6 +9,7 @@ from grim.sfx_map import SfxId
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...effects import FxQueue
+from ...math_parity import x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...sim.state_types import GameplayState, PlayerState
 from ..helpers import perk_active
@@ -92,15 +93,16 @@ def apply_final_revenge_on_player_death(
         if not creature.active:
             continue
 
-        delta = creature.pos - player_pos
-        if abs(delta.x) > 512.0 or abs(delta.y) > 512.0:
+        dx = x87_pc24_sub(creature.pos.x, player_pos.x)
+        dy = x87_pc24_sub(creature.pos.y, player_pos.y)
+        if abs(dx) > 512.0 or abs(dy) > 512.0:
             continue
 
-        remaining = 512.0 - delta.length()
+        remaining = x87_pc24_sub(512.0, x87_pc24_hypot(dx, dy))
         if remaining <= 0.0:
             continue
 
-        damage = remaining * 5.0
+        damage = x87_pc24_mul(remaining, 5.0)
         creature_apply_damage_with_lethal_followup(
             creature,
             creature_index=int(creature_idx),

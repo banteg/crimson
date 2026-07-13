@@ -744,6 +744,7 @@ pub fn applyFinalRevengeOnDeathTransition(
     detail_preset: i32,
 ) void {
     var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     applyFinalRevengeOnDeathTransitionWithEffects(
         state,
         players,
@@ -752,6 +753,7 @@ pub fn applyFinalRevengeOnDeathTransition(
         creatures,
         bonuses,
         &effects,
+        &terrain_fx,
         dt,
         world_size,
         detail_preset,
@@ -776,7 +778,7 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
     if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
     if (!perkActive(player, PerkId.final_revenge)) return;
 
-    effects.spawnExplosionBurst(state, player.pos, 1.0, detail_preset);
+    effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
     const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
     defer state.bonus_spawn_guard = prev_spawn_guard;
@@ -784,13 +786,13 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
     const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        const dx = narrowF32(creature.pos.x - player.pos.x);
-        const dy = narrowF32(creature.pos.y - player.pos.y);
+        const dx = native_math.pc24Sub(creature.pos.x, player.pos.x);
+        const dy = native_math.pc24Sub(creature.pos.y, player.pos.y);
         if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
-        const distance = narrowF32(std.math.sqrt(narrowF32(dx * dx + dy * dy)));
-        const remaining = narrowF32(512.0 - distance);
+        const distance = native_math.pc24Hypot(dx, dy);
+        const remaining = native_math.pc24Sub(512.0, distance);
         if (!(remaining > 0.0)) continue;
-        const damage = narrowF32(remaining * 5.0);
+        const damage = native_math.pc24Mul(remaining, 5.0);
         _ = creatures.applyExplosionDamage(
             state,
             players,
@@ -1787,4 +1789,39 @@ test "evil eyes targeting assigns each alive owner" {
     updateEvilEyesTargets(players[0..], creatures[0..]);
     try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
     try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
+}
+
+test "final revenge uses native blast arithmetic and explosion scale" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.0 },
+    };
+    players[0].perk_counts.set(PerkId.final_revenge, 1);
+
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 155.231201171875, .y = 295.6527099609375 },
+        .hp = 10000.0,
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+
+    applyFinalRevengeOnDeathTransitionWithEffects(
+        &state,
+        players[0..],
+        0,
+        1.0,
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        0.0,
+        1024.0,
+        5,
+    );
+
+    try std.testing.expectEqual(@as(u32, 0x460e568a), @as(u32, @bitCast(creatures.entries[0].hp)));
+    try std.testing.expectEqual(@as(f32, 45.0), effects.entries[0].scale_step);
 }

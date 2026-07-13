@@ -138,3 +138,39 @@ def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> No
     )
 
     assert touched == [0, 1]
+
+
+def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+
+    pool = CreaturePool(size=1)
+    creature = pool.entries[0]
+    creature.active = True
+    creature.pos = Vec2(155.231201171875, 295.6527099609375)
+
+    damage_amounts: list[float] = []
+
+    def _record_apply(_creature, **kwargs):
+        damage_amounts.append(float(kwargs["damage_amount"]))
+        return False
+
+    mocker.patch(
+        "crimson.creatures.damage.creature_apply_damage_with_lethal_followup",
+        side_effect=_record_apply,
+    )
+
+    apply_final_revenge_on_player_death(
+        state=state,
+        creatures=pool,
+        players=[player],
+        player=player,
+        dt=0.1,
+        world_size=1024.0,
+        detail_preset=0,
+        fx_queue=None,
+        deaths=[],
+    )
+
+    assert damage_amounts == [890.364990234375]
