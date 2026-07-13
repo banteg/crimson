@@ -212,6 +212,8 @@ pub const CreaturePool = struct {
         const stale_target_heading = self.entries[slot].target_heading;
         const stale_heading = self.entries[slot].heading;
         const stale_force_target = self.entries[slot].force_target;
+        const stale_target = self.entries[slot].target;
+        const stale_target_player = self.entries[slot].target_player;
         const stale_target_offset = self.entries[slot].target_offset;
 
         self.entries[slot] = .{
@@ -221,10 +223,7 @@ pub const CreaturePool = struct {
                 .x = narrowF32(init.pos.x),
                 .y = narrowF32(init.pos.y),
             },
-            .target = .{
-                .x = narrowF32(init.pos.x),
-                .y = narrowF32(init.pos.y),
-            },
+            .target = stale_target,
             .target_offset = stale_target_offset,
             .heading = if (init.set_heading) narrowF32(init.heading) else stale_heading,
             .target_heading = stale_target_heading,
@@ -233,6 +232,7 @@ pub const CreaturePool = struct {
             .vel = .{},
             .move_scale = 1.0,
             .force_target = if (init.preserve_force_target) stale_force_target else 0,
+            .target_player = stale_target_player,
             .ai_mode = init.ai_mode,
             .link_index = stale_link_index,
             .hp = narrowF32(init.health),
@@ -4142,6 +4142,8 @@ test "template spawn supports survival early-stage templates" {
 test "spawn init preserves recycled force target" {
     var pool: CreaturePool = .{};
     pool.entries[0].force_target = 1;
+    pool.entries[0].target = .{ .x = 321.0, .y = 654.0 };
+    pool.entries[0].target_player = 1;
     pool.entries[0].target_offset = .{ .x = -70.71066284179688, .y = -70.710693359375 };
 
     const idx = pool.spawnInit(.{
@@ -4155,6 +4157,9 @@ test "spawn init preserves recycled force target" {
 
     try std.testing.expectEqual(@as(usize, 0), idx);
     try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].force_target);
+    try std.testing.expectEqual(@as(f32, 321.0), pool.entries[idx].target.x);
+    try std.testing.expectEqual(@as(f32, 654.0), pool.entries[idx].target.y);
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].target_player);
     try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[idx].target_offset.x)));
     try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[idx].target_offset.y)));
 }
