@@ -2353,13 +2353,13 @@ pub const CreaturePool = struct {
             var creature = &self.entries[creature_index];
             if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
                 const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
-                const jitter = @as(f32, @floatFromInt(jitter_i32)) * 0.002;
+                const jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.002));
                 const size = @max(@as(f32, 1e-6), creature.size);
-                var turn = jitter / (size * 0.025);
+                var turn = native_math.pc24Div(jitter, native_math.pc24Mul(size, @as(f32, 0.025)));
                 // Native clamps against the f32 literal 1.5707964.
                 const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
                 if (turn > half_pi) turn = half_pi;
-                creature.heading = narrowF32(creature.heading + turn);
+                creature.heading = native_math.pc24Add(creature.heading, turn);
             }
         }
         var damage_amount = damage;

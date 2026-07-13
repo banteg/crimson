@@ -21,6 +21,7 @@ __all__ = [
     "x87_pc24_add",
     "x87_fpatan",
     "x87_pc24_cos_mul",
+    "x87_pc24_div",
     "x87_pc24_mul",
     "x87_pc24_mul_chain",
     "x87_pc24_sin_mul",
@@ -65,6 +66,12 @@ def x87_pc24_sub(lhs: float, rhs: float) -> float:
     """Subtract using the game's x87 24-bit significand precision."""
 
     return f32(float(lhs) - float(rhs))
+
+
+def x87_pc24_div(lhs: float, rhs: float) -> float:
+    """Divide using the game's x87 24-bit significand precision."""
+
+    return f32(float(lhs) / float(rhs))
 
 
 def x87_pc24_mul(lhs: float, rhs: float) -> float:

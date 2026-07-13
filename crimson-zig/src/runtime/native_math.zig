@@ -25,6 +25,10 @@ pub inline fn pc24Mul(lhs: anytype, rhs: anytype) f32 {
     return roundF32(@as(f64, @floatCast(lhs)) * @as(f64, @floatCast(rhs)));
 }
 
+pub inline fn pc24Div(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) / @as(f64, @floatCast(rhs)));
+}
+
 pub inline fn sinNative(value: f32) f32 {
     return @floatCast(std.math.sin(@as(f64, @floatCast(value))));
 }
@@ -119,4 +123,9 @@ test "pc24 helpers round every arithmetic operation" {
     );
 
     try std.testing.expectEqual(@as(f32, -2.737848997116089), step);
+
+    const jitter = pc24Mul(@as(f32, 52.0), @as(f32, 0.002));
+    const size_scale = pc24Mul(@as(f32, 45.0), @as(f32, 0.025));
+    const turn = pc24Div(jitter, size_scale);
+    try std.testing.expectEqual(@as(f32, 0.09244444966316223), turn);
 }
