@@ -1334,8 +1334,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041e290",
     "name": "player_apply_move_with_spawn_avoidance",
-    "signature": "void player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)",
-    "comment": "applies movement delta (scaled by alternate-weapon perk) and resolves collisions with creature spawn slots"
+    "signature": "int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)",
+    "comment": "applies movement delta (scaled by alternate-weapon perk), resolves collisions with creature spawn slots, and returns 0"
   },
   {
     "program": "crimsonland.exe",

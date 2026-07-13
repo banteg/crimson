@@ -258,6 +258,7 @@ void effect_spawn_freeze_shard(float *pos, float angle);
 void effect_spawn_freeze_shatter(float *pos, float angle);
 void effect_spawn_explosion_burst(float *pos, float scale);
 int projectile_spawn(float *pos, float angle, int type_id, int owner_id);
+int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta);
 int creature_alloc_slot(void);
 int creature_spawn_slot_alloc(void);
 int creature_find_nearest(float *pos, int exclude_id, float radius);
