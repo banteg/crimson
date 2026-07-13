@@ -117,7 +117,11 @@ def player_take_damage(
 
     if not dodged:
         if not perk_active(player, PerkId.UNSTOPPABLE):
-            player.heading += float((state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50) * 0.04
+            heading_jitter = x87_pc24_mul(
+                float((state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50),
+                f32(0.04),
+            )
+            player.heading = x87_pc24_add(f32(player.heading), heading_jitter)
             # Native uses post-Tough-Reloader damage (before Thick Skinned) for spread heat growth.
             player.spread_heat = min(
                 f32(0.48),

@@ -3842,7 +3842,8 @@ pub fn applyPlayerContactDamage(
     if (!dodged) {
         if (!perkActive(player, PerkId.unstoppable)) {
             const jitter_i32: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_take_damage_heading) % 100)) - 50;
-            player.heading = narrowF32(player.heading + @as(f32, @floatFromInt(jitter_i32)) * 0.04);
+            const heading_jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.04));
+            player.heading = native_math.pc24Add(player.heading, heading_jitter);
             player.spread_heat = narrowF32(@min(
                 0.48,
                 narrowF32(player.spread_heat + spread_heat_damage * 0.01),
