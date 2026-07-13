@@ -551,7 +551,9 @@ Grim input query (partial, vtable `+0x80` → grim_is_key_active (`FUN_10006fe0`
 
 Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`)):
 
-- Uses grim_keyboard_key_down (`FUN_1000a370`) (keyboard state byte) plus per‑key timers; returns 1 on a new press edge.
+- Uses grim_keyboard_key_down (`FUN_1000a370`) plus per-key timers. It returns 1
+  on the press edge, waits 0.5 seconds, then repeats every 0.1 seconds while
+  held; releasing the key resets its first-press latch.
 
 Grim misc getter (vtable `+0xa4` → grim_get_joystick_pov (`FUN_100075b0`)):
 

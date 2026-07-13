@@ -28,7 +28,7 @@ public:
     virtual float grim_get_frame_dt(void) = 0;
     virtual float grim_get_fps(void) = 0;
     virtual int grim_is_key_down(unsigned int key) = 0;
-    virtual int grim_was_key_pressed(unsigned int key) = 0;
+    virtual bool grim_was_key_pressed(unsigned int key) = 0;
     virtual void grim_flush_input(void) = 0;
     virtual int grim_get_key_char(void) = 0;
     virtual void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size) = 0;

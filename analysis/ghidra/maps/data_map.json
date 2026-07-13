@@ -9434,7 +9434,7 @@
       "comment": "Per-key first-press latch flags used by grim_was_key_pressed repeat behavior.",
       "name": "grim_key_repeat_first_press",
       "program": "grim.dll",
-      "type": "char[256]"
+      "type": "unsigned char[256]"
     },
     {
       "address": "0x1005a044",

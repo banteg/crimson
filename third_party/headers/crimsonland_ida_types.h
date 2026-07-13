@@ -62,7 +62,7 @@ struct IGrim2D_vtbl {
     /* 0x03c */ float (*grim_get_frame_dt)(void);
     /* 0x040 */ float (*grim_get_fps)(void);
     /* 0x044 */ int (*grim_is_key_down)(unsigned int key);
-    /* 0x048 */ int (*grim_was_key_pressed)(unsigned int key);
+    /* 0x048 */ unsigned char (*grim_was_key_pressed)(unsigned int key);
     /* 0x04c */ void (*grim_flush_input)(void);
     /* 0x050 */ int (*grim_get_key_char)(void);
     /* 0x054 */ void (*grim_set_key_char_buffer)(unsigned char * buffer, int * count, int size);

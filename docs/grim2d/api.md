@@ -113,6 +113,9 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_flush_input` zeroes the 256-byte keyboard state before and after
   draining 20-byte DirectInput8 events, then clears the buffered key-char FIFO.
 
+- `grim_was_key_pressed` is both a press-edge and held-repeat query: the first
+  event loads a 0.5-second cooldown and later repeats use 20% of that delay.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 
@@ -293,7 +296,7 @@ These offsets appear with keycodes or input-related values:
 | `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | high | clamped frame delta |
 | `0x40` | `get_fps` | `float get_fps(void)` | high | frame rate estimate |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
-| `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
+| `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | press edge plus timed held repeats |
 | `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
 | `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | high | stores ring buffer pointers |

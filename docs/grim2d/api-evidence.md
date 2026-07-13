@@ -397,11 +397,11 @@ grim.dll body:
 
 ## 0x48 — grim_was_key_pressed @ 0x10007390
 
-- Provisional name: `was_key_pressed` (high)
-- Guess: `bool was_key_pressed(uint32_t key)`
-- Notes: edge-triggered key checks
-- Ghidra signature: `int grim_was_key_pressed(unsigned int key)`
-- Suggested signature: `bool grim_was_key_pressed(uint32_t key)`
+- Confirmed name: `was_key_pressed`
+- Confirmed C++ signature: `bool __thiscall IGrim2D::was_key_pressed(unsigned int key)`
+- Previous Ghidra signature: `int grim_was_key_pressed(unsigned int key)`
+- Notes: press/repeat query with a 0.5-second initial delay and 0.1-second
+  held-repeat interval.
 - Call sites: 39 (unique funcs: 16)
 - Sample calls: console_update (`FUN_00401a40`):L514; console_update (`FUN_00401a40`):L522; console_update (`FUN_00401a40`):L531; console_update (`FUN_00401a40`):L543; console_update (`FUN_00401a40`):L547; console_update (`FUN_00401a40`):L551; console_update (`FUN_00401a40`):L574; console_update (`FUN_00401a40`):L578
 - First callsite: console_update (`FUN_00401a40`) (line 514)
@@ -414,6 +414,18 @@ LAB_00401add:
     if (cVar2 != '\0') {
       *(int *)((int)param_1 + 0x14) = *(int *)((int)param_1 + 0x14) + 1;
 ```
+
+Live Binary Ninja shows that the full key value is passed to
+`grim_keyboard_key_down`, while all repeat arrays index `(unsigned char)key`.
+On a down key whose timer is zero, the function reloads the timer from the
+global `0.5f` delay. Subsequent repeats multiply that delay by `0.2f`, giving
+`0.1f`; releasing the key resets its timer to zero and first-press latch to 1.
+The timers are decremented and clamped elsewhere in the keyboard poll.
+
+The recovered virtual-bool member compiles with MSVC 6.5 to all 31 native
+instructions, full prefix, and masked references `10/0/0`. Callers supply
+`ECX=this`, push one key, and test only `AL`, confirming the member ABI and
+byte-sized result.
 
 
 ## 0x4c — grim_flush_input @ 0x10007330

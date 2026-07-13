@@ -5516,8 +5516,8 @@
     "program": "grim.dll",
     "address": "0x10007390",
     "name": "grim_was_key_pressed",
-    "signature": "int grim_was_key_pressed(unsigned int key)",
-    "comment": "Grim2D vtable 0x48 (provisional)"
+    "signature": "bool grim_was_key_pressed(unsigned int key)",
+    "comment": "Grim2D vtable 0x48: press/repeat query with per-key cooldown and first-press latch"
   },
   {
     "program": "grim.dll",
@@ -5944,8 +5944,8 @@
     "program": "grim.dll",
     "address": "0x1000a370",
     "name": "grim_keyboard_key_down",
-    "signature": "int grim_keyboard_key_down(unsigned int key)",
-    "comment": "reads the cached key state array"
+    "signature": "unsigned char grim_keyboard_key_down(unsigned int key)",
+    "comment": "returns bit 7 of cached keyboard state, indexing by the low byte of key"
   },
   {
     "program": "grim.dll",
