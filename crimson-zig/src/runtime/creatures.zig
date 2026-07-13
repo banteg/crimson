@@ -3472,7 +3472,8 @@ fn awardExperienceForOwner(
     owner: owner_ref.OwnerRef,
     reward_value: f32,
 ) i32 {
-    const slot = ownerToPlayerIndex(owner, players.len) orelse return 0;
+    if (players.len == 0) return 0;
+    const slot = ownerToPlayerIndex(owner, players.len) orelse 0;
     return awardExperienceFromReward(state, &players[slot], reward_value);
 }
 
@@ -6412,7 +6413,7 @@ test "split on death spawns two smaller children" {
     try expectFloatClose(60.0, child2.reward_value);
 }
 
-test "kill no corpse does not award xp for non-player owner" {
+test "kill no corpse awards player zero for non-player owner" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
@@ -6446,8 +6447,8 @@ test "kill no corpse does not award xp for non-player owner" {
         10_000.0,
     );
 
-    try std.testing.expectEqual(@as(i32, 0), gained);
-    try std.testing.expectEqual(@as(i32, 0), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 90), gained);
+    try std.testing.expectEqual(@as(i32, 90), players[0].experience);
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {
