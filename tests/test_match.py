@@ -5,16 +5,26 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from crimson.cli.match import match_app
 from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
     FunctionManifest,
     FunctionSymbol,
     ImageTotals,
     LoadedImage,
+    MaskedOperandAudit,
+    MaskedOperandAuditEntry,
+    MaskedReference,
+    MatchResult,
     ObjectFunction,
+    ObjectRelocationReference,
+    ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
+    _scratch_build_key,
+    _ScratchIncludeResolver,
     collect_image_totals,
     collect_scratch_statuses,
     common_prefix_length,
@@ -101,6 +111,8 @@ def test_extract_object_function_collects_relocations() -> None:
     obj = parse_coff_object(build_object(code, [("_foo", 0)], [1]))
     function = extract_object_function(obj, "foo")
     assert function.relocation_offsets == frozenset({1})
+    assert function.relocation_references[0].symbol_name == "_foo"
+    assert function.relocation_references[0].key == "name:foo"
 
 
 def test_normalize_masks_relocated_and_absolute_operands() -> None:
@@ -149,6 +161,130 @@ def test_match_function_reports_prefix_and_first_mismatch() -> None:
     assert result.prefix_instructions == 2
     assert result.first_target_mismatch == "xor eax, eax"
     assert result.first_candidate_mismatch == "mov eax, 0x1"
+
+
+@pytest.mark.parametrize(
+    ("candidate_key", "catalog", "expected_status", "exact"),
+    [
+        ("name:expected", ReferenceCatalog({0x402000: ("expected",)}), "ok", True),
+        (
+            "name:other",
+            ReferenceCatalog({0x402000: ("expected",), 0x403000: ("other",)}),
+            "mismatch",
+            False,
+        ),
+        ("name:expected", ReferenceCatalog({}), "unresolved", False),
+    ],
+)
+def test_match_function_audits_masked_reference_identity(
+    candidate_key: str,
+    catalog: ReferenceCatalog,
+    expected_status: str,
+    exact: bool,
+) -> None:
+    target = bytes.fromhex("a100204000c3")
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("a100000000c3"),
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=1,
+                symbol_name=candidate_key.removeprefix("name:"),
+                key=candidate_key,
+                explained=True,
+            ),
+        ),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0x10000),
+        target_va=0x401000,
+        reference_catalog=catalog,
+    )
+    assert result.ratio == 1.0
+    assert result.masked_operand_audit.entries[0].status == expected_status
+    assert result.exact is exact
+
+
+def test_match_function_audits_compiler_string_by_content() -> None:
+    mapped = bytearray(0x10000)
+    mapped[0x2000:0x2003] = b"%s\x00"
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("6800000000c3"),
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=1,
+                symbol_name="??_C@_02DILL@?$CFs?$AA@",
+                key=None,
+                explained=False,
+                symbol_data=b"%s\x00",
+            ),
+        ),
+    )
+    result = match_function(
+        bytes.fromhex("6800204000c3"),
+        candidate,
+        image=LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped)),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+
+def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyPatch) -> None:
+    target_reference = MaskedReference(
+        operand_index=0,
+        kind="imm",
+        source="image",
+        value=0x402000,
+        text="0x00402000",
+        keys=("address:0x00402000",),
+        explained=True,
+    )
+    candidate_reference = MaskedReference(
+        operand_index=0,
+        kind="imm",
+        source="reloc",
+        value=None,
+        text="unknown",
+        keys=(),
+        explained=False,
+    )
+    audit = MaskedOperandAudit(
+        (
+            MaskedOperandAuditEntry(
+                target_index=0,
+                candidate_index=0,
+                target_offset=0,
+                candidate_offset=0,
+                target_address=0x401000,
+                candidate_address=0,
+                instruction="push ADDR",
+                target_references=(target_reference,),
+                candidate_references=(candidate_reference,),
+                status="unresolved",
+            ),
+        ),
+    )
+    result = MatchResult(
+        ratio=1.0,
+        prefix_instructions=1,
+        target_lines=("push ADDR",),
+        candidate_lines=("push ADDR",),
+        masked_operand_audit=audit,
+    )
+    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+
+    completed = CliRunner().invoke(match_app, ["diff", "candidate.obj", "foo"])
+
+    assert completed.exit_code == 1
+    assert "refs=0/1/0" in completed.output
+    assert "unresolved target=0x00401000" in completed.output
 
 
 def test_diff_regions_reports_localized_mismatch() -> None:
@@ -201,7 +337,8 @@ def test_render_status_rows_includes_prefix() -> None:
         error=None,
     )
     assert render_status_rows([status])[0][7] == "2/4"
-    assert render_status_rows([status])[0][9] == "branch"
+    assert render_status_rows([status])[0][8] == "0/0/0"
+    assert render_status_rows([status])[0][10] == "branch"
     totals = [
         ImageTotals(
             image="crimsonland.exe",
@@ -223,14 +360,77 @@ def test_render_status_rows_includes_prefix() -> None:
         ),
     ]
     assert render_image_total_rows(totals)[0] == ("crimsonland.exe", "0/10", "0/1000", "0.0%", "0/1")
-    assert "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; 0/1 scratches at 100%" in (
+    assert "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; 0/1 scratches verified" in (
         render_status_table([status], totals)
     )
     markdown = render_status_markdown([status], totals)
     assert "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 0/1 |" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
-    assert "| wip | foo | 0x00401000 | 10 | 5/4 | 50.00% | 2/4 |  | branch |" in markdown
+    assert "| wip | foo | 0x00401000 | 10 | 5/4 | 50.00% | 2/4 | 0/0/0 |  | branch |" in markdown
+
+
+def test_exact_score_with_reference_debt_requires_audit() -> None:
+    config = ScratchConfig(
+        directory=Path("scratch"),
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    status = ScratchStatus(
+        config=config,
+        address=0x401000,
+        target_size=6,
+        ratio=1.0,
+        prefix_instructions=2,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+        masked_unresolved=1,
+        audit=MaskedOperandAudit(),
+    )
+    assert status.state == "audit"
+
+
+def test_scratch_build_key_tracks_transitive_headers(tmp_path: Path) -> None:
+    match_root = tmp_path / "match"
+    scratch = match_root / "scratches" / "foo"
+    include = match_root / "include"
+    compiler = match_root / "compilers" / "msvc6.5" / "Bin"
+    scratch.mkdir(parents=True)
+    include.mkdir()
+    compiler.mkdir(parents=True)
+    (scratch / "scratch.cpp").write_text('#include "outer.h"\n', encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    (include / "outer.h").write_text('#include "inner.h"\n', encoding="utf-8")
+    inner = include / "inner.h"
+    inner.write_text("#define VALUE 1\n", encoding="utf-8")
+    (match_root / "cl.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    (compiler / "CL.EXE").write_bytes(b"compiler")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    resolver = _ScratchIncludeResolver(match_root)
+    before = _scratch_build_key(config, match_root, include_resolver=resolver)
+    dependencies = {row[0] for row in before["dependencies"]}
+    assert "include/outer.h" in dependencies
+    assert "include/inner.h" in dependencies
+    inner.write_text("#define VALUE 2\n", encoding="utf-8")
+    after = _scratch_build_key(config, match_root, include_resolver=resolver)
+    assert after != before
 
 
 def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -347,9 +547,15 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     def fake_load_image(*args: object, **kwargs: object) -> LoadedImage:
         return LoadedImage(mapped=b"\xc3", image_base=0x401000, size_of_image=1)
 
-    def fake_compile(config: ScratchConfig, match_root: Path) -> Path:
+    def fake_compile(
+        config: ScratchConfig,
+        match_root: Path,
+        *,
+        include_resolver: _ScratchIncludeResolver | None = None,
+    ) -> Path:
         observed["compiler"] = config.compiler
         observed["cflags"] = config.cflags
+        observed["calls"] = observed.get("calls", 0) + 1
         return scratch / "scratch.obj"
 
     monkeypatch.setattr("crimson.match.load_function_manifest", fake_load_manifest)
@@ -362,7 +568,9 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     )
     monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
 
-    statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2")
+    statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
+    cached_statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
 
     assert statuses[0].state == "match"
-    assert observed == {"compiler": "msvc6.5", "cflags": "/O2"}
+    assert cached_statuses[0].state == "match"
+    assert observed == {"compiler": "msvc6.5", "cflags": "/O2", "calls": 1}

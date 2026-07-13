@@ -108,8 +108,14 @@ tools/match/match.sh tools/match/scratches/<function> --regions
 Regenerate the dashboard:
 
 ```sh
-uv run crimson match status --write tools/match/STATUS.md
+uv run crimson match status --check -j 8 --write tools/match/STATUS.md
 ```
+
+The status pipeline caches unchanged results and evaluates stale scratches in
+parallel. A cache entry is invalidated by the scratch source/config, compiler
+arguments and binary, `cl.sh`, the transitive local-header graph, the target
+image and symbol maps, or the matcher itself. This keeps repeat status runs
+cheap without allowing stale objects or scores to survive an input change.
 
 Compare another compiler profile without editing scratches:
 
@@ -139,3 +145,27 @@ normalization exists only for real native functions and globals.
 
 Record residual mismatches in the scratch directory instead of forcing
 byte-shaped source.
+
+## Exact Matches and Masked References
+
+Instruction normalization replaces relocated and in-image addresses with
+`ADDR`, but an `ADDR` token is not proof that the operands refer to the same
+thing. The matcher retains the hidden reference on both sides and audits it
+against function symbols, `analysis/ghidra/maps/data_map.json`, exact resolved
+base-plus-addend addresses, and compiler-generated constant contents.
+
+A scratch is `match` only when its normalized instruction score is 100% and
+all aligned masked references are proven equal. A 100% instruction score with
+unresolved or different references is `audit`, so it is excluded from matched
+function and byte totals. The `refs` column is `ok/unresolved/mismatch`.
+
+Inspect exact-score reference debt with:
+
+```sh
+uv run crimson match audit --exact-only --status problem
+uv run crimson match audit --exact-only --status all --json
+```
+
+Use `--all-scores` when investigating references inside partially matching
+functions. `crimson match diff` and `crimson match scratch` exit nonzero for
+either an instruction mismatch or masked-reference debt.
