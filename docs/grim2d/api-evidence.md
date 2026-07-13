@@ -1147,14 +1147,19 @@ forwards `rgba` to `set_color_ptr`, clears rotation, brackets one quad with
 
 ## 0xd4 — grim_draw_rect_outline @ 0x10008f10
 
-- Provisional name: `draw_rect_outline` (high)
-- Guess: `void draw_rect_outline(const float *xy, float w, float h)`
-- Notes: used for UI framing with explicit width/height
+- Confirmed name: `draw_rect_outline`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_rect_outline(float *xy, float w, float h)`
+- Notes: selects untextured D3D8 color/alpha state, clears rotation, and
+  brackets the edge draw with `begin_batch`/`end_batch`. Unit height or width
+  takes a one-quad fast path. Other rectangles draw top, left, bottom, and
+  right quads; the bottom edge is widened by one pixel before normal modulate
+  state is restored.
 - Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
-- Suggested signature: `void grim_draw_rect_outline(const float *xy, float w, float h)`
 - Call sites: 12 (unique funcs: 11)
 - Sample calls: FUN_00402d50:L1454; demo_trial_overlay_render (`FUN_004047c0`):L3107; ui_render_keybind_help:L3372; tutorial_prompt_dialog (`FUN_00408530`):L5031; quest_results_screen_update (`FUN_00410d20`):L7694; ui_menu_item_update:L27177; ui_text_input_update (`FUN_0043ecf0`):L27413; ui_text_input_update (`FUN_0043ecf0`):L27448
 - First callsite: FUN_00402d50 (line 1454)
+- Runtime evidence: the checked-in `ui_render_trace_summary.json` contains
+  3,132 `grim_draw_rect_outline` events.
 
 
 ```c
@@ -1176,6 +1181,11 @@ grim.dll body:
   (**(code **)(*in_ECX + 0x11c))(fVar1 + fRam00000000,fRam00000004,0x3f800000,0);
   (**(code **)(*in_ECX + 0xf0))();
 ```
+
+The recovered VC6.5 source matches all 125 instructions and all 8 masked
+references. Live Binary Ninja confirms the three-argument member ABI,
+documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
+`retn 0xc` without source-shaping artifacts.
 
 
 ## 0xd8 — grim_draw_circle_filled @ 0x10007b90
