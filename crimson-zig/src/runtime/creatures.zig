@@ -3636,6 +3636,23 @@ fn allocCreatureSlot(
     return slot;
 }
 
+fn emitBonusOnKillBurst(
+    state: *state_mod.GameplayState,
+    effects: *effects_mod.EffectPool,
+    pos: state_mod.Vec2,
+) void {
+    effects.spawnBurstWithCallers(
+        state,
+        pos,
+        16,
+        5,
+        0.5,
+        null,
+        .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+        effects_mod.EffectPool.bonus_on_kill_burst_callers,
+    );
+}
+
 fn emitDeathSideEffects(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
@@ -3672,16 +3689,7 @@ fn emitDeathSideEffects(
         world_size,
     );
     if (spawned_bonus) |_| {
-        effects.spawnBurstWithCallers(
-            state,
-            death_pos,
-            16,
-            5,
-            0.4,
-            null,
-            .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-            effects_mod.EffectPool.bonus_on_kill_burst_callers,
-        );
+        emitBonusOnKillBurst(state, effects, death_pos);
     }
     if (state.bonuses.freeze > 0.0) {
         for (0..8) |_| {
@@ -3952,6 +3960,23 @@ fn applyPlayerContactDamageWithAliveSource(
 
 fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
+test "bonus-on-kill burst uses native effect template" {
+    var state = state_mod.GameplayState.init(1);
+    var effects: effects_mod.EffectPool = .{};
+
+    emitBonusOnKillBurst(&state, &effects, .{ .x = 100.0, .y = 200.0 });
+
+    try std.testing.expectEqual(effects_mod.effect_pool_size - 16, effects.free_len);
+    for (effects.entries[0..16]) |entry| {
+        try std.testing.expectEqual(@as(i32, 0x1D), entry.flags);
+        try expectFloatClose(0.5, entry.lifetime);
+        try expectFloatClose(0.4, entry.color.r);
+        try expectFloatClose(0.5, entry.color.g);
+        try expectFloatClose(1.0, entry.color.b);
+        try expectFloatClose(0.5, entry.color.a);
+    }
 }
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {
