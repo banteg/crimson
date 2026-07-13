@@ -8,6 +8,13 @@ static __inline float abs_bits(float value)
     return *(float *)&bits;
 }
 
+static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
+{
+    float dx = lhs->x - rhs->x;
+    float dy = lhs->y - rhs->y;
+    return (float)sqrt(dx * dx + dy * dy);
+}
+
 extern "C" void player_take_damage(int player_index, float damage)
 {
     float abs_delta;
@@ -75,9 +82,10 @@ post_damage:
                             creature_pool[creature_index].pos_y - player_state_table[player_index].pos_y
                         );
                         if (abs_delta <= 512.0f) {
-                            float dx = creature_pool[creature_index].pos_x - player_pos[0];
-                            float dy = creature_pool[creature_index].pos_y - player_pos[1];
-                            float blast = 512.0f - (float)sqrt(dx * dx + dy * dy);
+                            float blast = 512.0f - vec2_distance(
+                                (vec2f_t *)&creature_pool[creature_index].pos_x,
+                                (vec2f_t *)player_pos
+                            );
                             if (blast > 0.0f) {
                                 float impulse[2];
                                 impulse[0] = 0.0f;
