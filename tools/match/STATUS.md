@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**48/2161** functions matched, **6210/675651** code bytes (**0.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**49/2161** functions matched, **7010/675651** code bytes (**1.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 41/986 | 6096/385754 | 1.6% | 41/57 |
-| grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
+| grim.dll | 8/1175 | 914/289897 | 0.3% | 8/8 |
 
 ## crimsonland.exe
 
@@ -77,7 +77,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**7/1175** functions, **114/289897** bytes (**0.0%**), **7/7** scratches verified.
+**8/1175** functions, **914/289897** bytes (**0.3%**), **8/8** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -88,3 +88,4 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_is_mouse_button_down | 0x10007410 | 38 | 11/11 | 100.00% | 11/11 | 3/0/0 |  | branch-call-stdcall |
 | match | grim_get_mouse_x | 0x10007510 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |
+| match | grim_draw_quad | 0x10008b10 | 800 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |

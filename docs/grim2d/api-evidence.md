@@ -1593,9 +1593,10 @@ grim.dll slot write:
 
 ## 0x11c — grim_draw_quad @ 0x10008b10
 
-- Provisional name: `draw_quad` (high)
-- Guess: `void draw_quad(float x, float y, float w, float h)`
-- Notes: core draw call; uses per-corner color slots + UV array
+- Confirmed name: `draw_quad`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_quad(float x, float y, float w, float h)`
+- Notes: core draw call; uses per-corner color slots + UV array. Live callers
+  pass the interface in `ECX`, and the implementation returns with `retn 0x10`.
 - Ghidra signature: `void grim_draw_quad(float x, float y, float w, float h)`
 - Call sites: 100 (unique funcs: 21)
 - Sample calls: demo_trial_overlay_render (`FUN_004047c0`):L3132; ui_draw_clock_gauge:L3888; ui_draw_clock_gauge:L3894; ui_render_aim_indicators:L5701; demo_purchase_screen_update (`FUN_0040b740`):L6344; ui_draw_textured_quad:L9124; terrain_render (`FUN_004188a0`):L9613; creature_render_type (`FUN_00418b60`):L9720
@@ -1617,6 +1618,11 @@ grim.dll vertex fill (color + UV):
     DAT_10059e34[5] = DAT_1005b290;
     DAT_10059e34[6] = DAT_1005b294;
 ```
+
+The recovered VC6.5 source matches all 195 instructions and all 68 masked
+references. Its rotated path uses one Quake inverse-square-root refinement:
+`half_diag = 0.5 * length_sq * inverse_sqrt(length_sq)`. This is a close
+approximation of `0.5 * sqrt(length_sq)`, not a CRT `sqrt` call.
 
 
 ## 0x120 — grim_draw_quad_xy @ 0x10008720

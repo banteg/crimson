@@ -1,7 +1,7 @@
 #ifndef GRIM2D_CPP_H
 #define GRIM2D_CPP_H
 
-// Recovered C++ view of the Grim2D interface through the atlas-frame slot.
+// Recovered C++ view of the Grim2D interface through the primary quad slot.
 // The C ABI view lives in third_party/headers/grim2d.h; this declaration is
 // used when reproducing the original __thiscall virtual dispatch.
 class IGrim2D_cpp {
@@ -72,6 +72,12 @@ public:
     virtual void grim_set_rotation(float radians) = 0;
     virtual void grim_set_uv(float u0, float v0, float u1, float v1) = 0;
     virtual void grim_set_atlas_frame(int atlas_size, int frame) = 0;
+    virtual void grim_set_sub_rect(int atlas_size, int width, int height, int frame) = 0;
+    virtual void grim_set_uv_point(int index, float u, float v) = 0;
+    virtual void grim_set_color_ptr(float *rgba) = 0;
+    virtual void grim_set_color(float r, float g, float b, float a) = 0;
+    virtual void grim_set_color_slot(int index, float r, float g, float b, float a) = 0;
+    virtual void grim_draw_quad(float x, float y, float w, float h);
 };
 
 #endif

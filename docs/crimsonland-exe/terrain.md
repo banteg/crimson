@@ -719,7 +719,11 @@ It internally stores:
 * Else it computes:
 
   * `center = (x+w/2, y+h/2)`
-  * `half_diag = 0.5 * sqrt(w*w + h*h)`
+  * `length_sq = w*w + h*h`
+  * `inv = inverse_sqrt(length_sq)` using the `0x5f3759df` seed and one
+    Newton refinement
+  * `half_diag = 0.5 * length_sq * inv` (an approximation of
+    `0.5 * sqrt(length_sq)`, with no CRT `sqrt` call)
   * `dx = cos(r+π/4) * half_diag`
   * `dy = sin(r+π/4) * half_diag`
   * corners:
