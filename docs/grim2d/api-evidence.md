@@ -1751,12 +1751,20 @@ grim.dll body:
 
 ## 0x128 — grim_submit_vertices_transform @ 0x100085c0
 
+- Confirmed name: `submit_vertices_transform`
+- Confirmed C++ signature: `void __thiscall IGrim2D::submit_vertices_transform(float *verts, int count, float *offset, float *matrix)`
 - Ghidra signature: `void grim_submit_vertices_transform(float * verts, int count, float * offset, float * matrix)`
-- Suggested signature: `void grim_submit_vertices_transform(const float *verts, int count, const float *offset, const float *matrix)`
-- Notes: copies `count * 0x1c` bytes (7-float stride) into the batch, applies 2x2 matrix + offset per vertex
+- Notes: the render-disabled guard precedes a `count * 0x1c` bulk copy. For
+  positive counts, live Binary Ninja disassembly shows the exact transforms
+  `x' = y*m[1] + x*m[0]` and `y' = y*m[3] + x*m[2]`, followed by the XY
+  offset and a seven-dword global write-pointer advance. The method then adds
+  `count` to the counter's low word and calls virtual slot `0xec` at capacity;
+  `retn 0x10` confirms the four-argument member ABI.
 - Call sites: 5 (unique funcs: 1)
 - Sample calls: ui_element_render (`FUN_00446c40`):L29980; ui_element_render (`FUN_00446c40`):L29985; ui_element_render (`FUN_00446c40`):L29986; ui_element_render (`FUN_00446c40`):L30065; ui_element_render (`FUN_00446c40`):L30107
 - First callsite: ui_element_render (`FUN_00446c40`) (line 32116)
+- Runtime evidence: the checked-in `ui_render_trace.jsonl` contains 13,940
+  `grim_submit_vertices` events with `kind: transform`.
 
 
 ```c
@@ -1773,6 +1781,11 @@ grim.dll inner loop (stride + matrix):
     for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
       *pfVar7 = *verts;
 ```
+
+The recovered VC6.5 source matches all 64 instructions and all 9 masked
+references. Ordinary scalar rotation accumulators preserve the native x87
+evaluation order; no inline assembly, dummy references, or layout-only
+branches are used.
 
 
 ## 0x12c — grim_submit_vertices_offset @ 0x10008680
