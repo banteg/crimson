@@ -21,8 +21,15 @@ class PerkPickCommand(msgspec.Struct, tag="perk_pick", frozen=True, forbid_unkno
     choice_index: int
 
 
-class RngBurnOperation(msgspec.Struct, tag="rng_burn", frozen=True, forbid_unknown_fields=True):
-    draws: int
+class GameFrameRngAdvanceOperation(
+    msgspec.Struct,
+    tag="game_frame_rng_advance",
+    frozen=True,
+    forbid_unknown_fields=True,
+):
+    """Advance the native top-level frame RNG side effect for skipped frames."""
+
+    frames: int
 
 
 class TypoCharCommand(msgspec.Struct, tag="typo_char", frozen=True, forbid_unknown_fields=True):
@@ -39,14 +46,10 @@ class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True, forbid_u
 
 
 GameCommand: TypeAlias = (
-    PerkMenuOpenCommand
-    | PerkPickCommand
-    | TypoCharCommand
-    | TypoBackspaceCommand
-    | TypoSubmitCommand
+    PerkMenuOpenCommand | PerkPickCommand | TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 )
 
-ReplayPreludeOperation: TypeAlias = RngBurnOperation | PerkMenuOpenCommand | PerkPickCommand
+ReplayPreludeOperation: TypeAlias = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
 ReplayPostludeOperation: TypeAlias = PerkMenuOpenCommand
 ReplayTickCommand: TypeAlias = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 

@@ -22,11 +22,11 @@ from crimson.replay.checkpoints import (
 )
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
+    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     PerkPickCommand,
     ReplayPreludeOperation,
     ReplayTickCommand,
-    RngBurnOperation,
     TypoCharCommand,
     TypoSubmitCommand,
 )
@@ -103,7 +103,7 @@ def inject_tick_commands(
     prelude = list(old_tick.prelude)
     tick_commands = list(old_tick.commands)
     for command in commands:
-        if isinstance(command, (RngBurnOperation, PerkMenuOpenCommand, PerkPickCommand)):
+        if isinstance(command, (GameFrameRngAdvanceOperation, PerkMenuOpenCommand, PerkPickCommand)):
             prelude.append(command)
         else:
             tick_commands.append(command)

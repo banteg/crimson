@@ -12,7 +12,7 @@ from crimson.replay.codec import load_replay_file
 # Seeds from captures finalized with this run_start source replay our sim's
 # setup draws value-for-value; older captures carry the stale session srand
 # seed and cannot be replay-aligned.
-_ALIGNED_SEED_SOURCE = "run_setup_rng_state"
+_ALIGNED_SEED_SOURCE = "rng_state_before_bootstrap"
 
 _MANIFEST_FORMAT_VERSION = 1
 
@@ -84,8 +84,7 @@ def import_run(cdt_path: Path, *, fixtures_dir: Path) -> dict:
     seed_source = str(meta.source.run_start_seed_source or "")
     if seed_source != _ALIGNED_SEED_SOURCE:
         raise RuntimeError(
-            f"capture trace seed source must be {_ALIGNED_SEED_SOURCE!r}: "
-            f"got {seed_source!r} in {cdt_path}",
+            f"capture trace seed source must be {_ALIGNED_SEED_SOURCE!r}: got {seed_source!r} in {cdt_path}",
         )
 
     fixtures_dir.mkdir(parents=True, exist_ok=True)

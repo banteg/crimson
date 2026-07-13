@@ -109,8 +109,7 @@ def test_zig_replay_list_reports_event_shape_detail(tmp_path: Path) -> None:
     assert "missing-perk-choice.crd invalid - - - - -" in result.stdout
     assert (
         "warning: missing-perk-choice.crd: "
-        "replay prelude perk_pick missing choice_index: tick=0 operation_index=0"
-        in result.stdout
+        "replay prelude perk_pick missing choice_index: tick=0 operation_index=0" in result.stdout
     )
     assert "canonical wire shape" not in result.stdout
 
@@ -128,8 +127,7 @@ def test_zig_replay_list_reports_unknown_command_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "unknown-command.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: unknown-command.crd: replay command type is unknown: "
-        "type=network_ping tick=0 command_index=0"
+        "warning: unknown-command.crd: replay command type is unknown: type=network_ping tick=0 command_index=0"
     ) in result.stdout
     assert "replay events include an unknown command kind" not in result.stdout
 
@@ -210,10 +208,7 @@ def test_zig_replay_list_rejects_string_quest_level(tmp_path: Path) -> None:
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "quest-string-level.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: quest-string-level.crd: replay payload does not match format 15 msgpack schema"
-        in result.stdout
-    )
+    assert "warning: quest-string-level.crd: replay payload does not match format 16 msgpack schema" in result.stdout
     assert "count=1 parsed=0 errors=1" in result.stdout
 
 
@@ -248,8 +243,7 @@ def test_zig_replay_list_reports_old_ruleset_detail(tmp_path: Path) -> None:
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "old-ruleset.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: old-ruleset.crd: "
-        "native replay tools require latest ruleset replays unless preserve_bugs is set"
+        "warning: old-ruleset.crd: native replay tools require latest ruleset replays unless preserve_bugs is set"
     ) in result.stdout
     assert "count=1 parsed=0 errors=1" in result.stdout
 
@@ -283,8 +277,7 @@ def test_zig_replay_list_reports_invalid_claimed_stats_detail(tmp_path: Path) ->
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "bad-claimed-stats.crd invalid - - - - -" in result.stdout
     assert (
-        "warning: bad-claimed-stats.crd: replay header claimed_stats.shots_hit must be <= "
-        "claimed_stats.shots_fired"
+        "warning: bad-claimed-stats.crd: replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired"
     ) in result.stdout
     assert "native runtime limitation" not in result.stdout
 
@@ -301,9 +294,7 @@ def test_zig_replay_list_rejects_legacy_bootstrap_fields(tmp_path: Path) -> None
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "bad-bootstrap-seed.crd invalid - - - - -" in result.stdout
-    assert (
-        "warning: bad-bootstrap-seed.crd: replay payload does not match format 15 msgpack schema"
-    ) in result.stdout
+    assert ("warning: bad-bootstrap-seed.crd: replay payload does not match format 16 msgpack schema") in result.stdout
     assert "native runtime limitation" not in result.stdout
 
 
@@ -380,10 +371,7 @@ def test_zig_replay_list_emits_json_and_artifact(tmp_path: Path) -> None:
     assert broken_row["parse_error"] == "unable to inflate replay zstd payload"
     unknown_row = next(row for row in payload["rows"] if row["replay"] == "unknown-command.crd")
     assert unknown_row["mode"] == "invalid"
-    assert (
-        unknown_row["parse_error"]
-        == "replay command type is unknown: type=network_ping tick=0 command_index=0"
-    )
+    assert unknown_row["parse_error"] == "replay command type is unknown: type=network_ping tick=0 command_index=0"
     assert json.loads(json_out.read_text(encoding="utf-8")) == payload
 
 

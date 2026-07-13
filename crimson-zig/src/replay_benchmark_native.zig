@@ -878,7 +878,7 @@ fn buildBenchmarkFailedOutput(
 
 fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
     return switch (err) {
-        error.InvalidMsgpack => "replay payload does not match format 15 msgpack schema",
+        error.InvalidMsgpack => "replay payload does not match format 16 msgpack schema",
         error.InvalidHeaderValue => "replay header contains invalid values",
         error.InvalidClaimedStats => "replay header claimed_stats.shots_hit must be <= claimed_stats.shots_fired",
         error.MissingHeaderField => "replay header missing required fields",
@@ -886,11 +886,11 @@ fn benchmarkReplayLoadErrorDetail(err: anyerror) []const u8 {
         error.TypoMultiplayer => "Typ-o replays require player_count == 1",
         error.TutorialMultiplayer => "tutorial replays require player_count == 1",
         error.UnsupportedGameMode => "replay game mode is not supported",
-        error.UnsupportedInputShape => "replay tick inputs do not match format 15",
-        error.UnsupportedEventShape => "replay tick operations do not match format 15",
+        error.UnsupportedInputShape => "replay tick inputs do not match format 16",
+        error.UnsupportedEventShape => "replay tick operations do not match format 16",
         error.InvalidZstdPayload => "unable to inflate replay zstd payload",
         error.UnsupportedReplayFormatVersion => "replay format version is not supported",
-        error.UnknownCommandKind => "replay tick operations do not match format 15",
+        error.UnknownCommandKind => "replay tick operations do not match format 16",
         error.UnsupportedInputQuantization => "replay input quantization is not supported",
         error.FileTooBig => "replay zstd envelope exceeds max file size",
         error.PayloadTooLarge => "replay payload exceeds max decompressed size",
@@ -1233,7 +1233,7 @@ test "benchmark writes json and profile artifacts in human mode" {
 
 test "benchmark replay load errors use user-facing details" {
     try std.testing.expectEqualStrings(
-        "replay payload does not match format 15 msgpack schema",
+        "replay payload does not match format 16 msgpack schema",
         benchmarkReplayLoadErrorDetail(error.InvalidMsgpack),
     );
     try std.testing.expectEqualStrings(
@@ -1245,7 +1245,7 @@ test "benchmark replay load errors use user-facing details" {
         benchmarkReplayLoadErrorDetail(error.OutOfMemory),
     );
     try std.testing.expectEqualStrings(
-        "replay tick operations do not match format 15",
+        "replay tick operations do not match format 16",
         benchmarkReplayLoadErrorDetail(error.UnknownCommandKind),
     );
 }

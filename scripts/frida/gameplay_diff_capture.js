@@ -5,7 +5,7 @@
 // - deterministic command/event summaries for first-divergence debugging
 // - compact before/after snapshots and entity samples on every tick
 // - emits a single JSONL stream with explicit run markers:
-//   session_start, run_start, tick, run_end, session_end
+//   session_start, run_start, tick, run_end
 //
 // Attach:
 //   frida -n crimsonland.exe -l C:\share\frida\gameplay_diff_capture.js
@@ -20,16 +20,21 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 21;
+const CAPTURE_FORMAT_VERSION = 22;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
 // BEGIN CAPTURE_FIELD_SETS
 const CAPTURE_FIELD_SETS = {
   "session_start": ["event", "capture_format_version", "session_id", "out_path", "platform", "arch", "frida_version", "script_version", "config", "session_fingerprint"],
-  "session_start.config": ["out_path", "capture_profile", "config_env_overrides", "log_mode", "console_all_events", "console_events", "include_caller", "include_backtrace", "emit_ticks_outside_tracked_states", "tracked_states", "player_count_override", "focus_tick", "focus_radius", "heartbeat_ms", "flush_capture_writes", "max_head_per_kind", "max_events_per_tick", "max_rng_head_per_tick", "max_rng_caller_kinds", "enable_rng_roll_log", "max_rng_roll_log_events", "max_rng_outside_tick_head", "enable_rng_state_mirror", "max_creature_delta_ids", "creature_sample_limit", "projectile_sample_limit", "secondary_projectile_sample_limit", "bonus_sample_limit", "enable_input_hooks", "enable_rng_hooks", "enable_sfx_hooks", "enable_damage_hooks", "enable_effect_hooks", "creature_damage_projectile_only", "enable_spawn_hooks", "enable_creature_spawn_hook", "enable_creature_death_hook", "enable_bonus_spawn_hook", "enable_creature_lifecycle_digest", "enable_creature_micro_hooks", "creature_micro_slots", "creature_micro_tick_start", "creature_micro_tick_end", "creature_micro_max_head_per_tick"],
+  "session_start.config": ["out_path", "out_path_source", "capture_profile", "config_env_overrides", "console_all_events", "console_events", "include_caller", "include_backtrace", "emit_ticks_outside_tracked_states", "tracked_states", "player_count_override", "focus_tick", "focus_radius", "heartbeat_ms", "max_head_per_kind", "max_events_per_tick", "max_rng_head_per_tick", "max_rng_caller_kinds", "enable_rng_roll_log", "max_rng_roll_log_events", "max_rng_outside_tick_head", "enable_rng_state_mirror", "max_creature_delta_ids", "creature_sample_limit", "projectile_sample_limit", "secondary_projectile_sample_limit", "bonus_sample_limit", "enable_input_hooks", "enable_rng_hooks", "enable_sfx_hooks", "enable_damage_hooks", "enable_effect_hooks", "creature_damage_projectile_only", "enable_spawn_hooks", "enable_creature_spawn_hook", "enable_creature_death_hook", "enable_bonus_spawn_hook", "enable_creature_lifecycle_digest", "enable_creature_micro_hooks", "creature_micro_slots", "creature_micro_tick_start", "creature_micro_tick_end", "creature_micro_max_head_per_tick"],
   "session_start.session_fingerprint": ["session_id", "ptrs_hash", "module_hash"],
-  "run_start": ["event", "run_id", "mode_id", "seed", "player_count", "reason", "quest_stage_major", "quest_stage_minor", "seed_source", "global_tick_index", "rng_state_at_run_setup", "rng_setup_caller_static", "pool_residue", "settings"],
+  "run_start": [
+    "event", "run_id", "mode_id", "player_count", "reason",
+    "quest_stage_major", "quest_stage_minor", "global_tick_index",
+    "rng_state_before_bootstrap", "rng_state_after_bootstrap",
+    "rng_bootstrap_calls", "pool_residue", "settings"
+  ],
   "run_start.settings": ["tick_rate", "quest_fail_retry_count", "hardcore", "detail_preset", "violence_disabled", "world_size", "status"],
   "run_start.settings.status": ["quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts", "quest_play_counts", "mode_play_survival", "mode_play_rush", "mode_play_typo", "mode_play_other", "game_sequence_id", "unknown_tail"],
   "run_start.pool_residue[]": ["index", "active", "phase_seed", "state_flag", "collision_flag", "collision_timer", "lifecycle_stage", "pos", "vel", "hp", "max_hp", "heading", "target_heading", "size", "hit_flash_timer", "tint", "force_target", "target", "contact_damage", "move_speed", "attack_cooldown", "reward_value", "type_id", "target_player", "link_index", "target_offset", "orbit_angle", "orbit_radius_u32", "flags", "ai_mode", "anim_phase"],
@@ -59,13 +64,12 @@ const CAPTURE_FIELD_SETS = {
   "tick.channels.rng_stream[]": ["tick_call_index", "value_15", "state_before_u32", "state_after_u32", "caller"],
   "tick.channels.timing_samples[]": ["tick_index", "gameplay_frame", "phase", "write_kind", "frame_dt_f32", "frame_dt_ms_i32", "frame_dt_ms_f32", "time_scale_active_entry", "time_scale_active_current", "time_scale_factor", "bonus_reflex_boost_timer", "mode_fn", "player_index"],
   "tick.rng_outside_before": ["calls", "dropped", "caller_counts", "head"],
-  "tick.rng_outside_before.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static"],
-  "run_end": ["event", "run_id", "mode_id", "quest_stage_major", "quest_stage_minor", "ticks_written", "reason", "global_tick_index", "rng_outside_tail"],
+  "tick.rng_outside_before.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static", "replay_operation_index"],
+  "run_end": ["event", "run_id", "mode_id", "quest_stage_major", "quest_stage_minor", "ticks_written", "reason", "global_tick_index", "trailing_prelude", "rng_outside_tail"],
   "run_end.rng_outside_tail": ["calls", "dropped", "caller_counts", "head"],
-  "run_end.rng_outside_tail.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static"],
+  "run_end.rng_outside_tail.head[]": ["state_before_u32", "state_after_u32", "value_15", "caller_static", "replay_operation_index"],
   "run_error": ["event", "error", "run_id", "mode_id", "quest_stage_major", "quest_stage_minor", "global_tick_index"],
-  "error": ["event", "error", "run_id", "global_tick_index"],
-  "session_end": ["event", "session_id", "ticks_written"]
+  "error": ["event", "error", "run_id", "global_tick_index"]
 };
 // END CAPTURE_FIELD_SETS
 // First rng caller of native run setup (terrain_generate prelude roll 1). The
@@ -206,7 +210,6 @@ function parseStringSet(raw, fallbackCsv) {
 const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_DIR",
   "CRIMSON_FRIDA_OUT_PATH",
-  "CRIMSON_FRIDA_APPEND",
   "CRIMSON_FRIDA_CONSOLE_ALL_EVENTS",
   "CRIMSON_FRIDA_CONSOLE_EVENTS",
   "CRIMSON_FRIDA_INCLUDE_CALLER",
@@ -218,7 +221,6 @@ const CONFIG_ENV_KEYS = [
   "CRIMSON_FRIDA_FOCUS_TICK",
   "CRIMSON_FRIDA_FOCUS_RADIUS",
   "CRIMSON_FRIDA_HEARTBEAT_MS",
-  "CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES",
   "CRIMSON_FRIDA_MAX_HEAD",
   "CRIMSON_FRIDA_MAX_EVENTS_PER_TICK",
   "CRIMSON_FRIDA_RNG_HEAD",
@@ -282,10 +284,20 @@ function toHex(value, width) {
 }
 
 const LOG_DIR = getEnv("CRIMSON_FRIDA_DIR") || DEFAULT_LOG_DIR;
+const HOST_CONFIG =
+  globalThis.CRIMSON_CAPTURE_HOST_CONFIG &&
+  typeof globalThis.CRIMSON_CAPTURE_HOST_CONFIG === "object"
+    ? globalThis.CRIMSON_CAPTURE_HOST_CONFIG
+    : null;
+const HOST_OUT_PATH =
+  HOST_CONFIG && typeof HOST_CONFIG.out_path === "string" && HOST_CONFIG.out_path.trim()
+    ? HOST_CONFIG.out_path.trim()
+    : null;
+const ENV_OUT_PATH = getEnv("CRIMSON_FRIDA_OUT_PATH");
 
 const CONFIG = {
-  outPath: getEnv("CRIMSON_FRIDA_OUT_PATH") || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
-  logMode: getEnv("CRIMSON_FRIDA_APPEND") === "1" ? "append" : "truncate",
+  outPath: HOST_OUT_PATH || ENV_OUT_PATH || joinPath(LOG_DIR, DEFAULT_OUT_NAME),
+  outPathSource: HOST_OUT_PATH ? "host" : ENV_OUT_PATH ? "environment" : "default",
   consoleAllEvents: parseBoolEnv("CRIMSON_FRIDA_CONSOLE_ALL_EVENTS", false),
   consoleEvents: parseStringSet(getEnv("CRIMSON_FRIDA_CONSOLE_EVENTS"), DEFAULT_CONSOLE_EVENTS),
   includeCaller: parseBoolEnv("CRIMSON_FRIDA_INCLUDE_CALLER", true),
@@ -297,7 +309,6 @@ const CONFIG = {
   focusTick: parseIntEnv("CRIMSON_FRIDA_FOCUS_TICK", -1),
   focusRadius: Math.max(0, parseIntEnv("CRIMSON_FRIDA_FOCUS_RADIUS", 0)),
   heartbeatMs: Math.max(100, parseIntEnv("CRIMSON_FRIDA_HEARTBEAT_MS", 1000)),
-  flushCaptureWrites: parseBoolEnv("CRIMSON_FRIDA_FLUSH_CAPTURE_WRITES", false),
   maxHeadPerKind: parseLimitEnv("CRIMSON_FRIDA_MAX_HEAD", -1, 0),
   maxEventsPerTick: parseLimitEnv("CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", -1, 0),
   maxRngHeadPerTick: parseLimitEnv("CRIMSON_FRIDA_RNG_HEAD", -1, 0),
@@ -632,6 +643,7 @@ const outState = {
   captureMetaTemplate: null,
   captureStarted: false,
   captureClosed: false,
+  captureFailure: null,
   captureTickCount: 0,
   runActive: false,
   currentRunId: 0,
@@ -682,10 +694,9 @@ const outState = {
   perkApplyOutsideTickPendingCalls: 0,
   perkApplyOutsideTickPendingDropped: 0,
   pendingReplayPrelude: [],
-  replayPreludeSuppressionDepthByTid: {},
+  replayPreludeOperationStackByTid: {},
   runSetupRngActive: false,
   pending_timing_samples: [],
-  lastSrandSeed: null,
   lastTickElapsedMs: null,
   lastTickGameplayFrame: null,
   lastCreatureDigest: null,
@@ -931,20 +942,35 @@ function runKeyForTick(tickObj) {
   );
 }
 
-function requireRunStartSeedU32(tickObj) {
-  if (outState.lastSrandSeed != null) return outState.lastSrandSeed >>> 0;
-  return emitCaptureContractError("missing_run_start_seed", tickObj);
+function noteCaptureIoFailure(operation, error) {
+  if (outState.captureFailure) return;
+  outState.captureFailure = {
+    operation: String(operation || "capture_io"),
+    error: String(error || "unknown"),
+  };
+  try {
+    send({
+      event: "capture_runtime_error",
+      error: "capture_io_failed",
+      details: outState.captureFailure,
+    });
+  } catch (_) {}
 }
 
 function openOutFile() {
-  if (outState.outFile) return;
+  if (outState.outFile) return true;
   const outPath = outState.currentOutPath || CONFIG.outPath;
-  if (!outPath) return;
-  const mode = CONFIG.logMode === "append" ? "a" : "w";
+  if (!outPath) {
+    noteCaptureIoFailure("open", "missing output path");
+    return false;
+  }
   try {
-    outState.outFile = new File(outPath, mode);
-  } catch (_) {
+    outState.outFile = new File(outPath, "w");
+    return true;
+  } catch (error) {
     outState.outFile = null;
+    noteCaptureIoFailure("open", error);
+    return false;
   }
 }
 
@@ -962,12 +988,12 @@ function writeLine(obj) {
 
 function _captureWrite(text, flushNow) {
   try {
-    openOutFile();
-    if (!outState.outFile) return false;
+    if (!openOutFile() || !outState.outFile) return false;
     outState.outFile.write(String(text));
-    if (flushNow && CONFIG.flushCaptureWrites) outState.outFile.flush();
+    if (flushNow) outState.outFile.flush();
     return true;
-  } catch (_) {
+  } catch (error) {
+    noteCaptureIoFailure(flushNow ? "write_and_flush" : "write", error);
     return false;
   }
 }
@@ -1034,13 +1060,6 @@ function _captureWriteJsonLine(obj, flushNow) {
   return _captureWrite(JSON.stringify(obj) + "\n", flushNow);
 }
 
-function _captureForceFlush() {
-  try {
-    if (!outState.outFile) return;
-    outState.outFile.flush();
-  } catch (_) {}
-}
-
 function emitCaptureContractError(errorCode, tickObj) {
   const runKey = outState.currentRunKey || runKeyForTick(tickObj);
   const row = {
@@ -1100,6 +1119,36 @@ function requiredReplayDataNames() {
 
 function replayConfigReadinessErrors() {
   const errors = [];
+  const unlimitedLimits = [
+    ["CRIMSON_FRIDA_MAX_HEAD", CONFIG.maxHeadPerKind],
+    ["CRIMSON_FRIDA_MAX_EVENTS_PER_TICK", CONFIG.maxEventsPerTick],
+    ["CRIMSON_FRIDA_RNG_HEAD", CONFIG.maxRngHeadPerTick],
+    ["CRIMSON_FRIDA_RNG_CALLERS", CONFIG.maxRngCallerKinds],
+    ["CRIMSON_FRIDA_RNG_OUTSIDE_TICK_HEAD", CONFIG.maxRngOutsideTickHead],
+    ["CRIMSON_FRIDA_CREATURE_DELTA_IDS", CONFIG.maxCreatureDeltaIds],
+    ["CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT", CONFIG.creatureSampleLimit],
+    ["CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT", CONFIG.projectileSampleLimit],
+    ["CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT", CONFIG.secondaryProjectileSampleLimit],
+    ["CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT", CONFIG.bonusSampleLimit],
+  ];
+  for (let i = 0; i < unlimitedLimits.length; i++) {
+    const key = unlimitedLimits[i][0];
+    const value = unlimitedLimits[i][1];
+    if (value >= 0) {
+      errors.push({
+        key: key,
+        raw: String(value),
+        reason: "must be unlimited (-1) for replay-grade capture",
+      });
+    }
+  }
+  if (CONFIG.focusTick >= 0) {
+    errors.push({
+      key: "CRIMSON_FRIDA_FOCUS_TICK",
+      raw: String(CONFIG.focusTick),
+      reason: "must remain unset because replay-grade capture records every tick",
+    });
+  }
   if (CONFIG.playerCountOverride > 0) {
     errors.push({
       key: "CRIMSON_FRIDA_PLAYER_COUNT",
@@ -1126,41 +1175,6 @@ function replayConfigReadinessErrors() {
       key: "CRIMSON_FRIDA_RNG_STATE_MIRROR",
       raw: String(CONFIG.enableRngStateMirror),
       reason: "must remain enabled for replay-grade capture",
-    });
-  }
-  if (CONFIG.maxRngHeadPerTick >= 0) {
-    errors.push({
-      key: "CRIMSON_FRIDA_RNG_HEAD",
-      raw: String(CONFIG.maxRngHeadPerTick),
-      reason: "must be unlimited (-1) for replay-grade rng_stream rows",
-    });
-  }
-  if (CONFIG.creatureSampleLimit >= 0) {
-    errors.push({
-      key: "CRIMSON_FRIDA_CREATURE_SAMPLE_LIMIT",
-      raw: String(CONFIG.creatureSampleLimit),
-      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
-    });
-  }
-  if (CONFIG.projectileSampleLimit >= 0) {
-    errors.push({
-      key: "CRIMSON_FRIDA_PROJECTILE_SAMPLE_LIMIT",
-      raw: String(CONFIG.projectileSampleLimit),
-      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
-    });
-  }
-  if (CONFIG.secondaryProjectileSampleLimit >= 0) {
-    errors.push({
-      key: "CRIMSON_FRIDA_SECONDARY_PROJECTILE_SAMPLE_LIMIT",
-      raw: String(CONFIG.secondaryProjectileSampleLimit),
-      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
-    });
-  }
-  if (CONFIG.bonusSampleLimit >= 0) {
-    errors.push({
-      key: "CRIMSON_FRIDA_BONUS_SAMPLE_LIMIT",
-      raw: String(CONFIG.bonusSampleLimit),
-      reason: "must be unlimited (-1) for replay-grade entity_samples rows",
     });
   }
   return errors;
@@ -1238,11 +1252,11 @@ function startCaptureFile(meta, outPath) {
   outState.pending_timing_samples = [];
   outState.captureStarted = false;
   outState.captureClosed = false;
+  outState.captureFailure = null;
   const started = _captureWriteJsonLine(
     emitSessionStartRow(meta, targetOutPath),
     true,
   );
-  if (started) _captureForceFlush();
   outState.captureStarted = started;
   outState.captureClosed = !started;
   if (!started && !outState.outWarned) {
@@ -1260,7 +1274,15 @@ function closeActiveRun(reason, tickObj) {
   }
   // Draws between the run's last tick and its close belong to this run, not
   // to the next tick's outside-before bag.
-  const outsideTail = takePendingOutsideRngRolls();
+  const trailingPrelude = replayPreludeFromRows(
+    outState.pendingReplayPrelude,
+    "run_end.trailing_prelude",
+  );
+  const outsideTail = rngOutsideBagFromRows(
+    takePendingOutsideRngRolls(),
+    "run_end.rng_outside_tail",
+    trailingPrelude,
+  );
   const wrote = _captureWriteJsonLine(
     {
       event: "run_end",
@@ -1272,23 +1294,24 @@ function closeActiveRun(reason, tickObj) {
       global_tick_index:
         outState.lastTickIndexGlobal == null ? -1 : outState.lastTickIndexGlobal | 0,
       ticks_written: outState.currentRunTickCount | 0,
+      trailing_prelude: trailingPrelude,
       rng_outside_tail: {
         calls: outsideTail.calls | 0,
         dropped: outsideTail.dropped | 0,
         caller_counts: outsideTail.caller_counts || {},
         head: (outsideTail.head || []).map(function (row) {
           return {
-            value_15: row.value_15 == null ? null : row.value_15 | 0,
-            state_before_u32: row.state_before_u32 == null ? null : row.state_before_u32 >>> 0,
-            state_after_u32: row.state_after_u32 == null ? null : row.state_after_u32 >>> 0,
-            caller_static: row.caller_static == null ? null : String(row.caller_static),
+            value_15: row.value_15 | 0,
+            state_before_u32: row.state_before_u32 >>> 0,
+            state_after_u32: row.state_after_u32 >>> 0,
+            caller_static: String(row.caller_static),
+            replay_operation_index: row.replay_operation_index | 0,
           };
         }),
       },
     },
     true,
   );
-  if (wrote) _captureForceFlush();
   resetCurrentRunState();
 }
 
@@ -1306,7 +1329,7 @@ function resetCurrentRunState() {
   outState.currentRunElapsedNormalizedMs = null;
   outState.pendingRunCloseReason = null;
   outState.pendingReplayPrelude = [];
-  outState.replayPreludeSuppressionDepthByTid = {};
+  outState.replayPreludeOperationStackByTid = {};
   resetEntityUidStates();
 }
 
@@ -1362,8 +1385,6 @@ function startRunForTick(tickObj, reason) {
     const questMajor = tickQuestMajor(tickObj);
     const questMinor = tickQuestMinor(tickObj);
     const runKey = runKeyForTick(tickObj);
-    const runSeed = requireRunStartSeedU32(tickObj);
-    if (runSeed == null) return false;
     const playerCount = runPlayerCountFromTick(tickObj);
     outState.currentRunId = (outState.currentRunId | 0) + 1;
     outState.currentRunTickCount = 0;
@@ -1386,8 +1407,8 @@ function startRunForTick(tickObj, reason) {
     outState.pendingRunSetupRng = null;
     const poolResidue = outState.pendingRunPoolResidue;
     outState.pendingRunPoolResidue = null;
-    if (!setupRng) {
-      emitCaptureContractError("missing_run_setup_rng_state", tickObj);
+    if (!setupRng || setupRng.state_after_u32 == null) {
+      emitCaptureContractError("missing_rng_bootstrap_boundary", tickObj);
       return false;
     }
     if (!poolResidue) {
@@ -1403,10 +1424,9 @@ function startRunForTick(tickObj, reason) {
         mode_id: outState.currentRunModeId | 0,
         quest_stage_major: outState.currentRunQuestMajor | 0,
         quest_stage_minor: outState.currentRunQuestMinor | 0,
-        seed: runSeed >>> 0,
-        seed_source: "crt_srand",
-        rng_state_at_run_setup: setupRng.state_before_u32 >>> 0,
-        rng_setup_caller_static: setupRng.caller_static,
+        rng_state_before_bootstrap: setupRng.state_before_u32 >>> 0,
+        rng_state_after_bootstrap: setupRng.state_after_u32 >>> 0,
+        rng_bootstrap_calls: setupRng.calls,
         pool_residue: poolResidue,
         player_count: playerCount,
         settings: runSettingsFromTick(tickObj),
@@ -1420,7 +1440,6 @@ function startRunForTick(tickObj, reason) {
       return false;
     }
     outState.currentRunStarted = true;
-    _captureForceFlush();
     return true;
   } catch (error) {
     if (isCaptureContractError(error)) {
@@ -1507,7 +1526,7 @@ function requireInt(value, field) {
   if (parsed == null) {
     failCaptureContract(field + " must be an integer");
   }
-  return parsed | 0;
+  return parsed;
 }
 
 function requireNonNegativeInt(value, field) {
@@ -1515,7 +1534,7 @@ function requireNonNegativeInt(value, field) {
   if (parsed < 0) {
     failCaptureContract(field + " must be >= 0");
   }
-  return parsed | 0;
+  return parsed;
 }
 
 function requirePositiveInt(value, field) {
@@ -1523,7 +1542,7 @@ function requirePositiveInt(value, field) {
   if (parsed <= 0) {
     failCaptureContract(field + " must be > 0");
   }
-  return parsed | 0;
+  return parsed;
 }
 
 function requireU32(value, field) {
@@ -1538,15 +1557,16 @@ function requireU32(value, field) {
 
 function intOr(value, fallback) {
   if (value == null) return fallback;
-  if (typeof value === "number" && Number.isFinite(value)) return value | 0;
-  return fallback;
-}
-
-function asReplayF32(value) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return captureNumber(value);
+  if (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value >= -0x80000000 &&
+    value <= 0x7fffffff
+  ) {
+    return value;
   }
-  return 0;
+  return fallback;
 }
 
 function requireReplayBool(value, field) {
@@ -2089,29 +2109,100 @@ function rngStreamFromTick(tickObj) {
   return out;
 }
 
-function rngOutsideBagFromRows(bag, field) {
+function rngOutsideBagFromRows(bag, field, replayPrelude) {
   const src = requireObject(bag, field);
+  const replayRows = requireArray(replayPrelude, field + ".replay_prelude");
   const calls = requireInt(src.calls, field + ".calls");
   const dropped = requireInt(src.dropped, field + ".dropped");
   if (calls < 0 || dropped < 0) {
     failCaptureContract(field + " calls/dropped must be >= 0");
   }
+  const head = requireArray(src.head, field + ".head");
+  if (dropped !== 0 || calls !== head.length) {
+    failCaptureContract(
+      field + " must contain every outside RNG row (calls=" + calls + " dropped=" + dropped + " head=" +
+        head.length + ")",
+    );
+  }
   const callerCounts = {};
-  const srcCounts = src.caller_counts && typeof src.caller_counts === "object" ? src.caller_counts : {};
+  const srcCounts = requireObject(src.caller_counts, field + ".caller_counts");
   const countKeys = Object.keys(srcCounts);
   for (let i = 0; i < countKeys.length; i++) {
-    callerCounts[String(countKeys[i])] = srcCounts[countKeys[i]] | 0;
+    const key = String(countKeys[i]);
+    callerCounts[key] = requireNonNegativeInt(srcCounts[key], field + ".caller_counts[" + key + "]");
   }
-  const head = requireArray(src.head, field + ".head");
   const rows = [];
+  const actualCallerCounts = {};
+  const callsByOperation = {};
+  let previousAfter = null;
+  let previousOperationIndex = null;
   for (let i = 0; i < head.length; i++) {
     const row = requireObject(head[i], field + ".head[" + i + "]");
+    const callerStatic = row.caller_static == null ? null : String(row.caller_static);
+    if (callerStatic == null) {
+      failCaptureContract(field + ".head[" + i + "].caller_static must be present");
+    }
+    const callerValue = parseHexU32(callerStatic);
+    if (callerValue == null || callerStatic !== toHex(callerValue, 8)) {
+      failCaptureContract(field + ".head[" + i + "].caller_static must be a canonical static uint32 address");
+    }
+    const operationIndex = requireNonNegativeInt(
+      row.replay_operation_index,
+      field + ".head[" + i + "].replay_operation_index",
+    );
+    if (operationIndex >= replayRows.length) {
+      failCaptureContract(field + ".head[" + i + "].replay_operation_index is out of range");
+    }
+    if (previousOperationIndex != null && operationIndex < previousOperationIndex) {
+      failCaptureContract(field + ".head[" + i + "].replay_operation_index is out of order");
+    }
+    previousOperationIndex = operationIndex;
+    const operation = requireObject(replayRows[operationIndex], field + ".replay_prelude[" + operationIndex + "]");
+    const operationType = String(operation.type || "");
+    if (operationType === "game_frame_rng_advance") {
+      if (callerStatic !== FRAME_DISCARDED_RNG_CALLER_STATIC) {
+        failCaptureContract(field + ".head[" + i + "] frame operation has caller " + callerStatic);
+      }
+    } else if (operationType !== "perk_menu_open" && operationType !== "perk_pick") {
+      failCaptureContract(field + ".head[" + i + "] references unsupported replay operation " + operationType);
+    }
+    const stateBefore = requireU32(row.state_before_u32, field + ".head[" + i + "].state_before_u32");
+    const stateAfter = requireU32(row.state_after_u32, field + ".head[" + i + "].state_after_u32");
+    const value15 = requireInt(row.value_15, field + ".head[" + i + "].value_15");
+    if (previousAfter != null && stateBefore !== previousAfter) {
+      failCaptureContract(field + ".head[" + i + "] does not continue the prior RNG state");
+    }
+    const expectedAfter = (Math.imul(stateBefore, 214013) + 2531011) >>> 0;
+    if (stateAfter !== expectedAfter || value15 !== ((stateAfter >>> 16) & 0x7fff)) {
+      failCaptureContract(field + ".head[" + i + "] is not a valid CRT rand transition");
+    }
+    actualCallerCounts[callerStatic] = (actualCallerCounts[callerStatic] || 0) + 1;
+    callsByOperation[operationIndex] = (callsByOperation[operationIndex] || 0) + 1;
+    previousAfter = stateAfter;
     rows.push({
-      value_15: row.value_15 == null ? null : row.value_15 | 0,
-      state_before_u32: requireU32(row.state_before_u32, field + ".head[" + i + "].state_before_u32"),
-      state_after_u32: requireU32(row.state_after_u32, field + ".head[" + i + "].state_after_u32"),
-      caller_static: row.caller_static == null ? null : String(row.caller_static),
+      value_15: value15,
+      state_before_u32: stateBefore,
+      state_after_u32: stateAfter,
+      caller_static: callerStatic,
+      replay_operation_index: operationIndex,
     });
+  }
+  const declaredCallerKeys = Object.keys(callerCounts).sort();
+  const actualCallerKeys = Object.keys(actualCallerCounts).sort();
+  if (declaredCallerKeys.length !== actualCallerKeys.length) {
+    failCaptureContract(field + ".caller_counts does not match captured rows");
+  }
+  for (let i = 0; i < declaredCallerKeys.length; i++) {
+    const key = declaredCallerKeys[i];
+    if (key !== actualCallerKeys[i] || callerCounts[key] !== actualCallerCounts[key]) {
+      failCaptureContract(field + ".caller_counts does not match captured rows");
+    }
+  }
+  for (let i = 0; i < replayRows.length; i++) {
+    const operation = replayRows[i];
+    if (operation.type === "game_frame_rng_advance" && (callsByOperation[i] || 0) !== (operation.frames | 0)) {
+      failCaptureContract(field + " frame operation " + i + " does not match its captured RNG rows");
+    }
   }
   return {
     calls: calls,
@@ -2183,14 +2274,14 @@ function normalizeRunElapsedMs(rawElapsedMs, dtMsI32) {
   return outState.currentRunElapsedNormalizedMs | 0;
 }
 
-function replayPreludeFromTick(tickObj) {
-  const raw = requireArray(tickObj && tickObj.replay_prelude, "replay_prelude");
+function replayPreludeFromRows(value, fieldPrefix) {
+  const raw = requireArray(value, fieldPrefix);
   return raw.map(function (value, index) {
-    const field = "replay_prelude[" + index + "]";
+    const field = fieldPrefix + "[" + index + "]";
     const row = requireObject(value, field);
     const type = row.type == null ? "" : String(row.type);
-    if (type === "rng_burn") {
-      return { type: type, draws: requirePositiveInt(row.draws, field + ".draws") };
+    if (type === "game_frame_rng_advance") {
+      return { type: type, frames: requirePositiveInt(row.frames, field + ".frames") };
     }
     const playerIndex = requireNonNegativeInt(row.player_index, field + ".player_index");
     if (type === "perk_menu_open") {
@@ -2205,6 +2296,10 @@ function replayPreludeFromTick(tickObj) {
     }
     failCaptureContract(field + ".type is unsupported: " + type);
   });
+}
+
+function replayPreludeFromTick(tickObj) {
+  return replayPreludeFromRows(tickObj && tickObj.replay_prelude, "replay_prelude");
 }
 
 function replayPostludeFromTick(tickObj) {
@@ -2240,7 +2335,12 @@ function buildTraceTickRow(tickObj) {
         "rng_calls " + rngCalls + " does not match rng_stream length " + rngStream.length
       );
     }
-    const rngOutsideBefore = rngOutsideBagFromRows(tickObj.rng_outside_before, "rng_outside_before");
+    const replayPrelude = replayPreludeFromTick(tickObj);
+    const rngOutsideBefore = rngOutsideBagFromRows(
+      tickObj.rng_outside_before,
+      "rng_outside_before",
+      replayPrelude,
+    );
     const rngStateEnter = requireU32(tickObj.rng_state_enter_u32, "rng_state_enter_u32");
     const rngStateLeave = requireU32(tickObj.rng_state_leave_u32, "rng_state_leave_u32");
     const timingSamples = timingSamplesFromTick(tickObj);
@@ -2335,7 +2435,6 @@ function buildTraceTickRow(tickObj) {
         flags: packed[4] | 0,
       };
     });
-    const replayPrelude = replayPreludeFromTick(tickObj);
     const replayPostlude = replayPostludeFromTick(tickObj);
 
     return {
@@ -2420,10 +2519,11 @@ function closeCaptureFile() {
   if (!outState.captureStarted || outState.captureClosed) return;
   try {
     if (outState.outFile) {
-      if (CONFIG.flushCaptureWrites) outState.outFile.flush();
+      outState.outFile.flush();
       outState.outFile.close();
     }
-  } catch (_) {
+  } catch (error) {
+    noteCaptureIoFailure("close", error);
   }
   outState.outFile = null;
   outState.captureClosed = true;
@@ -2442,17 +2542,6 @@ function shutdownCapture(reason) {
   finalizeTickOrReport();
   try {
     closeActiveRun("shutdown", null);
-  } catch (_) {}
-  try {
-    const wroteSessionEnd = _captureWriteJsonLine(
-      {
-        event: "session_end",
-        session_id: outState.sessionId,
-        ticks_written: outState.captureTickCount | 0,
-      },
-      true,
-    );
-    if (wroteSessionEnd) _captureForceFlush();
   } catch (_) {}
   try {
     closeCaptureFile();
@@ -4542,15 +4631,16 @@ function appendReplayPreludeOp(tickObj, op) {
     : (Array.isArray(outState.pendingReplayPrelude)
       ? outState.pendingReplayPrelude
       : (outState.pendingReplayPrelude = []));
-  if (op && op.type === "rng_burn") {
-    const draws = requirePositiveInt(op.draws, "replay_prelude.rng_burn.draws");
+  if (op && op.type === "game_frame_rng_advance") {
+    const frames = requirePositiveInt(op.frames, "replay_prelude.game_frame_rng_advance.frames");
     const last = target.length > 0 ? target[target.length - 1] : null;
-    if (last && last.type === "rng_burn") {
-      last.draws = (last.draws | 0) + draws;
-      return;
+    if (last && last.type === "game_frame_rng_advance") {
+      last.frames = (last.frames | 0) + frames;
+      return target.length - 1;
     }
   }
   target.push(op);
+  return target.length - 1;
 }
 
 function appendReplayPostludeOp(tickObj, op) {
@@ -4561,21 +4651,28 @@ function appendReplayPostludeOp(tickObj, op) {
   target.push(op);
 }
 
-function beginReplayPreludeRngSuppression(threadId) {
+function beginReplayPreludeRngSuppression(threadId, operationIndex) {
   const key = String(threadId);
-  outState.replayPreludeSuppressionDepthByTid[key] =
-    (outState.replayPreludeSuppressionDepthByTid[key] || 0) + 1;
+  const stack = Array.isArray(outState.replayPreludeOperationStackByTid[key])
+    ? outState.replayPreludeOperationStackByTid[key]
+    : [];
+  stack.push(requireNonNegativeInt(operationIndex, "replay_operation_index"));
+  outState.replayPreludeOperationStackByTid[key] = stack;
 }
 
 function endReplayPreludeRngSuppression(threadId) {
   const key = String(threadId);
-  const depth = (outState.replayPreludeSuppressionDepthByTid[key] || 0) - 1;
-  if (depth > 0) outState.replayPreludeSuppressionDepthByTid[key] = depth;
-  else delete outState.replayPreludeSuppressionDepthByTid[key];
+  const stack = outState.replayPreludeOperationStackByTid[key];
+  if (!Array.isArray(stack) || stack.length <= 0) {
+    failCaptureContract("replay operation stack underflow");
+  }
+  stack.pop();
+  if (stack.length <= 0) delete outState.replayPreludeOperationStackByTid[key];
 }
 
-function replayPreludeRngSuppressed(threadId) {
-  return (outState.replayPreludeSuppressionDepthByTid[String(threadId)] || 0) > 0;
+function currentReplayPreludeOperationIndex(threadId) {
+  const stack = outState.replayPreludeOperationStackByTid[String(threadId)];
+  return Array.isArray(stack) && stack.length > 0 ? stack[stack.length - 1] | 0 : null;
 }
 
 function emitRngRollEvent(rollRow) {
@@ -4629,10 +4726,14 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
   const tickCallIndex = tick ? tick.rng.calls + 1 : null;
   const mirrorBeforeU32 =
     CONFIG.enableRngStateMirror && outState.rngMirrorStateU32 != null ? outState.rngMirrorStateU32 >>> 0 : null;
-  // The real memory state is authoritative; the software mirror only models
-  // hooked draws, so mirror-vs-real divergence is evidence of unhooked draws.
-  const stateBeforeU32 = stateBeforeRealU32 != null ? stateBeforeRealU32 >>> 0 : mirrorBeforeU32;
-  const stateAfterU32 = stateBeforeU32 == null ? null : stepCrtRandState(stateBeforeU32);
+  if (stateBeforeRealU32 == null) {
+    emitCaptureContractError("missing_real_rng_state_before_draw", tick);
+    return null;
+  }
+  // Real CRT memory is the canonical chain. The software mirror remains
+  // diagnostics only and can never supply capture state.
+  const stateBeforeU32 = stateBeforeRealU32 >>> 0;
+  const stateAfterU32 = stepCrtRandState(stateBeforeU32);
   const expectedValue15 =
     mirrorBeforeU32 == null ? null : (stepCrtRandState(mirrorBeforeU32) >>> 16) & 0x7fff;
   let mirrorMatch = null;
@@ -4648,11 +4749,7 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     // The mirror resyncs to the real chain when available so mirror_match
     // flags each unhooked-draw gap once instead of permanently after the
     // first gap.
-    if (stateAfterU32 != null) {
-      outState.rngMirrorStateU32 = stateAfterU32 >>> 0;
-    } else if (mirrorBeforeU32 != null) {
-      outState.rngMirrorStateU32 = stepCrtRandState(mirrorBeforeU32) >>> 0;
-    }
+    outState.rngMirrorStateU32 = stateAfterU32 >>> 0;
   }
 
   const rollRow = {
@@ -4682,12 +4779,12 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     // run_start wins so restarts and quest retries re-latch naturally.
     outState.pendingRunSetupRng = {
       state_before_u32: rollRow.state_before_u32 >>> 0,
-      caller_static: String(rollRow.caller_static),
-      seq: rollRow.seq >>> 0,
+      state_after_u32: null,
+      calls: 0,
     };
     // The replay seed is latched before this setup sequence, so terrain/setup
     // draws are reproduced by normal run initialization and must not become
-    // prelude burns on the first gameplay tick.
+    // frame-advance operations on the first gameplay tick.
     outState.runSetupRngActive = true;
     outState.pendingReplayPrelude = [];
     // The pool is stable between creature_reset_all and the run's first tick;
@@ -4701,16 +4798,46 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     rollRow.caller_static === FRAME_DISCARDED_RNG_CALLER_STATIC
   ) {
     // The state-transition frame consumes one shared-CRT draw after run setup
-    // and before gameplay tick 0. It belongs in tick 0's replay prelude; the
-    // terrain/setup window before it is reproduced by normal initialization.
+    // and before the first gameplay update. It belongs in that update's replay
+    // prelude; normal initialization reproduces the preceding setup window.
+    if (outState.pendingRunSetupRng) {
+      outState.pendingRunSetupRng.state_after_u32 = rollRow.state_before_u32 >>> 0;
+    }
     outState.runSetupRngActive = false;
   }
 
   if (!tick) {
-    outState.rngCallsOutsideTick += 1;
-    if (!outState.runSetupRngActive && !replayPreludeRngSuppressed(threadId)) {
-      appendReplayPreludeOp(null, { type: "rng_burn", draws: 1 });
+    if (outState.runSetupRngActive) {
+      // Replay initialization owns terrain/setup draws from the captured
+      // pre-bootstrap state. They are neither skipped frames nor replay
+      // prelude input, so keep them out of the outside-before bag.
+      if (outState.pendingRunSetupRng) {
+        outState.pendingRunSetupRng.calls += 1;
+      }
+      emitRngRollEvent(rollRow);
+      return rollRow;
     }
+    outState.rngCallsOutsideTick += 1;
+    let replayOperationIndex = currentReplayPreludeOperationIndex(threadId);
+    if (replayOperationIndex == null) {
+      if (rollRow.caller_static !== FRAME_DISCARDED_RNG_CALLER_STATIC) {
+        emitCaptureContractError(
+          "unclassified_outside_rng_caller:" + String(rollRow.caller_static || "unknown"),
+          null,
+        );
+        emitRngRollEvent(rollRow);
+        return null;
+      } else {
+        replayOperationIndex = appendReplayPreludeOp(null, {
+          type: "game_frame_rng_advance",
+          frames: 1,
+        });
+      }
+    }
+    rollRow.replay_operation_index = requireNonNegativeInt(
+      replayOperationIndex,
+      "outside_rng.replay_operation_index",
+    );
     queueOutsideRngRoll(rollRow);
     emitRngRollEvent(rollRow);
     return rollRow;
@@ -5041,14 +5168,10 @@ function finalizeTick() {
       : globals.creature_active_count == null
         ? -1
         : globals.creature_active_count;
-  // Real memory state at gpur leave is authoritative for the checkpoint; the
-  // hooked-draws mirror is only the fallback when the ptd read is unavailable.
-  const rngStateForCheckpoint =
-    outState.lastGpurLeaveRngStateReal != null
-      ? outState.lastGpurLeaveRngStateReal >>> 0
-      : CONFIG.enableRngStateMirror && outState.rngMirrorStateU32 != null
-        ? outState.rngMirrorStateU32 >>> 0
-        : null;
+  if (outState.lastGpurLeaveRngStateReal == null) {
+    failCaptureContract("missing real CRT RNG state at gameplay_update_and_render leave");
+  }
+  const rngStateForCheckpoint = outState.lastGpurLeaveRngStateReal >>> 0;
   const diagnostics = {
     sampling_phase: "post_gameplay_update_and_render",
     timing: timing,
@@ -5068,7 +5191,7 @@ function finalizeTick() {
 
   const checkpoint = {
     tick_index: tick.tick_index,
-    rng_state: rngStateForCheckpoint == null ? -1 : rngStateForCheckpoint,
+    rng_state: rngStateForCheckpoint,
     elapsed_ms: globals.time_played_ms == null ? -1 : globals.time_played_ms,
     score_xp: scoreXp,
     kills: killCount,
@@ -5606,7 +5729,6 @@ function installHooks() {
         const ctx = srandContextByTid[this.threadId];
         delete srandContextByTid[this.threadId];
         if (!ctx) return;
-        outState.lastSrandSeed = ctx.seed_u32 >>> 0;
         outState.rngSeedEpoch += 1;
         if (CONFIG.enableRngStateMirror) {
           outState.rngMirrorStateU32 = ctx.seed_u32 >>> 0;
@@ -6491,9 +6613,12 @@ function installHooks() {
       } else {
         // Between native ticks, replay applies the equivalent operation before
         // the next simulation tick. Suppress its outside draws from also being
-        // encoded as unrelated rng_burn operations.
-        appendReplayPreludeOp(null, { type: "perk_menu_open", player_index: 0 });
-        beginReplayPreludeRngSuppression(this.threadId);
+        // encoded as unrelated frame-advance operations.
+        const operationIndex = appendReplayPreludeOp(null, {
+          type: "perk_menu_open",
+          player_index: 0,
+        });
+        beginReplayPreludeRngSuppression(this.threadId, operationIndex);
       }
       this._perkGenerateCtx = {
         choices_before: choicesBefore,
@@ -6540,19 +6665,23 @@ function installHooks() {
         choiceIndex < PERK_CHOICE_COUNT &&
         perkId != null &&
         choices[choiceIndex] === perkId;
+      let operationIndex = null;
       if (validSelectionPick) {
-        appendReplayPreludeOp(outState.currentTick, {
+        operationIndex = appendReplayPreludeOp(outState.currentTick, {
           type: "perk_pick",
           player_index: 0,
           choice_index: choiceIndex | 0,
         });
       }
-      if (isSelectionPick) beginReplayPreludeRngSuppression(this.threadId);
+      if (isSelectionPick && operationIndex != null && !outState.currentTick) {
+        beginReplayPreludeRngSuppression(this.threadId, operationIndex);
+      }
       this._perkApplyCtx = {
         perk_id: perkId,
         choice_index: choiceIndex == null ? -1 : choiceIndex | 0,
         choices: choices,
         is_selection_pick: isSelectionPick,
+        outside_rng_suppressed: isSelectionPick && operationIndex != null && !outState.currentTick,
         selection_contract_error: isSelectionPick && !validSelectionPick,
         pending_before: readDataI32("perk_pending_count"),
         caller: CONFIG.includeCaller ? formatCaller(this.returnAddress) : null,
@@ -6564,7 +6693,9 @@ function installHooks() {
       const ctx = this._perkApplyCtx;
       this._perkApplyCtx = null;
       if (!ctx) return;
-      if (ctx.is_selection_pick) endReplayPreludeRngSuppression(this.threadId);
+      if (ctx.is_selection_pick && ctx.outside_rng_suppressed) {
+        endReplayPreludeRngSuppression(this.threadId);
+      }
       if (ctx.selection_contract_error) {
         emitCaptureContractError("perk_selection_index_or_choice_mismatch", outState.currentTick);
         return;
@@ -6752,9 +6883,9 @@ function main() {
 
   const captureConfig = {
     out_path: CONFIG.outPath,
+    out_path_source: CONFIG.outPathSource,
     capture_profile: "exhaustive_default",
     config_env_overrides: collectConfigEnvOverrides(),
-    log_mode: CONFIG.logMode,
     console_all_events: CONFIG.consoleAllEvents,
     console_events: Array.from(CONFIG.consoleEvents.values()),
     include_caller: CONFIG.includeCaller,
@@ -6765,7 +6896,6 @@ function main() {
     focus_tick: CONFIG.focusTick,
     focus_radius: CONFIG.focusRadius,
     heartbeat_ms: CONFIG.heartbeatMs,
-    flush_capture_writes: CONFIG.flushCaptureWrites,
     max_head_per_kind: CONFIG.maxHeadPerKind,
     max_events_per_tick: CONFIG.maxEventsPerTick,
     max_rng_head_per_tick: CONFIG.maxRngHeadPerTick,
@@ -6862,6 +6992,7 @@ function main() {
         run_id: outState.currentRunId | 0,
         ticks_written: outState.captureTickCount | 0,
         out_path: outState.currentOutPath || CONFIG.outPath,
+        capture_failure: outState.captureFailure,
         last_hook: outState.lastHookActivity,
         last_exception: outState.lastException,
       };

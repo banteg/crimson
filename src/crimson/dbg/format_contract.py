@@ -53,7 +53,6 @@ def _capture_field_sets() -> dict[str, tuple[str, ...]]:
         "run_end": frida_format._RunEndRow,
         "run_error": frida_format._RunErrorRow,
         "error": frida_format._ErrorRow,
-        "session_end": frida_format._SessionEndRow,
     }
     nested: dict[str, type[msgspec.Struct]] = {
         "session_start.config": frida_format._SessionConfigRow,

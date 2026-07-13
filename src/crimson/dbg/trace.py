@@ -17,7 +17,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..math_parity import f32
 from ..replay.types import input_flags_validation_error
-from ..sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, RngBurnOperation
+from ..sim.input_providers import GameFrameRngAdvanceOperation, PerkMenuOpenCommand, PerkPickCommand
 from .canonical_channels import entity_uid
 from .schema import (
     CHUNK_KIND_FOOTER,
@@ -106,9 +106,7 @@ def _validate_wire_union(value: object, args: tuple[object, ...], *, path: str) 
     tagged = tuple(
         arg
         for arg in candidates
-        if isinstance(arg, type)
-        and issubclass(arg, msgspec.Struct)
-        and arg.__struct_config__.tag is not None
+        if isinstance(arg, type) and issubclass(arg, msgspec.Struct) and arg.__struct_config__.tag is not None
     )
     if tagged and len(tagged) == len(candidates):
         if not isinstance(value, dict):
@@ -331,9 +329,9 @@ def validate_tick_record(row: TickRecord, *, meta: TraceMeta | None = None) -> N
         if flags_error is not None:
             raise TraceError(f"tick {tick}: replay_step.inputs[{player_index}].flags {flags_error}")
     for operation_index, operation in enumerate(step.prelude):
-        if isinstance(operation, RngBurnOperation):
-            if int(operation.draws) <= 0:
-                raise TraceError(f"tick {tick}: replay_step.prelude[{operation_index}].draws must be > 0")
+        if isinstance(operation, GameFrameRngAdvanceOperation):
+            if int(operation.frames) <= 0:
+                raise TraceError(f"tick {tick}: replay_step.prelude[{operation_index}].frames must be > 0")
             continue
         player_index = int(operation.player_index)
         if not (0 <= player_index < len(step.inputs)):
@@ -468,9 +466,10 @@ def validate_tick_record(row: TickRecord, *, meta: TraceMeta | None = None) -> N
         if value != ((after >> 16) & 0x7FFF):
             raise TraceError(f"tick {tick}: rng_stream[{index - 1}] value_15 does not match state_after_u32")
         if previous_after is not None and before != previous_after:
-            # Gaps are valid evidence of native draws which bypassed the hook.
-            previous_after = after
-            continue
+            raise TraceError(
+                f"tick {tick}: rng_stream[{index - 1}].state_before_u32={before} "
+                f"does not continue prior state {previous_after}",
+            )
         previous_after = after
 
     all_entity_uids: set[int] = set()

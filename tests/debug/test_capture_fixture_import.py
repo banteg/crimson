@@ -49,7 +49,7 @@ def _meta(*, replay_sha256: str) -> TraceMeta:
             quest_stage_minor=None,
             global_tick_first=100,
             global_tick_last=101,
-            run_start_seed_source="run_setup_rng_state",
+            run_start_seed_source="rng_state_before_bootstrap",
         ),
         tick_range=TraceTickRange(start_tick=0, end_tick=1, tick_count=2),
     )
@@ -183,5 +183,5 @@ def test_capture_fixture_import_requires_replay_aligned_seed_source(
     monkeypatch.setattr(import_capture_fixtures, "load_replay_file", lambda _path: _replay())
     monkeypatch.setattr(import_capture_fixtures, "_first_rng_draw", lambda _path: None)
 
-    with pytest.raises(RuntimeError, match="seed source must be 'run_setup_rng_state'"):
+    with pytest.raises(RuntimeError, match="seed source must be 'rng_state_before_bootstrap'"):
         import_capture_fixtures.import_run(cdt_path, fixtures_dir=tmp_path / "fixtures")

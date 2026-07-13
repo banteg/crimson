@@ -9,7 +9,11 @@ from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.input_providers import PerkMenuOpenCommand, PerkPickCommand, RngBurnOperation
+from crimson.sim.input_providers import (
+    GameFrameRngAdvanceOperation,
+    PerkMenuOpenCommand,
+    PerkPickCommand,
+)
 from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, inject_tick_commands, write_replay
@@ -195,7 +199,7 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     inject_tick_commands(replay, 0, [PerkMenuOpenCommand(player_index=0)])
     replay.ticks[0] = msgspec.structs.replace(
         replay.ticks[0],
-        prelude=[RngBurnOperation(draws=2), *replay.ticks[0].prelude],
+        prelude=[GameFrameRngAdvanceOperation(frames=2), *replay.ticks[0].prelude],
     )
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
     runner = CliRunner()
@@ -214,7 +218,7 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     default_payload = json.loads(default_result.output)
     default_kinds = {event["kind"] for event in default_payload["timeline"]}
     assert "perk_menu_open" not in default_kinds
-    assert "rng_burn" not in default_kinds
+    assert "game_frame_rng_advance" not in default_kinds
 
     verbose_result = runner.invoke(
         app,
@@ -231,6 +235,6 @@ def test_replay_info_default_excludes_extra_kinds_and_verbose_includes(tmp_path:
     verbose_payload = json.loads(verbose_result.output)
     verbose_kinds = {event["kind"] for event in verbose_payload["timeline"]}
     assert "perk_menu_open" in verbose_kinds
-    assert "rng_burn" in verbose_kinds
-    rng_event = next(event for event in verbose_payload["timeline"] if event["kind"] == "rng_burn")
-    assert rng_event["data"] == {"draws": 2}
+    assert "game_frame_rng_advance" in verbose_kinds
+    rng_event = next(event for event in verbose_payload["timeline"] if event["kind"] == "game_frame_rng_advance")
+    assert rng_event["data"] == {"frames": 2}

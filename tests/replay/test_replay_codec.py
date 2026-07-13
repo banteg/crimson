@@ -31,9 +31,9 @@ from crimson.replay.types import (
 )
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import (
+    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     PerkPickCommand,
-    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -514,7 +514,7 @@ def test_replay_codec_preserves_ordered_prelude() -> None:
     recorder = ReplayRecorder(ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1))
     recorder.record_tick(
         [PlayerInput()],
-        prelude=[RngBurnOperation(draws=2)],
+        prelude=[GameFrameRngAdvanceOperation(frames=2)],
         commands=[
             PerkMenuOpenCommand(player_index=0),
             PerkPickCommand(player_index=0, choice_index=6),
@@ -524,19 +524,19 @@ def test_replay_codec_preserves_ordered_prelude() -> None:
     replay = load_replay(dump_replay(recorder.finish()))
 
     assert replay.ticks[0].prelude == [
-        RngBurnOperation(draws=2),
+        GameFrameRngAdvanceOperation(frames=2),
         PerkMenuOpenCommand(player_index=0),
         PerkPickCommand(player_index=0, choice_index=6),
     ]
 
 
-@pytest.mark.parametrize("draws", [0, -1])
-def test_replay_codec_rejects_nonpositive_rng_burn(draws: int) -> None:
+@pytest.mark.parametrize("frames", [0, -1])
+def test_replay_codec_rejects_nonpositive_game_frame_rng_advance(frames: int) -> None:
     replay_obj = _minimal_wire_replay_obj()
     tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
-    tick["prelude"] = [{"type": "rng_burn", "draws": draws}]
+    tick["prelude"] = [{"type": "game_frame_rng_advance", "frames": frames}]
 
-    with pytest.raises(ReplayCodecError, match="draws must be in 1"):
+    with pytest.raises(ReplayCodecError, match="frames must be in 1"):
         load_replay(_dump_wire(replay_obj))
 
 
@@ -549,12 +549,12 @@ def test_replay_codec_rejects_perk_operation_in_tick_commands() -> None:
         load_replay(_dump_wire(replay_obj))
 
 
-def test_replay_codec_rejects_rng_burn_in_postlude() -> None:
+def test_replay_codec_rejects_game_frame_rng_advance_in_postlude() -> None:
     replay_obj = _minimal_wire_replay_obj()
     tick = cast("dict[str, object]", cast("list[object]", replay_obj["ticks"])[0])
-    tick["postlude"] = [{"type": "rng_burn", "draws": 1}]
+    tick["postlude"] = [{"type": "game_frame_rng_advance", "frames": 1}]
 
-    with pytest.raises(ReplayCodecError, match="postlude.*unsupported type 'rng_burn'"):
+    with pytest.raises(ReplayCodecError, match="postlude.*unsupported type 'game_frame_rng_advance'"):
         load_replay(_dump_wire(replay_obj))
 
 

@@ -180,10 +180,10 @@ pub fn applyReplayOperations(
 
     for (ops) |op| {
         switch (op) {
-            .rng_burn => |burn| {
-                var draw_index: u32 = 0;
-                while (draw_index < burn.draws) : (draw_index += 1) {
-                    _ = context.state.rng.randTagged(rng_callers.replay_prelude_rng_burn);
+            .game_frame_rng_advance => |advance| {
+                var frame_index: u32 = 0;
+                while (frame_index < advance.frames) : (frame_index += 1) {
+                    _ = context.state.rng.randTagged(rng_callers.game_frame_update_discarded);
                 }
             },
             .perk_menu_open, .perk_pick => {
@@ -197,7 +197,7 @@ pub fn applyReplayOperations(
                         .player_index = pick.player_index,
                         .choice_index = pick.choice_index,
                     } },
-                    .rng_burn => unreachable,
+                    .game_frame_rng_advance => unreachable,
                 };
                 const outcome = try replay_events.applyReplayEvent(
                     event,
@@ -1129,9 +1129,9 @@ test "survival run ordered rng-burn preludes shift rng deterministically" {
     });
     defer baseline_replay.deinit(allocator);
     const burns = [_]replay_codec.ReplayPreludeOp{
-        .{ .rng_burn = .{ .tick_index = 0, .draws = 1 } },
-        .{ .rng_burn = .{ .tick_index = 1, .draws = 1 } },
-        .{ .rng_burn = .{ .tick_index = 2, .draws = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 0, .frames = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 1, .frames = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 2, .frames = 1 } },
     };
     const shifted_replay = try buildTestReplay(allocator, .{
         .tick_rate = 60,
@@ -1644,9 +1644,9 @@ test "rush run ordered rng-burn preludes shift rng deterministically" {
     });
     defer baseline_replay.deinit(allocator);
     const burns = [_]replay_codec.ReplayPreludeOp{
-        .{ .rng_burn = .{ .tick_index = 0, .draws = 1 } },
-        .{ .rng_burn = .{ .tick_index = 1, .draws = 1 } },
-        .{ .rng_burn = .{ .tick_index = 2, .draws = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 0, .frames = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 1, .frames = 1 } },
+        .{ .game_frame_rng_advance = .{ .tick_index = 2, .frames = 1 } },
     };
     const shifted_replay = try buildTestReplay(allocator, .{
         .game_mode_id = @intFromEnum(GameModeId.rush),

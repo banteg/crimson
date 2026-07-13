@@ -39,7 +39,7 @@ pub const EventKind = enum {
     player_death,
     creature_deaths,
     perk_menu_open,
-    rng_burn,
+    game_frame_rng_advance,
     typo_backspace,
     typo_char,
     typo_submit,
@@ -111,8 +111,8 @@ const PerkMenuOpenData = struct {
     player_index: i32,
 };
 
-const RngBurnData = struct {
-    draws: u32,
+const GameFrameRngAdvanceData = struct {
+    frames: u32,
 };
 
 const TypoCharData = struct {
@@ -143,7 +143,7 @@ pub const EventData = union(enum) {
     player_death: PlayerDeathData,
     creature_deaths: CreatureDeathsData,
     perk_menu_open: PerkMenuOpenData,
-    rng_burn: RngBurnData,
+    game_frame_rng_advance: GameFrameRngAdvanceData,
     typo_backspace: TypoCommandData,
     typo_char: TypoCharData,
     typo_submit: TypoCommandData,
@@ -198,7 +198,7 @@ pub const EventCountsByKind = struct {
             .health_heal,
             .level_up,
             .perk_menu_open,
-            .rng_burn,
+            .game_frame_rng_advance,
             .typo_backspace,
             .typo_char,
             .typo_submit,
@@ -488,20 +488,20 @@ fn appendExtraReplayPrelude(
     if (!include_extra_events) return;
     for (tick_prelude) |op| {
         switch (op) {
-            .rng_burn => |burn| {
+            .game_frame_rng_advance => |advance| {
                 const detail = try std.fmt.allocPrint(
                     allocator,
-                    "replay prelude burned {d} RNG draw(s)",
-                    .{burn.draws},
+                    "advanced native frame RNG for {d} frame(s)",
+                    .{advance.frames},
                 );
                 errdefer allocator.free(detail);
                 try timeline.append(allocator, makeEvent(
                     tick_index,
                     elapsed_ms,
-                    .rng_burn,
+                    .game_frame_rng_advance,
                     null,
                     detail,
-                    .{ .rng_burn = .{ .draws = burn.draws } },
+                    .{ .game_frame_rng_advance = .{ .frames = advance.frames } },
                 ));
             },
             .perk_menu_open => |open| {

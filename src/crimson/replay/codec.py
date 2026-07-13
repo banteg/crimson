@@ -12,9 +12,9 @@ from ..math_parity import f32
 from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
 from ..sim.input_providers import (
+    GameFrameRngAdvanceOperation,
     PerkMenuOpenCommand,
     PerkPickCommand,
-    RngBurnOperation,
     TypoBackspaceCommand,
     TypoCharCommand,
     TypoSubmitCommand,
@@ -50,7 +50,7 @@ _REPLAY_DECODER = msgspec.msgpack.Decoder(type=Replay)
 _HEADER_DECODER = msgspec.msgpack.Decoder(type=ReplayHeader)
 
 _PRELUDE_TYPES = {
-    "rng_burn": RngBurnOperation,
+    "game_frame_rng_advance": GameFrameRngAdvanceOperation,
     "perk_menu_open": PerkMenuOpenCommand,
     "perk_pick": PerkPickCommand,
 }
@@ -529,12 +529,12 @@ def _validate_tick_operations(
     game_mode: GameMode,
 ) -> None:
     for operation_index, operation in enumerate(tick.prelude):
-        if isinstance(operation, RngBurnOperation):
+        if isinstance(operation, GameFrameRngAdvanceOperation):
             _require_int_range(
-                operation.draws,
+                operation.frames,
                 low=1,
                 high=(1 << 31) - 1,
-                field=f"replay tick {tick_idx} prelude {operation_index} draws",
+                field=f"replay tick {tick_idx} prelude {operation_index} frames",
             )
             continue
         player_index = int(operation.player_index)

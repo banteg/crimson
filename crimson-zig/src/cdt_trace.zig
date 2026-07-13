@@ -10,7 +10,7 @@ const state_mod = @import("runtime/state.zig");
 
 const trace_magic = "crimson_debug_trace_v2\n";
 pub const trace_format_version: u32 = 2;
-pub const trace_schema_version: i32 = 14;
+pub const trace_schema_version: i32 = 15;
 pub const trace_required_channels = "replay_step,checkpoint,sim_state,entity_samples,rng_stream,timing_samples";
 const trace_chunk_ticks: usize = 256;
 
@@ -550,12 +550,12 @@ const PerkPickStepCommand = struct {
     choice_index: i32,
 };
 
-const RngBurnStepPrelude = struct {
-    draws: u32,
+const GameFrameRngAdvanceStepPrelude = struct {
+    frames: u32,
 };
 
 const ReplayStepPrelude = union(enum) {
-    rng_burn: RngBurnStepPrelude,
+    game_frame_rng_advance: GameFrameRngAdvanceStepPrelude,
     perk_menu_open: PerkMenuOpenStepCommand,
     perk_pick: PerkPickStepCommand,
 
@@ -2016,7 +2016,7 @@ fn buildReplayStep(
     for (replay.prelude) |op| {
         if (op.tickIndex() != tick_index) continue;
         prelude[prelude_built] = switch (op) {
-            .rng_burn => |payload| .{ .rng_burn = .{ .draws = payload.draws } },
+            .game_frame_rng_advance => |payload| .{ .game_frame_rng_advance = .{ .frames = payload.frames } },
             .perk_menu_open => |payload| .{ .perk_menu_open = .{
                 .player_index = payload.player_index,
             } },
@@ -2726,9 +2726,9 @@ fn replayStepPreludeHash(prelude: []const ReplayStepPrelude) u64 {
     var digest: u64 = 0xcbf29ce484222325;
     for (prelude) |op| {
         switch (op) {
-            .rng_burn => |burn| {
+            .game_frame_rng_advance => |advance| {
                 digest = fnv1aByte(digest, 1);
-                digest = fnv1aU32(digest, burn.draws);
+                digest = fnv1aU32(digest, advance.frames);
             },
             .perk_menu_open => |open| {
                 digest = fnv1aByte(digest, 2);
@@ -3147,7 +3147,7 @@ test "trace diff rows report first summary mismatch" {
 
 test "replay-step prelude hash preserves operation contents and order" {
     const ordered = [_]ReplayStepPrelude{
-        .{ .rng_burn = .{ .draws = 2 } },
+        .{ .game_frame_rng_advance = .{ .frames = 2 } },
         .{ .perk_menu_open = .{ .player_index = 0 } },
         .{ .perk_pick = .{ .player_index = 0, .choice_index = 6 } },
     };
@@ -3157,7 +3157,7 @@ test "replay-step prelude hash preserves operation contents and order" {
         ordered[2],
     };
     const changed = [_]ReplayStepPrelude{
-        .{ .rng_burn = .{ .draws = 3 } },
+        .{ .game_frame_rng_advance = .{ .frames = 3 } },
         ordered[1],
         ordered[2],
     };

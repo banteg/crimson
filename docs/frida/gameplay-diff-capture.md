@@ -8,11 +8,11 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 19. The host finalizes each completed run into the same
+raw capture format 22. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
-- CDT container 2, schema 14
-- CRD replay 15
+- CDT container 2, schema 15
+- CRD replay 16
 - a sibling `.rng_evidence.json` diagnostic report
 - a typed `.evidence.msgpack.zst` native-evidence sidecar
 
@@ -39,15 +39,13 @@ just frida-gameplay-diff-capture -- --keep-raw
 ```
 
 Terminal gameplay transitions close the active run before the game-over or
-quest-results screen. If process teardown destroys the injected agent before it
-can write `session_end`, the host appends that transport marker. It may also
-recover `run_end` only when the final tick itself proves a native terminal
-transition (`9 -> 7`, `9 -> 8`, or `9 -> 12`); an arbitrary active run remains
-a hard error.
+quest-results screen. A clean stream may end immediately after `run_end`;
+there is no session trailer to race process teardown. The host never appends or
+repairs lifecycle rows. EOF with an active run is a hard recapture error.
 
 Useful host options:
 
-- `--raw-path <path>`: override the JSONL path
+- `--raw-path <path>`: override the JSONL path in both host and injected agent
 - `--finalize-only`: finalize an existing JSONL without attaching; requires
   `--raw-path`
 - `--keep-raw`: retain the producer-private JSONL after successful finalization
@@ -68,13 +66,12 @@ The JSONL stream is ordered and typed:
 
 1. one `session_start`
 2. one or more completed `run_start` -> `tick` -> `run_end` sequences
-3. one `session_end`
+3. EOF immediately after any completed `run_end`
 
 Capture format, session identity, row order, mode/quest identity, tick counts,
 and lifecycle counters must agree. Run-local `tick_index` and session-global
 `global_tick_index` advance exactly one at a time. Unknown fields, capture
-errors, an empty run, a missing end row, or data after `session_end` invalidate
-the whole capture.
+errors, an empty run, or a missing `run_end` invalidate the whole capture.
 
 Finalization deliberately has no partial-run or salvage mode. A truncated
 capture lacks evidence and must not be made to look like a valid behavioral
@@ -84,17 +81,20 @@ comparison.
 
 The most recent session `crt_srand` seed is stale by the time a run begins:
 menus and prior startup work may already have consumed draws. The capture
-latches the real CRT state immediately before the run's first terrain draw and
-writes it as `rng_state_at_run_setup`.
+latches the real CRT state immediately before the run's first terrain draw,
+counts every bootstrap draw, and records the exact state where bootstrap ends.
+These are written as `rng_state_before_bootstrap`, `rng_bootstrap_calls`, and
+`rng_state_after_bootstrap`.
 
 The state-transition frame consumes a discarded shared-CRT draw at `0x0040cac7`
-after that setup window and before gameplay tick 0. The agent records it as a
-tick-0 replay prelude burn. Finalization cross-checks the exhaustive outside-RNG
-state chain and canonicalizes the CDT and CRD prelude together, so a missing
-agent-side prelude row cannot silently shift every gameplay RNG result.
+after that setup window and before the first gameplay update. The agent records it as a
+`game_frame_rng_advance` replay prelude operation. Finalization only validates
+the captured operation against the exhaustive outside-RNG state chain; it never
+invents a missing operation.
 
-Finalization uses that value for `ReplayHeader.seed` and records
-`run_start_seed_source = "run_setup_rng_state"` in CDT metadata. It also copies
+Finalization verifies that advancing the before-state by the captured call
+count produces the after-state. It uses the before-state for `ReplayHeader.seed` and records
+`run_start_seed_source = "rng_state_before_bootstrap"` in CDT metadata. It also copies
 captured creature-pool residue to `ReplayHeader.initial_creature_pool`. Together
 these make the generated CRD start from the observed native run boundary rather
 than an inferred clean state.
@@ -110,7 +110,7 @@ format.
 
 ## Tick contract
 
-Every tick has the canonical schema 14 channels:
+Every tick has the canonical schema 15 channels:
 
 - `replay_step`
 - `checkpoint`
@@ -121,15 +121,19 @@ Every tick has the canonical schema 14 channels:
 
 `replay_step` is the replay-driving authority. Its wire order is `dt`, `inputs`,
 `prelude`, `postlude`, `commands`. There is no sibling `replay_inputs`
-transport field. The prelude contains coalesced unrelated between-tick RNG
-burns and between-tick perk operations that must run before simulation. The
+transport field. The prelude contains named native frame-RNG advances and
+between-tick perk operations that must run before simulation. The
 postlude contains native `perks_generate_choices` calls observed late inside
 `gameplay_update_and_render`, after the mode and simulation updates. Their RNG
 rows remain in that tick's canonical `rng_stream` while replay executes the
-postlude with tick RNG tracing still active. RNG consumed by a represented
-between-tick operation is suppressed only to prevent duplicate `rng_burn`
-operations. `commands` is reserved for Typ-o input and is therefore empty in
-supported Frida runs.
+postlude with tick RNG tracing still active. Terrain/bootstrap RNG is owned by
+replay initialization and excluded from the outside-frame bag. Each remaining
+outside draw carries a `replay_operation_index`: top-level frame draws must map
+to a `game_frame_rng_advance` operation and use native caller `0x0040cac7`, while
+draws inside a captured perk operation map to that operation. Missing ownership,
+an invalid caller for a frame operation, or a draw count that disagrees with a
+frame operation invalidates the capture. `commands` is reserved for Typ-o input
+and is therefore empty in supported Frida runs.
 
 Perk choice snapshots always contain the seven native slots exactly, including
 zeros and duplicates, plus the actual dirty bit. A pick records its exact
@@ -160,16 +164,18 @@ The capture reads the real CRT RNG state from per-thread data instead of relying
 on a software mirror. This exposes draws that bypass the `crt_rand` hook:
 
 - canonical `rng_stream` rows carry value, before/after state, call index, and
-  optional numeric caller
+  required numeric caller for Frida captures
 - tick boundary samples record RNG state entering and leaving the gameplay
   update
 - diagnostic bags count hooked draws outside gameplay-update windows
-- gaps in the LCG state chain reveal unhooked draws
+- every in-tick and between-tick LCG chain must be complete and contiguous
 
-Finalization validates the transitions and writes
+Any invalid transition, missing draw, dropped outside row, or unowned outside
+draw rejects the capture. `run_end.trailing_prelude` retains operations observed
+after the final gameplay update solely so finalization can prove ownership of
+the tail RNG chain; those operations are not added to the replay. Finalization writes
 `gameplay_diff_capture.<mode>.run<k>.rng_evidence.json`. The report summarizes
-setup distance, outside-draw callers, in-tick and boundary gaps, unresolved
-gaps, and neighboring hooked callers.
+the exact bootstrap boundary and outside callers.
 
 Caller attribution is diagnostic. If two traces have the same draw values and
 state transitions but different caller labels, `dbg diff` reports
@@ -188,7 +194,7 @@ Each completed run produces a matching artifact set:
 The four files publish as one rollback-safe bundle. If any replacement fails,
 the previous complete bundle is restored and the raw JSONL is retained.
 
-The rich sidecar is evidence format 1: one zstd frame containing little-endian
+The rich sidecar is evidence format 2: one zstd frame containing little-endian
 u32-length-prefixed MessagePack `header`, `tick`, and `footer` rows. Its header
 binds the bundle to the session/module/pointer hashes and the raw/CDT/CRD
 SHA256 values. Missing or unknown typed fields, trailing bytes, and concatenated
@@ -218,11 +224,11 @@ together so native diagnostics are not lost.
 `just capture-fixtures-import <captures_dir>` imports current finalized pairs
 into `tests/fixtures/captures/`. It preserves each full contiguous CDT, verifies
 every trace block, the replay hash and tick range against the CRD sidecar, the
-current Frida version, and the replay-aligned `run_setup_rng_state` seed source.
+current Frida version, and the replay-aligned `rng_state_before_bootstrap` seed source.
 It then writes versioned provenance to `manifest.json`. A stale or inconsistent
 pair aborts the import instead of being skipped.
 
 The importer and fixture tests accept only the current capture/CDT/CRD contract.
-Old checked-in recordings should be deleted and replaced with a fresh format 19
+Old checked-in recordings should be deleted and replaced with a fresh format 22
 capture. Fixture parity is a strict diff assertion; known mismatches are not
 hidden behind a blanket `xfail`.
