@@ -19,6 +19,7 @@ from ...math_parity import (
     f32,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
@@ -108,6 +109,11 @@ def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
     damage = f32(float(damage) * 30.0)
     damage = f32(float(damage) + 10.0)
     return f32(float(damage) * float(f32(0.95)))
+
+
+def _stop_on_hit_jitter_axis_f32(direction: float, jitter: int, pos: float) -> float:
+    offset = x87_pc24_mul(direction, float(jitter))
+    return x87_pc24_add(offset, pos)
 
 
 def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCollisionProfile:
@@ -440,11 +446,10 @@ class ProjectilePool:
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
-                        # Native computes `cos * jitter + pos` in extended
-                        # precision with a single f32 spill on the sum.
+                        # Native rounds the multiply and add as separate PC24 operations.
                         proj.pos = Vec2(
-                            float(f32(float(dir_x) * float(jitter) + float(proj.pos.x))),
-                            float(f32(float(dir_y) * float(jitter) + float(proj.pos.y))),
+                            _stop_on_hit_jitter_axis_f32(dir_x, jitter, proj.pos.x),
+                            _stop_on_hit_jitter_axis_f32(dir_y, jitter, proj.pos.y),
                         )
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)

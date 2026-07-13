@@ -418,11 +418,10 @@ pub const ProjectilePool = struct {
                 {
                     proj.life_timer = 0.25;
                     const jitter = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_stop_on_hit_jitter) & 3));
-                    // Native computes `cos * jitter + pos` in extended precision
-                    // with a single f32 spill on the sum.
+                    // Native rounds the multiply and add as separate PC24 operations.
                     proj.pos = .{
-                        .x = @floatCast(dir_x_ext * @as(f64, jitter) + @as(f64, proj.pos.x)),
-                        .y = @floatCast(dir_y_ext * @as(f64, jitter) + @as(f64, proj.pos.y)),
+                        .x = native_math.pc24Add(native_math.pc24Mul(dir_x_ext, jitter), proj.pos.x),
+                        .y = native_math.pc24Add(native_math.pc24Mul(dir_y_ext, jitter), proj.pos.y),
                     };
                 }
 

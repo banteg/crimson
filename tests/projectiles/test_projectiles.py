@@ -47,6 +47,16 @@ def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> Non
     assert damage == 44.73385238647461
 
 
+def test_stop_on_hit_jitter_rounds_multiply_before_position_add() -> None:
+    result = projectile_pool_runtime._stop_on_hit_jitter_axis_f32(
+        0.8021621757752091,
+        2,
+        356.32464599609375,
+    )
+
+    assert result == 357.928955078125
+
+
 def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
     angle = -2.5405335426330566
     dt = 0.04500000178813934
