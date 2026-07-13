@@ -2330,7 +2330,14 @@ pub const CreaturePool = struct {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                applyPlayerContactDamage(state, contact_player, creature.contact_damage, dt_f32);
+                const alive_source = if (state.preserve_bugs) &players[0] else contact_player;
+                applyPlayerContactDamageWithAliveSource(
+                    state,
+                    contact_player,
+                    creature.contact_damage,
+                    dt_f32,
+                    alive_source,
+                );
                 const push_delta = state_mod.Vec2.sub(contact_player.pos, creature.pos);
                 const push_len = push_delta.length();
                 if (push_len > 1e-6) {
@@ -3856,6 +3863,16 @@ pub fn applyPlayerContactDamage(
     damage: f32,
     dt: f32,
 ) void {
+    applyPlayerContactDamageWithAliveSource(state, player, damage, dt, player);
+}
+
+fn applyPlayerContactDamageWithAliveSource(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    damage: f32,
+    dt: f32,
+    alive_source: *const state_mod.PlayerState,
+) void {
     if (!(damage > 0.0)) return;
     if (perkActive(player, PerkId.death_clock)) return;
 
@@ -3867,6 +3884,7 @@ pub fn applyPlayerContactDamage(
 
     state.survival_reward_damage_seen = true;
     if (player.shield_timer > 0.0) return;
+    const was_alive = alive_source.health > 0.0;
 
     var dodged = false;
     if (perkActive(player, PerkId.ninja)) {
@@ -3886,10 +3904,11 @@ pub fn applyPlayerContactDamage(
             }
         } else {
             player.health = narrowF32(player.health - damage_scaled);
-            if (player.health < 0.0 and dt > 0.0) {
-                player.death_timer = narrowF32(player.death_timer - dt * 28.0);
-            }
         }
+    }
+
+    if (player.health < 0.0 and dt > 0.0) {
+        player.death_timer = narrowF32(player.death_timer - dt * 28.0);
     }
 
     if (player.health >= 0.0) {
@@ -3899,9 +3918,13 @@ pub fn applyPlayerContactDamage(
             1 => .trooper_inpain_02,
             else => .trooper_inpain_03,
         });
-    } else if (!perkActive(player, PerkId.final_revenge)) {
-        const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
-        state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
+        if (!was_alive) return;
+    } else {
+        if (!was_alive) return;
+        if (!perkActive(player, PerkId.final_revenge)) {
+            const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
+            state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
+        }
     }
 
     if (!dodged) {
@@ -5996,6 +6019,37 @@ test "tough reloader halves damage while reloading" {
     );
 
     try expectFloatClose(95.0, player.health);
+}
+
+test "dead primary suppresses dormant target post-hit effects" {
+    var state = state_mod.GameplayState.init(1);
+    var primary: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .health = -1.0,
+    };
+    var dormant_target: state_mod.PlayerState = .{
+        .index = 1,
+        .pos = .{},
+        .health = 100.0,
+        .heading = 1.0,
+        .spread_heat = 0.1,
+    };
+    var expected_rng = state.rng;
+    _ = expected_rng.rand();
+
+    applyPlayerContactDamageWithAliveSource(
+        &state,
+        &dormant_target,
+        10.0,
+        0.1,
+        &primary,
+    );
+
+    try expectFloatClose(90.0, dormant_target.health);
+    try expectFloatClose(1.0, dormant_target.heading);
+    try expectFloatClose(0.1, dormant_target.spread_heat);
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
 
 test "highlander prevents contact damage except 1-in-10 lethal roll" {
