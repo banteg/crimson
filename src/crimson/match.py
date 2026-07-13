@@ -82,6 +82,7 @@ class FunctionManifest:
 class ReferenceCatalog:
     names_by_address: dict[int, tuple[str, ...]]
     addresses_by_name: dict[str, tuple[int, ...]] = field(default_factory=dict)
+    import_addresses: frozenset[int] = frozenset()
 
     def keys_for_address(self, address: int) -> tuple[str, ...]:
         return (
@@ -95,22 +96,34 @@ class ReferenceCatalog:
         keys = [f"name:{canonical}{_format_addend(addend)}"]
         if lookup_name != canonical:
             keys.append(f"name:{lookup_name}{_format_addend(addend)}")
-        addresses = self._addresses_for_name(lookup_name)
+        addresses = self._addresses_for_name(
+            lookup_name,
+            imported=_is_import_symbol(symbol_name),
+        )
         if len(addresses) == 1:
             keys.append(f"address:0x{addresses[0] + addend:08x}")
         return tuple(dict.fromkeys(keys))
 
     def knows_name(self, symbol_name: str) -> bool:
-        return len(self._addresses_for_name(_symbol_lookup_name(symbol_name))) == 1
-
-    def _addresses_for_name(self, name: str) -> tuple[int, ...]:
-        if name in self.addresses_by_name:
-            return self.addresses_by_name[name]
-        return tuple(
-            address
-            for address, names in self.names_by_address.items()
-            if any(_symbol_lookup_name(candidate) == name for candidate in names)
+        return (
+            len(
+                self._addresses_for_name(
+                    _symbol_lookup_name(symbol_name),
+                    imported=_is_import_symbol(symbol_name),
+                ),
+            )
+            == 1
         )
+
+    def _addresses_for_name(self, name: str, *, imported: bool) -> tuple[int, ...]:
+        addresses = self.addresses_by_name.get(name)
+        if addresses is None:
+            addresses = tuple(
+                address
+                for address, names in self.names_by_address.items()
+                if any(_symbol_lookup_name(candidate) == name for candidate in names)
+            )
+        return tuple(address for address in addresses if (address in self.import_addresses) == imported)
 
 
 def load_reference_catalog(
@@ -127,6 +140,7 @@ def load_reference_catalog(
     placeholder.
     """
     names: dict[int, list[str]] = {}
+    import_addresses: set[int] = set()
     for function in manifest.functions:
         names.setdefault(function.address, []).append(function.name)
     raw_functions_path = functions_path or default_functions_path(manifest.image_name)
@@ -144,8 +158,10 @@ def load_reference_catalog(
                 name = str(entry.get("name") or "")
                 if not name:
                     continue
-                if address > 0 and name not in names.setdefault(address, []):
-                    names[address].append(name)
+                if address > 0:
+                    import_addresses.add(address)
+                    if name not in names.setdefault(address, []):
+                        names[address].append(name)
     if data_map_path.exists():
         payload = json.loads(data_map_path.read_text(encoding="utf-8"))
         for entry in payload.get("entries", []):
@@ -163,6 +179,7 @@ def load_reference_catalog(
     return ReferenceCatalog(
         names_by_address,
         {name: tuple(dict.fromkeys(addresses)) for name, addresses in addresses_by_name.items()},
+        frozenset(import_addresses),
     )
 
 
@@ -484,6 +501,10 @@ def _symbol_matches(symbol_name: str, wanted: str) -> bool:
         or _canonical_symbol_name(symbol_name) == _canonical_symbol_name(wanted)
         or _symbol_lookup_name(symbol_name) == wanted
     )
+
+
+def _is_import_symbol(name: str) -> bool:
+    return name.startswith("__imp_")
 
 
 def _canonical_symbol_name(name: str) -> str:

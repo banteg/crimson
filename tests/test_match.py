@@ -104,9 +104,15 @@ def test_resolve_function_accepts_address() -> None:
 
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
-    functions_path.write_text("[]\n", encoding="utf-8")
+    functions_path.write_text(
+        '[{"address":"0x1000A8FA","name":"_ftol"}]\n',
+        encoding="utf-8",
+    )
     (tmp_path / "imports.json").write_text(
-        '[{"module":"MSVCRT","entries":[{"address":"0x1004C0B4","name":"vsprintf","ordinal":0}]}]\n',
+        '[{"module":"MSVCRT","entries":['
+        '{"address":"0x1004C0B4","name":"vsprintf","ordinal":0},'
+        '{"address":"0x1004C0FC","name":"_ftol","ordinal":0}'
+        "]}]\n",
         encoding="utf-8",
     )
     manifest = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
@@ -125,6 +131,14 @@ def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> Non
     assert catalog.keys_for_object_reference("__imp__vsprintf", 0) == (
         "name:vsprintf",
         "address:0x1004c0b4",
+    )
+    assert catalog.keys_for_object_reference("__ftol", 0) == (
+        "name:ftol",
+        "address:0x1000a8fa",
+    )
+    assert catalog.keys_for_object_reference("__imp___ftol", 0) == (
+        "name:ftol",
+        "address:0x1004c0fc",
     )
 
 
