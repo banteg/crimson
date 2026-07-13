@@ -88,7 +88,10 @@ pub const ProjectilePool = struct {
             .origin = .{ .x = pos.x, .y = pos.y },
             // Native writes vel = (cos(angle), sin(angle)) * 1.5 - the raw
             // trig components, not the heading-rotated direction.
-            .vel = .{ .x = narrowF32(@cos(angle) * 1.5), .y = narrowF32(@sin(angle) * 1.5) },
+            .vel = .{
+                .x = narrowF32(@cos(@as(f64, @floatCast(angle))) * 1.5),
+                .y = narrowF32(@sin(@as(f64, @floatCast(angle))) * 1.5),
+            },
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
@@ -1044,6 +1047,21 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
 
 fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
+test "projectile spawn keeps trig wide until velocity store" {
+    var pool: ProjectilePool = .{};
+    const index = pool.spawn(
+        .{},
+        -1.4083715677261353,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        55.0,
+        false,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.2425672858953476), pool.entries[index].vel.x);
+    try std.testing.expectEqual(@as(f32, -1.4802571535110474), pool.entries[index].vel.y);
 }
 
 test "projectile hit consumes hit-presentation rng" {
