@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import difflib
+import hashlib
 import json
+import os
 import re
 import shlex
 import struct
-from dataclasses import dataclass, replace
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field, replace
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_VERSION = "1.9.93-gog"
@@ -17,6 +21,9 @@ DEFAULT_MATCH_ROOT = REPO_ROOT / "tools" / "match"
 DEFAULT_FUNCTIONS_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_NAME / "functions.json"
 DEFAULT_METADATA_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_NAME / "metadata.json"
 DEFAULT_IMAGE_PATH = DEFAULT_GAME_DIR / DEFAULT_IMAGE_NAME
+DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"
+DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
+CACHE_VERSION = 1
 
 IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
@@ -31,6 +38,7 @@ PADDING_LINE_TEXT = {
     "nop",
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
+LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
 
 
 def parse_int(value: str | int) -> int:
@@ -68,6 +76,86 @@ class FunctionManifest:
     @property
     def by_name(self) -> dict[str, FunctionSymbol]:
         return {function.name: function for function in self.functions}
+
+
+@dataclass(frozen=True, slots=True)
+class ReferenceCatalog:
+    names_by_address: dict[int, tuple[str, ...]]
+    addresses_by_name: dict[str, tuple[int, ...]] = field(default_factory=dict)
+
+    def keys_for_address(self, address: int) -> tuple[str, ...]:
+        return (
+            f"address:0x{address:08x}",
+            *(f"name:{_canonical_symbol_name(name)}" for name in self.names_by_address.get(address, ())),
+        )
+
+    def keys_for_object_reference(self, symbol_name: str, addend: int) -> tuple[str, ...]:
+        canonical = _canonical_symbol_name(symbol_name)
+        lookup_name = _symbol_lookup_name(symbol_name)
+        keys = [f"name:{canonical}{_format_addend(addend)}"]
+        if lookup_name != canonical:
+            keys.append(f"name:{lookup_name}{_format_addend(addend)}")
+        addresses = self._addresses_for_name(lookup_name)
+        if len(addresses) == 1:
+            keys.append(f"address:0x{addresses[0] + addend:08x}")
+        return tuple(dict.fromkeys(keys))
+
+    def knows_name(self, symbol_name: str) -> bool:
+        return len(self._addresses_for_name(_symbol_lookup_name(symbol_name))) == 1
+
+    def _addresses_for_name(self, name: str) -> tuple[int, ...]:
+        if name in self.addresses_by_name:
+            return self.addresses_by_name[name]
+        return tuple(
+            address
+            for address, names in self.names_by_address.items()
+            if any(_symbol_lookup_name(candidate) == name for candidate in names)
+        )
+
+
+def load_reference_catalog(
+    manifest: FunctionManifest,
+    *,
+    data_map_path: Path = DEFAULT_DATA_MAP_PATH,
+    functions_path: Path | None = None,
+) -> ReferenceCatalog:
+    """Build the conservative symbol oracle used to audit masked image addresses.
+
+    Only exact function and data-map addresses are named. References into an
+    unknown object or to an unlabelled import stay unresolved instead of being
+    accepted on the strength of an ``ADDR`` placeholder.
+    """
+    names: dict[int, list[str]] = {}
+    for function in manifest.functions:
+        names.setdefault(function.address, []).append(function.name)
+    raw_functions_path = functions_path or default_functions_path(manifest.image_name)
+    if raw_functions_path.exists():
+        for entry in json.loads(raw_functions_path.read_text(encoding="utf-8")):
+            address = parse_int(entry["address"])
+            name = str(entry["name"])
+            if address > 0 and name not in names.setdefault(address, []):
+                names[address].append(name)
+    if data_map_path.exists():
+        payload = json.loads(data_map_path.read_text(encoding="utf-8"))
+        for entry in payload.get("entries", []):
+            if entry.get("program") != manifest.image_name:
+                continue
+            address = parse_int(entry["address"])
+            name = str(entry["name"])
+            if name not in names.setdefault(address, []):
+                names[address].append(name)
+    names_by_address = {address: tuple(values) for address, values in names.items()}
+    addresses_by_name: dict[str, list[int]] = {}
+    for address, values in names_by_address.items():
+        for name in values:
+            addresses_by_name.setdefault(_symbol_lookup_name(name), []).append(address)
+    return ReferenceCatalog(
+        names_by_address,
+        {
+            name: tuple(dict.fromkeys(addresses))
+            for name, addresses in addresses_by_name.items()
+        },
+    )
 
 
 def _load_image_base(metadata_path: Path | None) -> int:
@@ -145,6 +233,7 @@ class CoffSection:
 
 @dataclass(frozen=True, slots=True)
 class CoffSymbol:
+    raw_index: int
     name: str
     value: int
     section_number: int
@@ -163,6 +252,17 @@ class ObjectFunction:
     name: str
     data: bytes
     relocation_offsets: frozenset[int]
+    relocation_references: tuple[ObjectRelocationReference, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ObjectRelocationReference:
+    offset: int
+    symbol_name: str
+    key: str | None
+    explained: bool
+    addend: int | None = None
+    symbol_data: bytes | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -181,6 +281,53 @@ class DisassemblyLine:
     offset: int
     address: int
     text: str
+    masked_references: tuple[MaskedReference, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class MaskedReference:
+    operand_index: int
+    kind: str
+    source: str
+    value: int | None
+    text: str
+    keys: tuple[str, ...]
+    explained: bool
+
+
+@dataclass(frozen=True, slots=True)
+class MaskedOperandAuditEntry:
+    target_index: int
+    candidate_index: int
+    target_offset: int
+    candidate_offset: int
+    target_address: int
+    candidate_address: int
+    instruction: str
+    target_references: tuple[MaskedReference, ...]
+    candidate_references: tuple[MaskedReference, ...]
+    status: str
+
+
+@dataclass(frozen=True, slots=True)
+class MaskedOperandAudit:
+    entries: tuple[MaskedOperandAuditEntry, ...] = ()
+
+    @property
+    def ok_count(self) -> int:
+        return sum(entry.status == "ok" for entry in self.entries)
+
+    @property
+    def unresolved_count(self) -> int:
+        return sum(entry.status == "unresolved" for entry in self.entries)
+
+    @property
+    def mismatch_count(self) -> int:
+        return sum(entry.status == "mismatch" for entry in self.entries)
+
+    @property
+    def problem_count(self) -> int:
+        return self.unresolved_count + self.mismatch_count
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,6 +336,13 @@ class MatchResult:
     prefix_instructions: int
     target_lines: tuple[str, ...]
     candidate_lines: tuple[str, ...]
+    target_disassembly: tuple[DisassemblyLine, ...] = ()
+    candidate_disassembly: tuple[DisassemblyLine, ...] = ()
+    masked_operand_audit: MaskedOperandAudit = field(default_factory=MaskedOperandAudit)
+
+    @property
+    def exact(self) -> bool:
+        return self.ratio == 1.0 and self.masked_operand_audit.problem_count == 0
 
     @property
     def first_target_mismatch(self) -> str | None:
@@ -269,6 +423,7 @@ def parse_coff_object(data: bytes) -> CoffObject:
         value, section_number, symbol_type, storage_class, aux_count = struct.unpack_from("<IhHBB", record, 8)
         symbols.append(
             CoffSymbol(
+                raw_index=index,
                 name=symbol_name(record[:8]),
                 value=value,
                 section_number=section_number,
@@ -316,7 +471,45 @@ def _is_function_symbol(symbol: CoffSymbol) -> bool:
 
 
 def _symbol_matches(symbol_name: str, wanted: str) -> bool:
-    return wanted in symbol_name
+    return (
+        symbol_name == wanted
+        or _canonical_symbol_name(symbol_name) == _canonical_symbol_name(wanted)
+        or _symbol_lookup_name(symbol_name) == wanted
+    )
+
+
+def _canonical_symbol_name(name: str) -> str:
+    name = name.removeprefix("__imp_")
+    name = name.removeprefix("__imp__")
+    if name.startswith("?"):
+        # Preserve a decorated C++ signature: reducing it to its display name
+        # would collapse overloads into the same audit key.
+        return name
+    name = name.lstrip("_")
+    return re.sub(r"@\d+$", "", name)
+
+
+def _symbol_lookup_name(name: str) -> str:
+    canonical = _canonical_symbol_name(name)
+    if canonical.startswith("?") and (match := re.match(r"^\?([^@]+)@", canonical)):
+        return match.group(1)
+    return canonical
+
+
+def _object_reference_key(symbol: CoffSymbol, addend: int) -> tuple[str | None, bool]:
+    if symbol.name.startswith(("$L", "??_C@", "__real@")) or not symbol.name:
+        return None, False
+    canonical = _canonical_symbol_name(symbol.name)
+    if not canonical:
+        return None, False
+    return f"name:{canonical}{_format_addend(addend)}", True
+
+
+def _format_addend(addend: int) -> str:
+    if addend == 0:
+        return ""
+    operator = "+" if addend > 0 else "-"
+    return f"{operator}0x{abs(addend):x}"
 
 
 def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectFunction:
@@ -350,15 +543,57 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
         and symbol.value > target.value
     )
     end = siblings[0] if siblings else len(section.data)
-    relocation_offsets = frozenset(
-        relocation.virtual_address - target.value
-        for relocation in section.relocations
-        if target.value <= relocation.virtual_address < end
-    )
+    symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
+    relocation_references: list[ObjectRelocationReference] = []
+    for relocation in section.relocations:
+        if not (target.value <= relocation.virtual_address < end):
+            continue
+        offset = relocation.virtual_address - target.value
+        symbol = symbols_by_raw_index.get(relocation.symbol_index)
+        if symbol is None:
+            relocation_references.append(
+                ObjectRelocationReference(
+                    offset=offset,
+                    symbol_name=f"<symbol#{relocation.symbol_index}>",
+                    key=None,
+                    explained=False,
+                ),
+            )
+            continue
+        addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
+        key, explained = _object_reference_key(symbol, addend)
+        symbol_section = obj.sections[symbol.section_number - 1] if symbol.section_number > 0 else None
+        symbol_end = (
+            min(
+                (
+                    sibling.value
+                    for sibling in obj.symbols
+                    if sibling.section_number == symbol.section_number and sibling.value > symbol.value
+                ),
+                default=len(symbol_section.data),
+            )
+            if symbol_section is not None
+            else None
+        )
+        relocation_references.append(
+            ObjectRelocationReference(
+                offset=offset,
+                symbol_name=symbol.name,
+                key=key,
+                explained=explained,
+                addend=addend,
+                symbol_data=(
+                    symbol_section.data[symbol.value : symbol_end]
+                    if symbol_section is not None and symbol_end is not None
+                    else None
+                ),
+            ),
+        )
     return ObjectFunction(
         name=target.name,
         data=section.data[target.value : end].rstrip(PADDING_BYTES),
-        relocation_offsets=relocation_offsets,
+        relocation_offsets=frozenset(reference.offset for reference in relocation_references),
+        relocation_references=tuple(relocation_references),
     )
 
 
@@ -380,6 +615,25 @@ def load_image(path: Path, image_base: int | None = None) -> LoadedImage:
 _OPERAND_SIZE_NAMES = {1: "byte", 2: "word", 4: "dword", 8: "qword", 10: "tword"}
 
 
+def _printable_string_key(data: bytes) -> str | None:
+    end = data.find(b"\x00", 0, 161)
+    if end <= 0:
+        return None
+    raw = data[:end]
+    if any((byte < 0x20 and byte not in b"\t\n\r") or byte > 0x7E for byte in raw):
+        return None
+    return f"string:{json.dumps(raw.decode('ascii'), ensure_ascii=True)}"
+
+
+def _image_bytes(image: LoadedImage | None, address: int, byte_count: int) -> bytes | None:
+    if image is None:
+        return None
+    offset = address - image.image_base
+    if offset < 0 or offset + byte_count > len(image.mapped):
+        return None
+    return image.mapped[offset : offset + byte_count]
+
+
 def _format_memory_operand(insn, operand, masked_disp: bool) -> str:
     mem = operand.mem
     parts: list[str] = []
@@ -399,8 +653,11 @@ def disassemble_normalized_function(
     data: bytes,
     *,
     relocation_offsets: frozenset[int] | None = None,
+    relocation_references: tuple[ObjectRelocationReference, ...] = (),
     address_range: tuple[int, int] | None = None,
     base_address: int = 0,
+    reference_catalog: ReferenceCatalog | None = None,
+    image: LoadedImage | None = None,
 ) -> tuple[DisassemblyLine, ...]:
     try:
         import capstone
@@ -410,15 +667,97 @@ def disassemble_normalized_function(
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     md.detail = True
     relocation_offsets = relocation_offsets or frozenset()
+    relocation_by_offset = {reference.offset: reference for reference in relocation_references}
     size = len(data)
 
     def is_masked_value(value: int) -> bool:
         return address_range is not None and address_range[0] <= value < address_range[1]
 
+    def relocation_in_span(start: int, byte_count: int) -> ObjectRelocationReference | None:
+        return next(
+            (
+                relocation_by_offset[offset]
+                for offset in range(start, start + max(byte_count, 1))
+                if offset in relocation_by_offset
+            ),
+            None,
+        )
+
+    def object_reference(
+        reference: ObjectRelocationReference | None,
+        *,
+        operand_index: int,
+        kind: str,
+    ) -> MaskedReference:
+        if reference is None:
+            return MaskedReference(
+                operand_index=operand_index,
+                kind=kind,
+                source="reloc",
+                value=None,
+                text="<unknown relocation>",
+                keys=(),
+                explained=False,
+            )
+        keys = (reference.key,) if reference.key is not None else ()
+        explained = reference.explained
+        symbol_data = reference.symbol_data or b""
+        if reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
+            keys = (string_key,)
+            explained = True
+        elif reference.symbol_name.startswith("__real@4") and len(symbol_data) >= 4:
+            keys = (f"bytes4:{symbol_data[:4].hex()}",)
+            explained = True
+        elif reference_catalog is not None:
+            if reference_catalog.knows_name(reference.symbol_name):
+                keys = reference_catalog.keys_for_object_reference(
+                    reference.symbol_name,
+                    reference.addend or 0,
+                )
+            else:
+                explained = False
+        return MaskedReference(
+            operand_index=operand_index,
+            kind=kind,
+            source="reloc",
+            value=None,
+            text=reference.symbol_name,
+            keys=keys,
+            explained=explained,
+        )
+
+    def image_reference(
+        value: int,
+        *,
+        operand_index: int,
+        kind: str,
+        byte_count: int | None = None,
+    ) -> MaskedReference:
+        keys = list(reference_catalog.keys_for_address(value) if reference_catalog is not None else ())
+        if image is not None:
+            available = image.mapped[value - image.image_base :] if image.image_base <= value else b""
+            if string_key := _printable_string_key(available):
+                keys.append(string_key)
+            if byte_count == 4 and (raw := _image_bytes(image, value, 4)) is not None:
+                keys.append(f"bytes4:{raw.hex()}")
+        names = reference_catalog.names_by_address.get(value, ()) if reference_catalog is not None else ()
+        return MaskedReference(
+            operand_index=operand_index,
+            kind=kind,
+            source="image",
+            value=value,
+            text="|".join(names) if names else f"0x{value:08x}",
+            keys=tuple(dict.fromkeys(keys)),
+            explained=True,
+        )
+
     lines: list[DisassemblyLine] = []
     for insn in md.disasm(data, base_address):
         insn_offset = insn.address - base_address
         is_branch = capstone.CS_GRP_JUMP in insn.groups or capstone.CS_GRP_CALL in insn.groups
+        imm_relocation = (
+            relocation_in_span(insn_offset + insn.imm_offset, insn.imm_size) if insn.imm_offset else None
+        )
         imm_masked = (
             any(
                 insn_offset + rel_offset in relocation_offsets
@@ -426,6 +765,9 @@ def disassemble_normalized_function(
             )
             if insn.imm_offset
             else False
+        )
+        disp_relocation = (
+            relocation_in_span(insn_offset + insn.disp_offset, insn.disp_size) if insn.disp_offset else None
         )
         disp_masked = (
             any(
@@ -437,7 +779,8 @@ def disassemble_normalized_function(
         )
 
         operands: list[str] = []
-        for operand in insn.operands:
+        masked_references: list[MaskedReference] = []
+        for operand_index, operand in enumerate(insn.operands):
             if operand.type == capstone.x86.X86_OP_REG:
                 operands.append(insn.reg_name(operand.reg))
             elif operand.type == capstone.x86.X86_OP_IMM:
@@ -445,15 +788,32 @@ def disassemble_normalized_function(
                 target_offset = value - base_address
                 if imm_masked:
                     operands.append("ADDR")
+                    masked_references.append(
+                        object_reference(imm_relocation, operand_index=operand_index, kind="imm"),
+                    )
                 elif is_branch and 0 <= target_offset < size:
                     operands.append(f"L{target_offset:x}")
                 elif is_masked_value(value):
                     operands.append("ADDR")
+                    masked_references.append(image_reference(value, operand_index=operand_index, kind="imm"))
                 else:
                     operands.append(f"0x{value:x}" if value >= 0 else f"-0x{-value:x}")
             elif operand.type == capstone.x86.X86_OP_MEM:
                 masked = disp_masked or is_masked_value(operand.mem.disp)
                 operands.append(_format_memory_operand(insn, operand, masked))
+                if disp_masked:
+                    masked_references.append(
+                        object_reference(disp_relocation, operand_index=operand_index, kind="disp"),
+                    )
+                elif is_masked_value(operand.mem.disp):
+                    masked_references.append(
+                        image_reference(
+                            operand.mem.disp,
+                            operand_index=operand_index,
+                            kind="disp",
+                            byte_count=operand.size,
+                        ),
+                    )
             else:
                 operands.append("?")
         lines.append(
@@ -461,6 +821,7 @@ def disassemble_normalized_function(
                 offset=insn_offset,
                 address=insn.address,
                 text=f"{insn.mnemonic} {', '.join(operands)}".strip(),
+                masked_references=tuple(masked_references),
             ),
         )
     return _strip_trailing_padding_lines(tuple(lines))
@@ -506,30 +867,101 @@ def common_prefix_length(target_lines: tuple[str, ...], candidate_lines: tuple[s
     return min(len(target_lines), len(candidate_lines))
 
 
+def _masked_reference_status(
+    target_references: tuple[MaskedReference, ...],
+    candidate_references: tuple[MaskedReference, ...],
+) -> str:
+    if len(target_references) != len(candidate_references):
+        return "unresolved"
+    explained = all(reference.explained and reference.keys for reference in (*target_references, *candidate_references))
+    if not explained:
+        return "unresolved"
+    if all(
+        target.operand_index == candidate.operand_index
+        and target.kind == candidate.kind
+        and bool(set(target.keys) & set(candidate.keys))
+        for target, candidate in zip(target_references, candidate_references)
+    ):
+        return "ok"
+    return "mismatch"
+
+
+def audit_masked_operands(
+    target_disassembly: tuple[DisassemblyLine, ...],
+    candidate_disassembly: tuple[DisassemblyLine, ...],
+) -> MaskedOperandAudit:
+    matcher = difflib.SequenceMatcher(
+        a=tuple(line.text for line in target_disassembly),
+        b=tuple(line.text for line in candidate_disassembly),
+        autojunk=False,
+    )
+    entries: list[MaskedOperandAuditEntry] = []
+    for tag, target_start, target_end, candidate_start, candidate_end in matcher.get_opcodes():
+        if tag != "equal":
+            continue
+        for target_index, candidate_index in zip(
+            range(target_start, target_end),
+            range(candidate_start, candidate_end),
+        ):
+            target_line = target_disassembly[target_index]
+            candidate_line = candidate_disassembly[candidate_index]
+            if not target_line.masked_references and not candidate_line.masked_references:
+                continue
+            entries.append(
+                MaskedOperandAuditEntry(
+                    target_index=target_index,
+                    candidate_index=candidate_index,
+                    target_offset=target_line.offset,
+                    candidate_offset=candidate_line.offset,
+                    target_address=target_line.address,
+                    candidate_address=candidate_line.address,
+                    instruction=target_line.text,
+                    target_references=target_line.masked_references,
+                    candidate_references=candidate_line.masked_references,
+                    status=_masked_reference_status(
+                        target_line.masked_references,
+                        candidate_line.masked_references,
+                    ),
+                ),
+            )
+    return MaskedOperandAudit(tuple(entries))
+
+
 def match_function(
     target_data: bytes,
     candidate: ObjectFunction,
     *,
     image: LoadedImage,
     target_va: int,
+    reference_catalog: ReferenceCatalog | None = None,
 ) -> MatchResult:
     address_range = (image.image_base, image.image_base + image.size_of_image)
-    target_lines = normalize_function(
+    target_disassembly = disassemble_normalized_function(
         target_data,
         address_range=address_range,
         base_address=target_va,
+        reference_catalog=reference_catalog,
+        image=image,
     )
-    candidate_lines = normalize_function(
+    candidate_disassembly = disassemble_normalized_function(
         candidate.data,
         relocation_offsets=candidate.relocation_offsets,
+        relocation_references=candidate.relocation_references,
         address_range=address_range,
+        reference_catalog=reference_catalog,
+        image=image,
     )
+    target_lines = tuple(line.text for line in target_disassembly)
+    candidate_lines = tuple(line.text for line in candidate_disassembly)
     ratio = difflib.SequenceMatcher(a=target_lines, b=candidate_lines, autojunk=False).ratio()
     return MatchResult(
         ratio=ratio,
         prefix_instructions=common_prefix_length(target_lines, candidate_lines),
         target_lines=target_lines,
         candidate_lines=candidate_lines,
+        target_disassembly=target_disassembly,
+        candidate_disassembly=candidate_disassembly,
+        masked_operand_audit=audit_masked_operands(target_disassembly, candidate_disassembly),
     )
 
 
@@ -607,7 +1039,14 @@ def run_match(
     candidate = extract_object_function(obj, symbol_name)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
-    return match_function(image.function_bytes(start, end), candidate, image=image, target_va=start)
+    catalog = load_reference_catalog(manifest, functions_path=functions_path)
+    return match_function(
+        image.function_bytes(start, end),
+        candidate,
+        image=image,
+        target_va=start,
+        reference_catalog=catalog,
+    )
 
 
 def run_match_dump(
@@ -625,17 +1064,23 @@ def run_match_dump(
     candidate = extract_object_function(obj, symbol_name)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
+    catalog = load_reference_catalog(manifest, functions_path=functions_path)
     address_range = (image.image_base, image.image_base + image.size_of_image)
     return MatchDump(
         target_lines=disassemble_normalized_function(
             image.function_bytes(start, end),
             address_range=address_range,
             base_address=start,
+            reference_catalog=catalog,
+            image=image,
         ),
         candidate_lines=disassemble_normalized_function(
             candidate.data,
             relocation_offsets=candidate.relocation_offsets,
+            relocation_references=candidate.relocation_references,
             address_range=address_range,
+            reference_catalog=catalog,
+            image=image,
         ),
     )
 
@@ -668,14 +1113,20 @@ class ScratchStatus:
     target_instructions: int
     candidate_instructions: int
     error: str | None
+    masked_ok: int = 0
+    masked_unresolved: int = 0
+    masked_mismatches: int = 0
+    audit: MaskedOperandAudit = field(default_factory=MaskedOperandAudit)
 
     @property
     def state(self) -> str:
         if self.ratio is None:
             return "error"
-        if self.ratio == 1.0:
-            return "match"
-        return "wip"
+        if self.ratio != 1.0:
+            return "wip"
+        if self.masked_unresolved or self.masked_mismatches:
+            return "audit"
+        return "match"
 
 
 @dataclass(frozen=True, slots=True)
@@ -730,29 +1181,167 @@ def validate_scratch_source(source: Path) -> None:
             )
 
 
-def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT) -> Path:
-    import os
+def _mtime_ns(path: Path) -> int | None:
+    return path.stat().st_mtime_ns if path.exists() else None
+
+
+class _ScratchIncludeResolver:
+    def __init__(self, match_root: Path) -> None:
+        self.include_dir = match_root / "include"
+        self._direct_dependencies: dict[tuple[Path, bool], tuple[Path, ...]] = {}
+
+    def direct_dependencies(self, including_path: Path, *, source: bool) -> tuple[Path, ...]:
+        cache_key = (including_path, source)
+        if cache_key in self._direct_dependencies:
+            return self._direct_dependencies[cache_key]
+        try:
+            text = including_path.read_text(encoding="latin1")
+        except OSError:
+            self._direct_dependencies[cache_key] = ()
+            return ()
+        dependencies: list[Path] = []
+        seen: set[Path] = set()
+        for match in LOCAL_INCLUDE_RE.finditer(text):
+            include_name = Path(match.group(1).replace("\\", "/"))
+            candidates = [self.include_dir / include_name]
+            if not source:
+                candidates.insert(0, including_path.parent / include_name)
+            dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
+            if dependency is None:
+                continue
+            dependency = dependency.resolve()
+            if dependency not in seen:
+                seen.add(dependency)
+                dependencies.append(dependency)
+        resolved = tuple(dependencies)
+        self._direct_dependencies[cache_key] = resolved
+        return resolved
+
+
+def _scratch_include_headers(
+    config: ScratchConfig,
+    match_root: Path,
+    *,
+    resolver: _ScratchIncludeResolver | None = None,
+) -> tuple[Path, ...]:
+    resolver = resolver or _ScratchIncludeResolver(match_root)
+    source = config.directory / config.source
+    pending = [source]
+    visited = {source}
+    headers: set[Path] = set()
+    while pending:
+        including_path = pending.pop()
+        for dependency in resolver.direct_dependencies(including_path, source=including_path == source):
+            if dependency in visited:
+                continue
+            visited.add(dependency)
+            headers.add(dependency)
+            pending.append(dependency)
+    return tuple(sorted(headers))
+
+
+def _compiler_executable_path(config: ScratchConfig, match_root: Path) -> Path:
+    configured_root = os.environ.get("CRIMSON_MSVC_ROOT")
+    roots: list[Path] = []
+    if configured_root:
+        root = Path(configured_root)
+        roots.extend((root, root / config.compiler))
+    roots.extend(
+        (
+            match_root / "compilers" / config.compiler,
+            REPO_ROOT.parent / "snail-mail" / "tools" / "match" / "compilers" / config.compiler,
+        ),
+    )
+    for root in roots:
+        for name in ("CL.EXE", "cl.exe"):
+            candidate = root / "Bin" / name
+            if candidate.is_file():
+                return candidate
+    return match_root / "compilers" / config.compiler / "Bin" / "CL.EXE"
+
+
+def _scratch_compile_argv(config: ScratchConfig, match_root: Path) -> tuple[str, ...]:
+    return (str(match_root / "cl.sh"), "/c", *shlex.split(config.cflags), Path(config.source).name)
+
+
+def _scratch_build_dependencies(
+    config: ScratchConfig,
+    match_root: Path,
+    *,
+    include_resolver: _ScratchIncludeResolver | None = None,
+) -> tuple[Path, ...]:
+    return (
+        config.directory / config.source,
+        config.directory / "scratch.conf",
+        match_root / "cl.sh",
+        _compiler_executable_path(config, match_root),
+        *_scratch_include_headers(config, match_root, resolver=include_resolver),
+    )
+
+
+def _scratch_build_key(
+    config: ScratchConfig,
+    match_root: Path,
+    *,
+    include_resolver: _ScratchIncludeResolver | None = None,
+) -> dict[str, Any]:
+    dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
+    return {
+        "compiler": config.compiler,
+        "argv": list(_scratch_compile_argv(config, match_root)),
+        "dependencies": [
+            [str(path.relative_to(match_root) if path.is_relative_to(match_root) else path), _mtime_ns(path)]
+            for path in dependencies
+        ],
+    }
+
+
+def _scratch_object_is_current(
+    obj_path: Path,
+    config: ScratchConfig,
+    match_root: Path,
+    *,
+    include_resolver: _ScratchIncludeResolver | None = None,
+) -> bool:
+    if not obj_path.exists():
+        return False
+    obj_mtime = obj_path.stat().st_mtime_ns
+    dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
+    if any((mtime := _mtime_ns(path)) is None or mtime > obj_mtime for path in dependencies):
+        return False
+    key_path = obj_path.parent / "scratch-build.json"
+    try:
+        cached = json.loads(key_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return cached.get("key") == _scratch_build_key(config, match_root, include_resolver=include_resolver)
+
+
+def compile_scratch(
+    config: ScratchConfig,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    include_resolver: _ScratchIncludeResolver | None = None,
+) -> Path:
     import shutil
     import subprocess
 
     source = config.directory / config.source
     validate_scratch_source(source)
     build_dir = config.directory / "build" / config.compiler
-    build_key = f"{config.compiler}\n{config.cflags}\n{config.source}\n"
-    build_key_path = build_dir / ".build_key"
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
-    if (
-        obj_path.exists()
-        and obj_path.stat().st_mtime >= source.stat().st_mtime
-        and build_key_path.exists()
-        and build_key_path.read_text(encoding="utf-8") == build_key
+    if _scratch_object_is_current(
+        obj_path,
+        config,
+        match_root,
+        include_resolver=include_resolver,
     ):
         return obj_path
 
     build_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, build_dir / Path(config.source).name)
-    command = [str(match_root / "cl.sh"), "/c", *shlex.split(config.cflags), Path(config.source).name]
+    command = list(_scratch_compile_argv(config, match_root))
     completed = subprocess.run(
         command,
         cwd=build_dir,
@@ -763,7 +1352,10 @@ def compile_scratch(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT
     )
     if completed.returncode != 0 or not obj_path.exists():
         raise RuntimeError(f"cl failed:\n{completed.stdout}{completed.stderr}")
-    build_key_path.write_text(build_key, encoding="utf-8")
+    (build_dir / "scratch-build.json").write_text(
+        json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+        encoding="utf-8",
+    )
     return obj_path
 
 
@@ -771,70 +1363,306 @@ def _paths_for_image(image: str) -> tuple[Path, Path, Path]:
     return default_image_path(image), default_functions_path(image), default_metadata_path(image)
 
 
+def _manifest_digest(manifest: FunctionManifest) -> str:
+    payload = {
+        "image": manifest.image_name,
+        "image_base": manifest.image_base,
+        "functions": [[function.address, function.end, function.name] for function in manifest.functions],
+    }
+    return hashlib.sha256(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()).hexdigest()
+
+
+def _scratch_cache_path(config: ScratchConfig) -> Path:
+    return config.directory / "build" / config.compiler / "match-cache.json"
+
+
+def _scratch_cache_key(
+    config: ScratchConfig,
+    image_path: Path,
+    manifest: FunctionManifest,
+    match_root: Path,
+    *,
+    include_resolver: _ScratchIncludeResolver,
+) -> dict[str, Any]:
+    return {
+        "version": CACHE_VERSION,
+        "build": _scratch_build_key(config, match_root, include_resolver=include_resolver),
+        "match": {
+            "image": config.image,
+            "function": config.function,
+            "end_va": config.end_va,
+            "symbol": config.symbol,
+        },
+        "image_mtime": _mtime_ns(image_path),
+        "matcher_mtime": _mtime_ns(Path(__file__)),
+        "manifest": _manifest_digest(manifest),
+        "data_map_mtime": _mtime_ns(DEFAULT_DATA_MAP_PATH),
+    }
+
+
+def _masked_reference_payload(reference: MaskedReference) -> dict[str, Any]:
+    return {
+        "operand_index": reference.operand_index,
+        "kind": reference.kind,
+        "source": reference.source,
+        "value": reference.value,
+        "text": reference.text,
+        "keys": list(reference.keys),
+        "explained": reference.explained,
+    }
+
+
+def _masked_reference_from_payload(payload: dict[str, Any]) -> MaskedReference:
+    return MaskedReference(
+        operand_index=int(payload["operand_index"]),
+        kind=str(payload["kind"]),
+        source=str(payload["source"]),
+        value=int(payload["value"]) if payload["value"] is not None else None,
+        text=str(payload["text"]),
+        keys=tuple(str(key) for key in payload["keys"]),
+        explained=bool(payload["explained"]),
+    )
+
+
+def _audit_payload(audit: MaskedOperandAudit) -> list[dict[str, Any]]:
+    return [
+        {
+            "target_index": entry.target_index,
+            "candidate_index": entry.candidate_index,
+            "target_offset": entry.target_offset,
+            "candidate_offset": entry.candidate_offset,
+            "target_address": entry.target_address,
+            "candidate_address": entry.candidate_address,
+            "instruction": entry.instruction,
+            "target_references": [_masked_reference_payload(reference) for reference in entry.target_references],
+            "candidate_references": [
+                _masked_reference_payload(reference) for reference in entry.candidate_references
+            ],
+            "status": entry.status,
+        }
+        for entry in audit.entries
+    ]
+
+
+def _audit_from_payload(payload: list[dict[str, Any]]) -> MaskedOperandAudit:
+    return MaskedOperandAudit(
+        tuple(
+            MaskedOperandAuditEntry(
+                target_index=int(entry["target_index"]),
+                candidate_index=int(entry["candidate_index"]),
+                target_offset=int(entry["target_offset"]),
+                candidate_offset=int(entry["candidate_offset"]),
+                target_address=int(entry["target_address"]),
+                candidate_address=int(entry["candidate_address"]),
+                instruction=str(entry["instruction"]),
+                target_references=tuple(
+                    _masked_reference_from_payload(reference)
+                    for reference in entry["target_references"]
+                ),
+                candidate_references=tuple(
+                    _masked_reference_from_payload(reference)
+                    for reference in entry["candidate_references"]
+                ),
+                status=str(entry["status"]),
+            )
+            for entry in payload
+        ),
+    )
+
+
+def _load_cached_status(
+    config: ScratchConfig,
+    *,
+    address: int,
+    image_path: Path,
+    manifest: FunctionManifest,
+    match_root: Path,
+    include_resolver: _ScratchIncludeResolver,
+) -> ScratchStatus | None:
+    try:
+        payload = json.loads(_scratch_cache_path(config).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if payload.get("key") != _scratch_cache_key(
+        config,
+        image_path,
+        manifest,
+        match_root,
+        include_resolver=include_resolver,
+    ):
+        return None
+    try:
+        fields = payload["status"]
+        audit = _audit_from_payload(payload["audit"])
+        return ScratchStatus(config=config, address=address, audit=audit, **fields)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _store_cached_status(
+    status: ScratchStatus,
+    *,
+    image_path: Path,
+    manifest: FunctionManifest,
+    match_root: Path,
+    include_resolver: _ScratchIncludeResolver,
+) -> None:
+    cache_path = _scratch_cache_path(status.config)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    fields = {
+        "target_size": status.target_size,
+        "ratio": status.ratio,
+        "prefix_instructions": status.prefix_instructions,
+        "target_instructions": status.target_instructions,
+        "candidate_instructions": status.candidate_instructions,
+        "error": status.error,
+        "masked_ok": status.masked_ok,
+        "masked_unresolved": status.masked_unresolved,
+        "masked_mismatches": status.masked_mismatches,
+    }
+    cache_path.write_text(
+        json.dumps(
+            {
+                "key": _scratch_cache_key(
+                    status.config,
+                    image_path,
+                    manifest,
+                    match_root,
+                    include_resolver=include_resolver,
+                ),
+                "status": fields,
+                "audit": _audit_payload(status.audit),
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+
 def collect_scratch_statuses(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
     compiler: str | None = None,
     cflags: str | None = None,
+    jobs: int = DEFAULT_MATCH_JOBS,
 ) -> list[ScratchStatus]:
-    statuses: list[ScratchStatus] = []
-    manifest_cache: dict[str, FunctionManifest] = {}
-    image_cache: dict[str, LoadedImage] = {}
+    if jobs < 1:
+        raise ValueError("jobs must be positive")
+
+    configs: list[ScratchConfig] = []
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
         config = load_scratch_config(conf_path.parent)
         if compiler is not None or cflags is not None:
-            config = replace(
-                config,
-                compiler=compiler or config.compiler,
-                cflags=cflags or config.cflags,
-            )
-        image_path, functions_path, metadata_path = _paths_for_image(config.image)
-        if config.image not in manifest_cache:
-            manifest_cache[config.image] = load_function_manifest(
-                functions_path,
-                metadata_path=metadata_path,
-                image_name=config.image,
-            )
+            config = replace(config, compiler=compiler or config.compiler, cflags=cflags or config.cflags)
+        configs.append(config)
+
+    manifest_cache: dict[str, FunctionManifest] = {}
+    catalog_cache: dict[str, ReferenceCatalog] = {}
+    for image_name in {config.image for config in configs}:
+        _, functions_path, metadata_path = _paths_for_image(image_name)
+        manifest_cache[image_name] = load_function_manifest(
+            functions_path,
+            metadata_path=metadata_path,
+            image_name=image_name,
+        )
+        catalog_cache[image_name] = load_reference_catalog(manifest_cache[image_name])
+
+    include_resolver = _ScratchIncludeResolver(match_root)
+    statuses_by_directory: dict[Path, ScratchStatus] = {}
+    uncached: list[ScratchConfig] = []
+    for config in configs:
         manifest = manifest_cache[config.image]
+        image_path, _, _ = _paths_for_image(config.image)
+        try:
+            function, _, _ = resolve_function(manifest, config.function, end_override=config.end_va)
+            address = function.address
+        except ValueError:
+            address = 0
+        cached = _load_cached_status(
+            config,
+            address=address,
+            image_path=image_path,
+            manifest=manifest,
+            match_root=match_root,
+            include_resolver=include_resolver,
+        )
+        if cached is not None:
+            statuses_by_directory[config.directory] = cached
+        else:
+            uncached.append(config)
+
+    image_cache = {
+        image_name: load_image(_paths_for_image(image_name)[0], manifest_cache[image_name].image_base)
+        for image_name in {config.image for config in uncached}
+    }
+
+    def match_config(config: ScratchConfig) -> ScratchStatus:
+        manifest = manifest_cache[config.image]
+        image = image_cache[config.image]
+        image_path, _, _ = _paths_for_image(config.image)
         try:
             function, start, end = resolve_function(manifest, config.function, end_override=config.end_va)
-            if config.image not in image_cache:
-                image_cache[config.image] = load_image(image_path, manifest.image_base)
-            image = image_cache[config.image]
             target_data = image.function_bytes(start, end)
-            obj_path = compile_scratch(config, match_root)
+            obj_path = compile_scratch(config, match_root, include_resolver=include_resolver)
             obj = parse_coff_object(obj_path.read_bytes())
             candidate = extract_object_function(obj, config.symbol)
-            result = match_function(target_data, candidate, image=image, target_va=start)
-            statuses.append(
-                ScratchStatus(
-                    config=config,
-                    address=function.address,
-                    target_size=len(target_data),
-                    ratio=result.ratio,
-                    prefix_instructions=result.prefix_instructions,
-                    target_instructions=len(result.target_lines),
-                    candidate_instructions=len(result.candidate_lines),
-                    error=None,
-                ),
+            result = match_function(
+                target_data,
+                candidate,
+                image=image,
+                target_va=start,
+                reference_catalog=catalog_cache[config.image],
             )
+            status = ScratchStatus(
+                config=config,
+                address=function.address,
+                target_size=len(target_data),
+                ratio=result.ratio,
+                prefix_instructions=result.prefix_instructions,
+                target_instructions=len(result.target_lines),
+                candidate_instructions=len(result.candidate_lines),
+                error=None,
+                masked_ok=result.masked_operand_audit.ok_count,
+                masked_unresolved=result.masked_operand_audit.unresolved_count,
+                masked_mismatches=result.masked_operand_audit.mismatch_count,
+                audit=result.masked_operand_audit,
+            )
+            _store_cached_status(
+                status,
+                image_path=image_path,
+                manifest=manifest,
+                match_root=match_root,
+                include_resolver=include_resolver,
+            )
+            return status
         except Exception as exc:
-            statuses.append(
-                ScratchStatus(
-                    config=config,
-                    address=0,
-                    target_size=0,
-                    ratio=None,
-                    prefix_instructions=0,
-                    target_instructions=0,
-                    candidate_instructions=0,
-                    error=str(exc).splitlines()[0] if str(exc) else type(exc).__name__,
-                ),
+            try:
+                address = resolve_function(manifest, config.function, end_override=config.end_va)[0].address
+            except ValueError:
+                address = 0
+            return ScratchStatus(
+                config=config,
+                address=address,
+                target_size=0,
+                ratio=None,
+                prefix_instructions=0,
+                target_instructions=0,
+                candidate_instructions=0,
+                error=str(exc).splitlines()[0] if str(exc) else type(exc).__name__,
             )
-    return statuses
+
+    if jobs == 1 or len(uncached) < 2:
+        matched = list(map(match_config, uncached))
+    else:
+        with ThreadPoolExecutor(max_workers=min(jobs, len(uncached))) as executor:
+            matched = list(executor.map(match_config, uncached))
+    for status in matched:
+        statuses_by_directory[status.config.directory] = status
+    return [statuses_by_directory[config.directory] for config in configs]
 
 
-STATUS_HEADER = ("state", "image", "function", "address", "bytes", "insns", "match", "prefix", "build", "note")
+STATUS_HEADER = ("state", "image", "function", "address", "bytes", "insns", "match", "prefix", "refs", "build", "note")
 IMAGE_TOTALS_HEADER = ("image", "functions", "bytes", "code", "scratches")
 
 
@@ -879,6 +1707,11 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
         ratio = f"{status.ratio:.2%}" if status.ratio is not None else "-"
         insns = f"{status.candidate_instructions}/{status.target_instructions}" if status.ratio is not None else "-"
         prefix = f"{status.prefix_instructions}/{status.target_instructions}" if status.ratio is not None else "-"
+        refs = (
+            f"{status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches}"
+            if status.ratio is not None
+            else "-"
+        )
         build = f"{status.config.compiler} {status.config.cflags}"
         rows.append(
             (
@@ -890,6 +1723,7 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
                 insns,
                 ratio,
                 prefix,
+                refs,
                 "" if build == default_build else build,
                 status.error or status.config.note,
             ),
@@ -927,7 +1761,7 @@ def _image_summary(total: ImageTotals) -> str:
         f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
         f"{total.matched_bytes}/{total.byte_total} bytes "
         f"({total.byte_percentage:.1%}) matched; "
-        f"{total.matched_scratches}/{total.scratch_count} scratches at 100%"
+        f"{total.matched_scratches}/{total.scratch_count} scratches verified"
     )
 
 
@@ -940,7 +1774,7 @@ def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]
         f"\nall images: {overall.matched_functions}/{overall.function_count} functions, "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
-        f"{overall.matched_scratches}/{overall.scratch_count} scratches at 100%",
+        f"{overall.matched_scratches}/{overall.scratch_count} scratches verified",
     )
     lines.append("by image:")
     lines.extend(_image_summary(total) for total in totals)
@@ -976,15 +1810,15 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
                 f"**{total.matched_functions}/{total.function_count}** functions, "
                 f"**{total.matched_bytes}/{total.byte_total}** bytes "
                 f"(**{total.byte_percentage:.1%}**), "
-                f"**{total.matched_scratches}/{total.scratch_count}** scratches at 100%.",
+                f"**{total.matched_scratches}/{total.scratch_count}** scratches verified.",
                 "",
-                "| state | function | address | bytes | insns | match | prefix | build | note |",
-                "|---|---|---|---:|---:|---:|---:|---|---|",
+                "| state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |",
+                "|---|---|---|---:|---:|---:|---:|---:|---|---|",
             ],
         )
         for row in render_status_rows(image_statuses):
             lines.append("| " + " | ".join((row[0], *row[2:])) + " |")
         if not image_statuses:
-            lines.append("| - | - | - | - | - | - | - | - | no scratches |")
+            lines.append("| - | - | - | - | - | - | - | - | - | no scratches |")
     lines.append("")
     return "\n".join(lines)

@@ -13,50 +13,50 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## crimsonland.exe
 
-**12/986** functions, **345/385754** bytes (**0.1%**), **12/29** scratches at 100%.
+**12/986** functions, **345/385754** bytes (**0.1%**), **12/29** scratches verified.
 
-| state | function | address | bytes | insns | match | prefix | build | note |
-|---|---|---|---:|---:|---:|---:|---|---|
-| match | console_input_clear | 0x00401030 | 18 | 5/5 | 100.00% | 5/5 |  | smoke |
-| match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| wip | bonus_apply | 0x00409890 | 2693 | 661/668 | 64.41% | 6/668 |  | gameplay-bonus-switch |
-| wip | player_start_reload | 0x00413430 | 263 | 67/67 | 94.03% | 29/67 |  | gameplay-reload |
-| wip | player_heading_approach_target | 0x00413540 | 354 | 93/95 | 57.45% | 1/95 |  | gameplay-angle-x87 |
-| match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 |  | x87-fsqrt |
-| match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 64.66% | 1/131 |  | gameplay-movement |
-| match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 |  | gameplay-bonus-pool |
-| match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 |  | gameplay-weapon-table |
-| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 65.56% | 7/89 |  | gameplay-target-search |
-| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 67/65 | 69.70% | 0/65 |  | gameplay-secondary-projectile |
-| wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 64.75% | 0/126 |  | gameplay-projectile |
-| match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 |  | gameplay-pool-reset |
-| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 74.78% | 11/57 |  | gameplay-radius-damage |
-| wip | creature_find_in_radius | 0x004206a0 | 133 | 51/47 | 40.82% | 0/47 |  | gameplay-target-search |
-| wip | player_find_in_radius | 0x00420730 | 133 | 54/54 | 64.81% | 9/54 |  | gameplay-target-search |
-| wip | player_take_damage | 0x00425e50 | 969 | 265/267 | 75.56% | 9/267 |  | gameplay-player-damage |
-| wip | creature_reset_all | 0x004281e0 | 46 | 12/13 | 80.00% | 2/13 |  | gameplay-creature-reset |
-| match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-creature-scan |
-| wip | creature_spawn | 0x00428240 | 334 | 78/79 | 73.89% | 5/79 |  | gameplay-creature-spawn |
-| match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 |  | gameplay-bonus-label |
-| wip | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 96.88% | 28/32 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-perk-rng |
-| match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 |  | gameplay-perk-count |
-| match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-spawn-slots |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 2731/3159 | 57.28% | 20/3159 |  | gameplay-spawn-switch |
-| wip | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 97.22% | 6/36 |  | gameplay-weapon-rng |
-| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 93.75% | 10/48 |  | gameplay-weapon-unlocks |
+| state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
+|---|---|---|---:|---:|---:|---:|---:|---|---|
+| match | console_input_clear | 0x00401030 | 18 | 5/5 | 100.00% | 5/5 | 3/0/0 |  | smoke |
+| match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| wip | bonus_apply | 0x00409890 | 2693 | 661/668 | 64.41% | 6/668 | 159/0/14 |  | gameplay-bonus-switch |
+| wip | player_start_reload | 0x00413430 | 263 | 67/67 | 94.03% | 29/67 | 26/0/0 |  | gameplay-reload |
+| wip | player_heading_approach_target | 0x00413540 | 354 | 93/95 | 57.45% | 1/95 | 12/0/0 |  | gameplay-angle-x87 |
+| match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
+| match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 64.66% | 1/131 | 7/0/1 |  | gameplay-movement |
+| match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
+| match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
+| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 65.56% | 7/89 | 3/0/1 |  | gameplay-target-search |
+| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 67/65 | 69.70% | 0/65 | 11/0/0 |  | gameplay-secondary-projectile |
+| wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 64.75% | 0/126 | 11/0/0 |  | gameplay-projectile |
+| match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
+| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 74.78% | 11/57 | 4/0/1 |  | gameplay-radius-damage |
+| wip | creature_find_in_radius | 0x004206a0 | 133 | 51/47 | 40.82% | 0/47 | 3/0/1 |  | gameplay-target-search |
+| wip | player_find_in_radius | 0x00420730 | 133 | 54/54 | 64.81% | 9/54 | 4/0/1 |  | gameplay-target-search |
+| wip | player_take_damage | 0x00425e50 | 969 | 265/267 | 75.56% | 9/267 | 60/0/2 |  | gameplay-player-damage |
+| wip | creature_reset_all | 0x004281e0 | 46 | 12/13 | 80.00% | 2/13 | 3/0/0 |  | gameplay-creature-reset |
+| match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-creature-scan |
+| wip | creature_spawn | 0x00428240 | 334 | 78/79 | 73.89% | 5/79 | 25/0/1 |  | gameplay-creature-spawn |
+| match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
+| wip | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 96.88% | 28/32 | 8/0/0 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-perk-rng |
+| match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
+| match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O2 /G6 /W3 /GR- | gameplay-spawn-slots |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 2731/3159 | 57.28% | 20/3159 | 304/4/1 |  | gameplay-spawn-switch |
+| wip | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 97.22% | 6/36 | 7/0/0 |  | gameplay-weapon-rng |
+| wip | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 93.75% | 10/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 
 ## grim.dll
 
-**7/1175** functions, **114/289897** bytes (**0.0%**), **7/7** scratches at 100%.
+**7/1175** functions, **114/289897** bytes (**0.0%**), **7/7** scratches verified.
 
-| state | function | address | bytes | insns | match | prefix | build | note |
-|---|---|---|---:|---:|---:|---:|---|---|
-| match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 |  | smoke |
-| match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 |  | smoke |
-| match | grim_get_frame_dt | 0x10006e60 | 33 | 9/9 | 100.00% | 9/9 |  | branch-x87 |
-| match | grim_is_mouse_button_down | 0x10007410 | 38 | 11/11 | 100.00% | 11/11 |  | branch-call-stdcall |
-| match | grim_get_mouse_x | 0x10007510 | 7 | 2/2 | 100.00% | 2/2 |  | smoke |
-| match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 |  | branch-x87 |
+| state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
+|---|---|---|---:|---:|---:|---:|---:|---|---|
+| match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
+| match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_get_frame_dt | 0x10006e60 | 33 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | branch-x87 |
+| match | grim_is_mouse_button_down | 0x10007410 | 38 | 11/11 | 100.00% | 11/11 | 3/0/0 |  | branch-call-stdcall |
+| match | grim_get_mouse_x | 0x10007510 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |

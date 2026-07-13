@@ -12,5 +12,5 @@ extern "C" void projectile_reset_pools(void)
     do {
         particle->active = 0;
         ++particle;
-    } while ((int)particle < (int)&particle_pool[0x70]);
+    } while ((int)particle < (int)&particle_pool[0x80]);
 }
