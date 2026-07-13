@@ -14,7 +14,15 @@ from ...creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDam
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
+from ...math_parity import (
+    NATIVE_HALF_PI,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
@@ -101,6 +109,11 @@ def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
     damage = f32(float(damage) * 30.0)
     damage = f32(float(damage) + 10.0)
     return f32(float(damage) * float(f32(0.95)))
+
+
+def _stop_on_hit_jitter_axis_f32(direction: float, jitter: int, pos: float) -> float:
+    offset = x87_pc24_mul(direction, float(jitter))
+    return x87_pc24_add(offset, pos)
 
 
 def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCollisionProfile:
@@ -298,33 +311,32 @@ class ProjectilePool:
             # Decompile parity (`projectile_update`, 0x00420b90):
             #   local_cc += (float)(cos(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
             #   local_c8 += (float)(sin(angle - pi/2) * frame_dt * 20.0f) * speed_scale * 3.0f
-            # Keep the float32 cast before `* speed_scale * 3.0`.
-            # The game leaves x87 in 24-bit precision mode, so the angle-minus-
-            # half-pi subtraction rounds before fcos/fsin. Keeping it wide can
-            # drift projectile integration by one ULP.
+            # The game leaves x87 in 24-bit precision mode, so every arithmetic
+            # operation in the integration chain rounds to a 24-bit significand.
+            # Transcendental results stay wide until the first multiply.
             heading_radians = x87_pc24_sub(float(proj.angle), NATIVE_HALF_PI)
+            step_x = x87_pc24_cos_mul(
+                heading_radians,
+                dt,
+                20.0,
+                proj.speed_scale,
+                3.0,
+            )
+            step_y = x87_pc24_sin_mul(
+                heading_radians,
+                dt,
+                20.0,
+                proj.speed_scale,
+                3.0,
+            )
             dir_x = math.cos(heading_radians)
             dir_y = math.sin(heading_radians)
             acc = Vec2()
             step = 0
             while step < steps:
                 acc = Vec2(
-                    float(
-                        f32(
-                            float(acc.x)
-                            + float(
-                                f32(float(dir_x) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
-                            ),
-                        ),
-                    ),
-                    float(
-                        f32(
-                            float(acc.y)
-                            + float(
-                                f32(float(dir_y) * float(dt) * 20.0) * float(proj.speed_scale) * 3.0,
-                            ),
-                        ),
-                    ),
+                    x87_pc24_add(acc.x, step_x),
+                    x87_pc24_add(acc.y, step_y),
                 )
 
                 if acc.length() >= 4.0 or steps <= step + 3:
@@ -434,11 +446,10 @@ class ProjectilePool:
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
-                        # Native computes `cos * jitter + pos` in extended
-                        # precision with a single f32 spill on the sum.
+                        # Native rounds the multiply and add as separate PC24 operations.
                         proj.pos = Vec2(
-                            float(f32(float(dir_x) * float(jitter) + float(proj.pos.x))),
-                            float(f32(float(dir_y) * float(jitter) + float(proj.pos.y))),
+                            _stop_on_hit_jitter_axis_f32(dir_x, jitter, proj.pos.x),
+                            _stop_on_hit_jitter_axis_f32(dir_y, jitter, proj.pos.y),
                         )
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)
@@ -549,7 +560,7 @@ class ProjectilePool:
 
             if proj.life_timer < 0.4:
                 if proj.type_id == ProjectileTemplateId.ION_RIFLE:
-                    damage = dt * 100.0
+                    damage = x87_pc24_mul(dt, f32(100.0))
                     radius = 88.0
                     for creature in creatures:
                         if creature.hp <= 0.0:
@@ -557,9 +568,9 @@ class ProjectilePool:
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            creature.hp = x87_pc24_sub(creature.hp, damage)
                 elif proj.type_id == ProjectileTemplateId.ION_MINIGUN:
-                    damage = dt * 40.0
+                    damage = x87_pc24_mul(dt, f32(40.0))
                     radius = 60.0
                     for creature in creatures:
                         if creature.hp <= 0.0:
@@ -567,7 +578,7 @@ class ProjectilePool:
                         creature_radius = _hit_radius_for(creature)
                         hit_r = radius + creature_radius
                         if Vec2.distance_sq(proj.pos, creature.pos) <= hit_r * hit_r:
-                            creature.hp -= damage
+                            creature.hp = x87_pc24_sub(creature.hp, damage)
                 proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue
 

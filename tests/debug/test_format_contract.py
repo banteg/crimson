@@ -29,7 +29,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         CHECKPOINT_FORMAT_VERSION,
         FRIDA_CAPTURE_FORMAT_VERSION,
         FRIDA_EVIDENCE_FORMAT_VERSION,
-    ) == (2, 14, 15, 5, 20, 2)
+    ) == (2, 14, 15, 5, 21, 2)
 
 
 def test_cross_language_format_contract_is_wired() -> None:
@@ -58,6 +58,14 @@ def test_frida_agent_records_x87_environment_evidence() -> None:
     assert "x87_precision_control:" in source
     assert "x87_rounding_control:" in source
     assert "x87_control_word: ctx.x87_control_word" in source
+
+
+def test_frida_agent_reads_native_time_scale_latch() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    assert "time_scale_active: 0x0048700e" in source
+    assert 'time_scale_active: readDataU8("time_scale_active")' in source
+    assert "const timingEntryActive = _timeScaleActiveFromGlobals(beforeGlobals);" in source
 
 
 def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:

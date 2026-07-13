@@ -10,6 +10,7 @@ from grim.geom import Vec2
 __all__ = [
     "NATIVE_HALF_PI",
     "NATIVE_PI",
+    "NATIVE_QUARTER_PI",
     "NATIVE_TAU",
     "NATIVE_TURN_RATE_SCALE",
     "atan2_f32",
@@ -21,8 +22,10 @@ __all__ = [
     "x87_pc24_add",
     "x87_fpatan",
     "x87_pc24_cos_mul",
+    "x87_pc24_div",
     "x87_pc24_mul",
     "x87_pc24_mul_chain",
+    "x87_pc24_sqrt",
     "x87_pc24_sin_mul",
     "x87_pc24_sub",
 ]
@@ -41,6 +44,7 @@ _F32_UNPACK = _F32_STRUCT.unpack
 # Native movement/heading code uses these exact float32 literals.
 NATIVE_PI = _f32_from_bits(0x40490FDB)
 NATIVE_HALF_PI = _f32_from_bits(0x3FC90FDB)
+NATIVE_QUARTER_PI = _f32_from_bits(0x3F490FDB)
 NATIVE_TAU = _f32_from_bits(0x40C90FDB)
 NATIVE_TURN_RATE_SCALE = _f32_from_bits(0x3FAAAAAB)
 
@@ -67,10 +71,22 @@ def x87_pc24_sub(lhs: float, rhs: float) -> float:
     return f32(float(lhs) - float(rhs))
 
 
+def x87_pc24_div(lhs: float, rhs: float) -> float:
+    """Divide using the game's x87 24-bit significand precision."""
+
+    return f32(float(lhs) / float(rhs))
+
+
 def x87_pc24_mul(lhs: float, rhs: float) -> float:
     """Multiply using the game's x87 24-bit significand precision."""
 
     return f32(float(lhs) * float(rhs))
+
+
+def x87_pc24_sqrt(value: float) -> float:
+    """Square-root using the game's x87 24-bit significand precision."""
+
+    return f32(math.sqrt(float(value)))
 
 
 def x87_pc24_mul_chain(first: float, *factors: float) -> float:

@@ -53,7 +53,6 @@ const bonus_time_max: f32 = 10.0;
 const bonus_weapon_near_radius: f32 = 56.0;
 const bonus_aim_hover_radius: f32 = 24.0;
 const bonus_telekinetic_pickup_ms: f32 = 650.0;
-const reflex_timer_subtract_bias: f32 = 4e-9;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
     return @intCast(@intFromEnum(weapon_id));
@@ -173,12 +172,9 @@ pub const BonusPool = struct {
             return null;
         }
 
-        if (entry.bonus_id == .weapon) {
-            const weapon_id = weapon_data.weaponIdFromInt(entry.amount);
-            if (carriedWeaponId(players, weapon_id)) {
-                clearEntry(self, entry);
-                return null;
-            }
+        if (suppressSpawnedBonusForCarriedWeapon(entry.*, players, state.preserve_bugs)) {
+            clearEntry(self, entry);
+            return null;
         }
 
         if (slot == .sentinel) return null;
@@ -294,12 +290,10 @@ pub fn updatePrePickupTimers(
         state.bonuses.energizer -= dt;
     }
     if (state.bonuses.reflex_boost > 0.0) {
-        const reflex_before = state.bonuses.reflex_boost;
-        var subtract = dt;
-        if (reflex_before > 0.0 and reflex_before < 1.0) {
-            subtract += reflex_timer_subtract_bias;
-        }
-        state.bonuses.reflex_boost = reflex_before - subtract;
+        state.bonuses.reflex_boost = native_math.pc24Sub(
+            state.bonuses.reflex_boost,
+            dt,
+        );
     }
 }
 
@@ -628,18 +622,33 @@ fn applyNukeBonus(
     bullet_count += 4;
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)) * 0.01;
+        const angle = native_math.pc24Mul(
+            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)),
+            @as(f32, 0.01),
+        );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-        const speed_scale = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)) * 0.01 + 0.5;
-        projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
+        const speed_scale = native_math.pc24Add(
+            native_math.pc24Mul(
+                @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)),
+                @as(f32, 0.01),
+            ),
+            @as(f32, 0.5),
+        );
+        projectiles.entries[proj_idx].speed_scale = native_math.pc24Mul(
+            projectiles.entries[proj_idx].speed_scale,
+            speed_scale,
+        );
     }
 
     for (0..2) |gauss_idx| {
         const angle_caller = if (gauss_idx == 0) rng_callers.bonus_apply_nuke_gauss_angle_1 else rng_callers.bonus_apply_nuke_gauss_angle_2;
-        const angle = @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)) * 0.01;
+        const angle = native_math.pc24Mul(
+            @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)),
+            @as(f32, 0.01),
+        );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
@@ -654,12 +663,17 @@ fn applyNukeBonus(
 
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        const dx = creature.pos.x - origin.x;
-        const dy = creature.pos.y - origin.y;
+        const dx = native_math.pc24Sub(creature.pos.x, origin.x);
+        const dy = native_math.pc24Sub(creature.pos.y, origin.y);
         if (@abs(dx) > 256.0 or @abs(dy) > 256.0) continue;
-        const dist = std.math.sqrt(dx * dx + dy * dy);
-        if (dist >= 256.0) continue;
-        const damage = (256.0 - dist) * 5.0;
+        const distance_sq = native_math.pc24Add(
+            native_math.pc24Mul(dx, dx),
+            native_math.pc24Mul(dy, dy),
+        );
+        const distance = native_math.pc24Sqrt(distance_sq);
+        const damage_base = native_math.pc24Sub(@as(f32, 256.0), distance);
+        if (!(damage_base > 0.0)) continue;
+        const damage = native_math.pc24Mul(damage_base, @as(f32, 5.0));
         const xp = creatures.applyExplosionDamage(
             state,
             players,
@@ -843,6 +857,36 @@ fn carriedWeaponId(players: []const state_mod.PlayerState, weapon_id: game_ids.W
         }
     }
     return false;
+}
+
+fn suppressSpawnedBonusForCarriedWeapon(
+    entry: BonusEntry,
+    players: []const state_mod.PlayerState,
+    preserve_bugs: bool,
+) bool {
+    if (preserve_bugs) {
+        if (players.len == 0) return false;
+        const amount_weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse return false;
+        return players[0].weapon.weapon_id == amount_weapon_id;
+    }
+    if (entry.bonus_id != .weapon) return false;
+    const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse return false;
+    return carriedWeaponId(players, weapon_id);
+}
+
+test "preserved bonus suppression treats amount as weapon id" {
+    const players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{},
+        .weapon = .{ .weapon_id = .multi_plasma },
+    }};
+    const entry: BonusEntry = .{
+        .bonus_id = .weapon_power_up,
+        .amount = 10,
+    };
+
+    try std.testing.expect(suppressSpawnedBonusForCarriedWeapon(entry, players[0..], true));
+    try std.testing.expect(!suppressSpawnedBonusForCarriedWeapon(entry, players[0..], false));
 }
 
 fn weaponRefreshAvailable(state: *state_mod.GameplayState) void {

@@ -17,8 +17,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw, build_verify_playback_driver
 from ..replay.types import Replay, current_replay_game_version
 from ..sim.hooks import TickResult
-from ..sim.step_pipeline import time_scale_reflex_boost_factor
-from ..sim.timing import ftol_ms_i32
+from ..sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
 from ..sim.world_state import WorldState
 from .canonical_channels import (
     BonusEntitySample,
@@ -376,7 +375,7 @@ def _timing_samples_for_tick(
             time_scale_active_entry=active,
             time_scale_active_current=active,
             time_scale_factor=_trace_f32(
-                time_scale_reflex_boost_factor(
+                reflex_boost_time_scale_factor(
                     reflex_boost_timer=reflex_boost_timer,
                     time_scale_active=active,
                 ),
@@ -418,12 +417,22 @@ def _build_trace_meta(
     )
 
 
+def _canonical_elapsed_ms_by_tick(replay: Replay) -> list[int]:
+    elapsed_ms = 0
+    out: list[int] = []
+    for tick in replay.ticks:
+        elapsed_ms += int(ftol_ms_i32(tick.dt))
+        out.append(elapsed_ms)
+    return out
+
+
 def _record_replay_to_trace_python(
     *,
     replay_path: Path,
     out_path: Path,
 ) -> TraceSummary:
     replay = load_replay_file(replay_path)
+    canonical_elapsed_ms = _canonical_elapsed_ms_by_tick(replay)
 
     replay_tick_count = len(replay.ticks)
     checkpoint_ticks = set(range(replay_tick_count))
@@ -460,7 +469,13 @@ def _record_replay_to_trace_python(
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
             tick_index = int(tick_result.source_tick.tick_index)
             if tick_index in checkpoint_ticks:
-                checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
+                checkpoint = driver.build_checkpoint(tick_result=tick_result)
+                checkpoints.append(
+                    msgspec.structs.replace(
+                        checkpoint,
+                        elapsed_ms=int(canonical_elapsed_ms[tick_index]),
+                    ),
+                )
             entity_samples_by_tick[tick_index] = _entity_samples_for_world(
                 world,
                 creature_state=creature_state,

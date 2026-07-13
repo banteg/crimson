@@ -13,8 +13,8 @@ class PerkEffectIntervals(msgspec.Struct):
     """
 
     man_bomb: float = 4.0
-    fire_cough: float = 2.0
-    hot_tempered: float = 2.0
+    fire_cough: float = 1.399999976158142
+    hot_tempered: float = 1.399999976158142
 
 
 class PerkSelectionState(msgspec.Struct):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.sim.state_types import PlayerState
@@ -29,4 +30,4 @@ def test_tough_reloader_sets_spread_heat_from_post_reload_damage_before_thick_sk
 
     _ = player_take_damage(state, player, 10.0, dt=0.1)
 
-    assert_float_close(player.spread_heat, 0.15)
+    assert player.spread_heat == x87_pc24_add(0.1, x87_pc24_mul(5.0, f32(0.01)))

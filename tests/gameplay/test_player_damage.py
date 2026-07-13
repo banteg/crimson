@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
@@ -72,6 +73,20 @@ def test_player_take_damage_tags_dodger_dodge_caller() -> None:
         RngCallerStatic.PLAYER_TAKE_DAMAGE_DODGER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
     ]
+
+
+def test_repeated_heading_jitter_stores_each_native_precision_result() -> None:
+    state = GameplayState(rng=ScriptedCrand([0, 43, 0, 15]))
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=f32(1.1))
+
+    player_take_damage(state, player, 1.0)
+    player_take_damage(state, player, 1.0)
+
+    expected = x87_pc24_add(
+        x87_pc24_add(f32(1.1), x87_pc24_mul(-7.0, f32(0.04))),
+        x87_pc24_mul(-35.0, f32(0.04)),
+    )
+    assert player.heading == expected
 
 
 @pytest.mark.parametrize(

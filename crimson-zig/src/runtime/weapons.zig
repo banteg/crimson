@@ -252,7 +252,10 @@ pub fn stepPlayerForTickWithEffects(
     if (perks.perkActive(player, PerkId.sharpshooter)) {
         player.spread_heat = 0.02;
     } else {
-        player.spread_heat = @max(0.01, player.spread_heat - dt * 0.4);
+        player.spread_heat = @max(
+            @as(f32, 0.01),
+            native_math.pc24Sub(player.spread_heat, native_math.pc24Mul(dt, @as(f32, 0.4))),
+        );
     }
 
     if (player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0) {
@@ -464,23 +467,45 @@ fn tryFireWeaponWithForce(
         );
     }
 
-    // Native float sequence: half the f32 aim distance is spilled, the
-    // spread/magnitude product chain stays in extended precision, the jittered
-    // aim x is spilled, and the y addition rounds in x87's 24-bit precision
-    // mode before atan2. The heading is stored once as float32.
-    const half_len: f32 = aim_delta.length() * 0.5;
+    // Native uses x87 PC=24 here: arithmetic rounds after every operation,
+    // while fsqrt/fcos/fsin/fpatan remain wide until consumed.
+    const aim_dist_sq = native_math.pc24Add(
+        native_math.pc24Mul(aim_delta.x, aim_delta.x),
+        native_math.pc24Mul(aim_delta.y, aim_delta.y),
+    );
+    const half_len = native_math.pc24Mul(std.math.sqrt(aim_dist_sq), @as(f32, 0.5));
     const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
-    const offset_term: f64 = @as(f64, half_len) * @as(f64, player.spread_heat) *
-        @as(f64, @floatFromInt(mag_roll & 0x1ff)) * 0.001953125;
-    const dir_angle: f32 = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
-    const aim_jitter_x: f32 = @floatCast(@cos(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.x));
-    const aim_jitter_y: f32 = @floatCast(@sin(@as(f64, dir_angle)) * offset_term + @as(f64, player.aim.y));
+    const offset_term = native_math.pc24Mul(
+        native_math.pc24Mul(
+            native_math.pc24Mul(
+                half_len,
+                player.spread_heat,
+            ),
+            @as(f32, @floatFromInt(mag_roll & 0x1ff)),
+        ),
+        @as(f32, 0.001953125),
+    );
+    const dir_angle = native_math.pc24Mul(
+        @as(f32, @floatFromInt(dir_roll & 0x1ff)),
+        native_math.pc24Mul(native_tau, @as(f32, 1.0 / 512.0)),
+    );
+    const aim_jitter_x = native_math.pc24Add(
+        native_math.pc24Mul(@cos(@as(f64, dir_angle)), offset_term),
+        player.aim.x,
+    );
+    const aim_jitter_y = native_math.pc24Add(
+        native_math.pc24Mul(@sin(@as(f64, dir_angle)), offset_term),
+        player.aim.y,
+    );
     const native_half_pi_f32: f32 = native_math.roundF32(native_math.native_half_pi);
-    const shot_angle: f32 = @floatCast(std.math.atan2(
-        @as(f64, player.pos.y) - @as(f64, aim_jitter_y),
-        @as(f64, player.pos.x) - @as(f64, aim_jitter_x),
-    ) - @as(f64, native_half_pi_f32));
+    const shot_angle = native_math.pc24Sub(
+        native_math.fpatan(
+            native_math.pc24Sub(player.pos.y, aim_jitter_y),
+            native_math.pc24Sub(player.pos.x, aim_jitter_x),
+        ),
+        native_half_pi_f32,
+    );
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon.weapon_id == .flamethrower or player.weapon.weapon_id == .blow_torch or player.weapon.weapon_id == .hr_flamer) {
         particle_angle = directionFromHeading(aim_heading).toAngle();
@@ -563,13 +588,13 @@ fn tryFireWeaponWithForce(
         },
         .multi_plasma_fan => {
             shot_count = 5;
-            const spread_small = std.math.pi / 10.0;
-            const spread_large = std.math.pi / 6.0;
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle - spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            const spread_small: f32 = 0.31415927;
+            const spread_large: f32 = 0.5235988;
+            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
             _ = projectiles.spawn(muzzle, narrowF32(shot_angle), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle + spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_large), @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), projectile_owner, weapon_data.weapon_stats.get(.plasma_minigun).travel_budget, projectile_hits_players);
+            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_small), @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectile_owner, weapon_data.weapon_stats.get(.plasma_rifle).travel_budget, projectile_hits_players);
         },
         .swarmer_dump => {
             // Native spawns one rocket per integer counter step below the float
@@ -629,9 +654,9 @@ fn tryFireWeaponWithForce(
 
     if (!perks.perkActive(player, PerkId.sharpshooter)) {
         const spread_heat_base = if (is_fire_bullets) fire_bullets_spread_heat else weapon_spread_heat;
-        const spread_inc = spread_heat_base * 1.3;
+        const spread_inc = native_math.pc24Mul(spread_heat_base, @as(f32, 1.3));
         player.spread_heat = std.math.clamp(
-            player.spread_heat + spread_inc,
+            native_math.pc24Add(player.spread_heat, spread_inc),
             0.0,
             0.48,
         );
@@ -736,7 +761,7 @@ fn tickFireCaugh(
         return;
     }
 
-    player.fire_cough_timer += dt;
+    player.fire_cough_timer = native_math.pc24Add(player.fire_cough_timer, dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
     const owner = if (!state.friendly_fire_enabled)
@@ -782,7 +807,7 @@ fn tickFireCaugh(
         .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = 0.413 },
     );
 
-    player.fire_cough_timer -= state.perk_interval_fire_cough;
+    player.fire_cough_timer = native_math.pc24Sub(player.fire_cough_timer, state.perk_interval_fire_cough);
     state.perk_interval_fire_cough = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_fire_cough_interval_reset) % 4)) + 2.0;
 }
 
@@ -797,7 +822,7 @@ fn tickHotTempered(
         return;
     }
 
-    player.hot_tempered_timer += dt;
+    player.hot_tempered_timer = native_math.pc24Add(player.hot_tempered_timer, dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
     const owner = if (state.friendly_fire_enabled)
@@ -809,7 +834,7 @@ fn tickHotTempered(
             .plasma_minigun
         else
             .plasma_rifle;
-        const angle = @as(f32, @floatFromInt(idx)) * (native_pi / 4.0);
+        const angle = native_math.pc24Mul(@as(f32, @floatFromInt(idx)), native_math.native_quarter_pi);
         spawnPerkProjectile(
             state,
             player,
@@ -822,7 +847,7 @@ fn tickHotTempered(
     }
     state.sfx_queue.append(.explosion_small);
 
-    player.hot_tempered_timer -= state.perk_interval_hot_tempered;
+    player.hot_tempered_timer = native_math.pc24Sub(player.hot_tempered_timer, state.perk_interval_hot_tempered);
     state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_hot_tempered_interval_reset) % 8)) + 2.0;
 }
 
@@ -1808,24 +1833,24 @@ test "multi plasma fires five projectiles with fixed spread profile" {
     try std.testing.expectEqual(@as(i32, 5), state.weapon_shots_fired[0][10]);
 
     const shot_angle = std.math.pi / 2.0;
-    const spread_small = std.math.pi / 10.0;
-    const spread_large = std.math.pi / 6.0;
+    const spread_small: f32 = 0.31415927;
+    const spread_large: f32 = 0.5235988;
     const expected = [_]struct {
         angle: f32,
         type_id: i32,
     }{
-        .{ .angle = shot_angle - spread_small, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
-        .{ .angle = shot_angle - spread_large, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
+        .{ .angle = native_math.pc24Sub(shot_angle, spread_small), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
+        .{ .angle = native_math.pc24Sub(shot_angle, spread_large), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
         .{ .angle = shot_angle, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
-        .{ .angle = shot_angle + spread_large, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
-        .{ .angle = shot_angle + spread_small, .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
+        .{ .angle = native_math.pc24Add(shot_angle, spread_large), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun) },
+        .{ .angle = native_math.pc24Add(shot_angle, spread_small), .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle) },
     };
 
     for (expected, 0..) |entry, idx| {
         const proj = projectiles.entries[idx];
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(entry.type_id, proj.type_id);
-        try expectFloatClose(entry.angle, proj.angle);
+        try std.testing.expectEqual(entry.angle, proj.angle);
     }
 }
 

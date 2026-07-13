@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import math
-
 from grim.sfx_map import SfxId
 
+from ...math_parity import NATIVE_QUARTER_PI, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
@@ -18,7 +17,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
         ctx.player.hot_tempered_timer = 0.0
         return
 
-    ctx.player.hot_tempered_timer += ctx.dt
+    ctx.player.hot_tempered_timer = x87_pc24_add(ctx.player.hot_tempered_timer, ctx.dt)
     if ctx.player.hot_tempered_timer <= ctx.state.perk_intervals.hot_tempered:
         return
 
@@ -27,7 +26,7 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
     )
     for idx in range(8):
         type_id = ProjectileTemplateId.PLASMA_MINIGUN if ((idx & 1) == 0) else ProjectileTemplateId.PLASMA_RIFLE
-        angle = float(idx) * (math.pi / 4.0)
+        angle = x87_pc24_mul(float(idx), NATIVE_QUARTER_PI)
         ctx.projectile_spawn(
             ctx.state,
             players=ctx.players,
@@ -39,7 +38,10 @@ def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
         )
     ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
 
-    ctx.player.hot_tempered_timer -= ctx.state.perk_intervals.hot_tempered
+    ctx.player.hot_tempered_timer = x87_pc24_sub(
+        ctx.player.hot_tempered_timer,
+        ctx.state.perk_intervals.hot_tempered,
+    )
     interval_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET)
     ctx.state.perk_intervals.hot_tempered = float(interval_roll % 8) + 2.0
 

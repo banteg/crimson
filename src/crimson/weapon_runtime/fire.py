@@ -15,9 +15,11 @@ from ..math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
     f32,
+    x87_fpatan,
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_mul,
+    x87_pc24_mul_chain,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
@@ -158,31 +160,30 @@ def _native_shot_angle_with_jitter(
 ) -> float:
     # Native gameplay fire owns two exact `player_update` draw sites for the
     # disc-spread direction and magnitude before the later projectile work.
-    # Float sequence per the decompile: half the f32 aim distance is spilled,
-    # the spread/magnitude product chain stays in extended precision, the
-    # jittered aim x is spilled and the y addition rounds in x87's 24-bit
-    # precision mode before atan2. The heading is stored once as float32.
-    aim_dx = float(f32(float(aim.x) - float(player_pos.x)))
-    aim_dy = float(f32(float(aim.y) - float(player_pos.y)))
-    dist_sq = float(f32(float(f32(float(aim_dx) * float(aim_dx))) + float(f32(float(aim_dy) * float(aim_dy)))))
-    half_len = float(f32(float(f32(math.sqrt(float(dist_sq)))) * 0.5))
+    # The x87 control word uses PC=24 here. Arithmetic rounds after every
+    # operation, while fsqrt/fcos/fsin/fpatan remain wide until consumed.
+    aim_dx = x87_pc24_sub(aim.x, player_pos.x)
+    aim_dy = x87_pc24_sub(aim.y, player_pos.y)
+    dist_sq = x87_pc24_add(
+        x87_pc24_mul(aim_dx, aim_dx),
+        x87_pc24_mul(aim_dy, aim_dy),
+    )
+    half_len = x87_pc24_mul(math.sqrt(dist_sq), 0.5)
 
     dir_draw = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_DIR) & 0x1FF)
     mag_draw = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_JITTER_MAG) & 0x1FF)
-    offset_term = half_len * float(spread_heat) * mag_draw * 0.001953125
-    dir_angle = float(f32(dir_draw * float(f32(float(NATIVE_TAU) / 512.0))))
+    offset_term = x87_pc24_mul_chain(half_len, spread_heat, mag_draw, 0.001953125)
+    dir_angle = x87_pc24_mul(dir_draw, f32(float(NATIVE_TAU) / 512.0))
 
-    aim_jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim.x)))
-    aim_jitter_y = x87_pc24_add(math.sin(dir_angle) * offset_term, float(aim.y))
+    aim_jitter_x = x87_pc24_add(x87_pc24_mul(math.cos(dir_angle), offset_term), aim.x)
+    aim_jitter_y = x87_pc24_add(x87_pc24_mul(math.sin(dir_angle), offset_term), aim.y)
 
-    return float(
-        f32(
-            math.atan2(
-                float(player_pos.y) - aim_jitter_y,
-                float(player_pos.x) - aim_jitter_x,
-            )
-            - float(NATIVE_HALF_PI),
+    return x87_pc24_sub(
+        x87_fpatan(
+            x87_pc24_sub(player_pos.y, aim_jitter_y),
+            x87_pc24_sub(player_pos.x, aim_jitter_x),
         ),
+        NATIVE_HALF_PI,
     )
 
 
@@ -279,7 +280,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         shot_cooldown = float(f32(float(fire_bullets_weapon.shot_cooldown)))
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
-    spread_inc = spread_heat_base * 1.3
+    spread_inc = x87_pc24_mul(spread_heat_base, f32(1.3))
 
     if perk_active(player, PerkId.FASTSHOT):
         shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
@@ -437,19 +438,19 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         case MultiPlasmaFanMode():
             # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
             shot_count = 5
-            spread_small = math.pi / 10
-            spread_large = math.pi / 6
+            spread_small = f32(0.31415927)
+            spread_large = f32(0.5235988)
             patterns: tuple[tuple[float, ProjectileTemplateId], ...] = (
-                (-spread_small, ProjectileTemplateId.PLASMA_RIFLE),
-                (-spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
-                (0.0, ProjectileTemplateId.PLASMA_RIFLE),
-                (spread_large, ProjectileTemplateId.PLASMA_MINIGUN),
-                (spread_small, ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_sub(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_sub(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
+                (shot_angle, ProjectileTemplateId.PLASMA_RIFLE),
+                (x87_pc24_add(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
+                (x87_pc24_add(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
             )
-            for angle_offset, type_id in patterns:
+            for angle, type_id in patterns:
                 state.projectiles.spawn(
                     pos=muzzle,
-                    angle=shot_angle + angle_offset,
+                    angle=angle,
                     type_id=type_id,
                     owner=projectile_owner,
                     travel_budget=travel_budget_for_type_id(type_id),
@@ -509,7 +510,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         )
 
     if not perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
+        player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
 
     muzzle_inc = weapon_spread_heat
     if is_fire_bullets and pellet_count == 1:

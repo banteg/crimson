@@ -139,6 +139,17 @@ const CreatureAiUpdate = struct {
     self_damage: ?f32 = null,
 };
 
+fn formationOffset(index: usize, angle_step: f32, radius: f32) state_mod.Vec2 {
+    const angle = native_math.pc24Mul(
+        @as(f32, @floatFromInt(index)),
+        angle_step,
+    );
+    return .{
+        .x = native_math.pc24Mul(@cos(@as(f64, @floatCast(angle))), radius),
+        .y = native_math.pc24Mul(@sin(@as(f64, @floatCast(angle))), radius),
+    };
+}
+
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
@@ -147,6 +158,7 @@ pub const CreaturePool = struct {
     demo_mode_active: bool = false,
     quest_fail_retry_count: i32 = 0,
     effects: ?*effects_mod.EffectPool = null,
+    single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
     spawn_slots: [max_creatures]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{
         .{
             .owner_creature = 0,
@@ -167,6 +179,7 @@ pub const CreaturePool = struct {
         self.demo_mode_active = false;
         self.quest_fail_retry_count = 0;
         self.effects = null;
+        self.single_player_dormant_target = .{ .index = 1, .pos = .{} };
         self.spawn_slot_count = 0;
     }
 
@@ -198,6 +211,10 @@ pub const CreaturePool = struct {
         const stale_link_index = self.entries[slot].link_index;
         const stale_target_heading = self.entries[slot].target_heading;
         const stale_heading = self.entries[slot].heading;
+        const stale_force_target = self.entries[slot].force_target;
+        const stale_target = self.entries[slot].target;
+        const stale_target_player = self.entries[slot].target_player;
+        const stale_target_offset = self.entries[slot].target_offset;
 
         self.entries[slot] = .{
             .active = true,
@@ -206,17 +223,16 @@ pub const CreaturePool = struct {
                 .x = narrowF32(init.pos.x),
                 .y = narrowF32(init.pos.y),
             },
-            .target = .{
-                .x = narrowF32(init.pos.x),
-                .y = narrowF32(init.pos.y),
-            },
+            .target = stale_target,
+            .target_offset = stale_target_offset,
             .heading = if (init.set_heading) narrowF32(init.heading) else stale_heading,
             .target_heading = stale_target_heading,
             .phase_seed = narrowF32(init.phase_seed),
             .anim_phase = 0.0,
             .vel = .{},
             .move_scale = 1.0,
-            .force_target = 0,
+            .force_target = if (init.preserve_force_target) stale_force_target else 0,
+            .target_player = stale_target_player,
             .ai_mode = init.ai_mode,
             .link_index = stale_link_index,
             .hp = narrowF32(init.health),
@@ -279,14 +295,16 @@ pub const CreaturePool = struct {
                 );
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
-                const transient_heading = @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314)) * 0.01;
+                const transient_heading = native_math.pc24Mul(
+                    @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314)),
+                    @as(f32, 0.01),
+                );
                 self.entries[parent_idx].heading = transient_heading;
 
-                const angle_step = std.math.pi / 4.0;
+                const angle_step: f32 = std.math.pi / 4.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..8) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
+                    const offset = formationOffset(idx, angle_step, 100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -314,6 +332,7 @@ pub const CreaturePool = struct {
                     primary_child_idx = child_idx;
                 }
                 self.entries[primary_child_idx].heading = narrowF32(call.heading);
+                self.entries[primary_child_idx].hp = 20.0;
             },
             0x03 => {
                 self.spawnBasicRandomTemplate(
@@ -518,11 +537,10 @@ pub const CreaturePool = struct {
                     0x1C,
                 );
 
-                const angle_step = std.math.pi / 12.0;
+                const angle_step: f32 = std.math.pi / 12.0;
                 var primary_child_idx: usize = parent_idx;
                 for (0..24) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(100.0);
+                    const offset = formationOffset(idx, angle_step, 100.0);
                     const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{
@@ -605,8 +623,7 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
-                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (std.math.pi / 8.0);
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
+                    const offset = formationOffset(2 + idx * 2, @as(f32, std.math.pi / 8.0), 256.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -721,8 +738,11 @@ pub const CreaturePool = struct {
 
                 var chain_prev = parent_idx;
                 for (0..10) |idx| {
-                    const angle = @as(f32, @floatFromInt(2 + idx * 2)) * (20.0 * std.math.pi / 180.0);
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(256.0);
+                    const offset = formationOffset(
+                        2 + idx * 2,
+                        @as(f32, 20.0 * std.math.pi / 180.0),
+                        256.0,
+                    );
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1291,10 +1311,9 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
 
-                const angle_step = (2.0 * std.math.pi) / 5.0;
+                const angle_step: f32 = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
-                    const angle = @as(f32, @floatFromInt(idx)) * angle_step;
-                    const offset = state_mod.Vec2.fromAngle(narrowF32(angle)).mul(110.0);
+                    const offset = formationOffset(idx, angle_step, 110.0);
                     const child_idx = self.spawnFromStats(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1957,15 +1976,12 @@ pub const CreaturePool = struct {
 
         const dt_ms = @max(@as(i32, 0), timing.ftolMsI32(dt));
         const player = &players[0];
-        const single_player_dead_target_pos: ?state_mod.Vec2 =
-            if (players.len == 1 and players[0].health <= 0.0)
-                .{
-                    .x = world_size * (27.0 / 64.0),
-                    .y = world_size * (27.0 / 64.0),
-                }
-            else
-                null;
-
+        if (players.len == 1) {
+            self.single_player_dormant_target.pos = .{
+                .x = world_size * (27.0 / 64.0),
+                .y = world_size * (27.0 / 64.0),
+            };
+        }
         for (&self.entries, 0..) |*creature, idx| {
             if (!creature.active) continue;
             if (state.bonuses.freeze > 0.0) continue;
@@ -1994,6 +2010,7 @@ pub const CreaturePool = struct {
                     world_size,
                 );
                 if (!(creature.hp > 0.0)) {
+                    tickAi7LinkTimer(creature, dt_ms, &state.rng);
                     if (creature.active) {
                         tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
@@ -2006,9 +2023,24 @@ pub const CreaturePool = struct {
                 creature.force_target = 0;
                 continue;
             }
+            const single_player_dormant_target: ?*state_mod.PlayerState =
+                if (players.len == 1 and players[0].health <= 0.0)
+                    &self.single_player_dormant_target
+                else
+                    null;
+            const distance_player_pos = if (single_player_dormant_target) |dormant_target|
+                if (creature.target_player == 1) dormant_target.pos else player.pos
+            else
+                player.pos;
+            const contact_player = single_player_dormant_target orelse player;
+            if (single_player_dormant_target != null) {
+                creature.target_player = 1;
+            }
+            const target_player_pos = contact_player.pos;
             const ai_update = creatureAiUpdateTarget(
                 creature,
-                if (single_player_dead_target_pos) |dead_target| dead_target else player.pos,
+                target_player_pos,
+                distance_player_pos,
                 self.entries[0..],
                 dt_f32,
             );
@@ -2143,13 +2175,13 @@ pub const CreaturePool = struct {
             if (creature.attack_cooldown <= 0.0) {
                 creature.attack_cooldown = 0.0;
             } else {
-                creature.attack_cooldown = narrowF32(creature.attack_cooldown - dt_f32);
+                creature.attack_cooldown = native_math.pc24Sub(creature.attack_cooldown, dt_f32);
             }
 
             // Native gates on the global perk count and only fires the pulse
             // while the creature is still alive (hp > 0).
             if (anyPlayerHasPerk(players, PerkId.radioactive)) {
-                const dist = state_mod.Vec2.sub(creature.pos, player.pos).length();
+                const dist = state_mod.Vec2.sub(creature.pos, target_player_pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt_f32 * 1.5;
                     if (creature.collision_timer < 0.0 and creature.hp > 0.0) {
@@ -2172,7 +2204,7 @@ pub const CreaturePool = struct {
             // Decompile parity (`creature_update_all`, 0x00426220): compute
             // creature->target-player distance once and reuse it for ranged,
             // eat, and contact checks inside this creature tick.
-            const to_player = state_mod.Vec2.sub(creature.pos, player.pos);
+            const to_player = state_mod.Vec2.sub(creature.pos, target_player_pos);
             const target_dist_sq = to_player.lengthSq();
             const target_dist = std.math.sqrt(target_dist_sq);
 
@@ -2186,7 +2218,7 @@ pub const CreaturePool = struct {
                             @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
-                        creature.attack_cooldown = narrowF32(creature.attack_cooldown + 1.0);
+                        creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, @as(f32, 1.0));
                     }
 
                     if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_variant) != 0 and
@@ -2200,18 +2232,21 @@ pub const CreaturePool = struct {
                             projectile_type,
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
-                        creature.attack_cooldown = narrowF32(
-                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)) * 0.1 +
-                                creature.orbit_angle +
-                                creature.attack_cooldown,
+                        const randomized_cooldown = native_math.pc24Mul(
+                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)),
+                            @as(f32, 0.1),
+                        );
+                        creature.attack_cooldown = native_math.pc24Add(
+                            native_math.pc24Add(randomized_cooldown, creature.orbit_angle),
+                            creature.attack_cooldown,
                         );
                     }
                 }
             }
 
             if (target_dist_sq < 20.0 * 20.0) {
-                var reverted_x = creature.pos.x - creature.vel.x;
-                var reverted_y = creature.pos.y - creature.vel.y;
+                var reverted_x = native_math.pc24Sub(creature.pos.x, creature.vel.x);
+                var reverted_y = native_math.pc24Sub(creature.pos.y, creature.vel.y);
                 if (reverted_x < 0.0) {
                     reverted_x = 0.0;
                 } else if (reverted_x > world_size) {
@@ -2240,7 +2275,7 @@ pub const CreaturePool = struct {
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
                     );
-                    creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+                    creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
                     emitDeathSideEffects(
@@ -2267,11 +2302,11 @@ pub const CreaturePool = struct {
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and
                 creature.attack_cooldown <= 0.0 and
-                player.health > 0.0 and
+                contact_player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
-                if (perkActive(player, PerkId.mr_melee)) {
+                if (perkActive(contact_player, PerkId.mr_melee)) {
                     _ = self.applyDamage(
                         state,
                         players,
@@ -2280,7 +2315,7 @@ pub const CreaturePool = struct {
                         idx,
                         25.0,
                         .{},
-                        owner_ref.OwnerRef.fromPlayer(@intCast(player.index)),
+                        owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index)),
                         dt_f32,
                         world_size,
                     );
@@ -2288,27 +2323,34 @@ pub const CreaturePool = struct {
                         tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                 }
-                if (player.shield_timer <= 0.0) {
-                    if (perkActive(player, PerkId.toxic_avenger)) {
+                if (contact_player.shield_timer <= 0.0) {
+                    if (perkActive(contact_player, PerkId.toxic_avenger)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.self_damage_tick_strong;
-                    } else if (perkActive(player, PerkId.veins_of_poison)) {
+                    } else if (perkActive(contact_player, PerkId.veins_of_poison)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                applyPlayerContactDamage(state, player, creature.contact_damage, dt_f32);
-                const push_delta = state_mod.Vec2.sub(player.pos, creature.pos);
+                const alive_source = if (state.preserve_bugs) &players[0] else contact_player;
+                applyPlayerContactDamageWithAliveSource(
+                    state,
+                    contact_player,
+                    creature.contact_damage,
+                    dt_f32,
+                    alive_source,
+                );
+                const push_delta = state_mod.Vec2.sub(contact_player.pos, creature.pos);
                 const push_len = push_delta.length();
                 if (push_len > 1e-6) {
                     const push_dir = push_delta.mul(1.0 / push_len);
-                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(player.pos, push_dir.mul(3.0)));
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(contact_player.pos, push_dir.mul(3.0)));
                 } else {
-                    _ = terrain_fx.decals.addRandom(state, player.pos);
+                    _ = terrain_fx.decals.addRandom(state, contact_player.pos);
                 }
-                creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
+                creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, contact_damage_cooldown);
             }
 
             if (state.bonuses.energizer <= 0.0 and
-                player.plaguebearer_active and
+                contact_player.plaguebearer_active and
                 creature.hp < 150.0 and
                 state.plaguebearer_infection_count < 0x32 and
                 contact_sq < 30.0 * 30.0)
@@ -2353,13 +2395,13 @@ pub const CreaturePool = struct {
             var creature = &self.entries[creature_index];
             if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
                 const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
-                const jitter = @as(f32, @floatFromInt(jitter_i32)) * 0.002;
+                const jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.002));
                 const size = @max(@as(f32, 1e-6), creature.size);
-                var turn = jitter / (size * 0.025);
+                var turn = native_math.pc24Div(jitter, native_math.pc24Mul(size, @as(f32, 0.025)));
                 // Native clamps against the f32 literal 1.5707964.
                 const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
                 if (turn > half_pi) turn = half_pi;
-                creature.heading = narrowF32(creature.heading + turn);
+                creature.heading = native_math.pc24Add(creature.heading, turn);
             }
         }
         var damage_amount = damage;
@@ -2702,6 +2744,7 @@ pub const CreaturePool = struct {
             .heading = heading,
             .set_heading = set_heading,
             .phase_seed = phase_seed,
+            .preserve_force_target = true,
             .type_id = stats.type_id,
             .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
             .flags = flags,
@@ -2995,10 +3038,11 @@ pub const CreaturePool = struct {
 fn creatureAiUpdateTarget(
     creature: *CreatureState,
     player_pos: state_mod.Vec2,
+    distance_player_pos: state_mod.Vec2,
     creatures: []const CreatureState,
     dt: f32,
 ) CreatureAiUpdate {
-    const dist_to_player = distanceF32(creature.pos, player_pos);
+    const dist_to_player = distanceF32(creature.pos, distance_player_pos);
     const phase_int: i32 = @intFromFloat(creature.phase_seed);
     const phase_scale: f32 = 3.7;
     const orbit_phase = (@as(f32, @floatFromInt(phase_int)) * phase_scale) * native_pi;
@@ -3129,14 +3173,13 @@ fn linkTargetF32(
 }
 
 fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
-    const dx = narrowF32(b.x - a.x);
-    const dy = narrowF32(b.y - a.y);
-    // Native stores dx/dy into float locals, then computes dx*dx + dy*dy in x87
-    // precision and narrows only after sqrt.
-    const dx_f64 = @as(f64, @floatCast(dx));
-    const dy_f64 = @as(f64, @floatCast(dy));
-    const dist_sq = dx_f64 * dx_f64 + dy_f64 * dy_f64;
-    return narrowF32(std.math.sqrt(dist_sq));
+    const dx = native_math.pc24Sub(b.x, a.x);
+    const dy = native_math.pc24Sub(b.y, a.y);
+    const dist_sq = native_math.pc24Add(
+        native_math.pc24Mul(dx, dx),
+        native_math.pc24Mul(dy, dy),
+    );
+    return native_math.pc24Sqrt(dist_sq);
 }
 
 fn orbitTargetF32(
@@ -3145,18 +3188,34 @@ fn orbitTargetF32(
     dist: f32,
     scale: f32,
 ) state_mod.Vec2 {
-    const orbit_dist = narrowF32(narrowF32(dist) * narrowF32(scale));
+    const orbit_dist = narrowF32(dist);
+    const orbit_scale = narrowF32(scale);
     const phase = narrowF32(orbit_phase);
     const px = narrowF32(player_pos.x);
     const py = narrowF32(player_pos.y);
-    const orbit_x = narrowF32(math.cos(phase));
-    const orbit_y = narrowF32(math.sin(phase));
-    const orbit_x_dist = narrowF32(@as(f64, @floatCast(orbit_x)) * @as(f64, @floatCast(orbit_dist)));
-    const orbit_y_dist = narrowF32(@as(f64, @floatCast(orbit_y)) * @as(f64, @floatCast(orbit_dist)));
+    const orbit_x_dist = native_math.pc24Mul(
+        native_math.pc24Mul(std.math.cos(@as(f64, @floatCast(phase))), orbit_dist),
+        orbit_scale,
+    );
+    const orbit_y_dist = native_math.pc24Mul(
+        native_math.pc24Mul(std.math.sin(@as(f64, @floatCast(phase))), orbit_dist),
+        orbit_scale,
+    );
     return .{
-        .x = narrowF32(@as(f64, @floatCast(orbit_x_dist)) + @as(f64, @floatCast(px))),
-        .y = narrowF32(@as(f64, @floatCast(orbit_y_dist)) + @as(f64, @floatCast(py))),
+        .x = native_math.pc24Add(orbit_x_dist, px),
+        .y = native_math.pc24Add(orbit_y_dist, py),
     };
+}
+
+test "creature orbit target rounds each x87 operation" {
+    const creature_pos: state_mod.Vec2 = .{ .x = 50.46105194091797, .y = 510.7478332519531 };
+    const player_pos: state_mod.Vec2 = .{ .x = 328.4262390136719, .y = 588.0155639648438 };
+    const distance = distanceF32(creature_pos, player_pos);
+    const target = orbitTargetF32(player_pos, 0.0, distance, 0.85);
+
+    try std.testing.expectEqual(@as(f32, 288.5046691894531), distance);
+    try std.testing.expectEqual(@as(f32, 573.6552124023438), target.x);
+    try std.testing.expectEqual(@as(f32, 588.0155639648438), target.y);
 }
 
 fn headingFromDeltaF32(dx: f32, dy: f32) f32 {
@@ -3209,7 +3268,7 @@ fn movementDeltaFromHeadingF32(
     // velocity chain rounds to f32, while fsin/fcos evaluate in extended
     // precision internally so their rounding lands in the first multiply
     // (creature_update_all 0x426dab).
-    const radians = @as(f64, @floatCast(narrowF32(heading))) - @as(f64, @floatCast(native_half_pi));
+    const radians = @as(f64, @floatCast(native_math.pc24Sub(heading, native_half_pi)));
 
     var vx = narrowF32(std.math.cos(radians) * @as(f64, @floatCast(dt)));
     vx = narrowF32(vx * move_scale);
@@ -3225,6 +3284,18 @@ fn movementDeltaFromHeadingF32(
         .x = vx,
         .y = vy,
     };
+}
+
+test "creature movement narrows heading subtraction before trig" {
+    const delta = movementDeltaFromHeadingF32(
+        0.49451950192451477,
+        0.03400000184774399,
+        1.0,
+        1.1699999570846558,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.566398024559021), delta.x);
+    try std.testing.expectEqual(@as(f32, -1.0504270792007446), delta.y);
 }
 
 fn advancePosByDeltaF32(
@@ -3408,7 +3479,8 @@ fn awardExperienceForOwner(
     owner: owner_ref.OwnerRef,
     reward_value: f32,
 ) i32 {
-    const slot = ownerToPlayerIndex(owner, players.len) orelse return 0;
+    if (players.len == 0) return 0;
+    const slot = ownerToPlayerIndex(owner, players.len) orelse 0;
     return awardExperienceFromReward(state, &players[slot], reward_value);
 }
 
@@ -3642,12 +3714,7 @@ fn tickDead(
     creature.lifecycle_stage = narrowF32(next_lifecycle_stage);
     if (next_lifecycle_stage > 0.0) {
         if (long_strip) {
-            const slide = narrowF32(next_lifecycle_stage * dt * 9.0);
-            const direction = headingDirectionF32(creature.heading);
-            creature.vel = .{
-                .x = narrowF32(direction.x * slide),
-                .y = narrowF32(direction.y * slide),
-            };
+            creature.vel = deathSlideVelocityF32(creature.heading, next_lifecycle_stage, dt);
             creature.pos = .{
                 .x = narrowF32(creature.pos.x - creature.vel.x),
                 .y = narrowF32(creature.pos.y - creature.vel.y),
@@ -3696,10 +3763,10 @@ fn tickDead(
 fn selfDamageTickAmount(flags: u32, dt: f32) f32 {
     if (!(dt > 0.0)) return 0.0;
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick_strong) != 0) {
-        return narrowF32(dt * 180.0);
+        return native_math.pc24Mul(dt, @as(f32, 180.0));
     }
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick) != 0) {
-        return narrowF32(dt * 60.0);
+        return native_math.pc24Mul(dt, @as(f32, 60.0));
     }
     return 0.0;
 }
@@ -3714,12 +3781,35 @@ fn applySelfDamageTickToDead(
     }
 }
 
-fn headingDirectionF32(heading: f32) state_mod.Vec2 {
-    const radians = heading - native_half_pi;
+fn deathSlideVelocityF32(heading: f32, lifecycle_stage: f32, dt: f32) state_mod.Vec2 {
+    const radians = native_math.pc24Sub(heading, native_half_pi);
     return .{
-        .x = narrowF32(math.cos(radians)),
-        .y = narrowF32(math.sin(radians)),
+        .x = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(std.math.cos(@as(f64, @floatCast(radians))), lifecycle_stage),
+                dt,
+            ),
+            @as(f32, 9.0),
+        ),
+        .y = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(std.math.sin(@as(f64, @floatCast(radians))), lifecycle_stage),
+                dt,
+            ),
+            @as(f32, 9.0),
+        ),
     };
+}
+
+test "death slide rounds each x87 velocity operation" {
+    const velocity = deathSlideVelocityF32(
+        1.3476296663284302,
+        14.324000358581543,
+        0.05700000375509262,
+    );
+
+    try std.testing.expectEqual(@as(f32, 7.165987491607666), velocity.x);
+    try std.testing.expectEqual(@as(f32, -1.6262983083724976), velocity.y);
 }
 
 fn awardExperienceOnceFromReward(
@@ -3773,6 +3863,16 @@ pub fn applyPlayerContactDamage(
     damage: f32,
     dt: f32,
 ) void {
+    applyPlayerContactDamageWithAliveSource(state, player, damage, dt, player);
+}
+
+fn applyPlayerContactDamageWithAliveSource(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    damage: f32,
+    dt: f32,
+    alive_source: *const state_mod.PlayerState,
+) void {
     if (!(damage > 0.0)) return;
     if (perkActive(player, PerkId.death_clock)) return;
 
@@ -3784,6 +3884,7 @@ pub fn applyPlayerContactDamage(
 
     state.survival_reward_damage_seen = true;
     if (player.shield_timer > 0.0) return;
+    const was_alive = alive_source.health > 0.0;
 
     var dodged = false;
     if (perkActive(player, PerkId.ninja)) {
@@ -3803,10 +3904,11 @@ pub fn applyPlayerContactDamage(
             }
         } else {
             player.health = narrowF32(player.health - damage_scaled);
-            if (player.health < 0.0 and dt > 0.0) {
-                player.death_timer = narrowF32(player.death_timer - dt * 28.0);
-            }
         }
+    }
+
+    if (player.health < 0.0 and dt > 0.0) {
+        player.death_timer = narrowF32(player.death_timer - dt * 28.0);
     }
 
     if (player.health >= 0.0) {
@@ -3816,15 +3918,20 @@ pub fn applyPlayerContactDamage(
             1 => .trooper_inpain_02,
             else => .trooper_inpain_03,
         });
-    } else if (!perkActive(player, PerkId.final_revenge)) {
-        const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
-        state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
+        if (!was_alive) return;
+    } else {
+        if (!was_alive) return;
+        if (!perkActive(player, PerkId.final_revenge)) {
+            const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
+            state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
+        }
     }
 
     if (!dodged) {
         if (!perkActive(player, PerkId.unstoppable)) {
             const jitter_i32: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_take_damage_heading) % 100)) - 50;
-            player.heading = narrowF32(player.heading + @as(f32, @floatFromInt(jitter_i32)) * 0.04);
+            const heading_jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.04));
+            player.heading = native_math.pc24Add(player.heading, heading_jitter);
             player.spread_heat = narrowF32(@min(
                 0.48,
                 narrowF32(player.spread_heat + spread_heat_damage * 0.01),
@@ -4096,6 +4203,35 @@ test "template spawn supports survival early-stage templates" {
     try expectFloatClose(4.0, child.contact_damage);
     try expectFloatClose(100.0, child.target_offset.x);
     try expectFloatClose(0.0, child.target_offset.y);
+    try std.testing.expectEqual(@as(u32, 0xb692abcc), @as(u32, @bitCast(pool.entries[3].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[6].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[6].target_offset.y)));
+    try expectFloatClose(20.0, pool.entries[8].hp);
+}
+
+test "spawn init preserves recycled force target" {
+    var pool: CreaturePool = .{};
+    pool.entries[0].force_target = 1;
+    pool.entries[0].target = .{ .x = 321.0, .y = 654.0 };
+    pool.entries[0].target_player = 1;
+    pool.entries[0].target_offset = .{ .x = -70.71066284179688, .y = -70.710693359375 };
+
+    const idx = pool.spawnInit(.{
+        .origin_template_id = @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_8_12),
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .preserve_force_target = true,
+        .type_id = .alien,
+        .health = 40.0,
+        .max_health = 40.0,
+    });
+
+    try std.testing.expectEqual(@as(usize, 0), idx);
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].force_target);
+    try std.testing.expectEqual(@as(f32, 321.0), pool.entries[idx].target.x);
+    try std.testing.expectEqual(@as(f32, 654.0), pool.entries[idx].target.y);
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].target_player);
+    try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[idx].target_offset.x)));
+    try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[idx].target_offset.y)));
 }
 
 test "template spawn supports survival late-stage templates" {
@@ -5310,6 +5446,39 @@ test "creature update applies contact damage and movement" {
     try expectFloatClose(1.0, pool.entries[0].attack_cooldown);
 }
 
+test "creature attack cooldown stores native precision" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .health = 100.0,
+        },
+    };
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 60.0,
+        .contact_damage = 7.0,
+    });
+    pool.entries[0].attack_cooldown = 1.0;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    const expected = native_math.pc24Sub(native_math.pc24Sub(1.0, @as(f32, 0.1)), @as(f32, 0.1));
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].attack_cooldown)));
+}
+
 test "veins of poison sets self-damage flag on contact hit" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
@@ -5442,6 +5611,73 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
 
     try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
     try expectFloatClose(82.0, pool.entries[0].hp);
+}
+
+test "self damage product stores native precision" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = spawn_mod.CreatureFlags.self_damage_tick,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 8.0,
+        .max_health = 8.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+
+    const dt: f32 = 0.09800000488758087;
+    try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    const damage = native_math.pc24Mul(dt, @as(f32, 60.0));
+    const expected = native_math.pc24Sub(@as(f32, 8.0), damage);
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].hp)));
+}
+
+test "lethal self damage still advances ai7 link timer" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .health = 100.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .spider_sp1,
+        .flags = spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.ai7_link_timer,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 2.0,
+        .max_health = 2.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].link_index = -1473;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    try std.testing.expect(pool.entries[0].hp <= 0.0);
+    try std.testing.expectEqual(@as(i32, -1373), pool.entries[0].link_index);
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {
@@ -5783,6 +6019,37 @@ test "tough reloader halves damage while reloading" {
     );
 
     try expectFloatClose(95.0, player.health);
+}
+
+test "dead primary suppresses dormant target post-hit effects" {
+    var state = state_mod.GameplayState.init(1);
+    var primary: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .health = -1.0,
+    };
+    var dormant_target: state_mod.PlayerState = .{
+        .index = 1,
+        .pos = .{},
+        .health = 100.0,
+        .heading = 1.0,
+        .spread_heat = 0.1,
+    };
+    var expected_rng = state.rng;
+    _ = expected_rng.rand();
+
+    applyPlayerContactDamageWithAliveSource(
+        &state,
+        &dormant_target,
+        10.0,
+        0.1,
+        &primary,
+    );
+
+    try expectFloatClose(90.0, dormant_target.health);
+    try expectFloatClose(1.0, dormant_target.heading);
+    try expectFloatClose(0.1, dormant_target.spread_heat);
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 }
 
 test "highlander prevents contact damage except 1-in-10 lethal roll" {
@@ -6200,7 +6467,7 @@ test "split on death spawns two smaller children" {
     try expectFloatClose(60.0, child2.reward_value);
 }
 
-test "kill no corpse does not award xp for non-player owner" {
+test "kill no corpse awards player zero for non-player owner" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);
     var bonuses: bonus_runtime.BonusPool = .{};
@@ -6234,8 +6501,8 @@ test "kill no corpse does not award xp for non-player owner" {
         10_000.0,
     );
 
-    try std.testing.expectEqual(@as(i32, 0), gained);
-    try std.testing.expectEqual(@as(i32, 0), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 90), gained);
+    try std.testing.expectEqual(@as(i32, 90), players[0].experience);
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {
@@ -6621,7 +6888,7 @@ test "single-player dead player uses dead-target AI position" {
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
-            .pos = .{ .x = 900.0, .y = 900.0 },
+            .pos = .{ .x = 660.0, .y = 520.0 },
             .health = 0.0,
         },
     };
@@ -6634,24 +6901,56 @@ test "single-player dead player uses dead-target AI position" {
         .type_id = .alien,
         .flags = 0,
         .size = 45.0,
-        .move_speed = 2.0,
+        .move_speed = 0.0,
         .health = 50.0,
         .max_health = 50.0,
         .reward_value = 10.0,
         .contact_damage = 0.0,
     });
 
-    const start_pos = pool.entries[0].pos;
     try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
 
-    const expected_dead_target: state_mod.Vec2 = .{
-        .x = 1024.0 * (27.0 / 64.0),
-        .y = 1024.0 * (27.0 / 64.0),
-    };
-    const creature = pool.entries[0];
-    const dead_target_dist_sq = state_mod.Vec2.sub(creature.target, expected_dead_target).lengthSq();
-    const dead_player_dist_sq = state_mod.Vec2.sub(creature.target, players[0].pos).lengthSq();
-    try std.testing.expect(dead_target_dist_sq < dead_player_dist_sq);
-    try std.testing.expect(creature.pos.y < start_pos.y);
+    const creature = &pool.entries[0];
+    try std.testing.expectEqual(@as(i32, 1), creature.target_player);
+    try std.testing.expectEqual(@as(f32, 569.058349609375), creature.target.x);
+    try std.testing.expectEqual(@as(f32, 432.0), creature.target.y);
+    try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+    try std.testing.expectEqual(@as(f32, 513.7415771484375), creature.target.x);
+    try std.testing.expectEqual(@as(f32, 432.0), creature.target.y);
     try expectFloatClose(0.0, players[0].health);
+}
+
+test "single-player dormant target receives creature contact" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 400.0, .y = 400.0 },
+            .health = 0.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 432.0, .y = 432.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 10.0,
+        .contact_damage = 10.0,
+    });
+
+    try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
+    try std.testing.expectEqual(@as(f32, 1.0), pool.entries[0].attack_cooldown);
+    try std.testing.expect(pool.single_player_dormant_target.health < 100.0);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].health);
 }

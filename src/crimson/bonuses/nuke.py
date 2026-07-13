@@ -3,6 +3,7 @@ from __future__ import annotations
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sqrt, x87_pc24_sub
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
@@ -23,7 +24,10 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     bullet_count = int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_BULLET_COUNT)) & 3
     bullet_count += 4
     for _ in range(bullet_count):
-        angle = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_ANGLE)) % 628) * 0.01
+        angle = x87_pc24_mul(
+            float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_ANGLE)) % 628),
+            f32(0.01),
+        )
         proj_id = projectile_spawn(
             ctx.state,
             players=ctx.players,
@@ -34,12 +38,20 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             owner_player_index=ctx.player.index,
         )
         if proj_id != -1:
-            speed_scale = (
-                float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_SPEED_SCALE)) % 50) * 0.01 + 0.5
+            speed_scale = x87_pc24_add(
+                x87_pc24_mul(
+                    float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_PISTOL_SPEED_SCALE)) % 50),
+                    f32(0.01),
+                ),
+                f32(0.5),
             )
-            ctx.state.projectiles.entries[proj_id].speed_scale *= float(speed_scale)
+            projectile = ctx.state.projectiles.entries[proj_id]
+            projectile.speed_scale = x87_pc24_mul(projectile.speed_scale, speed_scale)
 
-    gauss_angle_1 = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_1)) % 628) * 0.01
+    gauss_angle_1 = x87_pc24_mul(
+        float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_1)) % 628),
+        f32(0.01),
+    )
     projectile_spawn(
         ctx.state,
         players=ctx.players,
@@ -49,7 +61,10 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
         owner=OwnerRef.from_local_player(0),
         owner_player_index=ctx.player.index,
     )
-    gauss_angle_2 = float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_2)) % 628) * 0.01
+    gauss_angle_2 = x87_pc24_mul(
+        float(int(rng.rand_tagged(RngCallerStatic.BONUS_APPLY_NUKE_GAUSS_ANGLE_2)) % 628),
+        f32(0.01),
+    )
     projectile_spawn(
         ctx.state,
         players=ctx.players,
@@ -78,12 +93,15 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
             # faster via the hp<=0 path in creature_apply_damage).
             if not creature.active:
                 continue
-            delta = creature.pos - origin
-            if abs(delta.x) > 256.0 or abs(delta.y) > 256.0:
+            dx = x87_pc24_sub(creature.pos.x, origin.x)
+            dy = x87_pc24_sub(creature.pos.y, origin.y)
+            if abs(dx) > 256.0 or abs(dy) > 256.0:
                 continue
-            dist = delta.length()
-            if dist < 256.0:
-                damage = (256.0 - dist) * 5.0
+            distance_sq = x87_pc24_add(x87_pc24_mul(dx, dx), x87_pc24_mul(dy, dy))
+            distance = x87_pc24_sqrt(distance_sq)
+            damage_base = x87_pc24_sub(256.0, distance)
+            if damage_base > 0.0:
+                damage = x87_pc24_mul(damage_base, 5.0)
                 if creature_damage_runtime is not None:
                     creature_damage_runtime.apply_creature_damage(
                         int(idx),
@@ -93,7 +111,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                         owner_ref_for_player(ctx.player.index),
                     )
                 else:
-                    creature.hp -= float(damage)
+                    creature.hp = x87_pc24_sub(creature.hp, damage)
         ctx.state.bonus_spawn_guard = prev_guard
 
     ctx.state.sfx_queue.append(SfxId.EXPLOSION_LARGE)

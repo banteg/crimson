@@ -17,7 +17,17 @@ from crimson.gameplay import (
     _player_turn_aligned_velocity_native,
     player_update,
 )
-from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, NATIVE_TAU, f32
+from crimson.math_parity import (
+    NATIVE_HALF_PI,
+    NATIVE_PI,
+    NATIVE_TAU,
+    f32,
+    x87_fpatan,
+    x87_pc24_add,
+    x87_pc24_mul,
+    x87_pc24_mul_chain,
+    x87_pc24_sub,
+)
 from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
@@ -71,6 +81,20 @@ def test_player_update_shot_cooldown_decay_keeps_tiny_positive_residual() -> Non
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034, state)
 
     assert player.weapon.shot_cooldown == 3.725290298461914e-09
+
+
+def test_player_update_spread_floor_is_native_f32() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        spread_heat=f32(0.01),
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), f32(0.1), state)
+
+    assert player.spread_heat == f32(0.01)
+    assert player.spread_heat != 0.01
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
@@ -740,6 +764,29 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
     assert_float_close(player.weapon.reload_timer, 3.0)
 
 
+def test_player_fire_weapon_spread_cap_is_native_f32() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
+        spread_heat=f32(0.47),
+    )
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
+            dt=0.0,
+            state=state,
+        ),
+    )
+
+    assert player.spread_heat == f32(0.48)
+    assert player.spread_heat != 0.48
+
+
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
@@ -756,7 +803,10 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
-    expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
+    expected = x87_pc24_add(
+        start_heat,
+        x87_pc24_mul(fire_bullets_weapon.spread_heat_inc, f32(1.3)),
+    )
 
     fire_weapon(
         WeaponFireCtx(
@@ -767,7 +817,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
         ),
     )
 
-    assert_float_close(player.spread_heat, expected)
+    assert player.spread_heat == expected
 
 
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_single_pellet_weapons() -> None:
@@ -787,7 +837,10 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
     start_heat = player.spread_heat
-    expected = start_heat + float(fire_bullets_weapon.spread_heat_inc) * 1.3
+    expected = x87_pc24_add(
+        start_heat,
+        x87_pc24_mul(fire_bullets_weapon.spread_heat_inc, f32(1.3)),
+    )
 
     fire_weapon(
         WeaponFireCtx(
@@ -798,7 +851,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
         ),
     )
 
-    assert_float_close(player.spread_heat, expected)
+    assert player.spread_heat == expected
 
 
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
@@ -1015,6 +1068,33 @@ def test_player_update_move_phase_uses_native_intermediate_f32_store() -> None:
     assert player.move_phase == f32(f32(0.03200000151991844 * player.move_speed) * 19.0)
 
 
+def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(439.3449401855469, 646.193603515625),
+        move_speed=f32(0.8),
+        move_phase=1.4318476915359497,
+        weapon=WeaponSlot(weapon_id=WeaponId.MEAN_MINIGUN, clip_size=120, ammo=19),
+    )
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(560.0, 496.0),
+            move_forward_pressed=True,
+            move_backward_pressed=False,
+            turn_left_pressed=False,
+            turn_right_pressed=True,
+        ),
+        0.08900000154972076,
+        state,
+    )
+
+    assert player.move_speed == f32(0.8)
+    assert player.move_phase == 2.7846479415893555
+
+
 def test_player_update_move_speed_uses_native_acceleration_f32_store() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), move_speed=0.4750000238418579)
@@ -1140,19 +1220,25 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     rand_dir = expected_rng.rand()
     rand_mag = expected_rng.rand()
 
-    # Mirror the native float sequence: half the f32 aim distance is spilled,
-    # the spread/magnitude product stays extended, and both jittered aim
-    # coordinates round before atan2.
-    dx = float(f32(float(aim_x) - float(player.pos.x)))
-    dy = float(f32(float(aim_y) - float(player.pos.y)))
-    dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
-    half_len = float(f32(float(f32(math.sqrt(float(dist_sq)))) * 0.5))
-    offset_term = half_len * float(player.spread_heat) * float(rand_mag & 0x1FF) * 0.001953125
-    dir_angle = float(f32(float(rand_dir & 0x1FF) * float(f32(float(NATIVE_TAU) / 512.0))))
-    jitter_x = float(f32(math.cos(dir_angle) * offset_term + float(aim_x)))
-    jitter_y = float(f32(math.sin(dir_angle) * offset_term + float(aim_y)))
-    expected_angle = float(
-        f32(math.atan2(float(player.pos.y) - jitter_y, float(player.pos.x) - jitter_x) - float(NATIVE_HALF_PI)),
+    dx = x87_pc24_sub(aim_x, player.pos.x)
+    dy = x87_pc24_sub(aim_y, player.pos.y)
+    dist_sq = x87_pc24_add(x87_pc24_mul(dx, dx), x87_pc24_mul(dy, dy))
+    half_len = x87_pc24_mul(math.sqrt(dist_sq), 0.5)
+    offset_term = x87_pc24_mul_chain(
+        half_len,
+        player.spread_heat,
+        float(rand_mag & 0x1FF),
+        0.001953125,
+    )
+    dir_angle = x87_pc24_mul(float(rand_dir & 0x1FF), f32(float(NATIVE_TAU) / 512.0))
+    jitter_x = x87_pc24_add(x87_pc24_mul(math.cos(dir_angle), offset_term), aim_x)
+    jitter_y = x87_pc24_add(x87_pc24_mul(math.sin(dir_angle), offset_term), aim_y)
+    expected_angle = x87_pc24_sub(
+        x87_fpatan(
+            x87_pc24_sub(player.pos.y, jitter_y),
+            x87_pc24_sub(player.pos.x, jitter_x),
+        ),
+        NATIVE_HALF_PI,
     )
 
     fire_weapon(
@@ -1179,6 +1265,37 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
         RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
         RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
     ]
+
+
+def test_player_fire_weapon_disc_spread_rounds_each_x87_operation() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(
+        projectiles=pool,
+        rng=ScriptedCrand(
+            [3210, 6757, 16721, 32587, 146, 4299, 4835],
+            fallback=ScriptedCrand.Fallback.REPEAT_LAST,
+        ),
+    )
+    player = PlayerState(
+        index=0,
+        pos=Vec2(284.0749816894531, 934.1846923828125),
+        weapon=WeaponSlot(weapon_id=WeaponId.MEAN_MINIGUN, clip_size=120, ammo=110),
+        spread_heat=0.24259991943836212,
+    )
+
+    fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=PlayerInput(fire_down=True, aim=Vec2(272.0, 787.0)),
+            dt=0.07300000637769699,
+            state=state,
+        ),
+    )
+
+    projectiles = pool.iter_active()
+    assert len(projectiles) == 1
+    assert projectiles[0].angle == -0.09688407182693481
+    assert player.spread_heat == 0.32319992780685425
 
 
 def test_player_fire_weapon_uses_native_muzzle_arithmetic() -> None:
@@ -1284,10 +1401,10 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     pool = ProjectilePool(size=16)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.35)
     player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.08400000631809235, state)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -1295,6 +1412,17 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     assert len(type_ids) == 8
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_MINIGUN)) == 4
     assert type_ids.count(int(ProjectileTemplateId.PLASMA_RIFLE)) == 4
+    assert [entry.angle for entry in pool.entries if entry.active] == [
+        0.0,
+        0.7853981852531433,
+        1.5707963705062866,
+        2.356194496154785,
+        3.1415927410125732,
+        3.9269909858703613,
+        4.71238899230957,
+        5.4977874755859375,
+    ]
+    assert player.hot_tempered_timer == 0.03400003910064697
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET,
     ]

@@ -4,7 +4,26 @@ import math
 
 import msgspec
 
-from ..math_parity import f32
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+
+
+def reflex_boost_time_scale_factor(*, reflex_boost_timer: float, time_scale_active: bool) -> float:
+    """Return the native Reflex Boost scale with x87 PC=24 operation boundaries."""
+
+    if not time_scale_active:
+        return 1.0
+
+    reflex_f32 = f32(float(reflex_boost_timer))
+    if reflex_f32 >= 1.0:
+        return f32(0.3)
+
+    return x87_pc24_add(
+        x87_pc24_mul(
+            x87_pc24_sub(f32(1.0), reflex_f32),
+            f32(0.7),
+        ),
+        f32(0.3),
+    )
 
 
 def ftol_ms_i32(dt_seconds: float) -> int:
@@ -37,12 +56,6 @@ class FrameTiming(msgspec.Struct, frozen=True):
     def dt_sim_ms_i32(self) -> int:
         return int(ftol_ms_i32(self.dt_sim))
 
-    @property
-    def dt_player_local(self) -> float:
-        if not self.time_scale_active_entry:
-            return float(self.dt_sim)
-        return float(f32((0.600000024 / float(self.time_scale_factor)) * float(self.dt_sim)))
-
     @staticmethod
     def compute(
         dt: float,
@@ -62,7 +75,7 @@ class FrameTiming(msgspec.Struct, frozen=True):
 
         dt_sim = float(dt_f32)
         if active:
-            dt_sim = float(f32(float(dt_f32) * float(factor)))
+            dt_sim = float(x87_pc24_mul(dt_f32, factor))
         if bool(zero_gate_active):
             dt_sim = 0.0
 

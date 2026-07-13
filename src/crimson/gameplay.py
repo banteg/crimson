@@ -24,6 +24,9 @@ from .math_parity import (
     NATIVE_TAU,
     f32,
     x87_fpatan,
+    x87_pc24_add,
+    x87_pc24_div,
+    x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sub,
 )
@@ -40,7 +43,7 @@ from .projectiles.runtime import (
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PERK_COUNT_SIZE
-from .sim.timing import ftol_ms_i32
+from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
 from .tutorial import TutorialOverlayState, TutorialState
 from .typo.state import TypoState
 from .weapon_runtime import (
@@ -183,15 +186,21 @@ def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, refle
     if not time_scale_active or dt_f32 <= 0.0:
         return float(dt_f32)
 
-    reflex_f32 = float(f32(float(reflex_boost_timer)))
-    time_scale_factor = float(f32(0.3))
-    if reflex_f32 < 1.0:
-        time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+    time_scale_factor = reflex_boost_time_scale_factor(
+        reflex_boost_timer=reflex_boost_timer,
+        time_scale_active=True,
+    )
     if time_scale_factor <= 0.0:
         return float(dt_f32)
 
-    movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(dt_f32)))
-    roundtrip_dt = float(f32(float(time_scale_factor) * float(movement_dt) * 1.6666666))
+    movement_dt = x87_pc24_mul(
+        x87_pc24_div(f32(0.6), time_scale_factor),
+        dt_f32,
+    )
+    roundtrip_dt = x87_pc24_mul(
+        x87_pc24_mul(time_scale_factor, movement_dt),
+        f32(1.6666666),
+    )
     return float(roundtrip_dt)
 
 
@@ -448,8 +457,8 @@ def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
             acceleration = f32(float(dt) * 4.0)
             player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         player.move_speed = float(f32(float(player.move_speed) + float(dt)))
-        if player.move_speed > 2.8:
-            player.move_speed = 2.8
+        if player.move_speed > f32(2.8):
+            player.move_speed = f32(2.8)
     else:
         acceleration = f32(float(dt) * 5.0)
         player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
@@ -466,8 +475,8 @@ def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
 
 
 def _player_apply_move_speed_caps(player: PlayerState) -> None:
-    if player.weapon.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-        player.move_speed = 0.8
+    if player.weapon.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > f32(0.8):
+        player.move_speed = f32(0.8)
 
 
 def _player_move_delta_from_heading(
@@ -652,14 +661,17 @@ def player_update(
 
     movement_dt = float(dt)
     if state.time_scale_active and movement_dt > 0.0:
-        reflex_f32 = float(f32(float(state.bonuses.reflex_boost)))
-        time_scale_factor = float(f32(0.3))
-        if reflex_f32 < 1.0:
-            time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+        time_scale_factor = reflex_boost_time_scale_factor(
+            reflex_boost_timer=state.bonuses.reflex_boost,
+            time_scale_active=True,
+        )
         if time_scale_factor > 0.0:
             # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
             # and stores back to float before movement/heading logic.
-            movement_dt = float(f32((0.6 / float(time_scale_factor)) * float(movement_dt)))
+            movement_dt = x87_pc24_mul(
+                x87_pc24_div(f32(0.6), time_scale_factor),
+                movement_dt,
+            )
 
     perk_tick_stationary = abs(float(player.move_speed)) <= 1e-9
     apply_player_perk_ticks(
@@ -965,9 +977,12 @@ def player_update(
     # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
     # sampling order while still applying cooldown before `player_fire_weapon`.
     if perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = 0.02
+        player.spread_heat = f32(0.02)
     else:
-        player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
+        player.spread_heat = max(
+            f32(0.01),
+            x87_pc24_sub(player.spread_heat, x87_pc24_mul(dt, f32(0.4))),
+        )
 
     fire_gate_open_pre_reload = player.weapon.shot_cooldown <= 0.0 and player.weapon.reload_timer == 0.0
 
@@ -992,7 +1007,7 @@ def player_update(
                 swapped_alt_weapon = True
                 weapon = _weapon_entry(player.weapon.weapon_id)
                 state.sfx_queue.append(weapon.reload_sound)
-                player.weapon.shot_cooldown = float(player.weapon.shot_cooldown) + 0.1
+                player.weapon.shot_cooldown = x87_pc24_add(player.weapon.shot_cooldown, f32(0.1))
                 state.player_alt_weapon_swap_cooldown_ms = 200
             else:
                 state.player_alt_weapon_swap_cooldown_ms = 0

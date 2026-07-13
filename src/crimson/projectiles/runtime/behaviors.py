@@ -15,7 +15,7 @@ from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...creatures.spawn import CreatureFlags
 from ...effects import EffectPool
-from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
+from ...math_parity import NATIVE_HALF_PI, NATIVE_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ...weapons import weapon_entry_for_projectile_type_id
@@ -84,7 +84,7 @@ _PROJECTILE_HIT_PERK_HOOKS: tuple[_ProjectileHitPerkHook, ...] = (_projectile_hi
 
 
 def _life_timer_sub_f32(life_timer: float, amount: float) -> float:
-    return float(f32(float(life_timer) - float(amount)))
+    return x87_pc24_sub(life_timer, amount)
 
 
 def _linger_default(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
@@ -92,7 +92,8 @@ def _linger_default(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
 
 
 def _linger_gauss_gun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * 0.1)
+    decay = x87_pc24_mul(ctx.dt, f32(0.1))
+    proj.life_timer = _life_timer_sub_f32(proj.life_timer, decay)
 
 
 def _linger_ion_aoe(
@@ -103,9 +104,10 @@ def _linger_ion_aoe(
     damage_per_second: float,
     base_radius: float,
 ) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt) * float(life_decay_scale))
-    damage = float(ctx.dt) * float(damage_per_second)
-    radius = float(ctx.ion_scale) * float(base_radius)
+    decay = x87_pc24_mul(ctx.dt, f32(life_decay_scale))
+    proj.life_timer = _life_timer_sub_f32(proj.life_timer, decay)
+    damage = x87_pc24_mul(ctx.dt, f32(damage_per_second))
+    radius = x87_pc24_mul(f32(ctx.ion_scale), f32(base_radius))
     for creature_idx, creature in enumerate(ctx.creatures):
         if not creature.active:
             continue

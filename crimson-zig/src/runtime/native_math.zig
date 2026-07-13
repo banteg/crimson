@@ -2,6 +2,7 @@ const std = @import("std");
 
 pub const native_pi: f32 = @bitCast(@as(u32, 0x40490FDB));
 pub const native_half_pi: f32 = @bitCast(@as(u32, 0x3FC90FDB));
+pub const native_quarter_pi: f32 = @bitCast(@as(u32, 0x3F490FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 
@@ -11,6 +12,26 @@ const native_left_axis_dy_eps: f32 = 5e-4;
 
 pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
+}
+
+pub inline fn pc24Add(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) + @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Sub(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) - @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Mul(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) * @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Div(lhs: anytype, rhs: anytype) f32 {
+    return roundF32(@as(f64, @floatCast(lhs)) / @as(f64, @floatCast(rhs)));
+}
+
+pub inline fn pc24Sqrt(value: anytype) f32 {
+    return roundF32(std.math.sqrt(@as(f64, @floatCast(value))));
 }
 
 pub inline fn sinNative(value: f32) f32 {
@@ -90,4 +111,30 @@ test "fpatan consumes pc24 rounded subtraction operands" {
     const atan = fpatan(dy, dx);
     const heading = roundF32(atan - @as(f64, native_half_pi));
     try std.testing.expectEqual(@as(u32, 0x3f8df6b7), @as(u32, @bitCast(heading)));
+}
+
+test "pc24 helpers round every arithmetic operation" {
+    const radians = pc24Sub(@as(f32, -0.8641037344932556), native_half_pi);
+    const cosine = std.math.cos(@as(f64, @floatCast(radians)));
+    const step = pc24Mul(
+        pc24Mul(
+            pc24Mul(
+                pc24Mul(cosine, @as(f32, 0.06000000238418579)),
+                @as(f32, 20.0),
+            ),
+            @as(f32, 1.0),
+        ),
+        @as(f32, 3.0),
+    );
+
+    try std.testing.expectEqual(@as(f32, -2.737848997116089), step);
+
+    const jitter = pc24Mul(@as(f32, 52.0), @as(f32, 0.002));
+    const size_scale = pc24Mul(@as(f32, 45.0), @as(f32, 0.025));
+    const turn = pc24Div(jitter, size_scale);
+    try std.testing.expectEqual(@as(f32, 0.09244444966316223), turn);
+
+    const distance_sq = pc24Add(pc24Mul(@as(f32, 58.63446044921875), @as(f32, 58.63446044921875)), pc24Mul(@as(f32, -209.81591796875), @as(f32, -209.81591796875)));
+    const distance = pc24Sqrt(distance_sq);
+    try std.testing.expectEqual(@as(f32, 217.8548126220703), distance);
 }

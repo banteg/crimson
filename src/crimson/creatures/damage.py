@@ -11,7 +11,7 @@ from grim.sfx_map import SfxId
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
-from ..math_parity import NATIVE_HALF_PI, f32
+from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -123,12 +123,15 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
     creature = ctx.creature
     if (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0:
         return
-    jitter = float((ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40) * 0.002
+    jitter = x87_pc24_mul(
+        float((ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40),
+        f32(0.002),
+    )
     size = max(1e-6, float(creature.size))
-    turn = jitter / (size * 0.025)
+    turn = x87_pc24_div(jitter, x87_pc24_mul(size, f32(0.025)))
     # Native clamps against the f32 literal 1.5707964 and stores the sum f32.
     turn = min(float(NATIVE_HALF_PI), turn)
-    creature.heading = float(f32(turn + float(creature.heading)))
+    creature.heading = x87_pc24_add(turn, creature.heading)
 
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:

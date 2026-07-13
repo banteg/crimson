@@ -47,6 +47,16 @@ def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> Non
     assert damage == 44.73385238647461
 
 
+def test_stop_on_hit_jitter_rounds_multiply_before_position_add() -> None:
+    result = projectile_pool_runtime._stop_on_hit_jitter_axis_f32(
+        0.8021621757752091,
+        2,
+        356.32464599609375,
+    )
+
+    assert result == 357.928955078125
+
+
 def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
     angle = -2.5405335426330566
     dt = 0.04500000178813934
@@ -57,6 +67,71 @@ def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
 
     assert f32(step_x) == -1.5268936157226562
     assert f32(step_y) == 2.2267906665802
+
+
+def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(-49.92948532104492, 681.1566772460938),
+        angle=-0.8641037344932556,
+        type_id=ProjectileTemplateId.PISTOL,
+        owner=OwnerRef.from_local_player(0),
+        travel_budget=55.0,
+    )
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.06000000238418579,
+            creatures=(),
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert pool.entries[idx].pos == Vec2(-101.94862365722656, 636.7431030273438)
+
+
+def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTemplateId.GAUSS_GUN,
+        owner=OwnerRef.from_local_player(0),
+    )
+    pool.entries[idx].life_timer = 0.011000030674040318
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=0.08000000566244125,
+            creatures=(),
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert pool.entries[idx].life_timer == 0.003000030294060707
+
+
+def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=ProjectileTemplateId.ION_RIFLE,
+        owner=OwnerRef.from_local_player(0),
+    )
+    pool.entries[idx].life_timer = 0.39
+    creature = _creature(pos=Vec2(), hp=12.0)
+    dt = f32(0.0950000062584877)
+
+    pool.step(
+        PrimaryStepCtx(
+            dt=dt,
+            creatures=[creature],
+            options=make_projectile_update_options(world_size=1024.0),
+        ),
+    )
+
+    assert creature.hp == f32(12.0 - f32(dt * 100.0))
 
 
 def _normalize_vec2(vec: Vec2) -> list[float]:

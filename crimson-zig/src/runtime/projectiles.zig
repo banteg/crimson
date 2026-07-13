@@ -88,7 +88,10 @@ pub const ProjectilePool = struct {
             .origin = .{ .x = pos.x, .y = pos.y },
             // Native writes vel = (cos(angle), sin(angle)) * 1.5 - the raw
             // trig components, not the heading-rotated direction.
-            .vel = .{ .x = narrowF32(@cos(angle) * 1.5), .y = narrowF32(@sin(angle) * 1.5) },
+            .vel = .{
+                .x = narrowF32(@cos(@as(f64, @floatCast(angle))) * 1.5),
+                .y = narrowF32(@sin(@as(f64, @floatCast(angle))) * 1.5),
+            },
             .type_id = type_id,
             .life_timer = 0.4,
             .reserved = 0.0,
@@ -213,11 +216,11 @@ pub const ProjectilePool = struct {
                     resetShockChainIfOwner(state, proj_idx);
                 }
                 const linger_decay: f32 = switch (proj.type_id) {
-                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => dt * 0.1,
-                    @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => dt * 0.7,
+                    @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => native_math.pc24Mul(dt, @as(f32, 0.1)),
+                    @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => native_math.pc24Mul(dt, @as(f32, 0.7)),
                     else => dt,
                 };
-                proj.life_timer = narrowF32(proj.life_timer - linger_decay);
+                proj.life_timer = native_math.pc24Sub(proj.life_timer, linger_decay);
                 applyIonLingerDamage(
                     state,
                     players,
@@ -243,26 +246,36 @@ pub const ProjectilePool = struct {
             if (barrel_greaser_active and proj.owner.isPlayer()) {
                 steps *= 2;
             }
-            const heading_radians = proj.angle - native_half_pi;
+            const heading_radians = native_math.pc24Sub(proj.angle, native_half_pi);
             const dir_x_ext = std.math.cos(@as(f64, @floatCast(heading_radians)));
             const dir_y_ext = std.math.sin(@as(f64, @floatCast(heading_radians)));
+            const step_x = native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(
+                        native_math.pc24Mul(dir_x_ext, dt),
+                        @as(f32, 20.0),
+                    ),
+                    proj.speed_scale,
+                ),
+                @as(f32, 3.0),
+            );
+            const step_y = native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(
+                        native_math.pc24Mul(dir_y_ext, dt),
+                        @as(f32, 20.0),
+                    ),
+                    proj.speed_scale,
+                ),
+                @as(f32, 3.0),
+            );
             var acc: state_mod.Vec2 = .{};
 
             var step: i32 = 0;
             while (step < steps) : (step += 3) {
-                const step_x = narrowF32(
-                    @as(f32, @floatCast(dir_x_ext * @as(f64, @floatCast(dt)) * 20.0)) *
-                        proj.speed_scale *
-                        3.0,
-                );
-                const step_y = narrowF32(
-                    @as(f32, @floatCast(dir_y_ext * @as(f64, @floatCast(dt)) * 20.0)) *
-                        proj.speed_scale *
-                        3.0,
-                );
                 acc = .{
-                    .x = narrowF32(acc.x + step_x),
-                    .y = narrowF32(acc.y + step_y),
+                    .x = native_math.pc24Add(acc.x, step_x),
+                    .y = native_math.pc24Add(acc.y, step_y),
                 };
 
                 if (!(acc.length() >= 4.0 or steps <= step + 3)) continue;
@@ -408,11 +421,10 @@ pub const ProjectilePool = struct {
                 {
                     proj.life_timer = 0.25;
                     const jitter = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_stop_on_hit_jitter) & 3));
-                    // Native computes `cos * jitter + pos` in extended precision
-                    // with a single f32 spill on the sum.
+                    // Native rounds the multiply and add as separate PC24 operations.
                     proj.pos = .{
-                        .x = @floatCast(dir_x_ext * @as(f64, jitter) + @as(f64, proj.pos.x)),
-                        .y = @floatCast(dir_y_ext * @as(f64, jitter) + @as(f64, proj.pos.y)),
+                        .x = native_math.pc24Add(native_math.pc24Mul(dir_x_ext, jitter), proj.pos.x),
+                        .y = native_math.pc24Add(native_math.pc24Mul(dir_y_ext, jitter), proj.pos.y),
                     };
                 }
 
@@ -446,7 +458,7 @@ pub const ProjectilePool = struct {
                 if (dist < 50.0) dist = 50.0;
                 const damage_scale = damageScaleFromRawId(proj.type_id);
                 const damage_amount = ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95;
-                const impulse_axis = narrowF32(math.cos(proj.angle - native_half_pi) * proj.speed_scale);
+                const impulse_axis = projectileImpulseAxisF32(proj.angle, proj.speed_scale);
                 const impulse: state_mod.Vec2 = .{
                     .x = impulse_axis,
                     .y = impulse_axis,
@@ -601,16 +613,16 @@ fn applyIonLingerDamage(
     var radius: f32 = 0.0;
     switch (proj.type_id) {
         @intFromEnum(game_ids.ProjectileTypeId.ion_minigun) => {
-            damage = dt * 40.0;
-            radius = ion_scale * 60.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 40.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 60.0));
         },
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle) => {
-            damage = dt * 100.0;
-            radius = ion_scale * 88.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 100.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 88.0));
         },
         @intFromEnum(game_ids.ProjectileTypeId.ion_cannon) => {
-            damage = dt * 300.0;
-            radius = ion_scale * 128.0;
+            damage = native_math.pc24Mul(dt, @as(f32, 300.0));
+            radius = native_math.pc24Mul(ion_scale, @as(f32, 128.0));
         },
         else => return,
     }
@@ -843,14 +855,17 @@ fn emitProjectileTypeHitEffects(
             if (detail_preset < 3) count = @divTrunc(count, 2);
             var idx: i32 = 0;
             while (idx < count) : (idx += 1) {
+                const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_rotation) & 0x7f)) * 0.049087387;
+                const vel: state_mod.Vec2 = .{
+                    .x = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_x) & 0x7f)) - 64.0) * burst * 1.4,
+                    .y = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_y) & 0x7f)) - 64.0) * burst * 1.4,
+                };
+                const scale_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_scale_step) % 100)) * 0.01 + 0.1) * burst;
                 _ = effects.spawn(
                     @intFromEnum(effects_mod.EffectId.burst),
                     pos,
-                    .{
-                        .x = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_x) & 0x7f)) - 64.0) * burst * 1.4,
-                        .y = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_y) & 0x7f)) - 64.0) * burst * 1.4,
-                    },
-                    @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_rotation) & 0x7f)) * 0.049087387,
+                    vel,
+                    rotation,
                     1.0,
                     burst * 32.0,
                     burst * 32.0,
@@ -859,7 +874,7 @@ fn emitProjectileTypeHitEffects(
                     0x1D,
                     .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
                     0.0,
-                    (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_scale_step) % 100)) * 0.01 + 0.1) * burst,
+                    scale_step,
                     detail_preset,
                 );
             }
@@ -1033,8 +1048,40 @@ fn damageScaleFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
 }
 
+fn projectileImpulseAxisF32(angle: f32, speed_scale: f32) f32 {
+    const impulse_angle = native_math.pc24Sub(angle, native_half_pi);
+    return native_math.pc24Mul(
+        std.math.cos(@as(f64, @floatCast(impulse_angle))),
+        speed_scale,
+    );
+}
+
 fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
+test "projectile spawn keeps trig wide until velocity store" {
+    var pool: ProjectilePool = .{};
+    const index = pool.spawn(
+        .{},
+        -1.4083715677261353,
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        55.0,
+        false,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.2425672858953476), pool.entries[index].vel.x);
+    try std.testing.expectEqual(@as(f32, -1.4802571535110474), pool.entries[index].vel.y);
+}
+
+test "projectile impulse keeps trig wide until scale multiply" {
+    const impulse = projectileImpulseAxisF32(4.929999828338623, 0.8400000333786011);
+    try std.testing.expectEqual(@as(f32, -0.8201895356178284), impulse);
+    try std.testing.expectEqual(
+        @as(f32, 3.125081777572632),
+        native_math.pc24Sub(2.3048923015594482, impulse),
+    );
 }
 
 test "projectile hit consumes hit-presentation rng" {
@@ -1079,6 +1126,15 @@ test "ion and plasma hit rings use native small impact geometry" {
     var state = state_mod.GameplayState.init(1);
     var effects: effects_mod.EffectPool = .{};
     const pos: state_mod.Vec2 = .{ .x = 100.0, .y = 120.0 };
+    var expected_rng = state.rng;
+    const burst: f32 = 1.2 * 0.8;
+    const expected_rotation = @as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) * 0.049087387;
+    const expected_vel: state_mod.Vec2 = .{
+        .x = (@as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+        .y = (@as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+    };
+    const expected_scale_step = (@as(f32, @floatFromInt(expected_rng.rand() % 100)) * 0.01 + 0.1) * burst;
+    for (0..12) |_| _ = expected_rng.rand();
 
     emitProjectileTypeHitEffects(
         &state,
@@ -1101,6 +1157,12 @@ test "ion and plasma hit rings use native small impact geometry" {
     try expectFloatClose(0.0, ion_ring.?.age);
     try expectFloatClose(0.32, ion_ring.?.lifetime);
     try expectFloatClose(54.0, ion_ring.?.scale_step);
+    const first_spark = effects.entries[1];
+    try expectFloatClose(expected_rotation, first_spark.rotation);
+    try expectFloatClose(expected_vel.x, first_spark.vel.x);
+    try expectFloatClose(expected_vel.y, first_spark.vel.y);
+    try expectFloatClose(expected_scale_step, first_spark.scale_step);
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 
     effects.reset();
     emitProjectileTypeHitEffects(
@@ -1418,6 +1480,52 @@ test "barrel greaser doubles pistol projectile movement steps" {
     try expectFloatClose(18.240001678466797, base_x);
     try expectFloatClose(35.519996643066406, greased_x);
     try std.testing.expect(greased_x > base_x);
+}
+
+test "ion linger damage stores rate product at native precision" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+    };
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
+    _ = creatures.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{},
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 0.0,
+        .health = 12.0,
+        .max_health = 12.0,
+        .reward_value = 50.0,
+        .contact_damage = 4.0,
+    });
+    var pool: ProjectilePool = .{};
+    const idx = pool.spawn(
+        .{},
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        45.0,
+        false,
+    );
+    pool.entries[idx].life_timer = 0.39;
+
+    const dt: f32 = 0.0950000062584877;
+    _ = pool.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        dt,
+        10_000.0,
+    );
+
+    const damage = native_math.pc24Mul(dt, @as(f32, 100.0));
+    const expected = native_math.pc24Sub(@as(f32, 12.0), damage);
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(creatures.entries[0].hp)));
 }
 
 test "ion gun master increases ion rifle linger radius" {
