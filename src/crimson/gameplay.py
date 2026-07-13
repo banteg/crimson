@@ -449,8 +449,8 @@ def _player_accelerate_move_speed(player: PlayerState, dt: float) -> None:
             acceleration = f32(float(dt) * 4.0)
             player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
         player.move_speed = float(f32(float(player.move_speed) + float(dt)))
-        if player.move_speed > 2.8:
-            player.move_speed = 2.8
+        if player.move_speed > f32(2.8):
+            player.move_speed = f32(2.8)
     else:
         acceleration = f32(float(dt) * 5.0)
         player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
@@ -467,8 +467,8 @@ def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
 
 
 def _player_apply_move_speed_caps(player: PlayerState) -> None:
-    if player.weapon.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > 0.8:
-        player.move_speed = 0.8
+    if player.weapon.weapon_id == WeaponId.MEAN_MINIGUN and player.move_speed > f32(0.8):
+        player.move_speed = f32(0.8)
 
 
 def _player_move_delta_from_heading(

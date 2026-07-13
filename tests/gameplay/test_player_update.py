@@ -1068,6 +1068,33 @@ def test_player_update_move_phase_uses_native_intermediate_f32_store() -> None:
     assert player.move_phase == f32(f32(0.03200000151991844 * player.move_speed) * 19.0)
 
 
+def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(439.3449401855469, 646.193603515625),
+        move_speed=f32(0.8),
+        move_phase=1.4318476915359497,
+        weapon=WeaponSlot(weapon_id=WeaponId.MEAN_MINIGUN, clip_size=120, ammo=19),
+    )
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(560.0, 496.0),
+            move_forward_pressed=True,
+            move_backward_pressed=False,
+            turn_left_pressed=False,
+            turn_right_pressed=True,
+        ),
+        0.08900000154972076,
+        state,
+    )
+
+    assert player.move_speed == f32(0.8)
+    assert player.move_phase == 2.7846479415893555
+
+
 def test_player_update_move_speed_uses_native_acceleration_f32_store() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), move_speed=0.4750000238418579)
