@@ -1176,15 +1176,15 @@ def test_player_update_wraps_negative_target_heading_before_turning() -> None:
     assert player.heading < math.tau
 
 
-def test_player_heading_approach_target_spills_scaled_product_to_float32() -> None:
+def test_player_heading_approach_target_rounds_scaled_product_at_pc24() -> None:
     def _f32_from_bits(bits: int) -> float:
         return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
 
     def _bits_f32(value: float) -> int:
         return struct.unpack("<I", struct.pack("<f", float(value)))[0]
 
-    # Without a float32 spill of `frame_dt * diff`, this opposite-heading
-    # boundary turns one ULP too far.
+    # Without PC=24 rounding after `frame_dt * diff`, this opposite-heading
+    # boundary turns one ULP too far even though native keeps it on x87.
     heading_before = _f32_from_bits(0x40966A37)
     dt = _f32_from_bits(0x3D75C290)
 

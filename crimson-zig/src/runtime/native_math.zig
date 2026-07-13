@@ -6,10 +6,6 @@ pub const native_quarter_pi: f32 = @bitCast(@as(u32, 0x3F490FDB));
 pub const native_tau: f32 = @bitCast(@as(u32, 0x40C90FDB));
 pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 
-const native_left_axis_heading_pos: f32 = roundF32(native_tau - native_half_pi);
-const native_left_axis_heading_eps: f32 = 1e-6;
-const native_left_axis_dy_eps: f32 = 5e-4;
-
 pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
 }
@@ -69,19 +65,9 @@ pub inline fn wrapAngle0Tau(value: f32) f32 {
 }
 
 pub inline fn headingFromDeltaNative(dx: f32, dy: f32) f32 {
-    // Match decompiled fpatan path: keep atan2 + half_pi wide and narrow once.
-    const heading_wide = std.math.atan2(
-        @as(f64, @floatCast(dy)),
-        @as(f64, @floatCast(dx)),
-    ) + @as(f64, @floatCast(native_half_pi));
-    var heading = roundF32(heading_wide);
-    if (dx < 0.0 and
-        @abs(heading - native_left_axis_heading_pos) <= native_left_axis_heading_eps and
-        @abs(dy) <= native_left_axis_dy_eps)
-    {
-        heading = roundF32(heading - native_tau);
-    }
-    return heading;
+    // `fpatan` stays wide; the following PC=24 `fadd` chooses the signed-zero
+    // side of the left-axis boundary before the f32 target-heading store.
+    return pc24Add(fpatan(dy, dx), native_half_pi);
 }
 
 test "wrap angle 0..tau keeps native finite behavior" {
@@ -107,6 +93,11 @@ test "heading from delta keeps atan2+half_pi wide until final narrow" {
     const dy: f32 = -21.1148681640625;
     const heading = headingFromDeltaNative(dx, dy);
     try std.testing.expectEqual(@as(u32, 0x3fa8ca7d), @as(u32, @bitCast(heading)));
+}
+
+test "heading from delta preserves fpatan signed-zero boundary" {
+    try std.testing.expectEqual(@as(u32, 0x4096cbe4), @as(u32, @bitCast(headingFromDeltaNative(-1.0, 0.0))));
+    try std.testing.expectEqual(@as(u32, 0xbfc90fda), @as(u32, @bitCast(headingFromDeltaNative(-1.0, -0.0))));
 }
 
 test "fpatan consumes pc24 rounded subtraction operands" {

@@ -1081,9 +1081,9 @@ def _player_heading_approach_target_with_delta(
     diff = wrapped if direct >= wrapped else direct
 
     dt_f32 = float(f32(float(dt)))
-    # Native computes `player_heading_turn_delta = frame_dt * diff * 5.0` via
-    # float32 temporaries/spills. Quantize `frame_dt * diff` to float32 before
-    # applying the `* 5.0` to match x87 store boundaries.
+    # Native computes `frame_dt * diff * 5.0` under x87 PC=24. Quantize after
+    # each multiply to model that precision even though the intermediate stays
+    # on the x87 stack.
     scaled = float(f32(float(dt_f32) * float(diff)))
     if direct <= wrapped:
         if target > heading:
