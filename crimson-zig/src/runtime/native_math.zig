@@ -8,6 +8,8 @@ pub const native_turn_rate_scale: f32 = @bitCast(@as(u32, 0x3FAAAAAB));
 pub const native_creature_spawn_elapsed_scale: f32 = @bitCast(@as(u32, 0x3727C5AD));
 pub const native_float_epsilon: f32 = @bitCast(@as(u32, 0x34000000));
 pub const native_float_min: f32 = @bitCast(@as(u32, 0x00800000));
+pub const native_fire_muzzle_rotation: f32 = @bitCast(@as(u32, 0x3E1A8976));
+pub const native_tau_over_512: f32 = @bitCast(@as(u32, 0x3C490FDB));
 
 pub inline fn roundF32(value: anytype) f32 {
     return @floatCast(value);
@@ -52,6 +54,52 @@ pub inline fn normalizeVec2Safe(x: f32, y: f32) [2]f32 {
         pc24Mul(inv_magnitude, x),
         pc24Mul(inv_magnitude, y),
     };
+}
+
+pub inline fn fireMuzzlePos(player_x: f32, player_y: f32, aim_heading: f32) [2]f32 {
+    const radians = pc24Sub(pc24Sub(aim_heading, native_half_pi), native_fire_muzzle_rotation);
+    return .{
+        pc24Add(player_x, pc24Mul(@cos(@as(f64, radians)), @as(f32, 16.0))),
+        pc24Add(player_y, pc24Mul(@sin(@as(f64, radians)), @as(f32, 16.0))),
+    };
+}
+
+pub inline fn shotAngleFromJitterDraws(
+    aim_x: f32,
+    aim_y: f32,
+    player_x: f32,
+    player_y: f32,
+    spread_heat: f32,
+    dir_draw: u32,
+    mag_draw: u32,
+) f32 {
+    const aim_dx = pc24Sub(aim_x, player_x);
+    const aim_dy = pc24Sub(aim_y, player_y);
+    const distance_sq = pc24Add(
+        pc24Mul(aim_dx, aim_dx),
+        pc24Mul(aim_dy, aim_dy),
+    );
+    const half_len = pc24Mul(std.math.sqrt(@as(f64, distance_sq)), @as(f32, 0.5));
+    const offset = pc24Mul(
+        pc24Mul(
+            pc24Mul(half_len, spread_heat),
+            @as(f32, @floatFromInt(mag_draw & 0x1ff)),
+        ),
+        @as(f32, 0.001953125),
+    );
+    const dir_angle = pc24Mul(
+        @as(f32, @floatFromInt(dir_draw & 0x1ff)),
+        native_tau_over_512,
+    );
+    const jitter_x = pc24Add(pc24Mul(@cos(@as(f64, dir_angle)), offset), aim_x);
+    const jitter_y = pc24Add(pc24Mul(@sin(@as(f64, dir_angle)), offset), aim_y);
+    return pc24Sub(
+        fpatan(
+            pc24Sub(player_y, jitter_y),
+            pc24Sub(player_x, jitter_x),
+        ),
+        native_half_pi,
+    );
 }
 
 pub inline fn sinNative(value: f32) f32 {
@@ -166,4 +214,18 @@ test "safe vec2 normalization preserves near-unit and rejects subnormal lengths"
         normalizeVec2Safe(1.0, 0.0001),
     );
     try std.testing.expectEqual([2]f32{ 0.0, 0.0 }, normalizeVec2Safe(1e-20, 0.0));
+}
+
+test "native fire muzzle combines heading rotations before trig" {
+    try std.testing.expectEqual(
+        [2]f32{ 152.47727966308594, 941.5100708007812 },
+        fireMuzzlePos(137.84991455078125, 935.0262451171875, -4.14423131942749),
+    );
+}
+
+test "native shot jitter preserves fpatan branch and pc24 rounding" {
+    try std.testing.expectEqual(
+        @as(f32, -4.71196985244751),
+        shotAngleFromJitterDraws(200.0, 100.0, 100.0, 100.0, 0.2, 65, 3),
+    );
 }

@@ -420,16 +420,11 @@ fn tryFireWeaponWithForce(
     }
     if (shot_count <= 0) return false;
 
-    const aim_delta = state_mod.Vec2.sub(player.aim, player.pos);
     const aim_heading = player.aim_heading;
-    const muzzle_radians = narrowF32(narrowF32(aim_heading - native_math.native_half_pi) - narrowF32(0.150915));
-    const muzzle_offset: state_mod.Vec2 = .{
-        .x = narrowF32(std.math.cos(@as(f64, muzzle_radians)) * 16.0),
-        .y = narrowF32(std.math.sin(@as(f64, muzzle_radians)) * 16.0),
-    };
+    const muzzle_xy = native_math.fireMuzzlePos(player.pos.x, player.pos.y, aim_heading);
     const muzzle: state_mod.Vec2 = .{
-        .x = narrowF32(player.pos.x + muzzle_offset.x),
-        .y = narrowF32(player.pos.y + muzzle_offset.y),
+        .x = muzzle_xy[0],
+        .y = muzzle_xy[1],
     };
     // Native encodes friendly fire in the owner id (-1 - player_index): with
     // the cvar enabled, primary player shots can hit other players.
@@ -467,44 +462,16 @@ fn tryFireWeaponWithForce(
         );
     }
 
-    // Native uses x87 PC=24 here: arithmetic rounds after every operation,
-    // while fsqrt/fcos/fsin/fpatan remain wide until consumed.
-    const aim_dist_sq = native_math.pc24Add(
-        native_math.pc24Mul(aim_delta.x, aim_delta.x),
-        native_math.pc24Mul(aim_delta.y, aim_delta.y),
-    );
-    const half_len = native_math.pc24Mul(std.math.sqrt(aim_dist_sq), @as(f32, 0.5));
     const dir_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_dir);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_shot_jitter_mag);
-    const offset_term = native_math.pc24Mul(
-        native_math.pc24Mul(
-            native_math.pc24Mul(
-                half_len,
-                player.spread_heat,
-            ),
-            @as(f32, @floatFromInt(mag_roll & 0x1ff)),
-        ),
-        @as(f32, 0.001953125),
-    );
-    const dir_angle = native_math.pc24Mul(
-        @as(f32, @floatFromInt(dir_roll & 0x1ff)),
-        native_math.pc24Mul(native_tau, @as(f32, 1.0 / 512.0)),
-    );
-    const aim_jitter_x = native_math.pc24Add(
-        native_math.pc24Mul(@cos(@as(f64, dir_angle)), offset_term),
+    const shot_angle = native_math.shotAngleFromJitterDraws(
         player.aim.x,
-    );
-    const aim_jitter_y = native_math.pc24Add(
-        native_math.pc24Mul(@sin(@as(f64, dir_angle)), offset_term),
         player.aim.y,
-    );
-    const native_half_pi_f32: f32 = native_math.roundF32(native_math.native_half_pi);
-    const shot_angle = native_math.pc24Sub(
-        native_math.fpatan(
-            native_math.pc24Sub(player.pos.y, aim_jitter_y),
-            native_math.pc24Sub(player.pos.x, aim_jitter_x),
-        ),
-        native_half_pi_f32,
+        player.pos.x,
+        player.pos.y,
+        player.spread_heat,
+        dir_roll,
+        mag_roll,
     );
     var particle_angle = directionFromHeading(shot_angle).toAngle();
     if (player.weapon.weapon_id == .flamethrower or player.weapon.weapon_id == .blow_torch or player.weapon.weapon_id == .hr_flamer) {
@@ -772,23 +739,19 @@ fn tickFireCaugh(
     state.sfx_queue.append(.plasmaminigun_fire);
     const aim_heading = player.aim_heading;
     const origin_pos = player.pos;
-    const muzzle = state_mod.Vec2.add(
-        origin_pos,
-        rotateVec(directionFromHeading(aim_heading), -0.150915).mul(16.0),
-    );
-    const aim_delta = state_mod.Vec2.sub(player.aim, origin_pos);
-    const dist = aim_delta.length();
-    const max_offset = dist * player.spread_heat * 0.5;
+    const muzzle_xy = native_math.fireMuzzlePos(origin_pos.x, origin_pos.y, aim_heading);
+    const muzzle: state_mod.Vec2 = .{ .x = muzzle_xy[0], .y = muzzle_xy[1] };
     const dir_roll = state.rng.randTagged(rng_callers.player_update_fire_cough_spread_dir);
-    const dir_angle = @as(f32, @floatFromInt(dir_roll & 0x1ff)) * (native_tau / 512.0);
     const mag_roll = state.rng.randTagged(rng_callers.player_update_fire_cough_spread_mag);
-    const mag = @as(f32, @floatFromInt(mag_roll & 0x1ff)) * (1.0 / 512.0);
-    const offset = max_offset * mag;
-    const jitter = state_mod.Vec2.add(
-        player.aim,
-        state_mod.Vec2.fromAngle(dir_angle).mul(offset),
+    const angle = native_math.shotAngleFromJitterDraws(
+        player.aim.x,
+        player.aim.y,
+        origin_pos.x,
+        origin_pos.y,
+        player.spread_heat,
+        dir_roll,
+        mag_roll,
     );
-    const angle = state_mod.Vec2.sub(jitter, origin_pos).toHeading();
     spawnPerkProjectile(
         state,
         player,
@@ -1052,15 +1015,6 @@ fn directionFromHeading(heading: f32) state_mod.Vec2 {
     return .{
         .x = narrowF32(math.cos(radians)),
         .y = narrowF32(math.sin(radians)),
-    };
-}
-
-fn rotateVec(vec: state_mod.Vec2, theta: f32) state_mod.Vec2 {
-    const cos_theta = narrowF32(math.cos(theta));
-    const sin_theta = narrowF32(math.sin(theta));
-    return .{
-        .x = narrowF32(vec.x * cos_theta - vec.y * sin_theta),
-        .y = narrowF32(vec.x * sin_theta + vec.y * cos_theta),
     };
 }
 

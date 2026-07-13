@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Float/trig helpers for native movement math parity."""
+"""Float/trig helpers for native gameplay math parity."""
 
 import math
 import struct
@@ -20,6 +20,8 @@ __all__ = [
     "heading_add_pi_f32",
     "heading_from_delta_f32",
     "heading_to_direction_f32",
+    "native_fire_muzzle_pos",
+    "native_shot_angle_from_jitter_draws",
     "x87_pc24_add",
     "x87_fpatan",
     "x87_pc24_cos_mul",
@@ -153,3 +155,56 @@ def heading_add_pi_f32(heading: float) -> float:
 def heading_to_direction_f32(heading: float) -> Vec2:
     radians = f32(float(f32(heading)) - NATIVE_HALF_PI)
     return Vec2(cos_f32(radians), sin_f32(radians))
+
+
+def native_fire_muzzle_pos(player_pos: Vec2, aim_heading: float) -> Vec2:
+    """Reproduce the shared native player-fire muzzle calculation."""
+
+    radians = x87_pc24_sub(float(aim_heading), NATIVE_HALF_PI)
+    radians = x87_pc24_sub(radians, f32(0.150915))
+    offset_x = x87_pc24_cos_mul(radians, 16.0)
+    offset_y = x87_pc24_sin_mul(radians, 16.0)
+    return Vec2(
+        x87_pc24_add(float(player_pos.x), offset_x),
+        x87_pc24_add(float(player_pos.y), offset_y),
+    )
+
+
+def native_shot_angle_from_jitter_draws(
+    *,
+    aim: Vec2,
+    player_pos: Vec2,
+    spread_heat: float,
+    dir_draw: int,
+    mag_draw: int,
+) -> float:
+    """Reproduce the native disc-spread calculation from its two RNG draws."""
+
+    aim_dx = x87_pc24_sub(aim.x, player_pos.x)
+    aim_dy = x87_pc24_sub(aim.y, player_pos.y)
+    dist_sq = x87_pc24_add(
+        x87_pc24_mul(aim_dx, aim_dx),
+        x87_pc24_mul(aim_dy, aim_dy),
+    )
+    half_len = x87_pc24_mul(math.sqrt(dist_sq), 0.5)
+
+    offset_term = x87_pc24_mul_chain(
+        half_len,
+        spread_heat,
+        float(int(mag_draw) & 0x1FF),
+        0.001953125,
+    )
+    dir_angle = x87_pc24_mul(
+        float(int(dir_draw) & 0x1FF),
+        f32(float(NATIVE_TAU) / 512.0),
+    )
+
+    aim_jitter_x = x87_pc24_add(x87_pc24_mul(math.cos(dir_angle), offset_term), aim.x)
+    aim_jitter_y = x87_pc24_add(x87_pc24_mul(math.sin(dir_angle), offset_term), aim.y)
+    return x87_pc24_sub(
+        x87_fpatan(
+            x87_pc24_sub(player_pos.y, aim_jitter_y),
+            x87_pc24_sub(player_pos.x, aim_jitter_x),
+        ),
+        NATIVE_HALF_PI,
+    )

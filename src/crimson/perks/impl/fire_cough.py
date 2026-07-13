@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import math
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
-from ...math_parity import x87_pc24_add, x87_pc24_sub
+from ...math_parity import (
+    native_fire_muzzle_pos,
+    native_shot_angle_from_jitter_draws,
+    x87_pc24_add,
+    x87_pc24_sub,
+)
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
@@ -30,18 +33,18 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
 
     aim_heading = float(ctx.player.aim_heading)
     origin_pos = ctx.player_pos_before_move
-    muzzle = origin_pos + Vec2.from_heading(aim_heading).rotated(-0.150915) * 16.0
+    muzzle = native_fire_muzzle_pos(origin_pos, aim_heading)
 
     aim = ctx.player.aim
-    dist = (aim - origin_pos).length()
-    max_offset = dist * float(ctx.player.spread_heat) * 0.5
     dir_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR)
-    dir_angle = float(dir_roll & 0x1FF) * (math.tau / 512.0)
     mag_roll = ctx.state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG)
-    mag = float(mag_roll & 0x1FF) * (1.0 / 512.0)
-    offset = max_offset * mag
-    jitter = aim + Vec2.from_angle(dir_angle) * offset
-    angle = (jitter - origin_pos).to_heading()
+    angle = native_shot_angle_from_jitter_draws(
+        aim=aim,
+        player_pos=origin_pos,
+        spread_heat=float(ctx.player.spread_heat),
+        dir_draw=dir_roll,
+        mag_draw=mag_roll,
+    )
     ctx.projectile_spawn(
         ctx.state,
         players=[ctx.player],

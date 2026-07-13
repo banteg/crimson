@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
-from crimson.math_parity import NATIVE_HALF_PI, f32
+from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos
 from crimson.owner_ref import OwnerRef
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -13,7 +13,6 @@ from crimson.weapon_runtime import (
     fire_weapon,
     weapon_assign_player,
 )
-from crimson.weapon_runtime.fire import _native_muzzle_pos
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.factories import RecordingCreatureDamageRuntime
@@ -92,7 +91,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     assert len(particles) == 1
     particle = particles[0]
 
-    expected_muzzle = _native_muzzle_pos(player.pos, player.aim_heading)
+    expected_muzzle = native_fire_muzzle_pos(player.pos, player.aim_heading)
 
     assert_float_close(float(particle.pos.x), float(expected_muzzle.x))
     assert_float_close(float(particle.pos.y), float(expected_muzzle.y))

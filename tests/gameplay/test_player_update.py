@@ -22,6 +22,7 @@ from crimson.math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
     f32,
+    native_fire_muzzle_pos,
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_mul,
@@ -42,7 +43,6 @@ from crimson.weapon_runtime import (
     fire_weapon,
     weapon_assign_player,
 )
-from crimson.weapon_runtime.fire import _native_muzzle_pos
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -590,6 +590,27 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     ]
 
 
+def test_player_update_fire_cough_uses_native_spread_angle() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(
+        projectiles=pool,
+        rng=ScriptedCrand([65, 3, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        aim=Vec2(200.0, 100.0),
+        spread_heat=0.2,
+        fire_cough_timer=1.95,
+    )
+    player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
+
+    player_update(player, PlayerInput(aim=player.aim), 0.1, state)
+
+    projectile = next(entry for entry in pool.entries if entry.active)
+    assert projectile.angle == -4.71196985244751
+
+
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     pool = ProjectilePool(size=8)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -615,9 +636,7 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     entry = next(e for e in pool.entries if e.active)
     assert int(entry.type_id) == int(ProjectileTemplateId.FIRE_BULLETS)
 
-    expected = before_pos + Vec2.from_heading(0.0).rotated(-0.150915) * 16.0
-    assert_float_close(float(entry.pos.x), float(f32(float(expected.x))))
-    assert_float_close(float(entry.pos.y), float(f32(float(expected.y))))
+    assert entry.pos == native_fire_muzzle_pos(before_pos, 0.0)
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR,
         RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG,
@@ -1317,7 +1336,7 @@ def test_player_fire_weapon_disc_spread_rounds_each_x87_operation() -> None:
 
 
 def test_player_fire_weapon_uses_native_muzzle_arithmetic() -> None:
-    muzzle = _native_muzzle_pos(
+    muzzle = native_fire_muzzle_pos(
         Vec2(137.84991455078125, 935.0262451171875),
         -4.14423131942749,
     )

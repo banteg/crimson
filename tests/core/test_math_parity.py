@@ -9,12 +9,15 @@ from crimson.math_parity import (
     heading_add_pi_f32,
     heading_from_delta_f32,
     heading_to_direction_f32,
+    native_fire_muzzle_pos,
+    native_shot_angle_from_jitter_draws,
     x87_fpatan,
     x87_pc24_cos_mul,
     x87_pc24_mul_chain,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
+from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
 
 
@@ -88,3 +91,24 @@ def test_x87_fpatan_uses_pc24_rounded_input_arithmetic() -> None:
     atan = x87_fpatan(dy, dx)
 
     assert x87_pc24_sub(atan, NATIVE_HALF_PI) == 1.1090916395187378
+
+
+def test_native_fire_muzzle_uses_combined_angle_before_trig() -> None:
+    muzzle = native_fire_muzzle_pos(
+        Vec2(137.84991455078125, 935.0262451171875),
+        -4.14423131942749,
+    )
+
+    assert muzzle == Vec2(152.47727966308594, 941.5100708007812)
+
+
+def test_native_shot_jitter_preserves_fpatan_branch_and_pc24_rounding() -> None:
+    angle = native_shot_angle_from_jitter_draws(
+        aim=Vec2(200.0, 100.0),
+        player_pos=Vec2(100.0, 100.0),
+        spread_heat=0.2,
+        dir_draw=65,
+        mag_draw=3,
+    )
+
+    assert angle == -4.71196985244751
