@@ -33,7 +33,7 @@ from ..types import (
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )
-from .collision import _apply_damage_to_creature, _creature_find_nearest_for_secondary, _within_native_find_radius
+from .collision import _apply_damage_to_creature, _within_native_find_radius, creature_find_nearest_alive
 from .secondary_rules import (
     DetonationRule,
     HomingRocketRule,
@@ -166,7 +166,7 @@ class SecondaryProjectilePool:
             entry.target_id = -1
             if creatures is not None:
                 origin = target_hint if target_hint is not None else pos
-                entry.target_id = _creature_find_nearest_for_secondary(
+                entry.target_id = creature_find_nearest_alive(
                     creatures=creatures,
                     origin=origin,
                     preserve_bugs=preserve_bugs,
@@ -324,7 +324,7 @@ class SecondaryProjectilePool:
                     # Type 2: homing projectile.
                     target_id = entry.target_id
                     if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
-                        entry.target_id = _creature_find_nearest_for_secondary(
+                        entry.target_id = creature_find_nearest_alive(
                             creatures=creatures,
                             origin=entry.pos,
                             preserve_bugs=bool(runtime_state.preserve_bugs) if runtime_state is not None else False,

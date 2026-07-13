@@ -38,13 +38,13 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
     return distance_outside_radius < size_margin
 
 
-def _creature_find_nearest_for_secondary(
+def creature_find_nearest_alive(
     *,
     creatures: Sequence[CreatureState],
     origin: Vec2,
     preserve_bugs: bool = False,
 ) -> int:
-    """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
+    """Port of `creature_find_nearest(origin, -1, 0.0)`."""
 
     best_idx = 0 if preserve_bugs else -1
     best_distance = f32(1_000_000.0)
@@ -90,8 +90,8 @@ def _apply_damage_to_creature(
 
 __all__ = [
     "_apply_damage_to_creature",
-    "_creature_find_nearest_for_secondary",
     "_hit_radius_for",
     "_within_native_find_radius",
+    "creature_find_nearest_alive",
     "native_find_size_margin",
 ]

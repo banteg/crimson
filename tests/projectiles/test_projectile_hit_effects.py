@@ -378,7 +378,7 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
 
 
 def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
-    from crimson.projectiles.runtime.collision import _creature_find_nearest_for_secondary
+    from crimson.projectiles.runtime.collision import creature_find_nearest_alive
 
     far_creature = CreatureState(active=True, hp=10.0, lifecycle_stage=16.0, pos=Vec2(1200.0, 900.0))
     creatures = [CreatureState() for _ in range(3)]
@@ -386,11 +386,11 @@ def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
 
     # Native compares plain distances against a 1e6 seed, so targets farther
     # than 1000 units (offscreen spawns) are still acquired.
-    assert _creature_find_nearest_for_secondary(creatures=creatures, origin=Vec2(0.0, 0.0)) == 2
+    assert creature_find_nearest_alive(creatures=creatures, origin=Vec2(0.0, 0.0)) == 2
 
 
 def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
-    from crimson.projectiles.runtime.collision import _creature_find_nearest_for_secondary
+    from crimson.projectiles.runtime.collision import creature_find_nearest_alive
 
     creatures = [
         CreatureState(
@@ -409,4 +409,4 @@ def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
 
     # A host-double squared-distance compare chooses slot 0; native narrows the
     # x87 fsqrt result and slot 1 is strictly closer at that precision.
-    assert _creature_find_nearest_for_secondary(creatures=creatures, origin=Vec2()) == 1
+    assert creature_find_nearest_alive(creatures=creatures, origin=Vec2()) == 1

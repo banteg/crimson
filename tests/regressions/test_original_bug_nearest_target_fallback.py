@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import GameplayState
+from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
     ProjectilePool,
@@ -48,6 +51,23 @@ def test_shock_chain_initial_target_miss_handling(
         assert state.shock_chain_projectile_id >= 0
     else:
         assert state.shock_chain_projectile_id == -1
+
+
+def test_shock_chain_uses_native_f32_nearest_ordering() -> None:
+    pool = ProjectilePool(size=4)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos=Vec2())
+    first_pos = Vec2(-1727.156494140625, -1351.4605712890625)
+    creatures = [
+        make_creature_state(pos=first_pos, hp=100.0),
+        make_creature_state(pos=Vec2(1722.1292724609375, -1357.8604736328125), hp=100.0),
+    ]
+
+    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
+
+    projectile = pool.entries[state.shock_chain_projectile_id]
+    expected_angle = f32(math.atan2(first_pos.y, first_pos.x) - NATIVE_HALF_PI - NATIVE_PI)
+    assert projectile.angle == expected_angle
 
 
 @pytest.mark.parametrize(

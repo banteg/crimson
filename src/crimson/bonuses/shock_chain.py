@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import math
 
-from grim.geom import Vec2
 from grim.sfx_map import SfxId
 
-from ..creatures.lifecycle import creature_lifecycle_is_alive
 from ..math_parity import NATIVE_HALF_PI, NATIVE_PI, f32
 from ..owner_ref import OwnerRef
+from ..projectiles.runtime.collision import creature_find_nearest_alive
 from ..projectiles.types import ProjectileTemplateId
 from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn
 from .apply_context import BonusApplyCtx
@@ -18,22 +17,12 @@ def apply_shock_chain(ctx: BonusApplyCtx) -> None:
     if not creatures:
         return
 
-    # Mirrors the `exclude_id == -1` behavior of `creature_find_nearest(origin, -1, 0.0)`:
-    # - requires `active != 0`
-    # - requires `lifecycle_stage == 16.0` (alive sentinel)
-    # - no HP gate
     origin = ctx.origin_pos
-    best_idx = 0 if bool(ctx.state.preserve_bugs) else -1
-    best_dist_sq = 1e12
-    for idx, creature in enumerate(creatures):
-        if not creature.active:
-            continue
-        if not creature_lifecycle_is_alive(creature.lifecycle_stage):
-            continue
-        d_sq = Vec2.distance_sq(origin, creature.pos)
-        if d_sq < best_dist_sq:
-            best_dist_sq = d_sq
-            best_idx = idx
+    best_idx = creature_find_nearest_alive(
+        creatures=creatures,
+        origin=origin,
+        preserve_bugs=bool(ctx.state.preserve_bugs),
+    )
 
     if best_idx < 0:
         return
