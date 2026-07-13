@@ -90,9 +90,9 @@ pub fn applyPoolResidue(
     pool: *CreaturePool,
     residue: []const replay_codec.ReplayCreatureSlotResidue,
 ) void {
-    // Native creature_reset_all clears only `active`; replays of native
-    // captures seed the previous occupants' persistent fields so stale reads
-    // (link_index, target_heading, AI7 timers, ...) match the original run.
+    // Native creature_reset_all clears `active` and detaches linked spawn-slot
+    // owners; the other creature fields persist. Seed those fields so stale
+    // reads (link_index, target_heading, AI7 timers, ...) match the original.
     for (residue) |slot| {
         if (slot.index < 0 or slot.index >= pool.entries.len) continue;
         const entry = &pool.entries[@intCast(slot.index)];

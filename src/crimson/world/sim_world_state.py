@@ -37,10 +37,10 @@ def apply_creature_pool_residue(
 ) -> None:
     """Seed the fresh pool with the run-start residue captured natively.
 
-    `creature_reset_all` (0x4281e0) clears only `active`; spawn paths
-    overwrite only the fields they write, so stale reads (link_index,
-    target_heading, AI7 timers, ...) must see the previous occupant's values
-    to replay a native session run-for-run."""
+    `creature_reset_all` (0x4281e0) clears `active` and detaches linked
+    spawn-slot owners, but leaves the other creature fields intact. Spawn
+    paths overwrite only the fields they write, so stale reads (link_index,
+    target_heading, AI7 timers, ...) must see the previous occupant's values."""
 
     for slot in residue:
         idx = int(slot.index)

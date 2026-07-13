@@ -280,10 +280,10 @@ class ReplayVec2(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 class ReplayCreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     """Persistent creature-slot state inherited at run start.
 
-    Native `creature_reset_all` (0x4281e0) clears only `active`; every other
-    field keeps the previous occupant's value (menu creatures or an earlier
-    run in the same session), and spawn paths overwrite only what they write.
-    Captured at the run-setup latch so replays can seed an identical pool."""
+    Native `creature_reset_all` (0x4281e0) clears `active` and detaches linked
+    spawn-slot owners; every other creature field keeps the previous
+    occupant's value, and spawn paths overwrite only what they write. Captured
+    at the run-setup latch so replays can seed an identical pool."""
 
     index: int
     phase_seed: float = 0.0
