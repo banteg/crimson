@@ -87,6 +87,24 @@ def test_weapon_drop_near_player2_stays_player1_only_with_preserve_bugs() -> Non
     assert entry.amount == WeaponId.SUBMACHINE_GUN
 
 
+def test_weapon_drop_near_check_uses_native_pc24_hypotenuse_boundary() -> None:
+    state = _init_bonus_state(GameplayState(preserve_bugs=True))
+    state.rng = ScriptedCrand([1, 13, 1, 4], fallback=ScriptedCrand.Fallback.ZERO)
+
+    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    entry = state.bonus_pool.try_spawn_on_kill(
+        pos=Vec2(43.35334777832031, 35.44696044921875),
+        state=state,
+        players=[player],
+    )
+
+    # Double-precision dx²+dy² is below 56², but native PC=24 math rounds the
+    # hypotenuse to exactly 56 and does not convert the weapon drop to points.
+    assert entry is not None
+    assert entry.bonus_id == BonusId.WEAPON
+    assert entry.amount == WeaponId.SUBMACHINE_GUN
+
+
 def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> None:
     state = _init_bonus_state(GameplayState())
     rng = ScriptedCrand([0, 0, 2], fallback=ScriptedCrand.Fallback.ZERO)

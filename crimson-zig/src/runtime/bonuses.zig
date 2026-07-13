@@ -152,19 +152,9 @@ pub const BonusPool = struct {
         const slot = spawnAtPos(self, pos, state, players, world_size);
         var entry = slotPtr(self, slot);
 
-        if (entry.bonus_id == .weapon) {
-            const near_sq = bonus_weapon_near_radius * bonus_weapon_near_radius;
-            var near_player = false;
-            for (players) |player| {
-                if (distanceSq(pos, player.pos) < near_sq) {
-                    near_player = true;
-                    break;
-                }
-            }
-            if (near_player) {
-                entry.bonus_id = .points;
-                entry.amount = 100;
-            }
+        if (entry.bonus_id == .weapon and weaponDropNearPlayer(pos, players, state.preserve_bugs)) {
+            entry.bonus_id = .points;
+            entry.amount = 100;
         }
 
         if (entry.bonus_id != .points and countMatches(self, entry.bonus_id) > 1) {
@@ -1098,6 +1088,40 @@ fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return dx * dx + dy * dy;
+}
+
+fn withinNativeRadius(a: state_mod.Vec2, b: state_mod.Vec2, radius: f32) bool {
+    return native_math.pc24Hypot(
+        native_math.pc24Sub(a.x, b.x),
+        native_math.pc24Sub(a.y, b.y),
+    ) < radius;
+}
+
+fn weaponDropNearPlayer(
+    pos: state_mod.Vec2,
+    players: []const state_mod.PlayerState,
+    preserve_bugs: bool,
+) bool {
+    const candidates = if (preserve_bugs and players.len > 0) players[0..1] else players;
+    for (candidates) |player| {
+        if (withinNativeRadius(pos, player.pos, bonus_weapon_near_radius)) return true;
+    }
+    return false;
+}
+
+test "weapon drop near check uses native pc24 boundary and player slot" {
+    const players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+
+    try std.testing.expect(!weaponDropNearPlayer(
+        .{ .x = 43.35334777832031, .y = 35.44696044921875 },
+        players[0..1],
+        true,
+    ));
+    try std.testing.expect(!weaponDropNearPlayer(.{ .x = 500.0, .y = 500.0 }, players[0..], true));
+    try std.testing.expect(weaponDropNearPlayer(.{ .x = 500.0, .y = 500.0 }, players[0..], false));
 }
 
 fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {

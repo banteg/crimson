@@ -82,6 +82,13 @@ def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
     return carried
 
 
+def _within_native_radius(a: Vec2, b: Vec2, radius: float) -> bool:
+    return x87_pc24_hypot(
+        x87_pc24_sub(a.x, b.x),
+        x87_pc24_sub(a.y, b.y),
+    ) < radius
+
+
 class BonusPool:
     def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
         self._entries = [BonusEntry() for _ in range(int(size))]
@@ -323,14 +330,15 @@ class BonusPool:
         )
 
         if entry.bonus_id == BonusId.WEAPON:
-            near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
             near_player = False
             if players:
                 if bool(state.preserve_bugs):
                     # Native checks player 1 position only.
-                    near_player = Vec2.distance_sq(pos, players[0].pos) < near_sq
+                    near_player = _within_native_radius(pos, players[0].pos, BONUS_WEAPON_NEAR_RADIUS)
                 else:
-                    near_player = any(Vec2.distance_sq(pos, player.pos) < near_sq for player in players)
+                    near_player = any(
+                        _within_native_radius(pos, player.pos, BONUS_WEAPON_NEAR_RADIUS) for player in players
+                    )
             if near_player:
                 entry.bonus_id = BonusId.POINTS
                 entry.amount = 100
