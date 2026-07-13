@@ -17,8 +17,7 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw, build_verify_playback_driver
 from ..replay.types import Replay, current_replay_game_version
 from ..sim.hooks import TickResult
-from ..sim.step_pipeline import time_scale_reflex_boost_factor
-from ..sim.timing import ftol_ms_i32
+from ..sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
 from ..sim.world_state import WorldState
 from .canonical_channels import (
     BonusEntitySample,
@@ -376,7 +375,7 @@ def _timing_samples_for_tick(
             time_scale_active_entry=active,
             time_scale_active_current=active,
             time_scale_factor=_trace_f32(
-                time_scale_reflex_boost_factor(
+                reflex_boost_time_scale_factor(
                     reflex_boost_timer=reflex_boost_timer,
                     time_scale_active=active,
                 ),

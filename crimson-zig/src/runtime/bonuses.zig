@@ -53,7 +53,6 @@ const bonus_time_max: f32 = 10.0;
 const bonus_weapon_near_radius: f32 = 56.0;
 const bonus_aim_hover_radius: f32 = 24.0;
 const bonus_telekinetic_pickup_ms: f32 = 650.0;
-const reflex_timer_subtract_bias: f32 = 4e-9;
 
 inline fn weaponIdIndex(weapon_id: game_ids.WeaponId) usize {
     return @intCast(@intFromEnum(weapon_id));
@@ -294,12 +293,10 @@ pub fn updatePrePickupTimers(
         state.bonuses.energizer -= dt;
     }
     if (state.bonuses.reflex_boost > 0.0) {
-        const reflex_before = state.bonuses.reflex_boost;
-        var subtract = dt;
-        if (reflex_before > 0.0 and reflex_before < 1.0) {
-            subtract += reflex_timer_subtract_bias;
-        }
-        state.bonuses.reflex_boost = reflex_before - subtract;
+        state.bonuses.reflex_boost = native_math.pc24Sub(
+            state.bonuses.reflex_boost,
+            dt,
+        );
     }
 }
 

@@ -5,6 +5,7 @@ const creatures_mod = @import("creatures.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const state_mod = @import("state.zig");
+const survival_progression = @import("survival_progression.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
@@ -40,11 +41,10 @@ pub fn updatePlayerFromGameInput(
     const prev_pos = player.pos;
     var movement_dt = dt;
     if (state.time_scale_active and movement_dt > 0.0) {
-        const reflex_f32 = narrowF32(state.bonuses.reflex_boost);
-        var time_scale_factor = narrowF32(0.3);
-        if (reflex_f32 < 1.0) {
-            time_scale_factor = narrowF32((1.0 - reflex_f32) * 0.7 + 0.3);
-        }
+        const time_scale_factor = survival_progression.reflexBoostTimeScaleFactor(
+            state.bonuses.reflex_boost,
+            true,
+        );
         if (time_scale_factor > 0.0) {
             movement_dt = native_math.pc24Mul(
                 native_math.pc24Div(@as(f32, 0.6), time_scale_factor),
@@ -533,10 +533,10 @@ pub fn playerFrameDtAfterRoundtrip(
         return dt;
     }
 
-    var time_scale_factor = narrowF32(0.3);
-    if (reflex_boost_timer < 1.0) {
-        time_scale_factor = narrowF32((1.0 - reflex_boost_timer) * 0.7 + 0.3);
-    }
+    const time_scale_factor = survival_progression.reflexBoostTimeScaleFactor(
+        reflex_boost_timer,
+        true,
+    );
     if (time_scale_factor <= 0.0) {
         return dt;
     }

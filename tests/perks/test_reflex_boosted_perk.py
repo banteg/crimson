@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from crimson.bonuses.update import _REFLEX_TIMER_SUBTRACT_BIAS
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import player_frame_dt_after_roundtrip
@@ -63,10 +62,7 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         time_scale_active=True,
         reflex_boost_timer=float(world.state.bonuses.reflex_boost),
     )
-    expected_decrement = float(expected_post_player_dt)
-    if 0.0 < float(world.state.bonuses.reflex_boost) < 1.0:
-        expected_decrement += float(_REFLEX_TIMER_SUBTRACT_BIAS)
-    expected_reflex = float(f32(float(world.state.bonuses.reflex_boost) - float(expected_decrement)))
+    expected_reflex = float(f32(float(world.state.bonuses.reflex_boost) - float(expected_post_player_dt)))
 
     world.step(
         dt,

@@ -43,7 +43,7 @@ from .projectiles.runtime import (
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PERK_COUNT_SIZE
-from .sim.timing import ftol_ms_i32
+from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
 from .tutorial import TutorialOverlayState, TutorialState
 from .typo.state import TypoState
 from .weapon_runtime import (
@@ -186,10 +186,10 @@ def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, refle
     if not time_scale_active or dt_f32 <= 0.0:
         return float(dt_f32)
 
-    reflex_f32 = float(f32(float(reflex_boost_timer)))
-    time_scale_factor = float(f32(0.3))
-    if reflex_f32 < 1.0:
-        time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+    time_scale_factor = reflex_boost_time_scale_factor(
+        reflex_boost_timer=reflex_boost_timer,
+        time_scale_active=True,
+    )
     if time_scale_factor <= 0.0:
         return float(dt_f32)
 
@@ -661,10 +661,10 @@ def player_update(
 
     movement_dt = float(dt)
     if state.time_scale_active and movement_dt > 0.0:
-        reflex_f32 = float(f32(float(state.bonuses.reflex_boost)))
-        time_scale_factor = float(f32(0.3))
-        if reflex_f32 < 1.0:
-            time_scale_factor = float(f32((1.0 - float(reflex_f32)) * 0.7 + 0.3))
+        time_scale_factor = reflex_boost_time_scale_factor(
+            reflex_boost_timer=state.bonuses.reflex_boost,
+            time_scale_active=True,
+        )
         if time_scale_factor > 0.0:
             # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
             # and stores back to float before movement/heading logic.

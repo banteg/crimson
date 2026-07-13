@@ -63,15 +63,24 @@ pub fn timeScaleReflexBoostBonus(
     if (!(dt_f32 > 0.0)) return dt_f32;
     if (!time_scale_active) return dt_f32;
 
+    const time_scale_factor = reflexBoostTimeScaleFactor(reflex_boost_timer, true);
+    return native_math.pc24Mul(dt_f32, time_scale_factor);
+}
+
+pub fn reflexBoostTimeScaleFactor(
+    reflex_boost_timer: f32,
+    time_scale_active: bool,
+) f32 {
+    if (!time_scale_active) return 1.0;
+
     const reflex_f32 = narrowF32(reflex_boost_timer);
-    var time_scale_factor = narrowF32(0.3);
-    if (reflex_f32 < 1.0) {
-        time_scale_factor = narrowF32(
-            (@as(f64, 1.0) - @as(f64, @floatCast(reflex_f32))) * 0.7 + 0.3,
-        );
-    }
-    return narrowF32(
-        @as(f64, @floatCast(dt_f32)) * @as(f64, @floatCast(time_scale_factor)),
+    if (reflex_f32 >= 1.0) return narrowF32(0.3);
+    return native_math.pc24Add(
+        native_math.pc24Mul(
+            native_math.pc24Sub(@as(f32, 1.0), reflex_f32),
+            @as(f32, 0.7),
+        ),
+        @as(f32, 0.3),
     );
 }
 
@@ -330,4 +339,8 @@ test "time scale reflex boost bonus mirrors f32 latch" {
     try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, false, 1.0 / 60.0));
     try expectFloatClose(0.01666666753590107, timeScaleReflexBoostBonus(0.0, true, 1.0 / 60.0));
     try expectFloatClose(0.010833333246409893, timeScaleReflexBoostBonus(0.5, true, 1.0 / 60.0));
+    try std.testing.expectEqual(
+        @as(u32, 0x3ec9246d),
+        @as(u32, @bitCast(reflexBoostTimeScaleFactor(0.8673485517501831, true))),
+    );
 }

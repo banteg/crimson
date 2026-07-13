@@ -4,15 +4,13 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
-from ..math_parity import f32
+from ..math_parity import f32, x87_pc24_sub
 from ..perks.helpers import perk_active
 from ..sim.state_types import BonusPickupEvent, GameplayState, PlayerState
 from .apply import bonus_apply
 from .hud import bonus_hud_update
 from .ids import BonusId
 from .pool import BONUS_PICKUP_LINGER, BONUS_TELEKINETIC_PICKUP_MS, bonus_find_aim_hover_entry
-
-_REFLEX_TIMER_SUBTRACT_BIAS = 4e-9
 
 if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
@@ -159,9 +157,9 @@ def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
     if float(state.bonuses.energizer) > 0.0:
         state.bonuses.energizer = float(f32(float(state.bonuses.energizer) - float(dt)))
     if float(state.bonuses.reflex_boost) > 0.0:
-        reflex_before = float(state.bonuses.reflex_boost)
-        subtract = float(dt)
-        if 0.0 < reflex_before < 1.0:
-            # Native x87 timer math trends slightly lower than straight f32 subtraction in this window.
-            subtract += float(_REFLEX_TIMER_SUBTRACT_BIAS)
-        state.bonuses.reflex_boost = float(f32(float(reflex_before) - float(subtract)))
+        state.bonuses.reflex_boost = float(
+            x87_pc24_sub(
+                state.bonuses.reflex_boost,
+                dt,
+            ),
+        )

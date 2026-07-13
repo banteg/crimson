@@ -748,10 +748,9 @@ fn currentTimeScaleFactor(
 ) f32 {
     if (!time_scale_active) return 1.0;
 
-    const reflex_f32 = narrowF32(reflex_boost_timer);
-    if (reflex_f32 >= 1.0) return narrowF32(0.3);
-    return narrowF32(
-        (@as(f64, 1.0) - @as(f64, @floatCast(reflex_f32))) * 0.7 + 0.3,
+    return survival_progression.reflexBoostTimeScaleFactor(
+        reflex_boost_timer,
+        true,
     );
 }
 

@@ -41,10 +41,9 @@ from .presentation_step import plan_world_presentation_step
 from .step_pipeline import (
     DeterministicStepResult,
     PresentationRngTrace,
-    time_scale_reflex_boost_factor,
 )
 from .terrain_fx import TerrainFxScratch
-from .timing import FrameTiming
+from .timing import FrameTiming, reflex_boost_time_scale_factor
 from .world_state import WorldMidStepRuntime, WorldState
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
@@ -322,7 +321,7 @@ def _session_timing(state: object, dt: float) -> FrameTiming:
     return FrameTiming.compute(
         dt,
         time_scale_active_entry=bool(state.time_scale_active),  # type: ignore[union-attr]
-        time_scale_factor=time_scale_reflex_boost_factor(
+        time_scale_factor=reflex_boost_time_scale_factor(
             reflex_boost_timer=float(state.bonuses.reflex_boost),  # type: ignore[union-attr]
             time_scale_active=bool(state.time_scale_active),  # type: ignore[union-attr]
         ),

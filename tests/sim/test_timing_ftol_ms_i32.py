@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from crimson.sim.timing import FrameTiming, ftol_ms_i32, nearest_ms_i32
+import struct
+
+from crimson.sim.timing import FrameTiming, ftol_ms_i32, nearest_ms_i32, reflex_boost_time_scale_factor
 
 
 def test_ftol_ms_i32_tie_cases_are_truncation() -> None:
@@ -27,3 +29,12 @@ def test_frame_timing_defaults_to_live_dt_when_zero_gate_disabled() -> None:
     )
     assert timing.zero_gate_active is False
     assert timing.dt_sim > 0.0
+
+
+def test_reflex_boost_fade_rounds_each_native_operation() -> None:
+    factor = reflex_boost_time_scale_factor(
+        reflex_boost_timer=0.8673485517501831,
+        time_scale_active=True,
+    )
+
+    assert struct.unpack("<I", struct.pack("<f", factor))[0] == 0x3EC9246D

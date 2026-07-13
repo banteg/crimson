@@ -2823,6 +2823,18 @@ function captureNumber(v) {
   return captureF32Bits(f32ToU32(v));
 }
 
+function pc24AddNumber(lhs, rhs) {
+  return captureNumber(Number(lhs) + Number(rhs));
+}
+
+function pc24SubNumber(lhs, rhs) {
+  return captureNumber(Number(lhs) - Number(rhs));
+}
+
+function pc24MulNumber(lhs, rhs) {
+  return captureNumber(Number(lhs) * Number(rhs));
+}
+
 function normalizeSampleLimit(limit) {
   if (!Number.isFinite(limit)) return -1;
   if (limit < 0) return -1;
@@ -4292,7 +4304,12 @@ function _timeScaleFactorFromBonusTimer(timerValue, active) {
   if (!active) return 1.0;
   const timer = decodeCapturedF32(timerValue);
   if (timer == null) return 0.3;
-  if (timer < 1.0) return ((1.0 - timer) * 0.7) + 0.3;
+  if (timer < 1.0) {
+    return pc24AddNumber(
+      pc24MulNumber(pc24SubNumber(1.0, timer), captureNumber(0.7)),
+      captureNumber(0.3)
+    );
+  }
   return 0.3;
 }
 
