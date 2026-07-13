@@ -630,6 +630,7 @@ class CreaturePool:
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
+        self._single_player_dormant_target: PlayerState | None = None
 
     @property
     def entries(self) -> list[CreatureState]:
@@ -642,6 +643,7 @@ class CreaturePool:
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
+        self._single_player_dormant_target = None
 
     def iter_active(self) -> list[CreatureState]:
         return [entry for entry in self._entries if entry.active and entry.hp > 0.0]
@@ -937,12 +939,17 @@ class CreaturePool:
         spawned: list[int] = []
         sfx: list[SfxId] = []
         self._update_tick = int(self._update_tick) + 1
-        single_player_dead_target_pos: Vec2 | None = None
+        single_player_dormant_target: PlayerState | None = None
         if len(players) == 1:
-            single_player_dead_target_pos = Vec2(
+            dormant_pos = Vec2(
                 float(world_width) * (27.0 / 64.0),
                 float(world_height) * (27.0 / 64.0),
             )
+            if self._single_player_dormant_target is None:
+                self._single_player_dormant_target = PlayerState(index=1, pos=dormant_pos)
+            else:
+                self._single_player_dormant_target.pos = dormant_pos
+            single_player_dormant_target = self._single_player_dormant_target
 
         evil_targets: set[int] = set()
         if players:
@@ -1123,7 +1130,7 @@ class CreaturePool:
                         pass
 
             uses_dormant_target = (
-                single_player_dead_target_pos is not None
+                single_player_dormant_target is not None
                 and float(players[0].health) <= 0.0
                 and int(creature.target_player) == 1
             )
@@ -1138,14 +1145,20 @@ class CreaturePool:
                     creature_index=int(idx),
                     creature=creature,
                 )
-            player = players[0] if uses_dormant_target else players[target_player]
-            distance_player_pos = single_player_dead_target_pos if uses_dormant_target else player.pos
+            if uses_dormant_target:
+                assert single_player_dormant_target is not None
+                distance_player = single_player_dormant_target
+            else:
+                distance_player = players[target_player]
+            player = distance_player
+            distance_player_pos = distance_player.pos
             player_pos = player.pos
-            if single_player_dead_target_pos is not None and float(players[0].health) <= 0.0:
+            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
                 # Native calculates distance before redirecting creatures from
                 # the dead player to the dormant second-player position.
                 creature.target_player = 1
-                player_pos = single_player_dead_target_pos
+                player = single_player_dormant_target
+                player_pos = player.pos
 
             frozen_by_evil_eyes = idx in evil_targets
             if frozen_by_evil_eyes:

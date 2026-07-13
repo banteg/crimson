@@ -158,6 +158,7 @@ pub const CreaturePool = struct {
     demo_mode_active: bool = false,
     quest_fail_retry_count: i32 = 0,
     effects: ?*effects_mod.EffectPool = null,
+    single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
     spawn_slots: [max_creatures]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{
         .{
             .owner_creature = 0,
@@ -178,6 +179,7 @@ pub const CreaturePool = struct {
         self.demo_mode_active = false;
         self.quest_fail_retry_count = 0;
         self.effects = null;
+        self.single_player_dormant_target = .{ .index = 1, .pos = .{} };
         self.spawn_slot_count = 0;
     }
 
@@ -1974,15 +1976,12 @@ pub const CreaturePool = struct {
 
         const dt_ms = @max(@as(i32, 0), timing.ftolMsI32(dt));
         const player = &players[0];
-        const single_player_dead_target_pos: ?state_mod.Vec2 =
-            if (players.len == 1 and players[0].health <= 0.0)
-                .{
-                    .x = world_size * (27.0 / 64.0),
-                    .y = world_size * (27.0 / 64.0),
-                }
-            else
-                null;
-
+        if (players.len == 1) {
+            self.single_player_dormant_target.pos = .{
+                .x = world_size * (27.0 / 64.0),
+                .y = world_size * (27.0 / 64.0),
+            };
+        }
         for (&self.entries, 0..) |*creature, idx| {
             if (!creature.active) continue;
             if (state.bonuses.freeze > 0.0) continue;
@@ -2023,14 +2022,20 @@ pub const CreaturePool = struct {
                 creature.force_target = 0;
                 continue;
             }
-            const distance_player_pos = if (single_player_dead_target_pos) |dead_target|
-                if (creature.target_player == 1) dead_target else player.pos
+            const single_player_dormant_target: ?*state_mod.PlayerState =
+                if (players.len == 1 and players[0].health <= 0.0)
+                    &self.single_player_dormant_target
+                else
+                    null;
+            const distance_player_pos = if (single_player_dormant_target) |dormant_target|
+                if (creature.target_player == 1) dormant_target.pos else player.pos
             else
                 player.pos;
-            if (single_player_dead_target_pos != null) {
+            const contact_player = single_player_dormant_target orelse player;
+            if (single_player_dormant_target != null) {
                 creature.target_player = 1;
             }
-            const target_player_pos = if (single_player_dead_target_pos) |dead_target| dead_target else player.pos;
+            const target_player_pos = contact_player.pos;
             const ai_update = creatureAiUpdateTarget(
                 creature,
                 target_player_pos,
@@ -2269,7 +2274,7 @@ pub const CreaturePool = struct {
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
                     );
-                    creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+                    creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
                     emitDeathSideEffects(
@@ -2296,11 +2301,11 @@ pub const CreaturePool = struct {
                 creature.size > 16.0 and
                 contact_sq < 30.0 * 30.0 and
                 creature.attack_cooldown <= 0.0 and
-                player.health > 0.0 and
+                contact_player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
-                if (perkActive(player, PerkId.mr_melee)) {
+                if (perkActive(contact_player, PerkId.mr_melee)) {
                     _ = self.applyDamage(
                         state,
                         players,
@@ -2309,7 +2314,7 @@ pub const CreaturePool = struct {
                         idx,
                         25.0,
                         .{},
-                        owner_ref.OwnerRef.fromPlayer(@intCast(player.index)),
+                        owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index)),
                         dt_f32,
                         world_size,
                     );
@@ -2317,27 +2322,27 @@ pub const CreaturePool = struct {
                         tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                 }
-                if (player.shield_timer <= 0.0) {
-                    if (perkActive(player, PerkId.toxic_avenger)) {
+                if (contact_player.shield_timer <= 0.0) {
+                    if (perkActive(contact_player, PerkId.toxic_avenger)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.self_damage_tick_strong;
-                    } else if (perkActive(player, PerkId.veins_of_poison)) {
+                    } else if (perkActive(contact_player, PerkId.veins_of_poison)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                applyPlayerContactDamage(state, player, creature.contact_damage, dt_f32);
-                const push_delta = state_mod.Vec2.sub(player.pos, creature.pos);
+                applyPlayerContactDamage(state, contact_player, creature.contact_damage, dt_f32);
+                const push_delta = state_mod.Vec2.sub(contact_player.pos, creature.pos);
                 const push_len = push_delta.length();
                 if (push_len > 1e-6) {
                     const push_dir = push_delta.mul(1.0 / push_len);
-                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(player.pos, push_dir.mul(3.0)));
+                    _ = terrain_fx.decals.addRandom(state, state_mod.Vec2.add(contact_player.pos, push_dir.mul(3.0)));
                 } else {
-                    _ = terrain_fx.decals.addRandom(state, player.pos);
+                    _ = terrain_fx.decals.addRandom(state, contact_player.pos);
                 }
                 creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, contact_damage_cooldown);
             }
 
             if (state.bonuses.energizer <= 0.0 and
-                player.plaguebearer_active and
+                contact_player.plaguebearer_active and
                 creature.hp < 150.0 and
                 state.plaguebearer_infection_count < 0x32 and
                 contact_sq < 30.0 * 30.0)
@@ -6775,4 +6780,39 @@ test "single-player dead player uses dead-target AI position" {
     try std.testing.expectEqual(@as(f32, 513.7415771484375), creature.target.x);
     try std.testing.expectEqual(@as(f32, 432.0), creature.target.y);
     try expectFloatClose(0.0, players[0].health);
+}
+
+test "single-player dormant target receives creature contact" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 400.0, .y = 400.0 },
+            .health = 0.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 432.0, .y = 432.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 10.0,
+        .contact_damage = 10.0,
+    });
+
+    try pool.update(&state, players[0..], 1.0 / 60.0, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
+    try std.testing.expectEqual(@as(f32, 1.0), pool.entries[0].attack_cooldown);
+    try std.testing.expect(pool.single_player_dormant_target.health < 100.0);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].health);
 }

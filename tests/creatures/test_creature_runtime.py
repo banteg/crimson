@@ -647,7 +647,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.size = 45.0
     creature.contact_damage = 10.0
     creature.target_player = 0
-    creature.pos = Vec2(400.0, 400.0)
+    creature.pos = Vec2(432.0, 432.0)
 
     pool.update(
         1.0 / 60.0,
@@ -661,6 +661,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
     assert creature.target == expected_dead_target
+    assert creature.attack_cooldown == 1.0
     assert_float_close(dead_player.health, 0.0)
 
 
