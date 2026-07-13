@@ -5,6 +5,7 @@ import math
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
@@ -104,7 +105,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     proj = spawned[0]
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
-    assert_float_close(creature.attack_cooldown, 0.4)
+    assert creature.attack_cooldown == f32(0.4)
     assert result.sfx == (SfxId.PLASMAMINIGUN_FIRE,)
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN,

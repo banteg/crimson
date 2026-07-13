@@ -37,6 +37,7 @@ from ..math_parity import (
     f32,
     f32_vec2,
     heading_add_pi_f32,
+    x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_mul,
     x87_pc24_sin_mul,
@@ -553,7 +554,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             rng=ctx.rng,
         )
 
-    creature.attack_cooldown = float(creature.attack_cooldown) + 1.0
+    creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
     if mr_melee_killed:
         ctx.skip_creature = True
@@ -1318,7 +1319,7 @@ class CreaturePool:
                             hits_players=True,
                         )
                         sfx.append(SfxId.SHOCK_FIRE)
-                        creature.attack_cooldown += 1.0
+                        creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
                         projectile_type = ProjectileTemplateId(creature.orbit_radius)
@@ -1331,10 +1332,13 @@ class CreaturePool:
                             hits_players=True,
                         )
                         sfx.append(SfxId.PLASMAMINIGUN_FIRE)
-                        creature.attack_cooldown = (
-                            float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3) * 0.1
-                            + float(creature.orbit_angle)
-                            + float(creature.attack_cooldown)
+                        randomized_cooldown = x87_pc24_mul(
+                            float(rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN) & 3),
+                            f32(0.1),
+                        )
+                        creature.attack_cooldown = x87_pc24_add(
+                            x87_pc24_add(randomized_cooldown, f32(creature.orbit_angle)),
+                            f32(creature.attack_cooldown),
                         )
 
             interaction_ctx = _CreatureInteractionCtx(

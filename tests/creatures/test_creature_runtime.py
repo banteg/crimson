@@ -22,7 +22,7 @@ from crimson.creatures.spawn import (
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
@@ -511,6 +511,32 @@ def test_near_player_movement_rollback_is_stored_at_native_precision() -> None:
 
     assert creature.pos.x == f32(creature.pos.x)
     assert creature.pos.y == f32(creature.pos.y)
+
+
+def test_contact_cooldown_addition_is_stored_at_native_precision() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        health=100.0,
+        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
+    )
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.pos = Vec2(100.0, 100.0)
+    creature.attack_cooldown = f32(0.077)
+
+    dt = f32(0.084)
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+
+    expected = x87_pc24_add(x87_pc24_sub(f32(0.077), dt), f32(1.0))
+    assert creature.attack_cooldown == expected
 
 
 def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:

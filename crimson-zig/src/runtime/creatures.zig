@@ -2203,7 +2203,7 @@ pub const CreaturePool = struct {
                             @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
-                        creature.attack_cooldown = narrowF32(creature.attack_cooldown + 1.0);
+                        creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, @as(f32, 1.0));
                     }
 
                     if ((creature.flags & spawn_mod.CreatureFlags.ranged_attack_variant) != 0 and
@@ -2217,10 +2217,13 @@ pub const CreaturePool = struct {
                             projectile_type,
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
-                        creature.attack_cooldown = narrowF32(
-                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)) * 0.1 +
-                                creature.orbit_angle +
-                                creature.attack_cooldown,
+                        const randomized_cooldown = native_math.pc24Mul(
+                            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)),
+                            @as(f32, 0.1),
+                        );
+                        creature.attack_cooldown = native_math.pc24Add(
+                            native_math.pc24Add(randomized_cooldown, creature.orbit_angle),
+                            creature.attack_cooldown,
                         );
                     }
                 }
@@ -2321,7 +2324,7 @@ pub const CreaturePool = struct {
                 } else {
                     _ = terrain_fx.decals.addRandom(state, player.pos);
                 }
-                creature.attack_cooldown = narrowF32(creature.attack_cooldown + contact_damage_cooldown);
+                creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, contact_damage_cooldown);
             }
 
             if (state.bonuses.energizer <= 0.0 and
