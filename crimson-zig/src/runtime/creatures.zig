@@ -3165,14 +3165,13 @@ fn linkTargetF32(
 }
 
 fn distanceF32(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
-    const dx = narrowF32(b.x - a.x);
-    const dy = narrowF32(b.y - a.y);
-    // Native stores dx/dy into float locals, then computes dx*dx + dy*dy in x87
-    // precision and narrows only after sqrt.
-    const dx_f64 = @as(f64, @floatCast(dx));
-    const dy_f64 = @as(f64, @floatCast(dy));
-    const dist_sq = dx_f64 * dx_f64 + dy_f64 * dy_f64;
-    return narrowF32(std.math.sqrt(dist_sq));
+    const dx = native_math.pc24Sub(b.x, a.x);
+    const dy = native_math.pc24Sub(b.y, a.y);
+    const dist_sq = native_math.pc24Add(
+        native_math.pc24Mul(dx, dx),
+        native_math.pc24Mul(dy, dy),
+    );
+    return native_math.pc24Sqrt(dist_sq);
 }
 
 fn orbitTargetF32(
@@ -3181,18 +3180,34 @@ fn orbitTargetF32(
     dist: f32,
     scale: f32,
 ) state_mod.Vec2 {
-    const orbit_dist = narrowF32(narrowF32(dist) * narrowF32(scale));
+    const orbit_dist = narrowF32(dist);
+    const orbit_scale = narrowF32(scale);
     const phase = narrowF32(orbit_phase);
     const px = narrowF32(player_pos.x);
     const py = narrowF32(player_pos.y);
-    const orbit_x = narrowF32(math.cos(phase));
-    const orbit_y = narrowF32(math.sin(phase));
-    const orbit_x_dist = narrowF32(@as(f64, @floatCast(orbit_x)) * @as(f64, @floatCast(orbit_dist)));
-    const orbit_y_dist = narrowF32(@as(f64, @floatCast(orbit_y)) * @as(f64, @floatCast(orbit_dist)));
+    const orbit_x_dist = native_math.pc24Mul(
+        native_math.pc24Mul(std.math.cos(@as(f64, @floatCast(phase))), orbit_dist),
+        orbit_scale,
+    );
+    const orbit_y_dist = native_math.pc24Mul(
+        native_math.pc24Mul(std.math.sin(@as(f64, @floatCast(phase))), orbit_dist),
+        orbit_scale,
+    );
     return .{
-        .x = narrowF32(@as(f64, @floatCast(orbit_x_dist)) + @as(f64, @floatCast(px))),
-        .y = narrowF32(@as(f64, @floatCast(orbit_y_dist)) + @as(f64, @floatCast(py))),
+        .x = native_math.pc24Add(orbit_x_dist, px),
+        .y = native_math.pc24Add(orbit_y_dist, py),
     };
+}
+
+test "creature orbit target rounds each x87 operation" {
+    const creature_pos: state_mod.Vec2 = .{ .x = 50.46105194091797, .y = 510.7478332519531 };
+    const player_pos: state_mod.Vec2 = .{ .x = 328.4262390136719, .y = 588.0155639648438 };
+    const distance = distanceF32(creature_pos, player_pos);
+    const target = orbitTargetF32(player_pos, 0.0, distance, 0.85);
+
+    try std.testing.expectEqual(@as(f32, 288.5046691894531), distance);
+    try std.testing.expectEqual(@as(f32, 573.6552124023438), target.x);
+    try std.testing.expectEqual(@as(f32, 588.0155639648438), target.y);
 }
 
 fn headingFromDeltaF32(dx: f32, dy: f32) f32 {
