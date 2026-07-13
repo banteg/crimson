@@ -10,9 +10,10 @@ hooks = [
     { id = "sg-scan", name = "sg-scan", entry = "sg scan", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|tools/ast-grep/|sgconfig.*\\.yml|justfile)" },
     { id = "sg-test", name = "sg-test", entry = "sg test", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(tools/ast-grep/|sgconfig.*\\.yml|justfile)" },
     { id = "zig-lint", name = "zig-lint", entry = "ziglint", language = "system", stages = ["pre-commit"], files = "^crimson-zig/(src/.*\\.zig|build\\.zig)$", priority = 260 },
-    { id = "py-pytest", name = "py-pytest", entry = "uv run pytest --no-cov", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(src/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
+    # Slow matrix gates stay available explicitly and run in CI/`just check`.
+    { id = "py-pytest", name = "py-pytest", entry = "uv run pytest --no-cov", language = "system", pass_filenames = false, stages = ["manual"], files = "^(src/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "py-build", name = "py-build", entry = "uv build", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(src/|pyproject\\.toml|uv\\.lock|readme\\.md|justfile)" },
     { id = "zig-test", name = "zig-test", entry = "bash -uc 'cd crimson-zig && zig build test --summary all'", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^crimson-zig/", priority = 300 },
-    { id = "zig-release", name = "zig-release", entry = "bash -uc 'cd crimson-zig && zig build -Doptimize=ReleaseFast'", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^crimson-zig/", priority = 310 },
-    { id = "zig-wasm", name = "zig-wasm", entry = "bash -uc 'cd crimson-zig && zig build wasm'", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^crimson-zig/", priority = 320 },
+    { id = "zig-release", name = "zig-release", entry = "bash -uc 'cd crimson-zig && zig build -Doptimize=ReleaseFast'", language = "system", pass_filenames = false, stages = ["manual"], files = "^crimson-zig/", priority = 310 },
+    { id = "zig-wasm", name = "zig-wasm", entry = "bash -uc 'cd crimson-zig && zig build wasm'", language = "system", pass_filenames = false, stages = ["manual"], files = "^crimson-zig/", priority = 320 },
 ]
