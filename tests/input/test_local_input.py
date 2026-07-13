@@ -376,7 +376,7 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     assert out.reload_pressed is True
     assert out.move_to_cursor_pressed is True
     assert interpreter._states[0].move_target == mouse_world
-    expected = (mouse_world - player.pos).normalized()
+    expected, _distance = (mouse_world - player.pos).normalized_with_length()
     assert_float_close(float(out.move.x), float(expected.x))
     assert_float_close(float(out.move.y), float(expected.y))
 
@@ -427,7 +427,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
         creatures=creatures,
     )
 
-    expected = (Vec2(512.0, 512.0) - player.pos).normalized()
+    expected, _distance = (Vec2(512.0, 512.0) - player.pos).normalized_with_length()
     assert_float_close(float(out.move.x), float(expected.x))
     assert_float_close(float(out.move.y), float(expected.y))
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
@@ -55,8 +56,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 5
     intensities = [entry.intensity for entry in particles]
-    for actual, expected in zip(intensities, (0.8, 0.6, 0.4, 0.3, 0.2)):
-        assert_float_close(actual, expected)
+    assert intensities == [f32(value) for value in (0.8, 0.6, 0.4, 0.3, 0.2)]
     assert [record.caller for record in rng.records_since()] == [
         *_PYROKINETIC_BURST_CALLERS,
         *_FX_QUEUE_CALLERS,

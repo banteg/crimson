@@ -7,7 +7,7 @@ from crimson.gameplay import (
     survival_update_weapon_handouts,
 )
 from crimson.sim.state_types import PlayerState
-from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
@@ -96,6 +96,7 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
 
 def test_creature_handle_death_tracks_survival_recent_death_samples() -> None:
     state = GameplayState()
+    prepare_weapon_availability(state)
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     pool = CreaturePool()
     state.survival_reward_fire_seen = True
