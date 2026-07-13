@@ -489,7 +489,8 @@ typedef struct fx_queue_entry_t {
 } fx_queue_entry_t;
 
 typedef struct sprite_effect_t {
-    int active;
+    unsigned char active;
+    unsigned char _pad0[3];
     float color_r;
     float color_g;
     float color_b;

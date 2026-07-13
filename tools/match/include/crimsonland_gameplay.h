@@ -164,6 +164,7 @@ extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
 extern secondary_projectile_pool_t secondary_projectile_pool;
 extern particle_t particle_pool[];
+extern sprite_effect_t sprite_effect_pool[];
 extern creature_t creature_pool[];
 extern creature_spawn_slot_t creature_spawn_slot_table[];
 extern bonus_pool_t bonus_pool;
