@@ -855,14 +855,17 @@ fn emitProjectileTypeHitEffects(
             if (detail_preset < 3) count = @divTrunc(count, 2);
             var idx: i32 = 0;
             while (idx < count) : (idx += 1) {
+                const rotation = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_rotation) & 0x7f)) * 0.049087387;
+                const vel: state_mod.Vec2 = .{
+                    .x = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_x) & 0x7f)) - 64.0) * burst * 1.4,
+                    .y = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_y) & 0x7f)) - 64.0) * burst * 1.4,
+                };
+                const scale_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_scale_step) % 100)) * 0.01 + 0.1) * burst;
                 _ = effects.spawn(
                     @intFromEnum(effects_mod.EffectId.burst),
                     pos,
-                    .{
-                        .x = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_x) & 0x7f)) - 64.0) * burst * 1.4,
-                        .y = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_vel_y) & 0x7f)) - 64.0) * burst * 1.4,
-                    },
-                    @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_rotation) & 0x7f)) * 0.049087387,
+                    vel,
+                    rotation,
                     1.0,
                     burst * 32.0,
                     burst * 32.0,
@@ -871,7 +874,7 @@ fn emitProjectileTypeHitEffects(
                     0x1D,
                     .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
                     0.0,
-                    (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.ion_hit_spark_scale_step) % 100)) * 0.01 + 0.1) * burst,
+                    scale_step,
                     detail_preset,
                 );
             }
@@ -1123,6 +1126,15 @@ test "ion and plasma hit rings use native small impact geometry" {
     var state = state_mod.GameplayState.init(1);
     var effects: effects_mod.EffectPool = .{};
     const pos: state_mod.Vec2 = .{ .x = 100.0, .y = 120.0 };
+    var expected_rng = state.rng;
+    const burst: f32 = 1.2 * 0.8;
+    const expected_rotation = @as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) * 0.049087387;
+    const expected_vel: state_mod.Vec2 = .{
+        .x = (@as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+        .y = (@as(f32, @floatFromInt(expected_rng.rand() & 0x7f)) - 64.0) * burst * 1.4,
+    };
+    const expected_scale_step = (@as(f32, @floatFromInt(expected_rng.rand() % 100)) * 0.01 + 0.1) * burst;
+    for (0..12) |_| _ = expected_rng.rand();
 
     emitProjectileTypeHitEffects(
         &state,
@@ -1145,6 +1157,12 @@ test "ion and plasma hit rings use native small impact geometry" {
     try expectFloatClose(0.0, ion_ring.?.age);
     try expectFloatClose(0.32, ion_ring.?.lifetime);
     try expectFloatClose(54.0, ion_ring.?.scale_step);
+    const first_spark = effects.entries[1];
+    try expectFloatClose(expected_rotation, first_spark.rotation);
+    try expectFloatClose(expected_vel.x, first_spark.vel.x);
+    try expectFloatClose(expected_vel.y, first_spark.vel.y);
+    try expectFloatClose(expected_scale_step, first_spark.scale_step);
+    try std.testing.expectEqual(expected_rng.state, state.rng.state);
 
     effects.reset();
     emitProjectileTypeHitEffects(
