@@ -980,7 +980,15 @@ fn perkCanOffer(
     game_mode: GameModeId,
     player_count: i32,
 ) bool {
-    _ = state;
+    if (game_mode == .quests and
+        state.hardcore and
+        state.quest_stage_major == 2 and
+        state.quest_stage_minor == 10 and
+        (perk_id == .poison_bullets or perk_id == .veins_of_poison or perk_id == .plaguebearer))
+    {
+        return false;
+    }
+
     const flags = perkFlags(perk_id);
     if (game_mode == .quests and !flags.contains(.quest_mode_allowed)) {
         return false;
@@ -1087,6 +1095,24 @@ test "antiperk is excluded by availability rather than offer predicate" {
         1,
     ));
     try std.testing.expect(!buildPerkAvailabilityForUnlockIndex(0).contains(.antiperk));
+}
+
+test "hardcore quest 2-10 blocks poison perks" {
+    var state = state_mod.GameplayState.init(1);
+    const player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+    };
+    state.hardcore = true;
+    state.quest_stage_major = 2;
+    state.quest_stage_minor = 10;
+
+    try std.testing.expect(!perkCanOffer(&state, &player, .poison_bullets, .quests, 1));
+    try std.testing.expect(!perkCanOffer(&state, &player, .veins_of_poison, .quests, 1));
+    try std.testing.expect(!perkCanOffer(&state, &player, .plaguebearer, .quests, 1));
+
+    state.quest_stage_minor = 9;
+    try std.testing.expect(perkCanOffer(&state, &player, .poison_bullets, .quests, 1));
 }
 
 test "perk availability rebuild clears stale state at the same unlock index" {
