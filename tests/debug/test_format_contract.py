@@ -68,6 +68,15 @@ def test_frida_agent_reads_native_time_scale_latch() -> None:
     assert "const timingEntryActive = _timeScaleActiveFromGlobals(beforeGlobals);" in source
 
 
+def test_frida_agent_reads_byte_sized_creature_force_target() -> None:
+    source = (Path(__file__).parents[2] / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
+
+    assert source.count("force_target: safeReadU8(base.add(0x4c))") == 2
+    assert "const forceTarget = safeReadU8(base.add(0x4c));" in source
+    assert "force_target: safeReadS32(base.add(0x4c))" not in source
+    assert "const forceTarget = safeReadS32(base.add(0x4c));" not in source
+
+
 def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:
     root = Path(__file__).parents[2]
     source = (root / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()

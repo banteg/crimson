@@ -89,14 +89,17 @@ _RESIDUE_F32_FIELDS = (
 _RESIDUE_I32_FIELDS = (
     "index",
     "phase_seed",
-    "state_flag",
-    "collision_flag",
-    "force_target",
     "type_id",
     "target_player",
     "link_index",
     "flags",
     "ai_mode",
+)
+
+_RESIDUE_U8_FIELDS = (
+    "state_flag",
+    "collision_flag",
+    "force_target",
 )
 
 
@@ -314,6 +317,13 @@ def _canonical_residue(
             getattr(value, name),
             low=-(1 << 31),
             high=(1 << 31) - 1,
+            field=f"{field}.{name}",
+        )
+    for name in _RESIDUE_U8_FIELDS:
+        replacements[name] = _require_int_range(
+            getattr(value, name),
+            low=0,
+            high=0xFF,
             field=f"{field}.{name}",
         )
     replacements["orbit_radius_u32"] = _require_int_range(

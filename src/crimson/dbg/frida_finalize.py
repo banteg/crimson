@@ -584,6 +584,13 @@ def _residue_int(value: int | None, *, field: str) -> int:
     return int(value)
 
 
+def _residue_u8(value: int | None, *, field: str) -> int:
+    integer = _residue_int(value, field=field)
+    if not (0 <= integer <= 0xFF):
+        raise FridaFinalizeError(f"{field} must be an unsigned byte in the pool residue snapshot")
+    return integer
+
+
 def _residue_vec2(row: _CaptureVec2Row, *, field: str) -> ReplayVec2:
     return ReplayVec2(
         x=_residue_float(row.x, field=f"{field}.x"),
@@ -608,8 +615,8 @@ def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tupl
             ReplayCreatureSlotResidue(
                 index=i,
                 phase_seed=_residue_int(row.phase_seed, field=f"{slot_field}.phase_seed"),
-                state_flag=_residue_int(row.state_flag, field=f"{slot_field}.state_flag"),
-                collision_flag=_residue_int(row.collision_flag, field=f"{slot_field}.collision_flag"),
+                state_flag=_residue_u8(row.state_flag, field=f"{slot_field}.state_flag"),
+                collision_flag=_residue_u8(row.collision_flag, field=f"{slot_field}.collision_flag"),
                 collision_timer=_residue_float(row.collision_timer, field=f"{slot_field}.collision_timer"),
                 lifecycle_stage=_residue_float(row.lifecycle_stage, field=f"{slot_field}.lifecycle_stage"),
                 pos=_residue_vec2(row.pos, field=f"{slot_field}.pos"),
@@ -624,7 +631,7 @@ def _pool_residue_from_run_start(run_start: _RunStartRow, *, field: str) -> tupl
                 tint_g=_residue_float(row.tint.g, field=f"{slot_field}.tint.g"),
                 tint_b=_residue_float(row.tint.b, field=f"{slot_field}.tint.b"),
                 tint_a=_residue_float(row.tint.a, field=f"{slot_field}.tint.a"),
-                force_target=_residue_int(row.force_target, field=f"{slot_field}.force_target"),
+                force_target=_residue_u8(row.force_target, field=f"{slot_field}.force_target"),
                 target=_residue_vec2(row.target, field=f"{slot_field}.target"),
                 contact_damage=_residue_float(row.contact_damage, field=f"{slot_field}.contact_damage"),
                 move_speed=_residue_float(row.move_speed, field=f"{slot_field}.move_speed"),

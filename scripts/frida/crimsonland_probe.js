@@ -726,7 +726,7 @@ function readCreature(idx) {
     size_f32: tryReadFloat(b.add(0x34)),
     hit_flash_timer_f32: tryReadFloat(b.add(0x38)),
     tint: [tryReadFloat(b.add(0x3c)), tryReadFloat(b.add(0x40)), tryReadFloat(b.add(0x44)), tryReadFloat(b.add(0x48))],
-    force_target_i32: tryReadS32(b.add(0x4c)),
+    force_target_u8: tryReadU8(b.add(0x4c)),
     target: [tryReadFloat(b.add(0x50)), tryReadFloat(b.add(0x54))],
     contact_damage_f32: tryReadFloat(b.add(0x58)),
     move_speed_f32: tryReadFloat(b.add(0x5c)),

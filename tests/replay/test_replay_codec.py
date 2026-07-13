@@ -350,6 +350,24 @@ def test_replay_load_rejects_float_phase_seed() -> None:
         load_replay(_dump_wire(replay_obj))
 
 
+@pytest.mark.parametrize("field", ["state_flag", "collision_flag", "force_target"])
+@pytest.mark.parametrize("value", [-1, 256])
+def test_replay_rejects_pool_byte_out_of_range(field: str, value: int) -> None:
+    header = ReplayHeader(
+        game_mode_id=GameMode.SURVIVAL,
+        seed=1,
+        player_count=1,
+        initial_creature_pool=(
+            msgspec.structs.replace(ReplayCreatureSlotResidue(index=0), **{field: value}),
+        ),
+    )
+    recorder = ReplayRecorder(header)
+    recorder.record_tick([PlayerInput()])
+
+    with pytest.raises(ReplayCodecError, match=field):
+        dump_replay(recorder.finish())
+
+
 def test_replay_load_rejects_plain_msgpack_bytes() -> None:
     header = ReplayHeader(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=1)
     rec = ReplayRecorder(header)

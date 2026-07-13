@@ -3359,7 +3359,7 @@ function readCreatureSlotResidue(index) {
       b: captureNumber(safeReadF32(base.add(0x44))),
       a: captureNumber(safeReadF32(base.add(0x48))),
     },
-    force_target: safeReadS32(base.add(0x4c)),
+    force_target: safeReadU8(base.add(0x4c)),
     target: {
       x: captureNumber(safeReadF32(base.add(0x50))),
       y: captureNumber(safeReadF32(base.add(0x54))),
@@ -3426,7 +3426,7 @@ function readCreatureEntry(index) {
     ai_mode: safeReadS32(base.add(0x90)),
     heading: captureNumber(safeReadF32(base.add(0x2c))),
     target_heading: captureNumber(safeReadF32(base.add(0x30))),
-    force_target: safeReadS32(base.add(0x4c)),
+    force_target: safeReadU8(base.add(0x4c)),
     target: {
       x: captureNumber(safeReadF32(base.add(0x50))),
       y: captureNumber(safeReadF32(base.add(0x54))),
@@ -3521,7 +3521,7 @@ function _readCreatureMicroState(index) {
   const velY = safeReadF32(base.add(0x20));
   const heading = safeReadF32(base.add(0x2c));
   const targetHeading = safeReadF32(base.add(0x30));
-  const forceTarget = safeReadS32(base.add(0x4c));
+  const forceTarget = safeReadU8(base.add(0x4c));
   const targetX = safeReadF32(base.add(0x50));
   const targetY = safeReadF32(base.add(0x54));
   const moveSpeed = safeReadF32(base.add(0x5c));

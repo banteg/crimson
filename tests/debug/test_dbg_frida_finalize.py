@@ -1405,6 +1405,18 @@ def test_finalize_frida_jsonl_to_traces_rejects_active_pool_residue_slot(tmp_pat
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
+def test_finalize_frida_jsonl_to_traces_rejects_non_byte_force_target(tmp_path: Path) -> None:
+    run_start = _run_start_row(run_id=1, mode_id=1, seed=91, player_count=1, rng_state_before_bootstrap=777)
+    run_start["pool_residue"] = [_pool_residue_slot_stub(0, force_target=0x100)]
+    raw_path = _write_jsonl(
+        tmp_path / "capture.jsonl",
+        [_current_session_start_row(), run_start],
+    )
+
+    with pytest.raises(FridaFinalizeError, match=r"force_target must be an unsigned byte"):
+        finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
+
+
 def test_finalize_frida_jsonl_to_traces_rejects_trimmed_entity_samples(tmp_path: Path) -> None:
     config = _session_config_stub()
     config["creature_sample_limit"] = 64

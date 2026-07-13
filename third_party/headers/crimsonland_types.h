@@ -343,7 +343,8 @@ typedef struct creature_t {
     float tint_g;
     float tint_b;
     float tint_a;
-    int force_target;
+    unsigned char force_target;
+    unsigned char _pad_force_target[3];
     float target_x;
     float target_y;
     float contact_damage;
