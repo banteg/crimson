@@ -34,6 +34,10 @@ pub inline fn pc24Sqrt(value: anytype) f32 {
     return roundF32(std.math.sqrt(@as(f64, @floatCast(value))));
 }
 
+pub inline fn pc24Hypot(x: anytype, y: anytype) f32 {
+    return pc24Sqrt(pc24Add(pc24Mul(x, x), pc24Mul(y, y)));
+}
+
 pub inline fn sinNative(value: f32) f32 {
     return @floatCast(std.math.sin(@as(f64, @floatCast(value))));
 }

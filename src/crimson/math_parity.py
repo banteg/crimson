@@ -23,6 +23,7 @@ __all__ = [
     "x87_fpatan",
     "x87_pc24_cos_mul",
     "x87_pc24_div",
+    "x87_pc24_hypot",
     "x87_pc24_mul",
     "x87_pc24_mul_chain",
     "x87_pc24_sqrt",
@@ -87,6 +88,17 @@ def x87_pc24_sqrt(value: float) -> float:
     """Square-root using the game's x87 24-bit significand precision."""
 
     return f32(math.sqrt(float(value)))
+
+
+def x87_pc24_hypot(x: float, y: float) -> float:
+    """Evaluate ``sqrt(x*x + y*y)`` with PC=24 rounding per operation."""
+
+    return x87_pc24_sqrt(
+        x87_pc24_add(
+            x87_pc24_mul(x, x),
+            x87_pc24_mul(y, y),
+        ),
+    )
 
 
 def x87_pc24_mul_chain(first: float, *factors: float) -> float:

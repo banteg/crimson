@@ -387,3 +387,26 @@ def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
     # Native compares plain distances against a 1e6 seed, so targets farther
     # than 1000 units (offscreen spawns) are still acquired.
     assert _creature_find_nearest_for_secondary(creatures=creatures, origin=Vec2(0.0, 0.0)) == 2
+
+
+def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
+    from crimson.projectiles.runtime.collision import _creature_find_nearest_for_secondary
+
+    creatures = [
+        CreatureState(
+            active=True,
+            hp=10.0,
+            lifecycle_stage=16.0,
+            pos=Vec2(-631.7838745117188, -249.09634399414062),
+        ),
+        CreatureState(
+            active=True,
+            hp=10.0,
+            lifecycle_stage=16.0,
+            pos=Vec2(-627.4663696289062, -259.78033447265625),
+        ),
+    ]
+
+    # A host-double squared-distance compare chooses slot 0; native narrows the
+    # x87 fsqrt result and slot 1 is strictly closer at that precision.
+    assert _creature_find_nearest_for_secondary(creatures=creatures, origin=Vec2()) == 1

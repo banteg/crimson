@@ -111,7 +111,7 @@ pub const SecondaryProjectilePool = struct {
         if (type_id == SecondaryProjectileTypeId.homing_rocket) {
             if (creatures) |pool| {
                 const origin = target_hint orelse pos;
-                entry.target_id = @intCast(creatureFindNearestAlive(pool, origin));
+                entry.target_id = @intCast(creatureFindNearestSeekerTarget(pool, origin));
             } else if (target_hint) |hint| {
                 entry.target_hint_active = true;
                 entry.target_hint = .{
@@ -297,7 +297,7 @@ pub const SecondaryProjectilePool = struct {
                         entry.target_hint_active = false;
                         search_pos = entry.target_hint;
                     }
-                    const nearest = creatureFindNearestAlive(creatures, search_pos);
+                    const nearest = creatureFindNearestSeekerTarget(creatures, search_pos);
                     entry.target_id = @intCast(nearest);
                     target_id = entry.target_id;
                 }
@@ -542,25 +542,44 @@ fn directionTo(origin: state_mod.Vec2, target: state_mod.Vec2) state_mod.Vec2 {
     };
 }
 
-fn creatureFindNearestAlive(
+fn creatureFindNearestSeekerTarget(
     creatures: *const creatures_mod.CreaturePool,
     origin: state_mod.Vec2,
 ) usize {
     var best_idx: usize = 0;
-    // Native seeds best with 1e6 and compares plain distances, so the search
-    // is effectively unbounded on a 1024 map; square it for the squared compare.
-    var best_dist_sq: f32 = 1e12;
+    var best_distance: f32 = 1_000_000.0;
     const limit: usize = @min(creatures.entries.len, 0x180);
     for (creatures.entries[0..limit], 0..) |creature, idx| {
         if (!creature.active) continue;
         if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
-        const dist_sq = runtime_helpers.distanceSqRoundedF32(origin, creature.pos);
-        if (dist_sq < best_dist_sq) {
-            best_dist_sq = dist_sq;
+        const dx = native_math.pc24Sub(origin.x, creature.pos.x);
+        const dy = native_math.pc24Sub(origin.y, creature.pos.y);
+        const distance = native_math.pc24Hypot(dx, dy);
+        if (distance < best_distance) {
+            best_distance = distance;
             best_idx = idx;
         }
     }
     return best_idx;
+}
+
+test "nearest seeker target compares stored x87 pc24 distances" {
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .lifecycle_stage = creature_lifecycle.alive,
+        .pos = .{ .x = -631.7838745117188, .y = -249.09634399414062 },
+    };
+    creatures.entries[1] = .{
+        .active = true,
+        .lifecycle_stage = creature_lifecycle.alive,
+        .pos = .{ .x = -627.4663696289062, .y = -259.78033447265625 },
+    };
+
+    try std.testing.expectEqual(
+        @as(usize, 1),
+        creatureFindNearestSeekerTarget(&creatures, .{}),
+    );
 }
 
 test "homing rocket spawn preserves native trig store order" {

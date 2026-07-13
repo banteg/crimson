@@ -29,11 +29,7 @@ pub fn withinNativeFindRadius(
 ) bool {
     const dx = native_math.pc24Sub(target.x, origin.x);
     const dy = native_math.pc24Sub(target.y, origin.y);
-    const distance_sq = native_math.pc24Add(
-        native_math.pc24Mul(dx, dx),
-        native_math.pc24Mul(dy, dy),
-    );
-    const distance = native_math.pc24Sqrt(distance_sq);
+    const distance = native_math.pc24Hypot(dx, dy);
     const distance_outside_radius = native_math.pc24Sub(distance, radius);
     const size_margin = native_math.pc24Add(
         native_math.pc24Mul(target_size, @as(f32, 0.14285715)),

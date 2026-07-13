@@ -8,7 +8,7 @@ from grim.geom import Vec2
 from ...collision_math import native_find_size_margin
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.lifecycle import creature_lifecycle_is_alive
-from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sqrt, x87_pc24_sub
+from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ...owner_ref import OwnerRef
 
 if TYPE_CHECKING:
@@ -32,11 +32,7 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
 
     dx = x87_pc24_sub(f32(target.x), f32(origin.x))
     dy = x87_pc24_sub(f32(target.y), f32(origin.y))
-    distance_sq = x87_pc24_add(
-        x87_pc24_mul(dx, dx),
-        x87_pc24_mul(dy, dy),
-    )
-    distance = x87_pc24_sqrt(distance_sq)
+    distance = x87_pc24_hypot(dx, dy)
     distance_outside_radius = x87_pc24_sub(distance, f32(radius))
     size_margin = native_find_size_margin(float(target_size))
     return distance_outside_radius < size_margin
@@ -51,9 +47,7 @@ def _creature_find_nearest_for_secondary(
     """Port of `creature_find_nearest(origin, -1, 0.0)` for homing secondary targets."""
 
     best_idx = 0 if preserve_bugs else -1
-    # Native seeds best with 1e6 and compares plain distances, so the search is
-    # effectively unbounded on a 1024 map; square it for the squared compare.
-    best_dist_sq = 1e12
+    best_distance = f32(1_000_000.0)
     max_index = min(len(creatures), 0x180)
     for idx in range(max_index):
         creature = creatures[idx]
@@ -61,9 +55,11 @@ def _creature_find_nearest_for_secondary(
             continue
         if not creature_lifecycle_is_alive(creature.lifecycle_stage):
             continue
-        dist_sq = Vec2.distance_sq(origin, creature.pos)
-        if dist_sq < best_dist_sq:
-            best_dist_sq = dist_sq
+        dx = x87_pc24_sub(f32(origin.x), f32(creature.pos.x))
+        dy = x87_pc24_sub(f32(origin.y), f32(creature.pos.y))
+        distance = x87_pc24_hypot(dx, dy)
+        if distance < best_distance:
+            best_distance = distance
             best_idx = idx
     return best_idx
 
