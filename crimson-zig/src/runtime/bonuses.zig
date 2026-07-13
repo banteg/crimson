@@ -628,18 +628,33 @@ fn applyNukeBonus(
     bullet_count += 4;
     var bullet_idx: i32 = 0;
     while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)) * 0.01;
+        const angle = native_math.pc24Mul(
+            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)),
+            @as(f32, 0.01),
+        );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-        const speed_scale = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)) * 0.01 + 0.5;
-        projectiles.entries[proj_idx].speed_scale *= narrowF32(speed_scale);
+        const speed_scale = native_math.pc24Add(
+            native_math.pc24Mul(
+                @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)),
+                @as(f32, 0.01),
+            ),
+            @as(f32, 0.5),
+        );
+        projectiles.entries[proj_idx].speed_scale = native_math.pc24Mul(
+            projectiles.entries[proj_idx].speed_scale,
+            speed_scale,
+        );
     }
 
     for (0..2) |gauss_idx| {
         const angle_caller = if (gauss_idx == 0) rng_callers.bonus_apply_nuke_gauss_angle_1 else rng_callers.bonus_apply_nuke_gauss_angle_2;
-        const angle = @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)) * 0.01;
+        const angle = native_math.pc24Mul(
+            @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)),
+            @as(f32, 0.01),
+        );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
         applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
@@ -654,12 +669,17 @@ fn applyNukeBonus(
 
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
-        const dx = creature.pos.x - origin.x;
-        const dy = creature.pos.y - origin.y;
+        const dx = native_math.pc24Sub(creature.pos.x, origin.x);
+        const dy = native_math.pc24Sub(creature.pos.y, origin.y);
         if (@abs(dx) > 256.0 or @abs(dy) > 256.0) continue;
-        const dist = std.math.sqrt(dx * dx + dy * dy);
-        if (dist >= 256.0) continue;
-        const damage = (256.0 - dist) * 5.0;
+        const distance_sq = native_math.pc24Add(
+            native_math.pc24Mul(dx, dx),
+            native_math.pc24Mul(dy, dy),
+        );
+        const distance = native_math.pc24Sqrt(distance_sq);
+        const damage_base = native_math.pc24Sub(@as(f32, 256.0), distance);
+        if (!(damage_base > 0.0)) continue;
+        const damage = native_math.pc24Mul(damage_base, @as(f32, 5.0));
         const xp = creatures.applyExplosionDamage(
             state,
             players,
