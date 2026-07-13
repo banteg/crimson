@@ -236,6 +236,34 @@ def test_match_function_audits_compiler_string_by_content() -> None:
     assert result.masked_operand_audit.ok_count == 1
 
 
+def test_match_function_audits_compiler_float_by_content() -> None:
+    mapped = bytearray(0x10000)
+    mapped[0x2000:0x2004] = bytes.fromhex("000000b4")
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("d90500000000c3"),
+        relocation_offsets=frozenset({2}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=2,
+                symbol_name="__real@b4000000",
+                key=None,
+                explained=False,
+                symbol_data=bytes.fromhex("000000b4"),
+            ),
+        ),
+    )
+    result = match_function(
+        bytes.fromhex("d90500204000c3"),
+        candidate,
+        image=LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped)),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+
 def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyPatch) -> None:
     target_reference = MaskedReference(
         operand_index=0,

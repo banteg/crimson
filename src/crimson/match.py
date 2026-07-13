@@ -688,6 +688,7 @@ def disassemble_normalized_function(
         *,
         operand_index: int,
         kind: str,
+        byte_count: int,
     ) -> MaskedReference:
         if reference is None:
             return MaskedReference(
@@ -705,8 +706,8 @@ def disassemble_normalized_function(
         if reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
             keys = (string_key,)
             explained = True
-        elif reference.symbol_name.startswith("__real@4") and len(symbol_data) >= 4:
-            keys = (f"bytes4:{symbol_data[:4].hex()}",)
+        elif reference.symbol_name.startswith("__real@") and len(symbol_data) >= byte_count:
+            keys = (f"bytes{byte_count}:{symbol_data[:byte_count].hex()}",)
             explained = True
         elif reference_catalog is not None:
             if reference_catalog.knows_name(reference.symbol_name):
@@ -738,8 +739,8 @@ def disassemble_normalized_function(
             available = image.mapped[value - image.image_base :] if image.image_base <= value else b""
             if string_key := _printable_string_key(available):
                 keys.append(string_key)
-            if byte_count == 4 and (raw := _image_bytes(image, value, 4)) is not None:
-                keys.append(f"bytes4:{raw.hex()}")
+            if byte_count is not None and (raw := _image_bytes(image, value, byte_count)) is not None:
+                keys.append(f"bytes{byte_count}:{raw.hex()}")
         names = reference_catalog.names_by_address.get(value, ()) if reference_catalog is not None else ()
         return MaskedReference(
             operand_index=operand_index,
@@ -789,7 +790,12 @@ def disassemble_normalized_function(
                 if imm_masked:
                     operands.append("ADDR")
                     masked_references.append(
-                        object_reference(imm_relocation, operand_index=operand_index, kind="imm"),
+                        object_reference(
+                            imm_relocation,
+                            operand_index=operand_index,
+                            kind="imm",
+                            byte_count=operand.size,
+                        ),
                     )
                 elif is_branch and 0 <= target_offset < size:
                     operands.append(f"L{target_offset:x}")
@@ -803,7 +809,12 @@ def disassemble_normalized_function(
                 operands.append(_format_memory_operand(insn, operand, masked))
                 if disp_masked:
                     masked_references.append(
-                        object_reference(disp_relocation, operand_index=operand_index, kind="disp"),
+                        object_reference(
+                            disp_relocation,
+                            operand_index=operand_index,
+                            kind="disp",
+                            byte_count=operand.size,
+                        ),
                     )
                 elif is_masked_value(operand.mem.disp):
                     masked_references.append(
