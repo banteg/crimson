@@ -2010,6 +2010,7 @@ pub const CreaturePool = struct {
                     world_size,
                 );
                 if (!(creature.hp > 0.0)) {
+                    tickAi7LinkTimer(creature, dt_ms, &state.rng);
                     if (creature.active) {
                         tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
@@ -5621,6 +5622,38 @@ test "self damage product stores native precision" {
     const damage = native_math.pc24Mul(dt, @as(f32, 60.0));
     const expected = native_math.pc24Sub(@as(f32, 8.0), damage);
     try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].hp)));
+}
+
+test "lethal self damage still advances ai7 link timer" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .health = 100.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .spider_sp1,
+        .flags = spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.ai7_link_timer,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 2.0,
+        .max_health = 2.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].link_index = -1473;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    try std.testing.expect(pool.entries[0].hp <= 0.0);
+    try std.testing.expectEqual(@as(i32, -1373), pool.entries[0].link_index);
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {
