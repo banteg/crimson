@@ -28,7 +28,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 66.17% | 1/131 | 7/0/1 |  | gameplay-movement |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
-| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 72.22% | 7/89 | 3/0/1 |  | gameplay-target-search |
+| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 74.44% | 7/89 | 3/0/1 |  | gameplay-target-search |
 | wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 66/65 | 91.60% | 35/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 67.21% | 0/126 | 11/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
