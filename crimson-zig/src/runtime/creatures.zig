@@ -3714,10 +3714,10 @@ fn tickDead(
 fn selfDamageTickAmount(flags: u32, dt: f32) f32 {
     if (!(dt > 0.0)) return 0.0;
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick_strong) != 0) {
-        return narrowF32(dt * 180.0);
+        return native_math.pc24Mul(dt, @as(f32, 180.0));
     }
     if ((flags & spawn_mod.CreatureFlags.self_damage_tick) != 0) {
-        return narrowF32(dt * 60.0);
+        return native_math.pc24Mul(dt, @as(f32, 60.0));
     }
     return 0.0;
 }
@@ -5517,6 +5517,41 @@ test "toxic avenger strong self-damage tick overrides weak tick" {
 
     try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
     try expectFloatClose(82.0, pool.entries[0].hp);
+}
+
+test "self damage product stores native precision" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0.0,
+        .type_id = .alien,
+        .flags = spawn_mod.CreatureFlags.self_damage_tick,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 8.0,
+        .max_health = 8.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+
+    const dt: f32 = 0.09800000488758087;
+    try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    const damage = native_math.pc24Mul(dt, @as(f32, 60.0));
+    const expected = native_math.pc24Sub(@as(f32, 8.0), damage);
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].hp)));
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {

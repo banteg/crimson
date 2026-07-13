@@ -38,6 +38,7 @@ from ..math_parity import (
     f32_vec2,
     heading_add_pi_f32,
     x87_pc24_cos_mul,
+    x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
@@ -988,9 +989,9 @@ class CreaturePool:
             damage_amount = 0.0
             creature_flags = int(creature.flags)
             if (creature_flags & _FLAG_SELF_DAMAGE_TICK_STRONG) != 0:
-                damage_amount = dt * 180.0
+                damage_amount = x87_pc24_mul(dt, 180.0)
             elif (creature_flags & _FLAG_SELF_DAMAGE_TICK) != 0:
-                damage_amount = dt * 60.0
+                damage_amount = x87_pc24_mul(dt, 60.0)
             if damage_amount <= 0.0:
                 return False
 

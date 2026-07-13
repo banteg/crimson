@@ -1651,7 +1651,7 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
     corpse.lifecycle_stage = 12.640003204345703
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
-    # Captured 38 ms self-damage boundary.
+    # Exercise a non-round frame time at the native damage boundary.
     pool.update(
         0.03800000250339508,
         options=make_creature_update_options(
@@ -1663,6 +1663,28 @@ def test_dead_self_damage_tick_flags_still_shrink_hitbox_before_dead_decay() -> 
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
+
+
+def test_live_self_damage_product_is_stored_at_native_precision() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 8.0
+    creature.max_hp = 8.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.SELF_DAMAGE_TICK
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.pos = Vec2(128.0, 128.0)
+
+    dt = f32(0.09800000488758087)
+    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+
+    expected = f32(8.0 - f32(dt * 60.0))
+    assert creature.hp == expected
 
 
 def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
