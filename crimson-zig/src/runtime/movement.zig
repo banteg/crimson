@@ -165,14 +165,13 @@ pub fn updatePlayerFromGameInput(
                 playerAccelerateMoveSpeed(player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move_ext = directionFromHeadingNativeExt(player.heading);
-                const turn_align_wide =
-                    (@as(f64, @floatCast(native_pi)) - @as(f64, @floatCast(heading_result.diff))) *
-                    @as(f64, @floatCast(speed_multiplier)) *
-                    @as(f64, @floatCast(relative_move_turn_align_scale));
-                const speed_scale_wide = @as(f64, @floatCast(player.move_speed)) * turn_align_wide;
-                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
-                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
-                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
+                const velocity = playerTurnAlignedVelocityNative(
+                    move_ext,
+                    player.move_speed,
+                    heading_result.diff,
+                    speed_multiplier,
+                );
+                move_delta_override = movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
             }
         } else {
             const moving_input = raw_mag > 0.2;
@@ -331,6 +330,37 @@ fn headingMulWideNarrow(component: f64, scale_wide: f64) f32 {
     return narrowF32(component * scale_wide);
 }
 
+fn playerTurnAlignedVelocityNative(
+    direction: HeadingDirectionExt,
+    move_speed: f32,
+    angle_diff: f32,
+    speed_multiplier: f32,
+) state_mod.Vec2 {
+    const alignment = native_math.pc24Sub(native_pi, angle_diff);
+    return .{
+        .x = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(direction.x, move_speed),
+                    alignment,
+                ),
+                speed_multiplier,
+            ),
+            relative_move_turn_align_scale,
+        ),
+        .y = native_math.pc24Mul(
+            native_math.pc24Mul(
+                native_math.pc24Mul(
+                    native_math.pc24Mul(direction.y, move_speed),
+                    alignment,
+                ),
+                speed_multiplier,
+            ),
+            relative_move_turn_align_scale,
+        ),
+    };
+}
+
 fn movementDeltaFromVelocityNative(movement_dt: f32, move_dx: f32, move_dy: f32) state_mod.Vec2 {
     // Decompile stores `local_10/local_c = frame_dt * move_d{xy}` after x87 math.
     const dt_wide = @as(f64, @floatCast(movement_dt));
@@ -408,8 +438,9 @@ fn playerApplyMoveWithSpawnAvoidance(
 }
 
 fn directionFromHeadingNativeExt(heading: f32) HeadingDirectionExt {
-    // Keep `heading - half_pi` wide before trig to mirror x87-style precision.
-    const radians = @as(f64, @floatCast(heading)) - @as(f64, @floatCast(native_half_pi));
+    // Gameplay runs x87 arithmetic in 24-bit precision, so the subtraction
+    // rounds before fsin/fcos consume it.
+    const radians = @as(f64, @floatCast(native_math.pc24Sub(heading, native_half_pi)));
     return .{
         .x = std.math.cos(radians),
         .y = std.math.sin(radians),
@@ -679,4 +710,21 @@ test "aim heading from aim point matches native fpatan rounding path" {
     const aim_pos: state_mod.Vec2 = .{ .x = 333.0390625, .y = 391.1640625 };
     const heading = aimHeadingFromAimPointNative(player_pos, aim_pos);
     try std.testing.expectEqual(@as(u32, 0xbf7a1659), @as(u32, @bitCast(heading)));
+}
+
+test "static movement narrows x87 direction and alignment operations" {
+    const direction = directionFromHeadingNativeExt(3.9270143508911133);
+    const velocity = playerTurnAlignedVelocityNative(
+        direction,
+        2.0,
+        3.0040740966796875e-05,
+        2.0,
+    );
+
+    try std.testing.expectEqual(@as(f32, -70.7116470336914), velocity.x);
+    try std.testing.expectEqual(@as(f32, 70.7083511352539), velocity.y);
+    try std.testing.expectEqual(
+        @as(f32, 299.4222106933594),
+        narrowF32(@as(f64, 302.53350830078125) + @as(f64, @floatCast(native_math.pc24Mul(0.04400000348687172, velocity.x)))),
+    );
 }
