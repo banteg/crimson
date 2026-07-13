@@ -118,6 +118,7 @@ extern int perk_id_instant_winner;
 extern int perk_id_alternate_weapon;
 extern int perk_id_regression_bullets;
 extern int perk_id_ammunition_within;
+extern int perk_id_ammo_maniac;
 extern int perk_id_bonus_economist;
 extern int perk_id_final_revenge;
 extern int perk_id_my_favourite_weapon;
@@ -191,6 +192,7 @@ extern int terrain_texture_width;
 extern int terrain_texture_height;
 extern int quest_fail_retry_count;
 extern int survival_elapsed_ms;
+extern player_aux_timer_t player_aux_timer;
 
 extern int sfx_ui_bonus;
 extern int sfx_shockwave;

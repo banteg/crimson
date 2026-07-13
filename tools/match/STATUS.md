@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 27/986 | 3166/385754 | 0.8% | 27/40 |
+| crimsonland.exe | 27/986 | 3166/385754 | 0.8% | 27/41 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**27/986** functions, **3166/385754** bytes (**0.8%**), **27/40** scratches verified.
+**27/986** functions, **3166/385754** bytes (**0.8%**), **27/41** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -54,6 +54,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/2/1 |  | gameplay-spawn-switch |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
+| wip | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 81.97% | 12/61 | 21/0/0 |  | gameplay-weapon-assignment |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 | match | float_near_equal | 0x00452ef0 | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
 | wip | vec2_normalize_safe | 0x00455587 | 141 | 57/57 | 96.49% | 5/57 | 3/0/0 | msvc6.5pp /O1 /Oi /GB /W3 /GR- | vector-safe-normalize |
