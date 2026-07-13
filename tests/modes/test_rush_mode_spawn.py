@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import math
 
-from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, tick_rush_mode_spawns
+from crimson.creatures.spawn import (
+    CreatureFlags,
+    CreatureTypeId,
+    build_rush_mode_spawn_creature,
+    tick_rush_mode_spawns,
+)
 from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
+from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -24,6 +30,36 @@ def test_tick_rush_mode_spawns_no_trigger() -> None:
     assert_float_close(cooldown, 84.0)
     assert spawns == ()
     assert rng.state == 1
+
+
+def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
+    tint = (1.0, 1.0, 1.0, 1.0)
+
+    health_case = build_rush_mode_spawn_creature(
+        Vec2(),
+        tint,
+        Crand(1),
+        type_id=CreatureTypeId.ALIEN,
+        survival_elapsed_ms=474,
+    )
+    speed_case = build_rush_mode_spawn_creature(
+        Vec2(),
+        tint,
+        Crand(1),
+        type_id=CreatureTypeId.ALIEN,
+        survival_elapsed_ms=237,
+    )
+    size_case = build_rush_mode_spawn_creature(
+        Vec2(),
+        tint,
+        Crand(1),
+        type_id=CreatureTypeId.ALIEN,
+        survival_elapsed_ms=3792,
+    )
+
+    assert health_case.health == 10.047399520874023
+    assert speed_case.move_speed == 2.5023698806762695
+    assert size_case.size == 47.03791809082031
 
 
 def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:

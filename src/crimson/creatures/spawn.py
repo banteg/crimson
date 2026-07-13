@@ -1586,9 +1586,9 @@ def build_rush_mode_spawn_creature(
     c.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     elapsed_f32 = f32(float(elapsed_ms))
-    c.health = float(f32(elapsed_f32 * f32(1e-4) + 10.0))
+    c.health = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-4)), 10.0)
     c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
-    c.move_speed = float(f32(elapsed_f32 * f32(1e-5) + 2.5))
+    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-5)), 2.5)
     c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
 
     c.tint = tint_rgba
@@ -1596,7 +1596,7 @@ def build_rush_mode_spawn_creature(
 
     if c.health is not None:
         c.max_health = c.health
-    c.size = float(f32(elapsed_f32 * f32(1e-5) + 47.0))
+    c.size = x87_pc24_add(x87_pc24_mul(elapsed_f32, f32(1e-5)), 47.0)
 
     return c
 
