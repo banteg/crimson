@@ -46,7 +46,7 @@ void player_reset_all(void)
             player_state_table[player_index].level = 1;
             player_state_table[player_index].heading = 0.0f;
             player_state_table[player_index].experience = 0;
-            player_state_table[player_index].reset_reserved_a0 = 0;
+            player_state_table[player_index].reset_reserved_b0 = 0;
             player_state_table[player_index].spread_heat = 0.0f;
             player_state_table[player_index].move_speed = 0.0f;
             player_state_table[player_index].ammo = 10.0f;

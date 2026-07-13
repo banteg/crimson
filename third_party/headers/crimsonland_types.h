@@ -205,6 +205,7 @@ typedef struct player_input_t {
 } player_input_t;
 
 typedef struct player_state_t {
+    unsigned char _reserved_prefix[0x10];
     float death_timer;
     float pos_x;
     float pos_y;
@@ -231,7 +232,7 @@ typedef struct player_state_t {
     float living_fortress_timer;
     float fire_cough_timer;
     int experience;
-    int reset_reserved_a0;
+    int reset_reserved_b0;
     int level;
     int perk_counts[0x80];
     float spread_heat;
@@ -266,7 +267,6 @@ typedef struct player_state_t {
     float move_target_x;
     float move_target_y;
     player_input_t input;
-    unsigned char _pad8[0x10];
 } player_state_t;
 
 typedef struct creature_type_t {
