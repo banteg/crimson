@@ -2269,6 +2269,18 @@ event offset. Ordinary C++ reproduces all 60 native instructions, full prefix,
 and references `9/0/0` with the stock MSVC 6.5 profile.
 
 
+## grim.dll — keyboard shutdown helper @ 0x1000a550
+
+- Confirmed name: `grim_keyboard_shutdown`
+- Confirmed C++ signature: `void grim_keyboard_shutdown(void)`
+- Notes: unacquires and releases the keyboard device, nulls it, then releases
+  and nulls the parent DirectInput interface.
+
+Live Binary Ninja identifies a 62-byte function with COM vtable calls at
+offsets `0x20` (`Unacquire`) and `0x08` (`Release`). Ordinary C++ reproduces
+all 19 native instructions, full prefix, and references `5/0/0` with MSVC 6.5.
+
+
 ## grim.dll — coordinate space conversion helper @ 0x10016944
 
 - Provisional name: `grim_convert_vertex_space` (medium)

@@ -5966,7 +5966,7 @@
     "address": "0x1000a550",
     "name": "grim_keyboard_shutdown",
     "signature": "void grim_keyboard_shutdown(void)",
-    "comment": "releases DirectInput keyboard objects"
+    "comment": "unacquires and releases the keyboard device, then releases the parent DirectInput interface"
   },
   {
     "program": "grim.dll",

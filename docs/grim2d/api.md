@@ -65,6 +65,7 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_keyboard_init` (`0x1000a390`) / `grim_keyboard_poll` (`0x1000a4a0`) / `grim_keyboard_shutdown`
   (`0x1000a550`) manage the DirectInput keyboard device. The poll retries acquisition only for
   lost/not-acquired errors, snapshots all 256 key bytes, then overlays up to ten buffered events.
+  Shutdown unacquires/releases the device before releasing the parent DirectInput interface.
 
 - `grim_mouse_init` (`0x1000a5a0`) / `grim_mouse_poll` (`0x1000a670`) / `grim_mouse_shutdown`
   (`0x1000a7d0`) manage the DirectInput mouse device.
