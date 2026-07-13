@@ -1327,8 +1327,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
-    "signature": "void vec2_add(float *dst, float *delta)",
-    "comment": "adds delta xy into dst"
+    "signature": "int vec2_add(float *dst, float *delta)",
+    "comment": "adds delta xy into dst and returns 0"
   },
   {
     "program": "crimsonland.exe",
@@ -1341,8 +1341,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041e400",
     "name": "vec2_add_inplace",
-    "signature": "void vec2_add_inplace(int unused, float *pos, float *delta)",
-    "comment": "adds delta XY into pos; unused param_1 in decompile"
+    "signature": "int vec2_add_inplace(int entity_index, float *pos, float *delta)",
+    "comment": "adds delta XY into pos and returns 0; entity_index is accepted but unused"
   },
   {
     "program": "crimsonland.exe",

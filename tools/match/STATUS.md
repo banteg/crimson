@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**29/2161** functions matched, **2664/675651** code bytes (**0.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**32/2161** functions matched, **2742/675651** code bytes (**0.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 22/986 | 2550/385754 | 0.7% | 22/33 |
+| crimsonland.exe | 25/986 | 2628/385754 | 0.7% | 25/36 |
 | grim.dll | 7/1175 | 114/289897 | 0.0% | 7/7 |
 
 ## crimsonland.exe
 
-**22/986** functions, **2550/385754** bytes (**0.7%**), **22/33** scratches verified.
+**25/986** functions, **2628/385754** bytes (**0.7%**), **25/36** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -26,7 +26,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | wip | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 135/131 | 66.17% | 1/131 | 7/0/1 |  | gameplay-movement |
+| match | vec2_add_inplace | 0x0041e400 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 74.44% | 7/89 | 3/0/1 |  | gameplay-target-search |
@@ -46,6 +48,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-spawn-slots |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/2/1 |  | gameplay-spawn-switch |
+| match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 | match | float_near_equal | 0x00452ef0 | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
