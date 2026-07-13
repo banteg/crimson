@@ -259,7 +259,16 @@ void bonus_hud_slot_activate(char *label, int icon_id, float *timer, float *alt_
 void weapon_assign_player(int player_index, int weapon_id);
 void effect_init_entry(effect_entry_t *entry);
 void effect_free(effect_entry_t *entry);
+void effects_update(void);
 effect_entry_t *effect_spawn(int effect_id, float *pos);
+int fx_queue_add(
+    int effect_id,
+    float *pos,
+    float width,
+    float height,
+    float rotation,
+    float *rgba
+);
 void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_freeze_shard(float *pos, float angle);

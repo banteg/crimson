@@ -6835,6 +6835,13 @@
     },
     {
       "address": "0x004ab330",
+      "comment": "Canonical typed base for the 512-entry effect pool (effect_entry_t stride 0xbc).",
+      "name": "effect_pool",
+      "type": "effect_pool_t",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004ab330",
       "comment": "Effect pool pos_x (stride 0xbc bytes)",
       "name": "effect_pool_pos_x",
       "type": "effect_entry_t",
