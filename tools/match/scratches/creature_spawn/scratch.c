@@ -5,12 +5,19 @@ typedef union creature_spawn_locals_t {
     float f[2];
 } creature_spawn_locals_t;
 
-extern "C" int creature_spawn(float *pos, float *tint_rgba, int type_id)
+typedef struct creature_spawn_tint_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} creature_spawn_tint_t;
+
+#define CREATURE_SPAWN_ELAPSED_SCALE 0.000010000001f
+
+int creature_spawn(float *pos, float *tint_rgba, int type_id)
 {
-    creature_spawn_locals_t locals;
     int slot_id = creature_alloc_slot();
-    locals.i[0] = 0;
-    locals.i[1] = 0;
+    creature_spawn_locals_t locals = {{0, 0}};
 
     creature_pool[slot_id].pos_x = pos[0];
     creature_pool[slot_id].pos_y = pos[1];
@@ -26,18 +33,16 @@ extern "C" int creature_spawn(float *pos, float *tint_rgba, int type_id)
     creature_pool[slot_id].vel_y = locals.f[1];
     creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;
     creature_pool[slot_id].heading = (float)(crt_rand() % 314) * 0.01f;
-    creature_pool[slot_id].move_speed = (float)survival_elapsed_ms * 0.00001f + 2.5f;
-    int reward_roll = crt_rand();
-    creature_pool[slot_id].attack_cooldown = 0.0f;
-    creature_pool[slot_id].reward_value = (float)(reward_roll % 30 + 140);
-    float *tint = &creature_pool[slot_id].tint_r;
-    tint[0] = tint_rgba[0];
-    tint[1] = tint_rgba[1];
-    tint[2] = tint_rgba[2];
-    tint[3] = tint_rgba[3];
+    creature_pool[slot_id].move_speed = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 2.5f;
+    {
+        int reward_roll = crt_rand();
+        creature_pool[slot_id].attack_cooldown = 0.0f;
+        creature_pool[slot_id].reward_value = (float)(reward_roll % 30 + 140);
+    }
+    *(creature_spawn_tint_t *)&creature_pool[slot_id].tint_r = *(creature_spawn_tint_t *)tint_rgba;
     creature_pool[slot_id].contact_damage = 4.0f;
     creature_pool[slot_id].max_health = creature_pool[slot_id].health;
-    creature_pool[slot_id].size = (float)survival_elapsed_ms * 0.00001f + 47.0f;
+    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;
 
     return slot_id;
 }
