@@ -246,8 +246,8 @@ test "reset players uses native alternating 80-unit layout" {
 
     resetPlayers(players[0..], 1024.0, null);
 
-    try std.testing.expectEqual(.{ .x = 512.0, .y = 512.0 }, players[0].pos);
-    try std.testing.expectEqual(.{ .x = 432.0, .y = 432.0 }, players[1].pos);
+    try std.testing.expectEqual(@as(state_mod.Vec2, .{ .x = 512.0, .y = 512.0 }), players[0].pos);
+    try std.testing.expectEqual(@as(state_mod.Vec2, .{ .x = 432.0, .y = 432.0 }), players[1].pos);
     try std.testing.expectEqual(@as(f32, 0.0), players[0].spread_heat);
     try std.testing.expectEqual(@as(f32, 0.0), players[1].spread_heat);
 }
