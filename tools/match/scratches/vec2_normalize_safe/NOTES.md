@@ -1,14 +1,16 @@
-# Residual mismatch
+# vec2_normalize_safe
 
-The candidate has the same 57 instructions and all three references audit cleanly.
-Its only mismatch is scheduling: MSVC reserves both call-argument stack slots
-before loading the vector components, while the native function interleaves those
-two `push ecx` instructions with the x87 loads.
+The recovered C++ source matches all 57 native instructions and all three
+masked references with `msvc6.5pp /O1 /Oi /G6 /W3 /GR-`.
 
 Keeping `float_near_equal` in the same translation unit is required to recover
 the native register allocation: the caller retains `src` in `ecx` across the
-call, which the compiler only does when it can see that helper's body. The
-inline `length_sq` and scalar multiply recover the native vector-temporary
-source shape. `/O2`, `/Og-`, and the other tested VC6-family backends all make
-the match substantially worse, so the four-instruction scheduling residue is
-left honest rather than shaped away.
+call only when the compiler can see the helper body. The inline `length_sq`
+method and scalar multiply also recover the native vector-temporary shape.
+
+This is an evidence-backed per-object `/G6` exception. With the global `/GB`
+profile, the candidate is semantically identical and has the same 57
+instructions, but it reserves both call-argument slots before loading the
+vector components. `/G6` interleaves those independent pushes and x87 loads
+exactly like the shipped function. The medium and exact calibration corpus
+still supports `/GB` as the global default.
