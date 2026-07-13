@@ -233,6 +233,28 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
     )
 
 
+def test_within_native_find_radius_keeps_x87_pc24_boundary_decisions() -> None:
+    origin = Vec2()
+
+    # Host-double evaluation accepts this point, but the native PC=24
+    # distance-minus-radius equals the size margin and the comparison is strict.
+    assert not _within_native_find_radius(
+        origin=origin,
+        target=Vec2(-9.429215431213379, -91.945556640625),
+        radius=66.75615692138672,
+        target_size=158.70140075683594,
+    )
+
+    # Rounding each x87 operation also admits points that a single host-double
+    # expression puts just outside the boundary.
+    assert _within_native_find_radius(
+        origin=origin,
+        target=Vec2(-18.60686492919922, 56.534645080566406),
+        radius=36.1519889831543,
+        target_size=142.56143188476562,
+    )
+
+
 def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
     expected: dict[ProjectileTemplateId, ProjectileCollisionProfile] = {
         ProjectileTemplateId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),

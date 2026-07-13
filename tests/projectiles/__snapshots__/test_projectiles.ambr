@@ -80,12 +80,12 @@
 # name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
   dict({
     'creature_hp': list([
-      44.532261,
+      48.588238,
     ]),
     'hits': list([
       dict({
         'hit': list([
-          60.0,
+          66.0,
           0.0,
         ]),
         'origin': list([
@@ -109,7 +109,7 @@
         'local_host': True,
       }),
       'pos': list([
-        62.0,
+        68.0,
         0.0,
       ]),
       'type_id': 1,
@@ -119,14 +119,14 @@
 # name: test_primary_projectile_update_snapshot[rocket_no_splash_type_0x0b]
   dict({
     'creature_hp': list([
-      43.0,
+      47.318184,
       100.0,
       100.0,
     ]),
     'hits': list([
       dict({
         'hit': list([
-          60.0,
+          66.0,
           0.0,
         ]),
         'origin': list([
@@ -150,7 +150,7 @@
         'local_host': True,
       }),
       'pos': list([
-        60.0,
+        66.0,
         0.0,
       ]),
       'type_id': 11,

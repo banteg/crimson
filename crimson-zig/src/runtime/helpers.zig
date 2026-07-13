@@ -27,13 +27,34 @@ pub fn withinNativeFindRadius(
     radius: f32,
     target_size: f32,
 ) bool {
-    const dx = target.x - origin.x;
-    const dy = target.y - origin.y;
-    const size_margin = target_size * 0.14285715 + 3.0;
-    const max_axis_delta = radius + size_margin;
-    if (@abs(dx) > max_axis_delta or @abs(dy) > max_axis_delta) return false;
-    const margin = std.math.sqrt(dx * dx + dy * dy) - radius - size_margin;
-    return margin < 0.0;
+    const dx = native_math.pc24Sub(target.x, origin.x);
+    const dy = native_math.pc24Sub(target.y, origin.y);
+    const distance_sq = native_math.pc24Add(
+        native_math.pc24Mul(dx, dx),
+        native_math.pc24Mul(dy, dy),
+    );
+    const distance = native_math.pc24Sqrt(distance_sq);
+    const distance_outside_radius = native_math.pc24Sub(distance, radius);
+    const size_margin = native_math.pc24Add(
+        native_math.pc24Mul(target_size, @as(f32, 0.14285715)),
+        @as(f32, 3.0),
+    );
+    return distance_outside_radius < size_margin;
+}
+
+test "native find radius keeps x87 pc24 boundary decisions" {
+    try std.testing.expect(!withinNativeFindRadius(
+        .{},
+        .{ .x = -9.429215431213379, .y = -91.945556640625 },
+        66.75615692138672,
+        158.70140075683594,
+    ));
+    try std.testing.expect(withinNativeFindRadius(
+        .{},
+        .{ .x = -18.60686492919922, .y = 56.534645080566406 },
+        36.1519889831543,
+        142.56143188476562,
+    ));
 }
 
 pub fn distanceSq(a: state_mod.Vec2, b: state_mod.Vec2) f32 {

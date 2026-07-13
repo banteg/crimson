@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -9,22 +8,19 @@ from grim.geom import Vec2
 from ...collision_math import native_find_size_margin
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.lifecycle import creature_lifecycle_is_alive
+from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sqrt, x87_pc24_sub
 from ...owner_ref import OwnerRef
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
 
-# Keep strict native boundary semantics for collision acceptance.
-_NATIVE_FIND_RADIUS_MARGIN_EPS = 0.0
-
-
 def _hit_radius_for(creature: CreatureState) -> float:
-    """Approximate `creature_find_in_radius`/`creatures_apply_radius_damage` sizing.
+    """Return the native size term used by the radius predicates.
 
     The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
     """
 
-    return max(0.0, native_find_size_margin(float(creature.size)))
+    return native_find_size_margin(float(creature.size))
 
 
 def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, target_size: float) -> bool:
@@ -34,19 +30,16 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
       sqrt(dx*dx + dy*dy) - radius < size * 0.14285715 + 3.0
     """
 
-    dx = float(target.x) - float(origin.x)
-    dy = float(target.y) - float(origin.y)
-    radius_f = float(radius)
+    dx = x87_pc24_sub(f32(target.x), f32(origin.x))
+    dy = x87_pc24_sub(f32(target.y), f32(origin.y))
+    distance_sq = x87_pc24_add(
+        x87_pc24_mul(dx, dx),
+        x87_pc24_mul(dy, dy),
+    )
+    distance = x87_pc24_sqrt(distance_sq)
+    distance_outside_radius = x87_pc24_sub(distance, f32(radius))
     size_margin = native_find_size_margin(float(target_size))
-    max_axis_delta = float(radius_f) + float(size_margin) + _NATIVE_FIND_RADIUS_MARGIN_EPS
-    # Fast reject for the common case where either axis already exceeds the
-    # maximal accepted Euclidean radius.
-    if abs(float(dx)) > float(max_axis_delta) or abs(float(dy)) > float(max_axis_delta):
-        return False
-    margin = math.sqrt(dx * dx + dy * dy) - float(radius_f) - float(size_margin)
-    # Native compares against zero; keep strict threshold to avoid rewrite-only
-    # near-edge hits that can cascade into RNG/XP timing drift.
-    return float(margin) < _NATIVE_FIND_RADIUS_MARGIN_EPS
+    return distance_outside_radius < size_margin
 
 
 def _creature_find_nearest_for_secondary(
