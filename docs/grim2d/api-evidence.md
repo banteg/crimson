@@ -501,11 +501,11 @@ the keyboard device, event buffer, keyboard state (twice), and key-char count.
 
 ## 0x58 — grim_is_mouse_button_down @ 0x10007410
 
-- Provisional name: `is_mouse_button_down` (high)
-- Guess: `bool is_mouse_button_down(int button)`
-- Notes: button 0 used
-- Ghidra signature: `int grim_is_mouse_button_down(int button)`
-- Suggested signature: `bool grim_is_mouse_button_down(int button)`
+- Confirmed name: `is_mouse_button_down`
+- Confirmed C++ signature: `unsigned char __thiscall IGrim2D::is_mouse_button_down(int button)`
+- Previous Ghidra signature: `int grim_is_mouse_button_down(int button)`
+- Notes: button 0 is observed; cached mode returns the saved byte directly,
+  otherwise the helper extracts bit 7 from `DIMOUSESTATE2.rgbButtons[button]`.
 - Call sites: 4 (unique funcs: 3)
 - Sample calls: gameplay_update_and_render:L6349; input_primary_just_pressed (`FUN_00446030`):L31421; input_primary_just_pressed (`FUN_00446030`):L31439; input_primary_is_down (`FUN_004460f0`):L31467
 - First callsite: gameplay_update_and_render (line 6349)
@@ -529,12 +529,18 @@ grim.dll body:
   return CONCAT31(extraout_var,bVar1);
 ```
 
+The recovered byte-predicate member and its raw DirectInput helper both compile
+exactly with MSVC 6.5. The member matches 11/11 instructions with references
+`3/0/0`; the helper at `0x1000a590` matches 4/4 with references `1/0/0`.
+
 
 ## 0x5c — grim_was_mouse_button_pressed @ 0x10007440
 
-- Notes: edge-triggered mouse button; updates per-button latch
-- Ghidra signature: `int grim_was_mouse_button_pressed(void *this, int button)`
-- Suggested signature: `bool grim_was_mouse_button_pressed(int button)`
+- Confirmed name: `was_mouse_button_pressed`
+- Confirmed C++ signature: `bool __thiscall IGrim2D::was_mouse_button_pressed(int button)`
+- Previous Ghidra signature: `int grim_was_mouse_button_pressed(void *this, int button)`
+- Notes: edge-triggered mouse button query; the per-button latch is true only
+  while the button is released.
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -554,6 +560,12 @@ grim.dll body:
   (&grim_mouse_button_latch)[button] = (char)uVar2 == '\0';
   return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
 ```
+
+The source performs the down query twice by design: the first value is ANDed
+with the previous release latch to produce the result, and the second is
+negated into the next latch state. Cached mode applies the same short-circuit
+logic directly to `grim_mouse_button_cache`. This natural source compiles to
+all 51 native instructions, full prefix, and masked references `7/0/0`.
 
 
 ## 0x60 — grim_get_mouse_wheel_delta @ 0x10007560

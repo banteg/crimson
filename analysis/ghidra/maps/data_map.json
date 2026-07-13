@@ -9440,7 +9440,8 @@
       "address": "0x1005a044",
       "comment": "Cached mouse button state array.",
       "name": "grim_mouse_button_cache",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char[16]"
     },
     {
       "address": "0x1005a058",
@@ -9855,7 +9856,8 @@
       "address": "0x1005c8e8",
       "comment": "Mouse button latch array for edge detection.",
       "name": "grim_mouse_button_latch",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char[16]"
     },
     {
       "address": "0x1005c8f8",
@@ -10224,7 +10226,8 @@
       "address": "0x1005db3c",
       "comment": "Mouse button byte array (DIMOUSESTATE2.rgbButtons, offset +0x0c).",
       "name": "grim_mouse_buttons",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "unsigned char[8]"
     },
     {
       "address": "0x1005db44",

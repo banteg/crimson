@@ -116,6 +116,10 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_was_key_pressed` is both a press-edge and held-repeat query: the first
   event loads a 0.5-second cooldown and later repeats use 20% of that delay.
 
+- `grim_was_mouse_button_pressed` reports `down && previously_released`, then
+  refreshes its release latch from a second state query; cached mode preserves
+  the same short-circuit behavior without polling DirectInput.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 
@@ -202,7 +206,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x38` | `grim_set_time_ms` | `void grim_set_time_ms(int ms)` |
 | `0x3c` | `grim_get_frame_dt` | `float grim_get_frame_dt(void)` |
 | `0x40` | `grim_get_fps` | `float grim_get_fps(void)` |
-| `0x5c` | `grim_was_mouse_button_pressed` | `int grim_was_mouse_button_pressed(int button)` |
+| `0x5c` | `grim_was_mouse_button_pressed` | `bool grim_was_mouse_button_pressed(int button)` |
 | `0x64` | `grim_set_mouse_pos` | `void grim_set_mouse_pos(float x, float y)` |
 | `0x68` | `grim_get_mouse_x` | `float grim_get_mouse_x(void)` |
 | `0x6c` | `grim_get_mouse_y` | `float grim_get_mouse_y(void)` |
@@ -300,7 +304,7 @@ These offsets appear with keycodes or input-related values:
 | `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
 | `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | high | stores ring buffer pointers |
-| `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | high | returns cached button state or polls input |
+| `0x58` | `is_mouse_button_down` | `uint8_t is_mouse_button_down(int button)` | high | returns cached button state or polls input |
 | `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | high | edge-triggered mouse button using cached state; no decompiled callsites yet |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
 | `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | high | updates cached mouse position |

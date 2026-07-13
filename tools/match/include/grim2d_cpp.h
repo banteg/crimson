@@ -32,8 +32,8 @@ public:
     virtual void grim_flush_input(void) = 0;
     virtual int grim_get_key_char(void) = 0;
     virtual void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size) = 0;
-    virtual int grim_is_mouse_button_down(int button) = 0;
-    virtual int grim_was_mouse_button_pressed(int button) = 0;
+    virtual unsigned char grim_is_mouse_button_down(int button) = 0;
+    virtual bool grim_was_mouse_button_pressed(int button) = 0;
     virtual float grim_get_mouse_wheel_delta(void) = 0;
     virtual void grim_set_mouse_pos(float x, float y) = 0;
     virtual float grim_get_mouse_x(void) = 0;

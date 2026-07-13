@@ -5523,15 +5523,15 @@
     "program": "grim.dll",
     "address": "0x10007410",
     "name": "grim_is_mouse_button_down",
-    "signature": "int grim_is_mouse_button_down(int button)",
-    "comment": "Grim2D vtable 0x58: cached mouse button state or poll"
+    "signature": "unsigned char grim_is_mouse_button_down(int button)",
+    "comment": "Grim2D vtable 0x58: return cached mouse button state when enabled, otherwise read DirectInput state"
   },
   {
     "program": "grim.dll",
     "address": "0x10007440",
     "name": "grim_was_mouse_button_pressed",
-    "signature": "int grim_was_mouse_button_pressed(int button)",
-    "comment": "Grim2D vtable 0x5c (provisional): edge-triggered mouse button"
+    "signature": "bool grim_was_mouse_button_pressed(int button)",
+    "comment": "Grim2D vtable 0x5c: edge-triggered mouse button query with per-button release latch"
   },
   {
     "program": "grim.dll",
@@ -5972,8 +5972,8 @@
     "program": "grim.dll",
     "address": "0x1000a590",
     "name": "grim_mouse_button_down",
-    "signature": "int grim_mouse_button_down(int button)",
-    "comment": "reads the cached mouse button state"
+    "signature": "unsigned char grim_mouse_button_down(int button)",
+    "comment": "returns bit 7 of the selected DIMOUSESTATE2 button byte"
   },
   {
     "program": "grim.dll",

@@ -66,8 +66,8 @@ struct IGrim2D_vtbl {
     /* 0x04c */ void (*grim_flush_input)(void);
     /* 0x050 */ int (*grim_get_key_char)(void);
     /* 0x054 */ void (*grim_set_key_char_buffer)(unsigned char * buffer, int * count, int size);
-    /* 0x058 */ int (*grim_is_mouse_button_down)(int button);
-    /* 0x05c */ int (*grim_was_mouse_button_pressed)(int button);
+    /* 0x058 */ unsigned char (*grim_is_mouse_button_down)(int button);
+    /* 0x05c */ unsigned char (*grim_was_mouse_button_pressed)(int button);
     /* 0x060 */ float (*grim_get_mouse_wheel_delta)(void);
     /* 0x064 */ void (*grim_set_mouse_pos)(float x, float y);
     /* 0x068 */ float (*grim_get_mouse_x)(void);
