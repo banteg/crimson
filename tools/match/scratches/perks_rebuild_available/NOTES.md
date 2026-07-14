@@ -17,9 +17,15 @@ injected availability bits to survive. Native rebuilds on every call; the port
 now does the same, with a regression test that dirties the table at the cached
 index before rebuilding.
 
-The remaining mismatch is register allocation and loop layout. The candidate
-loads the unlock count early and combines its initial test with the later quest
-loop, while native initializes the quest index and tests the count after the
-four always-available stores. Writing the decompiler's unrelated global loads
-inside the base-range loop would only steer scheduling and is not plausible
-source, so the clean WIP remains preferable.
+The quest scan is a conjunctive `while`: `index < unlock_count` guards the
+cursor-bound check, and the count backedge returns to that bound check after
+each availability write. This source shape accounts for native's initial count
+test, initial cursor comparison, and split loop latch without a body-level
+break.
+
+The remaining mismatch is register allocation and instruction scheduling. The
+candidate moves the index initialization and count test through the preceding
+always-available stores and assigns the index/cursor lifetimes to the opposite
+registers. Writing unrelated global loads inside the base-range loop would
+only steer scheduling and is not plausible source, so the clean WIP remains
+preferable.
