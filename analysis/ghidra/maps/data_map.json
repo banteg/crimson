@@ -9801,6 +9801,13 @@
       "type": "DWORD"
     },
     {
+      "address": "0x1005bad4",
+      "comment": "Timing epoch initialized from timeGetTime and advanced by elapsed milliseconds only while timing is frozen.",
+      "name": "grim_timing_epoch_ms",
+      "program": "grim.dll",
+      "type": "DWORD"
+    },
+    {
       "address": "0x1005bacc",
       "comment": "Grim2D module handle (HINSTANCE).",
       "name": "grim_module_handle",

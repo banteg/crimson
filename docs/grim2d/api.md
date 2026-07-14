@@ -195,8 +195,12 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_draw_circle_filled` / `grim_draw_circle_outline` appear in gameplay effects with UV + color setup
   immediately before the draw calls.
 
-- The timing helpers (`get_time_ms`, `set_time_ms`, `get_frame_dt`, `get_fps`) have no decompiled callsites yet;
-  grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
+- The exact-matched native timing step waits for `timeGetTime` to advance by
+  more than one millisecond. Active frames advance the game clock and FPS
+  window; frozen frames publish zero delta and shift a separate timing epoch.
+  FPS is recomputed after a window exceeds 500 ms, retaining the overrun for
+  the next sample. The public `get_frame_dt` accessor clamps the result to
+  `0.1`.
 
 - `grim_apply_config` opens the Grim2D config dialog and initializes Direct3D8 before applying settings.
 - `grim_apply_settings` is an exact-matched `bool` wrapper that enters

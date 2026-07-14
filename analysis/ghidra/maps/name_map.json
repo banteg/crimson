@@ -5284,14 +5284,14 @@
     "program": "grim.dll",
     "address": "0x10004920",
     "name": "grim_timing_init",
-    "signature": "unsigned int grim_timing_init(void)",
+    "signature": "void grim_timing_init(void)",
     "comment": "initializes millisecond, frame-delta, and FPS timing state and requests a 1 ms timer period"
   },
   {
     "program": "grim.dll",
     "address": "0x10004970",
     "name": "grim_timing_update",
-    "signature": "int grim_timing_update(void)",
+    "signature": "void grim_timing_update(void)",
     "comment": "advances the millisecond counter, frame delta, and rolling FPS estimate"
   },
   {

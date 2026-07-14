@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**156/2161** functions matched, **19840/675651** code bytes (**2.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**158/2161** functions matched, **20130/675651** code bytes (**3.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 112/1175 | 13149/289897 | 4.5% | 112/116 |
+| grim.dll | 114/1175 | 13439/289897 | 4.6% | 114/118 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**112/1175** functions, **13149/289897** bytes (**4.5%**), **112/116** scratches verified.
+**114/1175** functions, **13439/289897** bytes (**4.6%**), **114/118** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -89,6 +89,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |
+| match | grim_timing_init | 0x10004920 | 74 | 13/13 | 100.00% | 13/13 | 10/0/0 |  | grim-frame-timing-init |
+| match | grim_timing_update | 0x10004970 | 216 | 53/53 | 100.00% | 53/53 | 23/0/0 |  | grim-frame-timing-update |
 | match | grim_texture_init | 0x10004a50 | 83 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
 | match | grim_texture_release | 0x10004ab0 | 66 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
