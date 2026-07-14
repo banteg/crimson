@@ -5270,8 +5270,8 @@
     "program": "grim.dll",
     "address": "0x10004830",
     "name": "grim_select_texture_format",
-    "signature": "int grim_select_texture_format(void)",
-    "comment": "chooses the first supported texture format"
+    "signature": "bool grim_select_texture_format(void)",
+    "comment": "chooses the first supported format from the engine's ordered eight-probe fallback list"
   },
   {
     "program": "grim.dll",

@@ -65,6 +65,9 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_is_texture_format_supported` (`0x100047f0`) is an exact-matched
   `CheckDeviceFormat` predicate for `D3DRTYPE_TEXTURE`, using the selected
   adapter, device type, and current adapter format.
+- `grim_select_texture_format` (`0x10004830`) exact-matches the ordered fallback
+  chain `A8R8G8B8`, `DXT3`, `A4R4G4B4`, `A1R5G5B5`, `R8G8B8`,
+  `X8R8G8B8`, `R8G8B8` again, then `R5G6B5`. The duplicated probe is native.
 - `grim_keyboard_init` (`0x1000a390`) / `grim_keyboard_poll` (`0x1000a4a0`) / `grim_keyboard_shutdown`
   (`0x1000a550`) manage the DirectInput keyboard device. Initialization installs the keyboard
   data format, foreground/nonexclusive cooperative mode, and a ten-event buffer. The poll retries acquisition only for
