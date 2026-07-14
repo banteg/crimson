@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**173/2161** functions matched, **24800/675651** code bytes (**3.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**175/2161** functions matched, **25092/675651** code bytes (**3.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 129/1175 | 18109/289897 | 6.2% | 129/136 |
+| grim.dll | 131/1175 | 18401/289897 | 6.3% | 131/137 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**129/1175** functions, **18109/289897** bytes (**6.2%**), **129/136** scratches verified.
+**131/1175** functions, **18401/289897** bytes (**6.3%**), **131/137** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -115,7 +115,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_find_free_texture_slot | 0x100051c0 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
 | match | grim_load_texture_internal | 0x100051e0 | 265 | 80/80 | 100.00% | 80/80 | 14/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim-texture-file-load |
 | match | grim_lookup_blob_load | 0x10005a40 | 146 | 51/51 | 100.00% | 51/51 | 15/0/0 |  | grim-lookup-blob-lifecycle |
-| wip | grim_lookup_blob_find | 0x10005ae0 | 146 | 66/66 | 95.45% | 46/66 | 4/0/0 |  | grim-lookup-blob-search |
+| match | grim_lookup_blob_find | 0x10005ae0 | 146 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-search |
+| match | grim_lookup_blob_size_for_path | 0x10005b80 | 146 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-size |
 | match | grim_set_key_char_buffer | 0x10005c20 | 32 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | grim2d-key-char-buffer |
 | match | grim_get_key_char | 0x10005c40 | 52 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | grim2d-key-char-fifo |
 | match | grim_release | 0x10005c80 | 8 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |

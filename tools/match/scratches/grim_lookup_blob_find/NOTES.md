@@ -10,7 +10,8 @@ advance by `strlen(path) + 1 + sizeof(size) + size`, and malformed or exhausted
 offsets return null.
 
 The recovered source reproduces all 66 native instructions and all four
-references. It remains an honest 95.45% WIP because VC6 chooses the opposite
-base/index encoding for one commutative `LEA` and mutates the other addend in
-the equivalent success-pointer expression. No register-forcing construct is
-used.
+references. The final source-shape correction removes a local alias for
+`grim_lookup_blob` and uses the global directly in each record expression.
+VC6 hoists that repeated global into `ebx`, exactly reproducing the native
+base/index choice and destructive success-tail addition without any
+register-forcing construct.
