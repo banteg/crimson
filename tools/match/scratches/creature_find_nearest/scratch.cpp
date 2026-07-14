@@ -14,7 +14,9 @@ extern "C" int creature_find_nearest(float *pos, int exclude_id, float min_dist)
             if (creature->active && creature->lifecycle_stage == 16.0f) {
                 float dx = pos[0] - creature->pos_x;
                 float dy = pos[1] - creature->pos_y;
-                float distance = (float)sqrt(dy * dy + dx * dx);
+                float distance_sq = dx * dx;
+                distance_sq += dy * dy;
+                float distance = (float)sqrt(distance_sq);
                 if (distance < best_distance) {
                     best_index = index;
                     best_distance = distance;

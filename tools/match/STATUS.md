@@ -37,15 +37,15 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 120/127 | 37.25% | 1/127 | 15/0/2 |  | gameplay-player-reset |
-| wip | creature_find_nearest | 0x00420040 | 225 | 91/89 | 74.44% | 7/89 | 3/0/1 |  | gameplay-target-search |
+| wip | creature_find_nearest | 0x00420040 | 225 | 92/89 | 79.56% | 7/89 | 3/0/1 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
 | wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 67.21% | 0/126 | 11/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
 | wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 83.48% | 11/57 | 4/0/2 |  | gameplay-radius-damage |
-| wip | creature_find_in_radius | 0x004206a0 | 133 | 48/47 | 61.05% | 4/47 | 3/0/2 |  | gameplay-target-search |
-| wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 75.23% | 9/54 | 4/0/1 |  | gameplay-target-search |
+| wip | creature_find_in_radius | 0x004206a0 | 133 | 49/47 | 70.83% | 4/47 | 3/0/2 |  | gameplay-target-search |
+| wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 77.06% | 9/54 | 4/0/1 |  | gameplay-target-search |
 | wip | plaguebearer_spread_infection | 0x00425d80 | 203 | 67/64 | 88.55% | 25/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | match | creature_alloc_slot | 0x00428140 | 145 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |

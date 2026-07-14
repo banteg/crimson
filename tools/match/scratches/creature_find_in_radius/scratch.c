@@ -11,7 +11,10 @@ int creature_find_in_radius(float *pos, float radius, int start_index)
             if (creature->active) {
                 float dx = creature->pos_x - pos[0];
                 float dy = creature->pos_y - pos[1];
-                float distance = (float)sqrt(dx * dx + dy * dy);
+                float distance_sq = dx * dx;
+                float distance;
+                distance_sq += dy * dy;
+                distance = (float)sqrt(distance_sq);
                 if (distance - radius < creature->size * 0.14285715f + 3.0f) {
                     if (creature->lifecycle_stage > 5.0f) {
                         return index;
