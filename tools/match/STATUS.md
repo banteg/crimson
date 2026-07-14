@@ -46,7 +46,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 83.48% | 11/57 | 4/0/2 |  | gameplay-radius-damage |
 | wip | creature_find_in_radius | 0x004206a0 | 133 | 48/47 | 61.05% | 4/47 | 3/0/2 |  | gameplay-target-search |
 | wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 75.23% | 9/54 | 4/0/1 |  | gameplay-target-search |
-| wip | plaguebearer_spread_infection | 0x00425d80 | 203 | 66/64 | 80.00% | 5/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
+| wip | plaguebearer_spread_infection | 0x00425d80 | 203 | 67/64 | 88.55% | 25/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | match | creature_alloc_slot | 0x00428140 | 145 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |
 | match | creature_reset_all | 0x004281e0 | 46 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
