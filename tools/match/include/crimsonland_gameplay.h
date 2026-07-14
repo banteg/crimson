@@ -163,6 +163,7 @@ extern int quest_stage_minor;
 extern int quest_unlock_index;
 extern int quest_unlock_index_full;
 extern quest_meta_t quest_selected_meta[];
+extern quest_meta_t *quest_meta_cursor;
 extern char registry_key_status_root_path[];
 extern unsigned int game_sequence_id;
 
@@ -263,6 +264,8 @@ extern effect_id_entry_t effect_id_table[];
 int perk_count_get(int perk_id);
 unsigned char perk_can_offer(int perk_id);
 int crt_rand(void);
+void crt_free(void *ptr);
+char *strdup_malloc(char *src);
 bonus_entry_t *bonus_alloc_slot(void);
 bonus_entry_t *bonus_spawn_at_pos(float *pos);
 bonus_id_t bonus_pick_random_type(void);

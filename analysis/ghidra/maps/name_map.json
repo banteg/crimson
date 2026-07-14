@@ -1976,7 +1976,7 @@
     "program": "crimsonland.exe",
     "address": "0x00430a20",
     "name": "quest_meta_init_entry",
-    "signature": "int quest_meta_init_entry(quest_meta_t *meta, int tier, int index, char *name)",
+    "signature": "void quest_meta_init_entry(quest_meta_t *meta, int tier, int index, char *name)",
     "comment": "initializes a quest metadata entry (name copy, terrain ids, defaults) and updates quest_meta_cursor"
   },
   {
