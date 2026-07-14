@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**115/2161** functions matched, **13469/675651** code bytes (**2.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**121/2161** functions matched, **13531/675651** code bytes (**2.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 72/1175 | 7111/289897 | 2.5% | 72/73 |
+| grim.dll | 78/1175 | 7173/289897 | 2.5% | 78/79 |
 
 ## crimsonland.exe
 
@@ -79,17 +79,22 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**72/1175** functions, **7111/289897** bytes (**2.5%**), **72/73** scratches verified.
+**78/1175** functions, **7173/289897** bytes (**2.5%**), **78/79** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
 | match | grim_set_key_char_buffer | 0x10005c20 | 32 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | grim2d-key-char-buffer |
 | match | grim_get_key_char | 0x10005c40 | 52 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | grim2d-key-char-fifo |
+| match | grim_release | 0x10005c80 | 8 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |
+| match | grim_set_paused | 0x10005c90 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-pause-state |
+| match | grim_get_version | 0x10005ca0 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-version |
 | match | grim_get_config_var | 0x10006c30 | 102 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim2d-get-config-var |
 | match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_set_time_ms | 0x10006e50 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-time-state |
 | match | grim_get_frame_dt | 0x10006e60 | 33 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | branch-x87 |
+| match | grim_get_fps | 0x10006e90 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-fps-state |
 | match | grim_joystick_up_active | 0x10006ea0 | 78 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_down_active | 0x10006ef0 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_left_active | 0x10006f40 | 78 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
@@ -118,6 +123,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_joystick_z | 0x100075a0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
 | match | grim_get_joystick_pov | 0x100075b0 | 14 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-joystick-state |
 | match | grim_is_joystick_button_down | 0x100075c0 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-wrapper |
+| match | grim_get_texture_handle | 0x10007740 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-texture-lookup |
 | match | grim_bind_texture | 0x10007830 | 58 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
 | match | grim_draw_rect_filled | 0x100078e0 | 205 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
