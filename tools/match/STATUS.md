@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**377/2162** functions matched, **45723/675654** code bytes (**6.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**378/2162** functions matched, **45878/675654** code bytes (**6.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 245/987 | 26276/385757 | 6.8% | 245/273 |
+| crimsonland.exe | 246/987 | 26431/385757 | 6.9% | 246/274 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**245/987** functions, **26276/385757** bytes (**6.8%**), **245/273** scratches verified.
+**246/987** functions, **26431/385757** bytes (**6.9%**), **246/274** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -53,6 +53,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
+| match | demo_mode_start | 0x00403390 | 155 | 40/40 | 100.00% | 40/40 | 17/0/0 |  | demo-attract-mode-cycle |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
 | match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
