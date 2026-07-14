@@ -22,6 +22,27 @@ class GrimMonoFont(msgspec.Struct, frozen=True):
     advance: float = GRIM_MONO_ADVANCE
 
 
+def _draw_mono_glyph(
+    font: GrimMonoFont,
+    value: int,
+    x_pos: float,
+    y_pos: float,
+    draw_size: float,
+    origin: rl.Vector2,
+    color: rl.Color,
+) -> None:
+    col = value % font.grid
+    row = value // font.grid
+    src = rl.Rectangle(
+        float(col * font.cell_width),
+        float(row * font.cell_height),
+        float(font.cell_width),
+        float(font.cell_height),
+    )
+    dst = rl.Rectangle(x_pos, y_pos, draw_size, draw_size)
+    rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
+
+
 def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
     texture = runtime_resources_for(assets_root).texture(TextureId.DEFAULT_FONT_COURIER)
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
@@ -56,26 +77,28 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, pos: Vec2, scale: float, 
             skip_advance = True
             continue
 
+        if value == 0xE5:
+            x_pos += advance
+            _draw_mono_glyph(font, ord("a"), x_pos, y_pos + 1.0, draw_size, origin, color)
+            _draw_mono_glyph(font, ord("."), x_pos, y_pos - 6.0, draw_size, origin, color)
+            continue
+        if value == 0xE4:
+            x_pos += advance
+            _draw_mono_glyph(font, ord("a"), x_pos, y_pos + 1.0, draw_size, origin, color)
+            _draw_mono_glyph(font, ord('"'), x_pos, y_pos, draw_size, origin, color)
+            continue
+        if value == 0xF6:
+            x_pos += advance
+            _draw_mono_glyph(font, ord("o"), x_pos, y_pos + 1.0, draw_size, origin, color)
+            _draw_mono_glyph(font, ord('"'), x_pos, y_pos, draw_size, origin, color)
+            continue
+
         if skip_advance:
             skip_advance = False
         else:
             x_pos += advance
 
-        col = value % font.grid
-        row = value // font.grid
-        src = rl.Rectangle(
-            float(col * font.cell_width),
-            float(row * font.cell_height),
-            float(font.cell_width),
-            float(font.cell_height),
-        )
-        dst = rl.Rectangle(
-            float(x_pos),
-            float(y_pos + 1.0),
-            float(draw_size),
-            float(draw_size),
-        )
-        rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
+        _draw_mono_glyph(font, value, x_pos, y_pos + 1.0, draw_size, origin, color)
 
 
 def measure_grim_mono_text_height(font: GrimMonoFont, text: str, scale: float) -> float:
