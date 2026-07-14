@@ -183,6 +183,8 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_shutdown` exactly tears down the optional lookup blob, DirectInput
   devices, Direct3D resources, and the main window in that order.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
+- `grim_clear_color` exactly guards on render/device readiness and uses the
+  Direct3D8 `D3DCOLOR_COLORVALUE` macro before clearing `D3DCLEAR_TARGET`.
 - `grim_get_config_float` exactly maps six IDs to scaled joystick axes,
   `0x15f`/`0x160` to direct mouse X/Y delta, and two three-ID ranges to the
   indexed delta compatibility methods; unmatched IDs return zero.
@@ -330,7 +332,7 @@ These offsets appear with keycodes or input-related values:
 | `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | high | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
 | `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
-| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
+| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | exact guarded `Clear` call using `D3DCOLOR_COLORVALUE` |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
 | `0x34` | `get_time_ms` | `int get_time_ms(void)` | high | frame time accumulator (ms) |
 | `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | high | overrides time accumulator |

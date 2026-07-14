@@ -289,7 +289,9 @@ grim.dll body:
 
 ## 0x2c — grim_clear_color @ 0x10006cb0
 
-- Ghidra signature: `void grim_clear_color(float r, float g, float b, float a)`
+- Confirmed C++ signature: `void grim_clear_color(float r, float g, float b, float a)`
+- Notes: exact-matched `IDirect3DDevice8::Clear` call guarded by render-disabled
+  and device-ready flags; uses `D3DCOLOR_COLORVALUE(r, g, b, a)`
 - Call sites: 5 (unique funcs: 3)
 - Sample calls: FUN_00417b80:L9215; terrain_generate_random:L9452; crimsonland_main (`FUN_0042c450`):L19534; crimsonland_main (`FUN_0042c450`):L19538; crimsonland_main (`FUN_0042c450`):L19547
 - First callsite: terrain_generate (`FUN_00417b80`) (line 11352)
@@ -306,12 +308,11 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  uVar3 = ftol(0,0);
-  iVar4 = ftol();
-  uVar5 = ftol();
-  uVar6 = ftol();
-  (**(code **)(iVar1 + 0x90))(piVar2,0,0,1,
-      ((uVar3 & 0xff | iVar4 << 8) << 8 | uVar5 & 0xff) << 8 | uVar6 & 0xff);
+  if (!grim_render_disabled && grim_device_ready) {
+    grim_d3d_device->Clear(
+        0, 0, D3DCLEAR_TARGET,
+        D3DCOLOR_COLORVALUE(r, g, b, a), 0.0f, 0);
+  }
 ```
 
 
