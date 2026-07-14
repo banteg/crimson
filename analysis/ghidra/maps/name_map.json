@@ -1397,8 +1397,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041f430",
     "name": "angle_approach",
-    "signature": "void angle_approach(float *angle, float target, float rate)",
-    "comment": "wraps angle into [0,2pi] and steps toward target using shortest arc"
+    "signature": "float angle_approach(float *angle, float target, float rate)",
+    "comment": "wraps angle into [0,2pi], steps toward target, and returns the clamped shortest-arc distance"
   },
   {
     "program": "crimsonland.exe",
