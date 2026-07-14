@@ -66,6 +66,10 @@
     "program": "crimsonland.exe",
     "address": "0x004011f0",
     "name": "console_log_node_free",
+    "aliases": [
+      "?release@console_log_node_t@@QAEPAU1@E@Z",
+      "?release@console_history_entry_t@@QAEPAU1@E@Z"
+    ],
     "signature": "void console_log_node_free(char free_self)",
     "comment": "frees a console log node (text + next chain) and optionally frees the node"
   },
@@ -143,15 +147,18 @@
     "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
-    "signature": "char console_push_line(char *line)",
-    "comment": "pushes line into console queue"
+    "aliases": [
+      "?console_push_line@console_queue_t@@QAEXPAD@Z"
+    ],
+    "signature": "void __thiscall console_push_line(console_queue_t *queue, char *line)",
+    "comment": "pushes a line into the console log queue; native AL state is incidental for this void method"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401870",
     "name": "console_printf",
-    "signature": "char console_printf(void *console_state, char *fmt, ...)",
-    "comment": "formats then pushes line"
+    "signature": "void console_printf(console_queue_t *queue, char *fmt, ...)",
+    "comment": "formats then pushes a line; native AL state is incidental for this void function"
   },
   {
     "program": "crimsonland.exe",
@@ -3812,6 +3819,9 @@
     "program": "crimsonland.exe",
     "address": "0x00460dc7",
     "name": "crt_free",
+    "aliases": [
+      "??3@YAXPAX@Z"
+    ],
     "signature": "void crt_free(void *ptr)",
     "comment": "CRT free wrapper"
   },

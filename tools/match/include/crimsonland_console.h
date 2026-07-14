@@ -15,11 +15,25 @@ struct console_cvar_entry_t {
     char *mod_id;
     char *mod_string_value;
     float *mod_float_value;
+
+    ~console_cvar_entry_t(void);
 };
 
 struct console_history_entry_t {
     char *line;
     console_history_entry_t *next;
+
+    ~console_history_entry_t(void);
+    console_history_entry_t *release(unsigned char free_self);
+};
+
+struct console_log_node_t {
+    char *text;
+    console_log_node_t *next;
+
+    console_log_node_t(void);
+    ~console_log_node_t(void);
+    console_log_node_t *release(unsigned char free_self);
 };
 
 struct console_command_entry_t {
@@ -29,20 +43,25 @@ struct console_command_entry_t {
 
     console_command_entry_t(char *entry_name)
         : name(strdup_malloc(entry_name)), next(0), handler(0) {}
+    ~console_command_entry_t(void);
 };
 
 struct console_queue_t {
     console_cvar_entry_t *cvar_head;
     console_command_entry_t *command_head;
-    void *log_head;
+    console_log_node_t *log_head;
     unsigned char echo_enabled;
     unsigned char _pad0[3];
     console_history_entry_t *history_head;
     int history_index;
-    unsigned char _pad1[0x10];
+    unsigned char _pad1[8];
+    int log_count;
+    int scroll_offset;
     unsigned char open;
 
-    bool console_push_line(char *line);
+    ~console_queue_t(void);
+
+    void console_push_line(char *line);
     unsigned char flush_log(char *filename);
     bool exec_line(char *line);
     void console_set_open(unsigned char open);
@@ -77,7 +96,7 @@ extern int console_cmd_argc;
 extern unsigned char console_input_enabled;
 
 char *console_cmd_arg_get(int index);
-unsigned char console_printf(console_queue_t *queue, char *format, ...);
+void console_printf(console_queue_t *queue, char *format, ...);
 int crt_vsprintf(char *dst, char *format, void *args);
 
 #ifdef __cplusplus

@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**366/2162** functions matched, **43887/675654** code bytes (**6.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**370/2162** functions matched, **44413/675654** code bytes (**6.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 234/987 | 24440/385757 | 6.3% | 234/262 |
+| crimsonland.exe | 238/987 | 24966/385757 | 6.5% | 238/266 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**234/987** functions, **24440/385757** bytes (**6.3%**), **234/262** scratches verified.
+**238/987** functions, **24966/385757** bytes (**6.5%**), **238/266** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -22,6 +22,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_input_poll | 0x00401060 | 139 | 41/41 | 100.00% | 41/41 | 15/0/0 |  | console-input-buffer-policy |
 | match | console_cmd_arg_get | 0x00401120 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | console-command-arguments |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | console_clear_log | 0x004011a0 | 78 | 28/28 | 100.00% | 28/28 | 7/0/0 |  | console-log-clear |
+| match | console_log_node_free | 0x004011f0 | 68 | 24/24 | 100.00% | 24/24 | 2/0/0 |  | console-log-node-destructor |
 | match | console_cmd_quit | 0x00401240 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-quit-command |
 | match | console_cmd_extend | 0x00401340 | 17 | 4/4 | 100.00% | 4/4 | 3/0/0 |  | console-height-extend |
 | match | console_cmd_minimize | 0x00401360 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-minimize-command |
@@ -29,6 +31,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_vars | 0x004013c0 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-cvar-list |
 | match | console_echo | 0x00401410 | 245 | 93/93 | 100.00% | 93/93 | 17/0/0 |  | console-echo-command |
 | match | console_cmd_set | 0x00401510 | 77 | 22/22 | 100.00% | 22/22 | 11/0/0 |  | console-cvar-set-command |
+| match | console_destroy | 0x004016e0 | 187 | 77/77 | 100.00% | 77/77 | 10/0/0 |  | console-owned-list-destruction |
+| match | console_push_line | 0x004017a0 | 193 | 68/68 | 100.00% | 68/68 | 5/0/0 |  | console-log-insertion-and-eviction |
 | match | console_printf | 0x00401870 | 49 | 17/17 | 100.00% | 17/17 | 4/0/0 |  | console-formatted-output |
 | match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
 | match | console_history_apply | 0x004018d0 | 99 | 42/42 | 100.00% | 42/42 | 4/0/0 |  | console-history-navigation |
