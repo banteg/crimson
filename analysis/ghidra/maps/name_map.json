@@ -1298,8 +1298,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041dc80",
     "name": "grim_load_interface",
-    "signature": "int grim_load_interface(char *dll_name)",
-    "comment": "load grim DLL and fetch GRIM_GetInterface"
+    "signature": "IGrim2D * grim_load_interface(char *dll_name)",
+    "comment": "loads a Grim2D DLL, records its path, and calls the GRIM__GetInterface export"
   },
   {
     "program": "crimsonland.exe",

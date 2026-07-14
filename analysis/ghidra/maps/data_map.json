@@ -5262,6 +5262,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00490304",
+      "comment": "Module handle returned while loading the configured Grim2D implementation DLL.",
+      "name": "grim_dll_module_handle",
+      "program": "crimsonland.exe",
+      "type": "HMODULE"
+    },
+    {
+      "address": "0x00490308",
+      "comment": "Path of the Grim2D implementation DLL copied after resolving GRIM__GetInterface.",
+      "name": "grim_dll_name",
+      "program": "crimsonland.exe",
+      "type": "char[260]"
+    },
+    {
       "address": "0x00490420",
       "aliases": [
         "?color@?4??fx_queue_add_random@@9@4UFxRandomColor@@A"

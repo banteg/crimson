@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**395/2162** functions matched, **47483/675654** code bytes (**7.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**396/2162** functions matched, **47566/675654** code bytes (**7.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 263/987 | 28036/385757 | 7.3% | 263/293 |
+| crimsonland.exe | 264/987 | 28119/385757 | 7.3% | 264/294 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**263/987** functions, **28036/385757** bytes (**7.3%**), **263/293** scratches verified.
+**264/987** functions, **28119/385757** bytes (**7.3%**), **264/294** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -121,6 +121,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
+| match | grim_load_interface | 0x0041dc80 | 83 | 36/36 | 100.00% | 36/36 | 5/0/0 |  | grim-interface-loader |
 | match | vorbis_mem_read | 0x0041dce0 | 88 | 37/37 | 100.00% | 37/37 | 0/0/0 |  | vorbis-memory-read-callback |
 | match | vorbis_mem_seek | 0x0041dd40 | 66 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | vorbis-memory-seek-callback |
 | match | vorbis_mem_close_callback | 0x0041dd90 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | vorbis-memory-close-callback |
