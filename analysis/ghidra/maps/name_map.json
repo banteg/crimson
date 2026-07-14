@@ -5956,16 +5956,30 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000a110",
+    "name": "grim_joystick_enum_device",
+    "signature": "int grim_joystick_enum_device(const GrimDeviceInstance *instance, void *context)",
+    "comment": "DirectInput EnumDevices callback: creates the first joystick device and stops enumeration"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a150",
+    "name": "grim_joystick_configure_axis",
+    "signature": "int grim_joystick_configure_axis(const GrimDeviceObjectInstance *object, void *context)",
+    "comment": "DirectInput EnumObjects callback: sets each axis range to -1000..1000"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000a1c0",
     "name": "grim_joystick_init",
-    "signature": "int grim_joystick_init(int hwnd)",
+    "signature": "bool grim_joystick_init(HWND hwnd)",
     "comment": "initializes DirectInput joystick device and acquires it"
   },
   {
     "program": "grim.dll",
     "address": "0x1000a2b0",
     "name": "grim_joystick_poll",
-    "signature": "int grim_joystick_poll(void)",
+    "signature": "bool grim_joystick_poll(void)",
     "comment": "polls the joystick device and updates cached state"
   },
   {
@@ -5974,6 +5988,13 @@
     "name": "grim_joystick_button_down",
     "signature": "unsigned char grim_joystick_button_down(unsigned int button)",
     "comment": "returns bit 7 of the low-byte-indexed DIJOYSTATE2 button"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a330",
+    "name": "grim_joystick_shutdown",
+    "signature": "void grim_joystick_shutdown(void)",
+    "comment": "unacquires and releases the joystick device, then releases DirectInput"
   },
   {
     "program": "grim.dll",

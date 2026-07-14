@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**110/2161** functions matched, **12940/675651** code bytes (**1.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**115/2161** functions matched, **13469/675651** code bytes (**2.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 67/1175 | 6582/289897 | 2.3% | 67/68 |
+| grim.dll | 72/1175 | 7111/289897 | 2.5% | 72/73 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**67/1175** functions, **6582/289897** bytes (**2.3%**), **67/68** scratches verified.
+**72/1175** functions, **7111/289897** bytes (**2.5%**), **72/73** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -143,7 +143,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
 | match | grim_draw_text_small_fmt | 0x10009980 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
+| match | grim_joystick_enum_device | 0x1000a110 | 50 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim-joystick-enumeration |
+| match | grim_joystick_configure_axis | 0x1000a150 | 99 | 26/26 | 100.00% | 26/26 | 1/0/0 |  | grim-joystick-axis-range |
+| match | grim_joystick_init | 0x1000a1c0 | 231 | 90/90 | 100.00% | 90/90 | 19/0/0 |  | grim-joystick-init |
+| match | grim_joystick_poll | 0x1000a2b0 | 87 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim-joystick-poll |
 | match | grim_joystick_button_down | 0x1000a310 | 19 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-state |
+| match | grim_joystick_shutdown | 0x1000a330 | 62 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-joystick-shutdown |
 | match | grim_keyboard_key_down | 0x1000a370 | 19 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-keyboard-state |
 | match | grim_keyboard_init | 0x1000a390 | 272 | 89/89 | 100.00% | 89/89 | 18/0/0 |  | grim-keyboard-init |
 | match | grim_keyboard_poll | 0x1000a4a0 | 165 | 60/60 | 100.00% | 60/60 | 9/0/0 |  | grim-keyboard-poll |

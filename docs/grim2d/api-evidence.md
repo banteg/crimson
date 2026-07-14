@@ -2303,6 +2303,38 @@ grim.dll body:
 ```
 
 
+## grim.dll — joystick lifecycle @ 0x1000a110..0x1000a36d
+
+- Confirmed callbacks: `grim_joystick_enum_device` (`0x1000a110`) and
+  `grim_joystick_configure_axis` (`0x1000a150`)
+- Confirmed lifecycle: `grim_joystick_init` (`0x1000a1c0`),
+  `grim_joystick_poll` (`0x1000a2b0`), and `grim_joystick_shutdown`
+  (`0x1000a330`)
+- Confirmed lifecycle signatures: `bool grim_joystick_init(HWND hwnd)`,
+  `bool grim_joystick_poll(void)`, and `void grim_joystick_shutdown(void)`
+
+Live Binary Ninja exposes the standard DirectInput source shape. Initialization
+creates DirectInput8 when needed, enumerates attached game controllers, and
+stops after the first device is created. It installs `c_dfDIJoystick2`, sets
+cooperative flags `5`, enumerates device objects, acquires the device, and
+performs an initial poll. The axis callback applies `DIPROP_RANGE` by object ID
+to every object whose type has an axis bit, using `[-1000, 1000]`; property
+failure stops object enumeration. The null-window fallback calls
+`GetDesktopWindow` without retaining its result, matching the keyboard and
+mouse initializers.
+
+Polling calls `Poll` first. A failure enters an `Acquire` loop only while the
+result is `DIERR_INPUTLOST`, then returns false for that frame; a successful
+poll reads the full 272-byte `DIJOYSTATE2` and reports the `GetDeviceState`
+HRESULT. Shutdown unacquires/releases the device and then releases the parent
+DirectInput interface, nulling both globals.
+
+Natural C++ reproduces all 183 instructions across the five functions, with
+full prefixes and aggregate references `33/0/0` under the stock VC6.5 profile.
+No inline assembly, volatile shaping, fake references, or forced addresses are
+used.
+
+
 ## grim.dll — keyboard init helper @ 0x1000a390
 
 - Confirmed name: `grim_keyboard_init`

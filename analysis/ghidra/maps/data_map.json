@@ -9155,6 +9155,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1004fe74",
+      "comment": "DirectInput Joystick2 data format passed to SetDataFormat.",
+      "name": "c_dfDIJoystick2",
+      "program": "grim.dll",
+      "type": "DIDATAFORMAT"
+    },
+    {
       "address": "0x1005007c",
       "comment": "DirectInput keyboard data format passed to SetDataFormat.",
       "name": "c_dfDIKeyboard",
@@ -10237,6 +10244,13 @@
       "name": "grim_joystick_device",
       "program": "grim.dll",
       "type": "LPDIRECTINPUTDEVICE8A"
+    },
+    {
+      "address": "0x1005d948",
+      "comment": "Set after the joystick enumeration callback creates a device.",
+      "name": "grim_joystick_found",
+      "program": "grim.dll",
+      "type": "char"
     },
     {
       "address": "0x1005d958",

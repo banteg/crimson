@@ -44,5 +44,6 @@ High-confidence globals from the grim.dll decompilation:
   `grim_font2_uv_v`, and `grim_font2_texture_handle`.
 
 - **DirectInput:** `grim_dinput_keyboard`/`grim_keyboard_device`/`grim_keyboard_state`,
-  `grim_dinput_mouse`/`grim_mouse_device`/`grim_mouse_state`,
-  `grim_dinput_joystick`/`grim_joystick_device`/`grim_joystick_state`.
+  `grim_dinput_mouse`/`grim_mouse_device`/`grim_mouse_state`, and the
+  exact-matched joystick lifecycle around `grim_dinput_joystick`/
+  `grim_joystick_device`/`grim_joystick_state`.

@@ -77,8 +77,14 @@ We also generate an evidence appendix with callsite snippets:
   `grim_joystick_right_active` (`0x10006f90`) compare centered X/Y axis values
   against the configured deadzone using strict inequalities.
 
-- `grim_joystick_init` (`0x1000a1c0`) / `grim_joystick_poll` (`0x1000a2b0`) manage the DirectInput
-  joystick device.
+- `grim_joystick_enum_device` (`0x1000a110`) / `grim_joystick_configure_axis`
+  (`0x1000a150`) / `grim_joystick_init` (`0x1000a1c0`) /
+  `grim_joystick_poll` (`0x1000a2b0`) / `grim_joystick_shutdown`
+  (`0x1000a330`) exactly recover the DirectInput joystick lifecycle.
+  Initialization selects the first attached game controller, installs the
+  Joystick2 format, applies a `[-1000, 1000]` range to each axis, and acquires
+  it. Polling retries lost acquisition and snapshots all 272 state bytes;
+  shutdown releases both COM objects.
 
 
 ## Top offsets by callsite count
