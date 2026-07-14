@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**163/2161** functions matched, **22756/675651** code bytes (**3.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**164/2161** functions matched, **23365/675651** code bytes (**3.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 119/1175 | 16065/289897 | 5.5% | 119/123 |
+| grim.dll | 120/1175 | 16674/289897 | 5.8% | 120/124 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**119/1175** functions, **16065/289897** bytes (**5.5%**), **119/123** scratches verified.
+**120/1175** functions, **16674/289897** bytes (**5.8%**), **120/124** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -88,6 +88,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_window_destroy | 0x10002880 | 66 | 22/22 | 100.00% | 22/22 | 8/0/0 |  | grim-window-teardown |
 | match | grim_backup_textures | 0x100028d0 | 610 | 219/219 | 100.00% | 219/219 | 41/0/0 |  | grim-texture-backup |
 | match | grim_restore_textures | 0x10002b40 | 432 | 161/161 | 100.00% | 161/161 | 26/0/0 |  | grim-texture-restore |
+| match | grim_try_reset_device | 0x10002cf0 | 609 | 205/205 | 100.00% | 205/205 | 48/0/0 |  | grim-device-reset |
 | wip | grim_d3d_shutdown | 0x10004280 | 196 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
 | match | grim_apply_render_state | 0x10004520 | 720 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |

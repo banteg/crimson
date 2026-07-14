@@ -5208,6 +5208,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10002cf0",
+    "name": "grim_try_reset_device",
+    "signature": "HRESULT grim_try_reset_device(void)",
+    "comment": "retries a lost-device reset and rebuilds owned textures and render state"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10002f60",
     "name": "FUN_10002f60",
     "signature": "bool FUN_10002f60(void* arg1)",
