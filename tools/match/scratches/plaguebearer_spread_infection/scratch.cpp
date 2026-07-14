@@ -15,23 +15,22 @@ extern "C" int plaguebearer_spread_infection(int creature_id)
     register int other_id = 0;
     creature_t *creature = creature_pool;
 
-    do {
+    while ((int)creature < (int)&creature_pool[0x180]) {
         if (creature->active) {
             if (vec2_distance(
                     (vec2f_t *)&creature->pos_x,
                     (vec2f_t *)&creature_pool[creature_id].pos_x
                 ) < 45.0f) {
-                break;
+                goto found;
             }
         }
         ++creature;
         ++other_id;
-    } while ((int)creature < (int)&creature_pool[0x180]);
-
-    if ((int)creature >= (int)&creature_pool[0x180]) {
-        return 0;
     }
 
+    return 0;
+
+found:
     if (creature_pool[other_id].collision_flag
         && creature_pool[creature_id].health < 150.0f) {
         creature_pool[creature_id].collision_flag = 1;
