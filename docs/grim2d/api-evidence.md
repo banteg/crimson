@@ -1000,11 +1000,10 @@ match 2/2 instructions, and the unchecked POV array accessor matches 3/3.
 
 ## 0xac — grim_create_texture @ 0x100075d0
 
-- Provisional name: `create_texture` (high)
-- Guess: `bool create_texture(const char *name, int width, int height)`
+- Confirmed name: `create_texture`
+- Confirmed C++ signature: `bool create_texture(char *name, int width, int height)`
 - Notes: used for terrain texture
-- Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
-- Suggested signature: `bool grim_create_texture(const char *name, int width, int height)`
+- Previous Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
 - Call sites: 2 (unique funcs: 1)
 - Sample calls: init_audio_and_terrain:L21242; init_audio_and_terrain:L21250
 - First callsite: init_audio_and_terrain (`FUN_0042a9f0`) (line 21221)
@@ -1028,37 +1027,76 @@ grim.dll body:
   (&DAT_1005d404)[uVar1] = pvVar3;
 ```
 
+The recovered VC6.5 source matches all 81 native instructions (257 bytes;
+references `13/0/0`). It scans for a free slot, creates a one-level managed
+texture, allocates and initializes the 24-byte texture entry, stores it in the
+slot table, and returns a byte-sized success value. Allocation failures unwind
+the partially constructed entry through the compiler-generated cleanup path.
+
 
 ## 0xb0 — grim_recreate_texture @ 0x10007790
 
-- Provisional name: `recreate_texture` (high)
-- Guess: `bool recreate_texture(int handle)`
-- Ghidra signature: `int grim_recreate_texture(int handle)`
-- Suggested signature: `bool grim_recreate_texture(int handle)`
+- Confirmed name: `recreate_texture`
+- Confirmed C++ signature: `bool recreate_texture(int handle)`
+- Previous Ghidra signature: `int grim_recreate_texture(int handle)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
 
 
-grim.dll body:
+Recovered source shape:
 
-```c
-  iVar3 = (&DAT_1005d404)[handle];
-  if (iVar3 == 0) {
-    return 0;
-  }
-  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),DAT_10059dbc,*(uint *)(iVar3 + 0xc),
-                       (uint)*(void **)(iVar3 + 0x10),1,0,DAT_1005a56c,1,(int)&handle);
+```cpp
+bool IGrim2D_cpp::grim_recreate_texture(int handle)
+{
+    if (grim_texture_slots[handle] == 0) {
+        return false;
+    }
+
+    IDirect3DTexture8 *replacement;
+    if (D3DXCreateTexture(
+            grim_d3d_device,
+            grim_texture_slots[handle]->width,
+            grim_texture_slots[handle]->height,
+            1,
+            0,
+            grim_preferred_texture_format,
+            D3DPOOL_MANAGED,
+            &replacement) < 0) {
+        return false;
+    }
+
+    if (d3dx_copy_texture_filtered(
+            replacement,
+            grim_texture_slots[handle]->texture,
+            0,
+            0,
+            0x10,
+            1.0f) < 0) {
+        replacement->Release();
+        return false;
+    }
+
+    grim_texture_slots[handle]->texture->Release();
+    grim_texture_slots[handle]->texture = replacement;
+    return true;
+}
 ```
+
+This natural VC6.5 source matches all 57 native instructions (157 bytes;
+references `8/0/0`). The six-argument copy target is a linked internal D3DX8
+resampler rather than a public load API: its body validates copy/filter flags
+and consumes the final argument as an x87 scale. The old texture is released
+and replaced only after a successful copy; the temporary replacement is
+released on failure.
 
 
 ## 0xb4 — grim_load_texture @ 0x100076e0
 
-- Provisional name: `load_texture` (high)
-- Guess: `bool load_texture(const char *name, const char *path)`
+- Confirmed name: `load_texture`
+- Confirmed C++ signature: `bool load_texture(char *name, char *path)`
 - Notes: name + filename
-- Ghidra signature: `int grim_load_texture(char *name, char *path)`
-- Suggested signature: `bool grim_load_texture(const char *name, const char *path)`
+- Previous Ghidra signature: `int grim_load_texture(char *name, char *path)`
 - Call sites: 3 (unique funcs: 3)
 - Sample calls: ui_element_load:L10132; texture_get_or_load (`FUN_0042a670`):L18970; texture_get_or_load_alt (`FUN_0042a700`):L18996
 - First callsite: ui_element_load (line 12269)
@@ -1070,6 +1108,10 @@ grim.dll body:
   iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(&stack0xfffffef8);
   *(int *)(iStack_8 + 0xe0) = iVar2;
 ```
+
+The public method is an exact 7-instruction, 21-byte wrapper around
+`grim_load_texture_internal` (references `1/0/0`). Its return remains in `AL`,
+confirming the byte-sized C++ `bool` ABI.
 
 
 ## 0xb8 — grim_save_texture @ 0x10007750

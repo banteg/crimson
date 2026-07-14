@@ -242,7 +242,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x9c` | `grim_get_joystick_y` | `int grim_get_joystick_y(void)` |
 | `0xa0` | `grim_get_joystick_z` | `int grim_get_joystick_z(void)` |
 | `0xa8` | `grim_is_joystick_button_down` | `unsigned char grim_is_joystick_button_down(int button)` |
-| `0xb0` | `grim_recreate_texture` | `int grim_recreate_texture(int handle)` |
+| `0xb0` | `grim_recreate_texture` | `unsigned char grim_recreate_texture(int handle)` |
 | `0xb8` | `grim_save_texture` | `bool grim_save_texture(int handle, char *path)` |
 | `0xbc` | `grim_destroy_texture` | `void grim_destroy_texture(int handle)` |
 | `0xe0` | `grim_draw_line` | `void grim_draw_line(float * p0, float * p1, float thickness)` |
@@ -262,7 +262,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x1c` | 1 | `grim_apply_settings` | `void grim_apply_settings(void)` |
 | `0x28` | 1 | `grim_get_error_text` | `char * grim_get_error_text(void)` |
 | `0x50` | 1 | `grim_get_key_char` | `int grim_get_key_char(void)` |
-| `0xac` | 1 | `grim_create_texture` | `int grim_create_texture(char * name, int width, int height)` |
+| `0xac` | 1 | `grim_create_texture` | `unsigned char grim_create_texture(char * name, int width, int height)` |
 | `0xc8` | 1 | `grim_draw_fullscreen_quad` | `void grim_draw_fullscreen_quad(int unused)` |
 | `0xd8` | 1 | `grim_draw_circle_filled` | `void grim_draw_circle_filled(float x, float y, float radius)` |
 | `0xdc` | 1 | `grim_draw_circle_outline` | `void grim_draw_circle_outline(float x, float y, float radius)` |
@@ -270,7 +270,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x60` | 2 | `grim_get_mouse_wheel_delta` | `float grim_get_mouse_wheel_delta(void)` |
 | `0xa4` | 2 | `grim_get_joystick_pov` | `int grim_get_joystick_pov(int index)` |
 | `0xcc` | 2 | `grim_draw_fullscreen_color` | `void grim_draw_fullscreen_color(float r, float g, float b, float a)` |
-| `0xb4` | 3 | `grim_load_texture` | `int grim_load_texture(char * name, char * path)` |
+| `0xb4` | 3 | `grim_load_texture` | `unsigned char grim_load_texture(char * name, char * path)` |
 | `0x130` | 3 | `grim_submit_vertices_offset_color` | `void grim_submit_vertices_offset_color(float *verts, int count, float *offset, const uint32_t *color)` |
 | `0x140` | 3 | `grim_draw_text_mono_fmt` | `void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)` |
 
@@ -352,9 +352,9 @@ These offsets appear with keycodes or input-related values:
 | `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | high | returns cached joystick Z |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | high | returns cached POV value |
 | `0xa8` | `is_joystick_button_down` | `uint8_t is_joystick_button_down(int button)` | high | returns bit 7 of the low-byte-indexed cached button |
-| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | high | creates blank texture in a free slot |
-| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | high | recreates D3D texture surface for handle |
-| `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
+| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | confirmed | exact-matched blank texture allocation in a free slot |
+| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | confirmed | exact-matched managed texture recreation with success-only swap |
+| `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | confirmed | exact-matched `(name, filename)` wrapper |
 | `0xb8` | `save_texture` | `bool save_texture(int handle, const char *path)` | confirmed | saves the texture as TGA through `D3DXSaveTextureToFileA` |
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |

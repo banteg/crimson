@@ -5658,15 +5658,15 @@
     "program": "grim.dll",
     "address": "0x100075d0",
     "name": "grim_create_texture",
-    "signature": "int grim_create_texture(char *name, int width, int height)",
-    "comment": "Grim2D vtable 0xac: create blank texture in a free slot"
+    "signature": "unsigned char grim_create_texture(char *name, int width, int height)",
+    "comment": "Grim2D vtable 0xac: exact-matched blank texture allocation in a free slot"
   },
   {
     "program": "grim.dll",
     "address": "0x100076e0",
     "name": "grim_load_texture",
-    "signature": "int grim_load_texture(char *name, char *path)",
-    "comment": "Grim2D vtable 0xb4 (provisional)"
+    "signature": "unsigned char grim_load_texture(char *name, char *path)",
+    "comment": "Grim2D vtable 0xb4: exact-matched byte-return wrapper for grim_load_texture_internal"
   },
   {
     "program": "grim.dll",
@@ -5693,8 +5693,8 @@
     "program": "grim.dll",
     "address": "0x10007790",
     "name": "grim_recreate_texture",
-    "signature": "int grim_recreate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb0: recreate D3D texture surface"
+    "signature": "unsigned char grim_recreate_texture(int handle)",
+    "comment": "Grim2D vtable 0xb0: exact-matched managed texture recreation, filtered copy, and success-only swap"
   },
   {
     "program": "grim.dll",
@@ -6152,17 +6152,17 @@
   {
     "program": "grim.dll",
     "address": "0x1000b297",
-    "name": "FUN_1000b297",
-    "signature": "int FUN_1000b297(int** arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t __stdcall sub_1000b297(int32_t** arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "name": "D3DXCreateTexture",
+    "signature": "int D3DXCreateTexture(void *device, uint width, uint height, uint mip_levels, uint usage, int format, int pool, void **texture)",
+    "comment": "D3DX8 static helper; validates texture requirements then calls IDirect3DDevice8::CreateTexture",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000b3fe",
-    "name": "FUN_1000b3fe",
-    "signature": "int FUN_1000b3fe(int* arg1, int* arg2, int arg3, int arg4, float arg5)",
-    "comment": "[binja] int32_t __stdcall sub_1000b3fe(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5)",
+    "name": "d3dx_copy_texture_filtered",
+    "signature": "int d3dx_copy_texture_filtered(void *destination, void *source, void *destination_options, uint copy_flags, uint filter, float scale)",
+    "comment": "internal D3DX8 texture resampler used to copy a live texture into a recreated surface",
     "create": false
   },
   {

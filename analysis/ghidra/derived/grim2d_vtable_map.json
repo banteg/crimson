@@ -796,10 +796,10 @@
     "func_name": "grim_create_texture",
     "func_size": 257,
     "calling_convention": "__stdcall",
-    "return_type": "int",
+    "return_type": "unsigned char",
     "param_count": 3,
-    "signature": "int grim_create_texture(char * name, int width, int height)",
-    "source_type": "DEFAULT"
+    "signature": "unsigned char grim_create_texture(char * name, int width, int height)",
+    "source_type": "USER_DEFINED"
   },
   {
     "offset_hex": "0xb0",
@@ -812,10 +812,10 @@
     "func_name": "grim_recreate_texture",
     "func_size": 157,
     "calling_convention": "__stdcall",
-    "return_type": "int",
+    "return_type": "unsigned char",
     "param_count": 1,
-    "signature": "int grim_recreate_texture(int handle)",
-    "source_type": "DEFAULT"
+    "signature": "unsigned char grim_recreate_texture(int handle)",
+    "source_type": "USER_DEFINED"
   },
   {
     "offset_hex": "0xb4",
@@ -831,11 +831,11 @@
     "section": ".text",
     "func_name": "grim_load_texture",
     "func_size": 21,
-    "calling_convention": "unknown",
-    "return_type": "int",
+    "calling_convention": "__stdcall",
+    "return_type": "unsigned char",
     "param_count": 2,
-    "signature": "int grim_load_texture(char * name, char * path)",
-    "source_type": "DEFAULT"
+    "signature": "unsigned char grim_load_texture(char * name, char * path)",
+    "source_type": "USER_DEFINED"
   },
   {
     "offset_hex": "0xb8",

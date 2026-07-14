@@ -87,9 +87,9 @@ struct IGrim2D_vtbl {
     /* 0x0a0 */ int (*grim_get_joystick_z)(void);
     /* 0x0a4 */ int (*grim_get_joystick_pov)(int index);
     /* 0x0a8 */ unsigned char (*grim_is_joystick_button_down)(int button);
-    /* 0x0ac */ int (*grim_create_texture)(char * name, int width, int height);
-    /* 0x0b0 */ int (*grim_recreate_texture)(int handle);
-    /* 0x0b4 */ int (*grim_load_texture)(char * name, char * path);
+    /* 0x0ac */ unsigned char (*grim_create_texture)(char * name, int width, int height);
+    /* 0x0b0 */ unsigned char (*grim_recreate_texture)(int handle);
+    /* 0x0b4 */ unsigned char (*grim_load_texture)(char * name, char * path);
     /* 0x0b8 */ unsigned char (*grim_save_texture)(int handle, char * path);
     /* 0x0bc */ void (*grim_destroy_texture)(int handle);
     /* 0x0c0 */ int (*grim_get_texture_handle)(char * name);
