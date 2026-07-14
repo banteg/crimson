@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**175/2161** functions matched, **25092/675651** code bytes (**3.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**176/2161** functions matched, **26138/675651** code bytes (**3.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 131/1175 | 18401/289897 | 6.3% | 131/137 |
+| grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**131/1175** functions, **18401/289897** bytes (**6.3%**), **131/137** scratches verified.
+**132/1175** functions, **19447/289897** bytes (**6.7%**), **132/137** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -95,7 +95,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_app_shutdown | 0x10003080 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | grim-app-shutdown-thunk |
 | match | grim_app_pump | 0x10003090 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | grim-app-30ms-pump |
 | match | grim_run_loop | 0x10003c00 | 608 | 174/174 | 100.00% | 174/174 | 61/0/0 |  | grim-win32-frame-loop |
-| wip | grim_d3d_init | 0x10003e60 | 1046 | 323/323 | 97.21% | 1/323 | 104/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-direct3d-initialization |
+| match | grim_d3d_init | 0x10003e60 | 1046 | 323/323 | 100.00% | 323/323 | 104/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-direct3d-initialization |
 | wip | grim_d3d_shutdown | 0x10004280 | 196 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
 | match | grim_create_geometry_buffers | 0x10004350 | 387 | 107/107 | 100.00% | 107/107 | 32/0/0 |  | grim-geometry-buffer-creation |
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
