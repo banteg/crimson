@@ -475,6 +475,13 @@ typedef struct secondary_projectile_t {
 
 typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
 
+typedef struct effect_color_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} effect_color_t;
+
 typedef struct fx_queue_entry_t {
     int effect_id;
     float rotation;
@@ -482,10 +489,7 @@ typedef struct fx_queue_entry_t {
     float pos_y;
     float height;
     float width;
-    float color_r;
-    float color_g;
-    float color_b;
-    float color_a;
+    effect_color_t color;
 } fx_queue_entry_t;
 
 typedef struct sprite_effect_t {
@@ -507,13 +511,6 @@ typedef struct effect_id_entry_t {
     int size_code;
     int frame;
 } effect_id_entry_t;
-
-typedef struct effect_color_t {
-    float r;
-    float g;
-    float b;
-    float a;
-} effect_color_t;
 
 typedef struct effect_vec2_t {
     float x;

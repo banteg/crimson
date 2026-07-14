@@ -24,7 +24,7 @@ void effects_update(void)
                         entry->half_width + entry->half_width,
                         entry->half_height + entry->half_height,
                         entry->rotation,
-                        &entry->color.r
+                        &entry->color
                     );
                 }
                 effect_free(entry);

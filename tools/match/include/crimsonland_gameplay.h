@@ -167,6 +167,8 @@ extern perk_meta_t perk_meta_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
 extern secondary_projectile_pool_t secondary_projectile_pool;
+extern fx_queue_entry_t fx_queue[];
+extern int fx_queue_count;
 extern particle_t particle_pool[];
 extern sprite_effect_t sprite_effect_pool[];
 extern creature_t creature_pool[];
@@ -261,13 +263,13 @@ void effect_init_entry(effect_entry_t *entry);
 void effect_free(effect_entry_t *entry);
 void effects_update(void);
 effect_entry_t *effect_spawn(int effect_id, float *pos);
-int fx_queue_add(
+unsigned char fx_queue_add(
     int effect_id,
     float *pos,
     float width,
     float height,
     float rotation,
-    float *rgba
+    effect_color_t *color
 );
 void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
