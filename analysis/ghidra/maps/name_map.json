@@ -5743,14 +5743,14 @@
     "address": "0x10007b90",
     "name": "grim_draw_circle_filled",
     "signature": "void grim_draw_circle_filled(float x, float y, float radius)",
-    "comment": "Grim2D vtable 0xd8 (provisional): triangle fan circle fill"
+    "comment": "Grim2D vtable 0xd8: exact-matched triangle-fan circle with radius-scaled segment count"
   },
   {
     "program": "grim.dll",
     "address": "0x10007d40",
     "name": "grim_draw_circle_outline",
     "signature": "void grim_draw_circle_outline(float x, float y, float radius)",
-    "comment": "Grim2D vtable 0xdc (provisional): triangle strip ring/outline"
+    "comment": "Grim2D vtable 0xdc: exact-matched two-vertex triangle-strip ring with two-pixel outer radius"
   },
   {
     "program": "grim.dll",

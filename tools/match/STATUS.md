@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**136/2161** functions matched, **15123/675651** code bytes (**2.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**138/2161** functions matched, **16017/675651** code bytes (**2.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 93/1175 | 8765/289897 | 3.0% | 93/94 |
+| grim.dll | 95/1175 | 9659/289897 | 3.3% | 95/96 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**93/1175** functions, **8765/289897** bytes (**3.0%**), **93/94** scratches verified.
+**95/1175** functions, **9659/289897** bytes (**3.3%**), **95/96** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -141,6 +141,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_draw_fullscreen_color | 0x100079b0 | 259 | 83/83 | 100.00% | 83/83 | 8/0/0 |  | grim2d-fullscreen-color |
 | match | grim_begin_batch | 0x10007ac0 | 94 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-batch-lifecycle |
 | match | grim_end_batch | 0x10007b20 | 104 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | grim2d-batch-lifecycle |
+| match | grim_draw_circle_filled | 0x10007b90 | 432 | 115/115 | 100.00% | 115/115 | 32/0/0 |  | grim2d-filled-circle |
+| match | grim_draw_circle_outline | 0x10007d40 | 462 | 120/120 | 100.00% | 120/120 | 31/0/0 |  | grim2d-circle-outline |
 | match | grim_set_rotation | 0x10007f30 | 85 | 19/19 | 100.00% | 19/19 | 11/0/0 |  | grim2d-rotation-matrix |
 | match | grim_set_color | 0x10007f90 | 166 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
 | match | grim_set_color_ptr | 0x10008040 | 104 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |

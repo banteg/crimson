@@ -1384,7 +1384,10 @@ documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
 
 ## 0xd8 — grim_draw_circle_filled @ 0x10007b90
 
-- Ghidra signature: `void grim_draw_circle_filled(float x, float y, float radius)`
+- Confirmed name: `draw_circle_filled`
+- Confirmed C++ signature: `void grim_draw_circle_filled(float x, float y, float radius)`
+- Primitive: `D3DPT_TRIANGLEFAN`
+- Segment count: `int(radius * 0.125f + 12.0f)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: ui_render_aim_indicators:L5640
 - First callsite: ui_render_aim_indicators (line 6027)
@@ -1398,10 +1401,21 @@ documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
           (**(code **)(*DAT_0048083c + 0x100))(0x3f000000,0,0x3f000000,0x3f800000);
 ```
 
+The recovered source matches all 115 native instructions (432 bytes;
+references `32/0/0`). It opens and locks the dynamic vertex buffer directly,
+emits the center followed by an inclusive `0..segment_count` perimeter loop,
+unlocks, and draws `vertex_count - 2` fan primitives. Each vertex is the native
+28-byte transformed/lit layout `{x, y, z, rhw, color, u, v}`; the current
+depth, RHW, color, and UV values are copied into every generated point.
+
 
 ## 0xdc — grim_draw_circle_outline @ 0x10007d40
 
-- Ghidra signature: `void grim_draw_circle_outline(float x, float y, float radius)`
+- Confirmed name: `draw_circle_outline`
+- Confirmed C++ signature: `void grim_draw_circle_outline(float x, float y, float radius)`
+- Primitive: `D3DPT_TRIANGLESTRIP`
+- Segment count: `int(radius * 0.2f + 14.0f)`
+- Outer radius: `radius + 2.0f`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: ui_render_aim_indicators:L5644
 - First callsite: ui_render_aim_indicators (line 6031)
@@ -1414,6 +1428,13 @@ documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
           (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f333333,0x3dcccccd,0x3f4ccccd);
           DAT_004802a8 = _DAT_00484fc8 + (float)(&DAT_00490900)[DAT_004aaf0c * 0xd8];
 ```
+
+The recovered source matches all 120 native instructions (462 bytes;
+references `31/0/0`). Its inclusive loop emits an inner vertex at `radius`
+with `v = 0.0f` and an outer vertex at `radius + 2.0f` with `v = 1.0f`, then
+draws `vertex_count - 2` strip primitives. VC6 hoists the repeated outer-radius
+expression and retains it with the segment divisor on the x87 stack across the
+loop; the natural repeated expression reproduces that behavior exactly.
 
 
 ## 0xe0 — grim_draw_line @ 0x100080b0

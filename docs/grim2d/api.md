@@ -363,8 +363,8 @@ These offsets appear with keycodes or input-related values:
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | high | alpha>0 draws a fullscreen color quad |
 | `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h, const float *rgba)` | confirmed | UI panel fill / background quad with explicit color |
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |
-| `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | high | builds circle fan with sin/cos |
-| `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | high | builds ring with sin/cos |
+| `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | confirmed | exact-matched triangle fan; `int(radius * 0.125f + 12)` segments |
+| `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | confirmed | exact-matched triangle strip; `int(radius * 0.2f + 14)` segments |
 | `0xe0` | `draw_line` | `void draw_line(const float *p0, const float *p1, float thickness)` | confirmed | exact-matched local-static line-vector transform, then calls 0xe4 |
 | `0xe4` | `draw_line_quad` | `void draw_line_quad(const float *p0, const float *p1, const float *half_vec)` | confirmed | exact-matched quad expansion from endpoints + half_vec |
 | `0xec` | `flush_batch` | `void flush_batch(void)` | high | flushes batch when buffer fills |
