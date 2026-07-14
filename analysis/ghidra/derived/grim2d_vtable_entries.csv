@@ -2,7 +2,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 0,0x0,0,0x10005c80,grim_release,.text
 1,0x4,4,0x10005c90,grim_set_paused,.text
 2,0x8,8,0x10005ca0,grim_get_version,.text
-3,0xc,12,0x10005cb0,grim_check_device,.text
+3,0xc,12,0x10005cb0,grim_save_screenshot,.text
 4,0x10,16,0x10005d40,grim_apply_config,.text
 5,0x14,20,0x10005eb0,grim_init_system,.text
 6,0x18,24,0x10005ff0,grim_shutdown,.text

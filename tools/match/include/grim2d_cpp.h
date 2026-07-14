@@ -16,7 +16,7 @@ public:
     virtual void grim_release(void) = 0;
     virtual void grim_set_paused(int paused) = 0;
     virtual float grim_get_version(void) = 0;
-    virtual int grim_check_device(void) = 0;
+    virtual bool grim_save_screenshot(char *path) = 0;
     virtual int grim_apply_config(void) = 0;
     virtual int grim_init_system(void) = 0;
     virtual void grim_shutdown(void) = 0;

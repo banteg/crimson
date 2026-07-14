@@ -71,7 +71,7 @@ const CONFIG = {
     0x000: { name: 'grim_release', args: [] },
     0x004: { name: 'grim_set_paused', args: ['i32'] },
     0x008: { name: 'grim_get_version', args: [] },
-    0x00C: { name: 'grim_check_device', args: [] },
+    0x00C: { name: 'grim_save_screenshot', args: ['cstr'] },
     0x010: { name: 'grim_apply_config', args: [] },
     0x014: { name: 'grim_init_system', args: [] },
     0x018: { name: 'grim_shutdown', args: [] },

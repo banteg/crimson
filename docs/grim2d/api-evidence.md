@@ -67,10 +67,12 @@ grim.dll body:
 ```
 
 
-## 0xc — grim_check_device @ 0x10005cb0
+## 0xc — grim_save_screenshot @ 0x10005cb0
 
-- Ghidra signature: `int grim_check_device(void)`
-- Notes: wraps a D3D device status call; negative results are masked with `0xffffff00`
+- Confirmed C++ signature: `bool grim_save_screenshot(char *path)`
+- Previous Ghidra name/signature: `int grim_check_device(void)`
+- Notes: exact-matched front-buffer capture; creates an `A8R8G8B8` image
+  surface, copies the front buffer, saves it as BMP, and releases the surface
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -79,10 +81,18 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  uVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4);
-  if ((int)uVar1 < 0) {
-    return uVar1 & 0xffffff00;
+  IDirect3DSurface8 *surface = 0;
+  if (grim_d3d_device->CreateImageSurface(
+          grim_present_width, grim_present_height,
+          D3DFMT_A8R8G8B8, &surface) < 0)
+    return false;
+  if (grim_d3d_device->GetFrontBuffer(surface) < 0 ||
+      D3DXSaveSurfaceToFileA(path, 0, surface, 0, 0) < 0) {
+    surface->Release();
+    return false;
   }
+  surface->Release();
+  return true;
 ```
 
 

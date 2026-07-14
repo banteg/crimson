@@ -47,7 +47,7 @@ struct IGrim2D_vtbl {
     /* 0x000 */ void (*grim_release)(void);
     /* 0x004 */ void (*grim_set_paused)(int paused);
     /* 0x008 */ float (*grim_get_version)(void);
-    /* 0x00c */ int (*grim_check_device)(void);
+    /* 0x00c */ unsigned char (*grim_save_screenshot)(char * path);
     /* 0x010 */ int (*grim_apply_config)(void);
     /* 0x014 */ int (*grim_init_system)(void);
     /* 0x018 */ void (*grim_shutdown)(void);

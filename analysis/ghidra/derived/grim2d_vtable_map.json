@@ -55,12 +55,12 @@
     "sample_calls": [],
     "func_addr": "0x10005cb0",
     "section": ".text",
-    "func_name": "grim_check_device",
+    "func_name": "grim_save_screenshot",
     "func_size": 140,
     "calling_convention": "unknown",
-    "return_type": "int",
-    "param_count": 0,
-    "signature": "int grim_check_device(void)",
+    "return_type": "bool",
+    "param_count": 1,
+    "signature": "bool grim_save_screenshot(char *path)",
     "source_type": "DEFAULT"
   },
   {

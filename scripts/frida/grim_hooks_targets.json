@@ -33,7 +33,7 @@
     "grim_apply_config": { "rva": "0x05D40" },
     "grim_init_system": { "rva": "0x05EB0" },
     "grim_apply_settings": { "rva": "0x06020" },
-    "grim_check_device": { "rva": "0x05CB0" },
+    "grim_save_screenshot": { "rva": "0x05CB0", "args": ["path:cstring"] },
     "grim_get_error_text": { "rva": "0x06CA0", "ret": "cstring" },
 
     "grim_create_texture": {

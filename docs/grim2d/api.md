@@ -187,7 +187,9 @@ Validation highlights (see the evidence appendix for snippets):
   `0x15f`/`0x160` to direct mouse X/Y delta, and two three-ID ranges to the
   indexed delta compatibility methods; unmatched IDs return zero.
 
-- `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
+- Vtable slot `0x0c`, previously labeled `grim_check_device`, is the
+  exact-matched `grim_save_screenshot(char *path)`: it captures the front
+  buffer and saves it as a BMP through `D3DXSaveSurfaceToFileA`.
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
 ## Grim state/config IDs (vtable `+0x20` / `grim_set_config_var`)
@@ -229,7 +231,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x0` | `grim_release` | `void grim_release(void)` |
 | `0x4` | `grim_set_paused` | `void grim_set_paused(int paused)` |
 | `0x8` | `grim_get_version` | `float grim_get_version(void)` |
-| `0xc` | `grim_check_device` | `int grim_check_device(void)` |
+| `0xc` | `grim_save_screenshot` | `bool grim_save_screenshot(char *path)` |
 | `0x34` | `grim_get_time_ms` | `int grim_get_time_ms(void)` |
 | `0x38` | `grim_set_time_ms` | `void grim_set_time_ms(int ms)` |
 | `0x3c` | `grim_get_frame_dt` | `float grim_get_frame_dt(void)` |
@@ -320,7 +322,7 @@ These offsets appear with keycodes or input-related values:
 | `0x0` | `release` | `void release(void)` | high | vtable destructor (operator_delete) |
 | `0x4` | `set_paused` | `void set_paused(int paused)` | high | sets global pause flag |
 | `0x8` | `get_version` | `float get_version(void)` | high | returns constant 1.21 |
-| `0xc` | `check_device` | `int check_device(void)` | high | returns a D3D status code (negative values masked) |
+| `0xc` | `save_screenshot` | `bool save_screenshot(char *path)` | high | exact front-buffer capture and BMP save; original identifier unknown |
 | `0x10` | `apply_config` | `bool apply_config(void)` | high | opens D3D config dialog and applies settings |
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | exact ordered teardown of lookup, input, Direct3D, and window resources |

@@ -5377,9 +5377,10 @@
   {
     "program": "grim.dll",
     "address": "0x10005cb0",
-    "name": "grim_check_device",
-    "signature": "int grim_check_device(void)",
-    "comment": "Grim2D vtable 0xc: device creation test"
+    "name": "grim_save_screenshot",
+    "aliases": ["grim_check_device"],
+    "signature": "bool grim_save_screenshot(char *path)",
+    "comment": "Grim2D vtable 0xc: captures the front buffer and saves it as a BMP"
   },
   {
     "program": "grim.dll",
@@ -6159,9 +6160,10 @@
   {
     "program": "grim.dll",
     "address": "0x1000ae52",
-    "name": "FUN_1000ae52",
-    "signature": "int FUN_1000ae52(int arg1, int arg2, int* arg3, int arg4, int* arg5)",
-    "comment": "[binja] int32_t __stdcall sub_1000ae52(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)",
+    "name": "D3DXSaveSurfaceToFileA",
+    "aliases": ["FUN_1000ae52"],
+    "signature": "int D3DXSaveSurfaceToFileA(char *path, int format, void *surface, void *palette, void *rect)",
+    "comment": "D3DX8 static helper; saves a surface to an image path using an optional palette and source rectangle",
     "create": false
   },
   {
