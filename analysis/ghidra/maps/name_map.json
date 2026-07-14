@@ -998,8 +998,8 @@
     "program": "crimsonland.exe",
     "address": "0x00412940",
     "name": "bonus_reset_availability",
-    "signature": "char * bonus_reset_availability(void)",
-    "comment": "[binja] char* sub_412940()"
+    "signature": "void bonus_reset_availability(void)",
+    "comment": "enables every bonus metadata entry, then disables BONUS_ID_NONE"
   },
   {
     "program": "crimsonland.exe",
