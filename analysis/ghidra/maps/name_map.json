@@ -3025,8 +3025,8 @@
     "program": "crimsonland.exe",
     "address": "0x00441270",
     "name": "highscore_format_date_label",
-    "signature": "char * highscore_format_date_label(int day, int month_index)",
-    "comment": "formats high-score day/month text into DAT_004d0e38 using month-name strings"
+    "signature": "char * highscore_format_date_label(int day, int month_index, int year)",
+    "comment": "formats high-score day, month, and year text into highscore_date_label_buffer using month-name strings"
   },
   {
     "program": "crimsonland.exe",
