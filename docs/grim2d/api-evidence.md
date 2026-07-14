@@ -127,9 +127,8 @@ grim.dll body:
 
 ## 0x14 — grim_init_system @ 0x10005eb0
 
-- Ghidra signature: `int grim_init_system(void)`
+- Confirmed C++ signature: `bool grim_init_system(void)`
 - Notes: initializes D3D + input devices and loads `smallFnt.dat`
-- Suggested signature: `bool grim_init_system(void)` (low byte indicates success)
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: crimsonland_main (`FUN_0042c450`):L19504
 - First callsite: crimsonland_main (`FUN_0042c450`) (line 21641)
@@ -142,6 +141,19 @@ grim.dll body:
   if (cVar1 == '\0') {
     FUN_00401870(&DAT_0047eea0,(byte *)s_Critical_failure__00474968);
 ```
+
+The recovered grim.dll method records the current directory, initializes D3D,
+then conditionally initializes mouse, keyboard, and joystick input. Mouse or
+keyboard failure tears down the partially initialized system and returns
+false; joystick failure is nonfatal and disables that input path. The success
+tail initializes timing, installs `crimson.paq`, and copies the optional
+256-byte `load\\smallFnt.dat` glyph-width table.
+
+The two config calls expose the original value-wrapper shape: implicit integer
+conversion initializes record word 0, while implicit string conversion
+initializes record word 3. VC6 constructs those 16-byte by-value arguments
+directly on the outgoing stack. The recovered method matches all 93 native
+instructions and all 32 references under MSVC 6.5 `/O2 /GB`.
 
 
 ## 0x18 — grim_shutdown @ 0x10005ff0

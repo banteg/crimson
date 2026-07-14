@@ -9978,10 +9978,31 @@
       "type": "char"
     },
     {
+      "address": "0x1005cc38",
+      "comment": "Keyboard initialization enable flag consumed by grim_init_system.",
+      "name": "grim_keyboard_enabled",
+      "program": "grim.dll",
+      "type": "bool"
+    },
+    {
+      "address": "0x1005cc48",
+      "comment": "Mouse initialization enable flag consumed by grim_init_system.",
+      "name": "grim_mouse_enabled",
+      "program": "grim.dll",
+      "type": "bool"
+    },
+    {
       "address": "0x1005cc58",
       "comment": "Input cache flag (uses cached mouse state when nonzero).",
       "name": "grim_input_cached",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005cc68",
+      "comment": "Joystick initialization enable flag; cleared after a nonfatal initialization failure.",
+      "name": "grim_joystick_enabled",
+      "program": "grim.dll",
+      "type": "bool"
     },
     {
       "address": "0x1005ccf8",
@@ -10037,6 +10058,13 @@
       "name": "grim_enable_auto_depth_stencil",
       "program": "grim.dll",
       "type": "char"
+    },
+    {
+      "address": "0x1005d0b4",
+      "comment": "Pointer to grim_main_window_hwnd installed during system initialization.",
+      "name": "grim_main_window_hwnd_ref",
+      "program": "grim.dll",
+      "type": "HWND *"
     },
     {
       "address": "0x1005d0c8",

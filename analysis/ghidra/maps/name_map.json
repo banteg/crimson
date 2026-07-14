@@ -5282,6 +5282,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10004920",
+    "name": "grim_timing_init",
+    "signature": "unsigned int grim_timing_init(void)",
+    "comment": "initializes millisecond, frame-delta, and FPS timing state and requests a 1 ms timer period"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004970",
+    "name": "grim_timing_update",
+    "signature": "int grim_timing_update(void)",
+    "comment": "advances the millisecond counter, frame delta, and rolling FPS estimate"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10004a50",
     "name": "grim_texture_init",
     "aliases": ["??0GrimTexture@@QAE@PAD@Z"],
@@ -5355,6 +5369,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10005ae0",
+    "name": "grim_lookup_blob_find",
+    "signature": "char * grim_lookup_blob_find(char *path)",
+    "comment": "walks the loaded lookup blob and returns the payload for an exact path match"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10005c20",
     "name": "grim_set_key_char_buffer",
     "signature": "void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)",
@@ -5408,7 +5429,7 @@
     "address": "0x10005eb0",
     "name": "grim_init_system",
     "comment": "Grim2D vtable 0x14: Grim2D init; returns success",
-    "signature": "int grim_init_system(void)"
+    "signature": "bool grim_init_system(void)"
   },
   {
     "program": "grim.dll",
@@ -5463,8 +5484,8 @@
     "program": "grim.dll",
     "address": "0x10006d50",
     "name": "grim_set_render_target",
-    "signature": "int grim_set_render_target(int target_index)",
-    "comment": "Grim2D vtable 0x30 (provisional): set render target; -1 resets"
+    "signature": "bool grim_set_render_target(int target_index)",
+    "comment": "Grim2D vtable 0x30: switches between texture surfaces and the cached backbuffer"
   },
   {
     "program": "grim.dll",

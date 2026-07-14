@@ -94,9 +94,9 @@
     "func_name": "grim_init_system",
     "func_size": 318,
     "calling_convention": "__fastcall",
-    "return_type": "int",
+    "return_type": "bool",
     "param_count": 0,
-    "signature": "int grim_init_system(void)",
+    "signature": "bool grim_init_system(void)",
     "source_type": "DEFAULT"
   },
   {
@@ -243,9 +243,9 @@
     "func_name": "grim_set_render_target",
     "func_size": 240,
     "calling_convention": "unknown",
-    "return_type": "int",
+    "return_type": "bool",
     "param_count": 1,
-    "signature": "int grim_set_render_target(int target_index)",
+    "signature": "bool grim_set_render_target(int target_index)",
     "source_type": "DEFAULT"
   },
   {

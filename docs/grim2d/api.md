@@ -292,7 +292,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | Offset | Callsites | Name | Signature |
 | --- | --- | --- | --- |
 | `0x10` | 1 | `grim_apply_config` | `int grim_apply_config(void)` |
-| `0x14` | 1 | `grim_init_system` | `int grim_init_system(void)` |
+| `0x14` | 1 | `grim_init_system` | `bool grim_init_system(void)` |
 | `0x18` | 1 | `grim_shutdown` | `void grim_shutdown(void)` |
 | `0x1c` | 1 | `grim_apply_settings` | `bool grim_apply_settings(void)` |
 | `0x28` | 1 | `grim_get_error_text` | `char * grim_get_error_text(void)` |
@@ -356,7 +356,7 @@ These offsets appear with keycodes or input-related values:
 | `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | exact guarded `Clear` call using `D3DCOLOR_COLORVALUE` |
-| `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
+| `0x30` | `set_render_target` | `bool set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
 | `0x34` | `get_time_ms` | `int get_time_ms(void)` | high | frame time accumulator (ms) |
 | `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | high | overrides time accumulator |
 | `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | high | clamped frame delta |

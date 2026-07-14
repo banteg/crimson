@@ -19,14 +19,14 @@ struct IGrim2D_vtbl {
     /* 0x008 */ float (__stdcall *grim_get_version)(void);
     /* 0x00c */ unsigned char (__stdcall *grim_save_screenshot)(char * path);
     /* 0x010 */ int (__stdcall *grim_apply_config)(void);
-    /* 0x014 */ int (__stdcall *grim_init_system)(void);
+    /* 0x014 */ unsigned char (__stdcall *grim_init_system)(void);
     /* 0x018 */ void (__stdcall *grim_shutdown)(void);
     /* 0x01c */ void (__stdcall *grim_apply_settings)(void);
     /* 0x020 */ void (__stdcall *grim_set_config_var)(unsigned int id, grim_config_value_t value);
     /* 0x024 */ grim_config_value_t * (__stdcall *grim_get_config_var)(grim_config_value_t * out, int id);
     /* 0x028 */ char * (__stdcall *grim_get_error_text)(void);
     /* 0x02c */ void (__stdcall *grim_clear_color)(float r, float g, float b, float a);
-    /* 0x030 */ int (__stdcall *grim_set_render_target)(int target_index);
+    /* 0x030 */ unsigned char (__stdcall *grim_set_render_target)(int target_index);
     /* 0x034 */ int (__stdcall *grim_get_time_ms)(void);
     /* 0x038 */ void (__stdcall *grim_set_time_ms)(int ms);
     /* 0x03c */ float (__stdcall *grim_get_frame_dt)(void);
