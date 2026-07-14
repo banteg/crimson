@@ -3764,6 +3764,13 @@
       "type": "unsigned char"
     },
     {
+      "address": "0x004871c9",
+      "comment": "When nonzero, highscore_save_record skips refreshing the active record fields before saving.",
+      "name": "highscore_save_skip_record_init",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004871cc",
       "comment": "UI mouse blocking flag checked by ui_mouse_inside_rect.",
       "name": "ui_mouse_blocked",

@@ -2497,8 +2497,8 @@
     "program": "crimsonland.exe",
     "address": "0x0043b450",
     "name": "highscore_save_record",
-    "signature": "void highscore_save_record(byte *record)",
-    "comment": "saves a high score record (updates or appends)"
+    "signature": "void highscore_save_record(highscore_record_t *record)",
+    "comment": "normalizes and saves a high score record by updating or appending"
   },
   {
     "program": "crimsonland.exe",
