@@ -92,6 +92,8 @@ drives whether the exe keeps the mod active.
 The context pointer passed at `+0x04` is treated as a vtable-based API from
 within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 (API v3), and the vtable pointer is set to `0x0046f3e4` during init.
+The same CRT global initializer sets the still-unknown context tail field at
+offset `+0x68` to `1`; its semantics are not yet proven.
 
 | Vtable offset | SDK name | Wrapper (crimsonland.exe) | Notes |
 | --- | --- | --- | --- |
@@ -101,7 +103,7 @@ within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 | `0x0c` | `CORE_Execute` | `mod_api_core_execute` (`0x0040e0a0`) | Executes a console line. |
 | `0x10` | `CORE_AddCommand` | `mod_api_core_add_command` (`0x0040e0c0`) | Registers a console command. |
 | `0x14` | `CORE_DelCommand` | `mod_api_core_del_command` (`0x0040e0e0`) | Unregisters a command. |
-| `0x18` | `CORE_GetExtension` | `mod_api_core_get_extension` (`0x0040e100`) | Handles `"grimgfx"`, `"grimsfx"`, `"IDirect3D8"`. |
+| `0x18` | `CORE_GetExtension` | `mod_api_core_get_extension` (`0x0040e100`) | Case-sensitive: `"GrimGFX"` returns the Grim interface, `"GrimSFX"` returns null, and `"IDirect3D8"` returns config slot `0x51`'s pointer word. |
 | `0x1c` | `GFX_Clear` | `mod_api_gfx_clear` (`0x0040e1f0`) | Bridges to `grim_clear_color`. |
 | `0x20` | `GFX_GetStringWidth` | `mod_api_gfx_get_string_width` (`0x0040e220`) | Bridges to `grim_measure_text_width`. |
 | `0x24` | `GFX_Printf` | `mod_api_gfx_printf` (`0x0040e240`) | Preformats into a global buffer, then draws text. |

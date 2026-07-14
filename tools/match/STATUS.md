@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**322/2162** functions matched, **40039/675654** code bytes (**5.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**326/2162** functions matched, **40429/675654** code bytes (**6.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 190/987 | 20592/385757 | 5.3% | 190/214 |
+| crimsonland.exe | 194/987 | 20982/385757 | 5.4% | 194/218 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**190/987** functions, **20592/385757** bytes (**5.3%**), **190/214** scratches verified.
+**194/987** functions, **20982/385757** bytes (**5.4%**), **194/218** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -35,6 +35,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
+| match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
 | match | mod_api_debug_printf | 0x0040e000 | 50 | 14/14 | 100.00% | 14/14 | 2/0/0 |  | mod-api-debug-output |
 | match | mod_api_core_get_var | 0x0040e040 | 61 | 21/21 | 100.00% | 21/21 | 5/0/0 |  | mod-api-core-cvar-view |
@@ -42,8 +43,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_api_core_execute | 0x0040e0a0 | 18 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | mod-api-core-console-execute |
 | match | mod_api_core_add_command | 0x0040e0c0 | 23 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | mod-api-core-command-register |
 | match | mod_api_core_del_command | 0x0040e0e0 | 18 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | mod-api-core-command-delete |
+| match | mod_api_core_get_extension | 0x0040e100 | 233 | 101/101 | 100.00% | 101/101 | 5/0/0 |  | mod-api-core-extension-query |
 | match | mod_api_gfx_clear | 0x0040e1f0 | 34 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | mod-api-graphics-clear |
 | match | mod_api_gfx_get_string_width | 0x0040e220 | 22 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | mod-api-graphics-text-width |
+| match | mod_api_gfx_printf | 0x0040e240 | 53 | 16/16 | 100.00% | 16/16 | 4/0/0 |  | mod-api-graphics-formatted-text |
+| match | mod_api_gfx_load_texture | 0x0040e280 | 83 | 23/23 | 100.00% | 23/23 | 5/0/0 |  | mod-api-graphics-texture-load |
 | match | mod_api_gfx_free_texture | 0x0040e2e0 | 24 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | mod-api-graphics-texture-free |
 | match | mod_api_gfx_set_texture | 0x0040e300 | 24 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | mod-api-graphics-texture-bind |
 | match | mod_api_gfx_set_color | 0x0040e320 | 37 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | mod-api-graphics-color |

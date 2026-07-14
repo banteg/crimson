@@ -2,6 +2,9 @@
   "entries": [
     {
       "address": "0x0046f3e4",
+      "aliases": [
+        "??_7mod_api_cpp_t@@6B@"
+      ],
       "comment": "Mod API vtable used by mod_api_context (clAPI_t virtuals; see cl_mod_sdk_v1/ClMod.h).",
       "name": "mod_api_vtable",
       "program": "crimsonland.exe",
@@ -2391,6 +2394,13 @@
       "name": "mod_api_context",
       "type": "mod_api_t",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00481ae8",
+      "comment": "Unknown mod API context tail field at offset 0x68; the CRT global initializer sets it to 1.",
+      "name": "mod_api_context_field_0x68",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00481bc0",
@@ -9071,6 +9081,13 @@
       "name": "crt_environ",
       "program": "crimsonland.exe",
       "type": "char **"
+    },
+    {
+      "address": "0x004d9d00",
+      "comment": "Shared text buffer used by the native mod API GFX_Printf virtual method before drawing the small font.",
+      "name": "mod_api_gfx_format_buffer",
+      "program": "crimsonland.exe",
+      "type": "char[]"
     },
     {
       "address": "0x004d9f00",

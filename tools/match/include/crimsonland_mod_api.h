@@ -10,6 +10,8 @@ struct mod_var_t;
 // x86 __thiscall surface.
 class mod_api_cpp_t {
 public:
+    mod_api_cpp_t() { field_0x68 = 1; }
+
     virtual void mod_api_core_printf(char *format, ...);
     virtual mod_var_t *mod_api_core_get_var(char *id);
     virtual unsigned char mod_api_core_del_var(char *id);
@@ -44,6 +46,9 @@ public:
     virtual char mod_api_inp_get_pressed_char(void);
     virtual char *mod_api_inp_get_key_name(int key);
     virtual void mod_api_cl_enter_menu(char *menu);
+
+    unsigned char _opaque_0x04[0x64];
+    int field_0x68;
 };
 
 #endif
