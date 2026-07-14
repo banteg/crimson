@@ -36,6 +36,7 @@ PADDING_LINE_TEXT = {
     "add byte [eax], al",
     "int3",
     "lea ecx, dword [ecx]",
+    "mov edi, edi",
     "nop",
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
@@ -675,6 +676,31 @@ def _coff_local_jump_table_key(
     return _local_jump_table_key(offsets)
 
 
+def _coff_trailing_jump_table_start(
+    obj: CoffObject,
+    function: CoffSymbol,
+    end: int,
+) -> int | None:
+    """Return the first complete compiler-local switch table appended to a function."""
+
+    section = obj.sections[function.section_number - 1]
+    symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
+    starts: list[int] = []
+    for relocation in section.relocations:
+        if not (function.value <= relocation.virtual_address < end):
+            continue
+        table = symbols_by_raw_index.get(relocation.symbol_index)
+        if table is None or relocation.virtual_address + 4 > len(section.data):
+            continue
+        addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
+        table_start = table.value + addend
+        if not (relocation.virtual_address < table_start < end):
+            continue
+        if _coff_local_jump_table_key(obj, function, table, addend) is not None:
+            starts.append(table_start)
+    return min(starts, default=None)
+
+
 def _image_local_jump_table_key(
     image: LoadedImage | None,
     table_address: int,
@@ -756,6 +782,8 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
         and symbol.value > target.value
     )
     end = siblings[0] if siblings else len(section.data)
+    if (jump_table_start := _coff_trailing_jump_table_start(obj, target, end)) is not None:
+        end = jump_table_start
     symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
     relocation_references: list[ObjectRelocationReference] = []
     for relocation in section.relocations:

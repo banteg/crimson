@@ -244,6 +244,39 @@ def test_extract_object_function_collects_relocations() -> None:
     assert function.relocation_references[0].key == "name:foo"
 
 
+def test_extract_object_function_excludes_appended_local_jump_table() -> None:
+    code = bytes.fromhex("ff248500000000b801000000c3c38bff") + b"\x00" * 8
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=code,
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(3, 1, 6),
+                    CoffRelocation(0x10, 2, 6),
+                    CoffRelocation(0x14, 3, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Ltable", 0x10, 1, 0, 6),
+            CoffSymbol(2, "$Lcase0", 0x07, 1, 0, 6),
+            CoffSymbol(3, "$Lcase1", 0x0D, 1, 0, 6),
+        ),
+    )
+
+    function = extract_object_function(obj, "probe")
+
+    assert function.data == code[:0x10]
+    assert function.relocation_offsets == frozenset({3})
+    assert normalize_function(
+        function.data,
+        relocation_offsets=function.relocation_offsets,
+    ) == ("jmp dword [eax*4+ADDR]", "mov eax, 0x1", "ret", "ret")
+
+
 def test_normalize_masks_relocated_and_absolute_operands() -> None:
     code = bytes.fromhex("a134124a00c3")
     assert normalize_function(code, relocation_offsets=frozenset({1}))[0] == "mov eax, dword [ADDR]"
