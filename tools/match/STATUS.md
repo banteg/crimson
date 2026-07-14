@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**281/2161** functions matched, **38071/675651** code bytes (**5.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**282/2161** functions matched, **38326/675651** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 149/986 | 18624/385754 | 4.8% | 149/170 |
+| crimsonland.exe | 150/986 | 18879/385754 | 4.9% | 150/171 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**149/986** functions, **18624/385754** bytes (**4.8%**), **149/170** scratches verified.
+**150/986** functions, **18879/385754** bytes (**4.9%**), **150/171** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -107,6 +107,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
 | match | highscore_read_record | 0x0043ab10 | 179 | 80/80 | 100.00% | 80/80 | 5/0/0 |  | highscore-record-read-validation |
 | wip | highscore_record_equals | 0x0043abd0 | 151 | 78/74 | 89.47% | 49/74 | 0/0/0 |  | highscore-record-equality |
+| match | highscore_update_record | 0x0043ac70 | 255 | 95/95 | 100.00% | 95/95 | 13/0/0 |  | highscore-record-in-place-update |
 | match | highscore_write_record | 0x0043ad70 | 318 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | highscore-record-write-encoding |
 | match | highscore_compare_survival_score_desc | 0x0043aeb0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-survival-score-order |
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |

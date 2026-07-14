@@ -2445,8 +2445,8 @@
     "program": "crimsonland.exe",
     "address": "0x0043ac70",
     "name": "highscore_update_record",
-    "signature": "int highscore_update_record(char *path, byte *record)",
-    "comment": "updates a matching record in the high score file when allowed"
+    "signature": "unsigned char highscore_update_record(char *path, highscore_record_t *record)",
+    "comment": "finds and conditionally replaces a matching record in a high score file"
   },
   {
     "program": "crimsonland.exe",
@@ -3873,6 +3873,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461448",
     "name": "crt_fflush",
+    "aliases": [
+      "fflush"
+    ],
     "signature": "int crt_fflush(FILE *fp)",
     "comment": "CRT: fflush wrapper (NULL flushes all)"
   },
