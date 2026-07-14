@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 151/986 | 19061/385754 | 4.9% | 151/173 |
+| crimsonland.exe | 151/986 | 19061/385754 | 4.9% | 151/174 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**151/986** functions, **19061/385754** bytes (**4.9%**), **151/173** scratches verified.
+**151/986** functions, **19061/385754** bytes (**4.9%**), **151/174** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -113,6 +113,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
+| wip | highscore_load_table | 0x0043afa0 | 1198 | 339/354 | 67.53% | 0/354 | 51/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
