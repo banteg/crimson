@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**284/2161** functions matched, **38565/675651** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**286/2162** functions matched, **38574/675654** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 152/986 | 19118/385754 | 5.0% | 152/175 |
+| crimsonland.exe | 154/987 | 19127/385757 | 5.0% | 154/177 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**152/986** functions, **19118/385754** bytes (**5.0%**), **152/175** scratches verified.
+**154/987** functions, **19127/385757** bytes (**5.0%**), **154/177** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -45,6 +45,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
+| match | game_is_full_version | 0x0041df40 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
+| match | demo_trial_time_limit_ms | 0x0041df50 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | demo-trial-duration |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 131/131 | 100.00% | 131/131 | 8/0/0 |  | gameplay-movement |

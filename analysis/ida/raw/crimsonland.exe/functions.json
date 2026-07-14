@@ -3548,7 +3548,7 @@
     "calls": [],
     "end": "0x0041DF43",
     "external": false,
-    "library": true,
+    "library": false,
     "name": "game_is_full_version",
     "signature": "int()",
     "size": 3,

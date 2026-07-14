@@ -1327,8 +1327,8 @@
     "aliases": [
       "highscore_record_is_valid"
     ],
-    "signature": "int game_is_full_version(void)",
-    "comment": "constant-true full-version predicate; the linker folded the highscore_record_is_valid(record) predicate onto the same body"
+    "signature": "unsigned char game_is_full_version(void)",
+    "comment": "constant-true byte predicate; every caller consumes AL, and the linker folded the highscore_record_is_valid(record) predicate onto the same body"
   },
   {
     "program": "crimsonland.exe",
