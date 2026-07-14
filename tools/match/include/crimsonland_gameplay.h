@@ -154,6 +154,7 @@ extern float bonus_freeze_timer;
 extern float bonus_energizer_timer;
 extern float bonus_double_xp_timer;
 extern highscore_record_t highscore_active_record;
+extern highscore_record_t highscore_table[];
 extern char default_player_name[];
 extern game_mode_id_t config_game_mode;
 extern int quest_stage_major;

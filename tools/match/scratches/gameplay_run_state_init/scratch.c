@@ -9,7 +9,7 @@ int gameplay_run_state_init(void)
     highscore_active_record.flags = 0;
     highscore_active_record.sentinel_pipe = 124;
     highscore_active_record.sentinel_ff = -1;
-    *(int *)highscore_active_record.reserved0 = crt_rand() & 0x0fee050f;
+    highscore_active_record.random_tag = crt_rand() & 0x0fee050f;
 
     bonus_energizer_timer = 0.0f;
     survival_spawn_stage = 0;

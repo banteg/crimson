@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**188/2161** functions matched, **27262/675651** code bytes (**4.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**189/2161** functions matched, **27358/675651** code bytes (**4.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 56/986 | 7815/385754 | 2.0% | 56/67 |
+| crimsonland.exe | 57/986 | 7911/385754 | 2.1% | 57/68 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**56/986** functions, **7815/385754** bytes (**2.0%**), **56/67** scratches verified.
+**57/986** functions, **7911/385754** bytes (**2.1%**), **57/68** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -23,6 +23,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
+| match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
 | wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |

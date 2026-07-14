@@ -1058,7 +1058,8 @@ typedef struct highscore_record_t {
     unsigned int shots_fired;
     unsigned int shots_hit;
     unsigned int creature_kill_count;
-    unsigned char reserved0[0x08];
+    unsigned int random_tag;
+    unsigned char reserved0[0x04];
     unsigned char day;
     unsigned char date_checksum;
     unsigned char month;
