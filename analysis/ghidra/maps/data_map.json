@@ -9266,6 +9266,13 @@
       "type": "char"
     },
     {
+      "address": "0x10053040",
+      "comment": "Pointer to the NUL-terminated paq magic string that prefixes the lookup blob.",
+      "name": "grim_lookup_blob_magic",
+      "program": "grim.dll",
+      "type": "char *"
+    },
+    {
       "address": "0x10053070",
       "comment": "Texture handle for GRIM_Font2 (small font atlas).",
       "name": "grim_font2_texture_handle",

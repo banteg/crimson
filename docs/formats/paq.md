@@ -24,3 +24,6 @@ repeat until EOF:
 - There is no checksum or footer.
 - The extractor normalizes path separators and rejects `.`/`..` segments to
   avoid directory traversal.
+- Native `grim_lookup_blob_find` starts at `strlen("paq") + 1`, compares each
+  path exactly, returns `name + strlen(name) + 5` on a match, and otherwise
+  advances by the encoded payload size plus the path and header lengths.
