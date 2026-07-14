@@ -3745,6 +3745,9 @@
     "program": "crimsonland.exe",
     "address": "0x00460e5d",
     "name": "crt_fclose",
+    "aliases": [
+      "fclose"
+    ],
     "signature": "int crt_fclose(FILE *fp)",
     "comment": "fclose wrapper with CRT lock/unlock"
   },
@@ -3766,6 +3769,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046103f",
     "name": "crt_fopen",
+    "aliases": [
+      "fopen"
+    ],
     "signature": "FILE * crt_fopen(char *path, char *mode)",
     "comment": "fopen wrapper (calls crt_fsopen with share=0x40)"
   },
@@ -3906,6 +3912,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461af7",
     "name": "crt_fread",
+    "aliases": [
+      "fread"
+    ],
     "signature": "uint crt_fread(void *ptr, uint size, uint count, FILE *fp)",
     "comment": "fread wrapper with CRT lock/unlock"
   },
@@ -3920,6 +3929,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461c0e",
     "name": "crt_ftell",
+    "aliases": [
+      "ftell"
+    ],
     "signature": "long crt_ftell(FILE *fp)",
     "comment": "CRT: ftell with file lock"
   },
@@ -3934,6 +3946,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461d91",
     "name": "crt_fseek",
+    "aliases": [
+      "fseek"
+    ],
     "signature": "int crt_fseek(FILE *fp, long offset, int origin)",
     "comment": "fseek wrapper with CRT lock/unlock"
   },
@@ -4123,8 +4138,24 @@
     "program": "crimsonland.exe",
     "address": "0x00462da2",
     "name": "crt_getc",
+    "aliases": [
+      "fgetc"
+    ],
     "signature": "int crt_getc(FILE *fp)",
     "comment": "CRT: get character with stream lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462de0",
+    "name": "crt_stricmp",
+    "aliases": [
+      "_stricmp",
+      "__strcmpi",
+      "strcmpi",
+      "stricmp"
+    ],
+    "signature": "int crt_stricmp(const char *lhs, const char *rhs)",
+    "comment": "CRT: case-insensitive string comparison"
   },
   {
     "program": "crimsonland.exe",

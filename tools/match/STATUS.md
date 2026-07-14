@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**222/2161** functions matched, **30275/675651** code bytes (**4.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**227/2161** functions matched, **30757/675651** code bytes (**4.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 90/986 | 10828/385754 | 2.8% | 90/103 |
+| crimsonland.exe | 95/986 | 11310/385754 | 2.9% | 95/108 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**90/986** functions, **10828/385754** bytes (**2.8%**), **90/103** scratches verified.
+**95/986** functions, **11310/385754** bytes (**2.9%**), **95/108** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -105,6 +105,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | buffer_reader_read_u32 | 0x0043b8a0 | 24 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_skip | 0x0043b8c0 | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_find_tag | 0x0043b8e0 | 87 | 41/41 | 100.00% | 41/41 | 4/0/0 |  | resource-buffer-reader |
+| match | resource_pack_read_cstring | 0x0043b940 | 62 | 24/24 | 100.00% | 24/24 | 3/0/0 |  | resource-pack-cstring |
+| match | resource_pack_set | 0x0043b980 | 95 | 37/37 | 100.00% | 37/37 | 7/0/0 |  | resource-pack-selection |
+| match | resource_open_read | 0x0043b9e0 | 233 | 88/88 | 100.00% | 88/88 | 21/0/0 |  | resource-pack-lookup |
+| match | resource_close | 0x0043bad0 | 17 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | resource-file-lifecycle |
+| match | resource_read_alloc | 0x0043bca0 | 75 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
