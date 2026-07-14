@@ -69,7 +69,7 @@ bool IGrim2D_cpp::grim_init_system(void)
     grim_timing_init();
     grim_timing_update();
 
-    grim_set_config_var(0x15, 2);
+    grim_set_config_var(0x15, (unsigned int)2);
     grim_main_window_hwnd_ref = &grim_main_window_hwnd;
 
     grim_set_config_var(0x10, "crimson.paq");

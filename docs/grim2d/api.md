@@ -295,7 +295,7 @@ Runtime validation notes live in `runtime-validation.md`.
 
 | Offset | Callsites | Name | Signature |
 | --- | --- | --- | --- |
-| `0x10` | 1 | `grim_apply_config` | `int grim_apply_config(void)` |
+| `0x10` | 1 | `grim_apply_config` | `bool grim_apply_config(void)` |
 | `0x14` | 1 | `grim_init_system` | `bool grim_init_system(void)` |
 | `0x18` | 1 | `grim_shutdown` | `void grim_shutdown(void)` |
 | `0x1c` | 1 | `grim_apply_settings` | `bool grim_apply_settings(void)` |

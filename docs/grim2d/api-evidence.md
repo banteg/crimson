@@ -98,9 +98,8 @@ grim.dll body:
 
 ## 0x10 — grim_apply_config @ 0x10005d40
 
-- Ghidra signature: `int grim_apply_config(void)`
+- Confirmed C++ signature: `bool grim_apply_config(void)`
 - Notes: creates the D3D8 interface and shows the config dialog
-- Suggested signature: `bool grim_apply_config(void)` (low byte indicates success)
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: crimsonland_main (`FUN_0042c450`):L19443
 - First callsite: crimsonland_main (`FUN_0042c450`) (line 21580)
@@ -123,6 +122,14 @@ grim.dll body:
   if (grim_config_dialog_canceled == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
 ```
+
+The recovered method lazily loads icon resource `0x72`, probes Direct3D8 and
+device capabilities, runs dialog resource `0x74`, and releases the temporary
+interface. Direct3D creation failure records the native error, shows a `Grim`
+message box, and returns false. An accepted dialog applies config IDs `0x54`,
+`0x2b`, `8`, `0x34`, `8`, `0x29`, and `0x2a` in that order; both duplicated
+writes are native. The method matches all 124 instructions and all 25
+references under MSVC 6.5 `/O2 /GB`.
 
 
 ## 0x14 — grim_init_system @ 0x10005eb0

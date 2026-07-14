@@ -3,7 +3,7 @@ offset_hex,offset_dec,callsites,unique_functions,sample_calls,func_addr,section,
 0x4,4,0,0,,0x10005c90,.text,grim_set_paused,12,unknown,void,1,void grim_set_paused(int paused),DEFAULT
 0x8,8,0,0,,0x10005ca0,.text,grim_get_version,7,unknown,float,0,float grim_get_version(void),DEFAULT
 0xc,12,0,0,,0x10005cb0,.text,grim_save_screenshot,140,unknown,bool,1,bool grim_save_screenshot(char *path),DEFAULT
-0x10,16,1,1,FUN_0042c450:L19443,0x10005d40,.text,grim_apply_config,367,unknown,int,0,int grim_apply_config(void),DEFAULT
+0x10,16,1,1,FUN_0042c450:L19443,0x10005d40,.text,grim_apply_config,367,unknown,bool,0,bool grim_apply_config(void),DEFAULT
 0x14,20,1,1,FUN_0042c450:L19504,0x10005eb0,.text,grim_init_system,318,__fastcall,bool,0,bool grim_init_system(void),DEFAULT
 0x18,24,1,1,FUN_0042c450:L19599,0x10005ff0,.text,grim_shutdown,38,unknown,void,0,void grim_shutdown(void),DEFAULT
 0x1c,28,1,1,FUN_0042c450:L19581,0x10006020,.text,grim_apply_settings,8,unknown,void,0,void grim_apply_settings(void),DEFAULT

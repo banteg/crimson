@@ -6,6 +6,7 @@ struct grim_config_value_t {
 
     grim_config_value_t() {}
     grim_config_value_t(unsigned int value) { words[0] = value; }
+    grim_config_value_t(bool value) { *(bool *)words = value; }
     grim_config_value_t(char *value) { words[3] = (unsigned int)value; }
 };
 
@@ -18,7 +19,7 @@ public:
     virtual void grim_set_paused(int paused) = 0;
     virtual float grim_get_version(void) = 0;
     virtual bool grim_save_screenshot(char *path) = 0;
-    virtual int grim_apply_config(void) = 0;
+    virtual bool grim_apply_config(void) = 0;
     virtual bool grim_init_system(void) = 0;
     virtual void grim_shutdown(void) = 0;
     virtual bool grim_apply_settings(void) = 0;

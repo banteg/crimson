@@ -5422,7 +5422,7 @@
     "address": "0x10005d40",
     "name": "grim_apply_config",
     "comment": "Grim2D vtable 0x10: opens D3D config dialog and applies settings",
-    "signature": "int grim_apply_config(void)"
+    "signature": "bool grim_apply_config(void)"
   },
   {
     "program": "grim.dll",

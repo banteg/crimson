@@ -18,7 +18,7 @@ struct IGrim2D_vtbl {
     /* 0x004 */ void (__stdcall *grim_set_paused)(int paused);
     /* 0x008 */ float (__stdcall *grim_get_version)(void);
     /* 0x00c */ unsigned char (__stdcall *grim_save_screenshot)(char * path);
-    /* 0x010 */ int (__stdcall *grim_apply_config)(void);
+    /* 0x010 */ unsigned char (__stdcall *grim_apply_config)(void);
     /* 0x014 */ unsigned char (__stdcall *grim_init_system)(void);
     /* 0x018 */ void (__stdcall *grim_shutdown)(void);
     /* 0x01c */ void (__stdcall *grim_apply_settings)(void);

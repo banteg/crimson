@@ -76,9 +76,9 @@
     "func_name": "grim_apply_config",
     "func_size": 367,
     "calling_convention": "unknown",
-    "return_type": "int",
+    "return_type": "bool",
     "param_count": 0,
-    "signature": "int grim_apply_config(void)",
+    "signature": "bool grim_apply_config(void)",
     "source_type": "DEFAULT"
   },
   {

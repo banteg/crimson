@@ -36,9 +36,9 @@ void IGrim2D_cpp::grim_draw_text_small(float x, float y, char *text)
 
     GrimTextPoint origin(x, y);
     GrimTextPoint cursor(origin);
-    unsigned long saved_filter = grim_config_values[0x15].words[0];
+    unsigned int saved_filter = grim_config_values[0x15].words[0];
     if (saved_filter != 1) {
-        grim_set_config_var(0x15, 1);
+        grim_set_config_var(0x15, (unsigned int)1);
     }
 
     grim_set_rotation(0.0f);
