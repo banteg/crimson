@@ -5240,6 +5240,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10003c00",
+    "name": "grim_run_loop",
+    "signature": "int grim_run_loop(void)",
+    "comment": "Win32 message and Direct3D frame loop entered by vtable slot 0x1c"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10003e60",
     "name": "grim_d3d_init",
     "signature": "int grim_d3d_init(void)",
@@ -5385,8 +5392,8 @@
     "program": "grim.dll",
     "address": "0x10006020",
     "name": "grim_apply_settings",
-    "comment": "Grim2D vtable 0x1c: apply Grim2D settings after config load",
-    "signature": "void grim_apply_settings(void)"
+    "comment": "Grim2D vtable 0x1c: enters the main run loop and returns true after it exits",
+    "signature": "bool grim_apply_settings(void)"
   },
   {
     "program": "grim.dll",

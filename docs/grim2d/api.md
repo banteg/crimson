@@ -176,7 +176,9 @@ Validation highlights (see the evidence appendix for snippets):
   grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
 
 - `grim_apply_config` opens the Grim2D config dialog and initializes Direct3D8 before applying settings.
-- `grim_apply_settings` forwards to Grim2D’s internal settings routine (`FUN_10003c00`).
+- `grim_apply_settings` is an exact-matched `bool` wrapper that enters
+  `grim_run_loop`; despite the provisional name, slot `0x1c` owns the Win32
+  message pump and Direct3D frame loop rather than a settings-only operation.
 - `grim_init_system` initializes D3D and input devices, then loads `smallFnt.dat`.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
 - `grim_get_config_float` exactly maps six IDs to scaled joystick axes,
@@ -263,7 +265,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x10` | 1 | `grim_apply_config` | `int grim_apply_config(void)` |
 | `0x14` | 1 | `grim_init_system` | `int grim_init_system(void)` |
 | `0x18` | 1 | `grim_shutdown` | `void grim_shutdown(void)` |
-| `0x1c` | 1 | `grim_apply_settings` | `void grim_apply_settings(void)` |
+| `0x1c` | 1 | `grim_apply_settings` | `bool grim_apply_settings(void)` |
 | `0x28` | 1 | `grim_get_error_text` | `char * grim_get_error_text(void)` |
 | `0x50` | 1 | `grim_get_key_char` | `int grim_get_key_char(void)` |
 | `0xac` | 1 | `grim_create_texture` | `unsigned char grim_create_texture(char * name, int width, int height)` |
@@ -320,7 +322,7 @@ These offsets appear with keycodes or input-related values:
 | `0x10` | `apply_config` | `bool apply_config(void)` | high | opens D3D config dialog and applies settings |
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
-| `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
+| `0x1c` | `apply_settings` | `bool apply_settings(void)` | high | exact wrapper around the Win32/D3D run loop; public name remains provisional |
 | `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | high | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
 | `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |

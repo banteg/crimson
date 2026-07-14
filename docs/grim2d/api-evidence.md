@@ -153,8 +153,10 @@ grim.dll body:
 
 ## 0x1c — grim_apply_settings @ 0x10006020
 
-- Ghidra signature: `void grim_apply_settings(void)`
-- Notes: forwards to Grim2D’s internal settings routine (`FUN_10003c00`)
+- Confirmed C++ signature: `bool grim_apply_settings(void)`
+- Previous Ghidra signature: `void grim_apply_settings(void)`
+- Notes: exact-matched wrapper enters `grim_run_loop` (`0x10003c00`) and
+  returns `true` after the loop exits; the sole call site ignores the result
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: crimsonland_main (`FUN_0042c450`):L19581
 - First callsite: crimsonland_main (`FUN_0042c450`) (line 21718)
@@ -171,7 +173,8 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  FUN_10003c00();
+  grim_run_loop();
+  return true;
 ```
 
 

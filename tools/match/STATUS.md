@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**143/2161** functions matched, **18267/675651** code bytes (**2.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**144/2161** functions matched, **18275/675651** code bytes (**2.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 99/1175 | 11576/289897 | 4.0% | 99/101 |
+| grim.dll | 100/1175 | 11584/289897 | 4.0% | 100/102 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**99/1175** functions, **11576/289897** bytes (**4.0%**), **99/101** scratches verified.
+**100/1175** functions, **11584/289897** bytes (**4.0%**), **100/102** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -95,6 +95,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_release | 0x10005c80 | 8 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |
 | match | grim_set_paused | 0x10005c90 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-pause-state |
 | match | grim_get_version | 0x10005ca0 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-version |
+| match | grim_apply_settings | 0x10006020 | 8 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-run-loop-wrapper |
 | match | grim_get_config_var | 0x10006c30 | 102 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim2d-get-config-var |
 | match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
