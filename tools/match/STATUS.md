@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**350/2162** functions matched, **42566/675654** code bytes (**6.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**356/2162** functions matched, **43191/675654** code bytes (**6.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 218/987 | 23119/385757 | 6.0% | 218/245 |
+| crimsonland.exe | 224/987 | 23744/385757 | 6.2% | 224/251 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**218/987** functions, **23119/385757** bytes (**6.0%**), **218/245** scratches verified.
+**224/987** functions, **23744/385757** bytes (**6.2%**), **224/251** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -26,6 +26,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_cmd_minimize | 0x00401360 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-minimize-command |
 | match | console_cmdlist | 0x00401370 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-command-list |
 | match | console_vars | 0x004013c0 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-cvar-list |
+| match | console_echo | 0x00401410 | 245 | 93/93 | 100.00% | 93/93 | 17/0/0 |  | console-echo-command |
+| match | console_cmd_set | 0x00401510 | 77 | 22/22 | 100.00% | 22/22 | 11/0/0 |  | console-cvar-set-command |
 | match | console_printf | 0x00401870 | 49 | 17/17 | 100.00% | 17/17 | 4/0/0 |  | console-formatted-output |
 | match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
 | match | console_history_apply | 0x004018d0 | 99 | 42/42 | 100.00% | 42/42 | 4/0/0 |  | console-history-navigation |
@@ -36,6 +38,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_register_command | 0x004026e0 | 99 | 38/38 | 100.00% | 38/38 | 2/0/0 |  | console-command-register |
 | match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
+| match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
@@ -43,6 +46,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
+| match | ui_draw_clock_gauge_at | 0x0040a4c0 | 70 | 22/22 | 100.00% | 22/22 | 6/0/0 |  | ui-clock-gauge-wrapper |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
@@ -81,6 +85,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_api_inp_key_down | 0x0040e660 | 32 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | mod-api-input-key-state |
 | match | mod_api_inp_get_key_name | 0x0040e680 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-input-key-name |
 | match | mod_api_cl_enter_menu | 0x0040e690 | 99 | 37/37 | 100.00% | 37/37 | 4/0/0 |  | mod-api-pause-menu |
+| match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
@@ -106,6 +111,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | fx_queue_add | 0x0041e840 | 140 | 39/39 | 100.00% | 39/39 | 10/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
+| match | config_ensure_file | 0x0041f130 | 112 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | wip | angle_approach | 0x0041f430 | 299 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | bonus_spawn_at | 0x0041f5b0 | 479 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
