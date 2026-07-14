@@ -5458,6 +5458,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10006ea0",
+    "name": "grim_joystick_up_active",
+    "signature": "int grim_joystick_up_active(void)",
+    "comment": "tests whether joystick Y is below center minus the configured deadzone"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006ef0",
+    "name": "grim_joystick_down_active",
+    "signature": "int grim_joystick_down_active(void)",
+    "comment": "tests whether joystick Y exceeds center plus the configured deadzone"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006f40",
+    "name": "grim_joystick_left_active",
+    "signature": "int grim_joystick_left_active(void)",
+    "comment": "tests whether joystick X is below center minus the configured deadzone"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006f90",
+    "name": "grim_joystick_right_active",
+    "signature": "int grim_joystick_right_active(void)",
+    "comment": "tests whether joystick X exceeds center plus the configured deadzone"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10006fe0",
     "name": "grim_is_key_active",
     "signature": "int grim_is_key_active(int key)",

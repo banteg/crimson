@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**101/2161** functions matched, **12308/675651** code bytes (**1.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**105/2161** functions matched, **12612/675651** code bytes (**1.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 58/1175 | 5950/289897 | 2.1% | 58/58 |
+| grim.dll | 62/1175 | 6254/289897 | 2.2% | 62/62 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**58/1175** functions, **5950/289897** bytes (**2.1%**), **58/58** scratches verified.
+**62/1175** functions, **6254/289897** bytes (**2.2%**), **62/62** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -90,6 +90,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_error_text | 0x10006ca0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_time_ms | 0x10006e40 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_get_frame_dt | 0x10006e60 | 33 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | branch-x87 |
+| match | grim_joystick_up_active | 0x10006ea0 | 78 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_down_active | 0x10006ef0 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_left_active | 0x10006f40 | 78 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_right_active | 0x10006f90 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_is_key_down | 0x10007320 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-key-state |
 | match | grim_flush_input | 0x10007330 | 91 | 34/34 | 100.00% | 34/34 | 5/0/0 |  | grim2d-input-flush |
 | match | grim_was_key_pressed | 0x10007390 | 119 | 31/31 | 100.00% | 31/31 | 10/0/0 |  | grim2d-key-repeat |

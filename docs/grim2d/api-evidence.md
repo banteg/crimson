@@ -741,6 +741,20 @@ ignore their stack argument and dispatch through `this` slots `0x70` and
 `retn 4`.
 
 
+## grim.dll — joystick direction helpers @ 0x10006ea0..0x10006fd9
+
+- Confirmed names: `grim_joystick_up_active`, `grim_joystick_down_active`,
+  `grim_joystick_left_active`, and `grim_joystick_right_active`
+- Confirmed signatures: `int helper(void)`
+
+Each helper snapshots the configured deadzone and the corresponding axis
+center before reading X (`0x98`) or Y (`0x9c`) through the Grim2D interface.
+The negative helpers test `axis - center < -deadzone`; the positive helpers
+test `axis - center > deadzone`, so equality remains inactive. Natural VC6.5
+source reproduces all 88 instructions across the four functions, with full
+prefixes and aggregate references `12/0/0`.
+
+
 ## 0x80 — grim_is_key_active @ 0x10006fe0
 
 - Provisional name: `is_key_active` (high)

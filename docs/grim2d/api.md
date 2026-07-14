@@ -73,6 +73,10 @@ We also generate an evidence appendix with callsite snippets:
   data format and cooperative flags 5 before acquiring and polling. Shutdown mirrors the keyboard path:
   unacquire/release the device, then release the parent DirectInput interface.
 
+- `grim_joystick_up_active` (`0x10006ea0`) through
+  `grim_joystick_right_active` (`0x10006f90`) compare centered X/Y axis values
+  against the configured deadzone using strict inequalities.
+
 - `grim_joystick_init` (`0x1000a1c0`) / `grim_joystick_poll` (`0x1000a2b0`) manage the DirectInput
   joystick device.
 
