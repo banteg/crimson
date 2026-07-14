@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**290/2162** functions matched, **38831/675654** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**308/2162** functions matched, **39598/675654** code bytes (**5.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 158/987 | 19384/385757 | 5.0% | 158/182 |
+| crimsonland.exe | 176/987 | 20151/385757 | 5.2% | 176/200 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**158/987** functions, **19384/385757** bytes (**5.0%**), **158/182** scratches verified.
+**176/987** functions, **20151/385757** bytes (**5.2%**), **176/200** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -35,6 +35,24 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
+| match | mod_api_gfx_clear | 0x0040e1f0 | 34 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | mod-api-graphics-clear |
+| match | mod_api_gfx_get_string_width | 0x0040e220 | 22 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | mod-api-graphics-text-width |
+| match | mod_api_gfx_free_texture | 0x0040e2e0 | 24 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | mod-api-graphics-texture-free |
+| match | mod_api_gfx_set_texture | 0x0040e300 | 24 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | mod-api-graphics-texture-bind |
+| match | mod_api_gfx_set_color | 0x0040e320 | 37 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | mod-api-graphics-color |
+| match | mod_api_gfx_set_subset | 0x0040e350 | 37 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | mod-api-graphics-uv-subset |
+| match | mod_api_gfx_set_texture_filter | 0x0040e380 | 27 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | mod-api-graphics-texture-filter |
+| match | mod_api_gfx_set_blend_mode | 0x0040e3a0 | 51 | 17/17 | 100.00% | 17/17 | 2/0/0 |  | mod-api-graphics-blend-mode |
+| match | mod_api_gfx_begin | 0x0040e3e0 | 22 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | mod-api-graphics-batch |
+| match | mod_api_gfx_end | 0x0040e400 | 22 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | mod-api-graphics-batch |
+| match | mod_api_gfx_quad | 0x0040e420 | 76 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | mod-api-graphics-quad |
+| match | mod_api_gfx_quad_rot | 0x0040e470 | 79 | 23/23 | 100.00% | 23/23 | 4/0/0 |  | mod-api-graphics-rotated-quad |
+| match | mod_api_gfx_draw_quads | 0x0040e4c0 | 100 | 26/26 | 100.00% | 26/26 | 5/0/0 |  | mod-api-graphics-quad-batch |
+| match | mod_api_inp_get_pressed_char | 0x0040e610 | 11 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | mod-api-input-character |
+| match | mod_api_inp_get_analog | 0x0040e620 | 54 | 14/14 | 100.00% | 14/14 | 3/0/0 |  | mod-api-input-analog |
+| match | mod_api_inp_key_down | 0x0040e660 | 32 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | mod-api-input-key-state |
+| match | mod_api_inp_get_key_name | 0x0040e680 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-input-key-name |
+| match | mod_api_cl_enter_menu | 0x0040e690 | 99 | 37/37 | 100.00% | 37/37 | 4/0/0 |  | mod-api-pause-menu |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
