@@ -37,7 +37,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 120/127 | 37.25% | 1/127 | 15/0/2 |  | gameplay-player-reset |
-| wip | creature_find_nearest | 0x00420040 | 225 | 92/89 | 79.56% | 7/89 | 3/0/1 |  | gameplay-target-search |
+| wip | creature_find_nearest | 0x00420040 | 225 | 90/89 | 91.62% | 27/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
 | wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
