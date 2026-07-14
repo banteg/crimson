@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**254/2161** functions matched, **33584/675651** code bytes (**5.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**260/2161** functions matched, **33678/675651** code bytes (**5.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 122/986 | 14137/385754 | 3.7% | 122/140 |
+| crimsonland.exe | 128/986 | 14231/385754 | 3.7% | 128/147 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**122/986** functions, **14137/385754** bytes (**3.7%**), **122/140** scratches verified.
+**128/986** functions, **14231/385754** bytes (**3.7%**), **128/147** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -129,7 +129,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_entry_load_ogg | 0x0043c3a0 | 380 | 125/125 | 100.00% | 125/125 | 13/0/0 |  | audio-ogg-stream-load |
 | match | music_stream_update | 0x0043c520 | 109 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | audio-music-stream-update |
 | match | music_stream_fill | 0x0043c590 | 221 | 86/86 | 100.00% | 86/86 | 4/0/0 |  | audio-music-stream-fill |
+| match | sfx_entry_table_init_thunk | 0x0043c670 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | audio-sfx-entry-table-init-thunk |
+| match | sfx_entry_table_init | 0x0043c680 | 31 | 12/12 | 100.00% | 12/12 | 2/0/0 |  | audio-sfx-entry-table-init |
+| match | audio_asset_id_table_init_thunk | 0x0043c6a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | audio-asset-id-table-init-thunk |
+| match | audio_asset_id_table_init | 0x0043c6b0 | 17 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | audio-asset-id-table-init |
+| match | music_entry_table_init_thunk | 0x0043c6d0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | audio-music-entry-table-init-thunk |
+| match | music_entry_table_init | 0x0043c6e0 | 31 | 12/12 | 100.00% | 12/12 | 2/0/0 |  | audio-music-entry-table-init |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
+| wip | sfx_load_sample | 0x0043c740 | 389 | 132/134 | 84.21% | 11/134 | 29/0/0 |  | audio-sample-slot-loader |
 | wip | music_load_track | 0x0043c8d0 | 139 | 55/53 | 92.59% | 10/53 | 10/0/2 |  | music-track-slot-loader |
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |

@@ -7571,6 +7571,9 @@
     },
     {
       "address": "0x004c3f00",
+      "aliases": [
+        "audio_asset_id_table"
+      ],
       "comment": "SFX id for trooper_inPain_01.ogg",
       "name": "sfx_trooper_inpain_01",
       "program": "crimsonland.exe"

@@ -2733,6 +2733,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043c670",
+    "name": "sfx_entry_table_init_thunk",
+    "signature": "void sfx_entry_table_init_thunk(void)",
+    "comment": "startup thunk for sfx_entry_table_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c680",
+    "name": "sfx_entry_table_init",
+    "signature": "void sfx_entry_table_init(void)",
+    "comment": "runs the audio-entry runtime-state initializer across all 128 resident SFX slots"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c6a0",
+    "name": "audio_asset_id_table_init_thunk",
+    "signature": "void audio_asset_id_table_init_thunk(void)",
+    "comment": "startup thunk for audio_asset_id_table_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c6b0",
+    "name": "audio_asset_id_table_init",
+    "signature": "void audio_asset_id_table_init(void)",
+    "comment": "clears the contiguous 83-entry SFX and music asset id block"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c6d0",
+    "name": "music_entry_table_init_thunk",
+    "signature": "void music_entry_table_init_thunk(void)",
+    "comment": "startup thunk for music_entry_table_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c6e0",
+    "name": "music_entry_table_init",
+    "signature": "void music_entry_table_init(void)",
+    "comment": "runs the audio-entry runtime-state initializer across all 128 music slots"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043c700",
     "name": "sfx_release_sample",
     "signature": "int sfx_release_sample(int sfx_id)",
