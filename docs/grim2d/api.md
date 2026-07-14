@@ -93,6 +93,10 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_app_init` (`0x10002fc0`) exact-matches the runtime-object setup before
   the loop: timer and handle reset, client/backbuffer dimensions, current
   working directory, and the 16-byte client-rectangle overlay are recovered.
+- `grim_run_loop` (`0x10003c00`) now exact-matches all 608 bytes of the Win32
+  and Direct3D frame loop: message dispatch, timing, key-repeat decay, joystick
+  and mouse polling, cooperative-level recovery, restore/frame callbacks,
+  optional input-provider update, presentation, and orderly shutdown.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_d3d_shutdown` (`0x10004280`) has the full recovered surface, embedded
   texture, 256-slot texture table, geometry-buffer, device, and Direct3D8

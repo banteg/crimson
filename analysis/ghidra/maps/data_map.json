@@ -10081,6 +10081,14 @@
       "type": "char"
     },
     {
+      "address": "0x1005cf14",
+      "aliases": ["?grim_joystick_state_ptr@@3PAUGrimJoystickState@@A"],
+      "comment": "Published pointer to the current DIJOYSTATE2 buffer, refreshed by the main loop.",
+      "name": "grim_joystick_state_ptr",
+      "program": "grim.dll",
+      "type": "DIJOYSTATE2 *"
+    },
+    {
       "address": "0x1005d0b4",
       "comment": "Pointer to grim_main_window_hwnd installed during system initialization.",
       "name": "grim_main_window_hwnd_ref",
