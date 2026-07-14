@@ -52,6 +52,7 @@
     "program": "crimsonland.exe",
     "address": "0x00401170",
     "name": "console_global_init",
+    "include_library": true,
     "signature": "void console_global_init(void)",
     "comment": "loads the global console queue as this and tail-calls console_init"
   },
@@ -66,6 +67,7 @@
     "program": "crimsonland.exe",
     "address": "0x00401190",
     "name": "console_global_destroy",
+    "include_library": true,
     "signature": "void console_global_destroy(void)",
     "comment": "loads the global console queue as this and tail-calls console_destroy"
   },
@@ -157,6 +159,9 @@
     "program": "crimsonland.exe",
     "address": "0x004016e0",
     "name": "console_destroy",
+    "aliases": [
+      "??1console_queue_t@@QAE@XZ"
+    ],
     "signature": "void console_destroy(int *arg1)",
     "comment": "[binja] void __fastcall sub_4016e0(int32_t* arg1)"
   },

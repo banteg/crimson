@@ -135,6 +135,33 @@ def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     assert end == 0x1000A323
 
 
+def test_load_manifest_can_include_curated_library_false_positive(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401170","end":"0x0040117A",'
+        '"name":"console_global_init","size":10,"library":true}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"crimsonland.exe","address":"0x00401170",'
+        '"name":"console_global_init","include_library":true}]\n',
+        encoding="utf-8",
+    )
+
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=None,
+        image_name="crimsonland.exe",
+        name_map_path=name_map_path,
+    )
+
+    function, start, end = resolve_function(manifest, "console_global_init")
+    assert function.name == "console_global_init"
+    assert start == 0x00401170
+    assert end == 0x0040117A
+
+
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(

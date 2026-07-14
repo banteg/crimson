@@ -216,17 +216,23 @@ def load_function_manifest(
     rows = json.loads(Path(path).read_text(encoding="utf-8"))
     resolved_image_name = image_name or Path(path).parent.name
     name_overrides: dict[int, str] = {}
+    included_library_addresses: set[int] = set()
     if name_map_path is not None and name_map_path.exists():
         name_rows = json.loads(name_map_path.read_text(encoding="utf-8"))
         for row in name_rows:
             if row.get("program") != resolved_image_name:
                 continue
-            name_overrides[parse_int(row["address"])] = str(row["name"])
+            address = parse_int(row["address"])
+            name_overrides[address] = str(row["name"])
+            if bool(row.get("include_library")):
+                included_library_addresses.add(address)
     functions: list[FunctionSymbol] = []
     for row in rows:
-        if bool(row.get("external")) or bool(row.get("library")):
-            continue
         address = parse_int(row["address"])
+        if bool(row.get("external")) or (
+            bool(row.get("library")) and address not in included_library_addresses
+        ):
+            continue
         end = parse_int(row["end"])
         functions.append(
             FunctionSymbol(
