@@ -84,6 +84,15 @@ We also generate an evidence appendix with callsite snippets:
   coordinator. It releases default-pool objects, retries `Reset` every 500 ms,
   offers Retry/Cancel after four failures, rebuilds owned render-target
   textures, reapplies render state, and restores their saved contents.
+- `grim_app_tick` (`0x10002f80`) exact-matches the `MyApp` 30 ms accumulator:
+  its first sample seeds the previous timestamp, and later samples retain the
+  division remainder. `grim_app_cleanup` (`0x10002f60`) releases the object's
+  GDI handle; `grim_app_shutdown` (`0x10003080`) is its exact tail-call wrapper.
+  `grim_app_pump` (`0x10003090`) dispatches the singleton's folded empty
+  callback whenever a tick is due.
+- `grim_app_init` (`0x10002fc0`) exact-matches the runtime-object setup before
+  the loop: timer and handle reset, client/backbuffer dimensions, current
+  working directory, and the 16-byte client-rectangle overlay are recovered.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_d3d_shutdown` (`0x10004280`) has the full recovered surface, embedded
   texture, 256-slot texture table, geometry-buffer, device, and Direct3D8

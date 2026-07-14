@@ -9820,6 +9820,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005bbd8",
+      "aliases": ["?grim_app@@3VMyApp@@A"],
+      "comment": "Singleton runtime object initialized before the Win32 message loop.",
+      "name": "grim_app",
+      "program": "grim.dll"
+    },
+    {
       "address": "0x1005bc04",
       "comment": "Packed RGBA color slot 0.",
       "name": "grim_color_slot0",
@@ -10107,6 +10114,13 @@
       "name": "grim_joystick_center_y",
       "program": "grim.dll",
       "type": "float"
+    },
+    {
+      "address": "0x1005d1c8",
+      "aliases": ["?grim_client_rect@@3TGrimClientRect@@A"],
+      "comment": "Win32 client rectangle overlaid with a low-byte enabled flag and published by MyApp initialization.",
+      "name": "grim_client_rect",
+      "program": "grim.dll"
     },
     {
       "address": "0x1005d400",

@@ -5169,7 +5169,8 @@
     "address": "0x10001160",
     "name": "grim_noop",
     "signature": "void grim_noop(void)",
-    "comment": "debug stub (no-op)"
+    "comment": "debug stub and folded empty callback (no-op)",
+    "aliases": ["?on_tick@MyApp@@QAEXXZ"]
   },
   {
     "program": "grim.dll",
@@ -5216,34 +5217,42 @@
   {
     "program": "grim.dll",
     "address": "0x10002f60",
-    "name": "FUN_10002f60",
-    "signature": "bool FUN_10002f60(void* arg1)",
-    "comment": "[binja] BOOL __fastcall sub_10002f60(void* arg1)",
-    "create": false
+    "name": "grim_app_cleanup",
+    "signature": "void __fastcall grim_app_cleanup(void *self)",
+    "comment": "release and clear the MyApp GDI object",
+    "aliases": ["?cleanup@MyApp@@QAEXXZ"]
   },
   {
     "program": "grim.dll",
     "address": "0x10002f80",
-    "name": "FUN_10002f80",
-    "signature": "uint FUN_10002f80(void* arg1)",
-    "comment": "[binja] uint32_t __fastcall sub_10002f80(void* arg1)",
-    "create": false
+    "name": "grim_app_tick",
+    "signature": "bool __fastcall grim_app_tick(void *self)",
+    "comment": "advance the MyApp 30 ms tick accumulator",
+    "aliases": ["?tick@MyApp@@QAE_NXZ"]
   },
   {
     "program": "grim.dll",
     "address": "0x10002fc0",
-    "name": "FUN_10002fc0",
-    "signature": "int FUN_10002fc0(char* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10002fc0(char* arg1)",
-    "create": false
+    "name": "grim_app_init",
+    "signature": "bool __fastcall grim_app_init(void *self)",
+    "comment": "initialize MyApp timing, dimensions, working directory, and client rectangle",
+    "aliases": ["?init@MyApp@@QAE_NXZ"]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10003080",
+    "name": "grim_app_shutdown",
+    "signature": "void __fastcall grim_app_shutdown(void *self)",
+    "comment": "tail-call the MyApp GDI cleanup body when the run loop exits",
+    "aliases": ["?shutdown@MyApp@@QAEXXZ"]
   },
   {
     "program": "grim.dll",
     "address": "0x10003090",
-    "name": "FUN_10003090",
-    "signature": "int FUN_10003090(void)",
-    "comment": "[binja] int32_t sub_10003090()",
-    "create": false
+    "name": "grim_app_pump",
+    "signature": "void __fastcall grim_app_pump(void *self)",
+    "comment": "dispatch the singleton's empty callback on each 30 ms app tick",
+    "aliases": ["?pump@MyApp@@QAEXXZ"]
   },
   {
     "program": "grim.dll",
