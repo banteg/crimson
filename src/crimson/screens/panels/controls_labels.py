@@ -49,7 +49,7 @@ def input_scheme_label(scheme: MovementControlType) -> str:
         MovementControlType.RELATIVE: "Relative",
         MovementControlType.STATIC: "Static",
         MovementControlType.DUAL_ACTION_PAD: "Dual Action Pad",
-        MovementControlType.MOUSE_POINT_CLICK: "Mouse point click",
+        MovementControlType.MOUSE_POINT_CLICK: "Mouse point&click",
         MovementControlType.COMPUTER: "Computer",
     }
     return labels.get(scheme, "Unknown")

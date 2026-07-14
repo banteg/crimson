@@ -34,7 +34,7 @@ def test_input_scheme_label_mapping() -> None:
     assert input_scheme_label(MovementControlType.RELATIVE) == "Relative"
     assert input_scheme_label(MovementControlType.STATIC) == "Static"
     assert input_scheme_label(MovementControlType.DUAL_ACTION_PAD) == "Dual Action Pad"
-    assert input_scheme_label(MovementControlType.MOUSE_POINT_CLICK) == "Mouse point click"
+    assert input_scheme_label(MovementControlType.MOUSE_POINT_CLICK) == "Mouse point&click"
     assert input_scheme_label(MovementControlType.COMPUTER) == "Computer"
     assert input_scheme_label(MovementControlType.UNKNOWN) == "Unknown"
 
@@ -51,7 +51,7 @@ def test_controls_method_labels_reads_player_arrays() -> None:
     controls.player(3).aim_scheme = AimScheme.COMPUTER
 
     assert controls_method_labels(controls, player_index=0) == ("Mouse relative", "Static")
-    assert controls_method_labels(controls, player_index=1) == ("Joystick", "Mouse point click")
+    assert controls_method_labels(controls, player_index=1) == ("Joystick", "Mouse point&click")
     assert controls_method_labels(controls, player_index=2) == ("Dual Action Pad", "Computer")
     assert controls_method_labels(controls, player_index=3) == ("Computer", "Relative")
 

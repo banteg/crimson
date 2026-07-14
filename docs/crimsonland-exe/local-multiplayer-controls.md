@@ -22,7 +22,7 @@ This note consolidates the controls/multiplayer evidence used by the rewrite.
 - Aim-scheme labels come from `input_configure_for_label` (`0x00447c90`):
   - `0 Mouse`, `1 Keyboard`, `2 Joystick`, `3 Mouse relative`, `4 Dual Action Pad`, `5 Computer`
 - Move-scheme labels come from `input_scheme_label` (`0x00447cf0`):
-  - `1 Relative`, `2 Static`, `3 Dual Action Pad`, `4 Mouse point click`, `5 Computer`
+  - `1 Relative`, `2 Static`, `3 Dual Action Pad`, `4 Mouse point&click`, `5 Computer`
 - Ref: `docs/crimsonland-exe/ui.md`
 
 ## Per-scheme semantics (evidence anchors)
