@@ -11,6 +11,7 @@ from typer.testing import CliRunner
 from crimson.cli.match import match_app
 from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
+    VC6_LOCAL_JUMP_TABLE_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
     CoffObject,
     CoffRelocation,
@@ -29,6 +30,7 @@ from crimson.match import (
     ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
+    _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
     _scratch_build_key,
     _ScratchIncludeResolver,
@@ -507,6 +509,72 @@ def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
     )
 
     assert _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0]) == (f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c")
+
+
+def test_recognizes_compiler_local_jump_table_in_coff() -> None:
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=b"\x90" * 0x20 + b"\x00" * 12,
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(0x20, 2, 6),
+                    CoffRelocation(0x24, 3, 6),
+                    CoffRelocation(0x28, 4, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Ltable", 0x20, 1, 0, 6),
+            CoffSymbol(2, "$Lcase0", 0x08, 1, 0, 6),
+            CoffSymbol(3, "$Lcase1", 0x10, 1, 0, 6),
+            CoffSymbol(4, "$Lcase2", 0x18, 1, 0, 6),
+        ),
+    )
+
+    assert _coff_local_jump_table_key(obj, obj.symbols[0], obj.symbols[1]) == (
+        f"{VC6_LOCAL_JUMP_TABLE_KEY}:0x8,0x10,0x18"
+    )
+
+
+def test_match_function_audits_local_jump_table_destinations() -> None:
+    image_base = 0x400000
+    function_address = 0x401000
+    table_address = 0x402000
+    target = bytes.fromhex("ff2485") + struct.pack("<I", table_address) + b"\xc3" + b"\x90" * 16
+    candidate = ObjectFunction(
+        name="_probe",
+        data=bytes.fromhex("ff2485") + b"\x00" * 4 + b"\xc3" + b"\x90" * 16,
+        relocation_offsets=frozenset({3}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=3,
+                symbol_name="$Ltable",
+                key=f"{VC6_LOCAL_JUMP_TABLE_KEY}:0x8,0x10,0x14",
+                explained=True,
+            ),
+        ),
+    )
+    mapped = bytearray(0x3000)
+    mapped[0x2000:0x200C] = struct.pack(
+        "<III",
+        function_address + 0x08,
+        function_address + 0x10,
+        function_address + 0x14,
+    )
+
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(bytes(mapped), image_base, len(mapped)),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog({}),
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
 
 
 def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyPatch) -> None:

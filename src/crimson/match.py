@@ -41,6 +41,7 @@ PADDING_LINE_TEXT = {
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
 LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
 VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
+VC6_LOCAL_JUMP_TABLE_KEY = "compiler:vc6-local-jump-table"
 
 
 def parse_int(value: str | int) -> int:
@@ -629,6 +630,73 @@ def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> s
     return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
 
 
+def _local_jump_table_key(offsets: list[int]) -> str | None:
+    if len(offsets) < 2:
+        return None
+    return f"{VC6_LOCAL_JUMP_TABLE_KEY}:" + ",".join(f"0x{offset:x}" for offset in offsets)
+
+
+def _coff_local_jump_table_key(
+    obj: CoffObject,
+    function: CoffSymbol,
+    table: CoffSymbol,
+    addend: int = 0,
+) -> str | None:
+    """Describe a compiler-local absolute switch table by its function-relative targets."""
+
+    if (
+        not table.name.startswith("$L")
+        or function.section_number <= 0
+        or table.section_number != function.section_number
+    ):
+        return None
+    section = obj.sections[table.section_number - 1]
+    table_start = table.value + addend
+    if table_start < function.value or table_start >= len(section.data):
+        return None
+
+    symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
+    relocations_by_offset = {relocation.virtual_address: relocation for relocation in section.relocations}
+    offsets: list[int] = []
+    cursor = table_start
+    for _ in range(256):
+        relocation = relocations_by_offset.get(cursor)
+        if relocation is None or cursor + 4 > len(section.data):
+            break
+        target = symbols_by_raw_index.get(relocation.symbol_index)
+        if target is None or target.section_number != function.section_number:
+            break
+        entry_addend = struct.unpack_from("<i", section.data, cursor)[0]
+        destination = target.value + entry_addend
+        if destination < function.value or destination >= table_start:
+            break
+        offsets.append(destination - function.value)
+        cursor += 4
+    return _local_jump_table_key(offsets)
+
+
+def _image_local_jump_table_key(
+    image: LoadedImage | None,
+    table_address: int,
+    function_start: int,
+    function_end: int,
+) -> str | None:
+    """Describe a linked absolute switch table by its function-relative targets."""
+
+    if image is None or function_end <= function_start:
+        return None
+    offsets: list[int] = []
+    for index in range(256):
+        raw = _image_bytes(image, table_address + index * 4, 4)
+        if raw is None:
+            break
+        destination = struct.unpack("<I", raw)[0]
+        if destination < function_start or destination >= function_end:
+            break
+        offsets.append(destination - function_start)
+    return _local_jump_table_key(offsets)
+
+
 def _object_reference_key(symbol: CoffSymbol, addend: int) -> tuple[str | None, bool]:
     if symbol.name.startswith(("$L", "??_C@", "__real@")) or not symbol.name:
         return None, False
@@ -709,6 +777,9 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
         key, explained = _object_reference_key(symbol, addend)
         if compiler_key := _coff_vc6_single_delete_unwind_key(obj, symbol):
             key = compiler_key
+            explained = True
+        elif jump_table_key := _coff_local_jump_table_key(obj, target, symbol, addend):
+            key = jump_table_key
             explained = True
         symbol_section = obj.sections[symbol.section_number - 1] if symbol.section_number > 0 else None
         symbol_end = (
@@ -896,7 +967,7 @@ def disassemble_normalized_function(
         elif reference.symbol_name.startswith("__real@") and len(symbol_data) >= byte_count:
             keys = (f"bytes{byte_count}:{symbol_data[:byte_count].hex()}",)
             explained = True
-        elif reference.key is not None and reference.key.startswith(f"{VC6_SINGLE_DELETE_UNWIND_KEY}:"):
+        elif reference.key is not None and reference.key.startswith("compiler:vc6-"):
             pass
         elif reference_catalog is not None:
             if reference_catalog.knows_name(reference.symbol_name):
@@ -932,6 +1003,13 @@ def disassemble_normalized_function(
                 keys.append(f"bytes{byte_count}:{raw.hex()}")
         if compiler_key := _image_vc6_single_delete_unwind_key(image, reference_catalog, value):
             keys.append(compiler_key)
+        if jump_table_key := _image_local_jump_table_key(
+            image,
+            value,
+            base_address,
+            base_address + len(data),
+        ):
+            keys.append(jump_table_key)
         names = reference_catalog.names_by_address.get(value, ()) if reference_catalog is not None else ()
         return MaskedReference(
             operand_index=operand_index,
