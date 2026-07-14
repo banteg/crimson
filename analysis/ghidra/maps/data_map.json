@@ -10208,7 +10208,7 @@
     },
     {
       "address": "0x1005d81c",
-      "comment": "Singleton Grim2D interface instance (vtable pointer stored at grim_interface_vtable).",
+      "comment": "Most recently allocated Grim2D interface instance (vtable pointer stored at grim_interface_vtable).",
       "name": "grim_interface_instance",
       "program": "grim.dll",
       "type": "IGrim2D *"

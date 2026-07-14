@@ -9,8 +9,10 @@ This is a first-pass extraction of the Grim2D API vtable usage from the
 classic `crimsonland.exe` decompilation. The engine interface pointer is
 `DAT_0048083c` in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
 
-The interface is created in `GRIM__GetInterface` (`grim.dll`), which sets the
-object vtable to `PTR_LAB_1004c238` (address `0x1004c238` in the DLL).
+The exact-matched `GRIM__GetInterface` export probes DirectX 8.1, initializes
+the Grim2D global state, allocates the four-byte interface object, and installs
+`grim_interface_vtable` (`0x1004c238`). It stores the new object globally but
+does not itself enforce singleton reuse.
 
 We created functions at vtable entry addresses via
 `analysis/ghidra/scripts/CreateGrim2DVtableFunctions.java` and re-exported

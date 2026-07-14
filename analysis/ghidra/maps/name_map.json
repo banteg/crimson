@@ -5334,6 +5334,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100052f0",
+    "name": "grim_state_init",
+    "signature": "void grim_state_init(void)",
+    "comment": "initializes Grim2D globals and default callbacks before interface construction"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10005a40",
     "name": "grim_lookup_blob_load",
     "signature": "bool grim_lookup_blob_load(char *path)",
@@ -5978,7 +5985,7 @@
     "address": "0x100099c0",
     "name": "GRIM__GetInterface",
     "signature": "IGrim2D * GRIM__GetInterface(void)",
-    "comment": "export: constructs (singleton) Grim2D interface instance backed by grim_interface_vtable"
+    "comment": "export: probes DirectX, initializes Grim2D state, and allocates an interface backed by grim_interface_vtable"
   },
   {
     "program": "grim.dll",
