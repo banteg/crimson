@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**283/2161** functions matched, **38508/675651** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**284/2161** functions matched, **38565/675651** code bytes (**5.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 151/986 | 19061/385754 | 4.9% | 151/174 |
+| crimsonland.exe | 152/986 | 19118/385754 | 5.0% | 152/175 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**151/986** functions, **19061/385754** bytes (**4.9%**), **151/174** scratches verified.
+**152/986** functions, **19118/385754** bytes (**5.0%**), **152/175** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -183,6 +183,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_get_element_index | 0x00446150 | 31 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | ui-element-index |
 | match | ui_elements_reset_state | 0x00446170 | 31 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | ui-element-state-reset |
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
+| match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
