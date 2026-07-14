@@ -186,6 +186,7 @@ extern char *bonus_label_fire_bullets;
 extern char *bonus_label_energizer;
 extern char *bonus_label_double_experience;
 extern char bonus_label_format_buffer[];
+extern char time_format_mm_ss_buffer[];
 extern int bonus_icon_reflex_boost;
 extern int bonus_icon_weapon_power_up;
 extern int bonus_icon_speed;
