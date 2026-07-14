@@ -67,7 +67,7 @@ struct console_queue_t {
 
     void console_push_line(char *line);
     unsigned char flush_log(char *filename);
-    bool exec_line(char *line);
+    void exec_line(char *line);
     void console_set_open(unsigned char open);
     void console_history_apply(void);
     console_cvar_entry_t *console_cvar_find(char *name);

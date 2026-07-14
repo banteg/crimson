@@ -196,9 +196,9 @@
     "address": "0x00401940",
     "name": "console_exec_line",
     "aliases": [
-      "?exec_line@console_queue_t@@QAE_NPAD@Z"
+      "?exec_line@console_queue_t@@QAEXPAD@Z"
     ],
-    "signature": "char console_exec_line(char *line)",
+    "signature": "void __thiscall console_exec_line(console_queue_t *queue, char *line)",
     "comment": "executes a console command or cvar assignment from a line"
   },
   {
@@ -219,7 +219,10 @@
     "program": "crimsonland.exe",
     "address": "0x00402350",
     "name": "console_register_cvar",
-    "signature": "void * console_register_cvar(char *name, char *value)",
+    "aliases": [
+      "?console_register_cvar@console_queue_t@@QAEPAUconsole_cvar_entry_t@@PAD0@Z"
+    ],
+    "signature": "console_cvar_entry_t * __thiscall console_register_cvar(console_queue_t *queue, char *name, char *value)",
     "comment": "registers or updates a console cvar entry (stores string + float value)"
   },
   {
