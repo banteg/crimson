@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**380/2162** functions matched, **46137/675654** code bytes (**6.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**385/2162** functions matched, **46569/675654** code bytes (**6.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 248/987 | 26690/385757 | 6.9% | 248/276 |
+| crimsonland.exe | 253/987 | 27122/385757 | 7.0% | 253/282 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**248/987** functions, **26690/385757** bytes (**6.9%**), **248/276** scratches verified.
+**253/987** functions, **27122/385757** bytes (**7.0%**), **253/282** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -160,7 +160,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | audio_suspend_all | 0x0042a630 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | texture_get_or_load | 0x0042a670 | 133 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |
 | match | texture_get_or_load_alt | 0x0042a700 | 126 | 40/40 | 100.00% | 40/40 | 11/0/0 |  | texture-cache-load-legacy |
+| match | console_cmd_load_texture | 0x0042a780 | 60 | 19/19 | 100.00% | 19/19 | 7/0/0 |  | console-texture-load-command |
+| match | console_cmd_set_resource_paq | 0x0042a7c0 | 158 | 51/51 | 100.00% | 51/51 | 18/0/0 |  | console-resource-pack-command |
 | match | console_cmd_tell_time_survived | 0x0042a860 | 37 | 9/9 | 100.00% | 9/9 | 6/0/0 |  | console-survival-time |
+| match | console_cmd_open_url | 0x0042a890 | 151 | 43/43 | 100.00% | 43/43 | 14/0/0 |  | console-open-url-command |
+| match | console_cmd_snd_freq_adjustment | 0x0042a930 | 58 | 16/16 | 100.00% | 16/16 | 8/0/0 |  | console-sound-frequency-toggle |
+| match | console_cmd_generate_terrain | 0x0042a970 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | console-terrain-generation-command |
 | match | reg_read_dword_default | 0x0042a980 | 58 | 23/23 | 100.00% | 23/23 | 1/0/0 |  | registry-dword-read |
 | match | reg_write_dword | 0x0042a9c0 | 37 | 14/14 | 100.00% | 14/14 | 1/0/0 |  | registry-dword-write |
 | match | effect_init_entry | 0x0042de80 | 143 | 36/36 | 100.00% | 36/36 | 0/0/0 |  | gameplay-effect-pool |
@@ -175,6 +180,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
 | wip | perks_rebuild_available | 0x0042fc30 | 181 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
+| wip | wrap_text_to_width_alloc | 0x0042fd00 | 143 | 60/62 | 81.97% | 0/62 | 2/0/0 |  | text-wrap-allocation |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/1/2 |  | gameplay-spawn-switch |
