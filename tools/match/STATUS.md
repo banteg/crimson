@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**358/2162** functions matched, **43399/675654** code bytes (**6.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**364/2162** functions matched, **43690/675654** code bytes (**6.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 226/987 | 23952/385757 | 6.2% | 226/254 |
+| crimsonland.exe | 232/987 | 24243/385757 | 6.3% | 232/260 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**226/987** functions, **23952/385757** bytes (**6.2%**), **226/254** scratches verified.
+**232/987** functions, **24243/385757** bytes (**6.3%**), **232/260** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -23,6 +23,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_cmd_arg_get | 0x00401120 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | console-command-arguments |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | console_cmd_quit | 0x00401240 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-quit-command |
+| match | console_cmd_extend | 0x00401340 | 17 | 4/4 | 100.00% | 4/4 | 3/0/0 |  | console-height-extend |
 | match | console_cmd_minimize | 0x00401360 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-minimize-command |
 | match | console_cmdlist | 0x00401370 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-command-list |
 | match | console_vars | 0x004013c0 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-cvar-list |
@@ -49,6 +50,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_clock_gauge_at | 0x0040a4c0 | 70 | 22/22 | 100.00% | 22/22 | 6/0/0 |  | ui-clock-gauge-wrapper |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
+| match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
 | match | mod_api_debug_printf | 0x0040e000 | 50 | 14/14 | 100.00% | 14/14 | 2/0/0 |  | mod-api-debug-output |
@@ -250,6 +252,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
 | match | input_primary_is_down | 0x004460f0 | 74 | 24/24 | 100.00% | 24/24 | 5/0/0 |  | input-primary-held |
+| match | ui_callback_noop | 0x00446140 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-placeholder-callback |
 | match | ui_get_element_index | 0x00446150 | 31 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | ui-element-index |
 | match | ui_elements_reset_state | 0x00446170 | 31 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | ui-element-state-reset |
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
@@ -261,11 +264,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_menu_click_back_contextual | 0x00447420 | 45 | 12/12 | 100.00% | 12/12 | 5/0/0 |  | ui-menu-contextual-back |
 | match | ui_menu_main_click_quit | 0x00447450 | 61 | 15/15 | 100.00% | 15/15 | 9/0/0 |  | ui-menu-quit |
 | match | ui_menu_pause_click_resume | 0x00447490 | 67 | 18/18 | 100.00% | 18/18 | 7/0/0 |  | ui-menu-resume |
+| match | ui_menu_pause_click_main_menu | 0x004474e0 | 160 | 40/40 | 100.00% | 40/40 | 22/0/0 |  | pause-menu-plugin-exit |
 | match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
 | wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
+| match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
+| match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
