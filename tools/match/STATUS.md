@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**170/2161** functions matched, **24273/675651** code bytes (**3.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**171/2161** functions matched, **24660/675651** code bytes (**3.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 126/1175 | 17582/289897 | 6.1% | 126/130 |
+| grim.dll | 127/1175 | 17969/289897 | 6.2% | 127/131 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**126/1175** functions, **17582/289897** bytes (**6.1%**), **126/130** scratches verified.
+**127/1175** functions, **17969/289897** bytes (**6.2%**), **127/131** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -96,6 +96,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_app_pump | 0x10003090 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | grim-app-30ms-pump |
 | match | grim_run_loop | 0x10003c00 | 608 | 174/174 | 100.00% | 174/174 | 61/0/0 |  | grim-win32-frame-loop |
 | wip | grim_d3d_shutdown | 0x10004280 | 196 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
+| match | grim_create_geometry_buffers | 0x10004350 | 387 | 107/107 | 100.00% | 107/107 | 32/0/0 |  | grim-geometry-buffer-creation |
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
 | match | grim_apply_render_state | 0x10004520 | 720 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |

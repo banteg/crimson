@@ -5284,6 +5284,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10004350",
+    "name": "grim_create_geometry_buffers",
+    "signature": "bool grim_create_geometry_buffers(void)",
+    "comment": "create, populate, and bind the dynamic quad vertex and index buffers"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100044e0",
     "name": "grim_release_geometry_buffers",
     "signature": "void grim_release_geometry_buffers(void)",

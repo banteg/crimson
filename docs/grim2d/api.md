@@ -102,6 +102,9 @@ We also generate an evidence appendix with callsite snippets:
   texture, 256-slot texture table, geometry-buffer, device, and Direct3D8
   teardown shape. Its only remaining match delta is an `ESI`/`EDI` allocation
   swap inside the texture loop.
+- `grim_create_geometry_buffers` (`0x10004350`) exact-matches allocation of
+  the 256-entry dynamic vertex buffer and quad index buffer, construction of
+  every `(0,1,2, 2,3,0)` index group, and binding both buffers to the device.
 - `grim_release_geometry_buffers` (`0x100044e0`) exact-matches the independent
   vertex/index-buffer release and unconditional global clears.
 - `grim_apply_render_state` (`0x10004520`) exact-matches the fixed render and
