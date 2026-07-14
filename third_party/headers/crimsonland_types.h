@@ -757,7 +757,9 @@ typedef struct crimson_cfg_t {
     char saved_names[8][27];
     char player_name[32];
     int player_name_length;
-    unsigned char reserved1[0x14];
+    unsigned char reserved1_1a4[0x0c];
+    int aim_pov_right;
+    int aim_pov_left;
     int display_bpp;
     int screen_width;
     int screen_height;
