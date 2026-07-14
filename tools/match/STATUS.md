@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**265/2161** functions matched, **35126/675651** code bytes (**5.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**266/2161** functions matched, **36388/675651** code bytes (**5.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 133/986 | 15679/385754 | 4.1% | 133/152 |
+| crimsonland.exe | 134/986 | 16941/385754 | 4.4% | 134/153 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**133/986** functions, **15679/385754** bytes (**4.1%**), **133/152** scratches verified.
+**134/986** functions, **16941/385754** bytes (**4.4%**), **134/153** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -142,6 +142,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
 | match | audio_init_music | 0x0043c9c0 | 212 | 51/51 | 100.00% | 51/51 | 29/0/0 |  | audio-music-initialization |
+| match | audio_init_sfx | 0x0043caa0 | 1262 | 270/270 | 100.00% | 270/270 | 235/0/0 |  | audio-sfx-registry-initialization |
 | match | sfx_system_init | 0x0043cf90 | 214 | 59/59 | 100.00% | 59/59 | 28/0/0 |  | audio-system-initialization |
 | match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
 | match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |

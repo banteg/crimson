@@ -147,6 +147,7 @@ void sfx_play_exclusive(int sfx_id);
 int sfx_play(int sfx_id, float volume);
 int sfx_play_panned(int sfx_id, float *pos, float volume);
 unsigned char sfx_system_init(void);
+void audio_init_sfx(void);
 void audio_init_music(void);
 void audio_suspend_channels(void);
 void audio_resume_channels(void);
