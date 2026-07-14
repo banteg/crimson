@@ -5349,6 +5349,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10004b00",
+    "name": "grim_path_has_extension",
+    "signature": "bool grim_path_has_extension(char *path, char *extension)",
+    "comment": "compares the final three bytes of two path strings"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10004b70",
     "name": "FUN_10004b70",
     "signature": "char* FUN_10004b70(char* arg1, void** arg2, int* arg3, int* arg4)",
