@@ -60,7 +60,9 @@ We also generate an evidence appendix with callsite snippets:
 
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
 - `grim_window_create` (`0x10002680`) registers the window class and creates the main window.
-- `grim_window_destroy` (`0x10002880`) posts quit and destroys the main window.
+- `grim_window_destroy` (`0x10002880`) exact-matches the quit, conditional
+  window destruction, and class-unregistration path. Its override-handle
+  branch destroys `grim_main_window_hwnd` a second time, an apparent native bug.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_is_texture_format_supported` (`0x100047f0`) is an exact-matched
   `CheckDeviceFormat` predicate for `D3DRTYPE_TEXTURE`, using the selected
