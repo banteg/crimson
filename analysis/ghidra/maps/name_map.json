@@ -2609,7 +2609,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043baf0",
     "name": "dsound_init",
-    "signature": "int dsound_init(void *hwnd, uint coop_level)",
+    "signature": "unsigned char dsound_init(HWND hwnd, DWORD coop_level, int channels, DWORD sample_rate, int bits_per_sample)",
     "comment": "initializes DirectSound and the primary buffer"
   },
   {
@@ -2826,7 +2826,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043cf90",
     "name": "sfx_system_init",
-    "signature": "int sfx_system_init(void)",
+    "signature": "unsigned char sfx_system_init(void)",
     "comment": "initializes the Grim SFX system and clears per-sfx state"
   },
   {

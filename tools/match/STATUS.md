@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**263/2161** functions matched, **34623/675651** code bytes (**5.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**265/2161** functions matched, **35126/675651** code bytes (**5.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 131/986 | 15176/385754 | 3.9% | 131/150 |
+| crimsonland.exe | 133/986 | 15679/385754 | 4.1% | 133/152 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**131/986** functions, **15176/385754** bytes (**3.9%**), **131/150** scratches verified.
+**133/986** functions, **15679/385754** bytes (**4.1%**), **133/152** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -112,6 +112,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | resource_pack_set | 0x0043b980 | 95 | 37/37 | 100.00% | 37/37 | 7/0/0 |  | resource-pack-selection |
 | match | resource_open_read | 0x0043b9e0 | 233 | 88/88 | 100.00% | 88/88 | 21/0/0 |  | resource-pack-lookup |
 | match | resource_close | 0x0043bad0 | 17 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | resource-file-lifecycle |
+| match | dsound_init | 0x0043baf0 | 289 | 102/102 | 100.00% | 102/102 | 6/0/0 |  | audio-directsound-initialization |
 | match | dsound_shutdown | 0x0043bc20 | 26 | 8/8 | 100.00% | 8/8 | 2/0/0 |  | audio-directsound-lifecycle |
 | match | dsound_restore_buffer | 0x0043bc40 | 81 | 34/34 | 100.00% | 34/34 | 3/0/0 |  | audio-directsound-buffer-restore |
 | match | resource_read_alloc | 0x0043bca0 | 75 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
@@ -141,6 +142,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
 | match | audio_init_music | 0x0043c9c0 | 212 | 51/51 | 100.00% | 51/51 | 29/0/0 |  | audio-music-initialization |
+| match | sfx_system_init | 0x0043cf90 | 214 | 59/59 | 100.00% | 59/59 | 28/0/0 |  | audio-system-initialization |
 | match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
 | match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |

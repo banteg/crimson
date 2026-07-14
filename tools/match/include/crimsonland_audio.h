@@ -18,6 +18,7 @@ struct dsbufferdesc8_t {
 extern LPDIRECTSOUND dsound_iface;
 extern sfx_entry_t sfx_entry_table[];
 extern music_entry_t music_entry_table[];
+extern sfx_voice_table_t sfx_voice_table;
 
 #ifdef __cplusplus
 struct vorbis_stream_t {
@@ -96,6 +97,16 @@ unsigned char console_printf(console_queue_t *queue, char *format, ...);
 int crt_sprintf(char *dst, const char *format, ...);
 int crt_rand(void);
 void crt_free(void *ptr);
+HRESULT WINAPI DirectSoundCreate8(
+    GUID *guid,
+    LPDIRECTSOUND *iface_out,
+    LPUNKNOWN outer);
+unsigned char dsound_init(
+    HWND hwnd,
+    DWORD coop_level,
+    int channels,
+    DWORD sample_rate,
+    int bits_per_sample);
 void dsound_shutdown(void);
 unsigned char dsound_restore_buffer(LPDIRECTSOUNDBUFFER buffer);
 void sfx_release_entry(sfx_entry_t *entry);
@@ -135,6 +146,7 @@ void sfx_update_mute_fades(void);
 void sfx_play_exclusive(int sfx_id);
 int sfx_play(int sfx_id, float volume);
 int sfx_play_panned(int sfx_id, float *pos, float volume);
+unsigned char sfx_system_init(void);
 void audio_init_music(void);
 void audio_suspend_channels(void);
 void audio_resume_channels(void);
