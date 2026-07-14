@@ -72,6 +72,9 @@ We also generate an evidence appendix with callsite snippets:
   swap inside the texture loop.
 - `grim_release_geometry_buffers` (`0x100044e0`) exact-matches the independent
   vertex/index-buffer release and unconditional global clears.
+- `grim_lookup_blob_load` (`0x10005a40`) exact-matches the optional blob's
+  dynamic-CRT open/measure/allocate/read lifecycle. Its failed-open path frees
+  the previous buffer and doubles as the shutdown cleanup operation.
 - `grim_is_texture_format_supported` (`0x100047f0`) is an exact-matched
   `CheckDeviceFormat` predicate for `D3DRTYPE_TEXTURE`, using the selected
   adapter, device type, and current adapter format.
