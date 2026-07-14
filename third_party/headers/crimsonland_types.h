@@ -554,6 +554,16 @@ typedef effect_entry_t effect_pool_t[0x200];
 
 typedef void (*ui_element_callback_t)(void);
 
+typedef struct ui_element_vertex_t {
+    float x;
+    float y;
+    float z;
+    float rhw;
+    unsigned int color;
+    float u;
+    float v;
+} ui_element_vertex_t;
+
 typedef struct ui_element_t {
     unsigned char active;
     unsigned char enabled;
@@ -573,24 +583,23 @@ typedef struct ui_element_t {
     unsigned char _pad1[4];
     ui_element_callback_t on_activate;
     ui_element_callback_t on_update;
-    float quad0[14];
-    float quad1[14];
-    float quad2[14];
-    float quad3[14];
+    ui_element_vertex_t vertices[8];
     int texture_handle;
-    int quad_mode;
+    int vertex_count;
     unsigned char _pad4[0xe0];
-    int counter_id;
+    int overlay_texture_handle;
     unsigned char _pad5[0xec];
-    unsigned char hover_active;
+    unsigned char hover_enter_played;
     unsigned char _pad5_tail[3];
-    int counter_value;
-    int counter_timer;
+    int hover_amount;
+    int time_since_ready;
     float render_scale;
     float rot_m00;
     float rot_m01;
     float rot_m10;
     float rot_m11;
+    unsigned char direction_flag;
+    unsigned char _pad6_tail[3];
 } ui_element_t;
 
 // 0x1c-stride record copied/transformed in ui_menu_assets_init when building

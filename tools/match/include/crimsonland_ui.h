@@ -9,6 +9,8 @@ extern float ui_mouse_x;
 extern float ui_mouse_y;
 extern ui_element_t *ui_element_table_end;
 extern ui_element_t ui_perk_prompt_element;
+extern ui_element_t ui_element_slot_26;
+extern ui_element_t ui_element_slot_27;
 extern int ui_focus_candidates[];
 extern int ui_focus_count;
 extern int ui_focus_index;
@@ -23,6 +25,7 @@ int ui_get_element_index(ui_element_t *element);
 int ui_mouse_inside_rect(float *xy, int h, int w);
 int ui_mouse_inside_rect_with_padding(float *xy, int h, int w);
 void ui_element_init_defaults(ui_element_t *element);
+void ui_element_layout_calc(ui_element_t *element);
 void ui_element_load(
     ui_menu_item_subtemplate_block_t *element,
     char *jaz_path);

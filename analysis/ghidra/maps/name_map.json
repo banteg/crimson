@@ -3386,8 +3386,8 @@
     "program": "crimsonland.exe",
     "address": "0x0044fb50",
     "name": "ui_element_layout_calc",
-    "signature": "float ui_element_layout_calc(float arg1)",
-    "comment": "[binja] float sub_44fb50(float arg1)"
+    "signature": "void ui_element_layout_calc(ui_element_t *element)",
+    "comment": "derives element interaction bounds and swaps paired U coordinates while hovered"
   },
   {
     "program": "crimsonland.exe",

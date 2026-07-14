@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 268/987 | 28882/385757 | 7.5% | 268/298 |
+| crimsonland.exe | 268/987 | 28882/385757 | 7.5% | 268/299 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**268/987** functions, **28882/385757** bytes (**7.5%**), **268/298** scratches verified.
+**268/987** functions, **28882/385757** bytes (**7.5%**), **268/299** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -308,6 +308,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | ui_element_init_defaults | 0x0044faa0 | 173 | 40/40 | 100.00% | 40/40 | 3/0/0 |  | ui-element-default-state |
+| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 86/86 | 95.35% | 16/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
