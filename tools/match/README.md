@@ -175,7 +175,15 @@ function and byte totals. The `refs` column is `ok/unresolved/mismatch`.
 The function manifest is overlaid by exact program/address entries from
 `analysis/ghidra/maps/name_map.json`. This lets newly recovered function names
 participate in scratch selection and reference auditing immediately, without
-waiting for a full IDA artifact regeneration.
+waiting for a full IDA artifact regeneration. Curated `aliases` on those
+entries also connect decorated C++ constructor and destructor references to
+their proven native addresses.
+
+VC6 exception-chain references against the absolute `__except_list` symbol are
+resolved to the linked `fs:[0]` operand. Compiler-local frame-handler labels are
+accepted only when the matcher proves the full handler graph: thunk to
+`__CxxFrameHandler`, FuncInfo fields, unwind-map entry, cleanup funclet stack
+offset, and call to scalar `operator delete`.
 
 Inspect exact-score reference debt with:
 

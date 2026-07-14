@@ -5263,6 +5263,7 @@
     "program": "grim.dll",
     "address": "0x10004a50",
     "name": "grim_texture_init",
+    "aliases": ["??0GrimTexture@@QAE@PAD@Z"],
     "signature": "void * grim_texture_init(void *texture, char *name)",
     "comment": "allocates/copies texture name and zeroes fields"
   },
@@ -5270,6 +5271,7 @@
     "program": "grim.dll",
     "address": "0x10004ab0",
     "name": "grim_texture_release",
+    "aliases": ["??1GrimTexture@@QAE@XZ"],
     "signature": "void grim_texture_release(void *texture)",
     "comment": "releases COM objects and frees texture name"
   },

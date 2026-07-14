@@ -11,6 +11,11 @@ from typer.testing import CliRunner
 from crimson.cli.match import match_app
 from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
+    VC6_SINGLE_DELETE_UNWIND_KEY,
+    CoffObject,
+    CoffRelocation,
+    CoffSection,
+    CoffSymbol,
     FunctionManifest,
     FunctionSymbol,
     ImageTotals,
@@ -24,6 +29,7 @@ from crimson.match import (
     ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
+    _coff_vc6_single_delete_unwind_key,
     _scratch_build_key,
     _ScratchIncludeResolver,
     collect_image_totals,
@@ -105,14 +111,12 @@ def test_resolve_function_accepts_address() -> None:
 def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
-        '[{"address":"0x1000A310","end":"0x1000A323",'
-        '"name":"sub_1000A310","size":19}]\n',
+        '[{"address":"0x1000A310","end":"0x1000A323","name":"sub_1000A310","size":19}]\n',
         encoding="utf-8",
     )
     name_map_path = tmp_path / "name_map.json"
     name_map_path.write_text(
-        '[{"program":"grim.dll","address":"0x1000A310",'
-        '"name":"grim_joystick_button_down"}]\n',
+        '[{"program":"grim.dll","address":"0x1000A310","name":"grim_joystick_button_down"}]\n',
         encoding="utf-8",
     )
 
@@ -169,6 +173,35 @@ def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> Non
     )
 
 
+def test_load_reference_catalog_includes_curated_decorated_aliases(tmp_path: Path) -> None:
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x10004AB0",'
+        '"name":"grim_texture_release",'
+        '"aliases":["??1GrimTexture@@QAE@XZ"]}]\n',
+        encoding="utf-8",
+    )
+    manifest = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
+
+    catalog = load_reference_catalog(
+        manifest,
+        functions_path=tmp_path / "missing-functions.json",
+        data_map_path=tmp_path / "missing-data-map.json",
+        name_map_path=name_map_path,
+    )
+
+    assert catalog.keys_for_address(0x10004AB0) == (
+        "address:0x10004ab0",
+        "name:grim_texture_release",
+        "name:??1GrimTexture@@QAE@XZ",
+    )
+    assert catalog.keys_for_object_reference("??1GrimTexture@@QAE@XZ", 0) == (
+        "name:??1GrimTexture@@QAE@XZ",
+        "name:?1GrimTexture",
+        "address:0x10004ab0",
+    )
+
+
 def test_parse_and_extract_object_function() -> None:
     code = bytes.fromhex("8b442404c3") + bytes.fromhex("31c0c3")
     obj = parse_coff_object(build_object(code, [("_foo", 0), ("_bar", 5)], []))
@@ -190,6 +223,31 @@ def test_normalize_masks_relocated_and_absolute_operands() -> None:
     assert normalize_function(code, relocation_offsets=frozenset({1}))[0] == "mov eax, dword [ADDR]"
     assert normalize_function(code, address_range=(0x400000, 0x500000))[0] == "mov eax, dword [ADDR]"
     assert normalize_function(code)[0] == "mov eax, dword [0x4a1234]"
+
+
+def test_normalize_resolves_vc_exception_chain_relocation_to_fs_zero() -> None:
+    function = ObjectFunction(
+        name="_probe",
+        data=bytes.fromhex("64a100000000c3"),
+        relocation_offsets=frozenset({2}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=2,
+                symbol_name="__except_list",
+                key="name:except_list",
+                explained=True,
+            ),
+        ),
+    )
+
+    disassembly = disassemble_normalized_function(
+        function.data,
+        relocation_offsets=function.relocation_offsets,
+        relocation_references=function.relocation_references,
+    )
+
+    assert disassembly[0].text == "mov eax, dword [0x0]"
+    assert disassembly[0].masked_references == ()
 
 
 def test_normalize_labels_intra_function_branches() -> None:
@@ -332,6 +390,99 @@ def test_match_function_audits_compiler_float_by_content() -> None:
     )
     assert result.exact
     assert result.masked_operand_audit.ok_count == 1
+
+
+def test_match_function_audits_complete_vc6_delete_unwind_graph() -> None:
+    image_base = 0x400000
+    handler_address = 0x400100
+    func_info_address = 0x400200
+    cleanup_address = 0x400300
+    frame_handler_address = 0x400400
+    delete_address = 0x400500
+    unwind_key = f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c"
+    mapped = bytearray(0x1000)
+
+    handler = b"\xb8" + struct.pack("<I", func_info_address)
+    handler += b"\xe9" + struct.pack("<i", frame_handler_address - (handler_address + 10))
+    mapped[0x100:0x10A] = handler
+    func_info = struct.pack("<II", 0x19930520, 1)
+    func_info += struct.pack("<I", func_info_address + 32) + b"\x00" * 20
+    func_info += struct.pack("<iI", -1, cleanup_address)
+    mapped[0x200:0x228] = func_info
+    cleanup = bytes.fromhex("8b450c50e8")
+    cleanup += struct.pack("<i", delete_address - (cleanup_address + 9)) + bytes.fromhex("59c3")
+    mapped[0x300:0x30B] = cleanup
+
+    candidate = ObjectFunction(
+        name="_probe",
+        data=b"\x68\x00\x00\x00\x00\xc3",
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=1,
+                symbol_name="$Lhandler",
+                key=unwind_key,
+                explained=True,
+            ),
+        ),
+    )
+    catalog = ReferenceCatalog(
+        {
+            frame_handler_address: ("__CxxFrameHandler",),
+            delete_address: ("??3@YAXPAX@Z",),
+        },
+    )
+
+    result = match_function(
+        b"\x68" + struct.pack("<I", handler_address) + b"\xc3",
+        candidate,
+        image=LoadedImage(bytes(mapped), image_base, len(mapped)),
+        target_va=0x400000,
+        reference_catalog=catalog,
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+
+def test_recognizes_complete_vc6_delete_unwind_graph_in_coff() -> None:
+    handler = b"\xb8\x00\x00\x00\x00\xe9\x00\x00\x00\x00"
+    cleanup = bytes.fromhex("8b450c50e80000000059c3")
+    func_info = struct.pack("<II", 0x19930520, 1) + b"\x00" * 24
+    func_info += struct.pack("<iI", -1, 0)
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text$x",
+                data=handler + cleanup,
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(1, 1, 6),
+                    CoffRelocation(6, 3, 20),
+                    CoffRelocation(15, 5, 20),
+                ),
+            ),
+            CoffSection(
+                name=".xdata$x",
+                data=func_info,
+                characteristics=0,
+                relocations=(
+                    CoffRelocation(8, 2, 6),
+                    CoffRelocation(36, 4, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "$Lhandler", 0, 1, 0, 6),
+            CoffSymbol(1, "$Tinfo", 0, 2, 0, 3),
+            CoffSymbol(2, "$Tunwind", 32, 2, 0, 3),
+            CoffSymbol(3, "___CxxFrameHandler", 0, 0, 0x20, 2),
+            CoffSymbol(4, "$Lcleanup", 10, 1, 0, 6),
+            CoffSymbol(5, "??3@YAXPAX@Z", 0, 0, 0x20, 2),
+        ),
+    )
+
+    assert _coff_vc6_single_delete_unwind_key(obj, obj.symbols[0]) == (f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x0c")
 
 
 def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyPatch) -> None:

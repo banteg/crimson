@@ -40,6 +40,7 @@ PADDING_LINE_TEXT = {
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
 LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
+VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
 
 
 def parse_int(value: str | int) -> int:
@@ -132,6 +133,7 @@ def load_reference_catalog(
     *,
     data_map_path: Path = DEFAULT_DATA_MAP_PATH,
     functions_path: Path | None = None,
+    name_map_path: Path | None = DEFAULT_NAME_MAP_PATH,
 ) -> ReferenceCatalog:
     """Build the conservative symbol oracle used to audit masked image addresses.
 
@@ -172,6 +174,15 @@ def load_reference_catalog(
             name = str(entry["name"])
             if name not in names.setdefault(address, []):
                 names[address].append(name)
+    if name_map_path is not None and name_map_path.exists():
+        for entry in json.loads(name_map_path.read_text(encoding="utf-8")):
+            if entry.get("program") != manifest.image_name:
+                continue
+            address = parse_int(entry["address"])
+            entry_names = (str(entry["name"]), *(str(alias) for alias in entry.get("aliases", [])))
+            for name in entry_names:
+                if name not in names.setdefault(address, []):
+                    names[address].append(name)
     names_by_address = {address: tuple(values) for address, values in names.items()}
     addresses_by_name: dict[str, list[int]] = {}
     for address, values in names_by_address.items():
@@ -535,6 +546,82 @@ def _symbol_lookup_name(name: str) -> str:
     return canonical
 
 
+def _coff_relocation_symbol(
+    obj: CoffObject,
+    section: CoffSection,
+    virtual_address: int,
+) -> CoffSymbol | None:
+    relocation = next(
+        (entry for entry in section.relocations if entry.virtual_address == virtual_address),
+        None,
+    )
+    if relocation is None:
+        return None
+    return next((symbol for symbol in obj.symbols if symbol.raw_index == relocation.symbol_index), None)
+
+
+def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> str | None:
+    """Recognize a complete VC6 C++ frame-handler graph in a COFF object.
+
+    The pushed handler address is target-specific, but its thunk, FuncInfo,
+    unwind-map entry, and cleanup funclet are deterministic. Recognizing the
+    whole graph avoids accepting an arbitrary compiler-local ``$L`` label.
+    """
+
+    if not symbol.name.startswith("$L") or symbol.section_number <= 0:
+        return None
+    handler_section = obj.sections[symbol.section_number - 1]
+    handler = handler_section.data[symbol.value : symbol.value + 10]
+    if len(handler) != 10 or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+        return None
+    if handler[1:5] != b"\x00" * 4 or handler[6:10] != b"\x00" * 4:
+        return None
+
+    func_info_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 1)
+    frame_handler_symbol = _coff_relocation_symbol(obj, handler_section, symbol.value + 6)
+    if (
+        func_info_symbol is None
+        or func_info_symbol.section_number <= 0
+        or frame_handler_symbol is None
+        or _symbol_lookup_name(frame_handler_symbol.name) != "CxxFrameHandler"
+    ):
+        return None
+
+    func_info_section = obj.sections[func_info_symbol.section_number - 1]
+    base = func_info_symbol.value
+    func_info = func_info_section.data[base : base + 40]
+    if len(func_info) != 40:
+        return None
+    if struct.unpack_from("<II", func_info) != (0x19930520, 1):
+        return None
+    if func_info[8:12] != b"\x00" * 4 or func_info[36:40] != b"\x00" * 4:
+        return None
+    if func_info[12:32] != b"\x00" * 20 or struct.unpack_from("<i", func_info, 32)[0] != -1:
+        return None
+
+    unwind_map_symbol = _coff_relocation_symbol(obj, func_info_section, base + 8)
+    cleanup_symbol = _coff_relocation_symbol(obj, func_info_section, base + 36)
+    if (
+        unwind_map_symbol is None
+        or unwind_map_symbol.section_number != func_info_symbol.section_number
+        or unwind_map_symbol.value != base + 32
+        or cleanup_symbol is None
+        or cleanup_symbol.section_number <= 0
+    ):
+        return None
+
+    cleanup_section = obj.sections[cleanup_symbol.section_number - 1]
+    cleanup = cleanup_section.data[cleanup_symbol.value : cleanup_symbol.value + 11]
+    if cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
+        return None
+    if cleanup[5:9] != b"\x00" * 4 or cleanup[9:] != bytes.fromhex("59c3"):
+        return None
+    delete_symbol = _coff_relocation_symbol(obj, cleanup_section, cleanup_symbol.value + 5)
+    if delete_symbol is None or not delete_symbol.name.startswith("??3@"):
+        return None
+    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
+
+
 def _object_reference_key(symbol: CoffSymbol, addend: int) -> tuple[str | None, bool]:
     if symbol.name.startswith(("$L", "??_C@", "__real@")) or not symbol.name:
         return None, False
@@ -542,6 +629,18 @@ def _object_reference_key(symbol: CoffSymbol, addend: int) -> tuple[str | None, 
     if not canonical:
         return None, False
     return f"name:{canonical}{_format_addend(addend)}", True
+
+
+def _is_vc_exception_chain_reference(reference: ObjectRelocationReference | None) -> bool:
+    """Return whether a COFF relocation denotes the x86 FS exception-chain head.
+
+    VC6 emits relocations against the absolute ``__except_list`` symbol for
+    ``fs:[0]``. The PE linker resolves that symbol to numeric zero, so retaining
+    an ``ADDR`` placeholder would create a false instruction mismatch against
+    the linked image.
+    """
+
+    return reference is not None and reference.symbol_name == "__except_list"
 
 
 def _format_addend(addend: int) -> str:
@@ -601,6 +700,9 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
             continue
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         key, explained = _object_reference_key(symbol, addend)
+        if compiler_key := _coff_vc6_single_delete_unwind_key(obj, symbol):
+            key = compiler_key
+            explained = True
         symbol_section = obj.sections[symbol.section_number - 1] if symbol.section_number > 0 else None
         symbol_end = (
             min(
@@ -671,6 +773,45 @@ def _image_bytes(image: LoadedImage | None, address: int, byte_count: int) -> by
     if offset < 0 or offset + byte_count > len(image.mapped):
         return None
     return image.mapped[offset : offset + byte_count]
+
+
+def _image_vc6_single_delete_unwind_key(
+    image: LoadedImage | None,
+    reference_catalog: ReferenceCatalog | None,
+    address: int,
+) -> str | None:
+    if image is None or reference_catalog is None:
+        return None
+    handler = _image_bytes(image, address, 10)
+    if handler is None or handler[:1] != b"\xb8" or handler[5:6] != b"\xe9":
+        return None
+
+    func_info_address = struct.unpack_from("<I", handler, 1)[0]
+    frame_handler_address = address + 10 + struct.unpack_from("<i", handler, 6)[0]
+    if not any(
+        _symbol_lookup_name(name) == "CxxFrameHandler"
+        for name in reference_catalog.names_by_address.get(frame_handler_address, ())
+    ):
+        return None
+
+    func_info = _image_bytes(image, func_info_address, 40)
+    if func_info is None or struct.unpack_from("<II", func_info) != (0x19930520, 1):
+        return None
+    if func_info[12:32] != b"\x00" * 20 or struct.unpack_from("<i", func_info, 32)[0] != -1:
+        return None
+    if struct.unpack_from("<I", func_info, 8)[0] != func_info_address + 32:
+        return None
+
+    cleanup_address = struct.unpack_from("<I", func_info, 36)[0]
+    cleanup = _image_bytes(image, cleanup_address, 11)
+    if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
+        return None
+    if cleanup[9:] != bytes.fromhex("59c3"):
+        return None
+    delete_address = cleanup_address + 9 + struct.unpack_from("<i", cleanup, 5)[0]
+    if not any(name.startswith("??3@") for name in reference_catalog.names_by_address.get(delete_address, ())):
+        return None
+    return f"{VC6_SINGLE_DELETE_UNWIND_KEY}:ebp+0x{cleanup[2]:02x}"
 
 
 def _format_memory_operand(insn, operand, masked_disp: bool) -> str:
@@ -748,6 +889,8 @@ def disassemble_normalized_function(
         elif reference.symbol_name.startswith("__real@") and len(symbol_data) >= byte_count:
             keys = (f"bytes{byte_count}:{symbol_data[:byte_count].hex()}",)
             explained = True
+        elif reference.key is not None and reference.key.startswith(f"{VC6_SINGLE_DELETE_UNWIND_KEY}:"):
+            pass
         elif reference_catalog is not None:
             if reference_catalog.knows_name(reference.symbol_name):
                 keys = reference_catalog.keys_for_object_reference(
@@ -780,6 +923,8 @@ def disassemble_normalized_function(
                 keys.append(string_key)
             if byte_count is not None and (raw := _image_bytes(image, value, byte_count)) is not None:
                 keys.append(f"bytes{byte_count}:{raw.hex()}")
+        if compiler_key := _image_vc6_single_delete_unwind_key(image, reference_catalog, value):
+            keys.append(compiler_key)
         names = reference_catalog.names_by_address.get(value, ()) if reference_catalog is not None else ()
         return MaskedReference(
             operand_index=operand_index,
@@ -815,6 +960,8 @@ def disassemble_normalized_function(
             if insn.disp_offset
             else False
         )
+        if _is_vc_exception_chain_reference(disp_relocation):
+            disp_masked = False
 
         operands: list[str] = []
         masked_references: list[MaskedReference] = []
@@ -1495,6 +1642,7 @@ def _scratch_cache_key(
         "matcher_mtime": _mtime_ns(Path(__file__)),
         "manifest": _manifest_digest(manifest),
         "data_map_mtime": _mtime_ns(DEFAULT_DATA_MAP_PATH),
+        "name_map_mtime": _mtime_ns(DEFAULT_NAME_MAP_PATH),
     }
 
 

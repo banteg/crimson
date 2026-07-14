@@ -53,9 +53,9 @@ public:
     virtual int grim_get_joystick_z(void) = 0;
     virtual int grim_get_joystick_pov(int index) = 0;
     virtual unsigned char grim_is_joystick_button_down(int button) = 0;
-    virtual int grim_create_texture(char *name, int width, int height) = 0;
+    virtual bool grim_create_texture(char *name, int width, int height) = 0;
     virtual int grim_recreate_texture(int handle) = 0;
-    virtual int grim_load_texture(char *name, char *path) = 0;
+    virtual bool grim_load_texture(char *name, char *path) = 0;
     virtual bool grim_save_texture(int handle, char *path) = 0;
     virtual void grim_destroy_texture(int handle) = 0;
     virtual int grim_get_texture_handle(char *name) = 0;

@@ -5,7 +5,6 @@ void IGrim2D_cpp::grim_destroy_texture(int handle)
 {
     GrimTexture *texture = grim_texture_slots[handle];
     if (texture != 0) {
-        texture->grim_texture_release();
         delete texture;
 
         int last = grim_texture_slot_max_index;
