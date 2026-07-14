@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**200/2161** functions matched, **28600/675651** code bytes (**4.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**204/2161** functions matched, **28818/675651** code bytes (**4.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 68/986 | 9153/385754 | 2.4% | 68/80 |
+| crimsonland.exe | 72/986 | 9371/385754 | 2.4% | 72/84 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**68/986** functions, **9153/385754** bytes (**2.4%**), **68/80** scratches verified.
+**72/986** functions, **9371/385754** bytes (**2.4%**), **72/84** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -83,6 +83,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-spawn-slots |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/1/2 |  | gameplay-spawn-switch |
+| match | highscore_compare_survival_score_desc | 0x0043aeb0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-survival-score-order |
+| match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
+| match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
+| match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |

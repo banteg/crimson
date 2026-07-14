@@ -2439,7 +2439,7 @@
     "address": "0x0043aeb0",
     "name": "highscore_compare_survival_score_desc",
     "signature": "int highscore_compare_survival_score_desc(const void *a, const void *b)",
-    "comment": "qsort comparator used by highscore_load_table() for survival mode; sorts descending by dword at offset 0x24",
+    "comment": "qsort comparator used by highscore_load_table() for survival mode; sorts score_xp descending with signed comparisons",
     "create": true
   },
   {
@@ -2447,7 +2447,7 @@
     "address": "0x0043aed0",
     "name": "highscore_compare_rush_field32_desc",
     "signature": "int highscore_compare_rush_field32_desc(const void *a, const void *b)",
-    "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts descending by dword at offset 0x20",
+    "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts survival_elapsed_ms descending with signed comparisons",
     "create": true
   },
   {
@@ -2455,14 +2455,14 @@
     "address": "0x0043aef0",
     "name": "highscore_compare_quest_field32_asc_nonzero_first",
     "signature": "int highscore_compare_quest_field32_asc_nonzero_first(const void *a, const void *b)",
-    "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts ascending by dword at offset 0x20, treating 0 as \"missing\" (sorted last)",
+    "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts survival_elapsed_ms ascending with zero last",
     "create": true
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043af30",
     "name": "highscore_find_name_entry",
-    "signature": "byte * highscore_find_name_entry(byte *record, int count)",
+    "signature": "highscore_record_t * highscore_find_name_entry(const char *player_name, int count)",
     "comment": "finds a matching name entry in the loaded high score table"
   },
   {
