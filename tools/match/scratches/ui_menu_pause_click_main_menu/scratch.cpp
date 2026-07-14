@@ -1,16 +1,7 @@
 #include <windows.h>
 
 #include "crimsonland_audio.h"
-
-class mod_interface_cpp_t {
-public:
-    virtual unsigned char init(void);
-    virtual void shutdown(void);
-    virtual unsigned char frame(int frame_dt_ms);
-
-    void *api;
-    mod_parms_t parms;
-};
+#include "crimsonland_mod_api.h"
 
 extern "C" mod_interface_t *plugin_interface_ptr;
 extern "C" HMODULE plugin_module_handle;

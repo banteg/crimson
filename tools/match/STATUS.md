@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**399/2162** functions matched, **48064/675654** code bytes (**7.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**400/2162** functions matched, **48329/675654** code bytes (**7.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 267/987 | 28617/385757 | 7.4% | 267/297 |
+| crimsonland.exe | 268/987 | 28882/385757 | 7.5% | 268/298 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**267/987** functions, **28617/385757** bytes (**7.4%**), **267/297** scratches verified.
+**268/987** functions, **28882/385757** bytes (**7.5%**), **268/298** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -62,6 +62,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
 | match | ui_draw_clock_gauge_at | 0x0040a4c0 | 70 | 22/22 | 100.00% | 22/22 | 6/0/0 |  | ui-clock-gauge-wrapper |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
+| match | plugin_runtime_update_and_render | 0x0040b630 | 265 | 67/67 | 100.00% | 67/67 | 33/0/0 |  | plugin-runtime-frame-lifecycle |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |

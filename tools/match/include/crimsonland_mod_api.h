@@ -1,6 +1,11 @@
 #ifndef CRIMSONLAND_MOD_API_H
 #define CRIMSONLAND_MOD_API_H
 
+#include <windows.h>
+#include <dsound.h>
+
+#include "crimsonland_types.h"
+
 struct mod_vertex2_t;
 struct mod_var_t;
 
@@ -49,6 +54,17 @@ public:
 
     unsigned char _opaque_0x04[0x64];
     int field_0x68;
+};
+
+// C++ projection of the three-slot interface returned by CMOD_GetMod.
+class mod_interface_cpp_t {
+public:
+    virtual unsigned char init(void);
+    virtual void shutdown(void);
+    virtual unsigned char frame(int frame_dt_ms);
+
+    mod_api_cpp_t *api;
+    mod_parms_t parms;
 };
 
 #endif
