@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**370/2162** functions matched, **44413/675654** code bytes (**6.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**372/2162** functions matched, **44770/675654** code bytes (**6.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 238/987 | 24966/385757 | 6.5% | 238/266 |
+| crimsonland.exe | 240/987 | 25323/385757 | 6.6% | 240/268 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**238/987** functions, **24966/385757** bytes (**6.5%**), **238/266** scratches verified.
+**240/987** functions, **25323/385757** bytes (**6.6%**), **240/268** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -25,6 +25,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_clear_log | 0x004011a0 | 78 | 28/28 | 100.00% | 28/28 | 7/0/0 |  | console-log-clear |
 | match | console_log_node_free | 0x004011f0 | 68 | 24/24 | 100.00% | 24/24 | 2/0/0 |  | console-log-node-destructor |
 | match | console_cmd_quit | 0x00401240 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-quit-command |
+| match | console_cmd_exec | 0x00401250 | 236 | 72/72 | 100.00% | 72/72 | 28/0/0 |  | console-script-execution |
 | match | console_cmd_extend | 0x00401340 | 17 | 4/4 | 100.00% | 4/4 | 3/0/0 |  | console-height-extend |
 | match | console_cmd_minimize | 0x00401360 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-minimize-command |
 | match | console_cmdlist | 0x00401370 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-command-list |
@@ -44,6 +45,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_register_command | 0x004026e0 | 99 | 38/38 | 100.00% | 38/38 | 2/0/0 |  | console-command-register |
 | match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
+| match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |

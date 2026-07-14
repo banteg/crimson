@@ -90,6 +90,7 @@ extern "C" {
 
 extern char *console_empty_arg;
 extern char *console_cmd_name[];
+extern char console_exec_line_buf[512];
 extern char console_tokenize_buf[];
 extern char console_format_buffer[512];
 extern int console_cmd_argc;
