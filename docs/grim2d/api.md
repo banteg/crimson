@@ -162,6 +162,8 @@ Validation highlights (see the evidence appendix for snippets):
   offsets to 7-float stride vertices before batching.
 
 - `grim_draw_quad_points` emits four explicit points with current UV/color slots and batches immediately.
+- `grim_draw_quad_rotated_matrix` builds four center-relative corners, applies the cached 2x2 rotation
+  matrix, translates them back to the requested center, and emits the current UV/color slots.
 - `grim_draw_line` builds a half-width vector then forwards to `grim_draw_line_quad`, which emits the quad
   via `grim_draw_quad_points`.
 
@@ -382,7 +384,7 @@ These offsets appear with keycodes or input-related values:
 | `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | high | packs RGBA into color slot array (index 0..3, per-corner) |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call; uses per-corner color slots + UV array |
 | `0x120` | `draw_quad_xy` | `void draw_quad_xy(const float *xy, float w, float h)` | high | wrapper for draw_quad using `xy` pointer |
-| `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | high | uses rotation matrix to emit quad vertices |
+| `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | confirmed | exact-matched centered 2x2 matrix transform with batched UV/color emission |
 | `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(const float *verts, int count, const float *offset, const float *matrix)` | high | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
 | `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(const float *verts, int count, const float *offset)` | high | copies verts then offsets XY (7-float stride) |
 | `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)` | high | copies verts, offsets XY, overrides packed color from `*color` |

@@ -2006,9 +2006,10 @@ debt. Its body is exactly `draw_quad(xy[0], xy[1], w, h)`.
 
 ## 0x124 — grim_draw_quad_rotated_matrix @ 0x10008750
 
-- Notes: emits a quad using the current rotation matrix and UV/color slots
-- Ghidra signature: `void grim_draw_quad_rotated_matrix(void *this, float x, float y, float w, float h)`
-- Suggested signature: `void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)`
+- Confirmed name: `draw_quad_rotated_matrix`
+- Confirmed C++ signature: `void __thiscall IGrim2D::draw_quad_rotated_matrix(float x, float y, float w, float h)`
+- Notes: emits a centered quad using the cached rotation matrix and current
+  UV/color slots
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -2095,8 +2096,21 @@ grim.dll body:
   grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
   if (DAT_1005976c <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
-  }
+}
 ```
+
+The recovered VC6.5 source matches all 236 native instructions (953 code
+bytes) and all 81 masked references. With rotation disabled it emits the
+ordinary axis-aligned corners. Otherwise it constructs four half-width and
+half-height offsets, transforms each in place through the cached 2x2 matrix,
+then translates each point by the requested rectangle center.
+
+The native x87 schedule distinguishes the likely source operations: each
+point's matrix transform completes before its separate center translation.
+Keeping those as two ordinary operations reproduces the compiler's stack-slot
+reuse and all downstream vertex stores without volatile state or fake
+references. The four resulting vertices use the same lazy-batch, per-corner
+color/UV, low-word count, and capacity-flush path as `grim_draw_quad`.
 
 The recovered VC6.5 source matches all 50 instructions and all 8 masked
 references. An ordinary `memcpy(count * 0x1c)` produces the native bulk-copy

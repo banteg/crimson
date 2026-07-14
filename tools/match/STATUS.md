@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**140/2161** functions matched, **16630/675651** code bytes (**2.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**141/2161** functions matched, **17583/675651** code bytes (**2.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 97/1175 | 10272/289897 | 3.5% | 97/98 |
+| grim.dll | 98/1175 | 11225/289897 | 3.9% | 98/99 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**97/1175** functions, **10272/289897** bytes (**3.5%**), **97/98** scratches verified.
+**98/1175** functions, **11225/289897** bytes (**3.9%**), **98/99** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -159,6 +159,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_submit_vertices_transform | 0x100085c0 | 192 | 64/64 | 100.00% | 64/64 | 9/0/0 |  | grim2d-vertex-submit-transform |
 | match | grim_submit_vertices_offset | 0x10008680 | 153 | 50/50 | 100.00% | 50/50 | 8/0/0 |  | grim2d-vertex-submit-offset |
 | match | grim_draw_quad_xy | 0x10008720 | 34 | 14/14 | 100.00% | 14/14 | 0/0/0 |  | grim2d-quad-xy-wrapper |
+| match | grim_draw_quad_rotated_matrix | 0x10008750 | 953 | 236/236 | 100.00% | 236/236 | 81/0/0 |  | grim2d-matrix-quad |
 | match | grim_draw_quad | 0x10008b10 | 800 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |
 | match | grim_submit_vertex_raw | 0x10008e30 | 116 | 35/35 | 100.00% | 35/35 | 9/0/0 |  | grim2d-raw-vertex-submit |
 | match | grim_submit_quad_raw | 0x10008eb0 | 91 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
