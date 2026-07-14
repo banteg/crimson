@@ -9989,6 +9989,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005cd08",
+      "comment": "Mono-font scale used for the 16px advance, 28px line step, and 32px draw cells.",
+      "name": "grim_font_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1005ce18",
       "comment": "Display-mode width staging value used to preselect and apply config-dialog mode choices.",
       "name": "grim_config_mode_width",

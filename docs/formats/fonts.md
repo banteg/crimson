@@ -73,7 +73,9 @@ https://www.dafont.com/pixel-arial-11.font
 - **Baseline quirk**: Most glyph quads are drawn at `y + 1.0` (literal +1px, not scaled). [static]
 - **Visual effect**: Characters are drawn at 2x the size of their horizontal spacing, creating a dense, tall appearance (effective 1:2 aspect ratio relative to the grid). [static]
 - **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity). [static]
-- **Special codes**: 0xA7 (skip pre-advance for next glyph), plus 0xE4/0xE5/0xF6 and `\n`. [static]
+- **Special codes**: 0xA7 skips the next normal glyph's pre-advance. The renderer
+  builds 0xE4 from `a` + `"`, 0xE5 from `a` + `.`, and 0xF6 from `o` + `"`;
+  `\n` resets X and advances Y. [static]
 
 ### Quest title overlay (runtime evidence)
 

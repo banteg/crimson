@@ -9,7 +9,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 99/1175 | 11576/289897 | 4.0% | 99/100 |
+| grim.dll | 99/1175 | 11576/289897 | 4.0% | 99/101 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**99/1175** functions, **11576/289897** bytes (**4.0%**), **99/100** scratches verified.
+**99/1175** functions, **11576/289897** bytes (**4.0%**), **99/101** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -165,6 +165,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_submit_quad_raw | 0x10008eb0 | 91 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
 | match | grim_draw_rect_outline | 0x10008f10 | 356 | 125/125 | 100.00% | 125/125 | 8/0/0 |  | grim2d-outlined-rectangle |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
+| wip | grim_draw_text_mono | 0x100092b0 | 1034 | 298/308 | 94.39% | 6/308 | 41/0/0 |  | grim2d-mono-font-draw |
 | match | grim_measure_text_width | 0x100096c0 | 98 | 45/45 | 100.00% | 45/45 | 2/0/0 |  | grim2d-small-font-measurement |
 | match | grim_draw_text_small | 0x10009730 | 515 | 153/153 | 100.00% | 153/153 | 18/0/0 |  | grim2d-small-font-draw |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |

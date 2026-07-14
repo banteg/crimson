@@ -2243,6 +2243,13 @@ count/capacity check.
 - Sample calls: FUN_00401dd0:L781; FUN_00401dd0:L804; FUN_00401dd0:L843; demo_purchase_screen_update (`FUN_0040b740`):L6491; ui_render_hud (`FUN_0041aed0`):L11263
 - First callsite: FUN_00401dd0 (line 781)
 
+The recovered VC6 source shape identifies `grim_font_scale` at `0x1005cd08`,
+the shared two-float atlas temporary, and the native composite construction:
+`0xe4` is `a` plus `"`, `0xe5` is `a` plus `.`, and `0xf6` is `o` plus `"`.
+The current scratch is an honest 94.39% WIP (298/308 instructions, all 41
+masked references resolved). Its sole residual is a compiler tail merge that
+deduplicates ten native instructions shared by the `0xe4` and `0xf6` suffixes.
+
 
 ```c
     }
