@@ -1452,6 +1452,12 @@
       "type": "ui_button_t"
     },
     {
+      "address": "0x004802c8",
+      "comment": "Shared text buffer filled by format_ordinal for high-score rank labels.",
+      "name": "format_ordinal_buffer",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00480310",
       "comment": "Perk selection choice-item hover color component R (one-shot palette init in perk_selection_screen_update).",
       "name": "perk_selection_choice_color_hover_r",
