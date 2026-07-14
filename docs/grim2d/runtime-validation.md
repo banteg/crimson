@@ -64,5 +64,5 @@ No hits in this run:
 - `grim_apply_config` (`0x010`, `grim.dll+0x05D40`)
 - `grim_check_device` (`0x00C`, `grim.dll+0x05CB0`)
 - `grim_get_error_text` (`0x028`, `grim.dll+0x06CA0`)
-- `grim_validate_texture` (`0xB8`, `grim.dll+0x07750`)
+- `grim_save_texture` (`0xB8`, `grim.dll+0x07750`)
 - `grim_recreate_texture` (`0xB0`, `grim.dll+0x07790`)

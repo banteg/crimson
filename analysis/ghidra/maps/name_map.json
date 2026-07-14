@@ -5683,9 +5683,9 @@
   {
     "program": "grim.dll",
     "address": "0x10007750",
-    "name": "grim_validate_texture",
-    "signature": "int grim_validate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb8: validate texture handle/device"
+    "name": "grim_save_texture",
+    "signature": "unsigned char grim_save_texture(int handle, char *path)",
+    "comment": "Grim2D vtable 0xb8: saves a texture handle to a TGA file via D3DXSaveTextureToFileA"
   },
   {
     "program": "grim.dll",
@@ -6182,10 +6182,9 @@
   {
     "program": "grim.dll",
     "address": "0x1000c1e8",
-    "name": "FUN_1000c1e8",
-    "signature": "void* FUN_1000c1e8(int arg1, int arg2, int* arg3, int arg4)",
-    "comment": "[binja] void* __stdcall sub_1000c1e8(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
-    "create": false
+    "name": "D3DXSaveTextureToFileA",
+    "signature": "int D3DXSaveTextureToFileA(char *path, int format, void *texture, void *palette)",
+    "comment": "D3DX8 static helper; saves a base texture to path using the selected image format and optional palette"
   },
   {
     "program": "grim.dll",

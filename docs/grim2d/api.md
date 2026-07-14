@@ -243,7 +243,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0xa0` | `grim_get_joystick_z` | `int grim_get_joystick_z(void)` |
 | `0xa8` | `grim_is_joystick_button_down` | `unsigned char grim_is_joystick_button_down(int button)` |
 | `0xb0` | `grim_recreate_texture` | `int grim_recreate_texture(int handle)` |
-| `0xb8` | `grim_validate_texture` | `int grim_validate_texture(int handle)` |
+| `0xb8` | `grim_save_texture` | `bool grim_save_texture(int handle, char *path)` |
 | `0xbc` | `grim_destroy_texture` | `void grim_destroy_texture(int handle)` |
 | `0xe0` | `grim_draw_line` | `void grim_draw_line(float * p0, float * p1, float thickness)` |
 | `0xe4` | `grim_draw_line_quad` | `void grim_draw_line_quad(float * p0, float * p1, float * half_vec)` |
@@ -355,7 +355,7 @@ These offsets appear with keycodes or input-related values:
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | high | creates blank texture in a free slot |
 | `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | high | recreates D3D texture surface for handle |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
-| `0xb8` | `validate_texture` | `bool validate_texture(int handle)` | high | checks handle + device validation |
+| `0xb8` | `save_texture` | `bool save_texture(int handle, const char *path)` | confirmed | saves the texture as TGA through `D3DXSaveTextureToFileA` |
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |

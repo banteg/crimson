@@ -1072,12 +1072,16 @@ grim.dll body:
 ```
 
 
-## 0xb8 — grim_validate_texture @ 0x10007750
+## 0xb8 — grim_save_texture @ 0x10007750
 
-- Provisional name: `validate_texture` (high)
-- Guess: `bool validate_texture(int handle)`
-- Ghidra signature: `int grim_validate_texture(int handle)`
-- Suggested signature: `bool grim_validate_texture(int handle)`
+- Confirmed name: `save_texture`
+- Confirmed C++ signature: `bool __thiscall IGrim2D::save_texture(int handle, char *path)`
+- Previous Ghidra signature: `int grim_validate_texture(int handle)`
+- Notes: live disassembly reads both stack arguments and returns with `retn 0x8`.
+  For a populated handle it calls the statically linked
+  `D3DXSaveTextureToFileA(path, 2, texture, NULL)`; D3DX image format `2` is
+  TGA. The old one-argument validation interpretation lost the path argument
+  and misidentified the operation.
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1086,11 +1090,10 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  if ((&DAT_1005d404)[handle] == 0) {
-    return 0;
-  }
-  iVar1 = FUN_1000c1e8();
-  return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
+  texture = grim_texture_slots[handle];
+  if (texture == NULL)
+    return false;
+  return D3DXSaveTextureToFileA(path, 2, texture->texture, NULL) >= 0;
 ```
 
 

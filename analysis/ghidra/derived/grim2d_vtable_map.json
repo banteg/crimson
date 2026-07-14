@@ -845,13 +845,13 @@
     "sample_calls": [],
     "func_addr": "0x10007750",
     "section": ".text",
-    "func_name": "grim_validate_texture",
+    "func_name": "grim_save_texture",
     "func_size": 50,
     "calling_convention": "unknown",
-    "return_type": "int",
-    "param_count": 1,
-    "signature": "int grim_validate_texture(int handle)",
-    "source_type": "DEFAULT"
+    "return_type": "unsigned char",
+    "param_count": 2,
+    "signature": "unsigned char grim_save_texture(int handle, char * path)",
+    "source_type": "USER_DEFINED"
   },
   {
     "offset_hex": "0xbc",

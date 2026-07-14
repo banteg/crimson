@@ -45,7 +45,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 43,0xac,172,0x100075d0,grim_create_texture,.text
 44,0xb0,176,0x10007790,grim_recreate_texture,.text
 45,0xb4,180,0x100076e0,grim_load_texture,.text
-46,0xb8,184,0x10007750,grim_validate_texture,.text
+46,0xb8,184,0x10007750,grim_save_texture,.text
 47,0xbc,188,0x10007700,grim_destroy_texture,.text
 48,0xc0,192,0x10007740,grim_get_texture_handle,.text
 49,0xc4,196,0x10007830,grim_bind_texture,.text

@@ -90,7 +90,7 @@ struct IGrim2D_vtbl {
     /* 0x0ac */ int (*grim_create_texture)(char * name, int width, int height);
     /* 0x0b0 */ int (*grim_recreate_texture)(int handle);
     /* 0x0b4 */ int (*grim_load_texture)(char * name, char * path);
-    /* 0x0b8 */ int (*grim_validate_texture)(int handle);
+    /* 0x0b8 */ unsigned char (*grim_save_texture)(int handle, char * path);
     /* 0x0bc */ void (*grim_destroy_texture)(int handle);
     /* 0x0c0 */ int (*grim_get_texture_handle)(char * name);
     /* 0x0c4 */ void (*grim_bind_texture)(int handle, int stage);

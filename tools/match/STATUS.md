@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**121/2161** functions matched, **13531/675651** code bytes (**2.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**127/2161** functions matched, **13855/675651** code bytes (**2.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 78/1175 | 7173/289897 | 2.5% | 78/79 |
+| grim.dll | 84/1175 | 7497/289897 | 2.6% | 84/85 |
 
 ## crimsonland.exe
 
@@ -79,11 +79,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**78/1175** functions, **7173/289897** bytes (**2.5%**), **78/79** scratches verified.
+**84/1175** functions, **7497/289897** bytes (**2.6%**), **84/85** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
+| match | grim_texture_name_equals | 0x10005110 | 93 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
+| match | grim_find_texture_by_name | 0x10005170 | 68 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
+| match | grim_find_free_texture_slot | 0x100051c0 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
 | match | grim_set_key_char_buffer | 0x10005c20 | 32 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | grim2d-key-char-buffer |
 | match | grim_get_key_char | 0x10005c40 | 52 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | grim2d-key-char-fifo |
 | match | grim_release | 0x10005c80 | 8 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |
@@ -123,7 +126,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_joystick_z | 0x100075a0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
 | match | grim_get_joystick_pov | 0x100075b0 | 14 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-joystick-state |
 | match | grim_is_joystick_button_down | 0x100075c0 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-wrapper |
+| match | grim_load_texture | 0x100076e0 | 21 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | grim2d-texture-load-wrapper |
+| match | grim_destroy_texture | 0x10007700 | 64 | 20/20 | 100.00% | 20/20 | 6/0/0 |  | grim2d-texture-destruction |
 | match | grim_get_texture_handle | 0x10007740 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-texture-lookup |
+| match | grim_save_texture | 0x10007750 | 50 | 18/18 | 100.00% | 18/18 | 2/0/0 |  | grim2d-texture-save |
 | match | grim_bind_texture | 0x10007830 | 58 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
 | match | grim_draw_rect_filled | 0x100078e0 | 205 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
