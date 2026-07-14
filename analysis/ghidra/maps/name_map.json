@@ -1117,7 +1117,7 @@
     "program": "crimsonland.exe",
     "address": "0x00417ae0",
     "name": "ui_draw_textured_quad",
-    "signature": "void ui_draw_textured_quad(int texture_id, int x, int y, int w, int h)",
+    "signature": "void ui_draw_textured_quad(int x, int y, int w, int h, int texture_id)",
     "comment": "binds a texture and draws a screen-space quad"
   },
   {

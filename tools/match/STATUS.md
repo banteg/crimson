@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**328/2162** functions matched, **40583/675654** code bytes (**6.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**330/2162** functions matched, **40978/675654** code bytes (**6.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 196/987 | 21136/385757 | 5.5% | 196/220 |
+| crimsonland.exe | 198/987 | 21531/385757 | 5.6% | 198/222 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**196/987** functions, **21136/385757** bytes (**5.5%**), **196/220** scratches verified.
+**198/987** functions, **21531/385757** bytes (**5.6%**), **198/222** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -83,6 +83,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_template_block_set_mode4 | 0x00417aa0 | 13 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | ui-subtemplate-mode-init |
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
+| match | ui_draw_textured_quad | 0x00417ae0 | 158 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
+| match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
 | match | game_is_full_version | 0x0041df40 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
