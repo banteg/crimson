@@ -2285,11 +2285,9 @@ references, including both `grim_printf_buffer` operands and the imported
 
 ## 0x144 — grim_draw_text_small @ 0x10009730
 
-- Provisional name: `draw_text_small` (high)
-- Guess: `void draw_text_small(float x, float y, const char *text)`
-- Notes: uses `smallFnt.dat` widths + `GRIM_Font2`
-- Ghidra signature: `void grim_draw_text_small(float x, float y, char *text)`
-- Suggested signature: `void grim_draw_text_small(float x, float y, const char *text)`
+- Confirmed name: `draw_text_small`
+- Confirmed C++ signature: `void grim_draw_text_small(float x, float y, char *text)`
+- Atlas: `GRIM_Font2`, with the `smallFnt.dat` byte map and glyph widths
 - Call sites: 20 (unique funcs: 9)
 - Sample calls: FUN_00401dd0:L760; FUN_00401dd0:L800; perk_selection_screen_update:L3808; demo_purchase_screen_update (`FUN_0040b740`):L6398; demo_purchase_screen_update (`FUN_0040b740`):L6401; demo_purchase_screen_update (`FUN_0040b740`):L6409; demo_purchase_screen_update (`FUN_0040b740`):L6426; demo_purchase_screen_update (`FUN_0040b740`):L6428
 - First callsite: FUN_00401dd0 (line 760)
@@ -2302,6 +2300,19 @@ references, including both `grim_printf_buffer` operands and the imported
               (DAT_00471140 - 210.0,
                ((float)*(int *)(param_1 + 0x18) + *(float *)(param_1 + 0x1c)) - 18.0,
 ```
+
+The recovered source matches all 153 native instructions (515 code bytes;
+references `18/0/0`). It rejects disabled rendering and null strings, snaps the
+origin to integral pixels, lazily resolves and binds `GRIM_Font2`, forces filter
+mode 1 for the batch, and restores the previous 16-byte config value afterward.
+Each non-newline byte maps to a glyph width and an inset UV rectangle before a
+16-pixel-high quad is emitted; newlines reset x and advance y by 16 pixels.
+
+The native x87 ordering also reveals a two-stage endpoint construction: the
+atlas endpoint is first formed from width and row height, then both components
+are inset by `1/512`. Expressing those as ordinary two-float values reproduces
+the compiler spill and all four UV arguments without artificial volatility or
+unused state.
 
 grim.dll body:
 
@@ -2357,11 +2368,9 @@ address-only placeholder is accepted.
 
 ## 0x14c — grim_measure_text_width @ 0x100096c0
 
-- Provisional name: `measure_text_width` (high)
-- Guess: `int measure_text_width(const char *text)`
-- Notes: returns width for small font
-- Ghidra signature: `int grim_measure_text_width(char *text)`
-- Suggested signature: `int grim_measure_text_width(const char *text)`
+- Confirmed name: `measure_text_width`
+- Confirmed C++ signature: `int grim_measure_text_width(char *text)`
+- Result: maximum line width, or zero for a null pointer
 - Call sites: 14 (unique funcs: 10)
 - Sample calls: tutorial_prompt_dialog (`FUN_00408530`):L5007; bonus_render (`FUN_004295f0`):L18761; FUN_0042fd00:L20753; ui_checkbox_update (`FUN_0043dc80`):L26810; ui_menu_item_update:L27164; ui_button_update (`FUN_0043e830`):L27225; ui_text_input_update (`FUN_0043ecf0`):L27429; ui_list_widget_update (`FUN_0043efc0`):L27482
 - First callsite: tutorial_prompt_dialog (`FUN_00408530`) (line 5007)
@@ -2374,6 +2383,11 @@ address-only placeholder is accepted.
   iVar6 = 1;
   fStack_4c = 5.925313e-39;
 ```
+
+The recovered source matches all 45 native instructions (98 code bytes; references
+`2/0/0`). It scans the string once, accumulates mapped glyph widths, commits the
+running maximum at each newline, and performs one final maximum update for the
+last line. Declaration order naturally reproduces VC6's accumulator registers.
 
 grim.dll body:
 

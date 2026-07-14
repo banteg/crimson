@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**138/2161** functions matched, **16017/675651** code bytes (**2.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**140/2161** functions matched, **16630/675651** code bytes (**2.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 95/1175 | 9659/289897 | 3.3% | 95/96 |
+| grim.dll | 97/1175 | 10272/289897 | 3.5% | 97/98 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**95/1175** functions, **9659/289897** bytes (**3.3%**), **95/96** scratches verified.
+**97/1175** functions, **10272/289897** bytes (**3.5%**), **97/98** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -164,6 +164,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_submit_quad_raw | 0x10008eb0 | 91 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
 | match | grim_draw_rect_outline | 0x10008f10 | 356 | 125/125 | 100.00% | 125/125 | 8/0/0 |  | grim2d-outlined-rectangle |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
+| match | grim_measure_text_width | 0x100096c0 | 98 | 45/45 | 100.00% | 45/45 | 2/0/0 |  | grim2d-small-font-measurement |
+| match | grim_draw_text_small | 0x10009730 | 515 | 153/153 | 100.00% | 153/153 | 18/0/0 |  | grim2d-small-font-draw |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
 | match | grim_draw_text_small_fmt | 0x10009980 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
 | match | grim_joystick_enum_device | 0x1000a110 | 50 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim-joystick-enumeration |

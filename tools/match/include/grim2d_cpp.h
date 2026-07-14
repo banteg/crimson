@@ -3,6 +3,9 @@
 
 struct grim_config_value_t {
     unsigned int words[4];
+
+    grim_config_value_t() {}
+    grim_config_value_t(unsigned int value) { words[0] = value; }
 };
 
 // Recovered C++ view of the Grim2D interface through the primary quad slot.
@@ -114,6 +117,7 @@ public:
     virtual void grim_draw_text_mono_fmt(float x, float y, char *fmt, ...);
     virtual void grim_draw_text_small(float x, float y, char *text) = 0;
     virtual void grim_draw_text_small_fmt(float x, float y, char *fmt, ...);
+    virtual int grim_measure_text_width(char *text) = 0;
 };
 
 #endif
