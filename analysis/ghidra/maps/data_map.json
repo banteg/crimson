@@ -4255,6 +4255,9 @@
     },
     {
       "address": "0x0048f168",
+      "aliases": [
+        "ui_element_table"
+      ],
       "comment": "UI element pointer table slot 0 (logo sign root); also the low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
       "type": "ui_element_t *",

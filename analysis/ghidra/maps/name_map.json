@@ -3093,7 +3093,7 @@
     "address": "0x00446170",
     "name": "ui_elements_reset_state",
     "signature": "void ui_elements_reset_state(void)",
-    "comment": "clears active flags, hover timers, and callback pointers on all UI elements"
+    "comment": "clears active and counter_value on all 41 pointer-table UI elements"
   },
   {
     "program": "crimsonland.exe",

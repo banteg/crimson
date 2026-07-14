@@ -170,6 +170,7 @@ extern perk_meta_t perk_meta_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
 extern secondary_projectile_pool_t secondary_projectile_pool;
+extern ui_element_t *ui_element_table[];
 extern uv2f_t effect_uv_strip16[];
 extern uv2f_t effect_uv2[];
 extern uv2f_t effect_uv4[];
