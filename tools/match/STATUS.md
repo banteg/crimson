@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**216/2161** functions matched, **30080/675651** code bytes (**4.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**222/2161** functions matched, **30275/675651** code bytes (**4.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 84/986 | 10633/385754 | 2.8% | 84/97 |
+| crimsonland.exe | 90/986 | 10828/385754 | 2.8% | 90/103 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**84/986** functions, **10633/385754** bytes (**2.8%**), **84/97** scratches verified.
+**90/986** functions, **10828/385754** bytes (**2.8%**), **90/103** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -99,6 +99,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
+| match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
+| match | buffer_reader_seek | 0x0043b870 | 10 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | resource-buffer-reader |
+| match | buffer_reader_read_u16 | 0x0043b880 | 25 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
+| match | buffer_reader_read_u32 | 0x0043b8a0 | 24 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
+| match | buffer_reader_skip | 0x0043b8c0 | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 |  | resource-buffer-reader |
+| match | buffer_reader_find_tag | 0x0043b8e0 | 87 | 41/41 | 100.00% | 41/41 | 4/0/0 |  | resource-buffer-reader |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
