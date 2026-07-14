@@ -46,7 +46,7 @@ struct IGrim2D_vtbl {
     /* 0x074 */ float (__stdcall *grim_get_mouse_dy)(void);
     /* 0x078 */ float (__stdcall *grim_get_mouse_dx_indexed)(int index);
     /* 0x07c */ float (__stdcall *grim_get_mouse_dy_indexed)(int index);
-    /* 0x080 */ int (__stdcall *grim_is_key_active)(int key);
+    /* 0x080 */ unsigned char (__stdcall *grim_is_key_active)(int key);
     /* 0x084 */ float (__stdcall *grim_get_config_float)(int id);
     /* 0x088 */ float (__stdcall *grim_get_slot_float)(int index);
     /* 0x08c */ int (__stdcall *grim_get_slot_int)(int index);

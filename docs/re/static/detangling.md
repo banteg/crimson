@@ -548,9 +548,13 @@ Grim input query (partial, vtable `+0x80` → grim_is_key_active (`FUN_10006fe0`
 
 - `code < 0x100`: DirectInput keyboard state (raw DIK).
 - `0x100..0x104`: mouse buttons `0..4` (via Grim `+0x58`).
-- `0x11f..0x12b`: joystick buttons `0..12` (via Grim `+0xa8`).
-- `0x13f..0x155`: analog axes (reads `DAT_1005d830/834/838/83c/840/844`, thresholded).
-- `0x16d..0x17b`: joystick POV/axis queries via `DAT_1005d3b4` (if device present).
+- `0x11f..0x12a`: joystick buttons `0..11` (via Grim `+0xa8`).
+- `0x131..0x134`: joystick up/down/left/right deadzone helpers.
+- `0x13f`, `0x140`, `0x141`, `0x153`, `0x154`, `0x155`: six analog axes
+  (reads `DAT_1005d830/834/838/83c/840/844`, scales by `0.001`, and tests
+  `fabs(value) > 0.5`).
+- `0x16d..0x17b`: three groups of five RIM actions dispatched through the
+  optional provider at `DAT_1005d3b4` as `(player, action)`.
 
 Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`)):
 

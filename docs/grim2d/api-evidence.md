@@ -757,11 +757,9 @@ prefixes and aggregate references `12/0/0`.
 
 ## 0x80 — grim_is_key_active @ 0x10006fe0
 
-- Provisional name: `is_key_active` (high)
-- Guess: `bool is_key_active(int key)`
-- Notes: called with key mapping entries
-- Ghidra signature: `int grim_is_key_active(int key)`
-- Suggested signature: `bool grim_is_key_active(int key)`
+- Confirmed name: `grim_is_key_active`
+- Recovered signature: `unsigned char grim_is_key_active(int key)`
+- Ghidra signature: `int grim_is_key_active(int key)` (stale width)
 - Call sites: 6 (unique funcs: 4)
 - Sample calls: gameplay_update_and_render:L5929; input_any_key_pressed (`FUN_00446000`):L29232; input_primary_just_pressed (`FUN_00446030`):L29266; input_primary_just_pressed (`FUN_00446030`):L29282; input_primary_is_down (`FUN_004460f0`):L29308; input_primary_is_down (`FUN_004460f0`):L29310
 - First callsite: tutorial_timeline_update (`FUN_00408990`) (line 5277)
@@ -775,19 +773,26 @@ prefixes and aggregate references `12/0/0`.
               ((cVar2 = (**(code **)(*DAT_0048083c + 0x80))(puVar6[1]), cVar2 == '\0' &&
 ```
 
-grim.dll routing:
+The live grim.dll body and its natural VC6.5 WIP recover the complete routing:
 
 ```c
-  if (key < 0x100) {
-    return (**(code **)(*(int *)this + 0x44))(key);
-  }
-  if (key == 0x100) {
-    return (**(code **)(*(int *)this + 0x58))(0);
-  }
-  if (key == 0x101) {
-    return (**(code **)(*(int *)this + 0x58))(1);
-  }
+key <= 0xff       -> raw keyboard query
+0x100..0x104      -> mouse buttons 0..4
+0x11f..0x12a      -> joystick buttons 0..11
+0x131..0x134      -> up/down/left/right deadzone helpers
+0x13f,0x140,0x141,
+0x153,0x154,0x155 -> fabs(axis * 0.001f) > 0.5
+0x16d..0x17b      -> provider(player 0..2, action 0..4)
+all other IDs     -> 0
 ```
+
+The byte return is visible at direct forwarding exits, which preserve `al`
+without widening. The current source is deliberately recorded as WIP:
+174/175 candidate/target instructions, 73.93% normalized match, 2/175 prefix,
+and references `7/0/1`. Its remaining debt is register allocation and the
+placement of the shared axis-threshold tail. The lone conflicting masked
+reference is the resulting alignment of the candidate Rz load with the target
+X load; all six axis globals are present, and no semantic branch is unresolved.
 
 
 ## 0x84 — grim_get_config_float @ 0x100071b0

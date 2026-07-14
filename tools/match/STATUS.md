@@ -9,7 +9,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 63/1175 | 6518/289897 | 2.2% | 63/63 |
+| grim.dll | 63/1175 | 6518/289897 | 2.2% | 63/64 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**63/1175** functions, **6518/289897** bytes (**2.2%**), **63/63** scratches verified.
+**63/1175** functions, **6518/289897** bytes (**2.2%**), **63/64** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -94,6 +94,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_joystick_down_active | 0x10006ef0 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_left_active | 0x10006f40 | 78 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_right_active | 0x10006f90 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
+| wip | grim_is_key_active | 0x10006fe0 | 456 | 174/175 | 73.93% | 2/175 | 7/0/1 |  | grim-input-key-router |
 | match | grim_get_config_float | 0x100071b0 | 264 | 88/88 | 100.00% | 88/88 | 13/0/0 |  | grim-input-float-router |
 | match | grim_is_key_down | 0x10007320 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-key-state |
 | match | grim_flush_input | 0x10007330 | 91 | 34/34 | 100.00% | 34/34 | 5/0/0 |  | grim2d-input-flush |

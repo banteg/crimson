@@ -10060,6 +10060,13 @@
       "type": "float"
     },
     {
+      "address": "0x1005d3b4",
+      "comment": "Optional input provider queried for three groups of five extended actions.",
+      "name": "grim_input_provider",
+      "program": "grim.dll",
+      "type": "GrimInputProvider *"
+    },
+    {
       "address": "0x1005d3a8",
       "comment": "Device-lost callback (set via config var id 5; called before backup/release paths).",
       "name": "grim_on_device_lost",

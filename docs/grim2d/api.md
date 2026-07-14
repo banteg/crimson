@@ -281,9 +281,12 @@ These offsets appear with keycodes or input-related values:
 - `0x58` / `0x80` appear in input handling loops in
   `input_primary_just_pressed` (`FUN_00446030`).
 
-- `0x80` routes IDs `< 0x100` to `is_key_down` and uses `0x100/0x101` for mouse buttons 0/1.
-- `0x84` returns a float and is queried with IDs `0x13f..0x155`
-  in `FUN_00448b50` (likely config values); ID `0x15f` returns mouse X delta.
+- `0x80` routes raw keys, five mouse buttons, twelve joystick buttons, four
+  joystick directions, six thresholded axes, and three groups of five RIM
+  actions. Its recovered byte-return ABI matches the direct forwarding paths.
+- `0x84` maps six sparse IDs to scaled joystick axes, `0x15f`/`0x160` to
+  direct mouse X/Y delta, and `0x163..0x165`/`0x168..0x16a` to the indexed
+  delta compatibility methods; unmatched IDs return zero.
 
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
@@ -331,8 +334,8 @@ These offsets appear with keycodes or input-related values:
 | `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | high | cached mouse delta Y |
 | `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | high | aliases mouse dx (calls 0x70); index unused |
 | `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | high | aliases mouse dy (calls 0x74); index unused |
-| `0x80` | `is_key_active` | `bool is_key_active(int key)` | high | routes key/mouse/joystick IDs to input queries |
-| `0x84` | `get_config_float` | `float get_config_float(int id)` | high | IDs `0x13f..0x155` map to scaled config floats |
+| `0x80` | `is_key_active` | `uint8_t is_key_active(int key)` | high | routes raw keys plus mouse, joystick, axis, and RIM action IDs; natural VC6.5 source is a documented 73.93% WIP |
+| `0x84` | `get_config_float` | `float get_config_float(int id)` | high | exactly matched router for six joystick axes and direct/indexed mouse deltas |
 | `0x88` | `get_slot_float` | `float get_slot_float(int index)` | high | reads float slot array |
 | `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | high | reads int slot array |
 | `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | high | writes float slot array |

@@ -42,7 +42,7 @@ public:
     virtual float grim_get_mouse_dy(void) = 0;
     virtual float grim_get_mouse_dx_indexed(int index) = 0;
     virtual float grim_get_mouse_dy_indexed(int index) = 0;
-    virtual int grim_is_key_active(int key) = 0;
+    virtual unsigned char grim_is_key_active(int key) = 0;
     virtual float grim_get_config_float(int id) = 0;
     virtual float grim_get_slot_float(int index) = 0;
     virtual int grim_get_slot_int(int index) = 0;
