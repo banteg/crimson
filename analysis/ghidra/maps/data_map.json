@@ -1942,6 +1942,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004807a8",
+      "comment": "Config: sound frequency adjustment toggle controlled by the sndfreqadjustment console command.",
+      "name": "config_sound_frequency_adjustment",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004807ac",
       "comment": "Config: SFX volume multiplier.",
       "name": "config_sfx_volume",

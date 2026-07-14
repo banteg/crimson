@@ -788,7 +788,9 @@ typedef struct crimson_cfg_t {
     unsigned char ui_info_texts;
     unsigned char reserved5[2];
     int perk_prompt_counter;
-    unsigned char reserved6[0x14];
+    unsigned char reserved6_450[0x10];
+    unsigned char sound_frequency_adjustment;
+    unsigned char reserved6_461[3];
     float sfx_volume;
     float music_volume;
     unsigned char violence_disabled;

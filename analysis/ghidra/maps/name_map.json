@@ -1763,7 +1763,7 @@
     "name": "console_cmd_snd_freq_adjustment",
     "signature": "void console_cmd_snd_freq_adjustment(void)",
     "create": true,
-    "comment": "console command handler for sndfreqadjustment; toggles DAT_004807a8 and prints status"
+    "comment": "console command handler for sndfreqadjustment; toggles config_sound_frequency_adjustment and prints status"
   },
   {
     "program": "crimsonland.exe",
