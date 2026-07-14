@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**330/2162** functions matched, **40978/675654** code bytes (**6.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**339/2162** functions matched, **41308/675654** code bytes (**6.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 198/987 | 21531/385757 | 5.6% | 198/222 |
+| crimsonland.exe | 207/987 | 21861/385757 | 5.7% | 207/231 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**198/987** functions, **21531/385757** bytes (**5.6%**), **198/222** scratches verified.
+**207/987** functions, **21861/385757** bytes (**5.7%**), **207/231** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -28,6 +28,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
 | match | console_history_apply | 0x004018d0 | 99 | 42/42 | 100.00% | 42/42 | 4/0/0 |  | console-history-navigation |
 | match | console_cvar_find | 0x00402480 | 92 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-cvar-lookup |
+| match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
 | match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
@@ -229,6 +230,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_get_element_index | 0x00446150 | 31 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | ui-element-index |
 | match | ui_elements_reset_state | 0x00446170 | 31 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | ui-element-state-reset |
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
+| match | ui_menu_main_click_mods | 0x00447350 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
+| match | ui_menu_main_click_options | 0x00447370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
+| match | ui_menu_main_click_statistics | 0x00447390 | 67 | 16/16 | 100.00% | 16/16 | 10/0/0 |  | ui-menu-statistics-audio |
+| match | ui_menu_main_click_controls | 0x004473e0 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
+| match | ui_menu_main_click_play_game | 0x00447400 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
+| match | ui_menu_click_back_contextual | 0x00447420 | 45 | 12/12 | 100.00% | 12/12 | 5/0/0 |  | ui-menu-contextual-back |
+| match | ui_menu_main_click_quit | 0x00447450 | 61 | 15/15 | 100.00% | 15/15 | 9/0/0 |  | ui-menu-quit |
+| match | ui_menu_pause_click_resume | 0x00447490 | 67 | 18/18 | 100.00% | 18/18 | 7/0/0 |  | ui-menu-resume |
 | match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |

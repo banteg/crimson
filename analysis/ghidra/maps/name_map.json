@@ -3240,7 +3240,7 @@
     "program": "crimsonland.exe",
     "address": "0x00447420",
     "name": "ui_menu_click_back_contextual",
-    "signature": "int ui_menu_click_back_contextual(void)",
+    "signature": "void ui_menu_click_back_contextual(void)",
     "comment": "menu BACK callback: sets transition and routes to state 0 (main menu) or state 5 (in-game menu context)"
   },
   {
