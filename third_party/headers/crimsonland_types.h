@@ -615,6 +615,19 @@ typedef struct ui_menu_item_subtemplate_block_t {
     int quad_mode;
 } ui_menu_item_subtemplate_block_t;
 
+// Parent template containing three 0xe8-byte subtemplate payloads at +0x3c.
+typedef struct ui_menu_template_triplet_t {
+    unsigned char active;
+    unsigned char _pad0[0x33];
+    int head_state_34;
+    int head_state_38;
+    ui_menu_item_subtemplate_block_t blocks[3];
+    int field_2f4;
+    int tail_state_2f8;
+    unsigned char _pad1[0x18];
+    unsigned char tail_active_314;
+} ui_menu_template_triplet_t;
+
 // 0x10-byte text-item widget state consumed by ui_menu_item_update.
 typedef struct ui_menu_item_t {
     char *label;
