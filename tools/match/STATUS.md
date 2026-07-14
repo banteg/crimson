@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**402/2164** functions matched, **48349/675674** code bytes (**7.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**406/2164** functions matched, **49499/675674** code bytes (**7.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 270/989 | 28902/385777 | 7.5% | 270/301 |
+| crimsonland.exe | 274/989 | 30052/385777 | 7.8% | 274/305 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**270/989** functions, **28902/385777** bytes (**7.5%**), **270/301** scratches verified.
+**274/989** functions, **30052/385777** bytes (**7.8%**), **274/305** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -54,6 +54,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
+| match | demo_setup_variant_0 | 0x00402ed0 | 263 | 70/70 | 100.00% | 70/70 | 10/0/0 |  | demo-spider-corridor-setup |
+| match | demo_setup_variant_2 | 0x00402fe0 | 271 | 81/81 | 100.00% | 81/81 | 7/0/0 |  | demo-zombie-column-setup |
+| match | demo_setup_variant_1 | 0x004030f0 | 338 | 88/88 | 100.00% | 88/88 | 17/0/0 |  | demo-green-spider-setup |
+| match | demo_setup_variant_3 | 0x00403250 | 278 | 78/78 | 100.00% | 78/78 | 13/0/0 |  | demo-green-alien-setup |
 | match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
 | match | demo_mode_start | 0x00403390 | 155 | 40/40 | 100.00% | 40/40 | 17/0/0 |  | demo-attract-mode-cycle |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
