@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**365/2162** functions matched, **43726/675654** code bytes (**6.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**366/2162** functions matched, **43887/675654** code bytes (**6.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 233/987 | 24279/385757 | 6.3% | 233/261 |
+| crimsonland.exe | 234/987 | 24440/385757 | 6.3% | 234/262 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**233/987** functions, **24279/385757** bytes (**6.3%**), **233/261** scratches verified.
+**234/987** functions, **24440/385757** bytes (**6.3%**), **234/262** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -35,6 +35,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_cvar_find | 0x00402480 | 92 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-cvar-lookup |
 | match | console_cvar_unregister | 0x004024e0 | 72 | 32/32 | 100.00% | 32/32 | 1/0/0 |  | console-cvar-unlink |
 | match | console_command_unregister | 0x00402530 | 74 | 32/32 | 100.00% | 32/32 | 1/0/0 |  | console-command-unlink |
+| match | console_tokenize_line | 0x00402580 | 161 | 55/55 | 100.00% | 55/55 | 10/0/0 |  | console-command-tokenization |
 | match | console_cvar_autocomplete | 0x00402630 | 164 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-cvar-autocomplete |
 | match | console_register_command | 0x004026e0 | 99 | 38/38 | 100.00% | 38/38 | 2/0/0 |  | console-command-register |
 | match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
