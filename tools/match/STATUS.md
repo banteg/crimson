@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**378/2162** functions matched, **45878/675654** code bytes (**6.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**380/2162** functions matched, **46137/675654** code bytes (**6.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 246/987 | 26431/385757 | 6.9% | 246/274 |
+| crimsonland.exe | 248/987 | 26690/385757 | 6.9% | 248/276 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**246/987** functions, **26431/385757** bytes (**6.9%**), **246/274** scratches verified.
+**248/987** functions, **26690/385757** bytes (**6.9%**), **248/276** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -158,6 +158,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | audio_suspend_all | 0x0042a630 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
+| match | texture_get_or_load | 0x0042a670 | 133 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |
+| match | texture_get_or_load_alt | 0x0042a700 | 126 | 40/40 | 100.00% | 40/40 | 11/0/0 |  | texture-cache-load-legacy |
 | match | console_cmd_tell_time_survived | 0x0042a860 | 37 | 9/9 | 100.00% | 9/9 | 6/0/0 |  | console-survival-time |
 | match | reg_read_dword_default | 0x0042a980 | 58 | 23/23 | 100.00% | 23/23 | 1/0/0 |  | registry-dword-read |
 | match | reg_write_dword | 0x0042a9c0 | 37 | 14/14 | 100.00% | 14/14 | 1/0/0 |  | registry-dword-write |
