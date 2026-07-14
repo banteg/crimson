@@ -1348,7 +1348,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041e840",
     "name": "fx_queue_add",
-    "signature": "int fx_queue_add(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
+    "signature": "unsigned char fx_queue_add(int effect_id, vec2f_t *pos, float w, float h, float rotation, effect_color_t *color)",
     "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
   },
   {
@@ -1565,8 +1565,18 @@
     "program": "crimsonland.exe",
     "address": "0x00427700",
     "name": "fx_queue_add_random",
-    "signature": "void fx_queue_add_random(float *pos)",
+    "signature": "void fx_queue_add_random(vec2f_t *pos)",
     "comment": "spawns a random fx_queue_add entry (effect ids 3..7) with grayscale color/size"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00427830",
+    "name": "fx_queue_random_color_destroy",
+    "aliases": [
+      "$E2"
+    ],
+    "signature": "void fx_queue_random_color_destroy(void)",
+    "comment": "empty exit-time destructor registered for the random FX color static"
   },
   {
     "program": "crimsonland.exe",
@@ -3718,6 +3728,9 @@
     "program": "crimsonland.exe",
     "address": "0x00460d86",
     "name": "crt_atexit",
+    "aliases": [
+      "atexit"
+    ],
     "signature": "int crt_atexit(void *func)",
     "comment": "atexit wrapper (returns 0/-1)"
   },

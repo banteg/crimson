@@ -5202,9 +5202,13 @@
     },
     {
       "address": "0x00490420",
-      "comment": "Randomized grayscale color R used by fx_queue_add helper FUN_00427700.",
+      "aliases": [
+        "?color@?4??fx_queue_add_random@@9@4UFxRandomColor@@A"
+      ],
+      "comment": "Function-local static color used by fx_queue_add_random; randomized to grayscale before each enqueue.",
       "name": "fx_queue_random_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x00490424",
@@ -5829,10 +5833,13 @@
     },
     {
       "address": "0x004912b0",
+      "aliases": [
+        "?$S1@?4??fx_queue_add_random@@9@4EA"
+      ],
       "comment": "fx_queue_add_random one-shot init flags bitfield (guards random color scratch defaults).",
       "name": "fx_queue_random_init_flags",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "unsigned char"
     },
     {
       "address": "0x004912b8",

@@ -2,7 +2,7 @@
 
 extern "C" unsigned char fx_queue_add(
     int effect_id,
-    float *pos,
+    vec2f_t *pos,
     float width,
     float height,
     float rotation,
@@ -13,8 +13,8 @@ extern "C" unsigned char fx_queue_add(
     ++count;
     fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);
 
-    entry->pos_x = pos[0];
-    entry->pos_y = pos[1];
+    entry->pos_x = pos->x;
+    entry->pos_y = pos->y;
     entry->color = *color;
     entry->width = width;
     entry->height = height;

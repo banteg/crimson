@@ -269,7 +269,7 @@ void effects_update(void);
 effect_entry_t *effect_spawn(int effect_id, float *pos);
 unsigned char fx_queue_add(
     int effect_id,
-    float *pos,
+    vec2f_t *pos,
     float width,
     float height,
     float rotation,
@@ -300,6 +300,7 @@ extern cvar_float_t *cv_friendlyFire;
 extern cvar_float_t *cv_terrainBodiesTransparency;
 extern cvar_float_t *cv_verbose;
 extern unsigned char terrain_texture_failed;
+extern unsigned char config_violence_disabled;
 extern int fx_queue_rotated;
 extern vec2f_t fx_rotated_pos_x[];
 extern float fx_rotated_scale[];
