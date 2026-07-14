@@ -6,13 +6,36 @@
 
 #include "crimsonland_types.h"
 
+struct dsbufferdesc8_t {
+    DWORD dwSize;
+    DWORD dwFlags;
+    DWORD dwBufferBytes;
+    DWORD dwReserved;
+    LPWAVEFORMATEX lpwfxFormat;
+    GUID guid3DAlgorithm;
+};
+
 extern LPDIRECTSOUND dsound_iface;
 extern sfx_entry_t sfx_entry_table[];
 extern music_entry_t music_entry_table[];
 
 #ifdef __cplusplus
 struct vorbis_stream_t {
-    int read_pcm16(void *dst, int bytes);
+    unsigned char _opaque0[0x2e4];
+    unsigned int total_pcm_bytes;
+    unsigned int source_data_offset;
+    void *memory_source;
+    int info_version;
+    int channels;
+    int sample_rate;
+    int bitrate_upper;
+    int bitrate_nominal;
+    int bitrate_lower;
+    int bitrate_window;
+    void *codec_setup;
+
+    unsigned char open(void *buffer, unsigned int size);
+    int read_pcm16(char *dst, int bytes);
     int pcm_seek(unsigned int sample_offset);
     void close(void);
 };
@@ -68,6 +91,8 @@ unsigned char wav_parse_into_entry(
     void *data,
     unsigned int size);
 unsigned char sfx_entry_load_wav(sfx_entry_t *entry, char *path);
+unsigned char sfx_entry_load_ogg(sfx_entry_t *entry, char *path);
+unsigned char music_entry_load_ogg(music_entry_t *entry, char *path);
 unsigned char music_stream_fill(music_entry_t *entry);
 void music_stream_update(music_entry_t *entry);
 void audio_suspend_channels(void);

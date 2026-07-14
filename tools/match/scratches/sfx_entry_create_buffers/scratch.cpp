@@ -2,15 +2,6 @@
 
 #include "crimsonland_audio.h"
 
-struct dsbufferdesc8_t {
-    DWORD dwSize;
-    DWORD dwFlags;
-    DWORD dwBufferBytes;
-    DWORD dwReserved;
-    LPWAVEFORMATEX lpwfxFormat;
-    GUID guid3DAlgorithm;
-};
-
 extern "C" unsigned char sfx_entry_create_buffers(sfx_entry_t *entry)
 {
     dsbufferdesc8_t desc;

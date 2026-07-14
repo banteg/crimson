@@ -1291,8 +1291,11 @@
     "program": "crimsonland.exe",
     "address": "0x0041ddd0",
     "name": "vorbis_mem_open",
+    "aliases": [
+      "?open@vorbis_stream_t@@QAEEPAXI@Z"
+    ],
     "signature": "int vorbis_mem_open(void *stream, void *buffer, uint size)",
-    "comment": "open OGG/Vorbis data from a memory buffer (sets callbacks)"
+    "comment": "member-style OGG/Vorbis memory opener; stream object is passed in ECX"
   },
   {
     "program": "crimsonland.exe",

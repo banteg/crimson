@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**250/2161** functions matched, **32803/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**251/2161** functions matched, **33183/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 118/986 | 13356/385754 | 3.5% | 118/132 |
+| crimsonland.exe | 119/986 | 13736/385754 | 3.6% | 119/134 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**118/986** functions, **13356/385754** bytes (**3.5%**), **118/132** scratches verified.
+**119/986** functions, **13736/385754** bytes (**3.6%**), **119/134** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -115,6 +115,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | dsound_shutdown | 0x0043bc20 | 26 | 8/8 | 100.00% | 8/8 | 2/0/0 |  | audio-directsound-lifecycle |
 | match | dsound_restore_buffer | 0x0043bc40 | 81 | 34/34 | 100.00% | 34/34 | 3/0/0 |  | audio-directsound-buffer-restore |
 | match | resource_read_alloc | 0x0043bca0 | 75 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
+| wip | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 99/99 | 97.98% | 78/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_stop | 0x0043bf60 | 60 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
@@ -124,6 +125,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | wav_parse_into_entry | 0x0043c110 | 274 | 87/87 | 100.00% | 87/87 | 15/0/0 |  | audio-wav-parser |
 | match | sfx_entry_upload_buffer | 0x0043c230 | 123 | 57/57 | 100.00% | 57/57 | 1/0/0 |  | audio-directsound-buffer-upload |
 | match | sfx_entry_create_buffers | 0x0043c2b0 | 238 | 91/91 | 100.00% | 91/91 | 9/0/0 |  | audio-directsound-buffer-create |
+| match | music_entry_load_ogg | 0x0043c3a0 | 380 | 125/125 | 100.00% | 125/125 | 13/0/0 |  | audio-ogg-stream-load |
 | match | music_stream_update | 0x0043c520 | 109 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | audio-music-stream-update |
 | match | music_stream_fill | 0x0043c590 | 221 | 86/86 | 100.00% | 86/86 | 4/0/0 |  | audio-music-stream-fill |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
