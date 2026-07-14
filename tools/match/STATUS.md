@@ -2,24 +2,26 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**266/2161** functions matched, **36388/675651** code bytes (**5.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**270/2161** functions matched, **36690/675651** code bytes (**5.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 134/986 | 16941/385754 | 4.4% | 134/153 |
+| crimsonland.exe | 138/986 | 17243/385754 | 4.5% | 138/157 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**134/986** functions, **16941/385754** bytes (**4.4%**), **134/153** scratches verified.
+**138/986** functions, **17243/385754** bytes (**4.5%**), **138/157** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | console_input_clear | 0x00401030 | 18 | 5/5 | 100.00% | 5/5 | 3/0/0 |  | smoke |
 | match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
+| match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
 | match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
@@ -156,10 +158,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | audio_suspend_channels | 0x0043d730 | 58 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
 | match | audio_resume_channels | 0x0043d770 | 73 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
 | match | sfx_is_unmuted | 0x0043d7c0 | 30 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |
+| match | ui_focus_set | 0x0043d7e0 | 75 | 25/25 | 100.00% | 25/25 | 6/0/0 |  | ui-focus-selection |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
 | match | input_primary_is_down | 0x004460f0 | 74 | 24/24 | 100.00% | 24/24 | 5/0/0 |  | input-primary-held |
+| match | ui_get_element_index | 0x00446150 | 31 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | ui-element-index |
 | match | ui_elements_reset_state | 0x00446170 | 31 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | ui-element-state-reset |
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
