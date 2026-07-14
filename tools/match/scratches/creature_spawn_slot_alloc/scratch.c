@@ -3,15 +3,16 @@
 int creature_spawn_slot_alloc(void)
 {
     int index = 0;
-    creature_spawn_slot_t *slot = creature_spawn_slot_table;
-loop:
-    if (slot->owner == 0) {
-        return index;
+    creature_spawn_slot_t *slot;
+
+    for (slot = creature_spawn_slot_table;
+         (int)slot < (int)&creature_spawn_slot_table[32];
+         ++slot) {
+        if (slot->owner == 0) {
+            return index;
+        }
+        ++index;
     }
-    slot = slot + 1;
-    index = index + 1;
-    if ((int)slot < (int)&creature_spawn_slot_table[0x20]) {
-        goto loop;
-    }
-    return 0x1f;
+
+    return 31;
 }
