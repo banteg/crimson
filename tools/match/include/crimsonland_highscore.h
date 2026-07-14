@@ -25,6 +25,9 @@ unsigned char highscore_submit_full_version_guard(highscore_record_t *record);
 highscore_record_t *highscore_record_pack_for_submit(
     highscore_record_t *src,
     highscore_record_t *dst);
+char highscore_record_equals(
+    highscore_record_t *left,
+    highscore_record_t *right);
 void highscore_save_record(highscore_record_t *record);
 void highscore_save_active(void);
 int highscore_rank_index(void);

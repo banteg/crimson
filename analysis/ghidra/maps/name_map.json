@@ -2438,8 +2438,8 @@
     "program": "crimsonland.exe",
     "address": "0x0043abd0",
     "name": "highscore_record_equals",
-    "signature": "int highscore_record_equals(byte *left, byte *right)",
-    "comment": "compares high score record metadata and name for equality"
+    "signature": "char highscore_record_equals(highscore_record_t *left, highscore_record_t *right)",
+    "comment": "compares score, time, mode, combat fields, and player name"
   },
   {
     "program": "crimsonland.exe",
