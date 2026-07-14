@@ -43,17 +43,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00401160",
+    "name": "console_global_construct_and_register",
+    "signature": "void console_global_construct_and_register(void)",
+    "comment": "constructs the global console queue, then tail-calls its destructor-registration helper"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00401170",
     "name": "console_global_init",
-    "signature": "int console_global_init(void)",
-    "comment": "[binja] int32_t sub_401170()"
+    "signature": "void console_global_init(void)",
+    "comment": "loads the global console queue as this and tail-calls console_init"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401180",
-    "name": "console_register_clear_log_atexit",
-    "signature": "int console_register_clear_log_atexit(void)",
-    "comment": "registers console_clear_log via crt_atexit for process shutdown cleanup"
+    "name": "console_register_global_destructor_atexit",
+    "signature": "void console_register_global_destructor_atexit(void)",
+    "comment": "registers the global console queue destructor thunk with crt_atexit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401190",
+    "name": "console_global_destroy",
+    "signature": "void console_global_destroy(void)",
+    "comment": "loads the global console queue as this and tail-calls console_destroy"
   },
   {
     "program": "crimsonland.exe",

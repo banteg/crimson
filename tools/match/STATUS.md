@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**372/2162** functions matched, **44770/675654** code bytes (**6.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**374/2162** functions matched, **44792/675654** code bytes (**6.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 240/987 | 25323/385757 | 6.6% | 240/268 |
+| crimsonland.exe | 242/987 | 25345/385757 | 6.6% | 242/270 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**240/987** functions, **25323/385757** bytes (**6.6%**), **240/268** scratches verified.
+**242/987** functions, **25345/385757** bytes (**6.6%**), **242/270** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -22,6 +22,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_input_poll | 0x00401060 | 139 | 41/41 | 100.00% | 41/41 | 15/0/0 |  | console-input-buffer-policy |
 | match | console_cmd_arg_get | 0x00401120 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | console-command-arguments |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | console_global_construct_and_register | 0x00401160 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | console-global-lifetime-registration |
+| match | console_register_global_destructor_atexit | 0x00401180 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | console-global-destructor-registration |
 | match | console_clear_log | 0x004011a0 | 78 | 28/28 | 100.00% | 28/28 | 7/0/0 |  | console-log-clear |
 | match | console_log_node_free | 0x004011f0 | 68 | 24/24 | 100.00% | 24/24 | 2/0/0 |  | console-log-node-destructor |
 | match | console_cmd_quit | 0x00401240 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-quit-command |
