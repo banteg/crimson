@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <dsound.h>
 
+#include "crimsonland_console.h"
 #include "crimsonland_types.h"
 
 struct dsbufferdesc8_t {
@@ -45,18 +46,6 @@ struct sfx_entry_cpp_t : sfx_entry_t {
     sfx_entry_cpp_t *reset_runtime_state(void);
 };
 
-struct console_queue_t {
-    unsigned char flush_log(char *filename);
-    unsigned char exec_line(char *line);
-};
-
-extern console_queue_t console_log_queue;
-
-#else
-
-typedef struct console_queue_t console_queue_t;
-extern console_queue_t console_log_queue;
-
 #endif
 
 #ifdef __cplusplus
@@ -93,7 +82,6 @@ extern int sfx_flamer_fire_01;
 extern int sfx_flamer_fire_02;
 extern int audio_asset_id_table[83];
 
-unsigned char console_printf(console_queue_t *queue, char *format, ...);
 int crt_sprintf(char *dst, const char *format, ...);
 int crt_rand(void);
 void crt_free(void *ptr);

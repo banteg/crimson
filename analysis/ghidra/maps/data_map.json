@@ -28,6 +28,13 @@
       "type": "float"
     },
     {
+      "address": "0x00471158",
+      "comment": "Pointer returned by console_cmd_arg_get for an out-of-range token; initialized to s_empty_string.",
+      "name": "console_empty_arg",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x0047115c",
       "comment": "Console open/close animation blend factor clamped to [0,1] and eased with sin().",
       "name": "console_open_anim_t",
@@ -1303,6 +1310,13 @@
       "name": "console_open_flag",
       "program": "crimsonland.exe",
       "type": "unsigned char"
+    },
+    {
+      "address": "0x0047f2cc",
+      "comment": "512-byte shared formatting buffer populated by console_printf before a line is queued.",
+      "name": "console_format_buffer",
+      "program": "crimsonland.exe",
+      "type": "char[512]"
     },
     {
       "address": "0x0047f4cc",

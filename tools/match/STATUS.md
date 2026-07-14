@@ -2,24 +2,28 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**270/2161** functions matched, **36690/675651** code bytes (**5.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**274/2161** functions matched, **36893/675651** code bytes (**5.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 138/986 | 17243/385754 | 4.5% | 138/157 |
+| crimsonland.exe | 142/986 | 17446/385754 | 4.5% | 142/161 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**138/986** functions, **17243/385754** bytes (**4.5%**), **138/157** scratches verified.
+**142/986** functions, **17446/385754** bytes (**4.5%**), **142/161** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | console_input_clear | 0x00401030 | 18 | 5/5 | 100.00% | 5/5 | 3/0/0 |  | smoke |
 | match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | console_cmd_arg_get | 0x00401120 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | console-command-arguments |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | console_printf | 0x00401870 | 49 | 17/17 | 100.00% | 17/17 | 4/0/0 |  | console-formatted-output |
+| match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
+| match | console_cvar_find | 0x00402480 | 92 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-cvar-lookup |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
 | match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
