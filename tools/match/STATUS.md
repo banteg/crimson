@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**274/2161** functions matched, **36893/675651** code bytes (**5.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**277/2161** functions matched, **37056/675651** code bytes (**5.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 142/986 | 17446/385754 | 4.5% | 142/161 |
+| crimsonland.exe | 145/986 | 17609/385754 | 4.6% | 145/165 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**142/986** functions, **17446/385754** bytes (**4.5%**), **142/161** scratches verified.
+**145/986** functions, **17609/385754** bytes (**4.6%**), **145/165** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -102,10 +102,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 32/32 | 78.12% | 12/32 | 7/0/0 |  | quest-fallback-builder |
+| match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
+| match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
 | match | highscore_compare_survival_score_desc | 0x0043aeb0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-survival-score-order |
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
+| match | highscore_save_active | 0x0043b510 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
+| wip | highscore_rank_index | 0x0043b520 | 133 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
 | match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |

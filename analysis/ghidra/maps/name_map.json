@@ -1324,8 +1324,11 @@
     "program": "crimsonland.exe",
     "address": "0x0041df40",
     "name": "game_is_full_version",
+    "aliases": [
+      "highscore_record_is_valid"
+    ],
     "signature": "int game_is_full_version(void)",
-    "comment": "returns non-zero when full version/unlimited mode is enabled"
+    "comment": "constant-true full-version predicate; the linker folded the highscore_record_is_valid(record) predicate onto the same body"
   },
   {
     "program": "crimsonland.exe",
@@ -2414,8 +2417,8 @@
     "program": "crimsonland.exe",
     "address": "0x0043aa60",
     "name": "highscore_submit_full_version_guard",
-    "signature": "int highscore_submit_full_version_guard(void)",
-    "comment": "logs illegal-score warning in demo mode; submit path checks this before packing records"
+    "signature": "unsigned char highscore_submit_full_version_guard(highscore_record_t *record)",
+    "comment": "logs an illegal-score warning when the folded highscore_record_is_valid(record) predicate fails; submit path checks this before packing records"
   },
   {
     "program": "crimsonland.exe",
