@@ -26,6 +26,11 @@ void ui_element_init_defaults(ui_element_t *element);
 void ui_element_load(
     ui_menu_item_subtemplate_block_t *element,
     char *jaz_path);
+void ui_element_set_rect(
+    ui_menu_item_subtemplate_block_t *element,
+    float width,
+    float height,
+    float *offset);
 
 #ifdef __cplusplus
 }

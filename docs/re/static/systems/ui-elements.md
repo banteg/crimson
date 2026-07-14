@@ -76,8 +76,10 @@ Template-pool globals (seeded in `ui_menu_template_pool_init`) are also mapped:
 `ui_menu_item_subtemplate_block_t`:
 
 - `slot_00..slot_07` are `0x1c` stride records.
-- Per-slot `x`/`y` are high confidence from copy/offset loops in
-  `ui_menu_assets_init`.
+- `ui_element_set_rect` establishes the complete record as transformed
+  `x`/`y`, `z`, `rhw`, packed `color`, and texture `u`/`v`. It initializes the
+  first four slots as a one-pixel-inset quad, with `z = 0.5`, `rhw = 1.0`, and
+  white color, then adds the supplied XY offset.
 - `+0xe0` is `texture_handle` (`ui_menu_item_subtemplate_block_*_texture_handle`).
 - `+0xe4` is `quad_mode` (`ui_menu_item_subtemplate_block_*_mode`).
 

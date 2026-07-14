@@ -598,11 +598,11 @@ typedef struct ui_element_t {
 typedef struct ui_menu_item_subtemplate_slot_t {
     float x;
     float y;
-    float field_0x08;
-    float field_0x0c;
-    float field_0x10;
-    float field_0x14;
-    float field_0x18;
+    float z;
+    float rhw;
+    unsigned int color;
+    float u;
+    float v;
 } ui_menu_item_subtemplate_slot_t;
 
 // 0xe8-byte menu item subtemplate payload:

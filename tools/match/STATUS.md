@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 255/987 | 27502/385757 | 7.1% | 255/284 |
+| crimsonland.exe | 255/987 | 27502/385757 | 7.1% | 255/285 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**255/987** functions, **27502/385757** bytes (**7.1%**), **255/284** scratches verified.
+**255/987** functions, **27502/385757** bytes (**7.1%**), **255/285** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -116,6 +116,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_template_block_set_mode4 | 0x00417aa0 | 13 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | ui-subtemplate-mode-init |
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | ui_draw_textured_quad | 0x00417ae0 | 158 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
+| wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
