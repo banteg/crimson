@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**179/2161** functions matched, **26633/675651** code bytes (**3.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**180/2161** functions matched, **26766/675651** code bytes (**4.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 47/986 | 7186/385754 | 1.9% | 47/59 |
+| crimsonland.exe | 48/986 | 7319/385754 | 1.9% | 48/59 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**47/986** functions, **7186/385754** bytes (**1.9%**), **47/59** scratches verified.
+**48/986** functions, **7319/385754** bytes (**1.9%**), **48/59** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -45,7 +45,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
 | match | creatures_apply_radius_damage | 0x00420600 | 159 | 57/57 | 100.00% | 57/57 | 6/0/0 |  | gameplay-radius-damage |
 | match | creature_find_in_radius | 0x004206a0 | 133 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
-| wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 77.06% | 9/54 | 4/0/1 |  | gameplay-target-search |
+| match | player_find_in_radius | 0x00420730 | 133 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | match | creature_alloc_slot | 0x00428140 | 145 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |

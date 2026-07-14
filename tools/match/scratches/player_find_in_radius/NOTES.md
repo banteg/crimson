@@ -1,19 +1,16 @@
-# player_find_in_radius WIP
-
-Current best local score:
+# player_find_in_radius exact match
 
 ```txt
-match=77.06% prefix=9/54 target_insns=54 candidate_insns=55 refs=4/0/1
+match=100.00% prefix=54/54 target_insns=54 candidate_insns=54 refs=5/0/0
 ```
 
 The scratch preserves the owner-derived skip index, configured player-count
 bound, alive-player filter, radius-plus-size test, and first-hit return.
-Staging `distance_sq` as the x square followed by the y-square accumulation
-recovers the native x87 distance kernel exactly.
+The shared inlined `vec2_distance` helper recovers the native x87 distance
+kernel. Direct `player_state_table[player_index]` expressions make VC6 retain
+the native health-based induction variable; a raw `float *health` iterator is
+instead rebased to `pos_y` and changes all field displacements.
 
-The remaining differences are backend shape. Native keeps the loop pointer
-based at `health`, while VC6 rebases the equivalent source pointer at `pos_y`;
-native also places the miss return on the loop fallthrough, whereas the clean
-early-return source emits an inverted loop branch and keeps the hit epilogue
-before the miss epilogue. Do not force either difference with raw offsets or
-layout-only gotos.
+A pre-tested player-count loop with a shared `found` return places the miss
+epilogue on the loop fallthrough and the hit epilogue afterward, matching the
+native back-edge and block order exactly.
