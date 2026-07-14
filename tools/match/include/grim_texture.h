@@ -20,7 +20,12 @@ struct GrimTexture {
 
 extern GrimTexture *grim_texture_slots[256];
 extern int grim_texture_slot_max_index;
+extern IDirect3D8 *grim_d3d8;
 extern IDirect3DDevice8 *grim_d3d_device;
+extern IDirect3DSurface8 *grim_backbuffer_surface;
+extern IDirect3DSurface8 *grim_render_target_surface;
+extern IDirect3DTexture8 *grim_font_texture;
+extern IDirect3DTexture8 *grim_splash_texture;
 extern int grim_present_width;
 extern int grim_present_height;
 extern D3DFORMAT grim_texture_format;
@@ -31,6 +36,7 @@ extern "C" int grim_find_texture_by_name(char *name);
 extern "C" int grim_find_free_texture_slot(void);
 bool grim_is_texture_format_supported(D3DFORMAT format);
 bool grim_load_texture_internal(char *name, unsigned short *path);
+void grim_release_geometry_buffers(void);
 extern "C" int __stdcall D3DXSaveTextureToFileA(
     char *path, int format, IDirect3DBaseTexture8 *texture, void *palette);
 extern "C" int __stdcall D3DXSaveSurfaceToFileA(

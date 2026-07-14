@@ -5261,6 +5261,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100044e0",
+    "name": "grim_release_geometry_buffers",
+    "signature": "void grim_release_geometry_buffers(void)",
+    "comment": "releases and clears the dynamic vertex and index buffers"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100047f0",
     "name": "grim_is_texture_format_supported",
     "signature": "bool grim_is_texture_format_supported(unsigned int format)",

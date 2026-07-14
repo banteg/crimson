@@ -9469,7 +9469,8 @@
       "address": "0x10059e2c",
       "comment": "Dynamic vertex buffer object (IDirect3DVertexBuffer8).",
       "name": "grim_vertex_buffer",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "LPDIRECT3DVERTEXBUFFER8"
     },
     {
       "address": "0x10059e30",
@@ -10144,6 +10145,13 @@
       "comment": "Font texture (IDirect3DTexture8) used for text rendering.",
       "name": "grim_font_texture",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x1005d3f0",
+      "comment": "Embedded Grim splash texture loaded during Direct3D initialization.",
+      "name": "grim_splash_texture",
+      "program": "grim.dll",
+      "type": "LPDIRECT3DTEXTURE8"
     },
     {
       "address": "0x1005d3f4",

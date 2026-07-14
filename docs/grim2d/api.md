@@ -66,6 +66,12 @@ We also generate an evidence appendix with callsite snippets:
   window destruction, and class-unregistration path. Its override-handle
   branch destroys `grim_main_window_hwnd` a second time, an apparent native bug.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
+- `grim_d3d_shutdown` (`0x10004280`) has the full recovered surface, embedded
+  texture, 256-slot texture table, geometry-buffer, device, and Direct3D8
+  teardown shape. Its only remaining match delta is an `ESI`/`EDI` allocation
+  swap inside the texture loop.
+- `grim_release_geometry_buffers` (`0x100044e0`) exact-matches the independent
+  vertex/index-buffer release and unconditional global clears.
 - `grim_is_texture_format_supported` (`0x100047f0`) is an exact-matched
   `CheckDeviceFormat` predicate for `D3DRTYPE_TEXTURE`, using the selected
   adapter, device type, and current adapter format.
