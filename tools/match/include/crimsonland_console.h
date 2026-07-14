@@ -6,6 +6,13 @@
 struct console_cvar_entry_t {
     char *name;
     console_cvar_entry_t *next;
+    unsigned char _pad0[4];
+    float value;
+    char *string_value;
+    unsigned char _pad1[4];
+    char *mod_id;
+    char *mod_string_value;
+    float *mod_float_value;
 };
 
 struct console_history_entry_t {
@@ -30,6 +37,10 @@ struct console_queue_t {
     void console_set_open(unsigned char open);
     void console_history_apply(void);
     console_cvar_entry_t *console_cvar_find(char *name);
+    console_cvar_entry_t *console_register_cvar(char *name, char *value);
+    unsigned char console_cvar_unregister(char *name);
+    void console_register_command(char *name, void (*handler)(void));
+    unsigned char console_command_unregister(char *name);
 };
 
 #else

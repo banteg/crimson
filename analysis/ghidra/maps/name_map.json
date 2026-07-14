@@ -597,10 +597,18 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0040e000",
+    "address": "0x0040dfc0",
     "name": "mod_api_core_printf",
     "signature": "void mod_api_core_printf(const char *fmt, ...)",
-    "comment": "mod API vtable 0x00: clAPI_t::CORE_Printf (writes to OutputDebugStringA)",
+    "comment": "mod API vtable 0x00: formats into the shared mod buffer, emits the debug line, and queues it in the console",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e000",
+    "name": "mod_api_debug_printf",
+    "signature": "void mod_api_debug_printf(const char *fmt, ...)",
+    "comment": "free variadic helper used by CORE_Printf to format a line and pass it to OutputDebugStringA",
     "create": true
   },
   {

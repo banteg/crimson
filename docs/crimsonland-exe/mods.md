@@ -95,7 +95,7 @@ within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 
 | Vtable offset | SDK name | Wrapper (crimsonland.exe) | Notes |
 | --- | --- | --- | --- |
-| `0x00` | `CORE_Printf` | `mod_api_core_printf` (`0x0040e000`) | Uses `OutputDebugStringA`. |
+| `0x00` | `CORE_Printf` | `mod_api_core_printf` (`0x0040dfc0`) | Formats into the shared mod buffer, calls `mod_api_debug_printf` (`0x0040e000`), then queues the line in the console. |
 | `0x04` | `CORE_GetVar` | `mod_api_core_get_var` (`0x0040e040`) | Returns a 3-pointer `var_t` view (`id`, `stringValue`, `floatValue`). |
 | `0x08` | `CORE_DelVar` | `mod_api_core_del_var` (`0x0040e080`) | Unregisters a cvar. |
 | `0x0c` | `CORE_Execute` | `mod_api_core_execute` (`0x0040e0a0`) | Executes a console line. |

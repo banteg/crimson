@@ -9073,6 +9073,13 @@
       "type": "char **"
     },
     {
+      "address": "0x004d9f00",
+      "comment": "Shared format buffer used by the native mod API CORE_Printf virtual method before debug and console emission.",
+      "name": "mod_api_core_format_buffer",
+      "program": "crimsonland.exe",
+      "type": "char[]"
+    },
+    {
       "address": "0x004da100",
       "comment": "Scratch buffer used by input_key_name (GetKeyNameTextA, 0x40 bytes).",
       "name": "input_key_name_buf",
