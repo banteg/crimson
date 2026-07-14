@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 154/987 | 19127/385757 | 5.0% | 154/177 |
+| crimsonland.exe | 154/987 | 19127/385757 | 5.0% | 154/178 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**154/987** functions, **19127/385757** bytes (**5.0%**), **154/177** scratches verified.
+**154/987** functions, **19127/385757** bytes (**5.0%**), **154/178** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -188,6 +188,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
+| wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
