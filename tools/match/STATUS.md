@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**106/2161** functions matched, **12876/675651** code bytes (**1.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**110/2161** functions matched, **12940/675651** code bytes (**1.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 63/1175 | 6518/289897 | 2.2% | 63/64 |
+| grim.dll | 67/1175 | 6582/289897 | 2.3% | 67/68 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**63/1175** functions, **6518/289897** bytes (**2.2%**), **63/64** scratches verified.
+**67/1175** functions, **6582/289897** bytes (**2.3%**), **67/68** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -96,6 +96,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_joystick_right_active | 0x10006f90 | 74 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
 | wip | grim_is_key_active | 0x10006fe0 | 456 | 174/175 | 73.93% | 2/175 | 7/0/1 |  | grim-input-key-router |
 | match | grim_get_config_float | 0x100071b0 | 264 | 88/88 | 100.00% | 88/88 | 13/0/0 |  | grim-input-float-router |
+| match | grim_get_slot_float | 0x100072c0 | 14 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |
+| match | grim_get_slot_int | 0x100072d0 | 14 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |
+| match | grim_set_slot_float | 0x100072e0 | 18 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-slot-state |
+| match | grim_set_slot_int | 0x10007300 | 18 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-slot-state |
 | match | grim_is_key_down | 0x10007320 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-key-state |
 | match | grim_flush_input | 0x10007330 | 91 | 34/34 | 100.00% | 34/34 | 5/0/0 |  | grim2d-input-flush |
 | match | grim_was_key_pressed | 0x10007390 | 119 | 31/31 | 100.00% | 31/31 | 10/0/0 |  | grim2d-key-repeat |

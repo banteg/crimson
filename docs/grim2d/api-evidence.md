@@ -901,6 +901,12 @@ grim.dll body:
   *(int *)(&DAT_1005bf00 + index * 4) = value;
 ```
 
+Live Binary Ninja names the two backing arrays `grim_slot_ints` and
+`grim_slot_floats`. Natural unchecked array access reproduces all 14 VC6.5
+instructions across the four getters/setters, with full prefixes and aggregate
+references `4/0/0`; there is no bounds check or conversion beyond the x87
+float load/store required by the ABI.
+
 
 ## 0x98 — grim_get_joystick_x @ 0x10007580
 

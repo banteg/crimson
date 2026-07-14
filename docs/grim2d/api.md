@@ -294,7 +294,8 @@ These offsets appear with keycodes or input-related values:
   `0x70`/`0x74`; this is confirmed by exact VC6.5 matches rather than inferred
   only from the vtable layout.
 
-- `0x88`..`0x94` are scratch slot accessors (float/int arrays).
+- `0x88`..`0x94` are exact-matched unchecked accessors for independent
+  float/int scratch arrays.
 - `0x98`..`0xa0` return cached joystick axis values.
 
 
