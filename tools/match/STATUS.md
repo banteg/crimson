@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**260/2161** functions matched, **33678/675651** code bytes (**5.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**263/2161** functions matched, **34623/675651** code bytes (**5.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 128/986 | 14231/385754 | 3.7% | 128/147 |
+| crimsonland.exe | 131/986 | 15176/385754 | 3.9% | 131/150 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**128/986** functions, **14231/385754** bytes (**3.7%**), **128/147** scratches verified.
+**131/986** functions, **15176/385754** bytes (**3.9%**), **131/150** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -144,7 +144,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
 | match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
+| match | sfx_play | 0x0043d120 | 320 | 93/93 | 100.00% | 93/93 | 29/0/0 |  | audio-centered-sfx-playback |
+| match | sfx_play_panned | 0x0043d260 | 386 | 110/110 | 100.00% | 110/110 | 34/0/0 |  | position-panned-sfx-playback |
 | match | audio_update | 0x0043d3f0 | 102 | 32/32 | 100.00% | 32/32 | 10/0/0 |  | audio-frame-update |
+| match | sfx_play_exclusive | 0x0043d460 | 239 | 66/66 | 100.00% | 66/66 | 23/0/0 |  | audio-exclusive-music-playback |
 | match | sfx_mute_all | 0x0043d550 | 87 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
 | wip | sfx_update_mute_fades | 0x0043d5b0 | 374 | 116/118 | 83.76% | 3/118 | 26/0/0 |  | audio-mute-fade-state-machine |
 | match | audio_suspend_channels | 0x0043d730 | 58 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |

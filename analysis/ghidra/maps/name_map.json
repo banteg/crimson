@@ -2854,14 +2854,14 @@
     "program": "crimsonland.exe",
     "address": "0x0043d120",
     "name": "sfx_play",
-    "signature": "int sfx_play(int sfx_id)",
+    "signature": "int sfx_play(int sfx_id, float volume)",
     "comment": "plays a sound effect with centered pan"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043d260",
     "name": "sfx_play_panned",
-    "signature": "float sfx_play_panned(float sfx_id)",
+    "signature": "int sfx_play_panned(int sfx_id, float *pos, float volume)",
     "comment": "plays a sound effect with computed pan"
   },
   {
