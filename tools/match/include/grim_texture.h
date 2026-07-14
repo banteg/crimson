@@ -26,6 +26,7 @@ extern IDirect3DSurface8 *grim_backbuffer_surface;
 extern IDirect3DSurface8 *grim_render_target_surface;
 extern IDirect3DTexture8 *grim_font_texture;
 extern IDirect3DTexture8 *grim_splash_texture;
+extern D3DPRESENT_PARAMETERS grim_present_parameters;
 extern int grim_present_width;
 extern int grim_present_height;
 extern D3DFORMAT grim_texture_format;
@@ -53,6 +54,22 @@ extern "C" int __stdcall D3DXCreateTexture(
     unsigned long usage,
     D3DFORMAT format,
     D3DPOOL pool,
+    IDirect3DTexture8 **texture);
+extern "C" int __stdcall D3DXCreateTextureFromFileInMemoryEx(
+    IDirect3DDevice8 *device,
+    const void *source_data,
+    unsigned int source_data_size,
+    unsigned int width,
+    unsigned int height,
+    unsigned int mip_levels,
+    unsigned long usage,
+    D3DFORMAT format,
+    D3DPOOL pool,
+    unsigned long filter,
+    unsigned long mip_filter,
+    D3DCOLOR color_key,
+    void *source_info,
+    PALETTEENTRY *palette,
     IDirect3DTexture8 **texture);
 extern "C" int __stdcall d3dx_copy_texture_filtered(
     IDirect3DTexture8 *destination,

@@ -9390,9 +9390,11 @@
     },
     {
       "address": "0x10059df8",
-      "comment": "D3D present parameters width.",
+      "aliases": ["grim_present_parameters"],
+      "comment": "D3DPRESENT_PARAMETERS block; this address is its BackBufferWidth field.",
       "name": "grim_present_width",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "D3DPRESENT_PARAMETERS"
     },
     {
       "address": "0x10059dfc",
@@ -10087,6 +10089,20 @@
       "name": "grim_joystick_state_ptr",
       "program": "grim.dll",
       "type": "DIJOYSTATE2 *"
+    },
+    {
+      "address": "0x1005d094",
+      "comment": "Published IDirect3D8 pointer copied from grim_d3d8 after successful device initialization.",
+      "name": "grim_active_d3d8",
+      "program": "grim.dll",
+      "type": "LPDIRECT3D8"
+    },
+    {
+      "address": "0x1005d0a4",
+      "comment": "Published IDirect3DDevice8 pointer copied from grim_d3d_device after successful device initialization.",
+      "name": "grim_active_d3d_device",
+      "program": "grim.dll",
+      "type": "LPDIRECT3DDEVICE8"
     },
     {
       "address": "0x1005d0b4",

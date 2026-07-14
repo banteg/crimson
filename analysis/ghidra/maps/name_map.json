@@ -6312,9 +6312,9 @@
   {
     "program": "grim.dll",
     "address": "0x1000cb5c",
-    "name": "FUN_1000cb5c",
-    "signature": "int FUN_1000cb5c(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, void* arg8, int arg9, int arg10, int** arg11, int arg12, int arg13, int arg14, int arg15)",
-    "comment": "[binja] int32_t __stdcall sub_1000cb5c(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, void* arg8, int32_t arg9, int32_t arg10, int32_t** arg11, int32_t arg12, int32_t arg13, int32_t arg14, int32_t arg15)",
+    "name": "D3DXCreateTextureFromFileInMemoryEx",
+    "signature": "int __stdcall D3DXCreateTextureFromFileInMemoryEx(IDirect3DDevice8* device, const void* source_data, unsigned int source_data_size, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
+    "comment": "D3DX8 in-memory extended texture loader wrapper; the 15-argument stdcall ABI and fixed wrapper arguments match D3DXCreateTextureFromFileInMemoryEx.",
     "create": false
   },
   {
