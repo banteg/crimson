@@ -8,14 +8,15 @@ extern "C" char *strdup_malloc(char *src);
 struct console_cvar_entry_t {
     char *name;
     console_cvar_entry_t *next;
-    unsigned char _pad0[4];
+    int unknown_08;
     float value;
     char *string_value;
-    unsigned char _pad1[4];
+    int unknown_14;
     char *mod_id;
     char *mod_string_value;
     float *mod_float_value;
 
+    console_cvar_entry_t(char *entry_name);
     ~console_cvar_entry_t(void);
 };
 
@@ -23,6 +24,7 @@ struct console_history_entry_t {
     char *line;
     console_history_entry_t *next;
 
+    console_history_entry_t(void);
     ~console_history_entry_t(void);
     console_history_entry_t *release(unsigned char free_self);
 };
@@ -54,11 +56,13 @@ struct console_queue_t {
     unsigned char _pad0[3];
     console_history_entry_t *history_head;
     int history_index;
-    unsigned char _pad1[8];
+    int height;
+    float slide_y;
     int log_count;
     int scroll_offset;
     unsigned char open;
 
+    console_queue_t(void);
     ~console_queue_t(void);
 
     void console_push_line(char *line);

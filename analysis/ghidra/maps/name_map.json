@@ -147,7 +147,10 @@
     "program": "crimsonland.exe",
     "address": "0x00401560",
     "name": "console_init",
-    "signature": "int * console_init(int *console_state)",
+    "aliases": [
+      "??0console_queue_t@@QAE@XZ"
+    ],
+    "signature": "console_queue_t * __thiscall console_init(console_queue_t *queue)",
     "comment": "initializes the console state, registers core commands/cvars, and seeds prompt/version strings"
   },
   {
