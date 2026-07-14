@@ -162,6 +162,8 @@ extern int quest_stage_minor;
 extern int quest_unlock_index;
 extern int quest_unlock_index_full;
 extern quest_meta_t quest_selected_meta[];
+extern char registry_key_status_root_path[];
+extern unsigned int game_sequence_id;
 
 extern weapon_stats_t weapon_table[];
 extern perk_meta_t perk_meta_table[];
