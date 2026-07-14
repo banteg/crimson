@@ -1193,8 +1193,8 @@
     "program": "crimsonland.exe",
     "address": "0x00419d00",
     "name": "ui_element_load",
-    "signature": "void ui_element_load(ui_element_t *element, char *jaz_path)",
-    "comment": "loads a UI element JAZ asset and logs failures"
+    "signature": "void ui_element_load(ui_menu_item_subtemplate_block_t *element, char *jaz_path)",
+    "comment": "loads a UI subtemplate JAZ asset under an extensionless texture-cache name and logs failures"
   },
   {
     "program": "crimsonland.exe",
@@ -3365,7 +3365,7 @@
     "program": "crimsonland.exe",
     "address": "0x0044faa0",
     "name": "ui_element_init_defaults",
-    "signature": "ui_element_t * ui_element_init_defaults(ui_element_t *element)",
+    "signature": "void ui_element_init_defaults(ui_element_t *element)",
     "comment": "resets one ui_element_t record to default counters, animation values, and flags"
   },
   {
