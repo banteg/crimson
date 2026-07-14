@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**153/2161** functions matched, **19244/675651** code bytes (**2.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**154/2161** functions matched, **19282/675651** code bytes (**2.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 109/1175 | 12553/289897 | 4.3% | 109/112 |
+| grim.dll | 110/1175 | 12591/289897 | 4.3% | 110/113 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**109/1175** functions, **12553/289897** bytes (**4.3%**), **109/112** scratches verified.
+**110/1175** functions, **12591/289897** bytes (**4.3%**), **110/113** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -181,6 +181,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
 | match | grim_draw_text_small_fmt | 0x10009980 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
 | match | GRIM__GetInterface | 0x100099c0 | 95 | 28/28 | 100.00% | 28/28 | 11/0/0 |  | grim-interface-factory |
+| match | DllMain | 0x10009a20 | 38 | 10/10 | 100.00% | 10/10 | 3/0/0 |  | grim-dll-process-attach |
 | match | grim_joystick_enum_device | 0x1000a110 | 50 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim-joystick-enumeration |
 | match | grim_joystick_configure_axis | 0x1000a150 | 99 | 26/26 | 100.00% | 26/26 | 1/0/0 |  | grim-joystick-axis-range |
 | match | grim_joystick_init | 0x1000a1c0 | 231 | 90/90 | 100.00% | 90/90 | 19/0/0 |  | grim-joystick-init |

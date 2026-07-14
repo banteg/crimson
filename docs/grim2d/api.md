@@ -52,6 +52,10 @@ We also generate an evidence appendix with callsite snippets:
 
 ## Internal helpers (non-vtable)
 
+- `DllMain` (`0x10009a20`) exact-matches the process-attach-only entrypoint:
+  it caches the DLL instance and loads icon resource `0x72`, then returns true
+  for every loader reason.
+
 - `grim_convert_vertex_space` (`0x10016944`) remaps vec4 coordinates between three space
   modes used by the batcher. Modes 1/2/3 control whether xyz and w are in `[-1, 1]`
   or `[0, 1]`; see the evidence appendix for inferred mappings.
