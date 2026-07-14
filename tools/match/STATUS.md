@@ -43,7 +43,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 118/126 | 67.21% | 0/126 | 11/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
-| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 83.48% | 11/57 | 4/0/2 |  | gameplay-radius-damage |
+| wip | creatures_apply_radius_damage | 0x00420600 | 159 | 58/57 | 85.22% | 11/57 | 4/0/2 |  | gameplay-radius-damage |
 | wip | creature_find_in_radius | 0x004206a0 | 133 | 49/47 | 70.83% | 4/47 | 3/0/2 |  | gameplay-target-search |
 | wip | player_find_in_radius | 0x00420730 | 133 | 55/54 | 77.06% | 9/54 | 4/0/1 |  | gameplay-target-search |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
