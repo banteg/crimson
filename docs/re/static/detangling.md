@@ -1047,7 +1047,8 @@ Init timing note:
 
 - `FUN_0042f3f0` -> `effect_spawn_splitter_hit_burst`
   - Evidence: called on `PROJECTILE_TYPE_SPLITTER_GUN` impacts before spawning split child
-    projectiles; emits radial burst particles in a configurable radius/count.
+    projectiles; the exact-matched body emits radial burst particles in a configurable
+    radius/count and preserves a double-precision distance across both x87 projections.
 ### Perk database + selection (medium confidence)
 
 - `FUN_0042fd90` -> `perks_init_database`

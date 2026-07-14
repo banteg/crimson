@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**142/2161** functions matched, **17934/675651** code bytes (**2.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**143/2161** functions matched, **18267/675651** code bytes (**2.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
+| crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
 | grim.dll | 99/1175 | 11576/289897 | 4.0% | 99/101 |
 
 ## crimsonland.exe
 
-**43/986** functions, **6358/385754** bytes (**1.6%**), **43/59** scratches verified.
+**44/986** functions, **6691/385754** bytes (**1.7%**), **44/59** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -60,7 +60,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | effects_update | 0x0042e710 | 267 | 85/85 | 100.00% | 85/85 | 10/0/0 |  | gameplay-effect-lifecycle |
 | match | effect_spawn_ion_hit_core | 0x0042f270 | 191 | 32/32 | 100.00% | 32/32 | 16/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_plasma_hit_core | 0x0042f330 | 185 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | gameplay-effect-spawn |
-| wip | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 75/75 | 82.67% | 3/75 | 21/0/1 |  | gameplay-effect-spawn |
+| match | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 75/75 | 100.00% | 75/75 | 23/0/0 |  | gameplay-effect-spawn |
 | match | perk_can_offer | 0x0042fb10 | 185 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
 | match | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
 | wip | perks_rebuild_available | 0x0042fc30 | 181 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |

@@ -1889,8 +1889,8 @@
     "program": "crimsonland.exe",
     "address": "0x0042f3f0",
     "name": "effect_spawn_splitter_hit_burst",
-    "signature": "void * effect_spawn_splitter_hit_burst(float *pos, float radius, int count)",
-    "comment": "spawns a radial burst of effect id 0 particles around the hit point; used by splitter gun impacts"
+    "signature": "void effect_spawn_splitter_hit_burst(float *pos, float radius, int count)",
+    "comment": "Exact-matched radial effect-id-0 burst around splitter-gun impacts"
   },
   {
     "program": "crimsonland.exe",
