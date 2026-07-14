@@ -431,8 +431,8 @@
     "program": "crimsonland.exe",
     "address": "0x00406af0",
     "name": "game_update_generic_menu",
-    "signature": "int game_update_generic_menu(void)",
-    "comment": "[binja] int32_t sub_406af0()"
+    "signature": "void game_update_generic_menu(void)",
+    "comment": "renders the world or terrain backdrop, applies the fullscreen fade, then updates menu UI, perk prompt, and cursor"
   },
   {
     "program": "crimsonland.exe",
