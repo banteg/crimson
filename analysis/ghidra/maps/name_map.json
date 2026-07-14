@@ -3921,6 +3921,9 @@
     "program": "crimsonland.exe",
     "address": "0x004616e7",
     "name": "crt_sprintf",
+    "aliases": [
+      "sprintf"
+    ],
     "signature": "int crt_sprintf(char *dst, char *fmt, ...)",
     "comment": "sprintf-style formatter (uses CRT output core)"
   },
@@ -4104,6 +4107,9 @@
     "program": "crimsonland.exe",
     "address": "0x0046248e",
     "name": "crt_getcwd",
+    "aliases": [
+      "getcwd"
+    ],
     "signature": "char * crt_getcwd(char *buf, unsigned int size)",
     "comment": "CRT: get current working directory"
   },

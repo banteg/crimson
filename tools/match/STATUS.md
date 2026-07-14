@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 151/986 | 19061/385754 | 4.9% | 151/172 |
+| crimsonland.exe | 151/986 | 19061/385754 | 4.9% | 151/173 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**151/986** functions, **19061/385754** bytes (**4.9%**), **151/172** scratches verified.
+**151/986** functions, **19061/385754** bytes (**4.9%**), **151/173** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -116,6 +116,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_save_record | 0x0043b450 | 182 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
+| wip | highscore_build_path | 0x0043b5b0 | 402 | 103/104 | 85.99% | 75/104 | 44/0/3 |  | highscore-mode-path-builder |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
 | match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
