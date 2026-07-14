@@ -15,18 +15,18 @@ extern "C" int music_load_track(char *path)
         return -1;
     }
     if (result == -1) {
-        return -1;
+        return result;
     }
-    if (music_entry_load_ogg(&music_entry_table[result], path)) {
+    if (!music_entry_load_ogg(&music_entry_table[result], path)) {
         console_printf(
             &console_log_queue,
-            "SFX Tune %d <- '%s' ok\n",
+            "SFX Tune %d <- '%s' FAILED\n",
             result,
             path);
     } else {
         console_printf(
             &console_log_queue,
-            "SFX Tune %d <- '%s' FAILED\n",
+            "SFX Tune %d <- '%s' ok\n",
             result,
             path);
     }

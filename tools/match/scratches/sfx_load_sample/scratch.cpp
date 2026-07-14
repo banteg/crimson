@@ -5,7 +5,6 @@
 extern "C" int sfx_load_sample(char *path)
 {
     int result;
-    void **pcm_data;
     char *load_path;
     char buffer[128];
 
@@ -13,14 +12,13 @@ extern "C" int sfx_load_sample(char *path)
         return 1;
     }
 
-    result = 0;
-    pcm_data = &sfx_entry_table[result].pcm_data;
-    while (*pcm_data != 0) {
-        pcm_data += 33;
-        ++result;
-        if (pcm_data >= &sfx_entry_table[128].pcm_data) {
-            return -1;
+    for (result = 0; result < 128; ++result) {
+        if (sfx_entry_table[result].pcm_data == 0) {
+            break;
         }
+    }
+    if (result == 128) {
+        return -1;
     }
     if (result == -1) {
         return -1;

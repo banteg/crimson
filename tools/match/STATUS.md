@@ -137,8 +137,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_entry_table_init_thunk | 0x0043c6d0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | audio-music-entry-table-init-thunk |
 | match | music_entry_table_init | 0x0043c6e0 | 31 | 12/12 | 100.00% | 12/12 | 2/0/0 |  | audio-music-entry-table-init |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
-| wip | sfx_load_sample | 0x0043c740 | 389 | 132/134 | 84.21% | 11/134 | 29/0/0 |  | audio-sample-slot-loader |
-| wip | music_load_track | 0x0043c8d0 | 139 | 55/53 | 92.59% | 10/53 | 10/0/2 |  | music-track-slot-loader |
+| wip | sfx_load_sample | 0x0043c740 | 389 | 131/134 | 96.60% | 14/134 | 29/0/0 |  | audio-sample-slot-loader |
+| wip | music_load_track | 0x0043c8d0 | 139 | 55/53 | 92.59% | 10/53 | 12/0/0 |  | music-track-slot-loader |
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
 | match | audio_init_music | 0x0043c9c0 | 212 | 51/51 | 100.00% | 51/51 | 29/0/0 |  | audio-music-initialization |
