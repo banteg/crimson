@@ -731,6 +731,15 @@ grim.dll body:
   return (float)fVar1;
 ```
 
+Live Binary Ninja and the VC6.5 matcher confirm the full mouse motion/position
+cluster. `grim_get_mouse_dx`, `grim_get_mouse_dy`, and `grim_get_mouse_y` are
+two-instruction x87 global getters with references `1/0/0`; `grim_set_mouse_pos`
+writes the supplied X/Y bit patterns to both accumulated and cached globals in
+9/9 instructions with references `4/0/0`. The indexed methods intentionally
+ignore their stack argument and dispatch through `this` slots `0x70` and
+`0x74`; each natural forwarding method matches all 3 instructions and ends in
+`retn 4`.
+
 
 ## 0x80 — grim_is_key_active @ 0x10006fe0
 

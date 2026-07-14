@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**89/2161** functions matched, **12167/675651** code bytes (**1.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**95/2161** functions matched, **12241/675651** code bytes (**1.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 46/1175 | 5809/289897 | 2.0% | 46/46 |
+| grim.dll | 52/1175 | 5883/289897 | 2.0% | 52/52 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**46/1175** functions, **5809/289897** bytes (**2.0%**), **46/46** scratches verified.
+**52/1175** functions, **5883/289897** bytes (**2.0%**), **52/52** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -95,7 +95,13 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_was_key_pressed | 0x10007390 | 119 | 31/31 | 100.00% | 31/31 | 10/0/0 |  | grim2d-key-repeat |
 | match | grim_is_mouse_button_down | 0x10007410 | 38 | 11/11 | 100.00% | 11/11 | 3/0/0 |  | grim2d-mouse-button-state |
 | match | grim_was_mouse_button_pressed | 0x10007440 | 131 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | grim2d-mouse-edge |
+| match | grim_get_mouse_dx | 0x100074d0 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-motion |
+| match | grim_get_mouse_dy | 0x100074e0 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-motion |
+| match | grim_get_mouse_dx_indexed | 0x100074f0 | 8 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | grim-mouse-motion-forwarder |
+| match | grim_get_mouse_dy_indexed | 0x10007500 | 8 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | grim-mouse-motion-forwarder |
 | match | grim_get_mouse_x | 0x10007510 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_get_mouse_y | 0x10007520 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-position |
+| match | grim_set_mouse_pos | 0x10007530 | 37 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | grim-mouse-position |
 | match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |
 | match | grim_bind_texture | 0x10007830 | 58 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
