@@ -2452,8 +2452,8 @@
     "program": "crimsonland.exe",
     "address": "0x0043ad70",
     "name": "highscore_write_record",
-    "signature": "void highscore_write_record(byte *record, FILE *fp)",
-    "comment": "writes a high score record with date + checksum"
+    "signature": "void highscore_write_record(highscore_record_t *record, FILE *fp)",
+    "comment": "stamps, checksums, encodes, and writes a high score record"
   },
   {
     "program": "crimsonland.exe",
@@ -3901,6 +3901,9 @@
     "program": "crimsonland.exe",
     "address": "0x004615ae",
     "name": "crt_fwrite",
+    "aliases": [
+      "fwrite"
+    ],
     "signature": "uint crt_fwrite(void *ptr, uint size, uint count, FILE *fp)",
     "comment": "fwrite wrapper with CRT lock/unlock"
   },

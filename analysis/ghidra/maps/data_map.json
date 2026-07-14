@@ -3611,7 +3611,7 @@
     {
       "address": "0x00487081",
       "comment": "High score record date checksum (offset 0x41).",
-      "name": "highscore_date_checksum",
+      "name": "highscore_record_date_checksum",
       "program": "crimsonland.exe"
     },
     {
