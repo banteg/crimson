@@ -18,11 +18,10 @@ extern "C" void creatures_apply_radius_damage(float *pos, float radius, float da
 
     int creature_id = 0;
     do {
-        creature_t &creature = creature_pool[creature_id];
-        if (creature.active
-            && vec2_distance((vec2f_t *)&creature.pos_x, (vec2f_t *)pos) - radius
-                < creature.size * 0.14285715f + 3.0f
-            && creature.lifecycle_stage > 5.0f) {
+        if (creature_pool[creature_id].active
+            && vec2_distance((vec2f_t *)&creature_pool[creature_id].pos_x, (vec2f_t *)pos) - radius
+                < creature_pool[creature_id].size * 0.14285715f + 3.0f
+            && creature_pool[creature_id].lifecycle_stage > 5.0f) {
             creature_apply_damage(creature_id, damage, damage_type, impulse);
         }
         ++creature_id;
