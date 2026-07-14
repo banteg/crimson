@@ -8,6 +8,13 @@
       "type": "mod_api_vtbl_t"
     },
     {
+      "address": "0x0046f7ec",
+      "comment": "Zero GUID copied into DirectSound 8 buffer descriptors as GUID_NULL/DS3DALG_DEFAULT.",
+      "name": "GUID_NULL",
+      "program": "crimsonland.exe",
+      "type": "GUID"
+    },
+    {
       "address": "0x00471140",
       "comment": "Float screen width used for UI/layout (set from config_screen_width).",
       "name": "screen_width_f",

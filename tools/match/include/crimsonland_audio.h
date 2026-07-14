@@ -61,6 +61,12 @@ void sfx_entry_seek(sfx_entry_t *entry, unsigned int sample_offset);
 void sfx_entry_stop(sfx_entry_t *entry);
 void sfx_entry_set_volume(sfx_entry_t *entry, float volume);
 unsigned char sfx_entry_upload_buffer(sfx_entry_t *entry);
+unsigned char sfx_entry_create_buffers(sfx_entry_t *entry);
+unsigned char wav_parse_into_entry(
+    sfx_entry_t *entry,
+    void *data,
+    unsigned int size);
+unsigned char sfx_entry_load_wav(sfx_entry_t *entry, char *path);
 void audio_suspend_channels(void);
 void audio_resume_channels(void);
 unsigned char audio_resume_all(void);
