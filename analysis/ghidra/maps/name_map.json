@@ -1308,8 +1308,11 @@
     "program": "crimsonland.exe",
     "address": "0x0041df00",
     "name": "vorbis_read_pcm16",
+    "aliases": [
+      "?read_pcm16@vorbis_stream_t@@QAEHPAXH@Z"
+    ],
     "signature": "int vorbis_read_pcm16(void *stream, char *dst, int bytes)",
-    "comment": "decode PCM16 samples via ov_read"
+    "comment": "member-style PCM16 decoder via ov_read; stream object is passed in ECX"
   },
   {
     "program": "crimsonland.exe",

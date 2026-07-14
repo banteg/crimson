@@ -12,6 +12,7 @@ extern music_entry_t music_entry_table[];
 
 #ifdef __cplusplus
 struct vorbis_stream_t {
+    int read_pcm16(void *dst, int bytes);
     int pcm_seek(unsigned int sample_offset);
     void close(void);
 };
@@ -67,6 +68,8 @@ unsigned char wav_parse_into_entry(
     void *data,
     unsigned int size);
 unsigned char sfx_entry_load_wav(sfx_entry_t *entry, char *path);
+unsigned char music_stream_fill(music_entry_t *entry);
+void music_stream_update(music_entry_t *entry);
 void audio_suspend_channels(void);
 void audio_resume_channels(void);
 unsigned char audio_resume_all(void);

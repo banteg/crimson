@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**248/2161** functions matched, **32473/675651** code bytes (**4.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**250/2161** functions matched, **32803/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 116/986 | 13026/385754 | 3.4% | 116/130 |
+| crimsonland.exe | 118/986 | 13356/385754 | 3.5% | 118/132 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**116/986** functions, **13026/385754** bytes (**3.4%**), **116/130** scratches verified.
+**118/986** functions, **13356/385754** bytes (**3.5%**), **118/132** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -124,6 +124,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | wav_parse_into_entry | 0x0043c110 | 274 | 87/87 | 100.00% | 87/87 | 15/0/0 |  | audio-wav-parser |
 | match | sfx_entry_upload_buffer | 0x0043c230 | 123 | 57/57 | 100.00% | 57/57 | 1/0/0 |  | audio-directsound-buffer-upload |
 | match | sfx_entry_create_buffers | 0x0043c2b0 | 238 | 91/91 | 100.00% | 91/91 | 9/0/0 |  | audio-directsound-buffer-create |
+| match | music_stream_update | 0x0043c520 | 109 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | audio-music-stream-update |
+| match | music_stream_fill | 0x0043c590 | 221 | 86/86 | 100.00% | 86/86 | 4/0/0 |  | audio-music-stream-fill |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
