@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**212/2161** functions matched, **29906/675651** code bytes (**4.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**214/2161** functions matched, **29985/675651** code bytes (**4.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 80/986 | 10459/385754 | 2.7% | 80/93 |
+| crimsonland.exe | 82/986 | 10538/385754 | 2.7% | 82/95 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**80/986** functions, **10459/385754** bytes (**2.7%**), **80/93** scratches verified.
+**82/986** functions, **10538/385754** bytes (**2.7%**), **82/95** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -24,6 +24,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
+| match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
@@ -96,6 +97,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
+| match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
