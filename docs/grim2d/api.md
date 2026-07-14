@@ -72,6 +72,10 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_window_destroy` (`0x10002880`) exact-matches the quit, conditional
   window destruction, and class-unregistration path. Its override-handle
   branch destroys `grim_main_window_hwnd` a second time, an apparent native bug.
+- `grim_restore_textures` (`0x10002b40`) exact-matches the post-reset copy from
+  each owned texture's backup image surface into mip level zero. It releases
+  both surfaces after each copy, clears the pending flag on completion, and
+  asserts config slot `0x57` before returning false on a failed `CopyRects`.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_d3d_shutdown` (`0x10004280`) has the full recovered surface, embedded
   texture, 256-slot texture table, geometry-buffer, device, and Direct3D8

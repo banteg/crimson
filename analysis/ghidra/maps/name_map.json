@@ -5203,8 +5203,8 @@
     "program": "grim.dll",
     "address": "0x10002b40",
     "name": "grim_restore_textures",
-    "signature": "int grim_restore_textures(void)",
-    "comment": "restore texture surfaces after device reset"
+    "signature": "bool grim_restore_textures(void)",
+    "comment": "restore owned texture surfaces after device reset"
   },
   {
     "program": "grim.dll",

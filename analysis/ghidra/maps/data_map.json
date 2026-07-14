@@ -10222,6 +10222,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d804",
+      "comment": "DC-mode flag used to select the non-D3D window/message path and block texture restoration.",
+      "name": "grim_dc_mode_active",
+      "program": "grim.dll",
+      "type": "bool"
+    },
+    {
       "address": "0x1005d808",
       "comment": "Retry counter for device Reset/restore attempts after device loss.",
       "name": "grim_device_reset_retry_count",

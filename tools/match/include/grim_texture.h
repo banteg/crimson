@@ -10,7 +10,7 @@ struct GrimTexture {
     unsigned char padding_09[3];
     int width;
     int height;
-    IDirect3DTexture8 *backup;
+    IDirect3DSurface8 *backup;
 
     GrimTexture(char *name);
     ~GrimTexture(void);
