@@ -5275,6 +5275,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10004520",
+    "name": "grim_apply_render_state",
+    "signature": "void grim_apply_render_state(void)",
+    "comment": "reapplies fixed and config-backed render state after device creation or reset"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100047f0",
     "name": "grim_is_texture_format_supported",
     "signature": "bool grim_is_texture_format_supported(unsigned int format)",

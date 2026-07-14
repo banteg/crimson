@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**162/2161** functions matched, **22036/675651** code bytes (**3.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**163/2161** functions matched, **22756/675651** code bytes (**3.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 118/1175 | 15345/289897 | 5.3% | 118/122 |
+| grim.dll | 119/1175 | 16065/289897 | 5.5% | 119/123 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**118/1175** functions, **15345/289897** bytes (**5.3%**), **118/122** scratches verified.
+**119/1175** functions, **16065/289897** bytes (**5.5%**), **119/123** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -90,6 +90,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_restore_textures | 0x10002b40 | 432 | 161/161 | 100.00% | 161/161 | 26/0/0 |  | grim-texture-restore |
 | wip | grim_d3d_shutdown | 0x10004280 | 196 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
+| match | grim_apply_render_state | 0x10004520 | 720 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |
 | match | grim_timing_init | 0x10004920 | 74 | 13/13 | 100.00% | 13/13 | 10/0/0 |  | grim-frame-timing-init |

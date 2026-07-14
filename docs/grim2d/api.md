@@ -87,6 +87,9 @@ We also generate an evidence appendix with callsite snippets:
   swap inside the texture loop.
 - `grim_release_geometry_buffers` (`0x100044e0`) exact-matches the independent
   vertex/index-buffer release and unconditional global clears.
+- `grim_apply_render_state` (`0x10004520`) exact-matches the fixed render and
+  texture-stage setup reapplied after device creation or reset. It also restores
+  alpha blending from config slots `0x12`-`0x14` and dithering from slot `0x58`.
 - `grim_lookup_blob_load` (`0x10005a40`) exact-matches the optional blob's
   dynamic-CRT open/measure/allocate/read lifecycle. Its failed-open path frees
   the previous buffer and doubles as the shutdown cleanup operation.
@@ -252,6 +255,7 @@ state names (partial list):
 | `0x2b` | `GRIM_CFG_TEXTURE_FORMAT` | Sets `grim_texture_format` based on `value` | Likely BPP/format selector. |
 | `0x36` | `GRIM_CFG_PRESENT` | Calls `IDirect3DDevice8::Present` | Explicit present trigger. |
 | `0x55` | `GRIM_CFG_RENDER_DISABLED` | Sets `grim_render_disabled` flag | Gates rendering. |
+| `0x58` | `GRIM_CFG_DITHER_ENABLE` | Supplies `D3DRS_DITHERENABLE` during render-state setup | Reapplied after device creation/reset. |
 
 Other handled IDs exist (e.g., `0x5`, `0x6`, `0x7`, `0xb`, `0xc`, `0xd`, `0xe`, `0x1a`, `0x2d`, `0x34`, `0x42`, `0x52`) but their semantics remain unknown; they mostly write into the config tables and/or stash pointers for later use.
 
