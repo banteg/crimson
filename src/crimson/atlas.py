@@ -3,8 +3,10 @@ from __future__ import annotations
 """
 Atlas slicing used by the Crimsonland renderer.
 
-Findings from decompiled code:
-- FUN_0041fed0 precomputes UV grids for 2x2, 4x4, 8x8, 16x16 (steps 0.5/0.25/0.125/0.0625).
+Findings from native code:
+- `effect_uv_tables_init` at 0x0041FED0 precomputes a 16-entry horizontal
+  strip and UV grids for 2x2, 4x4, 8x8, and 16x16 atlases (steps
+  0.5/0.25/0.125/0.0625).
 - FUN_0042e0a0 reads a table at VA 0x004755F0 with pairs (cell_code, group_id).
   cell_code maps to grid size: 0x80->2, 0x40->4, 0x20->8, 0x10->16.
   group_id is passed to the renderer alongside the grid size; semantics unknown.

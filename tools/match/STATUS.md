@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**194/2161** functions matched, **28021/675651** code bytes (**4.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**195/2161** functions matched, **28377/675651** code bytes (**4.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 62/986 | 8574/385754 | 2.2% | 62/74 |
+| crimsonland.exe | 63/986 | 8930/385754 | 2.3% | 63/75 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**62/986** functions, **8574/385754** bytes (**2.2%**), **62/74** scratches verified.
+**63/986** functions, **8930/385754** bytes (**2.3%**), **63/75** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -48,6 +48,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 120/127 | 37.25% | 1/127 | 15/0/2 |  | gameplay-player-reset |
+| match | effect_uv_tables_init | 0x0041fed0 | 356 | 109/109 | 100.00% | 109/109 | 15/0/0 |  | gameplay-effect-atlas-uv-init |
 | wip | creature_find_nearest | 0x00420040 | 225 | 90/89 | 91.62% | 27/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |

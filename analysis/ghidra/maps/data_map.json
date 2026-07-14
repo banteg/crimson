@@ -5772,6 +5772,13 @@
       "type": "int"
     },
     {
+      "address": "0x00490f80",
+      "comment": "Horizontal UV strip with 16 entries spanning U = 0/16 through 15/16 and V = 0.",
+      "name": "effect_uv_strip16",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
+    },
+    {
       "address": "0x00491010",
       "comment": "Effect UV table for 8x8 atlas frames (u,v).",
       "name": "effect_uv8",
