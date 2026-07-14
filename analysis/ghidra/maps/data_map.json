@@ -2071,7 +2071,7 @@
       "comment": "Core cvar handle for cv_terrainBodiesTransparency (registered by register_core_cvars). Used by fx_queue_add_rotated/fx_queue_render for corpse decals baked into terrain.",
       "name": "cv_terrainBodiesTransparency",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480864",
@@ -3726,7 +3726,8 @@
       "address": "0x004871c8",
       "comment": "Terrain texture creation failure flag (safe mode).",
       "name": "terrain_texture_failed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x004871cc",
@@ -5225,9 +5226,10 @@
     },
     {
       "address": "0x00490430",
-      "comment": "Rotated FX queue position X array",
+      "comment": "Rotated FX queue position array (X at base, Y at +4)",
       "name": "fx_rotated_pos_x",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "vec2f_t[64]"
     },
     {
       "address": "0x00490434",
@@ -5246,7 +5248,8 @@
       "address": "0x004906a8",
       "comment": "Rotated FX queue scale array",
       "name": "fx_rotated_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float[64]"
     },
     {
       "address": "0x004907a8",
@@ -6214,7 +6217,8 @@
       "address": "0x0049669c",
       "comment": "Rotated FX queue rotation array",
       "name": "fx_rotated_rotation",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float[64]"
     },
     {
       "address": "0x0049679c",
@@ -6293,7 +6297,8 @@
       "address": "0x0049ba30",
       "comment": "Rotated FX queue effect id array",
       "name": "fx_rotated_effect_id",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[64]"
     },
     {
       "address": "0x0049bb30",
@@ -6304,9 +6309,10 @@
     },
     {
       "address": "0x0049bb38",
-      "comment": "Rotated FX queue color R array",
+      "comment": "Rotated FX queue color array (RGBA aggregates)",
       "name": "fx_rotated_color_r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "effect_color_t[64]"
     },
     {
       "address": "0x0049bb3c",
@@ -6617,9 +6623,10 @@
     },
     {
       "address": "0x004aaf3c",
-      "comment": "Rotated FX queue base (0x40 entries)",
+      "comment": "Rotated FX queue count (63 is the full sentinel)",
       "name": "fx_queue_rotated",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004aaf45",

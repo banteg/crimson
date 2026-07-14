@@ -275,6 +275,13 @@ unsigned char fx_queue_add(
     float rotation,
     effect_color_t *color
 );
+unsigned char fx_queue_add_rotated(
+    vec2f_t *pos,
+    effect_color_t *color,
+    float rotation,
+    float scale,
+    int effect_id
+);
 void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_freeze_shard(float *pos, float angle);
@@ -289,13 +296,16 @@ int creature_find_nearest(float *pos, int exclude_id, float radius);
 void creature_apply_damage(int creature_index, float damage, int damage_type, float *impulse);
 void effect_spawn_burst(float *pos, int count);
 
-typedef struct cvar_float_t {
-    unsigned char _pad0[0x0c];
-    float value;
-} cvar_float_t;
-
 extern cvar_float_t *cv_friendlyFire;
+extern cvar_float_t *cv_terrainBodiesTransparency;
 extern cvar_float_t *cv_verbose;
+extern unsigned char terrain_texture_failed;
+extern int fx_queue_rotated;
+extern vec2f_t fx_rotated_pos_x[];
+extern float fx_rotated_scale[];
+extern float fx_rotated_rotation[];
+extern int fx_rotated_effect_id[];
+extern effect_color_t fx_rotated_color_r[];
 
 extern char console_log_queue;
 extern char s_Unhandled_creatureType__00477758[];

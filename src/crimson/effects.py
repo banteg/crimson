@@ -622,7 +622,8 @@ class FxQueueRotated:
         """Port of `fx_queue_add_rotated` (0x00427840)."""
 
         if terrain_texture_failed:
-            return False
+            # Native skips the queue write but still reports success.
+            return True
         if self._count >= self._max_count:
             return False
 

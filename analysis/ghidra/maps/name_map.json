@@ -1572,8 +1572,8 @@
     "program": "crimsonland.exe",
     "address": "0x00427840",
     "name": "fx_queue_add_rotated",
-    "signature": "int fx_queue_add_rotated(float *pos, float *rgba, float rotation, float scale, int effect_id)",
-    "comment": "pushes a rotated sprite into DAT_004aaf3c (capped at 0x40); returns 1 on success"
+    "signature": "unsigned char fx_queue_add_rotated(vec2f_t *pos, effect_color_t *color, float rotation, float scale, int effect_id)",
+    "comment": "queues a rotated terrain sprite when available; texture failure is a successful no-op"
   },
   {
     "program": "crimsonland.exe",

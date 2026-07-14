@@ -12,6 +12,11 @@ typedef struct uv2f_t {
     float v;
 } uv2f_t;
 
+typedef struct cvar_float_t {
+    unsigned char _pad0[0x0c];
+    float value;
+} cvar_float_t;
+
 typedef enum weapon_id_t {
     WEAPON_ID_NONE = 0x00,
     WEAPON_ID_PISTOL = 0x01,

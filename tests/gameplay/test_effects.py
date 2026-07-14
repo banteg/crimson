@@ -178,6 +178,19 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     assert_float_close(entry.color.a, 0.8)
 
 
+def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:
+    q = FxQueueRotated(capacity=2, max_count=2)
+    assert q.add(
+        top_left=Vec2(1.0, 2.0),
+        rgba=RGBA(1.0, 1.0, 1.0, 1.0),
+        rotation=3.0,
+        scale=4.0,
+        creature_type_id=5,
+        terrain_texture_failed=True,
+    )
+    assert q.count == 0
+
+
 def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
     pool = EffectPool(size=8)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
