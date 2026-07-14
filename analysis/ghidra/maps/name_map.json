@@ -5364,6 +5364,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10004e90",
+    "name": "grim_jaz_jpeg_error_exit",
+    "signature": "void grim_jaz_jpeg_error_exit(void **context)",
+    "comment": "formats the current libjpeg error and longjmps to the JAZ decoder recovery point"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10004ec0",
     "name": "grim_texture_load_file",
     "signature": "int grim_texture_load_file(void *texture, ushort *path)",
