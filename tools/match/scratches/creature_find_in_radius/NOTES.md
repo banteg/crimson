@@ -1,18 +1,16 @@
-# creature_find_in_radius WIP
-
-Current best local score:
+# creature_find_in_radius exact match
 
 ```txt
-match=70.83% prefix=4/47 target_insns=47 candidate_insns=49 refs=3/0/2
+match=100.00% prefix=47/47 target_insns=47 candidate_insns=47 refs=5/0/0
 ```
 
-The source recovers the bounded scan from `start_index`, active and lifecycle
-filters, radius-plus-size test, and first-hit or `-1` result. Splitting the
-squared distance into an x product followed by a y accumulation reproduces the
-native x87 arithmetic and cleanup sequence.
+The exact source uses a pre-tested `index < 0x180` scan and direct
+`creature_pool[index]` field expressions. VC6 strength-reduces those accesses
+to the native struct-base pointer induction variable. Introducing a temporary
+`creature_t *` instead rebases that induction variable to `pos_x`, splitting
+the active check and changing every field displacement.
 
-VC6 still biases the candidate loop register at `pos_y`; native retains the
-record's active-byte base. That rebasing adds a load/test pair and changes the
-end comparison. The candidate also lays the hit epilogue before the miss
-fallthrough. Keep these as honest WIP residuals rather than encoding structure
-offsets or branch-layout tricks in the recovered source.
+The shared inlined `vec2_distance` shape recovers the native x87 square, sum,
+`fsqrt`, and temporary-discard sequence. A `goto found` after all three tests
+places the exhausted-scan `-1` return before the successful index return,
+matching the native loop back-edge and block order exactly.
