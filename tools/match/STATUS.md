@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**339/2162** functions matched, **41308/675654** code bytes (**6.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**347/2162** functions matched, **42105/675654** code bytes (**6.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 207/987 | 21861/385757 | 5.7% | 207/231 |
+| crimsonland.exe | 215/987 | 22658/385757 | 5.9% | 215/239 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**207/987** functions, **21861/385757** bytes (**5.7%**), **207/231** scratches verified.
+**215/987** functions, **22658/385757** bytes (**5.9%**), **215/239** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -24,10 +24,18 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | console_cmd_quit | 0x00401240 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-quit-command |
 | match | console_cmd_minimize | 0x00401360 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | console-minimize-command |
+| match | console_cmdlist | 0x00401370 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-command-list |
+| match | console_vars | 0x004013c0 | 65 | 24/24 | 100.00% | 24/24 | 7/0/0 |  | console-cvar-list |
 | match | console_printf | 0x00401870 | 49 | 17/17 | 100.00% | 17/17 | 4/0/0 |  | console-formatted-output |
 | match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
 | match | console_history_apply | 0x004018d0 | 99 | 42/42 | 100.00% | 42/42 | 4/0/0 |  | console-history-navigation |
 | match | console_cvar_find | 0x00402480 | 92 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-cvar-lookup |
+| match | console_cvar_unregister | 0x004024e0 | 72 | 32/32 | 100.00% | 32/32 | 1/0/0 |  | console-cvar-unlink |
+| match | console_command_unregister | 0x00402530 | 74 | 32/32 | 100.00% | 32/32 | 1/0/0 |  | console-command-unlink |
+| match | console_cvar_autocomplete | 0x00402630 | 164 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-cvar-autocomplete |
+| match | console_register_command | 0x004026e0 | 99 | 38/38 | 100.00% | 38/38 | 2/0/0 |  | console-command-register |
+| match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
+| match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | demo_purchase_interstitial_begin | 0x00403370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | demo-purchase-interstitial |
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |

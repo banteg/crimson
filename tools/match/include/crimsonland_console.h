@@ -3,6 +3,8 @@
 
 #ifdef __cplusplus
 
+extern "C" char *strdup_malloc(char *src);
+
 struct console_cvar_entry_t {
     char *name;
     console_cvar_entry_t *next;
@@ -20,9 +22,18 @@ struct console_history_entry_t {
     console_history_entry_t *next;
 };
 
+struct console_command_entry_t {
+    char *name;
+    console_command_entry_t *next;
+    void (*handler)(void);
+
+    console_command_entry_t(char *entry_name)
+        : name(strdup_malloc(entry_name)), next(0), handler(0) {}
+};
+
 struct console_queue_t {
     console_cvar_entry_t *cvar_head;
-    void *command_head;
+    console_command_entry_t *command_head;
     void *log_head;
     unsigned char echo_enabled;
     unsigned char _pad0[3];
@@ -37,6 +48,9 @@ struct console_queue_t {
     void console_set_open(unsigned char open);
     void console_history_apply(void);
     console_cvar_entry_t *console_cvar_find(char *name);
+    console_command_entry_t *console_command_find(char *name);
+    char *console_cvar_autocomplete(char *prefix);
+    char *console_command_autocomplete(char *prefix);
     console_cvar_entry_t *console_register_cvar(char *name, char *value);
     unsigned char console_cvar_unregister(char *name);
     void console_register_command(char *name, void (*handler)(void));
