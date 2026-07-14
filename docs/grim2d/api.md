@@ -72,6 +72,10 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_window_destroy` (`0x10002880`) exact-matches the quit, conditional
   window destruction, and class-unregistration path. Its override-handle
   branch destroys `grim_main_window_hwnd` a second time, an apparent native bug.
+- `grim_backup_textures` (`0x100028d0`) exact-matches the pre-reset preservation
+  path: each owned texture receives a system-memory image surface populated
+  from mip level zero. Device-lost, invalid-call, and generic copy failures are
+  diagnosed separately, and config slot `0x57` is asserted after a copy error.
 - `grim_restore_textures` (`0x10002b40`) exact-matches the post-reset copy from
   each owned texture's backup image surface into mip level zero. It releases
   both surfaces after each copy, clears the pending flag on completion, and

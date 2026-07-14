@@ -5196,8 +5196,8 @@
     "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",
-    "signature": "int grim_backup_textures(void)",
-    "comment": "backup texture surfaces before device reset"
+    "signature": "bool grim_backup_textures(void)",
+    "comment": "backup owned texture surfaces before device reset"
   },
   {
     "program": "grim.dll",

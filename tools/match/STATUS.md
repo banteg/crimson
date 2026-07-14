@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**161/2161** functions matched, **21426/675651** code bytes (**3.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**162/2161** functions matched, **22036/675651** code bytes (**3.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 117/1175 | 14735/289897 | 5.1% | 117/121 |
+| grim.dll | 118/1175 | 15345/289897 | 5.3% | 118/122 |
 
 ## crimsonland.exe
 
@@ -79,13 +79,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**117/1175** functions, **14735/289897** bytes (**5.1%**), **117/121** scratches verified.
+**118/1175** functions, **15345/289897** bytes (**5.3%**), **118/122** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
 | match | grim_window_create | 0x10002680 | 497 | 142/142 | 100.00% | 142/142 | 46/0/0 |  | grim-window-creation |
 | match | grim_window_destroy | 0x10002880 | 66 | 22/22 | 100.00% | 22/22 | 8/0/0 |  | grim-window-teardown |
+| match | grim_backup_textures | 0x100028d0 | 610 | 219/219 | 100.00% | 219/219 | 41/0/0 |  | grim-texture-backup |
 | match | grim_restore_textures | 0x10002b40 | 432 | 161/161 | 100.00% | 161/161 | 26/0/0 |  | grim-texture-restore |
 | wip | grim_d3d_shutdown | 0x10004280 | 196 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
 | match | grim_release_geometry_buffers | 0x100044e0 | 51 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
