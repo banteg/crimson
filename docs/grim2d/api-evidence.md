@@ -825,6 +825,13 @@ grim.dll mapping:
   }
 ```
 
+Live Binary Ninja and the VC6.5 matcher confirm the complete router. Six
+`DIJOYSTATE2` axes (`0x13f`, `0x140`, `0x141`, `0x153`, `0x154`, `0x155`)
+are scaled by `0.001f`; `0x15f`/`0x160` return direct mouse X/Y delta; and a
+three-iteration loop maps `0x163..0x165` and `0x168..0x16a` to the indexed
+delta compatibility methods. All other IDs return `0.0f`. Natural C++ matches
+all 88 instructions, full prefix, and references `13/0/0`.
+
 
 ## 0x88 — grim_get_slot_float @ 0x100072c0
 

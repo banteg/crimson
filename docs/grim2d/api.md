@@ -169,8 +169,9 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_apply_settings` forwards to Grim2D’s internal settings routine (`FUN_10003c00`).
 - `grim_init_system` initializes D3D and input devices, then loads `smallFnt.dat`.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
-- `grim_get_config_float` maps IDs `0x13f..0x155` to scaled config values and special-cases `0x15f`
-  to return the mouse X delta (`grim_get_mouse_dx`).
+- `grim_get_config_float` exactly maps six IDs to scaled joystick axes,
+  `0x15f`/`0x160` to direct mouse X/Y delta, and two three-ID ranges to the
+  indexed delta compatibility methods; unmatched IDs return zero.
 
 - `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
