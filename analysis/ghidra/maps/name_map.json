@@ -5263,8 +5263,8 @@
     "program": "grim.dll",
     "address": "0x100047f0",
     "name": "grim_is_texture_format_supported",
-    "signature": "int grim_is_texture_format_supported(unsigned int format)",
-    "comment": "checks device support for a texture format"
+    "signature": "bool grim_is_texture_format_supported(unsigned int format)",
+    "comment": "returns whether CheckDeviceFormat accepts the candidate as a texture resource"
   },
   {
     "program": "grim.dll",

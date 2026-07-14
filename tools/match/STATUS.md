@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**147/2161** functions matched, **18603/675651** code bytes (**2.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**148/2161** functions matched, **18654/675651** code bytes (**2.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 103/1175 | 11912/289897 | 4.1% | 103/105 |
+| grim.dll | 104/1175 | 11963/289897 | 4.1% | 104/106 |
 
 ## crimsonland.exe
 
@@ -79,11 +79,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**103/1175** functions, **11912/289897** bytes (**4.1%**), **103/105** scratches verified.
+**104/1175** functions, **11963/289897** bytes (**4.1%**), **104/106** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
+| match | grim_is_texture_format_supported | 0x100047f0 | 51 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_texture_init | 0x10004a50 | 83 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
 | match | grim_texture_release | 0x10004ab0 | 66 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |

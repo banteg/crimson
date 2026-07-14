@@ -62,6 +62,9 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_window_create` (`0x10002680`) registers the window class and creates the main window.
 - `grim_window_destroy` (`0x10002880`) posts quit and destroys the main window.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
+- `grim_is_texture_format_supported` (`0x100047f0`) is an exact-matched
+  `CheckDeviceFormat` predicate for `D3DRTYPE_TEXTURE`, using the selected
+  adapter, device type, and current adapter format.
 - `grim_keyboard_init` (`0x1000a390`) / `grim_keyboard_poll` (`0x1000a4a0`) / `grim_keyboard_shutdown`
   (`0x1000a550`) manage the DirectInput keyboard device. Initialization installs the keyboard
   data format, foreground/nonexclusive cooperative mode, and a ten-event buffer. The poll retries acquisition only for
