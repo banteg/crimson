@@ -5240,6 +5240,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100033b0",
+    "name": "grim_window_proc",
+    "signature": "long grim_window_proc(void *hwnd, unsigned int message, unsigned int wparam, long lparam)",
+    "comment": "WNDPROC installed by grim_window_create for the registered Crimson window class"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10003c00",
     "name": "grim_run_loop",
     "signature": "int grim_run_loop(void)",

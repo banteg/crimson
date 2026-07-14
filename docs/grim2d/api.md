@@ -65,7 +65,10 @@ We also generate an evidence appendix with callsite snippets:
   mode before converting vertices.
 
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
-- `grim_window_create` (`0x10002680`) registers the window class and creates the main window.
+- Exact-matched `grim_window_create` (`0x10002680`) registers the `Crimson`
+  class with `grim_window_proc`, then creates either a topmost screen-sized
+  popup or a centered adjusted window using the configured backbuffer size.
+  Success performs the native show/update/focus/show/update sequence.
 - `grim_window_destroy` (`0x10002880`) exact-matches the quit, conditional
   window destruction, and class-unregistration path. Its override-handle
   branch destroys `grim_main_window_hwnd` a second time, an apparent native bug.
