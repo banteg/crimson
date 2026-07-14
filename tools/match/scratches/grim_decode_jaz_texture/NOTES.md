@@ -1,0 +1,51 @@
+# grim_decode_jaz_texture
+
+Native target: `grim.dll` at `0x10004b70..0x10004e81` (785 bytes).
+
+This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
+Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 252 normalized
+instructions, the same count as the native function, with a 32-instruction
+prefix, 86.51% similarity, and masked references `6/15/0`.
+
+## Recovered source shape
+
+- The function has five cdecl arguments: source pointer, unused source size,
+  output image size, output width, and output height. The fifth argument is
+  established by the native `[ebp+0x18]` accesses and caller stack setup.
+- A small C++ scope object calls the JAZ unpacker before decoding. The unpacked
+  payload begins with a little-endian JPEG byte count followed by JPEG data;
+  alpha RLE begins immediately after that JPEG segment.
+- The native libjpeg ABI is version 61. `jpeg_decompress_struct` occupies
+  `0x1a8` bytes and the custom error object combines a `0xc4`-byte error
+  manager with a 64-byte `jmp_buf`. `setjmp` protects the complete JPEG decode
+  and the custom `error_exit` longjmps back into this function.
+- The decoder allocates an 18-byte TGA header plus one 32-bit pixel per output
+  sample. JPEG RGB rows are copied bottom-up into BGRA pixels with alpha 255.
+  A zero-width guard around a `do/while` reproduces the native single pre-test,
+  pointer walk, and unsigned backedge.
+- The packed TGA header uses one four-byte zero write for the color-map origin
+  and length fields, followed by zero color-map depth, zero origins, 16-bit
+  dimensions, 32 bits per pixel, and descriptor 8.
+- Alpha is decoded as `(run_length, value)` byte pairs from the unpacked JAZ
+  tail and written bottom-up. The native retry shape decrements the horizontal
+  coordinate when loading a fresh run so that the same pixel is revisited.
+- The unpacked buffer is released only on the successful tail. The input-size
+  argument is unused, and native code dereferences the unpack result before a
+  meaningful null check; the scratch preserves those observed weaknesses.
+
+## Remaining mismatch
+
+The semantic body and scanline loop are recovered, but VC6 lays out two
+equivalent regions differently from the native function:
+
+- Natural early returns emit the C++ scope-destructor failure epilogue beside
+  each error path, while the native binary shares one failure epilogue between
+  the setjmp, allocation, and empty-payload branches. Nested, `goto`, and
+  single-exit spellings were tested; they either retained the block-placement
+  difference or changed real local lifetimes and degraded the match.
+- Independent width/height stores and the image-header pointer adjustment use
+  a different register schedule immediately before `alloc_sarray`.
+
+No inline assembly, volatile state, dummy reference, forced address, or
+layout-only arithmetic is used. The scratch remains WIP until those residuals
+can be explained by plausible source rather than forced code generation.

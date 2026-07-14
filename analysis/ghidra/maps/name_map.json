@@ -5357,9 +5357,9 @@
   {
     "program": "grim.dll",
     "address": "0x10004b70",
-    "name": "FUN_10004b70",
-    "signature": "char* FUN_10004b70(char* arg1, void** arg2, int* arg3, int* arg4)",
-    "comment": "[binja] char* sub_10004b70(char* arg1, void** arg2, int32_t* arg3, int32_t* arg4)",
+    "name": "grim_decode_jaz_texture",
+    "signature": "unsigned char * grim_decode_jaz_texture(unsigned char *source, unsigned int source_size, unsigned int *image_size, int *width, int *height)",
+    "comment": "unpacks a JAZ payload, decodes its JPEG color plane, restores RLE alpha, and returns a 32-bit TGA image",
     "create": false
   },
   {
