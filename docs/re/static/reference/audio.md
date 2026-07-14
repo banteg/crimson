@@ -50,6 +50,37 @@ Notes:
   pointers; it is only zeroed during `sfx_system_init`, so the role remains
   inferred.
 
+## Memory-backed Vorbis stream
+
+The native `vorbis_stream_t` is now recovered through its complete leaf
+surface. Its leading layout is an `ov_callbacks` record at `+0x00`, an
+`OggVorbis_File` at `+0x10`, the current bitstream index at `+0x2e0`, total PCM
+bytes at `+0x2e4`, source-data offset at `+0x2e8`, the owned source allocation
+at `+0x2ec`, and a copied 32-byte `vorbis_info` at `+0x2f0`.
+
+The owned allocation has an eight-byte prefix followed by inline OGG data:
+
+| Offset | Type | Meaning |
+| --- | --- | --- |
+| 0x00 | u32 | Source byte size. |
+| 0x04 | long | Callback cursor. |
+| 0x08 | u8[] | OGG bytes passed to `ov_open_callbacks`. |
+
+The callback policy contains several native quirks that ports should retain:
+
+- reads reset an exhausted cursor to zero, clamp the copy to remaining bytes,
+  but advance the cursor by the full requested `size * count`;
+- seek returns `1` for every origin, treats non-`SEEK_SET`/`SEEK_END` origins
+  as relative, and implements end-relative seek as `size - offset`;
+- the callback close is a no-op returning `1`; `vorbis_stream_t::close` owns
+  the allocation and frees it before `ov_clear`;
+- PCM reads request signed little-endian 16-bit output and clamp negative
+  `ov_read` results to zero.
+
+Opening copies `vorbis_info`, calculates PCM bytes as
+`ov_pcm_total * channels * 16 / 8`, and records the callback cursor after the
+Vorbis headers have been consumed.
+
 ## SFX ID map
 
 Derived from `audio_init_sfx` (`FUN_0043caa0`). `sfx_load_sample` (`FUN_0043c740`)

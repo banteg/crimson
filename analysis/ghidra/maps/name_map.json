@@ -1310,6 +1310,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041dd40",
+    "name": "vorbis_mem_seek",
+    "signature": "int vorbis_mem_seek(void *datasource, ogg_int64_t offset, int whence)",
+    "comment": "ov_open_callbacks seek hook for memory-backed OGG data"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dd90",
+    "name": "vorbis_mem_close_callback",
+    "signature": "int vorbis_mem_close_callback(void *datasource)",
+    "comment": "no-op ov_open_callbacks close hook; ownership stays with vorbis_stream_t"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041dda0",
     "name": "vorbis_mem_tell",
     "signature": "int vorbis_mem_tell(void *datasource)",
@@ -4098,6 +4112,13 @@
     "name": "crt_tolower_l",
     "signature": "int crt_tolower_l(void *locale, int c)",
     "comment": "CRT: tolower with locale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461fd5",
+    "name": "crt_printf",
+    "signature": "int crt_printf(char *format, ...)",
+    "comment": "CRT: printf to stdout"
   },
   {
     "program": "crimsonland.exe",

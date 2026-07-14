@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**387/2162** functions matched, **46949/675654** code bytes (**6.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**395/2162** functions matched, **47483/675654** code bytes (**7.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 255/987 | 27502/385757 | 7.1% | 255/285 |
+| crimsonland.exe | 263/987 | 28036/385757 | 7.3% | 263/293 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**255/987** functions, **27502/385757** bytes (**7.1%**), **255/285** scratches verified.
+**263/987** functions, **28036/385757** bytes (**7.3%**), **263/293** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -121,6 +121,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
+| match | vorbis_mem_read | 0x0041dce0 | 88 | 37/37 | 100.00% | 37/37 | 0/0/0 |  | vorbis-memory-read-callback |
+| match | vorbis_mem_seek | 0x0041dd40 | 66 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | vorbis-memory-seek-callback |
+| match | vorbis_mem_close_callback | 0x0041dd90 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | vorbis-memory-close-callback |
+| match | vorbis_mem_tell | 0x0041dda0 | 8 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | vorbis-memory-tell-callback |
+| match | vorbis_pcm_seek | 0x0041ddb0 | 22 | 8/8 | 100.00% | 8/8 | 1/0/0 |  | vorbis-pcm-seek-wrapper |
+| match | vorbis_mem_open | 0x0041ddd0 | 260 | 91/91 | 100.00% | 91/91 | 13/0/0 |  | vorbis-memory-stream-open |
+| match | vorbis_mem_close | 0x0041dee0 | 29 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | vorbis-memory-stream-close |
+| match | vorbis_read_pcm16 | 0x0041df00 | 55 | 22/22 | 100.00% | 22/22 | 1/0/0 |  | vorbis-pcm16-decode |
 | match | game_is_full_version | 0x0041df40 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
 | match | demo_trial_time_limit_ms | 0x0041df50 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | demo-trial-duration |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |

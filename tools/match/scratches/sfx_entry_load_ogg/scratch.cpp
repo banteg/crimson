@@ -28,11 +28,11 @@ extern "C" unsigned char sfx_entry_load_ogg(
     }
 
     memset(entry, 0, sizeof(WAVEFORMATEX));
-    entry->channels = stream.channels;
+    entry->channels = stream.info.channels;
     entry->format_tag = WAVE_FORMAT_PCM;
     entry->block_align = entry->channels * 16 / 8;
-    entry->avg_bytes_per_sec = entry->block_align * stream.sample_rate;
-    entry->sample_rate = stream.sample_rate;
+    entry->avg_bytes_per_sec = entry->block_align * stream.info.rate;
+    entry->sample_rate = stream.info.rate;
     entry->bits_per_sample = 16;
     entry->cb_size = 0;
     entry->pcm_bytes = stream.total_pcm_bytes;

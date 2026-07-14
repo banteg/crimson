@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <dsound.h>
+#include <vorbis/vorbisfile.h>
 
 #include "crimsonland_console.h"
 #include "crimsonland_types.h"
@@ -22,25 +23,39 @@ extern music_entry_t music_entry_table[];
 extern sfx_voice_table_t sfx_voice_table;
 
 #ifdef __cplusplus
+struct vorbis_memory_source_t {
+    unsigned int size;
+    long cursor;
+    unsigned char data[1];
+};
+
 struct vorbis_stream_t {
-    unsigned char _opaque0[0x2e4];
+    ov_callbacks callbacks;
+    OggVorbis_File file;
+    int bitstream;
     unsigned int total_pcm_bytes;
     unsigned int source_data_offset;
     void *memory_source;
-    int info_version;
-    int channels;
-    int sample_rate;
-    int bitrate_upper;
-    int bitrate_nominal;
-    int bitrate_lower;
-    int bitrate_window;
-    void *codec_setup;
+    vorbis_info info;
 
     unsigned char open(void *buffer, unsigned int size);
-    int read_pcm16(char *dst, int bytes);
+    int read_pcm16(void *dst, int bytes);
     int pcm_seek(unsigned int sample_offset);
     void close(void);
 };
+
+extern "C" long vorbis_mem_tell(void *datasource);
+extern "C" unsigned int vorbis_mem_read(
+    void *dst,
+    unsigned int size,
+    unsigned int count,
+    void *datasource);
+extern "C" int vorbis_mem_seek(
+    void *datasource,
+    ogg_int64_t offset,
+    int whence);
+extern "C" int vorbis_mem_close_callback(void *datasource);
+extern "C" int crt_printf(char *format, ...);
 
 struct sfx_entry_cpp_t : sfx_entry_t {
     sfx_entry_cpp_t *reset_runtime_state(void);

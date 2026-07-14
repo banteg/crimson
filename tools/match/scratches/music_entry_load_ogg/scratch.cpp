@@ -29,9 +29,9 @@ extern "C" unsigned char music_entry_load_ogg(
     memset(entry, 0, sizeof(WAVEFORMATEX));
     entry->format_tag = WAVE_FORMAT_PCM;
     entry->channels =
-        ((vorbis_stream_t *)entry->vorbis_stream)->channels;
+        ((vorbis_stream_t *)entry->vorbis_stream)->info.channels;
     entry->sample_rate =
-        ((vorbis_stream_t *)entry->vorbis_stream)->sample_rate;
+        ((vorbis_stream_t *)entry->vorbis_stream)->info.rate;
     entry->bits_per_sample = 16;
     entry->block_align = entry->channels * 16 / 8;
     entry->cb_size = 0;
