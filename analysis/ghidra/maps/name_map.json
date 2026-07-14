@@ -6054,8 +6054,8 @@
     "program": "grim.dll",
     "address": "0x1000a670",
     "name": "grim_mouse_poll",
-    "signature": "int grim_mouse_poll(void)",
-    "comment": "polls the mouse device and updates cached position/delta"
+    "signature": "bool grim_mouse_poll(void)",
+    "comment": "exact-matched DirectInput mouse drain loop with cumulative position/delta updates and lost-device reacquisition"
   },
   {
     "program": "grim.dll",

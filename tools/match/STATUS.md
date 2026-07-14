@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**141/2161** functions matched, **17583/675651** code bytes (**2.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**142/2161** functions matched, **17934/675651** code bytes (**2.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 98/1175 | 11225/289897 | 3.9% | 98/99 |
+| grim.dll | 99/1175 | 11576/289897 | 4.0% | 99/100 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**98/1175** functions, **11225/289897** bytes (**3.9%**), **98/99** scratches verified.
+**99/1175** functions, **11576/289897** bytes (**4.0%**), **99/100** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -181,4 +181,5 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_keyboard_shutdown | 0x1000a550 | 62 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-keyboard-shutdown |
 | match | grim_mouse_button_down | 0x1000a590 | 14 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-mouse-button-state |
 | match | grim_mouse_init | 0x1000a5a0 | 194 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
+| match | grim_mouse_poll | 0x1000a670 | 351 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
 | match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |

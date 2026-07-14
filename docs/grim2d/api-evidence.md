@@ -2506,6 +2506,31 @@ reproduces all 71 instructions, full prefix, and references `18/0/0`. As in
 keyboard initialization, the null-window `GetDesktopWindow` result is ignored.
 
 
+## grim.dll — mouse poll helper @ 0x1000a670
+
+- Confirmed name: `grim_mouse_poll`
+- Confirmed C++ signature: `bool grim_mouse_poll(void)`
+- Notes: drains relative DirectInput state into per-frame deltas and cumulative
+  position, then reacquires after failed state queries.
+
+Live Binary Ninja identifies a 351-byte function. It clears the three frame
+deltas and the 20-byte `DIMOUSESTATE2`, reads one state, then keeps clearing and
+reading while any of X, Y, or wheel motion remains. The post-incremented guard
+means samples numbered 0 through 100 are accumulated, for a maximum of 101
+reads. More than two processed samples invoke the no-op diagnostic with
+`"stall"` and the sample count.
+
+A failed state read skips cumulative-position updates, calls `Acquire` once,
+and repeats only while the result is `DIERR_INPUTLOST`; the function still
+returns true. Successful samples update cumulative X/Y and the newly proven
+float at `0x1005db4c`, now named `grim_mouse_wheel`.
+
+Ordinary C++ reproduces all 90 native instructions and all 42 masked references
+under the stock MSVC 6.5 profile. Resetting the frame deltas before zeroing the
+device state is semantically natural and reproduces the native instruction
+schedule without volatility or artificial state.
+
+
 ## grim.dll — mouse shutdown helper @ 0x1000a7d0
 
 - Confirmed name: `grim_mouse_shutdown`

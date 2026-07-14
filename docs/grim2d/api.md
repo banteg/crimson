@@ -70,8 +70,10 @@ We also generate an evidence appendix with callsite snippets:
 
 - `grim_mouse_init` (`0x1000a5a0`) / `grim_mouse_poll` (`0x1000a670`) / `grim_mouse_shutdown`
   (`0x1000a7d0`) manage the DirectInput mouse device. Initialization installs the Mouse2
-  data format and cooperative flags 5 before acquiring and polling. Shutdown mirrors the keyboard path:
-  unacquire/release the device, then release the parent DirectInput interface.
+  data format and cooperative flags 5 before acquiring and polling. Each poll drains up to 101
+  relative-motion samples into the frame deltas, cumulative XY position, and cumulative wheel
+  position; failed state reads reacquire while DirectInput reports input loss. Shutdown mirrors
+  the keyboard path: unacquire/release the device, then release the parent DirectInput interface.
 
 - `grim_joystick_up_active` (`0x10006ea0`) through
   `grim_joystick_right_active` (`0x10006f90`) compare centered X/Y axis values

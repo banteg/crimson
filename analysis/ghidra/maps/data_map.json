@@ -10327,6 +10327,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005db4c",
+      "comment": "Cumulative mouse wheel position updated from each poll delta.",
+      "name": "grim_mouse_wheel",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1005db50",
       "comment": "Mouse delta X (pixels) accumulated per poll.",
       "name": "grim_mouse_dx",
