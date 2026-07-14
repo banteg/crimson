@@ -1,6 +1,6 @@
 #include "grim_texture.h"
 
-bool grim_load_texture_internal(char *name, unsigned short *path)
+bool grim_load_texture_internal(char *name, char *path)
 {
     int handle = grim_find_free_texture_slot();
     if (handle == -1) {

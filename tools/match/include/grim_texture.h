@@ -15,7 +15,7 @@ struct GrimTexture {
     GrimTexture(char *name);
     ~GrimTexture(void);
     bool grim_texture_name_equals(char *name);
-    bool grim_texture_load_file(unsigned short *path);
+    bool grim_texture_load_file(char *path);
 };
 
 extern GrimTexture *grim_texture_slots[256];
@@ -36,7 +36,7 @@ extern char *grim_error_text;
 extern "C" int grim_find_texture_by_name(char *name);
 extern "C" int grim_find_free_texture_slot(void);
 bool grim_is_texture_format_supported(D3DFORMAT format);
-bool grim_load_texture_internal(char *name, unsigned short *path);
+bool grim_load_texture_internal(char *name, char *path);
 void grim_release_geometry_buffers(void);
 extern "C" int __stdcall D3DXSaveTextureToFileA(
     char *path, int format, IDirect3DBaseTexture8 *texture, void *palette);

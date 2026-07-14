@@ -5373,8 +5373,9 @@
     "program": "grim.dll",
     "address": "0x10004ec0",
     "name": "grim_texture_load_file",
-    "signature": "int grim_texture_load_file(void *texture, ushort *path)",
-    "comment": "loads texture data from file path"
+    "aliases": ["?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"],
+    "signature": "bool __thiscall grim_texture_load_file(void *texture, char *path)",
+    "comment": "loads an ANSI-path texture from the lookup blob or disk, including JAZ decode"
   },
   {
     "program": "grim.dll",
@@ -5401,7 +5402,7 @@
     "program": "grim.dll",
     "address": "0x100051e0",
     "name": "grim_load_texture_internal",
-    "signature": "int grim_load_texture_internal(char *name, ushort *path)",
+    "signature": "int grim_load_texture_internal(char *name, char *path)",
     "comment": "allocates texture slot and loads file"
   },
   {
@@ -5424,6 +5425,14 @@
     "name": "grim_lookup_blob_find",
     "signature": "char * grim_lookup_blob_find(char *path)",
     "comment": "walks the loaded lookup blob and returns the payload for an exact path match"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005b80",
+    "name": "grim_lookup_blob_size_for_path",
+    "signature": "unsigned int grim_lookup_blob_size_for_path(char *path)",
+    "comment": "walks the loaded lookup blob and returns the payload byte count for an exact path match",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -6334,9 +6343,9 @@
   {
     "program": "grim.dll",
     "address": "0x1000cb9c",
-    "name": "FUN_1000cb9c",
-    "signature": "int FUN_1000cb9c(int** arg1, int* arg2, int arg3, int arg4, int arg5, int arg6, void* arg7, int arg8, int arg9, int** arg10, int arg11, int arg12, int arg13, int arg14)",
-    "comment": "[binja] int32_t __stdcall sub_1000cb9c(int32_t** arg1, int32_t* arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, void* arg7, int32_t arg8, int32_t arg9, int32_t** arg10, int32_t arg11, int32_t arg12, int32_t arg13, int32_t arg14)",
+    "name": "D3DXCreateTextureFromFileExA",
+    "signature": "int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8* device, char* path, unsigned int width, unsigned int height, unsigned int mip_levels, unsigned long usage, D3DFORMAT format, D3DPOOL pool, unsigned long filter, unsigned long mip_filter, unsigned long color_key, void* source_info, PALETTEENTRY* palette, IDirect3DTexture8** texture)",
+    "comment": "D3DX8 ANSI extended file texture loader wrapper; maps the file and forwards all 14 public arguments to the in-memory implementation",
     "create": false
   },
   {

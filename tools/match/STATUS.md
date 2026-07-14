@@ -9,7 +9,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 44/986 | 6691/385754 | 1.7% | 44/59 |
-| grim.dll | 129/1175 | 18109/289897 | 6.2% | 129/135 |
+| grim.dll | 129/1175 | 18109/289897 | 6.2% | 129/136 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**129/1175** functions, **18109/289897** bytes (**6.2%**), **129/135** scratches verified.
+**129/1175** functions, **18109/289897** bytes (**6.2%**), **129/136** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -109,6 +109,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_path_has_extension | 0x10004b00 | 99 | 50/50 | 100.00% | 50/50 | 0/0/0 |  | grim-texture-extension |
 | wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 252/252 | 86.51% | 32/252 | 6/15/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
 | match | grim_jaz_jpeg_error_exit | 0x10004e90 | 41 | 14/14 | 100.00% | 14/14 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-jaz-jpeg-error |
+| wip | grim_texture_load_file | 0x10004ec0 | 591 | 223/235 | 64.19% | 0/235 | 24/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-texture-file-decode |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
 | match | grim_find_texture_by_name | 0x10005170 | 68 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
 | match | grim_find_free_texture_slot | 0x100051c0 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
