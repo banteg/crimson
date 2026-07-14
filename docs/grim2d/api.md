@@ -180,6 +180,8 @@ Validation highlights (see the evidence appendix for snippets):
   `grim_run_loop`; despite the provisional name, slot `0x1c` owns the Win32
   message pump and Direct3D frame loop rather than a settings-only operation.
 - `grim_init_system` initializes D3D and input devices, then loads `smallFnt.dat`.
+- `grim_shutdown` exactly tears down the optional lookup blob, DirectInput
+  devices, Direct3D resources, and the main window in that order.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
 - `grim_get_config_float` exactly maps six IDs to scaled joystick axes,
   `0x15f`/`0x160` to direct mouse X/Y delta, and two three-ID ranges to the
@@ -321,7 +323,7 @@ These offsets appear with keycodes or input-related values:
 | `0xc` | `check_device` | `int check_device(void)` | high | returns a D3D status code (negative values masked) |
 | `0x10` | `apply_config` | `bool apply_config(void)` | high | opens D3D config dialog and applies settings |
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
-| `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
+| `0x18` | `shutdown` | `void shutdown(void)` | high | exact ordered teardown of lookup, input, Direct3D, and window resources |
 | `0x1c` | `apply_settings` | `bool apply_settings(void)` | high | exact wrapper around the Win32/D3D run loop; public name remains provisional |
 | `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | high | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
 | `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |

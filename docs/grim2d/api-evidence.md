@@ -136,7 +136,9 @@ grim.dll body:
 
 ## 0x18 — grim_shutdown @ 0x10005ff0
 
-- Ghidra signature: `void grim_shutdown(void)`
+- Confirmed C++ signature: `void grim_shutdown(void)`
+- Notes: exact-matched teardown of the optional lookup blob, mouse, keyboard,
+  joystick, Direct3D resources, and window, in that order
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: crimsonland_main (`FUN_0042c450`):L19599
 - First callsite: crimsonland_main (`FUN_0042c450`) (line 21736)
@@ -148,6 +150,17 @@ grim.dll body:
   (**(code **)(*DAT_0048083c + 0x18))();
   FUN_00402860(0x47eea0);
   (**(code **)*DAT_0048083c)();
+```
+
+grim.dll body:
+
+```c
+  grim_lookup_blob_load(&grim_empty_string);
+  grim_mouse_shutdown();
+  grim_keyboard_shutdown();
+  grim_joystick_shutdown();
+  grim_d3d_shutdown();
+  grim_window_destroy();
 ```
 
 

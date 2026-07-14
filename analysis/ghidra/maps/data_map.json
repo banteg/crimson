@@ -10220,6 +10220,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x1005d828",
+      "comment": "Shared zero-filled string sentinel used for empty paths and error text.",
+      "name": "grim_empty_string",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005d830",
       "comment": "Joystick state buffer (DIJOYSTATE2).",
       "name": "grim_joystick_state",
