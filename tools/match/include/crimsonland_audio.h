@@ -1,0 +1,65 @@
+#ifndef CRIMSONLAND_AUDIO_H
+#define CRIMSONLAND_AUDIO_H
+
+#include <windows.h>
+#include <dsound.h>
+
+#include "crimsonland_types.h"
+
+extern LPDIRECTSOUND dsound_iface;
+extern sfx_entry_t sfx_entry_table[];
+extern music_entry_t music_entry_table[];
+
+#ifdef __cplusplus
+struct vorbis_stream_t {
+    int pcm_seek(unsigned int sample_offset);
+    void close(void);
+};
+
+struct sfx_entry_cpp_t : sfx_entry_t {
+    sfx_entry_cpp_t *reset_runtime_state(void);
+};
+
+struct console_queue_t {
+    unsigned char flush_log(char *filename);
+};
+
+extern console_queue_t console_log_queue;
+
+#else
+
+typedef struct console_queue_t console_queue_t;
+extern console_queue_t console_log_queue;
+
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern crimson_cfg_t config_blob;
+extern cvar_float_t *cv_verbose;
+extern unsigned char audio_suspend_flag;
+extern unsigned char sfx_unmuted_flag;
+extern sfx_mute_flags_t sfx_mute_flags;
+
+unsigned char console_printf(console_queue_t *queue, char *format, ...);
+void crt_free(void *ptr);
+void dsound_shutdown(void);
+void sfx_release_entry(sfx_entry_t *entry);
+void sfx_release_all(void);
+void music_release_all(void);
+void sfx_entry_resume(sfx_entry_t *entry);
+void sfx_entry_seek(sfx_entry_t *entry, unsigned int sample_offset);
+void sfx_entry_stop(sfx_entry_t *entry);
+void sfx_entry_set_volume(sfx_entry_t *entry, float volume);
+void audio_suspend_channels(void);
+void audio_resume_channels(void);
+unsigned char audio_resume_all(void);
+unsigned char audio_suspend_all(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -255,8 +255,11 @@
     "program": "crimsonland.exe",
     "address": "0x00402860",
     "name": "console_flush_log",
-    "signature": "int console_flush_log(void *console_state, char *filename)",
-    "comment": "flushes console lines to the log file"
+    "aliases": [
+      "?flush_log@console_queue_t@@QAEEPAD@Z"
+    ],
+    "signature": "unsigned char __thiscall console_flush_log(void *console_state, char *filename)",
+    "comment": "member-style console-log flush; console state is passed in ECX"
   },
   {
     "program": "crimsonland.exe",
@@ -1278,8 +1281,11 @@
     "program": "crimsonland.exe",
     "address": "0x0041ddb0",
     "name": "vorbis_pcm_seek",
-    "signature": "int vorbis_pcm_seek(void *stream, uint sample_offset)",
-    "comment": "wrapper around ov_pcm_seek for memory stream"
+    "aliases": [
+      "?pcm_seek@vorbis_stream_t@@QAEHI@Z"
+    ],
+    "signature": "int __thiscall vorbis_pcm_seek(void *stream, unsigned int sample_offset)",
+    "comment": "member-style wrapper around ov_pcm_seek for memory stream; stream object is passed in ECX"
   },
   {
     "program": "crimsonland.exe",
@@ -1292,8 +1298,11 @@
     "program": "crimsonland.exe",
     "address": "0x0041dee0",
     "name": "vorbis_mem_close",
-    "signature": "void vorbis_mem_close(void *stream)",
-    "comment": "frees memory buffer and ov_clear"
+    "aliases": [
+      "?close@vorbis_stream_t@@QAEXXZ"
+    ],
+    "signature": "void __thiscall vorbis_mem_close(void *stream)",
+    "comment": "member-style close that frees the memory buffer and calls ov_clear; stream object is passed in ECX"
   },
   {
     "program": "crimsonland.exe",
@@ -2511,8 +2520,11 @@
     "program": "crimsonland.exe",
     "address": "0x0043b810",
     "name": "sfx_entry_reset_runtime_state",
-    "signature": "void * sfx_entry_reset_runtime_state(void *entry)",
-    "comment": "clears per-voice/runtime playback state fields in an sfx entry (stream offsets, dsound voice pointers, and default gain)"
+    "aliases": [
+      "?reset_runtime_state@sfx_entry_cpp_t@@QAEPAU1@XZ"
+    ],
+    "signature": "sfx_entry_cpp_t * __thiscall sfx_entry_reset_runtime_state(sfx_entry_cpp_t *entry)",
+    "comment": "member-style initializer that clears stream offsets, DirectSound buffer pointers, and default gain while leaving buffer_in_use untouched"
   },
   {
     "program": "crimsonland.exe",

@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**227/2161** functions matched, **30757/675651** code bytes (**4.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**239/2161** functions matched, **31482/675651** code bytes (**4.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 95/986 | 11310/385754 | 2.9% | 95/108 |
+| crimsonland.exe | 107/986 | 12035/385754 | 3.1% | 107/121 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**95/986** functions, **11310/385754** bytes (**2.9%**), **95/108** scratches verified.
+**107/986** functions, **12035/385754** bytes (**3.1%**), **107/121** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -73,6 +73,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
+| match | audio_resume_all | 0x0042a5f0 | 54 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
+| match | audio_suspend_all | 0x0042a630 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | console_cmd_tell_time_survived | 0x0042a860 | 37 | 9/9 | 100.00% | 9/9 | 6/0/0 |  | console-survival-time |
 | match | reg_read_dword_default | 0x0042a980 | 58 | 23/23 | 100.00% | 23/23 | 1/0/0 |  | registry-dword-read |
 | match | reg_write_dword | 0x0042a9c0 | 37 | 14/14 | 100.00% | 14/14 | 1/0/0 |  | registry-dword-write |
@@ -99,6 +101,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
+| match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_seek | 0x0043b870 | 10 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_read_u16 | 0x0043b880 | 25 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
@@ -109,8 +112,18 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | resource_pack_set | 0x0043b980 | 95 | 37/37 | 100.00% | 37/37 | 7/0/0 |  | resource-pack-selection |
 | match | resource_open_read | 0x0043b9e0 | 233 | 88/88 | 100.00% | 88/88 | 21/0/0 |  | resource-pack-lookup |
 | match | resource_close | 0x0043bad0 | 17 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | resource-file-lifecycle |
+| match | dsound_shutdown | 0x0043bc20 | 26 | 8/8 | 100.00% | 8/8 | 2/0/0 |  | audio-directsound-lifecycle |
 | match | resource_read_alloc | 0x0043bca0 | 75 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
+| match | sfx_entry_seek | 0x0043be20 | 56 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
+| match | sfx_entry_resume | 0x0043bf40 | 27 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
+| match | sfx_entry_stop | 0x0043bf60 | 60 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
+| wip | sfx_entry_set_volume | 0x0043bfa0 | 120 | 45/45 | 86.67% | 2/45 | 5/0/0 |  | audio-entry-volume |
+| match | sfx_release_entry | 0x0043c090 | 119 | 52/52 | 100.00% | 52/52 | 4/0/0 |  | audio-entry-lifecycle |
+| match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
+| match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
+| match | audio_suspend_channels | 0x0043d730 | 58 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
+| match | audio_resume_channels | 0x0043d770 | 73 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |

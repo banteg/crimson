@@ -108,7 +108,7 @@ typedef struct audio_entry_t {
     unsigned int pcm_bytes;
     unsigned int stream_cursor;
     float volume;
-    void *buffers[16];
+    LPDIRECTSOUNDBUFFER buffers[16];
     unsigned char buffer_in_use[16];
     void *vorbis_stream;
     unsigned int stream_fill_bytes;
