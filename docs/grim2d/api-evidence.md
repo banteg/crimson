@@ -318,7 +318,7 @@ grim.dll body:
 
 ## 0x30 — grim_set_render_target @ 0x10006d50
 
-- Ghidra signature: `int grim_set_render_target(int target_index)`
+- Recovered signature: `bool grim_set_render_target(int target_index)`
 - Notes: called with `-1` to restore the backbuffer
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_00417b80:L9209; FUN_00417b80:L9333; terrain_generate_random:L9446; terrain_generate_random:L9563; fx_queue_render (`FUN_00427920`):L17949; fx_queue_render (`FUN_00427920`):L18035
@@ -332,6 +332,22 @@ grim.dll body:
   iStack_8c = 0x3f800000;
   uStack_90 = 0x3dc8c8c9;
 ```
+
+The recovered grim.dll method caches and restores the backbuffer around
+texture-backed render targets:
+
+```c++
+if (target_index < 0) {
+    // Release the active texture surface and restore the cached backbuffer.
+} else {
+    // Cache GetRenderTarget(), acquire texture mip level zero, then call
+    // SetRenderTarget().
+}
+```
+
+The native failure paths only clear `AL`, confirming the `bool` return ABI.
+The full recovered method matches all 89 native instructions and all 19
+references under MSVC 6.5 `/O2 /GB`.
 
 
 ## 0x34 — grim_get_time_ms @ 0x10006e40

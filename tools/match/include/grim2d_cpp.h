@@ -25,7 +25,7 @@ public:
     virtual grim_config_value_t grim_get_config_var(int id) = 0;
     virtual char *grim_get_error_text(void) = 0;
     virtual void grim_clear_color(float r, float g, float b, float a) = 0;
-    virtual int grim_set_render_target(int target_index) = 0;
+    virtual bool grim_set_render_target(int target_index) = 0;
     virtual int grim_get_time_ms(void) = 0;
     virtual void grim_set_time_ms(int ms) = 0;
     virtual float grim_get_frame_dt(void) = 0;
