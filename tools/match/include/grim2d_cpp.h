@@ -6,6 +6,7 @@ struct grim_config_value_t {
 
     grim_config_value_t() {}
     grim_config_value_t(unsigned int value) { words[0] = value; }
+    grim_config_value_t(float value) { *(float *)words = value; }
     grim_config_value_t(bool value) { *(bool *)words = value; }
     grim_config_value_t(char *value) { words[3] = (unsigned int)value; }
 };
