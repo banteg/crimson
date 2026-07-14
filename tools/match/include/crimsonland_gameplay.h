@@ -157,6 +157,7 @@ extern highscore_record_t highscore_active_record;
 extern highscore_record_t highscore_table[];
 extern char default_player_name[];
 extern game_mode_id_t config_game_mode;
+extern unsigned char config_hardcore;
 extern int quest_stage_major;
 extern int quest_stage_minor;
 extern int quest_unlock_index;
@@ -166,6 +167,7 @@ extern char registry_key_status_root_path[];
 extern unsigned int game_sequence_id;
 
 extern weapon_stats_t weapon_table[];
+extern weapon_usage_time_t weapon_usage_time;
 extern perk_meta_t perk_meta_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
 extern projectile_pool_t projectile_pool;
