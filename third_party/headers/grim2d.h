@@ -56,7 +56,7 @@ struct IGrim2D_vtbl {
     /* 0x09c */ int (__stdcall *grim_get_joystick_y)(void);
     /* 0x0a0 */ int (__stdcall *grim_get_joystick_z)(void);
     /* 0x0a4 */ int (__stdcall *grim_get_joystick_pov)(int index);
-    /* 0x0a8 */ int (__stdcall *grim_is_joystick_button_down)(int button);
+    /* 0x0a8 */ unsigned char (__stdcall *grim_is_joystick_button_down)(int button);
     /* 0x0ac */ int (__stdcall *grim_create_texture)(char * name, int width, int height);
     /* 0x0b0 */ int (__stdcall *grim_recreate_texture)(int handle);
     /* 0x0b4 */ int (__stdcall *grim_load_texture)(char * name, char * path);

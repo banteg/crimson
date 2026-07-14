@@ -5621,8 +5621,8 @@
     "program": "grim.dll",
     "address": "0x100075c0",
     "name": "grim_is_joystick_button_down",
-    "signature": "int grim_is_joystick_button_down(int button)",
-    "comment": "Grim2D vtable 0xa8 (provisional): joystick button state"
+    "signature": "unsigned char grim_is_joystick_button_down(int button)",
+    "comment": "Grim2D vtable 0xa8: forwards the low-byte-indexed joystick button state"
   },
   {
     "program": "grim.dll",
@@ -5939,6 +5939,13 @@
     "name": "grim_joystick_poll",
     "signature": "int grim_joystick_poll(void)",
     "comment": "polls the joystick device and updates cached state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a310",
+    "name": "grim_joystick_button_down",
+    "signature": "unsigned char grim_joystick_button_down(unsigned int button)",
+    "comment": "returns bit 7 of the low-byte-indexed DIJOYSTATE2 button"
   },
   {
     "program": "grim.dll",

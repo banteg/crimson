@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**95/2161** functions matched, **12241/675651** code bytes (**1.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**101/2161** functions matched, **12308/675651** code bytes (**1.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 52/1175 | 5883/289897 | 2.0% | 52/52 |
+| grim.dll | 58/1175 | 5950/289897 | 2.1% | 58/58 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**52/1175** functions, **5883/289897** bytes (**2.0%**), **52/52** scratches verified.
+**58/1175** functions, **5950/289897** bytes (**2.1%**), **58/58** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -103,6 +103,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_get_mouse_y | 0x10007520 | 7 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-position |
 | match | grim_set_mouse_pos | 0x10007530 | 37 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | grim-mouse-position |
 | match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |
+| match | grim_get_joystick_x | 0x10007580 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_y | 0x10007590 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_z | 0x100075a0 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_pov | 0x100075b0 | 14 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-joystick-state |
+| match | grim_is_joystick_button_down | 0x100075c0 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-wrapper |
 | match | grim_bind_texture | 0x10007830 | 58 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
 | match | grim_draw_rect_filled | 0x100078e0 | 205 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
@@ -128,6 +133,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
 | match | grim_draw_text_small_fmt | 0x10009980 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
+| match | grim_joystick_button_down | 0x1000a310 | 19 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-state |
 | match | grim_keyboard_key_down | 0x1000a370 | 19 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-keyboard-state |
 | match | grim_keyboard_init | 0x1000a390 | 272 | 89/89 | 100.00% | 89/89 | 18/0/0 |  | grim-keyboard-init |
 | match | grim_keyboard_poll | 0x1000a4a0 | 165 | 60/60 | 100.00% | 60/60 | 9/0/0 |  | grim-keyboard-poll |

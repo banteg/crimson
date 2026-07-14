@@ -230,7 +230,7 @@ Runtime validation notes live in `runtime-validation.md`.
 | `0x98` | `grim_get_joystick_x` | `int grim_get_joystick_x(void)` |
 | `0x9c` | `grim_get_joystick_y` | `int grim_get_joystick_y(void)` |
 | `0xa0` | `grim_get_joystick_z` | `int grim_get_joystick_z(void)` |
-| `0xa8` | `grim_is_joystick_button_down` | `int grim_is_joystick_button_down(int button)` |
+| `0xa8` | `grim_is_joystick_button_down` | `unsigned char grim_is_joystick_button_down(int button)` |
 | `0xb0` | `grim_recreate_texture` | `int grim_recreate_texture(int handle)` |
 | `0xb8` | `grim_validate_texture` | `int grim_validate_texture(int handle)` |
 | `0xbc` | `grim_destroy_texture` | `void grim_destroy_texture(int handle)` |
@@ -336,7 +336,7 @@ These offsets appear with keycodes or input-related values:
 | `0x9c` | `get_joystick_y` | `int get_joystick_y(void)` | high | returns cached joystick Y |
 | `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | high | returns cached joystick Z |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | high | returns cached POV value |
-| `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | high | returns cached joystick button bit; no decompiled callsites yet |
+| `0xa8` | `is_joystick_button_down` | `uint8_t is_joystick_button_down(int button)` | high | returns bit 7 of the low-byte-indexed cached button |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | high | creates blank texture in a free slot |
 | `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | high | recreates D3D texture surface for handle |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |

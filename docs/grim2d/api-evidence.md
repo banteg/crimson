@@ -943,8 +943,8 @@ grim.dll body:
 
 ## 0xa8 — grim_is_joystick_button_down @ 0x100075c0
 
-- Ghidra signature: `int grim_is_joystick_button_down(int button)`
-- Suggested signature: `bool grim_is_joystick_button_down(int button)`
+- Previous Ghidra signature: `int grim_is_joystick_button_down(int button)`
+- Confirmed signature: `unsigned char grim_is_joystick_button_down(int button)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -956,6 +956,14 @@ grim.dll body:
   bVar1 = FUN_1000a310(button);
   return CONCAT31(extraout_var,bVar1);
 ```
+
+Live Binary Ninja identifies the callee as the 19-byte
+`grim_joystick_button_down`: it masks the argument to its low byte, reads
+`DIJOYSTATE2.rgbButtons[index]`, and shifts bit 7 into `AL`. The natural helper
+and public wrapper each match all 5 native instructions with references
+`1/0/0`. The absence of widening in the wrapper confirms a byte return rather
+than the earlier provisional `bool`/`int` declaration. The X/Y/Z accessors each
+match 2/2 instructions, and the unchecked POV array accessor matches 3/3.
 
 
 ## 0xac — grim_create_texture @ 0x100075d0
