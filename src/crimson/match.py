@@ -171,9 +171,10 @@ def load_reference_catalog(
             if entry.get("program") != manifest.image_name:
                 continue
             address = parse_int(entry["address"])
-            name = str(entry["name"])
-            if name not in names.setdefault(address, []):
-                names[address].append(name)
+            entry_names = (str(entry["name"]), *(str(alias) for alias in entry.get("aliases", [])))
+            for name in entry_names:
+                if name not in names.setdefault(address, []):
+                    names[address].append(name)
     if name_map_path is not None and name_map_path.exists():
         for entry in json.loads(name_map_path.read_text(encoding="utf-8")):
             if entry.get("program") != manifest.image_name:
@@ -541,6 +542,12 @@ def _canonical_symbol_name(name: str) -> str:
 
 def _symbol_lookup_name(name: str) -> str:
     canonical = _canonical_symbol_name(name)
+    if "@?1??" in canonical:
+        # Function-local C++ statics carry their complete enclosing function
+        # in the decorated symbol. Preserve that scope: reducing every VC6
+        # guard to `$S1` (or every local object to its field name) would make
+        # otherwise unrelated compiler locals collide in the symbol oracle.
+        return canonical
     if canonical.startswith("?") and (match := re.match(r"^\?([^@]+)@", canonical)):
         return match.group(1)
     return canonical

@@ -365,13 +365,13 @@ These offsets appear with keycodes or input-related values:
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |
 | `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | high | builds circle fan with sin/cos |
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | high | builds ring with sin/cos |
-| `0xe0` | `draw_line` | `void draw_line(const float *p0, const float *p1, float thickness)` | high | computes line quad then calls 0xe4 |
-| `0xe4` | `draw_line_quad` | `void draw_line_quad(const float *p0, const float *p1, const float *half_vec)` | high | draws quad from endpoints + half_vec |
+| `0xe0` | `draw_line` | `void draw_line(const float *p0, const float *p1, float thickness)` | confirmed | exact-matched local-static line-vector transform, then calls 0xe4 |
+| `0xe4` | `draw_line_quad` | `void draw_line_quad(const float *p0, const float *p1, const float *half_vec)` | confirmed | exact-matched quad expansion from endpoints + half_vec |
 | `0xec` | `flush_batch` | `void flush_batch(void)` | high | flushes batch when buffer fills |
 | `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
-| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | high | pushes 1 raw vertex; auto-flush |
-| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | high | pushes 4 raw vertices; auto-flush |
+| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | confirmed | exact-matched 28-byte vertex append; lazy begin + auto-flush |
+| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | confirmed | exact-matched 112-byte quad append; auto-flush |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index; extra args in decompiled callsites are ignored |

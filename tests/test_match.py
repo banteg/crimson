@@ -202,6 +202,30 @@ def test_load_reference_catalog_includes_curated_decorated_aliases(tmp_path: Pat
     )
 
 
+def test_load_reference_catalog_preserves_scoped_data_aliases(tmp_path: Path) -> None:
+    local_name = "?half_vector@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4UVector@@A"
+    data_map_path = tmp_path / "data_map.json"
+    data_map_path.write_text(
+        '{"entries":[{"program":"grim.dll","address":"0x1005A490",'
+        f'"name":"grim_line_dx","aliases":["{local_name}"]}}]}}\n',
+        encoding="utf-8",
+    )
+    manifest = FunctionManifest(image_name="grim.dll", image_base=0x10000000, functions=())
+
+    catalog = load_reference_catalog(
+        manifest,
+        functions_path=tmp_path / "missing-functions.json",
+        data_map_path=data_map_path,
+        name_map_path=tmp_path / "missing-name-map.json",
+    )
+
+    assert catalog.knows_name(f"_{local_name}")
+    assert catalog.keys_for_object_reference(f"_{local_name}", 4) == (
+        f"name:{local_name}+0x4",
+        "address:0x1005a494",
+    )
+
+
 def test_parse_and_extract_object_function() -> None:
     code = bytes.fromhex("8b442404c3") + bytes.fromhex("31c0c3")
     obj = parse_coff_object(build_object(code, [("_foo", 0), ("_bar", 5)], []))

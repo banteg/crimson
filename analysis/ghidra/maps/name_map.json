@@ -5778,14 +5778,24 @@
     "address": "0x100080b0",
     "name": "grim_draw_line",
     "signature": "void grim_draw_line(float *p0, float *p1, float thickness)",
-    "comment": "Grim2D vtable 0xe0 (provisional): builds line quad from endpoints"
+    "comment": "Grim2D vtable 0xe0: exact-matched local-static line vector normalization and thickness transform"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008140",
+    "name": "grim_line_vector_dtor",
+    "aliases": [
+      "$E2"
+    ],
+    "signature": "void grim_line_vector_dtor(void)",
+    "comment": "VC6 local-static destructor registered by grim_draw_line; empty body"
   },
   {
     "program": "grim.dll",
     "address": "0x10008150",
     "name": "grim_draw_line_quad",
     "signature": "void grim_draw_line_quad(float *p0, float *p1, float *half_vec)",
-    "comment": "Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector"
+    "comment": "Grim2D vtable 0xe4: exact-matched line quad expansion from endpoints and half-width vector"
   },
   {
     "program": "grim.dll",
@@ -5883,14 +5893,14 @@
     "address": "0x10008e30",
     "name": "grim_submit_vertex_raw",
     "signature": "void grim_submit_vertex_raw(float *vertex)",
-    "comment": "Grim2D vtable 0xf4: push 1 raw vertex (7 floats)"
+    "comment": "Grim2D vtable 0xf4: exact-matched 28-byte raw vertex append with lazy batch begin"
   },
   {
     "program": "grim.dll",
     "address": "0x10008eb0",
     "name": "grim_submit_quad_raw",
     "signature": "void grim_submit_quad_raw(float *verts)",
-    "comment": "Grim2D vtable 0xf8: push 4 raw vertices (28 floats)"
+    "comment": "Grim2D vtable 0xf8: exact-matched 112-byte raw quad append into an active batch"
   },
   {
     "program": "grim.dll",
@@ -6226,6 +6236,14 @@
     "name": "float_near_equal",
     "signature": "int float_near_equal(float a, float b)",
     "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cc39",
+    "name": "D3DXVec2Normalize",
+    "signature": "void *D3DXVec2Normalize(void *out, void *input)",
+    "comment": "D3DX8 import thunk used by grim_draw_line to normalize its local vector",
+    "create": false
   },
   {
     "program": "grim.dll",

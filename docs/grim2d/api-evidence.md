@@ -1418,29 +1418,39 @@ documented D3D8 calls, comparison branches, four vtable `draw_quad` calls, and
 
 ## 0xe0 — grim_draw_line @ 0x100080b0
 
-- Notes: builds a half-width vector from endpoints then forwards to `0xe4`
-- Ghidra signature: `void grim_draw_line(void *this, float *p0, float *p1, float thickness)`
-- Suggested signature: `void grim_draw_line(const float *p0, const float *p1, float thickness)`
+- Confirmed name: `draw_line`
+- Confirmed C++ signature: `void grim_draw_line(float *p0, float *p1, float thickness)`
+- Previous Ghidra signature: `void grim_draw_line(void *this, float *p0, float *p1, float thickness)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
 
 
-grim.dll body:
+Recovered source shape:
 
-```c
-  _DAT_1005a490 = *p1 - *p0;
-  _DAT_1005a494 = p1[1] - p0[1];
-  thunk_FUN_1000cc2c();
-  (**(code **)(*(int *)this + 0xe4))(p0,p1,&DAT_1005a490);
+```cpp
+static GrimLineVector half_vector;
+half_vector.x = p1[0] - p0[0];
+half_vector.y = p1[1] - p0[1];
+D3DXVec2Normalize(&half_vector, &half_vector);
+half_vector.x = half_vector.y * thickness;
+half_vector.y = half_vector.x * thickness;
+grim_draw_line_quad(p0, p1, &half_vector.x);
 ```
+
+The source matches all 40 native instructions (134 bytes; references
+`13/0/0`), including VC6's guard and `atexit` registration for the
+function-static vector. The linked thunk is `D3DXVec2Normalize`. The second
+component genuinely multiplies the already-scaled first component by
+`thickness`; the scratch preserves that observed behavior instead of silently
+turning it into a conventional perpendicular-vector formula.
 
 
 ## 0xe4 — grim_draw_line_quad @ 0x10008150
 
-- Notes: draws a quad from endpoints plus half-width vector
-- Ghidra signature: `void grim_draw_line_quad(void *this, float *p0, float *p1, float *half_vec)`
-- Suggested signature: `void grim_draw_line_quad(const float *p0, const float *p1, const float *half_vec)`
+- Confirmed name: `draw_line_quad`
+- Confirmed C++ signature: `void grim_draw_line_quad(float *p0, float *p1, float *half_vec)`
+- Previous Ghidra signature: `void grim_draw_line_quad(void *this, float *p0, float *p1, float *half_vec)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1453,6 +1463,10 @@ grim.dll body:
             (*p0 - *half_vec,p0[1] - half_vec[1],*p0 + *half_vec,p0[1] + half_vec[1],
              *p1 + *half_vec,p1[1] + half_vec[1],*p1 - *half_vec,p1[1] - half_vec[1]);
 ```
+
+The direct eight-float forwarding source matches all 42 native instructions
+(99 bytes; no masked references). It expands the two endpoints into four
+corners and calls vtable slot `0x138` (`grim_draw_quad_points`).
 
 
 ## 0xe8 — grim_begin_batch @ 0x10007ac0
@@ -1540,11 +1554,10 @@ count and skips only the draw call for an empty batch.
 
 ## 0xf4 — grim_submit_vertex_raw @ 0x10008e30
 
-- Provisional name: `submit_vertex_raw` (high)
-- Guess: `void submit_vertex_raw(const float *vertex)`
+- Confirmed name: `submit_vertex_raw`
+- Confirmed C++ signature: `void submit_vertex_raw(float *vertex)`
 - Notes: copies 7 floats and auto-flushes when the batch is full
-- Ghidra signature: `void grim_submit_vertex_raw(float *vertex)`
-- Suggested signature: `void grim_submit_vertex_raw(const float *vertex)`
+- Previous Ghidra signature: `void grim_submit_vertex_raw(float *vertex)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1567,14 +1580,18 @@ grim.dll body:
   }
 ```
 
+The recovered source matches all 35 native instructions (116 bytes;
+references `9/0/0`). It rejects disabled/unready rendering, lazily begins a
+batch, copies one 28-byte transformed/lit vertex, advances the cursor and
+low-word count, and flushes at capacity.
+
 
 ## 0xf8 — grim_submit_quad_raw @ 0x10008eb0
 
-- Provisional name: `submit_quad_raw` (high)
-- Guess: `void submit_quad_raw(const float *verts)`
+- Confirmed name: `submit_quad_raw`
+- Confirmed C++ signature: `void submit_quad_raw(float *verts)`
 - Notes: copies 28 floats (4 vertices) and auto-flushes when the batch is full
-- Ghidra signature: `void grim_submit_quad_raw(float *verts)`
-- Suggested signature: `void grim_submit_quad_raw(const float *verts)`
+- Previous Ghidra signature: `void grim_submit_quad_raw(float *verts)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1593,6 +1610,11 @@ grim.dll body:
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
+
+The recovered source matches all 25 native instructions (91 bytes;
+references `7/0/0`). This lower-level path checks only the render-disable byte,
+copies 112 bytes into an already active batch, advances by four vertices, and
+flushes at capacity.
 
 
 ## 0xfc — grim_set_rotation @ 0x10007f30

@@ -9326,6 +9326,9 @@
     },
     {
       "address": "0x10059bb4",
+      "aliases": [
+        "?$S1@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4EA"
+      ],
       "comment": "One-time flag used by grim_draw_line to register its shutdown hook.",
       "name": "grim_draw_line_init_flag",
       "program": "grim.dll"
@@ -9585,6 +9588,9 @@
     },
     {
       "address": "0x1005a490",
+      "aliases": [
+        "?half_vector@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4UGrimLineVector@@A"
+      ],
       "comment": "Line delta X used by draw helpers.",
       "name": "grim_line_dx",
       "program": "grim.dll"

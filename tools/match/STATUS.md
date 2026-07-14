@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**132/2161** functions matched, **14683/675651** code bytes (**2.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**136/2161** functions matched, **15123/675651** code bytes (**2.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 43/986 | 6358/385754 | 1.6% | 43/59 |
-| grim.dll | 89/1175 | 8325/289897 | 2.9% | 89/90 |
+| grim.dll | 93/1175 | 8765/289897 | 3.0% | 93/94 |
 
 ## crimsonland.exe
 
@@ -79,7 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**89/1175** functions, **8325/289897** bytes (**2.9%**), **89/90** scratches verified.
+**93/1175** functions, **8765/289897** bytes (**3.0%**), **93/94** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -144,6 +144,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_set_rotation | 0x10007f30 | 85 | 19/19 | 100.00% | 19/19 | 11/0/0 |  | grim2d-rotation-matrix |
 | match | grim_set_color | 0x10007f90 | 166 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
 | match | grim_set_color_ptr | 0x10008040 | 104 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |
+| match | grim_draw_line | 0x100080b0 | 134 | 40/40 | 100.00% | 40/40 | 13/0/0 |  | grim2d-line-vector |
+| match | grim_draw_line_quad | 0x10008150 | 99 | 42/42 | 100.00% | 42/42 | 0/0/0 |  | grim2d-line-quad |
 | match | grim_set_color_slot | 0x100081c0 | 109 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-packed-color-slot |
 | match | grim_set_atlas_frame | 0x10008230 | 139 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-frame |
 | match | grim_set_sub_rect | 0x100082c0 | 143 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-sub-rectangle |
@@ -156,6 +158,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_submit_vertices_offset | 0x10008680 | 153 | 50/50 | 100.00% | 50/50 | 8/0/0 |  | grim2d-vertex-submit-offset |
 | match | grim_draw_quad_xy | 0x10008720 | 34 | 14/14 | 100.00% | 14/14 | 0/0/0 |  | grim2d-quad-xy-wrapper |
 | match | grim_draw_quad | 0x10008b10 | 800 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |
+| match | grim_submit_vertex_raw | 0x10008e30 | 116 | 35/35 | 100.00% | 35/35 | 9/0/0 |  | grim2d-raw-vertex-submit |
+| match | grim_submit_quad_raw | 0x10008eb0 | 91 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
 | match | grim_draw_rect_outline | 0x10008f10 | 356 | 125/125 | 100.00% | 125/125 | 8/0/0 |  | grim2d-outlined-rectangle |
 | match | grim_draw_quad_points | 0x10009080 | 554 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
 | match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
