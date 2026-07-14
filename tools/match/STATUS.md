@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**308/2162** functions matched, **39598/675654** code bytes (**5.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**315/2162** functions matched, **39799/675654** code bytes (**5.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 176/987 | 20151/385757 | 5.2% | 176/200 |
+| crimsonland.exe | 183/987 | 20352/385757 | 5.3% | 183/207 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**176/987** functions, **20151/385757** bytes (**5.2%**), **176/200** scratches verified.
+**183/987** functions, **20352/385757** bytes (**5.3%**), **183/207** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -48,6 +48,13 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_api_gfx_quad | 0x0040e420 | 76 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | mod-api-graphics-quad |
 | match | mod_api_gfx_quad_rot | 0x0040e470 | 79 | 23/23 | 100.00% | 23/23 | 4/0/0 |  | mod-api-graphics-rotated-quad |
 | match | mod_api_gfx_draw_quads | 0x0040e4c0 | 100 | 26/26 | 100.00% | 26/26 | 5/0/0 |  | mod-api-graphics-quad-batch |
+| match | mod_api_sfx_load_sample | 0x0040e530 | 45 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | mod-api-audio-sample-load |
+| match | mod_api_sfx_free_sample | 0x0040e560 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-audio-sample-release |
+| match | mod_api_sfx_play_sample | 0x0040e570 | 51 | 14/14 | 100.00% | 14/14 | 2/0/0 |  | mod-api-audio-sample-play |
+| match | mod_api_sfx_load_tune | 0x0040e5b0 | 45 | 12/12 | 100.00% | 12/12 | 3/0/0 |  | mod-api-audio-tune-load |
+| match | mod_api_sfx_free_tune | 0x0040e5e0 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-audio-tune-release |
+| match | mod_api_sfx_play_tune | 0x0040e5f0 | 14 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-audio-tune-play |
+| match | mod_api_sfx_stop_tune | 0x0040e600 | 14 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-audio-tune-stop |
 | match | mod_api_inp_get_pressed_char | 0x0040e610 | 11 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | mod-api-input-character |
 | match | mod_api_inp_get_analog | 0x0040e620 | 54 | 14/14 | 100.00% | 14/14 | 3/0/0 |  | mod-api-input-analog |
 | match | mod_api_inp_key_down | 0x0040e660 | 32 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | mod-api-input-key-state |
