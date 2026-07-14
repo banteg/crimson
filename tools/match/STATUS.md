@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**211/2161** functions matched, **29427/675651** code bytes (**4.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**212/2161** functions matched, **29906/675651** code bytes (**4.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 79/986 | 9980/385754 | 2.6% | 79/92 |
+| crimsonland.exe | 80/986 | 10459/385754 | 2.7% | 80/93 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**79/986** functions, **9980/385754** bytes (**2.6%**), **79/92** scratches verified.
+**80/986** functions, **10459/385754** bytes (**2.7%**), **80/93** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -47,6 +47,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
 | wip | angle_approach | 0x0041f430 | 299 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
+| match | bonus_spawn_at | 0x0041f5b0 | 479 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
 | wip | bonus_spawn_at_pos | 0x0041f790 | 309 | 100/99 | 88.44% | 0/99 | 14/0/0 |  | gameplay-bonus-spawn |
 | wip | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 201/207 | 88.24% | 6/207 | 47/0/0 |  | gameplay-bonus-drop |
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |

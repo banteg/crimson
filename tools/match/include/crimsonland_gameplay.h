@@ -269,6 +269,7 @@ int crt_rand(void);
 void crt_free(void *ptr);
 char *strdup_malloc(char *src);
 bonus_entry_t *bonus_alloc_slot(void);
+bonus_entry_t *bonus_spawn_at(float *pos, bonus_id_t bonus_id, int duration_override);
 bonus_entry_t *bonus_spawn_at_pos(float *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
