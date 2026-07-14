@@ -22,6 +22,7 @@ DEFAULT_FUNCTIONS_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_
 DEFAULT_METADATA_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_NAME / "metadata.json"
 DEFAULT_IMAGE_PATH = DEFAULT_GAME_DIR / DEFAULT_IMAGE_NAME
 DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"
+DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
 CACHE_VERSION = 1
 
@@ -195,8 +196,17 @@ def load_function_manifest(
     *,
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     image_name: str | None = None,
+    name_map_path: Path | None = DEFAULT_NAME_MAP_PATH,
 ) -> FunctionManifest:
     rows = json.loads(Path(path).read_text(encoding="utf-8"))
+    resolved_image_name = image_name or Path(path).parent.name
+    name_overrides: dict[int, str] = {}
+    if name_map_path is not None and name_map_path.exists():
+        name_rows = json.loads(name_map_path.read_text(encoding="utf-8"))
+        for row in name_rows:
+            if row.get("program") != resolved_image_name:
+                continue
+            name_overrides[parse_int(row["address"])] = str(row["name"])
     functions: list[FunctionSymbol] = []
     for row in rows:
         if bool(row.get("external")) or bool(row.get("library")):
@@ -205,14 +215,14 @@ def load_function_manifest(
         end = parse_int(row["end"])
         functions.append(
             FunctionSymbol(
-                name=str(row["name"]),
+                name=name_overrides.get(address, str(row["name"])),
                 address=address,
                 end=end,
                 size=int(row.get("size") or max(0, end - address)),
             ),
         )
     return FunctionManifest(
-        image_name=image_name or Path(path).parent.name,
+        image_name=resolved_image_name,
         image_base=_load_image_base(metadata_path),
         functions=tuple(sorted(functions, key=lambda function: function.address)),
     )

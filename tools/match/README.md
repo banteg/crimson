@@ -172,6 +172,11 @@ all aligned masked references are proven equal. A 100% instruction score with
 unresolved or different references is `audit`, so it is excluded from matched
 function and byte totals. The `refs` column is `ok/unresolved/mismatch`.
 
+The function manifest is overlaid by exact program/address entries from
+`analysis/ghidra/maps/name_map.json`. This lets newly recovered function names
+participate in scratch selection and reference auditing immediately, without
+waiting for a full IDA artifact regeneration.
+
 Inspect exact-score reference debt with:
 
 ```sh

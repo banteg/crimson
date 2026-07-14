@@ -102,6 +102,33 @@ def test_resolve_function_accepts_address() -> None:
     assert function.name == "player_update"
 
 
+def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1000A310","end":"0x1000A323",'
+        '"name":"sub_1000A310","size":19}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1000A310",'
+        '"name":"grim_joystick_button_down"}]\n',
+        encoding="utf-8",
+    )
+
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=None,
+        image_name="grim.dll",
+        name_map_path=name_map_path,
+    )
+
+    function, start, end = resolve_function(manifest, "grim_joystick_button_down")
+    assert function.name == "grim_joystick_button_down"
+    assert start == 0x1000A310
+    assert end == 0x1000A323
+
+
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
