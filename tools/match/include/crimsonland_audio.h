@@ -46,6 +46,7 @@ struct sfx_entry_cpp_t : sfx_entry_t {
 
 struct console_queue_t {
     unsigned char flush_log(char *filename);
+    unsigned char exec_line(char *line);
 };
 
 extern console_queue_t console_log_queue;
@@ -63,14 +64,26 @@ extern "C" {
 
 extern crimson_cfg_t config_blob;
 extern cvar_float_t *cv_verbose;
+extern cvar_float_t *cv_silentloads;
 extern unsigned char audio_suspend_flag;
 extern unsigned char sfx_unmuted_flag;
 extern unsigned char music_playlist_randomized_latch;
+extern unsigned char audio_resource_pack_available;
+extern int audio_assets_loaded_count;
 extern float frame_dt_copy;
+extern float frame_dt;
+extern DWORD sfx_rate_scale;
 extern sfx_cooldown_table_t sfx_cooldown_table;
+extern sfx_volume_table_t sfx_volume_table;
 extern sfx_mute_flags_t sfx_mute_flags;
 extern music_playlist_t music_playlist;
 extern int music_playlist_entry_count;
+extern int music_track_intro_id;
+extern int music_track_shortie_monk_id;
+extern int music_track_crimson_theme_id;
+extern int music_track_extra_0;
+extern int music_track_extra_1;
+extern int music_track_crimsonquest_id;
 
 unsigned char console_printf(console_queue_t *queue, char *format, ...);
 void crt_free(void *ptr);
@@ -86,6 +99,7 @@ unsigned char sfx_is_unmuted(int sfx_id);
 void sfx_entry_resume(sfx_entry_t *entry);
 void sfx_entry_seek(sfx_entry_t *entry, unsigned int sample_offset);
 void sfx_entry_stop(sfx_entry_t *entry);
+int sfx_entry_start_playback(sfx_entry_t *entry);
 void sfx_entry_set_volume(sfx_entry_t *entry, float volume);
 unsigned char sfx_entry_upload_buffer(sfx_entry_t *entry);
 unsigned char sfx_entry_create_buffers(sfx_entry_t *entry);
@@ -96,11 +110,13 @@ unsigned char wav_parse_into_entry(
 unsigned char sfx_entry_load_wav(sfx_entry_t *entry, char *path);
 unsigned char sfx_entry_load_ogg(sfx_entry_t *entry, char *path);
 unsigned char music_entry_load_ogg(music_entry_t *entry, char *path);
+int music_load_track(char *path);
 unsigned char music_stream_fill(music_entry_t *entry);
 void music_stream_update(music_entry_t *entry);
 void audio_update(void);
 void sfx_mute_all(int sfx_id);
 void sfx_update_mute_fades(void);
+void audio_init_music(void);
 void audio_suspend_channels(void);
 void audio_resume_channels(void);
 unsigned char audio_resume_all(void);

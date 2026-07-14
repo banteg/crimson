@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**253/2161** functions matched, **33372/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**254/2161** functions matched, **33584/675651** code bytes (**5.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 121/986 | 13925/385754 | 3.6% | 121/136 |
+| crimsonland.exe | 122/986 | 14137/385754 | 3.7% | 122/140 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**121/986** functions, **13925/385754** bytes (**3.6%**), **121/136** scratches verified.
+**122/986** functions, **14137/385754** bytes (**3.7%**), **122/140** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -117,6 +117,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | resource_read_alloc | 0x0043bca0 | 75 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
 | wip | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 99/99 | 97.98% | 78/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
+| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 93/93 | 77.42% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_stop | 0x0043bf60 | 60 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
 | wip | sfx_entry_set_volume | 0x0043bfa0 | 120 | 45/45 | 86.67% | 2/45 | 5/0/0 |  | audio-entry-volume |
@@ -129,13 +130,16 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_stream_update | 0x0043c520 | 109 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | audio-music-stream-update |
 | match | music_stream_fill | 0x0043c590 | 221 | 86/86 | 100.00% | 86/86 | 4/0/0 |  | audio-music-stream-fill |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
+| wip | music_load_track | 0x0043c8d0 | 139 | 55/53 | 92.59% | 10/53 | 10/0/2 |  | music-track-slot-loader |
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
+| match | audio_init_music | 0x0043c9c0 | 212 | 51/51 | 100.00% | 51/51 | 29/0/0 |  | audio-music-initialization |
 | match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
 | match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
 | match | audio_update | 0x0043d3f0 | 102 | 32/32 | 100.00% | 32/32 | 10/0/0 |  | audio-frame-update |
 | match | sfx_mute_all | 0x0043d550 | 87 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
+| wip | sfx_update_mute_fades | 0x0043d5b0 | 374 | 116/118 | 83.76% | 3/118 | 26/0/0 |  | audio-mute-fade-state-machine |
 | match | audio_suspend_channels | 0x0043d730 | 58 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
 | match | audio_resume_channels | 0x0043d770 | 73 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
 | match | sfx_is_unmuted | 0x0043d7c0 | 30 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |

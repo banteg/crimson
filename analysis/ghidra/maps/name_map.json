@@ -171,6 +171,9 @@
     "program": "crimsonland.exe",
     "address": "0x00401940",
     "name": "console_exec_line",
+    "aliases": [
+      "?exec_line@console_queue_t@@QAE_NPAD@Z"
+    ],
     "signature": "char console_exec_line(char *line)",
     "comment": "executes a console command or cvar assignment from a line"
   },
@@ -3874,6 +3877,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461739",
     "name": "crt_srand",
+    "aliases": [
+      "srand"
+    ],
     "signature": "void crt_srand(uint seed)",
     "comment": "sets the per-thread RNG seed (srand)"
   },
@@ -3881,6 +3887,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461746",
     "name": "crt_rand",
+    "aliases": [
+      "rand"
+    ],
     "signature": "int crt_rand(void)",
     "comment": "returns a pseudo-random value using the per-thread seed (rand)"
   },
