@@ -2,24 +2,25 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**196/2161** functions matched, **28403/675651** code bytes (**4.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**197/2161** functions matched, **28476/675651** code bytes (**4.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 64/986 | 8956/385754 | 2.3% | 64/76 |
+| crimsonland.exe | 65/986 | 9029/385754 | 2.3% | 65/77 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**64/986** functions, **8956/385754** bytes (**2.3%**), **64/76** scratches verified.
+**65/986** functions, **9029/385754** bytes (**2.3%**), **65/77** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
 | match | console_input_clear | 0x00401030 | 18 | 5/5 | 100.00% | 5/5 | 3/0/0 |  | smoke |
 | match | console_input_buffer | 0x00401050 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | console_cmd_argc_get | 0x00401150 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |

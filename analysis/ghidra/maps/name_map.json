@@ -347,7 +347,7 @@
     "program": "crimsonland.exe",
     "address": "0x00403500",
     "name": "game_core_init",
-    "signature": "int game_core_init(void)",
+    "signature": "unsigned char game_core_init(void)",
     "comment": "initializes core game systems (quests, effects, UI assets) and sets initial state"
   },
   {
