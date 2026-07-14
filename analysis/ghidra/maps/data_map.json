@@ -1214,6 +1214,13 @@
       "type": "float"
     },
     {
+      "address": "0x0047ea48",
+      "comment": "Per-frame copy of frame_dt used by console animation and SFX cooldown decay.",
+      "name": "frame_dt_copy",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x0047ea50",
       "comment": "Global quit latch set by menu/console quit paths and consumed by the main frame loop.",
       "name": "quit_requested",

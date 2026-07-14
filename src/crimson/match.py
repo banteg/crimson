@@ -30,6 +30,7 @@ IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_STATIC = 3
 IMAGE_SCN_CNT_CODE = 0x00000020
+IMAGE_REL_I386_REL32 = 0x14
 SYM_TYPE_FUNCTION = 0x20
 PADDING_BYTES = b"\xcc\x90"
 PADDING_LINE_TEXT = {
@@ -312,6 +313,7 @@ class ObjectRelocationReference:
     explained: bool
     addend: int | None = None
     symbol_data: bytes | None = None
+    local_target_offset: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -834,6 +836,13 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
                     if symbol_section is not None and symbol_end is not None
                     else None
                 ),
+                local_target_offset=(
+                    symbol.value + addend - target.value
+                    if relocation.relocation_type == IMAGE_REL_I386_REL32
+                    and symbol.section_number == target.section_number
+                    and target.value <= symbol.value + addend < end
+                    else None
+                ),
             ),
         )
     return ObjectFunction(
@@ -1084,7 +1093,14 @@ def disassemble_normalized_function(
             elif operand.type == capstone.x86.X86_OP_IMM:
                 value = operand.imm
                 target_offset = value - base_address
-                if imm_masked:
+                if (
+                    imm_masked
+                    and is_branch
+                    and imm_relocation is not None
+                    and imm_relocation.local_target_offset is not None
+                ):
+                    operands.append(f"L{imm_relocation.local_target_offset:x}")
+                elif imm_masked:
                     operands.append("ADDR")
                     masked_references.append(
                         object_reference(

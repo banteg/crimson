@@ -325,6 +325,31 @@ def test_normalize_masks_relocated_call_targets() -> None:
     assert normalize_function(code)[0] == "call L5"
 
 
+def test_normalize_resolves_coff_rel32_self_call_as_local_label() -> None:
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=bytes.fromhex("e800000000c3"),
+                characteristics=0x20,
+                relocations=(CoffRelocation(1, 0, 0x14),),
+            ),
+        ),
+        symbols=(CoffSymbol(0, "_foo", 0, 1, 0x20, 2),),
+    )
+
+    function = extract_object_function(obj, "foo")
+    disassembly = disassemble_normalized_function(
+        function.data,
+        relocation_offsets=function.relocation_offsets,
+        relocation_references=function.relocation_references,
+    )
+
+    assert function.relocation_references[0].local_target_offset == 0
+    assert disassembly[0].text == "call L0"
+    assert disassembly[0].masked_references == ()
+
+
 def test_normalize_strips_untargeted_terminal_padding() -> None:
     code = bytes.fromhex("c3") + bytes.fromhex("8d4900") + (b"\x00" * 4) + (b"\x90" * 4)
     assert normalize_function(code) == ("ret",)

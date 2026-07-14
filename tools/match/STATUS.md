@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**251/2161** functions matched, **33183/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**253/2161** functions matched, **33372/675651** code bytes (**4.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 119/986 | 13736/385754 | 3.6% | 119/134 |
+| crimsonland.exe | 121/986 | 13925/385754 | 3.6% | 121/136 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**119/986** functions, **13736/385754** bytes (**3.6%**), **119/134** scratches verified.
+**121/986** functions, **13925/385754** bytes (**3.6%**), **121/136** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -134,6 +134,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | sfx_release_all | 0x0043d070 | 91 | 24/24 | 100.00% | 24/24 | 13/0/0 |  | audio-system-lifecycle |
 | match | music_release_all | 0x0043d0d0 | 55 | 16/16 | 100.00% | 16/16 | 7/0/0 |  | audio-system-lifecycle |
 | match | audio_shutdown_all | 0x0043d110 | 15 | 3/3 | 100.00% | 3/3 | 3/0/0 |  | audio-subsystem-teardown |
+| match | audio_update | 0x0043d3f0 | 102 | 32/32 | 100.00% | 32/32 | 10/0/0 |  | audio-frame-update |
+| match | sfx_mute_all | 0x0043d550 | 87 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
 | match | audio_suspend_channels | 0x0043d730 | 58 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
 | match | audio_resume_channels | 0x0043d770 | 73 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
 | match | sfx_is_unmuted | 0x0043d7c0 | 30 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |
