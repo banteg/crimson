@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**423/2164** functions matched, **49862/675674** code bytes (**7.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**426/2165** functions matched, **50025/675677** code bytes (**7.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 291/989 | 30415/385777 | 7.9% | 291/322 |
+| crimsonland.exe | 294/990 | 30578/385780 | 7.9% | 294/327 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**291/989** functions, **30415/385777** bytes (**7.9%**), **291/322** scratches verified.
+**294/990** functions, **30578/385780** bytes (**7.9%**), **294/327** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -127,17 +127,20 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_meta_table_destroy | 0x00412450 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
 | wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_reset_availability | 0x00412940 | 26 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
+| wip | game_mode_label | 0x00412960 | 176 | 53/69 | 75.41% | 6/69 | 9/0/1 |  | game-mode-display-label |
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
+| match | ui_template_slot_ctor_noop | 0x00417a90 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | ui-template-trivial-slot-constructor |
 | match | ui_template_block_set_mode4 | 0x00417aa0 | 13 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | ui-subtemplate-mode-init |
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | ui_draw_textured_quad | 0x00417ae0 | 158 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
 | wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
+| match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
 | match | grim_load_interface | 0x0041dc80 | 83 | 36/36 | 100.00% | 36/36 | 5/0/0 |  | grim-interface-loader |
@@ -180,6 +183,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | match | fx_queue_add_random | 0x00427700 | 291 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
+| match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |
 | match | creature_alloc_slot | 0x00428140 | 145 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |
 | match | creature_reset_all | 0x004281e0 | 46 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
@@ -228,6 +232,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
+| wip | quest_build_zombie_time | 0x00437d70 | 152 | 50/50 | 60.00% | 1/50 | 2/0/0 |  | quest-zombie-time-builder |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
