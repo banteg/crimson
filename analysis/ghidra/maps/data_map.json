@@ -11,6 +11,20 @@
       "type": "mod_api_vtbl_t"
     },
     {
+      "address": "0x0046f5b8",
+      "comment": "IID_IDxDiagProvider passed to CoCreateInstance by dx_get_version_from_dxdiag.",
+      "name": "IID_IDxDiagProvider",
+      "program": "crimsonland.exe",
+      "type": "GUID"
+    },
+    {
+      "address": "0x0046f5c8",
+      "comment": "CLSID_DxDiagProvider passed to CoCreateInstance by dx_get_version_from_dxdiag.",
+      "name": "CLSID_DxDiagProvider",
+      "program": "crimsonland.exe",
+      "type": "GUID"
+    },
+    {
       "address": "0x0046f7ec",
       "comment": "Zero GUID copied into DirectSound 8 buffer descriptors as GUID_NULL/DS3DALG_DEFAULT.",
       "name": "GUID_NULL",
