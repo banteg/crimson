@@ -296,7 +296,7 @@ fn build_1_7_spider_wave_syndrome(
 }
 
 fn build_1_8_alien_squads(
-    ctx: common.BuildContext,
+    _: common.BuildContext,
     rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
@@ -325,7 +325,7 @@ fn build_1_8_alien_squads(
         try common.appendSpawn(
             out_entries,
             len,
-            .{ .x = ctx.width + 64.0, .y = ctx.height + 64.0 },
+            .{ .x = 1088.0, .y = 1088.0 },
             0.0,
             common.SpawnId.alien_const_pale_green_26,
             trigger,

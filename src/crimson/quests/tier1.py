@@ -437,7 +437,7 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
         )
         entries.append(
             spawn(
-                Vec2(ctx.width + 64.0, ctx.height + 64.0),
+                Vec2(1088.0, 1088.0),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,

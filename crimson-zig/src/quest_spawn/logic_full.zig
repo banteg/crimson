@@ -195,6 +195,31 @@ test "fortress uses native half height" {
     try std.testing.expectEqual(@as(u32, 0x42FFFFFE), @as(u32, @bitCast(entries[13].pos.y)));
 }
 
+test "alien squads far corner stays at native fixed coordinate" {
+    var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 64;
+    const descriptor = lookupLevelBuilder(108) orelse unreachable;
+    var rng = common.QuestRng.init(0);
+    var len: usize = 0;
+    try descriptor.build(
+        .{
+            .width = 2048.0,
+            .height = 2048.0,
+            .player_count = 1,
+        },
+        &rng,
+        out_entries[0..],
+        &len,
+    );
+    const entries = out_entries[0..len];
+
+    try std.testing.expectEqual(@as(usize, 60), entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, -64.0), entries[8].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1088.0), entries[9].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1088.0), entries[9].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1088.0), entries[59].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1088.0), entries[59].pos.y, 1e-6);
+}
+
 test "level 1-10 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(110) orelse unreachable;
     var rng = common.QuestRng.init(0x1A2B3C4D);

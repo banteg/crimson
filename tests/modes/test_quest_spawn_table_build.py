@@ -7,7 +7,11 @@ from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
     build_quest_spawn_table,
 )
-from crimson.quests.tier1 import build_1_3_target_practice, build_1_6_the_random_factor
+from crimson.quests.tier1 import (
+    build_1_3_target_practice,
+    build_1_6_the_random_factor,
+    build_1_8_alien_squads,
+)
 from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
 from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier5 import build_5_3_the_fortress, build_5_4_the_gang_wars
@@ -51,6 +55,17 @@ def test_fortress_uses_native_half_height() -> None:
     assert entries[0].pos == Vec2(-50.0, 1024.5)
     assert entries[8].pos == Vec2(320.0, 448.0)
     assert entries[13].pos == Vec2(320.0, 127.99998474121094)
+
+
+def test_alien_squads_far_corner_stays_at_native_fixed_coordinate() -> None:
+    ctx = QuestContext(width=2048, height=2048, player_count=1)
+
+    entries = build_1_8_alien_squads(ctx, rng=Crand(0), full_version=True)
+
+    assert len(entries) == 60
+    assert entries[8].pos == Vec2(-64.0, -64.0)
+    assert entries[9].pos == Vec2(1088.0, 1088.0)
+    assert entries[59].pos == Vec2(1088.0, 1088.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
