@@ -18,8 +18,9 @@ match=100.00% prefix=123/123 target_insns=123 candidate_insns=123 refs=20/0/0
 - Cache comparison is case-sensitive. A candidate is skipped when it exactly
   matches any earlier accepted entry.
 - Every byte of a nonempty candidate must satisfy `isalpha` or equal `'.'`.
-  A zero-length name vacuously passes that loop; in normal native operation,
-  unused table records have already been initialized to `default_player_name`.
+  A zero-length name vacuously passes that loop. Unused native table records
+  have already been initialized to the fixed `default_player_name` literal
+  `"10tons"`, which is rejected here because it contains digits.
 - On acceptance, the count and destination cursor advance, the full name is
   copied, and `"%d. unique: %s\n"` is written to the console log with the
   one-based cache index.
@@ -42,8 +43,11 @@ addresses are used.
 
 Python and Zig already read Typ-o records, preserve their order, filter names
 to alphabetic bytes/dots, deduplicate them, and use the same zero-list fallback
-and tagged selection draw. This recovery exposes one remaining difference:
-native fills unused high-score slots with the configured default player name
-before scanning all 100 records, whereas both ports currently scan only saved
-records. Consequently a fresh profile uses its valid configured player name in
-the native cache, while the ports fall straight back to `"quickbrownfox"`.
+and tagged selection draw. They scan only saved records rather than native's
+100-entry table, but the remaining native slots all contain the rejected
+`"10tons"` default, so the ordinary candidate set and fresh-profile fallback
+are unchanged.
+
+Both ports intentionally reject an empty saved name. Native's zero-length loop
+accepts one and can generate an untypeable empty target; retaining the port
+guard avoids reproducing that presentation/gameplay trap.
