@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/385 |
+| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/386 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**320/991** functions, **42244/386510** bytes (**10.9%**), **320/385** scratches verified.
+**320/991** functions, **42244/386510** bytes (**10.9%**), **320/386** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -250,6 +250,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 32/32 | 78.12% | 12/32 | 7/0/0 |  | quest-fallback-builder |
 | wip | quest_build_monster_blues | 0x00434860 | 348 | 95/95 | 82.11% | 9/95 | 2/0/0 |  | quest-monster-blues-modulo-wave-selector |
+| wip | quest_build_knee_deep_in_the_dead | 0x00434f00 | 541 | 141/141 | 95.74% | 3/141 | 17/0/0 |  | quest-knee-deep-escalating-zombies |
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
