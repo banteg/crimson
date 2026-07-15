@@ -1,19 +1,24 @@
 #include "crimsonland_audio.h"
 
+static __inline int music_find_free_slot(void)
+{
+    int result;
+
+    for (result = 0; result < 128; ++result) {
+        if (music_entry_table[result].pcm_data == 0 &&
+            music_entry_table[result].vorbis_stream == 0) {
+            return result;
+        }
+    }
+    return -1;
+}
+
 extern "C" int music_load_track(char *path)
 {
     int result;
 
     ++audio_assets_loaded_count;
-    for (result = 0; result < 128; ++result) {
-        if (music_entry_table[result].pcm_data == 0 &&
-            music_entry_table[result].vorbis_stream == 0) {
-            break;
-        }
-    }
-    if (result == 128) {
-        return -1;
-    }
+    result = music_find_free_slot();
     if (result == -1) {
         return result;
     }
