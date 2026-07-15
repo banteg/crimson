@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**436/2165** functions matched, **54410/675677** code bytes (**8.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**437/2165** functions matched, **54785/675677** code bytes (**8.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 304/990 | 34963/385780 | 9.1% | 304/337 |
+| crimsonland.exe | 305/990 | 35338/385780 | 9.2% | 305/338 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**304/990** functions, **34963/385780** bytes (**9.1%**), **304/337** scratches verified.
+**305/990** functions, **35338/385780** bytes (**9.2%**), **305/338** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -55,6 +55,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
+| match | ui_render_loading | 0x00402d50 | 375 | 107/107 | 100.00% | 107/107 | 15/0/0 |  | ui-loading-panel-renderer |
 | match | demo_setup_variant_0 | 0x00402ed0 | 263 | 70/70 | 100.00% | 70/70 | 10/0/0 |  | demo-spider-corridor-setup |
 | match | demo_setup_variant_2 | 0x00402fe0 | 271 | 81/81 | 100.00% | 81/81 | 7/0/0 |  | demo-zombie-column-setup |
 | match | demo_setup_variant_1 | 0x004030f0 | 338 | 88/88 | 100.00% | 88/88 | 17/0/0 |  | demo-green-spider-setup |
