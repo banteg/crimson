@@ -3388,7 +3388,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043e830",
     "name": "ui_button_update",
-    "signature": "int ui_button_update(float *xy, ui_button_t *button)",
+    "signature": "bool ui_button_update(float *xy, ui_button_t *button)",
     "comment": "draws a UI button, updates hover/press state, and returns 1 when activated. Runtime capture (2026-02-06 gameplay_state_capture): emits sfx_play id 63 (38/38)."
   },
   {
@@ -3472,8 +3472,8 @@
     "program": "crimsonland.exe",
     "address": "0x004443c0",
     "name": "ui_profile_menu_update",
-    "signature": "int ui_profile_menu_update(float *arg1, char arg2)",
-    "comment": "[binja] int32_t sub_4443c0(float* arg1, char arg2)"
+    "signature": "bool ui_profile_menu_update(float *xy, char enabled)",
+    "comment": "updates the saved-name selector/editor and returns false"
   },
   {
     "program": "crimsonland.exe",

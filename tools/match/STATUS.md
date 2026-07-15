@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**512/2167** functions matched, **88002/676448** code bytes (**13.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**513/2167** functions matched, **89035/676448** code bytes (**13.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 380/992 | 68555/386551 | 17.7% | 380/467 |
+| crimsonland.exe | 381/992 | 69588/386551 | 18.0% | 381/468 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**380/992** functions, **68555/386551** bytes (**17.7%**), **380/467** scratches verified.
+**381/992** functions, **69588/386551** bytes (**18.0%**), **381/468** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -443,6 +443,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | ui_update_notice_update | 0x00442150 | 614 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
+| match | ui_profile_menu_update | 0x004443c0 | 1033 | 261/261 | 100.00% | 261/261 | 109/0/0 |  | profile-saved-name-list-editing |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | typo_word_pick_fragment | 0x00444f70 | 356 | 117/117 | 100.00% | 117/117 | 54/0/0 |  | typo-random-name-fragment-table |
 | match | typo_word_pick_highscore_name | 0x004451b0 | 345 | 123/123 | 100.00% | 123/123 | 20/0/0 |  | typo-highscore-name-cache |

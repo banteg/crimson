@@ -977,6 +977,7 @@ fn drawHighScoreRightPanel(
     const mode_labels = highScoreModeLabels(&mode_labels_buf, status);
     var saved_names: [formats.crimson_cfg.saved_name_slot_count][]const u8 = undefined;
     for (0..saved_names.len) |idx| saved_names[idx] = formats.crimson_cfg.savedNameLabel(&config, idx);
+    const saved_name_count = formats.crimson_cfg.savedNameCount(&config);
     const dropdowns = [_]struct {
         kind: DropdownKind,
         rect: rl.Rectangle,
@@ -1004,7 +1005,7 @@ fn drawHighScoreRightPanel(
         .{
             .kind = .score_list,
             .rect = scoreListWidgetRect(options_rect),
-            .items = saved_names[0..],
+            .items = saved_names[0..saved_name_count],
             .selected = formats.crimson_cfg.selectedSavedNameSlot(&config),
         },
     };
@@ -1913,7 +1914,8 @@ fn updateHighScoreWidgets(
 
     var saved_names: [formats.crimson_cfg.saved_name_slot_count][]const u8 = undefined;
     for (0..saved_names.len) |idx| saved_names[idx] = formats.crimson_cfg.savedNameLabel(config, idx);
-    const score_list_update = updateDropdownSelection(&state.dropdown_open, .score_list, scoreListWidgetRect(right_rect), saved_names[0..], click, mouse);
+    const saved_name_count = formats.crimson_cfg.savedNameCount(config);
+    const score_list_update = updateDropdownSelection(&state.dropdown_open, .score_list, scoreListWidgetRect(right_rect), saved_names[0..saved_name_count], click, mouse);
     if (score_list_update.selected) |selected| {
         formats.crimson_cfg.setSelectedSavedNameSlot(config, selected);
         return .{ .config_dirty = true, .play_button_click = true };

@@ -49,6 +49,10 @@ Recent data-map lifts for one-shot setup guards:
   `profile_name_input_state_max_chars` (`0x004d0f30`),
   `profile_name_input_state_width_px` (`0x004d0f34`),
   `profile_name_input_state_alpha` (`0x004d0f38`).
+- `ui_profile_menu_update` exposes only the `config_saved_name_count` live
+  slots, followed by a synthetic `<add new named list>` row. Selecting a real
+  slot reloads the high-score table; the editor can append a 27-byte name or
+  delete a nonzero slot by replacing it with the last live entry.
 - `credits_screen_init_flags` (`0x00480978`): `credits_screen_update` one-shot
   setup guards for Back and Secret buttons.
 - `mods_menu_init_flags` (`0x00481bb8`): `mods_menu_update` one-shot setup

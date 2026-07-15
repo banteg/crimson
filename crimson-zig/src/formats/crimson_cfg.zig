@@ -430,8 +430,14 @@ pub fn setPlayerNameInput(cfg: *CrimsonCfg, name: []const u8) void {
     }
 }
 
+pub fn savedNameCount(cfg: *const CrimsonCfg) usize {
+    const count: usize = @intCast(cfg.saved_name_index);
+    return @min(@max(count, 1), saved_name_slot_count);
+}
+
 pub fn selectedSavedNameSlot(cfg: *const CrimsonCfg) usize {
-    return @min(cfg.selected_name_slot, saved_name_slot_count - 1);
+    const selected: usize = @intCast(cfg.selected_name_slot);
+    return @min(selected, savedNameCount(cfg) - 1);
 }
 
 pub fn setSelectedSavedNameSlot(cfg: *CrimsonCfg, slot_index: usize) void {
@@ -686,6 +692,21 @@ test "crimson.cfg player name input helper trims trailing spaces and preserves t
 
     try std.testing.expectEqualStrings("Alpha", playerName(&cfg));
     try std.testing.expectEqual(@as(u32, 8), cfg.player_name_len);
+}
+
+test "crimson.cfg saved name count clamps the visible slot prefix" {
+    var cfg = defaultConfig();
+
+    try std.testing.expectEqual(@as(usize, 1), savedNameCount(&cfg));
+    cfg.saved_name_index = 3;
+    try std.testing.expectEqual(@as(usize, 3), savedNameCount(&cfg));
+    cfg.selected_name_slot = 7;
+    try std.testing.expectEqual(@as(usize, 2), selectedSavedNameSlot(&cfg));
+    cfg.saved_name_index = 0;
+    try std.testing.expectEqual(@as(usize, 1), savedNameCount(&cfg));
+    try std.testing.expectEqual(@as(usize, 0), selectedSavedNameSlot(&cfg));
+    cfg.saved_name_index = 99;
+    try std.testing.expectEqual(saved_name_slot_count, savedNameCount(&cfg));
 }
 
 test "crimson.cfg detail presets update fx detail flags" {
