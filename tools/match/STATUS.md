@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**489/2166** functions matched, **85579/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**491/2166** functions matched, **85635/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 357/991 | 66132/386510 | 17.1% | 357/442 |
+| crimsonland.exe | 359/991 | 66188/386510 | 17.1% | 359/444 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**357/991** functions, **66132/386510** bytes (**17.1%**), **357/442** scratches verified.
+**359/991** functions, **66188/386510** bytes (**17.1%**), **359/444** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -198,6 +198,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | player_state_table_global_init | 0x0041e5d0 | 227 | 50/50 | 100.00% | 50/50 | 1/0/0 |  | player-state-table-global-constructor |
 | match | creature_pool_global_init_thunk | 0x0041e6c0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | creature-pool-global-init-thunk |
 | match | creature_pool_global_init | 0x0041e6d0 | 60 | 17/17 | 100.00% | 17/17 | 1/0/0 |  | creature-pool-global-constructor |
+| match | projectile_pool_global_init_thunk | 0x0041e750 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | projectile-pool-global-init-thunk |
+| match | projectile_pool_global_init | 0x0041e760 | 51 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | projectile-pool-global-constructor |
 | match | fx_queue_add | 0x0041e840 | 140 | 39/39 | 100.00% | 39/39 | 10/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |

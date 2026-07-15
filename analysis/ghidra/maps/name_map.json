@@ -1559,6 +1559,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e750",
+    "name": "projectile_pool_global_init_thunk",
+    "signature": "void projectile_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 96-entry projectile pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e760",
+    "name": "projectile_pool_global_init",
+    "signature": "void projectile_pool_global_init(void)",
+    "comment": "constructs 96 inactive projectile entries with pistol type, unit scales, and owner -1"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
     "signature": "int vec2_add(float *dst, float *delta)",
