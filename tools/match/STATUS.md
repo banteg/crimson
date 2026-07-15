@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**477/2166** functions matched, **84688/676407** code bytes (**12.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**479/2166** functions matched, **84864/676407** code bytes (**12.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 345/991 | 65241/386510 | 16.9% | 345/430 |
+| crimsonland.exe | 347/991 | 65417/386510 | 16.9% | 347/432 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**345/991** functions, **65241/386510** bytes (**16.9%**), **345/430** scratches verified.
+**347/991** functions, **65417/386510** bytes (**16.9%**), **347/432** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -133,6 +133,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_meta_entry_release | 0x004121e0 | 15 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | quest-metadata-owned-name-release |
 | match | quest_meta_register_atexit | 0x004121f0 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | quest-metadata-destructor-registration |
 | match | quest_meta_table_destroy | 0x00412200 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-destruction |
+| match | game_status_global_init_thunk | 0x00412290 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | game-status-global-init-thunk |
+| match | game_status_global_init | 0x004122a0 | 171 | 45/45 | 100.00% | 45/45 | 18/0/0 |  | game-status-global-constructor |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
 | match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | bonus-metadata-global-lifecycle |
 | match | bonus_meta_table_init | 0x004123d0 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-construction |

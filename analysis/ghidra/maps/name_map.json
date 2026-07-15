@@ -1034,6 +1034,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412290",
+    "name": "game_status_global_init_thunk",
+    "signature": "void game_status_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for game_status_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004122a0",
+    "name": "game_status_global_init",
+    "signature": "void game_status_global_init(void)",
+    "comment": "zeros persisted status counters and seeds the four reserved tail words"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412360",
     "name": "highscore_init_sentinels",
     "signature": "int highscore_init_sentinels(void)",
