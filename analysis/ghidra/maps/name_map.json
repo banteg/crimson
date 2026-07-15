@@ -1322,8 +1322,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041aed0",
     "name": "ui_render_hud",
-    "signature": "void ui_render_hud(void)",
-    "comment": "renders the in-game HUD (health, weapon icons, player UI)"
+    "signature": "void ui_render_hud(float transition_alpha)",
+    "comment": "renders the in-game HUD (health, weapon icons, player UI), scaled by the caller-supplied transition alpha"
   },
   {
     "program": "crimsonland.exe",
