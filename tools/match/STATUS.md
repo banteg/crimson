@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/391 |
+| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/392 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**320/991** functions, **42244/386510** bytes (**10.9%**), **320/391** scratches verified.
+**320/991** functions, **42244/386510** bytes (**10.9%**), **320/392** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -255,6 +255,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
+| wip | quest_build_the_beating | 0x00435610 | 649 | 166/166 | 53.61% | 22/166 | 7/0/0 |  | quest-the-beating-four-lines |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
