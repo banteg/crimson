@@ -702,15 +702,14 @@ fn build508MonsterBlues(
 }
 
 fn build509Nagolipoli(
-    ctx: common.BuildContext,
+    _: common.BuildContext,
     rng: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
 
-    const center = common.centerPoint(ctx.width, ctx.height);
-    const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
+    const center: spawn_runtime.Vec2 = .{ .x = 512.0, .y = 512.0 };
     try common.appendRingSpawns(
         out_entries,
         len,
@@ -846,7 +845,7 @@ fn build509Nagolipoli(
     try common.appendSpawn(
         out_entries,
         len,
-        edges.bottom,
+        .{ .x = 512.0, .y = 1088.0 },
         3.926991,
         common.SpawnId.ai1_lizard_blue_tint_1c,
         base_vertical,
@@ -855,7 +854,7 @@ fn build509Nagolipoli(
     try common.appendSpawn(
         out_entries,
         len,
-        edges.top,
+        .{ .x = 512.0, .y = -64.0 },
         3.926991,
         common.SpawnId.ai1_lizard_blue_tint_1c,
         base_vertical,

@@ -178,6 +178,20 @@ test "survival of the fastest corners stay at native fixed coordinates" {
     try std.testing.expectApproxEqAbs(@as(f32, 896.0), built.entries[25].pos.x, 1e-6);
 }
 
+test "nagolipoli stays in native fixed coordinate space" {
+    var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 192;
+    const built = try buildQuestSpawnTable(509, 1, 0, 2048.0, out_entries[0..]);
+
+    try std.testing.expectEqual(@as(usize, 164), built.entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 640.0), built.entries[0].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 512.0), built.entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 690.0), built.entries[8].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 64.0), built.entries[148].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 960.0), built.entries[154].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1088.0), built.entries[162].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, -64.0), built.entries[163].pos.y, 1e-6);
+}
+
 test "cross fire lower spawn stays at native fixed coordinate" {
     var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 16;
     const built = try buildQuestSpawnTable(506, 1, 0, 2048.0, out_entries[0..]);

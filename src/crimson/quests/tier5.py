@@ -10,7 +10,6 @@ from ..math_parity import f32
 from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
-    center_point,
     ring_points,
     spawn,
     spawn_exact,
@@ -609,7 +608,7 @@ def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike, full_version: 
 def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
-    center = center_point(ctx.width, ctx.height)
+    center = Vec2(512.0, 512.0)
     for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
         entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
 

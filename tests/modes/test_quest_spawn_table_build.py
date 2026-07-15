@@ -22,6 +22,7 @@ from crimson.quests.tier4 import build_4_10_the_end_of_all
 from crimson.quests.tier5 import (
     build_5_3_the_fortress,
     build_5_4_the_gang_wars,
+    build_5_9_nagolipoli,
     build_5_10_the_gathering,
 )
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
@@ -151,6 +152,22 @@ def test_survival_of_the_fastest_corners_stay_at_native_coordinates() -> None:
         Vec2(128.0, 896.0),
         Vec2(896.0, 896.0),
     ]
+
+
+def test_nagolipoli_stays_in_native_fixed_coordinate_space() -> None:
+    entries = build_5_9_nagolipoli(
+        QuestContext(width=2048, height=3072, player_count=1),
+        rng=Crand(0),
+        full_version=True,
+    )
+
+    assert len(entries) == 164
+    assert entries[0].pos == Vec2(640.0, 512.0)
+    assert entries[8].pos == Vec2(690.0, 512.0)
+    assert entries[148].pos == Vec2(64.0, 256.0)
+    assert entries[154].pos == Vec2(960.0, 256.0)
+    assert entries[162].pos == Vec2(512.0, 1088.0)
+    assert entries[163].pos == Vec2(512.0, -64.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
