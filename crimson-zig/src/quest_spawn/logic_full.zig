@@ -405,7 +405,7 @@ test "level 5-1 rectangular spawn summary stays stable" {
     }
     for (0..6) |i| {
         expected[expected_len] = .{
-            .pos = .{ .x = 800.0, .y = @as(f32, @floatFromInt(@as(i32, @intCast(i)) * 32 + 944)) },
+            .pos = .{ .x = 800.0, .y = @as(f32, @floatFromInt(@as(i32, @intCast(i)) * 32 + 1644)) },
             .heading = 0.0,
             .spawn_id = @enumFromInt(18),
             .trigger_ms = @as(i32, @intCast(i * 100)) + 40_000,

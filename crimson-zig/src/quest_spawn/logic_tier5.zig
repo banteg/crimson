@@ -116,7 +116,7 @@ fn build501TheBeating(
     }
 
     trigger = 40_000;
-    var y2: f32 = ctx.height + 44.0;
+    var y2: f32 = ctx.width + 44.0;
     wave_idx = 0;
     while (wave_idx < 6) : (wave_idx += 1) {
         try common.appendSpawn(
