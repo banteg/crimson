@@ -270,6 +270,7 @@ unsigned char perk_can_offer(int perk_id);
 int crt_rand(void);
 void crt_free(void *ptr);
 char *strdup_malloc(char *src);
+char *wrap_text_to_width_alloc(char *text, int max_width_px);
 void sfx_release_all(void);
 void music_release_all(void);
 void dsound_shutdown(void);

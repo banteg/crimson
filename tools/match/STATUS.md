@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**460/2166** functions matched, **68160/676407** code bytes (**10.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**461/2166** functions matched, **68895/676407** code bytes (**10.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 328/991 | 48713/386510 | 12.6% | 328/410 |
+| crimsonland.exe | 329/991 | 49448/386510 | 12.8% | 329/411 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**328/991** functions, **48713/386510** bytes (**12.6%**), **328/410** scratches verified.
+**329/991** functions, **49448/386510** bytes (**12.8%**), **329/411** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -136,6 +136,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_meta_register_atexit | 0x00412440 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | bonus-metadata-destructor-registration |
 | match | bonus_meta_table_destroy | 0x00412450 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
 | wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
+| match | bonus_metadata_init | 0x00412660 | 735 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
 | match | bonus_reset_availability | 0x00412940 | 26 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
 | wip | game_mode_label | 0x00412960 | 176 | 53/69 | 75.41% | 6/69 | 9/0/1 |  | game-mode-display-label |
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
