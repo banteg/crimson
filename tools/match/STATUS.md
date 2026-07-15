@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 322/991 | 45847/386510 | 11.9% | 322/399 |
+| crimsonland.exe | 322/991 | 45847/386510 | 11.9% | 322/400 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**322/991** functions, **45847/386510** bytes (**11.9%**), **322/399** scratches verified.
+**322/991** functions, **45847/386510** bytes (**11.9%**), **322/400** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -385,6 +385,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | typo_target_name_is_unique | 0x00445310 | 110 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | typo-target-uniqueness |
+| wip | typo_target_name_assign_random | 0x00445380 | 522 | 173/173 | 76.88% | 17/173 | 27/0/0 |  | typo-random-target-name-policy |
 | match | typo_target_find_by_name | 0x00445590 | 98 | 42/42 | 100.00% | 42/42 | 3/0/0 |  | typo-target-lookup |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
