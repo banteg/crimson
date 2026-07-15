@@ -11,13 +11,11 @@ extern "C" char *game_mode_label(void)
     if (mode == GAME_MODE_RUSH) {
         label = "Rush";
     } else if (mode == GAME_MODE_SURVIVAL) {
-        strcpy(game_mode_label_buffer, "Survival");
-        return game_mode_label_buffer;
+        return strcpy(game_mode_label_buffer, "Survival");
     } else if (mode == GAME_MODE_QUEST) {
         label = "Quests";
     } else if (mode == GAME_MODE_TYPO_SHOOTER) {
-        strcpy(game_mode_label_buffer, "Typ'o'Shooter");
-        return game_mode_label_buffer;
+        return strcpy(game_mode_label_buffer, "Typ'o'Shooter");
     } else {
         label = "Unknown";
     }

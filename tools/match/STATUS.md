@@ -177,7 +177,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_metadata_init | 0x00412660 | 735 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
 | match | bonus_reset_availability | 0x00412940 | 26 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
-| wip | game_mode_label | 0x00412960 | 176 | 53/69 | 75.41% | 6/69 | 9/0/1 |  | game-mode-display-label |
+| wip | game_mode_label | 0x00412960 | 176 | 69/69 | 86.96% | 6/69 | 10/0/0 |  | game-mode-display-label |
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
 | match | game_save_status | 0x00412a80 | 399 | 123/123 | 100.00% | 123/123 | 36/0/0 |  | game-status-save-transform |
 | match | game_load_status | 0x00412c10 | 420 | 134/134 | 100.00% | 134/134 | 43/0/0 |  | game-status-load-transform |
