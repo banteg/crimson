@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**451/2166** functions matched, **61308/676407** code bytes (**9.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**452/2166** functions matched, **61691/676407** code bytes (**9.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/377 |
+| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/378 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/377** scratches verified.
+**320/991** functions, **42244/386510** bytes (**10.9%**), **320/378** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -260,6 +260,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_syntax_terror | 0x00436c10 | 339 | 106/104 | 49.52% | 2/104 | 1/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
+| match | quest_build_two_fronts | 0x00436ee0 | 383 | 112/112 | 100.00% | 112/112 | 3/0/0 |  | quest-two-fronts-cardinal-waves |
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 114/114 | 92.11% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
