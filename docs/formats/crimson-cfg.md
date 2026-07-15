@@ -128,7 +128,8 @@ the blob start.
 | `0x1B8` | 4 | `32` | `config_display_bpp` | Bits per pixel (16/32). |
 | `0x1BC` | 4 | `800` | `config_screen_width` | Screen width. |
 | `0x1C0` | 4 | `600` | `config_screen_height` | Screen height. |
-| `0x1C4` | 4 | `0` | `config_windowed` | Windowed mode flag (0=fullscreen). |
+| `0x1C4` | 1 | `0` | `config_windowed` | Byte-sized windowed mode flag (0=fullscreen). |
+| `0x1C5` | 3 | - | Padding | Alignment before the P1 keybind table. |
 | `0x1C8` | 52 | - | P1 Keybinds | Player 1 control bindings (13 dwords). |
 | `0x1FC` | 12 | - | P1 Padding | Padding (3 dwords). |
 | `0x208` | 52 | - | P2 Keybinds | Player 2 control bindings (13 dwords). |

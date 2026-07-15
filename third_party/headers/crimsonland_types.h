@@ -799,7 +799,8 @@ typedef struct crimson_cfg_t {
     int display_bpp;
     int screen_width;
     int screen_height;
-    int windowed;
+    unsigned char windowed;
+    unsigned char reserved_windowed[3];
     int keybinds_p1[13];
     unsigned char reserved2[0x0c];
     int keybinds_p2[13];

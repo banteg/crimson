@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**511/2167** functions matched, **86777/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**512/2167** functions matched, **88002/676448** code bytes (**13.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 379/992 | 67330/386551 | 17.4% | 379/466 |
+| crimsonland.exe | 380/992 | 68555/386551 | 17.7% | 380/467 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**379/992** functions, **67330/386551** bytes (**17.4%**), **379/466** scratches verified.
+**380/992** functions, **68555/386551** bytes (**17.7%**), **380/467** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -220,6 +220,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
 | wip | creature_handle_death | 0x0041e910 | 834 | 202/204 | 84.73% | 5/204 | 80/0/1 |  | creature-death-side-effects |
+| match | config_sync_from_grim | 0x0041ec60 | 1225 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | wip | config_load_presets | 0x0041f1a0 | 653 | 178/178 | 88.20% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
 | wip | angle_approach | 0x0041f430 | 299 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |

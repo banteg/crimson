@@ -14,7 +14,7 @@ long crt_ftell(FILE *fp);
 unsigned int crt_fread(
     void *ptr, unsigned int size, unsigned int count, FILE *fp);
 int crt_fclose(FILE *fp);
-void config_sync_from_grim(void);
+bool config_sync_from_grim(void);
 
 extern "C" bool config_load_presets(bool skip_grim_settings)
 {

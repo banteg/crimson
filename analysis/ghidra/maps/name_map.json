@@ -1743,7 +1743,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041ec60",
     "name": "config_sync_from_grim",
-    "signature": "int config_sync_from_grim(void)",
+    "signature": "bool config_sync_from_grim(void)",
     "comment": "syncs Grim config values into config blob and writes crimson.cfg"
   },
   {

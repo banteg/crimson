@@ -1770,9 +1770,10 @@
     },
     {
       "address": "0x0048050c",
-      "comment": "Config: windowed flag (0=fullscreen).",
+      "comment": "Config: byte-sized windowed flag (0=fullscreen); followed by three padding bytes.",
       "name": "config_windowed",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00480510",
