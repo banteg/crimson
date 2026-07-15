@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**471/2166** functions matched, **78258/676407** code bytes (**11.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**472/2166** functions matched, **83143/676407** code bytes (**12.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 339/991 | 58811/386510 | 15.2% | 339/424 |
+| crimsonland.exe | 340/991 | 63696/386510 | 16.5% | 340/425 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**339/991** functions, **58811/386510** bytes (**15.2%**), **339/424** scratches verified.
+**340/991** functions, **63696/386510** bytes (**16.5%**), **340/425** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -436,6 +436,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | ui_element_layout_calc | 0x0044fb50 | 288 | 86/86 | 95.35% | 16/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
+| match | weapon_table_init | 0x004519b0 | 4885 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
