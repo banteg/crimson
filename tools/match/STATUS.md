@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**469/2166** functions matched, **73540/676407** code bytes (**10.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**470/2166** functions matched, **75047/676407** code bytes (**11.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 337/991 | 54093/386510 | 14.0% | 337/421 |
+| crimsonland.exe | 338/991 | 55600/386510 | 14.4% | 338/422 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**337/991** functions, **54093/386510** bytes (**14.0%**), **337/421** scratches verified.
+**338/991** functions, **55600/386510** bytes (**14.4%**), **338/422** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -237,6 +237,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | effect_defaults_reset | 0x0042df10 | 355 | 59/59 | 100.00% | 59/59 | 29/0/0 |  | gameplay-effect-pool-reset |
 | match | effect_free | 0x0042e080 | 29 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | gameplay-effect-pool |
 | match | effect_select_texture | 0x0042e0a0 | 113 | 35/35 | 100.00% | 35/35 | 6/0/0 |  | gameplay-effect-texture |
+| match | effect_spawn | 0x0042e120 | 1507 | 350/350 | 100.00% | 350/350 | 90/0/0 |  | gameplay-effect-allocation-and-quad-build |
 | match | effects_update | 0x0042e710 | 267 | 85/85 | 100.00% | 85/85 | 10/0/0 |  | gameplay-effect-lifecycle |
 | wip | effects_render | 0x0042e820 | 740 | 195/195 | 92.82% | 37/195 | 38/0/0 |  | gameplay-effect-render-passes |
 | match | effect_spawn_blood_splatter | 0x0042eb10 | 361 | 82/82 | 100.00% | 82/82 | 27/0/0 |  | gameplay-blood-splatter-effect |

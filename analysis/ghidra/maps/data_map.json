@@ -6974,6 +6974,13 @@
       "type": "int"
     },
     {
+      "address": "0x004ab270",
+      "comment": "Zero-initialized fallback effect entry returned when low-detail throttling skips a spawn or the effect free list is exhausted.",
+      "name": "effect_discard_entry",
+      "program": "crimsonland.exe",
+      "type": "effect_entry_t"
+    },
+    {
       "address": "0x004ab330",
       "comment": "Canonical typed base for the 512-entry effect pool (effect_entry_t stride 0xbc).",
       "name": "effect_pool",
