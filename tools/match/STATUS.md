@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**472/2166** functions matched, **83143/676407** code bytes (**12.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**473/2166** functions matched, **83362/676407** code bytes (**12.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 340/991 | 63696/386510 | 16.5% | 340/425 |
+| crimsonland.exe | 341/991 | 63915/386510 | 16.5% | 341/426 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**340/991** functions, **63696/386510** bytes (**16.5%**), **340/425** scratches verified.
+**341/991** functions, **63915/386510** bytes (**16.5%**), **341/426** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -121,6 +121,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_api_inp_key_down | 0x0040e660 | 32 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | mod-api-input-key-state |
 | match | mod_api_inp_get_key_name | 0x0040e680 | 16 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | mod-api-input-key-name |
 | match | mod_api_cl_enter_menu | 0x0040e690 | 99 | 37/37 | 100.00% | 37/37 | 4/0/0 |  | mod-api-pause-menu |
+| match | mod_load_mod | 0x0040e860 | 219 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
