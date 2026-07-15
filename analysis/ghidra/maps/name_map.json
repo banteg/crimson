@@ -1503,6 +1503,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e490",
+    "name": "sprite_effect_pool_global_init_thunk",
+    "signature": "void sprite_effect_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 384-entry sprite-effect pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e4a0",
+    "name": "sprite_effect_pool_global_init",
+    "signature": "void sprite_effect_pool_global_init(void)",
+    "comment": "constructs 384 inactive sprite effects with opaque-white color"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
     "signature": "int vec2_add(float *dst, float *delta)",

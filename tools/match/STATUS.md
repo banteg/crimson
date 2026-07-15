@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**481/2166** functions matched, **85016/676407** code bytes (**12.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**483/2166** functions matched, **85118/676407** code bytes (**12.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 349/991 | 65569/386510 | 17.0% | 349/434 |
+| crimsonland.exe | 351/991 | 65671/386510 | 17.0% | 351/436 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**349/991** functions, **65569/386510** bytes (**17.0%**), **349/434** scratches verified.
+**351/991** functions, **65671/386510** bytes (**17.0%**), **351/436** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -190,6 +190,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 131/131 | 100.00% | 131/131 | 8/0/0 |  | gameplay-movement |
 | match | vec2_add_inplace | 0x0041e400 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
+| match | sprite_effect_pool_global_init_thunk | 0x0041e490 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | sprite-effect-pool-global-init-thunk |
+| match | sprite_effect_pool_global_init | 0x0041e4a0 | 97 | 30/30 | 100.00% | 30/30 | 1/0/0 |  | sprite-effect-pool-global-constructor |
 | match | fx_queue_add | 0x0041e840 | 140 | 39/39 | 100.00% | 39/39 | 10/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
