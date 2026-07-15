@@ -593,6 +593,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040cfd0",
+    "name": "credits_line_table_global_init_thunk",
+    "signature": "void credits_line_table_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for credits_line_table_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040cfe0",
+    "name": "credits_line_table_global_init",
+    "signature": "void credits_line_table_global_init(void)",
+    "comment": "clears the text pointer and flags of all 256 credits-line records"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040d000",
     "name": "credits_line_set",
     "signature": "void credits_line_set(int index, char *text, int flags)",
@@ -1743,6 +1757,20 @@
     "name": "angle_approach",
     "signature": "float angle_approach(float *angle, float target, float rate)",
     "comment": "wraps angle into [0,2pi], steps toward target, and returns the clamped shortest-arc distance"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f560",
+    "name": "bonus_pool_sentinel_global_init_thunk",
+    "signature": "void bonus_pool_sentinel_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for bonus_pool_sentinel_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f570",
+    "name": "bonus_pool_sentinel_global_init",
+    "signature": "void bonus_pool_sentinel_global_init(void)",
+    "comment": "marks the exhausted-pool bonus sentinel inactive"
   },
   {
     "program": "crimsonland.exe",
@@ -3744,6 +3772,20 @@
     "name": "ui_menu_layout_init",
     "signature": "void ui_menu_layout_init(void)",
     "comment": "initializes menu UI element layout and text textures"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00451900",
+    "name": "weapon_table_defaults_global_init_thunk",
+    "signature": "void weapon_table_defaults_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for weapon_table_defaults_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00451910",
+    "name": "weapon_table_defaults_global_init",
+    "signature": "void weapon_table_defaults_global_init(void)",
+    "comment": "constructs the 64 weapon rows with their neutral metadata defaults"
   },
   {
     "program": "crimsonland.exe",

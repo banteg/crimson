@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**505/2167** functions matched, **86577/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**511/2167** functions matched, **86777/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 373/992 | 67130/386551 | 17.4% | 373/458 |
+| crimsonland.exe | 379/992 | 67330/386551 | 17.4% | 379/464 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**373/992** functions, **67130/386551** bytes (**17.4%**), **373/458** scratches verified.
+**379/992** functions, **67330/386551** bytes (**17.4%**), **379/464** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -83,6 +83,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_clock_gauge_at | 0x0040a4c0 | 70 | 22/22 | 100.00% | 22/22 | 6/0/0 |  | ui-clock-gauge-wrapper |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | plugin_runtime_update_and_render | 0x0040b630 | 265 | 67/67 | 100.00% | 67/67 | 33/0/0 |  | plugin-runtime-frame-lifecycle |
+| match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
+| match | credits_line_table_global_init | 0x0040cfe0 | 24 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
@@ -219,6 +221,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | config_ensure_file | 0x0041f130 | 112 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | wip | config_load_presets | 0x0041f1a0 | 653 | 178/178 | 88.20% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
 | wip | angle_approach | 0x0041f430 | 299 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
+| match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
+| match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | bonus_spawn_at | 0x0041f5b0 | 479 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
 | wip | bonus_spawn_at_pos | 0x0041f790 | 309 | 100/99 | 88.44% | 0/99 | 14/0/0 |  | gameplay-bonus-spawn |
@@ -469,6 +473,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | ui_element_layout_calc | 0x0044fb50 | 288 | 86/86 | 95.35% | 16/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
+| match | weapon_table_defaults_global_init_thunk | 0x00451900 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | weapon-table-default-global-initialization-thunk |
+| match | weapon_table_defaults_global_init | 0x00451910 | 150 | 47/47 | 100.00% | 47/47 | 2/0/0 |  | weapon-table-default-global-initialization |
 | match | weapon_table_init | 0x004519b0 | 4885 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
