@@ -6,9 +6,10 @@ selects Rush, Survival, Quest, or unknown filenames, replaces `.hi` with
 is nonzero. The native Quest branch intentionally uses the `questhc` filename
 when `config_hardcore` is zero; the scratch preserves that observed behavior.
 
-The first 75 instructions match exactly. The remaining semantic body differs
-only in VC6 stack cleanup scheduling between the named-path `sprintf` and its
-diagnostic `console_printf`: the target cleans 16 bytes immediately and then
-12 bytes, while the structured scratch combines both cleanups into 28 bytes.
-The source leaves that compiler artifact honest rather than introducing an
-artificial dependency between the calls.
+The source is compiled through VC6's C++ frontend with C linkage. That frontend
+emits the native caller cleanup between the named-path `sprintf` and its
+diagnostic `console_printf`; C mode instead combines both cleanups after the
+second call. No source dependency or dummy operation is needed.
+
+Verified exact with MSVC 6.5 `/O2 /GB /W3 /GR- /TP`: 104/104 instructions and
+all 54 masked references audited.

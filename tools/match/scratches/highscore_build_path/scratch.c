@@ -17,6 +17,9 @@ extern int quest_stage_major;
 extern int quest_stage_minor;
 extern cvar_float_t *cv_verbose;
 
+#ifdef __cplusplus
+extern "C"
+#endif
 char *highscore_build_path(void)
 {
     int selected_name;
