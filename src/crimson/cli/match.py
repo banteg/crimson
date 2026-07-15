@@ -141,6 +141,7 @@ def cmd_match_scratch(
             metadata_path=matchlib.default_metadata_path(config.image),
             symbol_name=config.symbol,
             end_va=config.end_va,
+            reference_aliases=config.reference_aliases,
         )
     except Exception as exc:
         typer.echo(f"match failed: {exc}", err=True)

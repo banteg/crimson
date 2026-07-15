@@ -106,7 +106,14 @@ SYMBOL=probe
 END=0x00401156
 COMPILER=msvc6.5
 CFLAGS="/O2 /GB /W3 /GR-"
+REFERENCE_ALIASES='$E2:widget_idle_color_destroy,$E3:widget_hover_color_destroy'
 ```
+
+`REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
+names are reused across translation units. Each comma-separated
+`object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely
+named native address; normal masked-reference auditing still compares the
+resolved address.
 
 Run one scratch:
 

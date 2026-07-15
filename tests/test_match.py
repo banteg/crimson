@@ -447,6 +447,21 @@ def test_match_function_audits_masked_reference_identity(
     assert result.exact is exact
 
 
+def test_reference_catalog_scopes_ambiguous_object_alias() -> None:
+    catalog = ReferenceCatalog(
+        {
+            0x402000: ("first_destroy", "$E2"),
+            0x403000: ("second_destroy", "$E2"),
+        },
+        {"$E2": (0x402000, 0x403000), "second_destroy": (0x403000,)},
+    )
+
+    assert not catalog.knows_name("$E2")
+    scoped = catalog.with_object_aliases((("$E2", "second_destroy"),))
+    assert scoped.knows_name("$E2")
+    assert "address:0x00403000" in scoped.keys_for_object_reference("$E2", 0)
+
+
 def test_match_function_audits_compiler_string_by_content() -> None:
     mapped = bytearray(0x10000)
     mapped[0x2000:0x2003] = b"%s\x00"

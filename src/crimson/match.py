@@ -130,6 +130,27 @@ class ReferenceCatalog:
             )
         return tuple(address for address in addresses if (address in self.import_addresses) == imported)
 
+    def with_object_aliases(
+        self,
+        aliases: tuple[tuple[str, str], ...],
+    ) -> ReferenceCatalog:
+        """Resolve reused compiler-local names against proven image symbols."""
+        if not aliases:
+            return self
+
+        addresses_by_name = dict(self.addresses_by_name)
+        for object_symbol, target_symbol in aliases:
+            target_addresses = self._addresses_for_name(
+                _symbol_lookup_name(target_symbol),
+                imported=False,
+            )
+            if len(target_addresses) != 1:
+                raise ValueError(
+                    f"reference alias target {target_symbol!r} must resolve to exactly one image address",
+                )
+            addresses_by_name[_symbol_lookup_name(object_symbol)] = target_addresses
+        return replace(self, addresses_by_name=addresses_by_name)
+
 
 def load_reference_catalog(
     manifest: FunctionManifest,
@@ -1363,13 +1384,16 @@ def run_match(
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
     end_va: int | None = None,
+    reference_aliases: tuple[tuple[str, str], ...] = (),
 ) -> MatchResult:
     manifest = load_function_manifest(functions_path, metadata_path=metadata_path, image_name=image_path.name)
     obj = parse_coff_object(Path(obj_path).read_bytes())
     candidate = extract_object_function(obj, symbol_name)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
     image = load_image(image_path, manifest.image_base)
-    catalog = load_reference_catalog(manifest, functions_path=functions_path)
+    catalog = load_reference_catalog(manifest, functions_path=functions_path).with_object_aliases(
+        reference_aliases,
+    )
     return match_function(
         image.function_bytes(start, end),
         candidate,
@@ -1431,6 +1455,7 @@ class ScratchConfig:
     end_va: int | None
     symbol: str | None
     note: str
+    reference_aliases: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1482,6 +1507,18 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             values[key] = value
     if "FUNCTION" not in values:
         raise ValueError(f"{directory}/scratch.conf must set FUNCTION")
+
+    reference_aliases: list[tuple[str, str]] = []
+    for mapping in values.get("REFERENCE_ALIASES", "").split(","):
+        if not mapping:
+            continue
+        object_symbol, separator, target_symbol = mapping.partition(":")
+        if not separator or not object_symbol or not target_symbol:
+            raise ValueError(
+                f"{directory}/scratch.conf has invalid REFERENCE_ALIASES entry {mapping!r}",
+            )
+        reference_aliases.append((object_symbol, target_symbol))
+
     return ScratchConfig(
         directory=directory,
         function=values["FUNCTION"],
@@ -1492,6 +1529,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         end_va=int(values["END"], 0) if "END" in values else None,
         symbol=values.get("SYMBOL"),
         note=values.get("NOTE", ""),
+        reference_aliases=tuple(reference_aliases),
     )
 
 
@@ -1772,6 +1810,7 @@ def _scratch_cache_key(
             "function": config.function,
             "end_va": config.end_va,
             "symbol": config.symbol,
+            "reference_aliases": [list(alias) for alias in config.reference_aliases],
         },
         "image_mtime": _mtime_ns(image_path),
         "matcher_mtime": _mtime_ns(Path(__file__)),
@@ -1990,7 +2029,9 @@ def collect_scratch_statuses(
                 candidate,
                 image=image,
                 target_va=start,
-                reference_catalog=catalog_cache[config.image],
+                reference_catalog=catalog_cache[config.image].with_object_aliases(
+                    config.reference_aliases,
+                ),
             )
             status = ScratchStatus(
                 config=config,
