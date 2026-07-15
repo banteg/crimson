@@ -673,7 +673,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         )
         trigger += 300
 
-    if full_version:
+    if ctx.hardcore:
         trigger = 62800
         for pos, _angle in ring_points(center, 180.0, 12, step=0.5235988, start=0.5235988):
             entries.append(

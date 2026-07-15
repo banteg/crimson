@@ -72,6 +72,7 @@ test "builder-specific hardcore quest branches use context flag" {
         .{ .level_key = 210, .normal_count = 3, .hardcore_count = 6 },
         .{ .level_key = 407, .normal_count = 68, .hardcore_count = 92 },
         .{ .level_key = 408, .normal_count = 40, .hardcore_count = 56 },
+        .{ .level_key = 410, .normal_count = 25, .hardcore_count = 37 },
     };
 
     for (cases) |case| {

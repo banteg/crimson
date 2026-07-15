@@ -125,6 +125,7 @@ def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
         (QuestLevel(2, 10), 3, 6),
         (QuestLevel(4, 7), 68, 92),
         (QuestLevel(4, 8), 40, 56),
+        (QuestLevel(4, 10), 25, 37),
     )
 
     for level, normal_count, hardcore_count in cases:

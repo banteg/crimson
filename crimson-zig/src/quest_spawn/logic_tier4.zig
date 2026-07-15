@@ -585,20 +585,22 @@ fn build_410_the_end_of_all(
         1,
     );
 
-    try common.appendRingSpawns(
-        out_entries,
-        len,
-        center,
-        180.0,
-        12,
-        0.5235988,
-        0.5235988,
-        .zero,
-        common.SpawnId.alien_spawner_child_1d_fast_07,
-        62_800,
-        500,
-        1,
-    );
+    if (ctx.hardcore) {
+        try common.appendRingSpawns(
+            out_entries,
+            len,
+            center,
+            180.0,
+            12,
+            0.5235988,
+            0.5235988,
+            .zero,
+            common.SpawnId.alien_spawner_child_1d_fast_07,
+            62_800,
+            500,
+            1,
+        );
+    }
 
     try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, edges_wide, 48_000);
 }
