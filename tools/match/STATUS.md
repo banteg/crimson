@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 317/991 | 41375/386510 | 10.7% | 317/355 |
+| crimsonland.exe | 317/991 | 41375/386510 | 10.7% | 317/356 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**317/991** functions, **41375/386510** bytes (**10.7%**), **317/355** scratches verified.
+**317/991** functions, **41375/386510** bytes (**10.7%**), **317/356** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -252,6 +252,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
+| wip | quest_build_spideroids | 0x004373c0 | 224 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | wip | quest_build_deja_vu | 0x00437920 | 209 | 62/63 | 83.20% | 1/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 48/48 | 95.83% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
