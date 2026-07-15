@@ -520,7 +520,7 @@
     "program": "crimsonland.exe",
     "address": "0x00408530",
     "name": "tutorial_prompt_dialog",
-    "signature": "void tutorial_prompt_dialog(char *text, float alpha)",
+    "signature": "void tutorial_prompt_dialog(char *text, float alpha, char tutorial_complete)",
     "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
   },
   {

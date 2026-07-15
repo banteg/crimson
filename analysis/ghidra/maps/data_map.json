@@ -1455,10 +1455,13 @@
       "comment": "Tutorial prompt dialog one-shot init flags for Repeat/Play button setup.",
       "name": "tutorial_prompt_dialog_init_flags",
       "program": "crimsonland.exe",
-      "type": "char"
+      "type": "unsigned char"
     },
     {
       "address": "0x00480250",
+      "aliases": [
+        "?repeat_button@?8??tutorial_prompt_dialog@@9@4Ututorial_button_t@@A"
+      ],
       "comment": "Tutorial prompt dialog action button state for \"Repeat tutorial\".",
       "name": "tutorial_prompt_repeat_button",
       "program": "crimsonland.exe",
@@ -2056,6 +2059,9 @@
     },
     {
       "address": "0x004807d0",
+      "aliases": [
+        "?primary_button@?8??tutorial_prompt_dialog@@9@4Ututorial_button_t@@A"
+      ],
       "comment": "Tutorial prompt dialog primary action button state (label switches between \"Play a game\" and \"Skip tutorial\").",
       "name": "tutorial_prompt_primary_button",
       "program": "crimsonland.exe",

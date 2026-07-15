@@ -73,7 +73,11 @@ Recent data-map lifts for one-shot setup guards:
 - `tutorial_prompt_repeat_button` (`0x00480250`) and
   `tutorial_prompt_primary_button` (`0x004807d0`):
   persistent `ui_button_t` states used by `tutorial_prompt_dialog` (primary
-  label switches between "Play a game" and "Skip tutorial").
+  label switches between "Play a game" and "Skip tutorial"). The recovered
+  third byte parameter selects the completion layout: the tutorial timeline
+  passes `tutorial_stage_index == 8`, while transient hint prompts pass zero.
+  Repeat clears all 128 perk counters and restarts the tutorial timers;
+  Play/Skip queue the Play Game menu transition.
 - `demo_purchase_screen_init_flags` (`0x00480320`):
   `demo_purchase_screen_update` one-shot setup guards for Maybe later /
   Purchase.

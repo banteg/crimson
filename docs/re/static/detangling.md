@@ -1106,7 +1106,7 @@ Init timing note:
 
   - `perk_choices_dirty` (`DAT_00486fb0`) is set after perk selection and on reset, then cleared the
     first time `perks_generate_choices` runs before switching to state `6`.
-### Tutorial prompt (medium confidence)
+### Tutorial prompt (high confidence)
 
 - `FUN_00408530` -> `tutorial_prompt_dialog`
   - Evidence: renders the tutorial message panel and uses button UI for "Repeat tutorial",
@@ -1114,10 +1114,11 @@ Init timing note:
     table `player_perk_counts` (`DAT_00490968`) and resets timers) or exit to game (sets `game_state_pending` (`DAT_00487274`), flushes input,
     and resets `DAT_00486fe0`).
 
-  - Signature (inferred): `void tutorial_prompt_dialog(char *text, float alpha)`
-  - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used
-    to scale the button visuals; the decompiler currently shows it as a `char` because the call
-    site passes `SUB41` of a float.
+  - Signature (matched):
+    `void tutorial_prompt_dialog(char *text, float alpha, char tutorial_complete)`
+  - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and scales
+    the button visuals. The main prompt passes `tutorial_stage_index == 8` as the third argument;
+    transient tutorial hints pass zero. The third byte selects Play/Repeat versus Skip.
 ### Tutorial timeline (medium confidence)
 
 - `FUN_00408990` -> `tutorial_timeline_update`

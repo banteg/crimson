@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**513/2167** functions matched, **89035/676448** code bytes (**13.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**514/2167** functions matched, **90119/676448** code bytes (**13.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 381/992 | 69588/386551 | 18.0% | 381/468 |
+| crimsonland.exe | 382/992 | 70672/386551 | 18.3% | 382/469 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**381/992** functions, **69588/386551** bytes (**18.0%**), **381/468** scratches verified.
+**382/992** functions, **70672/386551** bytes (**18.3%**), **382/469** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -79,6 +79,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | perks_update_effects | 0x00406b40 | 1437 | 352/352 | 90.06% | 9/352 | 135/0/0 |  | perk-runtime-effects |
 | wip | quest_mode_update | 0x004070e0 | 455 | 103/108 | 65.40% | 23/108 | 35/0/5 |  | quest-completion-transition-coordinator |
 | match | rush_mode_update | 0x004072b0 | 594 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
+| match | tutorial_prompt_dialog | 0x00408530 | 1084 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
