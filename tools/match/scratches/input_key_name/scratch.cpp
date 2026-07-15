@@ -1,0 +1,263 @@
+#include <windows.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#include <string.h>
+
+#ifndef DIK_OEM_102
+#define DIK_OEM_102 0x56
+#define DIK_ABNT_C1 0x73
+#define DIK_ABNT_C2 0x7e
+#define DIK_PREVTRACK 0x90
+#define DIK_NEXTTRACK 0x99
+#define DIK_MUTE 0xa0
+#define DIK_CALCULATOR 0xa1
+#define DIK_PLAYPAUSE 0xa2
+#define DIK_MEDIASTOP 0xa4
+#define DIK_VOLUMEDOWN 0xae
+#define DIK_VOLUMEUP 0xb0
+#define DIK_WEBHOME 0xb2
+#define DIK_WAKE 0xe3
+#define DIK_WEBSEARCH 0xe5
+#define DIK_WEBFAVORITES 0xe6
+#define DIK_WEBREFRESH 0xe7
+#define DIK_WEBSTOP 0xe8
+#define DIK_WEBFORWARD 0xe9
+#define DIK_WEBBACK 0xea
+#define DIK_MYCOMPUTER 0xeb
+#define DIK_MAIL 0xec
+#define DIK_MEDIASELECT 0xed
+#endif
+
+extern "C" char input_key_name_buf[64];
+
+#define COPY_FIRST_KEY_NAME(value, label) \
+    if (key_code == value) { \
+        strcpy(input_key_name_buf, label); \
+    }
+
+#define COPY_KEY_NAME(value, label) \
+    else if (key_code == value) { \
+        strcpy(input_key_name_buf, label); \
+    }
+
+#define RETURN_KEY_NAME(value, label) \
+    case value: \
+        return label
+
+extern "C" char *input_key_name(int key_code)
+{
+    if (key_code > 0xff) {
+        COPY_FIRST_KEY_NAME(0x100, "Mouse1")
+        COPY_KEY_NAME(0x101, "Mouse2")
+        COPY_KEY_NAME(0x102, "Mouse3")
+        COPY_KEY_NAME(0x103, "Mouse4")
+        COPY_KEY_NAME(0x104, "Mouse5")
+        COPY_KEY_NAME(0x109, "MWheelUp")
+        COPY_KEY_NAME(0x10a, "MWheelDown")
+
+        COPY_KEY_NAME(0x11f, "Joys1")
+        COPY_KEY_NAME(0x120, "Joys2")
+        COPY_KEY_NAME(0x121, "Joys3")
+        COPY_KEY_NAME(0x122, "Joys4")
+        COPY_KEY_NAME(0x123, "Joys5")
+        COPY_KEY_NAME(0x124, "Joys6")
+        COPY_KEY_NAME(0x125, "Joys7")
+        COPY_KEY_NAME(0x126, "Joys8")
+        COPY_KEY_NAME(0x127, "Joys9")
+        COPY_KEY_NAME(0x128, "Joys10")
+        COPY_KEY_NAME(0x129, "Joys11")
+        COPY_KEY_NAME(0x12a, "Joys12")
+
+        COPY_KEY_NAME(0x131, "JoysUp")
+        COPY_KEY_NAME(0x132, "JoysDown")
+        COPY_KEY_NAME(0x133, "JoysLeft")
+        COPY_KEY_NAME(0x134, "JoysRight")
+        COPY_KEY_NAME(0x13f, "JoyAxisX")
+        COPY_KEY_NAME(0x140, "JoyAxisY")
+        COPY_KEY_NAME(0x141, "JoyAxisZ")
+        COPY_KEY_NAME(0x153, "JoyRotX")
+        COPY_KEY_NAME(0x154, "JoyRotY")
+        COPY_KEY_NAME(0x155, "JoyRotZ")
+        COPY_KEY_NAME(0x17e, "unbound")
+
+        COPY_KEY_NAME(0x163, "RIM0XAxis")
+        COPY_KEY_NAME(0x164, "RIM1XAxis")
+        COPY_KEY_NAME(0x165, "RIM2XAxis")
+        COPY_KEY_NAME(0x168, "RIM0YAxis")
+        COPY_KEY_NAME(0x169, "RIM1YAxis")
+        COPY_KEY_NAME(0x16a, "RIM2YAxis")
+        COPY_KEY_NAME(0x16d, "RIM0Btn1")
+        COPY_KEY_NAME(0x16e, "RIM0Btn2")
+        COPY_KEY_NAME(0x16f, "RIM0Btn3")
+        COPY_KEY_NAME(0x170, "RIM0Btn4")
+        COPY_KEY_NAME(0x171, "RIM0Btn5")
+        COPY_KEY_NAME(0x172, "RIM1Btn1")
+        COPY_KEY_NAME(0x173, "RIM1Btn2")
+        COPY_KEY_NAME(0x174, "RIM1Btn3")
+        COPY_KEY_NAME(0x175, "RIM1Btn4")
+        COPY_KEY_NAME(0x176, "RIM1Btn5")
+        COPY_KEY_NAME(0x177, "RIM2Btn1")
+        COPY_KEY_NAME(0x178, "RIM2Btn2")
+        COPY_KEY_NAME(0x179, "RIM2Btn3")
+        COPY_KEY_NAME(0x17a, "RIM2Btn4")
+        COPY_KEY_NAME(0x17b, "RIM2Btn5")
+
+        else if (key_code > 0x163) {
+            strcpy(input_key_name_buf, "RawInput ?");
+        }
+        return input_key_name_buf;
+    }
+
+    if (GetKeyNameTextA(key_code << 16, input_key_name_buf, 63) != 0) {
+        return input_key_name_buf;
+    }
+
+    switch (key_code) {
+        RETURN_KEY_NAME(DIK_ESCAPE, "DIK_ESCAPE");
+        RETURN_KEY_NAME(DIK_1, "DIK_1");
+        RETURN_KEY_NAME(DIK_2, "DIK_2");
+        RETURN_KEY_NAME(DIK_3, "DIK_3");
+        RETURN_KEY_NAME(DIK_4, "DIK_4");
+        RETURN_KEY_NAME(DIK_5, "DIK_5");
+        RETURN_KEY_NAME(DIK_6, "DIK_6");
+        RETURN_KEY_NAME(DIK_7, "DIK_7");
+        RETURN_KEY_NAME(DIK_8, "DIK_8");
+        RETURN_KEY_NAME(DIK_9, "DIK_9");
+        RETURN_KEY_NAME(DIK_0, "DIK_0");
+        RETURN_KEY_NAME(DIK_MINUS, "MINUS");
+        RETURN_KEY_NAME(DIK_EQUALS, "EQUALS");
+        RETURN_KEY_NAME(DIK_BACK, "BACK");
+        RETURN_KEY_NAME(DIK_TAB, "TAB");
+        RETURN_KEY_NAME(DIK_Q, "Q");
+        RETURN_KEY_NAME(DIK_W, "W");
+        RETURN_KEY_NAME(DIK_E, "E");
+        RETURN_KEY_NAME(DIK_R, "R");
+        RETURN_KEY_NAME(DIK_T, "T");
+        RETURN_KEY_NAME(DIK_Y, "Y");
+        RETURN_KEY_NAME(DIK_U, "U");
+        RETURN_KEY_NAME(DIK_I, "I");
+        RETURN_KEY_NAME(DIK_O, "O");
+        RETURN_KEY_NAME(DIK_P, "P");
+        RETURN_KEY_NAME(DIK_LBRACKET, "LBRACKET");
+        RETURN_KEY_NAME(DIK_RBRACKET, "RBRACKET");
+        RETURN_KEY_NAME(DIK_RETURN, "RETURN");
+        RETURN_KEY_NAME(DIK_LCONTROL, "LCONTROL");
+        RETURN_KEY_NAME(DIK_A, "A");
+        RETURN_KEY_NAME(DIK_S, "S");
+        RETURN_KEY_NAME(DIK_D, "D");
+        RETURN_KEY_NAME(DIK_F, "F");
+        RETURN_KEY_NAME(DIK_G, "G");
+        RETURN_KEY_NAME(DIK_H, "H");
+        RETURN_KEY_NAME(DIK_J, "J");
+        RETURN_KEY_NAME(DIK_K, "K");
+        RETURN_KEY_NAME(DIK_L, "L");
+        RETURN_KEY_NAME(DIK_SEMICOLON, "SEMICOLON");
+        RETURN_KEY_NAME(DIK_APOSTROPHE, "APOSTROPHE");
+        RETURN_KEY_NAME(DIK_GRAVE, "GRAVE");
+        RETURN_KEY_NAME(DIK_LSHIFT, "LSHIFT");
+        RETURN_KEY_NAME(DIK_BACKSLASH, "BACKSLASH");
+        RETURN_KEY_NAME(DIK_Z, "Z");
+        RETURN_KEY_NAME(DIK_X, "X");
+        RETURN_KEY_NAME(DIK_C, "C");
+        RETURN_KEY_NAME(DIK_V, "V");
+        RETURN_KEY_NAME(DIK_B, "B");
+        RETURN_KEY_NAME(DIK_N, "N");
+        RETURN_KEY_NAME(DIK_M, "M");
+        RETURN_KEY_NAME(DIK_COMMA, "COMMA");
+        RETURN_KEY_NAME(DIK_PERIOD, "PERIOD");
+        RETURN_KEY_NAME(DIK_SLASH, "SLASH");
+        RETURN_KEY_NAME(DIK_RSHIFT, "RSHIFT");
+        RETURN_KEY_NAME(DIK_MULTIPLY, "MULTIPLY");
+        RETURN_KEY_NAME(DIK_LMENU, "LMENU");
+        RETURN_KEY_NAME(DIK_SPACE, "SPACE");
+        RETURN_KEY_NAME(DIK_CAPITAL, "CAPITAL");
+        RETURN_KEY_NAME(DIK_F1, "F1");
+        RETURN_KEY_NAME(DIK_F2, "F2");
+        RETURN_KEY_NAME(DIK_F3, "F3");
+        RETURN_KEY_NAME(DIK_F4, "F4");
+        RETURN_KEY_NAME(DIK_F5, "F5");
+        RETURN_KEY_NAME(DIK_F6, "F6");
+        RETURN_KEY_NAME(DIK_F7, "F7");
+        RETURN_KEY_NAME(DIK_F8, "F8");
+        RETURN_KEY_NAME(DIK_F9, "F9");
+        RETURN_KEY_NAME(DIK_F10, "F10");
+        RETURN_KEY_NAME(DIK_NUMLOCK, "NUMLOCK");
+        RETURN_KEY_NAME(DIK_SCROLL, "SCROLL");
+        RETURN_KEY_NAME(DIK_NUMPAD7, "NUMPAD7");
+        RETURN_KEY_NAME(DIK_NUMPAD8, "NUMPAD8");
+        RETURN_KEY_NAME(DIK_NUMPAD9, "NUMPAD9");
+        RETURN_KEY_NAME(DIK_SUBTRACT, "SUBTRACT");
+        RETURN_KEY_NAME(DIK_NUMPAD4, "NUMPAD4");
+        RETURN_KEY_NAME(DIK_NUMPAD5, "NUMPAD5");
+        RETURN_KEY_NAME(DIK_NUMPAD6, "NUMPAD6");
+        RETURN_KEY_NAME(DIK_ADD, "ADD");
+        RETURN_KEY_NAME(DIK_NUMPAD1, "NUMPAD1");
+        RETURN_KEY_NAME(DIK_NUMPAD2, "NUMPAD2");
+        RETURN_KEY_NAME(DIK_NUMPAD3, "NUMPAD3");
+        RETURN_KEY_NAME(DIK_NUMPAD0, "NUMPAD0");
+        RETURN_KEY_NAME(DIK_DECIMAL, "DECIMAL");
+        RETURN_KEY_NAME(DIK_OEM_102, "OEM_102");
+        RETURN_KEY_NAME(DIK_F11, "F11");
+        RETURN_KEY_NAME(DIK_F12, "F12");
+        RETURN_KEY_NAME(DIK_F13, "F13");
+        RETURN_KEY_NAME(DIK_F14, "F14");
+        RETURN_KEY_NAME(DIK_F15, "F15");
+        RETURN_KEY_NAME(DIK_KANA, "KANA");
+        RETURN_KEY_NAME(DIK_ABNT_C1, "ABNT_C1");
+        RETURN_KEY_NAME(DIK_CONVERT, "CONVERT");
+        RETURN_KEY_NAME(DIK_NOCONVERT, "NOCONVERT");
+        RETURN_KEY_NAME(DIK_YEN, "YEN");
+        RETURN_KEY_NAME(DIK_ABNT_C2, "ABNT_C2");
+        RETURN_KEY_NAME(DIK_NUMPADEQUALS, "NUMPADEQUALS");
+        RETURN_KEY_NAME(DIK_PREVTRACK, "PREVTRACK");
+        RETURN_KEY_NAME(DIK_AT, "AT");
+        RETURN_KEY_NAME(DIK_COLON, "COLON");
+        RETURN_KEY_NAME(DIK_UNDERLINE, "UNDERLINE");
+        RETURN_KEY_NAME(DIK_KANJI, "KANJI");
+        RETURN_KEY_NAME(DIK_STOP, "STOP");
+        RETURN_KEY_NAME(DIK_AX, "AX");
+        RETURN_KEY_NAME(DIK_UNLABELED, "UNLABELED");
+        RETURN_KEY_NAME(DIK_NEXTTRACK, "NEXTTRACK");
+        RETURN_KEY_NAME(DIK_NUMPADENTER, "NUMPADENTER");
+        RETURN_KEY_NAME(DIK_RCONTROL, "RCONTROL");
+        RETURN_KEY_NAME(DIK_MUTE, "MUTE");
+        RETURN_KEY_NAME(DIK_CALCULATOR, "CALCULATOR");
+        RETURN_KEY_NAME(DIK_PLAYPAUSE, "PLAYPAUSE");
+        RETURN_KEY_NAME(DIK_MEDIASTOP, "MEDIASTOP");
+        RETURN_KEY_NAME(DIK_VOLUMEDOWN, "VOLUMEDOWN");
+        RETURN_KEY_NAME(DIK_VOLUMEUP, "VOLUMEUP");
+        RETURN_KEY_NAME(DIK_WEBHOME, "WEBHOME");
+        RETURN_KEY_NAME(DIK_NUMPADCOMMA, "NUMPADCOMMA");
+        RETURN_KEY_NAME(DIK_DIVIDE, "DIVIDE");
+        RETURN_KEY_NAME(DIK_SYSRQ, "SYSRQ");
+        RETURN_KEY_NAME(DIK_RMENU, "RMENU");
+        RETURN_KEY_NAME(DIK_PAUSE, "PAUSE");
+        RETURN_KEY_NAME(DIK_HOME, "HOME");
+        RETURN_KEY_NAME(DIK_UP, "UP");
+        RETURN_KEY_NAME(DIK_PRIOR, "PRIOR");
+        RETURN_KEY_NAME(DIK_LEFT, "LEFT");
+        RETURN_KEY_NAME(DIK_RIGHT, "RIGHT");
+        RETURN_KEY_NAME(DIK_END, "END");
+        RETURN_KEY_NAME(DIK_DOWN, "DOWN");
+        RETURN_KEY_NAME(DIK_NEXT, "NEXT");
+        RETURN_KEY_NAME(DIK_INSERT, "INSERT");
+        RETURN_KEY_NAME(DIK_DELETE, "DELETE");
+        RETURN_KEY_NAME(DIK_LWIN, "LWIN");
+        RETURN_KEY_NAME(DIK_RWIN, "RWIN");
+        RETURN_KEY_NAME(DIK_APPS, "APPS");
+        RETURN_KEY_NAME(DIK_POWER, "POWER");
+        RETURN_KEY_NAME(DIK_SLEEP, "SLEEP");
+        RETURN_KEY_NAME(DIK_WAKE, "WAKE");
+        RETURN_KEY_NAME(DIK_WEBSEARCH, "WEBSEARCH");
+        RETURN_KEY_NAME(DIK_WEBFAVORITES, "WEBFAVORITES");
+        RETURN_KEY_NAME(DIK_WEBREFRESH, "WEBREFRESH");
+        RETURN_KEY_NAME(DIK_WEBSTOP, "WEBSTOP");
+        RETURN_KEY_NAME(DIK_WEBFORWARD, "WEBFORWARD");
+        RETURN_KEY_NAME(DIK_WEBBACK, "WEBBACK");
+        RETURN_KEY_NAME(DIK_MYCOMPUTER, "MYCOMPUTER");
+        RETURN_KEY_NAME(DIK_MAIL, "MAIL");
+        RETURN_KEY_NAME(DIK_MEDIASELECT, "MEDIASELECT");
+    }
+
+    return "Unknown";
+}

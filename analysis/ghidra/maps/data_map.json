@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "address": "0x004044b0",
+      "aliases": [
+        "lookup_table_4044b0"
+      ],
+      "comment": "Compiler-generated 237-byte case-id map for input_key_name's sparse DirectInput fallback switch.",
+      "name": "input_key_name_dik_dispatch_map",
+      "program": "crimsonland.exe",
+      "type": "uint8_t[237]"
+    },
+    {
       "address": "0x0046f3e4",
       "aliases": [
         "??_7mod_api_cpp_t@@6B@"
