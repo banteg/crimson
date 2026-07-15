@@ -369,7 +369,8 @@ typedef struct creature_t {
     float reward_value;
     unsigned char _pad2[4];
     int type_id;
-    int target_player;
+    unsigned char target_player;
+    unsigned char _pad_target_player[3];
     unsigned char _pad3[4];
     int link_index;
     float target_offset_x;

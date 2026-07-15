@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 423/997 | 80643/386756 | 20.9% | 423/512 |
+| crimsonland.exe | 423/997 | 80643/386756 | 20.9% | 423/513 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**423/997** functions, **80643/386756** bytes (**20.9%**), **423/512** scratches verified.
+**423/997** functions, **80643/386756** bytes (**20.9%**), **423/513** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -178,6 +178,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
 | match | game_save_status | 0x00412a80 | 399 | 123/123 | 100.00% | 123/123 | 36/0/0 |  | game-status-save-transform |
 | match | game_load_status | 0x00412c10 | 420 | 134/134 | 100.00% | 134/134 | 43/0/0 |  | game-status-load-transform |
+| wip | gameplay_reset_state | 0x00412dc0 | 1639 | 309/307 | 90.58% | 7/307 | 206/0/1 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |

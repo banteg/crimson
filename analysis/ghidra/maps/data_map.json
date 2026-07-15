@@ -2943,6 +2943,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00482940",
+      "comment": "Number of initialized creature type records; gameplay_reset_state sets six immediately before populating types 0 through 5.",
+      "name": "creature_type_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00482948",
       "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)",
       "name": "bonus_pool",
@@ -3357,6 +3364,13 @@
       "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples).",
       "name": "survival_reward_handout_enabled",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00486fa9",
+      "comment": "Write-only auxiliary survival handout flag; gameplay_reset_state is its sole Binary Ninja xref and initializes it to one beside survival_reward_handout_enabled.",
+      "name": "survival_reward_handout_aux_enabled",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x00486faa",
@@ -6732,9 +6746,10 @@
     },
     {
       "address": "0x0049bfa8",
-      "comment": "Creature target player index (creature_pool + 0x70).",
+      "comment": "Byte-sized creature target player index (creature_pool + 0x70); gameplay_reset_state writes only the low byte.",
       "name": "creature_target_player",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
     },
     {
       "address": "0x0049bfb0",
@@ -6861,6 +6876,13 @@
       "address": "0x004aaf1c",
       "comment": "Perk Jinxed self-damage proc timer (seconds); decremented each frame and reseeded with randomized interval in perks_update_effects.",
       "name": "perk_jinxed_proc_timer_s",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004aaf24",
+      "comment": "Write-only float in the gameplay timer block; gameplay_reset_state is its sole Binary Ninja xref and clears it to zero.",
+      "name": "gameplay_reset_unused_timer",
       "program": "crimsonland.exe",
       "type": "float"
     },
