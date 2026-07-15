@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 330/991 | 49774/386510 | 12.9% | 330/412 |
+| crimsonland.exe | 330/991 | 49774/386510 | 12.9% | 330/413 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**330/991** functions, **49774/386510** bytes (**12.9%**), **330/412** scratches verified.
+**330/991** functions, **49774/386510** bytes (**12.9%**), **330/413** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -54,6 +54,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
+| wip | config_init_defaults | 0x004028f0 | 734 | 143/140 | 77.74% | 0/140 | 65/0/2 |  | config-defaults-and-input-bindings |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | register_core_cvars | 0x00402c00 | 326 | 66/66 | 100.00% | 66/66 | 65/0/0 |  | core-console-variable-registration |
 | match | ui_render_loading | 0x00402d50 | 375 | 107/107 | 100.00% | 107/107 | 15/0/0 |  | ui-loading-panel-renderer |

@@ -300,8 +300,8 @@
     "program": "crimsonland.exe",
     "address": "0x004028f0",
     "name": "config_init_defaults",
-    "signature": "int config_init_defaults(void)",
-    "comment": "initializes default config globals, key bindings, and name slots",
+    "signature": "void config_init_defaults(void)",
+    "comment": "initializes default config globals, key bindings, and name slots; EAX is incidental residue from the final 0x17e assignments",
     "create": true
   },
   {
