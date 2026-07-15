@@ -1222,6 +1222,7 @@
     "aliases": [
       "??0ui_template_slot_cpp_t@@QAE@XZ",
       "??0ui_vec2_cpp_t@@QAE@XZ",
+      "?construct@effect_vertex_cpp_t@@QAEXXZ",
       "?construct@ui_vec2_cpp_t@@QAEXXZ",
       "?construct@ui_template_slot_cpp_t@@QAEXXZ"
     ],
@@ -2118,6 +2119,20 @@
     "name": "statistics_update_check_worker",
     "signature": "void statistics_update_check_worker(void *arg)",
     "comment": "background worker started from statistics/highscore flows to check for version updates and stage update notice URL state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de00",
+    "name": "effect_pool_vertices_global_init_thunk",
+    "signature": "void effect_pool_vertices_global_init_thunk(void)",
+    "comment": "tail-call thunk for the effect-pool vertex initializer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de10",
+    "name": "effect_pool_vertices_global_init",
+    "signature": "void effect_pool_vertices_global_init(void)",
+    "comment": "constructs the four quad vertices embedded in each of 512 effect-pool entries"
   },
   {
     "program": "crimsonland.exe",

@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**499/2167** functions matched, **86455/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**501/2167** functions matched, **86499/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 367/992 | 67008/386551 | 17.3% | 367/452 |
+| crimsonland.exe | 369/992 | 67052/386551 | 17.3% | 369/454 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**367/992** functions, **67008/386551** bytes (**17.3%**), **367/452** scratches verified.
+**369/992** functions, **67052/386551** bytes (**17.3%**), **369/454** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -261,6 +261,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | startup_audio_load_thread | 0x0042b250 | 63 | 14/14 | 100.00% | 14/14 | 11/0/0 |  | startup-audio-thread |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
+| match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
+| match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | effect_init_entry | 0x0042de80 | 143 | 36/36 | 100.00% | 36/36 | 0/0/0 |  | gameplay-effect-pool |
 | match | effect_defaults_reset | 0x0042df10 | 355 | 59/59 | 100.00% | 59/59 | 29/0/0 |  | gameplay-effect-pool-reset |
 | match | effect_free | 0x0042e080 | 29 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | gameplay-effect-pool |
