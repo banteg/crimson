@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/370 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/371 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/370** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/371** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -252,6 +252,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
+| wip | quest_build_ghost_patrols | 0x00436200 | 334 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
