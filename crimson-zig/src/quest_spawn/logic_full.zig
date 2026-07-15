@@ -171,6 +171,30 @@ test "gang wars uses native half height and fixed chain coordinates" {
     try std.testing.expectApproxEqAbs(@as(f32, 1152.0), entries[23].pos.y, 1e-6);
 }
 
+test "fortress uses native half height" {
+    var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 48;
+    const descriptor = lookupLevelBuilder(503) orelse unreachable;
+    var rng = common.QuestRng.init(0);
+    var len: usize = 0;
+    try descriptor.build(
+        .{
+            .width = 2048.0,
+            .height = 2049.0,
+            .player_count = 1,
+        },
+        &rng,
+        out_entries[0..],
+        &len,
+    );
+    const entries = out_entries[0..len];
+
+    try std.testing.expectEqual(@as(usize, 42), entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.5), entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 320.0), entries[8].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 448.0), entries[8].pos.y, 1e-6);
+    try std.testing.expectEqual(@as(u32, 0x42FFFFFE), @as(u32, @bitCast(entries[13].pos.y)));
+}
+
 test "level 1-10 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(110) orelse unreachable;
     var rng = common.QuestRng.init(0x1A2B3C4D);

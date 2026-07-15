@@ -212,9 +212,9 @@ fn build503TheFortress(
 ) common.QuestSpawnBuildError!void {
     _ = rng;
 
-    const half_height = halfFloor(ctx.height);
+    const half_height = ctx.height * 0.5;
 
-    try common.appendSpawn(
+    try common.appendSpawnExact(
         out_entries,
         len,
         .{ .x = -50.0, .y = half_height },
@@ -227,8 +227,8 @@ fn build503TheFortress(
     var trigger: i32 = 1100;
     var y_seed: i32 = 0x200;
     while (trigger < 0x14B4) {
-        const y = (@as(f32, @floatFromInt(y_seed)) * 0.125) + 256.0;
-        try common.appendSpawn(
+        const y: f32 = @floatCast((@as(f64, @floatFromInt(y_seed)) * 0.125) + 256.0);
+        try common.appendSpawnExact(
             out_entries,
             len,
             .{ .x = 768.0, .y = y },
@@ -243,15 +243,16 @@ fn build503TheFortress(
 
     var entry_count: i32 = 8;
     var x_seed: i32 = 0x180;
+    const one_sixth: f64 = @floatCast(@as(f32, 0.16666667));
     while (x_seed < 0x901) {
         trigger = entry_count * 600 + 0x157C;
 
         var row: i32 = 1;
         while (row < 7) : (row += 1) {
             if (row != 1 or (x_seed != 0x480 and x_seed != 0x600)) {
-                const x = (@as(f32, @floatFromInt(x_seed)) * 0.16666667) + 256.0;
-                const y = 512.0 - (@as(f32, @floatFromInt(row * 0x180)) * 0.16666667);
-                try common.appendSpawn(
+                const x: f32 = @floatCast((@as(f64, @floatFromInt(x_seed)) * one_sixth) + 256.0);
+                const y: f32 = @floatCast(512.0 - (@as(f64, @floatFromInt(row * 0x180)) * one_sixth));
+                try common.appendSpawnExact(
                     out_entries,
                     len,
                     .{ .x = x, .y = y },

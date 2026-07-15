@@ -6,6 +6,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
+from ..math_parity import f32
 from ..perks import PerkId
 from ..weapons import WeaponId
 from .helpers import (
@@ -176,9 +177,10 @@ def build_5_2_the_spanking_of_the_dead(
     unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
 )
 def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+    half_height = float(ctx.height) * 0.5
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-50.0, float(ctx.height // 2)),
+        spawn_exact(
+            Vec2(-50.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
             trigger_ms=100,
@@ -189,9 +191,9 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
     trigger = 1100
     y_seed = 0x200
     while trigger < 0x14B4:
-        y = y_seed * 0.125 + 256.0
+        y = float(f32(y_seed * 0.125 + 256.0))
         entries.append(
-            spawn(
+            spawn_exact(
                 Vec2(768.0, float(y)),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
@@ -204,14 +206,15 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
 
     entry_count = 8
     x_seed = 0x180
+    one_sixth = float(f32(0.16666667))
     while x_seed < 0x901:
         trigger = entry_count * 600 + 0x157C
         for row in range(1, 7):
             if row != 1 or x_seed not in (0x480, 0x600):
-                x = x_seed * 0.16666667 + 256.0
-                y = 512.0 - (row * 0x180) * 0.16666667
+                x = float(f32(x_seed * one_sixth + 256.0))
+                y = float(f32(512.0 - (row * 0x180) * one_sixth))
                 entries.append(
-                    spawn(
+                    spawn_exact(
                         Vec2(float(x), float(y)),
                         heading=0.0,
                         spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,

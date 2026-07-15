@@ -13827,7 +13827,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 10300,
         'x': 320.0,
-        'y': 447.0,
+        'y': 448.0,
       }),
       dict({
         'count': 1,
@@ -13835,7 +13835,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 10900,
         'x': 320.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -13843,7 +13843,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 11500,
         'x': 320.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -13851,7 +13851,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 12100,
         'x': 320.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -13859,7 +13859,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 12700,
         'x': 320.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -13867,7 +13867,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 13300,
         'x': 320.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
       dict({
         'count': 1,
@@ -13875,7 +13875,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 13900,
         'x': 384.0,
-        'y': 447.0,
+        'y': 448.0,
       }),
       dict({
         'count': 1,
@@ -13883,7 +13883,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 14500,
         'x': 384.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -13891,7 +13891,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 15100,
         'x': 384.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -13899,7 +13899,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 15700,
         'x': 384.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -13907,7 +13907,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 16300,
         'x': 384.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -13915,7 +13915,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 16900,
         'x': 384.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
       dict({
         'count': 1,
@@ -13923,7 +13923,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 17500,
         'x': 448.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -13931,7 +13931,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 18100,
         'x': 448.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -13939,7 +13939,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 18700,
         'x': 448.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -13947,7 +13947,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 19300,
         'x': 448.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -13955,7 +13955,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 19900,
         'x': 448.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
       dict({
         'count': 1,
@@ -13963,7 +13963,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 20500,
         'x': 512.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -13971,7 +13971,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 21100,
         'x': 512.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -13979,7 +13979,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 21700,
         'x': 512.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -13987,7 +13987,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 22300,
         'x': 512.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -13995,7 +13995,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 22900,
         'x': 512.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
       dict({
         'count': 1,
@@ -14003,7 +14003,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 23500,
         'x': 576.0,
-        'y': 447.0,
+        'y': 448.0,
       }),
       dict({
         'count': 1,
@@ -14011,7 +14011,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 24100,
         'x': 576.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -14019,7 +14019,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 24700,
         'x': 576.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -14027,7 +14027,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 25300,
         'x': 576.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -14035,7 +14035,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 25900,
         'x': 576.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -14043,7 +14043,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 26500,
         'x': 576.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
       dict({
         'count': 1,
@@ -14051,7 +14051,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 27100,
         'x': 640.0,
-        'y': 447.0,
+        'y': 448.0,
       }),
       dict({
         'count': 1,
@@ -14059,7 +14059,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 27700,
         'x': 640.0,
-        'y': 383.0,
+        'y': 384.0,
       }),
       dict({
         'count': 1,
@@ -14067,7 +14067,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 28300,
         'x': 640.0,
-        'y': 319.0,
+        'y': 320.0,
       }),
       dict({
         'count': 1,
@@ -14075,7 +14075,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 28900,
         'x': 640.0,
-        'y': 255.0,
+        'y': 256.0,
       }),
       dict({
         'count': 1,
@@ -14083,7 +14083,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 29500,
         'x': 640.0,
-        'y': 191.0,
+        'y': 191.999984741,
       }),
       dict({
         'count': 1,
@@ -14091,7 +14091,7 @@
         'spawn_id': <SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: 10>,
         'trigger_ms': 30100,
         'x': 640.0,
-        'y': 127.0,
+        'y': 127.999984741,
       }),
     ]),
     'level': '5.3',
