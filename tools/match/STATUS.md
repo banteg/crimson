@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 325/991 | 46982/386510 | 12.2% | 325/404 |
+| crimsonland.exe | 325/991 | 46982/386510 | 12.2% | 325/405 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**325/991** functions, **46982/386510** bytes (**12.2%**), **325/404** scratches verified.
+**325/991** functions, **46982/386510** bytes (**12.2%**), **325/405** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -302,6 +302,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 291/291 | 70.10% | 12/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | wip | quest_build_the_end_of_all | 0x00438e10 | 692 | 173/174 | 66.28% | 4/174 | 18/0/0 |  | quest-the-end-of-all-fixed-rings |
 | wip | quest_build_spiders_inc | 0x004390d0 | 346 | 106/105 | 69.19% | 9/105 | 8/0/0 |  | quest-spiders-inc-staged-spider-waves |
+| wip | quest_start_selected | 0x0043a790 | 434 | 116/116 | 91.38% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
