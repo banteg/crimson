@@ -70,7 +70,19 @@ def _failed_outcome() -> QuestRunOutcome:
         shots_fired=100,
         shots_hit=42,
         most_used_weapon_id=WeaponId.PISTOL,
+        highscore_random_tag=0x0AAC0004,
     )
+
+
+def test_quest_failed_preserves_start_random_tag(quest_failed_state) -> None:
+    state = quest_failed_state
+    state.quest_outcome = _failed_outcome()
+
+    view = QuestFailedView(state)
+    view.open()
+
+    assert view._record is not None
+    assert view._record.uni_num == 0x0AAC0004
 
 
 def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, quest_failed_state, mocker) -> None:

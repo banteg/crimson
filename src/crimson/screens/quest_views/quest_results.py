@@ -76,7 +76,9 @@ class QuestResultsView:
                 else:
                     self._unlock_perk_name = f"perk_{perk_id_native}"
 
-        record = HighScoreRecord.blank()
+        record = HighScoreRecord.blank(
+            rand_value=int(outcome.highscore_random_tag),
+        )
         record.game_mode_id = GameMode.QUESTS
         record.quest_stage_major = major
         record.quest_stage_minor = minor

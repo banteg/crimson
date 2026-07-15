@@ -329,7 +329,9 @@ class QuestFailedView:
         level = outcome.level
         major, minor = level.major, level.minor
 
-        record = HighScoreRecord.blank()
+        record = HighScoreRecord.blank(
+            rand_value=int(outcome.highscore_random_tag),
+        )
         record.set_name(_player_name_default(self.state.config) or "Player")
         record.game_mode_id = GameMode.QUESTS
         record.quest_stage_major = major

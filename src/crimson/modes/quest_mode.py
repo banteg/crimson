@@ -25,6 +25,7 @@ from ..net.rollback_resync_v5 import (
     QuestsStateSnapshotV2,
 )
 from ..perks.selection import perk_selection_prepared_choices
+from ..persistence.highscores import UNI_NUM_MASK
 from ..persistence.save_status import GameStatus, GameStatusData
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
@@ -84,6 +85,7 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
     shots_fired: int
     shots_hit: int
     most_used_weapon_id: WeaponId
+    highscore_random_tag: int
     player_health_values: tuple[float, ...] = ()
 
 
@@ -123,6 +125,7 @@ class QuestMode(BaseGameplayMode):
         self._quest_def: QuestDefinition | None = None
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_total_spawn_count: int = 0
+        self._quest_highscore_random_tag: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._perk_prompt = PerkPromptState()
@@ -136,6 +139,7 @@ class QuestMode(BaseGameplayMode):
         self._quest_def = None
         self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_total_spawn_count = 0
+        self._quest_highscore_random_tag = 0
         self._outcome = None
         self._grim_mono = load_grim_mono_font(self._assets_root)
 
@@ -319,6 +323,7 @@ class QuestMode(BaseGameplayMode):
                     shots_fired=fired,
                     shots_hit=hit,
                     most_used_weapon_id=most_used_weapon_id,
+                    highscore_random_tag=int(self._quest_highscore_random_tag),
                 )
             self._save_replay()
             self.close_requested = True
@@ -381,6 +386,7 @@ class QuestMode(BaseGameplayMode):
             self._quest_def = None
             self._quest_level = level
             self._quest_total_spawn_count = 0
+            self._quest_highscore_random_tag = 0
             self._sim_session = None
             return
         self._outcome = None
@@ -412,7 +418,10 @@ class QuestMode(BaseGameplayMode):
         )
         # Native `quest_start_selected()` burns one `crt_rand()` for
         # `highscore_record_random_tag` before quest terrain and spawn setup.
-        self.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
+        highscore_rand = self.state.rng.rand_tagged(
+            RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG,
+        )
+        self._quest_highscore_random_tag = int(highscore_rand) & UNI_NUM_MASK
         quest_terrain = advance_explicit_terrain(
             self.state.rng,
             terrain_slots=quest.terrain_slots,
@@ -560,6 +569,7 @@ class QuestMode(BaseGameplayMode):
                 shots_fired=fired,
                 shots_hit=hit,
                 most_used_weapon_id=most_used_weapon_id,
+                highscore_random_tag=int(self._quest_highscore_random_tag),
             )
         self._save_replay()
         self.close_requested = True
