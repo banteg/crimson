@@ -71,6 +71,7 @@ struct console_queue_t {
     void console_tokenize_line(char *line);
     void console_set_open(unsigned char open);
     void update(void);
+    void render(void);
     void console_history_apply(void);
     console_cvar_entry_t *console_cvar_find(char *name);
     console_command_entry_t *console_command_find(char *name);

@@ -32,6 +32,7 @@ EXTENDED_CONSOLE_HEIGHT = 480
 CONSOLE_VERSION_TEXT = "Crimsonland 1.9.93"
 CONSOLE_ANIM_SPEED = 3.5
 CONSOLE_BLINK_SPEED = 3.0
+CONSOLE_BLINK_EXPONENT = 8.0
 CONSOLE_LINE_HEIGHT = 16.0
 CONSOLE_MONO_SCALE = 0.5
 CONSOLE_SMALL_SCALE = 1.0
@@ -534,7 +535,7 @@ class ConsoleState(msgspec.Struct):
 
     def _caret_blink_alpha(self) -> float:
         pulse = math.sin(self._blink_time * CONSOLE_BLINK_SPEED)
-        value = max(0.2, abs(pulse) ** 2)
+        value = max(0.2, abs(pulse) ** CONSOLE_BLINK_EXPONENT)
         return clamp(value, 0.0, 1.0)
 
     def _use_mono_font(self) -> bool:

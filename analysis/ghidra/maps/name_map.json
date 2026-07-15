@@ -220,8 +220,11 @@
     "program": "crimsonland.exe",
     "address": "0x00401dd0",
     "name": "console_render",
-    "signature": "int console_render(void *arg1)",
-    "comment": "[binja] int32_t __fastcall sub_401dd0(void* arg1)"
+    "aliases": [
+      "?render@console_queue_t@@QAEXXZ"
+    ],
+    "signature": "void __thiscall console_render(console_queue_t *queue)",
+    "comment": "renders the sliding console background, log, input prompt, and blinking caret"
   },
   {
     "program": "crimsonland.exe",

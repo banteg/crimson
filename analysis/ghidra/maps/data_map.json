@@ -35,7 +35,8 @@
       "address": "0x00471140",
       "comment": "Float screen width used for UI/layout (set from config_screen_width).",
       "name": "screen_width_f",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x00471144",
@@ -125,10 +126,31 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004712b8",
+      "comment": "Underscore glyph used for the console and Typo input carets.",
+      "name": "console_caret_string",
+      "program": "crimsonland.exe",
+      "type": "char[2]"
+    },
+    {
+      "address": "0x004712bc",
+      "comment": "Small-font console prompt format string: \">%s\".",
+      "name": "console_prompt_format",
+      "program": "crimsonland.exe",
+      "type": "char[4]"
+    },
+    {
       "address": "0x004712c0",
       "comment": "Console prompt string used for input rendering.",
       "name": "console_prompt_string",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004712c4",
+      "comment": "Version label rendered at the lower-right edge of the console.",
+      "name": "console_version_string",
+      "program": "crimsonland.exe",
+      "type": "char[19]"
     },
     {
       "address": "0x004712f0",
