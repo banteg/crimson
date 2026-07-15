@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**431/2165** functions matched, **51815/675677** code bytes (**7.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**432/2165** functions matched, **52297/675677** code bytes (**7.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 299/990 | 32368/385780 | 8.4% | 299/332 |
+| crimsonland.exe | 300/990 | 32850/385780 | 8.5% | 300/333 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**299/990** functions, **32368/385780** bytes (**8.4%**), **299/332** scratches verified.
+**300/990** functions, **32850/385780** bytes (**8.5%**), **300/333** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -214,6 +214,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | effect_spawn_freeze_shard | 0x0042ec80 | 376 | 81/81 | 100.00% | 81/81 | 33/0/0 |  | gameplay-freeze-shard-effect |
 | match | effect_spawn_freeze_shatter | 0x0042ee00 | 339 | 79/79 | 100.00% | 79/79 | 27/0/0 |  | gameplay-freeze-shatter-effect |
 | match | effect_spawn_burst | 0x0042ef60 | 282 | 61/61 | 100.00% | 61/61 | 21/0/0 |  | gameplay-effect-burst |
+| match | effect_spawn_shrinkifier_hit | 0x0042f080 | 482 | 92/92 | 100.00% | 92/92 | 38/0/0 |  | gameplay-shrinkifier-impact |
 | match | effect_spawn_ion_hit_core | 0x0042f270 | 191 | 32/32 | 100.00% | 32/32 | 16/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_plasma_hit_core | 0x0042f330 | 185 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 75/75 | 100.00% | 75/75 | 23/0/0 |  | gameplay-effect-spawn |

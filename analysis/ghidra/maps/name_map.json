@@ -2020,7 +2020,7 @@
     "program": "crimsonland.exe",
     "address": "0x0042f080",
     "name": "effect_spawn_shrinkifier_hit",
-    "signature": "void * effect_spawn_shrinkifier_hit(float *pos)",
+    "signature": "void effect_spawn_shrinkifier_hit(float *pos)",
     "comment": "spawns shrinkifier impact effects: one core pulse (effect id 1) plus detail-scaled debris (effect id 0)"
   },
   {
