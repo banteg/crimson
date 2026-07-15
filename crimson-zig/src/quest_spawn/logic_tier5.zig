@@ -864,14 +864,11 @@ fn build509Nagolipoli(
 }
 
 fn build510TheGathering(
-    ctx: common.BuildContext,
-    rng: *common.QuestRng,
+    _: common.BuildContext,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = rng;
-    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
-
     try common.appendSpawn(
         out_entries,
         len,
@@ -965,7 +962,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.left,
+        .{ .x = -128.0, .y = 512.0 },
         0.0,
         common.SpawnId.spider_sp1_const_shock_boss_3a,
         90_500,
@@ -974,7 +971,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.right,
+        .{ .x = 1152.0, .y = 512.0 },
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         99_500,
@@ -983,7 +980,7 @@ fn build510TheGathering(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.right,
+        .{ .x = 1152.0, .y = 512.0 },
         0.0,
         common.SpawnId.spider_sp2_splitter_01,
         109_500,

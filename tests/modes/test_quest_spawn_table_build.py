@@ -15,7 +15,11 @@ from crimson.quests.tier1 import (
 from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
 from crimson.quests.tier3 import build_3_1_the_blighting, build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier4 import build_4_10_the_end_of_all
-from crimson.quests.tier5 import build_5_3_the_fortress, build_5_4_the_gang_wars
+from crimson.quests.tier5 import (
+    build_5_3_the_fortress,
+    build_5_4_the_gang_wars,
+    build_5_10_the_gathering,
+)
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
@@ -114,6 +118,19 @@ def test_end_of_all_stays_in_native_fixed_coordinate_space() -> None:
     )
     assert hardcore_entries[26].pos == Vec2(332.0, 511.0)
     assert hardcore_entries[31].pos == Vec2(667.0, 422.0)
+
+
+def test_gathering_edges_stay_at_native_fixed_coordinates() -> None:
+    entries = build_5_10_the_gathering(
+        QuestContext(width=2048, height=3072, player_count=1),
+        rng=Crand(0),
+        full_version=True,
+    )
+
+    assert len(entries) == 13
+    assert entries[10].pos == Vec2(-128.0, 512.0)
+    assert entries[11].pos == Vec2(1152.0, 512.0)
+    assert entries[12].pos == Vec2(1152.0, 512.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
