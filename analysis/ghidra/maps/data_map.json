@@ -8187,10 +8187,13 @@
     },
     {
       "address": "0x004cc910",
+      "aliases": [
+        "?$S1@?1??ui_menu_item_update@@9@4EA"
+      ],
       "comment": "ui_menu_item_update one-shot init flags bitfield (guards static hover/idle color palette setup blocks).",
       "name": "menu_item_palette_init_flags",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "unsigned char"
     },
     {
       "address": "0x004ccb58",
@@ -8270,6 +8273,9 @@
     },
     {
       "address": "0x004ccd40",
+      "aliases": [
+        "?idle_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A"
+      ],
       "comment": "ui_menu_item_update idle tint RGBA component R.",
       "name": "ui_menu_item_color_idle_r",
       "program": "crimsonland.exe",
@@ -8332,6 +8338,9 @@
     },
     {
       "address": "0x004d0e28",
+      "aliases": [
+        "?hover_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A"
+      ],
       "comment": "ui_menu_item_update hover tint RGBA component R.",
       "name": "ui_menu_item_color_hover_r",
       "program": "crimsonland.exe",
