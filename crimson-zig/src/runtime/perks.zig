@@ -716,8 +716,10 @@ pub fn applyJinxedEffects(
 
     if (state.bonuses.freeze > 0.0) return;
 
-    const pool_limit: usize = 0x180;
-    const pool_mod = @min(pool_limit, creatures.entries.len);
+    const pool_mod = jinxedCreaturePoolMod(
+        state.preserve_bugs,
+        creatures.entries.len,
+    );
     if (pool_mod == 0) return;
 
     var idx: usize = @intCast(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_creature_pick) % @as(u32, @intCast(pool_mod)));
@@ -735,6 +737,11 @@ pub fn applyJinxedEffects(
     // Double Experience handling, unlike creature_handle_death.
     _ = awardExperienceOnceFromReward(&players[0], creatures.entries[idx].reward_value);
     state.sfx_queue.append(.trooper_inpain_01);
+}
+
+fn jinxedCreaturePoolMod(preserve_bugs: bool, creature_count: usize) usize {
+    const pool_limit: usize = if (preserve_bugs) 0x17f else 0x180;
+    return @min(pool_limit, creature_count);
 }
 
 pub fn applyFinalRevengeOnDeathTransition(
@@ -1238,6 +1245,21 @@ test "perk generate choices blocks jinxed when death clock is active" {
     for (choices) |perk_id| {
         try std.testing.expect(perk_id != PerkId.jinxed);
     }
+}
+
+test "jinxed preserve bugs excludes the last native creature slot" {
+    try std.testing.expectEqual(
+        @as(usize, 0x17f),
+        jinxedCreaturePoolMod(true, creatures_mod.max_creatures),
+    );
+    try std.testing.expectEqual(
+        creatures_mod.max_creatures,
+        jinxedCreaturePoolMod(false, creatures_mod.max_creatures),
+    );
+    try std.testing.expectEqual(
+        @as(usize, 16),
+        jinxedCreaturePoolMod(true, 16),
+    );
 }
 
 test "death clock apply and update mirror runtime hooks" {
