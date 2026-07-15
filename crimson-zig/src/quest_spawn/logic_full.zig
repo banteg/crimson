@@ -135,6 +135,16 @@ test "everred bonus bottom y stays at native constant" {
     try std.testing.expectApproxEqAbs(@as(f32, 1088.0), built.entries[17].pos.y, 1e-6);
 }
 
+test "cross fire lower spawn stays at native fixed coordinate" {
+    var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 16;
+    const built = try buildQuestSpawnTable(506, 1, 0, 2048.0, out_entries[0..]);
+
+    try std.testing.expectEqual(@as(usize, 7), built.entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.0), built.entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 512.0), built.entries[5].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[5].pos.y, 1e-6);
+}
+
 test "level 1-10 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(110) orelse unreachable;
     var rng = common.QuestRng.init(0x1A2B3C4D);

@@ -65,4 +65,5 @@ test {
     _ = effects;
     _ = net;
     _ = quest_level;
+    _ = quest_spawn_logic_full;
 }

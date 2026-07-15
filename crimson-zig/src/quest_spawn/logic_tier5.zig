@@ -454,7 +454,6 @@ fn build506CrossFire(
     _ = rng;
 
     const mid_y = ctx.height * 0.5;
-    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -504,7 +503,7 @@ fn build506CrossFire(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.bottom,
+        .{ .x = 512.0, .y = 1152.0 },
         0.0,
         common.SpawnId.spider_sp1_const_blue_40,
         26_000,
