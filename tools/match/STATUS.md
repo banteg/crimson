@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**475/2166** functions matched, **83881/676407** code bytes (**12.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**476/2166** functions matched, **84132/676407** code bytes (**12.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 343/991 | 64434/386510 | 16.7% | 343/428 |
+| crimsonland.exe | 344/991 | 64685/386510 | 16.7% | 344/429 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**343/991** functions, **64434/386510** bytes (**16.7%**), **343/428** scratches verified.
+**344/991** functions, **64685/386510** bytes (**16.7%**), **344/429** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -166,6 +166,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
+| match | dx_get_version | 0x0041ccb0 | 251 | 106/106 | 100.00% | 106/106 | 7/0/0 |  | directx-version-query-and-format |
 | match | win32_file_get_version_words | 0x0041db50 | 187 | 78/78 | 100.00% | 78/78 | 7/0/0 |  | win32-file-version-query |
 | match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
 | match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |

@@ -1341,6 +1341,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041cdb0",
+    "name": "dx_get_version_from_dxdiag",
+    "signature": "int dx_get_version_from_dxdiag(int *major, int *minor, char *letter)",
+    "comment": "queries IDxDiagProvider system info for DirectX major, minor, and version letter"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041cfe0",
     "name": "dx_get_version_fallback_from_files",
     "signature": "int dx_get_version_fallback_from_files(int *major, int *minor, char *letter)",
