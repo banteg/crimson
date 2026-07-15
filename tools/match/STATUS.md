@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**444/2166** functions matched, **58957/676407** code bytes (**8.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**445/2166** functions matched, **59475/676407** code bytes (**8.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 312/991 | 39510/386510 | 10.2% | 312/346 |
+| crimsonland.exe | 313/991 | 40028/386510 | 10.4% | 313/347 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**312/991** functions, **39510/386510** bytes (**10.2%**), **312/346** scratches verified.
+**313/991** functions, **40028/386510** bytes (**10.4%**), **313/347** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -146,6 +146,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | wip | ui_cursor_render | 0x0041a040 | 730 | 177/177 | 98.87% | 158/177 | 57/0/0 |  | ui-cursor-particle-renderer |
+| match | ui_render_aim_enhancement | 0x0041a320 | 518 | 131/131 | 100.00% | 131/131 | 35/0/0 |  | ui-aim-enhancement-overlay |
 | match | ui_elements_update_and_render | 0x0041a530 | 409 | 103/103 | 100.00% | 103/103 | 41/0/0 |  | ui-transition-update-render |
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |

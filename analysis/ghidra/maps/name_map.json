@@ -1287,7 +1287,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041a320",
     "name": "ui_render_aim_enhancement",
-    "signature": "void ui_render_aim_enhancement(void)",
+    "signature": "void ui_render_aim_enhancement(float *xy)",
     "comment": "renders the aim enhancement overlay (cv_aimEnhancementFade-driven)"
   },
   {
