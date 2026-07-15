@@ -8203,6 +8203,16 @@
       "type": "unsigned char"
     },
     {
+      "address": "0x004cc930",
+      "aliases": [
+        "?$S1@?1??ui_update_notice_update@@9@4EA"
+      ],
+      "comment": "ui_update_notice_update one-shot initialization guard for its function-local Get the update button.",
+      "name": "ui_update_notice_button_init_guard",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004ccb58",
       "comment": "Highscore batch-sync stage cursor used by Shift-modified online sync flow (starts at -4 and iterates mode/quest variants).",
       "name": "highscore_batch_sync_stage_index",
@@ -8379,6 +8389,16 @@
       "comment": "Static text buffer written by highscore_format_date_label.",
       "name": "highscore_date_label_buffer",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d0ed0",
+      "aliases": [
+        "?update_button@?1??ui_update_notice_update@@9@4Uui_notice_button_t@@A"
+      ],
+      "comment": "Function-local Get the update button state owned by ui_update_notice_update.",
+      "name": "ui_update_notice_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004d0ee8",
