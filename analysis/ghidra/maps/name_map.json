@@ -455,6 +455,41 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00406130",
+    "name": "perk_selection_select_button_destroy",
+    "signature": "void perk_selection_select_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the perk-selection Select button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406140",
+    "name": "perk_selection_cancel_button_destroy",
+    "signature": "void perk_selection_cancel_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the perk-selection Cancel button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406150",
+    "name": "perk_selection_choice_items_destroy",
+    "signature": "void perk_selection_choice_items_destroy(void)",
+    "comment": "empty array-destructor thunk registered for the ten perk-selection choice items"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406160",
+    "name": "perk_selection_hover_color_destroy",
+    "signature": "void perk_selection_hover_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the perk-selection hover color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406170",
+    "name": "perk_selection_idle_color_destroy",
+    "signature": "void perk_selection_idle_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the perk-selection idle color"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00406180",
     "name": "format_ordinal",
     "signature": "char * format_ordinal(int n)",

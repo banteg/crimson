@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**531/2167** functions matched, **93019/676448** code bytes (**13.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**536/2167** functions matched, **93024/676448** code bytes (**13.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 399/992 | 73572/386551 | 19.0% | 399/486 |
+| crimsonland.exe | 404/992 | 73577/386551 | 19.0% | 404/492 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**399/992** functions, **73572/386551** bytes (**19.0%**), **399/486** scratches verified.
+**404/992** functions, **73577/386551** bytes (**19.0%**), **404/492** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -75,6 +75,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_render_keybind_help | 0x00405160 | 1142 | 324/324 | 100.00% | 324/324 | 80/0/0 |  | pause-keybind-help-panel |
 | wip | perk_apply | 0x004055e0 | 885 | 239/241 | 62.50% | 2/241 | 61/0/0 |  | perk-immediate-effect-dispatch |
 | match | gameplay_render_world | 0x00405960 | 625 | 184/184 | 100.00% | 184/184 | 56/0/0 |  | gameplay-world-render-coordinator |
+| wip | perk_selection_screen_update | 0x00405be0 | 1347 | 314/314 | 86.94% | 0/314 | 117/0/0 |  | perk-choice-menu-and-selection-flow |
+| match | perk_selection_select_button_destroy | 0x00406130 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-select-button-empty-destructor |
+| match | perk_selection_cancel_button_destroy | 0x00406140 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-cancel-button-empty-destructor |
+| match | perk_selection_choice_items_destroy | 0x00406150 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-choice-array-empty-destructor |
+| match | perk_selection_hover_color_destroy | 0x00406160 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-hover-color-empty-destructor |
+| match | perk_selection_idle_color_destroy | 0x00406170 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-idle-color-empty-destructor |
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | ui_draw_clock_gauge | 0x004061e0 | 362 | 99/99 | 100.00% | 99/99 | 17/0/0 |  | ui-clock-gauge-renderer |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
