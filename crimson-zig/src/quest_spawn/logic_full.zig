@@ -220,6 +220,40 @@ test "alien squads far corner stays at native fixed coordinate" {
     try std.testing.expectApproxEqAbs(@as(f32, 1088.0), entries[59].pos.y, 1e-6);
 }
 
+test "blighting corners and red right waves stay at native coordinates" {
+    var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 64;
+    const descriptor = lookupLevelBuilder(301) orelse unreachable;
+    var rng = common.QuestRng.init(0);
+    var len: usize = 0;
+    try descriptor.build(
+        .{
+            .width = 2048.0,
+            .height = 3072.0,
+            .player_count = 1,
+        },
+        &rng,
+        out_entries[0..],
+        &len,
+    );
+    const entries = out_entries[0..len];
+
+    try std.testing.expectEqual(@as(usize, 17), entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 2176.0), entries[0].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.0), entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 896.0), entries[2].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 128.0), entries[2].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 128.0), entries[3].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 128.0), entries[3].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 128.0), entries[4].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 896.0), entries[4].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 896.0), entries[5].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 896.0), entries[5].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), entries[10].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.0), entries[10].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), entries[13].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.0), entries[13].pos.y, 1e-6);
+}
+
 test "level 1-10 rectangular spawn summary stays stable" {
     const descriptor = lookupLevelBuilder(110) orelse unreachable;
     var rng = common.QuestRng.init(0x1A2B3C4D);

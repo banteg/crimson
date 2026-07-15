@@ -13,7 +13,7 @@ from crimson.quests.tier1 import (
     build_1_8_alien_squads,
 )
 from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
-from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
+from crimson.quests.tier3 import build_3_1_the_blighting, build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier5 import build_5_3_the_fortress, build_5_4_the_gang_wars
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
@@ -66,6 +66,23 @@ def test_alien_squads_far_corner_stays_at_native_fixed_coordinate() -> None:
     assert entries[8].pos == Vec2(-64.0, -64.0)
     assert entries[9].pos == Vec2(1088.0, 1088.0)
     assert entries[59].pos == Vec2(1088.0, 1088.0)
+
+
+def test_blighting_corners_and_red_right_waves_stay_at_native_coordinates() -> None:
+    ctx = QuestContext(width=2048, height=3072, player_count=1)
+
+    entries = build_3_1_the_blighting(ctx, rng=Crand(0), full_version=True)
+
+    assert len(entries) == 17
+    assert entries[0].pos == Vec2(2176.0, 1024.0)
+    assert [entry.pos for entry in entries[2:6]] == [
+        Vec2(896.0, 128.0),
+        Vec2(128.0, 128.0),
+        Vec2(128.0, 896.0),
+        Vec2(896.0, 896.0),
+    ]
+    assert entries[10].pos == Vec2(1152.0, 1024.0)
+    assert entries[13].pos == Vec2(1152.0, 1024.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:

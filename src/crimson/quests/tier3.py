@@ -84,7 +84,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
         if wave in (3, 5):
             entries.append(
                 spawn_at(
-                    edges_wide.right,
+                    Vec2(1152.0, edges_wide.right.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,

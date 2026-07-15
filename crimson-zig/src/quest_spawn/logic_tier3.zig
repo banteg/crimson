@@ -24,7 +24,6 @@ fn build301TheBlighting(
     _ = rng;
     const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
     const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
-    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -47,7 +46,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.top_right,
+        .{ .x = 896.0, .y = 128.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -56,7 +55,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.top_left,
+        .{ .x = 128.0, .y = 128.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -65,7 +64,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.bottom_left,
+        .{ .x = 128.0, .y = 896.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -74,7 +73,7 @@ fn build301TheBlighting(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.bottom_right,
+        .{ .x = 896.0, .y = 896.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         2000,
@@ -99,7 +98,7 @@ fn build301TheBlighting(
             try common.appendSpawn(
                 out_entries,
                 len,
-                edges_wide.right,
+                .{ .x = 1152.0, .y = edges_wide.right.y },
                 0.0,
                 common.SpawnId.alien_const_red_fast_2b,
                 trigger,
