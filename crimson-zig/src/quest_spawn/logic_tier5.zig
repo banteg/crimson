@@ -278,7 +278,6 @@ fn build504TheGangWars(
     _ = rng;
 
     const half_height = halfFloor(ctx.height);
-    const edges_wide = common.squareEdgeMidpoints(ctx.width, 128.0);
 
     try common.appendSpawn(
         out_entries,
@@ -317,7 +316,7 @@ fn build504TheGangWars(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.bottom,
+        .{ .x = 512.0, .y = 1152.0 },
         0.0,
         common.SpawnId.formation_chain_alien_10_13,
         50_500,
@@ -341,7 +340,7 @@ fn build504TheGangWars(
     try common.appendSpawn(
         out_entries,
         len,
-        edges_wide.bottom,
+        .{ .x = 512.0, .y = 1152.0 },
         0.0,
         common.SpawnId.formation_chain_alien_10_13,
         107_500,
