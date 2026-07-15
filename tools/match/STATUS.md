@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/369 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/370 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/369** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/370** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -269,6 +269,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 86/86 | 77.91% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | wip | quest_build_the_massacre | 0x004383e0 | 184 | 61/61 | 88.52% | 16/61 | 4/0/0 |  | quest-the-massacre-builder |
+| wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 95/95 | 56.84% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
