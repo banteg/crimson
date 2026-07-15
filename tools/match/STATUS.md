@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 328/991 | 48713/386510 | 12.6% | 328/408 |
+| crimsonland.exe | 328/991 | 48713/386510 | 12.6% | 328/409 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**328/991** functions, **48713/386510** bytes (**12.6%**), **328/408** scratches verified.
+**328/991** functions, **48713/386510** bytes (**12.6%**), **328/409** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -199,6 +199,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creatures_apply_radius_damage | 0x00420600 | 159 | 57/57 | 100.00% | 57/57 | 6/0/0 |  | gameplay-radius-damage |
 | match | creature_find_in_radius | 0x004206a0 | 133 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
+| wip | creature_apply_damage | 0x004207c0 | 963 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | match | fx_queue_add_random | 0x00427700 | 291 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |

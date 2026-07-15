@@ -326,7 +326,11 @@ int creature_alloc_slot(void);
 int creature_spawn_tinted(float *pos, float *rgba, int type_id);
 int creature_spawn_slot_alloc(void);
 int creature_find_nearest(float *pos, int exclude_id, float radius);
-void creature_apply_damage(int creature_index, float damage, int damage_type, float *impulse);
+int creature_apply_damage(
+    int creature_index,
+    float damage,
+    int damage_type,
+    float *impulse);
 void effect_spawn_burst(float *pos, int count);
 
 extern cvar_float_t *cv_friendlyFire;
