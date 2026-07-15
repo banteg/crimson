@@ -1190,6 +1190,10 @@
     "program": "crimsonland.exe",
     "address": "0x00417a90",
     "name": "ui_template_slot_ctor_noop",
+    "include_library": true,
+    "aliases": [
+      "??0ui_template_slot_cpp_t@@QAE@XZ"
+    ],
     "signature": "void * ui_template_slot_ctor_noop(void *slot)",
     "comment": "identity/no-op slot constructor callback used while building ui menu template pools"
   },
