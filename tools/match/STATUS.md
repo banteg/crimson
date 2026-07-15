@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**434/2165** functions matched, **53670/675677** code bytes (**7.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**435/2165** functions matched, **54048/675677** code bytes (**8.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 302/990 | 34223/385780 | 8.9% | 302/335 |
+| crimsonland.exe | 303/990 | 34601/385780 | 9.0% | 303/336 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**302/990** functions, **34223/385780** bytes (**8.9%**), **302/335** scratches verified.
+**303/990** functions, **34601/385780** bytes (**9.0%**), **303/336** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -64,6 +64,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_mouse_inside_rect_with_padding | 0x00403430 | 104 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | ui-mouse-hit-test |
 | match | ui_mouse_inside_rect | 0x004034a0 | 92 | 30/30 | 100.00% | 30/30 | 5/0/0 |  | ui-mouse-hit-test |
 | match | game_core_init | 0x00403500 | 73 | 17/17 | 100.00% | 17/17 | 12/0/0 |  | game-core-initialization |
+| match | perk_prompt_update_and_render | 0x00403550 | 378 | 93/93 | 100.00% | 93/93 | 35/0/0 |  | ui-perk-prompt-animation |
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | bonus_apply | 0x00409890 | 2693 | 664/668 | 65.32% | 27/668 | 161/0/14 |  | gameplay-bonus-switch |
