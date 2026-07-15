@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**491/2166** functions matched, **85635/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**493/2166** functions matched, **85681/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 359/991 | 66188/386510 | 17.1% | 359/444 |
+| crimsonland.exe | 361/991 | 66234/386510 | 17.1% | 361/446 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**359/991** functions, **66188/386510** bytes (**17.1%**), **359/444** scratches verified.
+**361/991** functions, **66234/386510** bytes (**17.1%**), **361/446** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -190,6 +190,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 131/131 | 100.00% | 131/131 | 8/0/0 |  | gameplay-movement |
 | match | vec2_add_inplace | 0x0041e400 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
+| match | secondary_projectile_pool_global_init_thunk | 0x0041e450 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | secondary-projectile-pool-global-init-thunk |
+| match | secondary_projectile_pool_global_init | 0x0041e460 | 41 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | secondary-projectile-pool-global-constructor |
 | match | sprite_effect_pool_global_init_thunk | 0x0041e490 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | sprite-effect-pool-global-init-thunk |
 | match | sprite_effect_pool_global_init | 0x0041e4a0 | 97 | 30/30 | 100.00% | 30/30 | 1/0/0 |  | sprite-effect-pool-global-constructor |
 | match | particle_pool_global_init_thunk | 0x0041e510 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | particle-pool-global-init-thunk |

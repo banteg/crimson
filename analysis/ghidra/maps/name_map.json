@@ -1594,6 +1594,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e450",
+    "name": "secondary_projectile_pool_global_init_thunk",
+    "signature": "void secondary_projectile_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 64-entry secondary-projectile pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e460",
+    "name": "secondary_projectile_pool_global_init",
+    "signature": "void secondary_projectile_pool_global_init(void)",
+    "comment": "constructs 64 inactive secondary projectiles with native rocket, timer, and sentinel defaults"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e840",
     "name": "fx_queue_add",
     "signature": "unsigned char fx_queue_add(int effect_id, vec2f_t *pos, float w, float h, float rotation, effect_color_t *color)",
