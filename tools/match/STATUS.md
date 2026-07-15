@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/375 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/376 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/375** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/376** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -261,6 +261,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
+| wip | quest_build_everred_pastures | 0x004375a0 | 367 | 114/114 | 92.11% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
 | wip | quest_build_lizard_kings | 0x00437710 | 254 | 67/66 | 78.20% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
 | wip | quest_build_sweep_stakes | 0x00437810 | 258 | 75/76 | 75.50% | 6/76 | 7/0/0 |  | quest-sweep-stakes-builder |
 | wip | quest_build_deja_vu | 0x00437920 | 209 | 62/63 | 83.20% | 1/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
