@@ -424,9 +424,12 @@ Defaults are set in `config_load_presets`.
 | `DAT_00490f58` | `0xd3` (Delete) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f5c` | `0xc9` (PageUp) | unused/reserved | defaults set; no callsites yet |
 
-Key info overlay (`ui_render_keybind_help`) shows the first five entries per player from the config
-blob at `DAT_00480510` (stride 5: Forward/Back/TurnLeft/TurnRight/Fire), which matches the active runtime
-binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
+Key info overlay (`ui_render_keybind_help`) indexes the block at `DAT_00480510`
+with a five-dword player stride (Up/Down/Left/Right/Fire). The exact recovered
+source confirms that both columns come from `config_blob.keybinds_p1`: Player 1
+uses slots 0..4 and Player 2 uses slots 5..9. It does not step to the separate
+`keybinds_p2` block at `DAT_00480550`; this appears to be stale native layout
+behavior and should not be silently corrected in parity work.
 
 ### Analog axis bindings (per-player, stride `0x360` bytes / `0xd8` dwords)
 
