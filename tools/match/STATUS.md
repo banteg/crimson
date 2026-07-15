@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 339/991 | 58811/386510 | 15.2% | 339/423 |
+| crimsonland.exe | 339/991 | 58811/386510 | 15.2% | 339/424 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**339/991** functions, **58811/386510** bytes (**15.2%**), **339/423** scratches verified.
+**339/991** functions, **58811/386510** bytes (**15.2%**), **339/424** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -74,6 +74,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | ui_draw_clock_gauge | 0x004061e0 | 362 | 99/99 | 100.00% | 99/99 | 17/0/0 |  | ui-clock-gauge-renderer |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
+| wip | perks_update_effects | 0x00406b40 | 1437 | 352/352 | 90.06% | 9/352 | 135/0/0 |  | perk-runtime-effects |
 | wip | quest_mode_update | 0x004070e0 | 455 | 103/108 | 65.40% | 23/108 | 35/0/5 |  | quest-completion-transition-coordinator |
 | match | rush_mode_update | 0x004072b0 | 594 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
