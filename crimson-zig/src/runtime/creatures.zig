@@ -3612,8 +3612,9 @@ fn spawnSplitChildrenOnDeath(
         var child = source;
         child.active = true;
         child.phase_seed = @intCast(state.rng.randTagged(if (heading_offset < 0.0) rng_callers.creature_handle_death_split_child_1_phase_seed else rng_callers.creature_handle_death_split_child_2_phase_seed) & 0xff);
-        child.heading = wrapAngle(narrowF32(source.heading + heading_offset));
-        child.target_heading = child.heading;
+        // Native updates only heading after copying the whole parent record:
+        // the value is not wrapped, and target_heading remains the stale copy.
+        child.heading = narrowF32(source.heading + heading_offset);
         child.hp = narrowF32(source.max_hp * 0.25);
         child.reward_value = narrowF32(source.reward_value * (2.0 / 3.0));
         child.size = narrowF32(source.size - 8.0);
@@ -6557,7 +6558,7 @@ test "split on death spawns two smaller children" {
     _ = pool.spawnInit(.{
         .origin_template_id = -1,
         .pos = .{ .x = 100.0, .y = 200.0 },
-        .heading = 0.0,
+        .heading = 3.0,
         .phase_seed = 0,
         .type_id = .spider_sp2,
         .flags = spawn_mod.CreatureFlags.split_on_death,
@@ -6568,6 +6569,7 @@ test "split on death spawns two smaller children" {
         .reward_value = 90.0,
         .contact_damage = 10.0,
     });
+    pool.entries[0].target_heading = -0.75;
 
     _ = pool.killNoCorpse(
         &state,
@@ -6587,8 +6589,10 @@ test "split on death spawns two smaller children" {
     try expectFloatClose(creature_lifecycle.alive, child2.lifecycle_stage);
     try std.testing.expect(child1.phase_seed >= 0 and child1.phase_seed <= 255);
     try std.testing.expect(child2.phase_seed >= 0 and child2.phase_seed <= 255);
-    try expectFloatClose(-native_half_pi, child1.heading);
-    try expectFloatClose(native_half_pi, child2.heading);
+    try expectFloatClose(narrowF32(3.0 - native_half_pi), child1.heading);
+    try expectFloatClose(narrowF32(3.0 + native_half_pi), child2.heading);
+    try expectFloatClose(-0.75, child1.target_heading);
+    try expectFloatClose(-0.75, child2.target_heading);
     try expectFloatClose(100.0, child1.hp);
     try expectFloatClose(100.0, child2.hp);
     try expectFloatClose(32.0, child1.size);

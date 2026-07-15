@@ -1739,12 +1739,18 @@ class CreaturePool:
                 # Native stores `heading +- 1.5707964f` unwrapped and leaves
                 # `target_heading` as the parent's stale copy.
                 child.heading = float(f32(float(creature.heading) + float(heading_offset)))
-                child.hp = float(creature.max_hp) * 0.25
+                child.hp = float(f32(float(creature.max_hp) * float(f32(0.25))))
                 # Native multiplies by the f32 literal 0.6666667.
-                child.reward_value = float(child.reward_value) * float(f32(0.6666667))
-                child.size = float(child.size) - 8.0
-                child.move_speed = float(child.move_speed) + 0.1
-                child.contact_damage = float(child.contact_damage) * 0.7
+                child.reward_value = float(
+                    f32(float(child.reward_value) * float(f32(0.6666667))),
+                )
+                child.size = float(f32(float(child.size) - float(f32(8.0))))
+                child.move_speed = float(
+                    f32(float(child.move_speed) + float(f32(0.1))),
+                )
+                child.contact_damage = float(
+                    f32(float(child.contact_damage) * float(f32(0.7))),
+                )
                 child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
                 self._entries[child_idx] = child
                 self.spawned_count += 1
