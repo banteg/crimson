@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**466/2166** functions matched, **71839/676407** code bytes (**10.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**467/2166** functions matched, **72274/676407** code bytes (**10.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 334/991 | 52392/386510 | 13.6% | 334/418 |
+| crimsonland.exe | 335/991 | 52827/386510 | 13.7% | 335/419 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**334/991** functions, **52392/386510** bytes (**13.6%**), **334/418** scratches verified.
+**335/991** functions, **52827/386510** bytes (**13.7%**), **335/419** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -228,6 +228,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | reg_read_dword_default | 0x0042a980 | 58 | 23/23 | 100.00% | 23/23 | 1/0/0 |  | registry-dword-read |
 | match | reg_write_dword | 0x0042a9c0 | 37 | 14/14 | 100.00% | 14/14 | 1/0/0 |  | registry-dword-write |
 | match | init_audio_and_terrain | 0x0042a9f0 | 480 | 116/116 | 100.00% | 116/116 | 65/0/0 |  | audio-and-terrain-startup |
+| match | game_startup_init_prelude | 0x0042b090 | 435 | 113/113 | 100.00% | 113/113 | 45/0/0 |  | startup-core-prelude |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | match | effect_init_entry | 0x0042de80 | 143 | 36/36 | 100.00% | 36/36 | 0/0/0 |  | gameplay-effect-pool |

@@ -6181,8 +6181,8 @@
     },
     {
       "address": "0x00495ad6",
-      "comment": "Scratch storage for QueryPerformanceCounter in early init (FUN_0042b090).",
-      "name": "qpc_timestamp_scratch",
+      "comment": "SYSTEMTIME.wMilliseconds field read into a stack LARGE_INTEGER before QueryPerformanceCounter seeds the PRNG.",
+      "name": "local_system_milliseconds",
       "program": "crimsonland.exe"
     },
     {
@@ -6664,10 +6664,31 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004aaed8",
+      "comment": "Temporary flag asserted only while the date-gated balloon texture is loaded during startup.",
+      "name": "seasonal_balloon_load_active",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x004aaed9",
+      "comment": "Startup terrain-generation guard asserted around the initial terrain_generate_random call and consulted by the startup loop.",
+      "name": "startup_terrain_generation_active",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004aaedc",
       "comment": "Key char count for grim_set_key_char_buffer.",
       "name": "key_char_count",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aaee4",
+      "comment": "Heap-owned copy of the shared empty string allocated during startup and freed during shutdown.",
+      "name": "runtime_empty_string_copy",
+      "program": "crimsonland.exe",
+      "type": "char *"
     },
     {
       "address": "0x004aaeea",
