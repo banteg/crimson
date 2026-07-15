@@ -1,0 +1,25 @@
+# `quest_build_the_spanking_of_the_dead`
+
+Native target: `crimsonland.exe` at `0x004358a0` (391 bytes).
+
+Live Binary Ninja evidence recovers 132 spawn entries. Two opening bonus aliens
+use template `0x27`, trigger 500, count 1, at `(256, 512)` and `(768, 512)`.
+The next 128 entries form a shrinking zombie spiral. Trigger time starts at
+5000 and advances by 300 while it is below 43400. For zero-based step `i`, the
+native x87 sequence computes angle `i * 0.333333343`, radius
+`512 - i * 3.79999995`, and position `(cos(angle) * radius + 512,
+sin(angle) * radius + 512)`. Each spiral entry uses heading `angle`, template
+`0x41`, and count 1. The two final template-`0x42` waves are fixed at
+`(1280, 512)` and `(-256, 512)`, with count 16 and triggers `i * 300 + 10000`
+and `i * 300 + 20000`.
+
+The candidate reproduces the exact 94-instruction length, all five audited
+references, the loop bounds, x87 trigonometric sequence, final indices, and
+trigger arithmetic. It scores 60.64%. Residuals are unconstrained VC6
+scheduling: the candidate hoists independent loop metadata stores and trigger
+updates ahead of the trigonometry, and schedules parts of the opening/final
+fixed entries differently. Raw indexed access kept the metadata after the
+math, but regressed the register allocation and score to 57.45%; a local spawn
+pointer is the strongest plausible source shape. VC6.5pp and VC6.6 reproduce
+the default result, while VC7 regresses sharply, so no compiler override is
+warranted.
