@@ -433,7 +433,8 @@ typedef struct particle_t {
     float intensity;
     float angle;
     float spin;
-    int style_id;
+    unsigned char style_id;
+    unsigned char _pad1[3];
     int target_id;
 } particle_t;
 

@@ -1517,6 +1517,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e510",
+    "name": "particle_pool_global_init_thunk",
+    "signature": "void particle_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 128-entry particle pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e520",
+    "name": "particle_pool_global_init",
+    "signature": "void particle_pool_global_init(void)",
+    "comment": "constructs 128 inactive particle entries with native scale, intensity, spin, style, and target defaults"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
     "signature": "int vec2_add(float *dst, float *delta)",
