@@ -8,7 +8,7 @@ from crimson.quests.runtime import (
     build_quest_spawn_table,
 )
 from crimson.quests.tier1 import build_1_3_target_practice, build_1_6_the_random_factor
-from crimson.quests.tier2 import build_2_5_sweep_stakes
+from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
 from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
@@ -17,6 +17,16 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike
 from tests.support.helpers import ScriptedCrand
+
+
+def test_everred_bonus_bottom_y_is_native_constant() -> None:
+    ctx = QuestContext(width=2048, height=2048, player_count=1)
+
+    entries = build_2_1_everred_pastures(ctx, rng=Crand(0), full_version=True)
+
+    assert len(entries) == 34
+    assert entries[16].pos == Vec2(1024.0, -64.0)
+    assert entries[17].pos == Vec2(1024.0, 1088.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:

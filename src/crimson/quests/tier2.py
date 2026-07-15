@@ -80,8 +80,8 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
                 ),
             )
             entries.append(
-                spawn_at(
-                    edges.bottom,
+                spawn(
+                    Vec2(edges.bottom.x, 1088.0),
                     heading=0.0,
                     spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                     trigger_ms=40500,

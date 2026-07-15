@@ -75,7 +75,7 @@ fn build21EverredPastures(
             try common.appendSpawn(
                 out_entries,
                 len,
-                edges.bottom,
+                .{ .x = edges.bottom.x, .y = 1088.0 },
                 0.0,
                 common.SpawnId.ai1_spider_sp1_blue_tint_1b,
                 40_500,
