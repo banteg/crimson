@@ -5366,13 +5366,13 @@
     },
     {
       "address": "0x004908b9",
-      "comment": "Per-player Plaguebearer perk active flag (checked in creature_update_all, set in perk_apply).",
+      "comment": "Per-player Plaguebearer perk active flag; this reuses byte +0x09 of the shared entity prefix.",
       "name": "player_plaguebearer_active",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004908b0",
-      "comment": "Per-player state table base (2 entries, stride 0x360 bytes); the first named gameplay field starts at offset 0x10.",
+      "comment": "Per-player state table base (2 entries, stride 0x360 bytes); offsets 0x00..0x97 share the entity-prefix layout used by creature state.",
       "name": "player_state_table",
       "program": "crimsonland.exe",
       "type": "player_state_t[2]"

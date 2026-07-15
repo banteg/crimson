@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**487/2166** functions matched, **85347/676407** code bytes (**12.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**489/2166** functions matched, **85579/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 355/991 | 65900/386510 | 17.1% | 355/440 |
+| crimsonland.exe | 357/991 | 66132/386510 | 17.1% | 357/442 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**355/991** functions, **65900/386510** bytes (**17.1%**), **355/440** scratches verified.
+**357/991** functions, **66132/386510** bytes (**17.1%**), **357/442** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -194,6 +194,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | sprite_effect_pool_global_init | 0x0041e4a0 | 97 | 30/30 | 100.00% | 30/30 | 1/0/0 |  | sprite-effect-pool-global-constructor |
 | match | particle_pool_global_init_thunk | 0x0041e510 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | particle-pool-global-init-thunk |
 | match | particle_pool_global_init | 0x0041e520 | 159 | 44/44 | 100.00% | 44/44 | 3/0/0 |  | particle-pool-global-constructor |
+| match | player_state_table_global_init_thunk | 0x0041e5c0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | player-state-table-global-init-thunk |
+| match | player_state_table_global_init | 0x0041e5d0 | 227 | 50/50 | 100.00% | 50/50 | 1/0/0 |  | player-state-table-global-constructor |
 | match | creature_pool_global_init_thunk | 0x0041e6c0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | creature-pool-global-init-thunk |
 | match | creature_pool_global_init | 0x0041e6d0 | 60 | 17/17 | 100.00% | 17/17 | 1/0/0 |  | creature-pool-global-constructor |
 | match | fx_queue_add | 0x0041e840 | 140 | 39/39 | 100.00% | 39/39 | 10/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-fx-queue |

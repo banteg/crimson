@@ -1531,6 +1531,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e5c0",
+    "name": "player_state_table_global_init_thunk",
+    "signature": "void player_state_table_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the two-entry player state table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e5d0",
+    "name": "player_state_table_global_init",
+    "signature": "void player_state_table_global_init(void)",
+    "comment": "constructs both player states, including their shared entity prefixes and player-specific defaults"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e6c0",
     "name": "creature_pool_global_init_thunk",
     "signature": "void creature_pool_global_init_thunk(void)",

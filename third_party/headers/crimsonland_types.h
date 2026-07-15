@@ -210,7 +210,13 @@ typedef struct player_input_t {
 } player_input_t;
 
 typedef struct player_state_t {
-    unsigned char _reserved_prefix[0x10];
+    unsigned char entity_active;
+    unsigned char _pad_entity_active[3];
+    int entity_phase_seed;
+    unsigned char entity_state_flag;
+    unsigned char plaguebearer_active;
+    unsigned char _pad_entity_flags[2];
+    float entity_collision_timer;
     float death_timer;
     float pos_x;
     float pos_y;
@@ -221,7 +227,8 @@ typedef struct player_state_t {
     float heading;
     float target_heading;
     float size;
-    unsigned char _pad0[0x18];
+    float entity_hit_flash_timer;
+    unsigned char _pad0[0x14];
     float aim_x;
     float aim_y;
     unsigned char _pad1[4];
@@ -229,9 +236,13 @@ typedef struct player_state_t {
     int weapon_reset_latch;
     unsigned char _pad2[4];
     float move_speed;
-    unsigned char _pad3[0x28];
+    unsigned char _pad3[8];
+    int entity_reserved_74;
+    int entity_link_index;
+    unsigned char _pad_entity_link[0x14];
+    int entity_ai_mode;
     float move_phase;
-    unsigned char _pad4[4];
+    int player_reserved_98;
     float hot_tempered_timer;
     float man_bomb_timer;
     float living_fortress_timer;
