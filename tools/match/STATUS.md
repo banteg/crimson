@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/367 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/368 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/367** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/368** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -265,6 +265,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 79/79 | 34.18% | 4/79 | 2/0/0 |  | quest-the-lizquidation-builder |
 | wip | quest_build_zombie_time | 0x00437d70 | 152 | 50/50 | 60.00% | 1/50 | 2/0/0 |  | quest-zombie-time-builder |
+| wip | quest_build_frontline_assault | 0x00437e10 | 285 | 81/84 | 75.15% | 10/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | wip | quest_build_the_massacre | 0x004383e0 | 184 | 61/61 | 88.52% | 16/61 | 4/0/0 |  | quest-the-massacre-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
