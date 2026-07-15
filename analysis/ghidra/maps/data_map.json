@@ -7182,6 +7182,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004c2b8c",
+      "comment": "One-past-last perk identifier initialized to 0x3a after perk_id_max is set to 0x39; included in the native Death Clock exclusion chain but never returned by perk_select_random.",
+      "name": "perk_id_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004c2b90",
       "comment": "Perk ID constant for Anxious Loader.",
       "name": "perk_id_anxious_loader",
