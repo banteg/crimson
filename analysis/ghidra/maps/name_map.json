@@ -1034,6 +1034,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412220",
+    "name": "bonus_pool_global_init_thunk",
+    "signature": "void bonus_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for bonus_pool_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412230",
+    "name": "bonus_pool_global_init",
+    "signature": "void bonus_pool_global_init(void)",
+    "comment": "marks every entry in the 16-slot bonus pool inactive"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412250",
+    "name": "creature_spawn_slot_table_global_init_thunk",
+    "signature": "void creature_spawn_slot_table_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for creature_spawn_slot_table_global_init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412260",
+    "name": "creature_spawn_slot_table_global_init",
+    "signature": "void creature_spawn_slot_table_global_init(void)",
+    "comment": "initializes the 32 creature spawn slots with default cadence and unlimited count"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412290",
     "name": "game_status_global_init_thunk",
     "signature": "void game_status_global_init_thunk(void)",

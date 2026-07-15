@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**501/2167** functions matched, **86499/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**505/2167** functions matched, **86577/676448** code bytes (**12.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 369/992 | 67052/386551 | 17.3% | 369/454 |
+| crimsonland.exe | 373/992 | 67130/386551 | 17.4% | 373/458 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**369/992** functions, **67052/386551** bytes (**17.3%**), **369/454** scratches verified.
+**373/992** functions, **67130/386551** bytes (**17.4%**), **373/458** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -133,6 +133,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_meta_entry_release | 0x004121e0 | 15 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | quest-metadata-owned-name-release |
 | match | quest_meta_register_atexit | 0x004121f0 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | quest-metadata-destructor-registration |
 | match | quest_meta_table_destroy | 0x00412200 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-destruction |
+| match | bonus_pool_global_init_thunk | 0x00412220 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-global-initialization-thunk |
+| match | bonus_pool_global_init | 0x00412230 | 23 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | bonus-pool-global-initialization |
+| match | creature_spawn_slot_table_global_init_thunk | 0x00412250 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | creature-spawn-slot-global-initialization-thunk |
+| match | creature_spawn_slot_table_global_init | 0x00412260 | 45 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | creature-spawn-slot-global-initialization |
 | match | game_status_global_init_thunk | 0x00412290 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | game-status-global-init-thunk |
 | match | game_status_global_init | 0x004122a0 | 171 | 45/45 | 100.00% | 45/45 | 18/0/0 |  | game-status-global-constructor |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
