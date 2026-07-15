@@ -107,14 +107,15 @@ pub const DesktopRuntime = struct {
 
         const global_index = quest_status.questLevelKeyGlobalIndex(level_key) orelse return;
         const next_unlock: u16 = @intCast(global_index + 1);
+        if (next_unlock > self.status.quest_unlock_index) {
+            self.status.quest_unlock_index = next_unlock;
+            self.status_dirty = true;
+        }
         if (self.config.hardcore_flag != 0) {
             if (next_unlock > self.status.quest_unlock_index_full) {
                 self.status.quest_unlock_index_full = next_unlock;
                 self.status_dirty = true;
             }
-        } else if (next_unlock > self.status.quest_unlock_index) {
-            self.status.quest_unlock_index = next_unlock;
-            self.status_dirty = true;
         }
     }
 
@@ -285,7 +286,7 @@ test "desktop runtime advances hardcore quest unlock progress separately" {
 
     runtime.recordQuestCompletion(501);
 
-    try std.testing.expectEqual(@as(u16, 7), runtime.status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 41), runtime.status.quest_unlock_index);
     try std.testing.expectEqual(@as(u16, 41), runtime.status.quest_unlock_index_full);
     try std.testing.expect(runtime.status_dirty);
 }
