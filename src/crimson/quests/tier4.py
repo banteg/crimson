@@ -616,8 +616,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         ),
     ]
 
-    center = center_point(ctx.width, ctx.height)
-    edges_wide = edge_midpoints(ctx.width, ctx.height, offset=128.0)
+    center = Vec2(512.0, 512.0)
 
     trigger = 13000
     for pos, _angle in ring_points(center, 80.0, 6, step=1.0471976):
@@ -646,7 +645,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = edges_wide.right.x if toggle else edges_wide.left.x
+        x = 1152.0 if toggle else -128.0
         entries.append(
             spawn(
                 Vec2(x, float(y)),
@@ -691,7 +690,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = edges_wide.right.x if toggle else edges_wide.left.x
+        x = 1152.0 if toggle else -128.0
         entries.append(
             spawn(
                 Vec2(x, float(y)),

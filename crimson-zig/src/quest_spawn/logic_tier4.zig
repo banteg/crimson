@@ -474,14 +474,13 @@ fn build_409_the_annihilation(
 fn appendEndOfAllAlternatingEdgeSpiders(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
-    edges_wide: common.EdgePoints,
     trigger_start: i32,
 ) common.QuestSpawnBuildError!void {
     var trigger = trigger_start;
     var y: i32 = 0x100;
     var toggle = false;
     while (y < 0x300) : (y += 0x80) {
-        const x = if (toggle) edges_wide.right.x else edges_wide.left.x;
+        const x: f32 = if (toggle) 1152.0 else -128.0;
         try common.appendSpawn(
             out_entries,
             len,
@@ -502,7 +501,12 @@ fn build_410_the_end_of_all(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
+    const corners: common.CornerPoints = .{
+        .top_left = .{ .x = 128.0, .y = 128.0 },
+        .top_right = .{ .x = 896.0, .y = 128.0 },
+        .bottom_left = .{ .x = 128.0, .y = 896.0 },
+        .bottom_right = .{ .x = 896.0, .y = 896.0 },
+    };
     try common.appendSpawn(
         out_entries,
         len,
@@ -540,8 +544,7 @@ fn build_410_the_end_of_all(
         1,
     );
 
-    const center = common.centerPoint(ctx.width, ctx.height);
-    const edges_wide = common.edgeMidpoints(ctx.width, ctx.height, 128.0);
+    const center: spawn_runtime.Vec2 = .{ .x = 512.0, .y = 512.0 };
 
     try common.appendRingSpawns(
         out_entries,
@@ -568,7 +571,7 @@ fn build_410_the_end_of_all(
         1,
     );
 
-    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, edges_wide, 18_000);
+    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, 18_000);
 
     try common.appendRingSpawns(
         out_entries,
@@ -602,7 +605,7 @@ fn build_410_the_end_of_all(
         );
     }
 
-    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, edges_wide, 48_000);
+    try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, 48_000);
 }
 
 fn unblitzkrieg_spawn_id_for(toggle: bool) common.SpawnId {

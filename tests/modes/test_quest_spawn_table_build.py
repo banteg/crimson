@@ -14,6 +14,7 @@ from crimson.quests.tier1 import (
 )
 from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
 from crimson.quests.tier3 import build_3_1_the_blighting, build_3_3_the_killing, build_3_9_deja_vu
+from crimson.quests.tier4 import build_4_10_the_end_of_all
 from crimson.quests.tier5 import build_5_3_the_fortress, build_5_4_the_gang_wars
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
@@ -83,6 +84,28 @@ def test_blighting_corners_and_red_right_waves_stay_at_native_coordinates() -> N
     ]
     assert entries[10].pos == Vec2(1152.0, 1024.0)
     assert entries[13].pos == Vec2(1152.0, 1024.0)
+
+
+def test_end_of_all_stays_in_native_fixed_coordinate_space() -> None:
+    ctx = QuestContext(width=2048, height=3072, player_count=1)
+
+    entries = build_4_10_the_end_of_all(ctx, rng=Crand(0), full_version=True)
+
+    assert len(entries) == 25
+    assert [entry.pos for entry in entries[:4]] == [
+        Vec2(128.0, 128.0),
+        Vec2(896.0, 128.0),
+        Vec2(128.0, 896.0),
+        Vec2(896.0, 896.0),
+    ]
+    assert entries[4].pos == Vec2(592.0, 512.0)
+    assert entries[10].pos == Vec2(512.0, 512.0)
+    assert [entry.pos for entry in entries[11:15]] == [
+        Vec2(-128.0, 256.0),
+        Vec2(1152.0, 384.0),
+        Vec2(-128.0, 512.0),
+        Vec2(1152.0, 640.0),
+    ]
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
