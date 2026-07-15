@@ -2,6 +2,18 @@
 
 #include "crimsonland_audio.h"
 
+static __inline int sfx_find_free_slot(void)
+{
+    int result;
+
+    for (result = 0; result < 128; ++result) {
+        if (sfx_entry_table[result].pcm_data == 0) {
+            return result;
+        }
+    }
+    return -1;
+}
+
 extern "C" int sfx_load_sample(char *path)
 {
     int result;
@@ -12,14 +24,7 @@ extern "C" int sfx_load_sample(char *path)
         return 1;
     }
 
-    for (result = 0; result < 128; ++result) {
-        if (sfx_entry_table[result].pcm_data == 0) {
-            break;
-        }
-    }
-    if (result == 128) {
-        return -1;
-    }
+    result = sfx_find_free_slot();
     if (result == -1) {
         return -1;
     }

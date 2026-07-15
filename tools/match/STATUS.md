@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**448/2166** functions matched, **60433/676407** code bytes (**8.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**449/2166** functions matched, **60822/676407** code bytes (**9.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 316/991 | 40986/386510 | 10.6% | 316/351 |
+| crimsonland.exe | 317/991 | 41375/386510 | 10.7% | 317/351 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**316/991** functions, **40986/386510** bytes (**10.6%**), **316/351** scratches verified.
+**317/991** functions, **41375/386510** bytes (**10.7%**), **317/351** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -306,7 +306,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | music_entry_table_init_thunk | 0x0043c6d0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | audio-music-entry-table-init-thunk |
 | match | music_entry_table_init | 0x0043c6e0 | 31 | 12/12 | 100.00% | 12/12 | 2/0/0 |  | audio-music-entry-table-init |
 | match | sfx_release_sample | 0x0043c700 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
-| wip | sfx_load_sample | 0x0043c740 | 389 | 131/134 | 96.60% | 14/134 | 29/0/0 |  | audio-sample-slot-loader |
+| match | sfx_load_sample | 0x0043c740 | 389 | 134/134 | 100.00% | 134/134 | 29/0/0 |  | audio-sample-slot-loader |
 | match | music_load_track | 0x0043c8d0 | 139 | 53/53 | 100.00% | 53/53 | 12/0/0 |  | music-track-slot-loader |
 | match | music_queue_track | 0x0043c960 | 27 | 8/8 | 100.00% | 8/8 | 3/0/0 |  | audio-music-playlist |
 | match | music_release_track | 0x0043c980 | 57 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | audio-slot-lifecycle |
