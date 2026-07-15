@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**470/2166** functions matched, **75047/676407** code bytes (**11.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**471/2166** functions matched, **78258/676407** code bytes (**11.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 338/991 | 55600/386510 | 14.4% | 338/422 |
+| crimsonland.exe | 339/991 | 58811/386510 | 15.2% | 339/423 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**338/991** functions, **55600/386510** bytes (**14.4%**), **338/422** scratches verified.
+**339/991** functions, **58811/386510** bytes (**15.2%**), **339/423** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -260,6 +260,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | perks_rebuild_available | 0x0042fc30 | 181 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |
 | match | perk_count_get | 0x0042fcf0 | 12 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | wip | wrap_text_to_width_alloc | 0x0042fd00 | 143 | 60/62 | 81.97% | 0/62 | 2/0/0 |  | text-wrap-allocation |
+| match | perks_init_database | 0x0042fd90 | 3211 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/1/2 |  | gameplay-spawn-switch |
