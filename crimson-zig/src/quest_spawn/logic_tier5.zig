@@ -277,9 +277,9 @@ fn build504TheGangWars(
 ) common.QuestSpawnBuildError!void {
     _ = rng;
 
-    const half_height = halfFloor(ctx.height);
+    const half_height = ctx.height * 0.5;
 
-    try common.appendSpawn(
+    try common.appendSpawnExact(
         out_entries,
         len,
         .{ .x = -150.0, .y = half_height },
@@ -288,7 +288,7 @@ fn build504TheGangWars(
         100,
         1,
     );
-    try common.appendSpawn(
+    try common.appendSpawnExact(
         out_entries,
         len,
         .{ .x = 1174.0, .y = half_height },
@@ -301,7 +301,7 @@ fn build504TheGangWars(
     var trigger: i32 = 5500;
     var wave: usize = 0;
     while (wave < 10) : (wave += 1) {
-        try common.appendSpawn(
+        try common.appendSpawnExact(
             out_entries,
             len,
             .{ .x = 1174.0, .y = half_height },
@@ -313,7 +313,7 @@ fn build504TheGangWars(
         trigger += 4000;
     }
 
-    try common.appendSpawn(
+    try common.appendSpawnExact(
         out_entries,
         len,
         .{ .x = 512.0, .y = 1152.0 },
@@ -325,7 +325,7 @@ fn build504TheGangWars(
 
     trigger = 59_500;
     while (trigger < 0x184AC) {
-        try common.appendSpawn(
+        try common.appendSpawnExact(
             out_entries,
             len,
             .{ .x = -150.0, .y = half_height },
@@ -337,7 +337,7 @@ fn build504TheGangWars(
         trigger += 4000;
     }
 
-    try common.appendSpawn(
+    try common.appendSpawnExact(
         out_entries,
         len,
         .{ .x = 512.0, .y = 1152.0 },

@@ -145,16 +145,30 @@ test "cross fire lower spawn stays at native fixed coordinate" {
     try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[5].pos.y, 1e-6);
 }
 
-test "gang wars chain spawns stay at native fixed coordinate" {
+test "gang wars uses native half height and fixed chain coordinates" {
     var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 32;
-    const built = try buildQuestSpawnTable(504, 1, 0, 2048.0, out_entries[0..]);
+    const descriptor = lookupLevelBuilder(504) orelse unreachable;
+    var rng = common.QuestRng.init(0);
+    var len: usize = 0;
+    try descriptor.build(
+        .{
+            .width = 2048.0,
+            .height = 2049.0,
+            .player_count = 1,
+        },
+        &rng,
+        out_entries[0..],
+        &len,
+    );
+    const entries = out_entries[0..len];
 
-    try std.testing.expectEqual(@as(usize, 24), built.entries.len);
-    try std.testing.expectApproxEqAbs(@as(f32, 1024.0), built.entries[0].pos.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 512.0), built.entries[12].pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[12].pos.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 512.0), built.entries[23].pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[23].pos.y, 1e-6);
+    try std.testing.expectEqual(@as(usize, 24), entries.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.5), entries[0].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 512.0), entries[12].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), entries[12].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1024.5), entries[13].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 512.0), entries[23].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1152.0), entries[23].pos.y, 1e-6);
 }
 
 test "level 1-10 rectangular spawn summary stays stable" {

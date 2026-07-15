@@ -107,8 +107,25 @@ def spawn(
     trigger_ms: int,
     count: int,
 ) -> SpawnEntry:
+    return spawn_exact(
+        Vec2(_native_entry_coord(point.x), _native_entry_coord(point.y)),
+        heading=heading,
+        spawn_id=spawn_id,
+        trigger_ms=trigger_ms,
+        count=count,
+    )
+
+
+def spawn_exact(
+    point: Vec2,
+    *,
+    heading: float = 0.0,
+    spawn_id: SpawnId,
+    trigger_ms: int,
+    count: int,
+) -> SpawnEntry:
     return SpawnEntry(
-        pos=Vec2(_native_entry_coord(point.x), _native_entry_coord(point.y)),
+        pos=point,
         heading=heading,
         spawn_id=spawn_id,
         trigger_ms=trigger_ms,

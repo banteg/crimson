@@ -12,6 +12,7 @@ from .helpers import (
     center_point,
     ring_points,
     spawn,
+    spawn_exact,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -233,16 +234,17 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
     unlock_weapon_id=WeaponId.GAUSS_SHOTGUN,
 )
 def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+    half_height = float(ctx.height) * 0.5
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-150.0, float(ctx.height // 2)),
+        spawn_exact(
+            Vec2(-150.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=100,
             count=1,
         ),
-        spawn(
-            Vec2(1174.0, float(ctx.height // 2)),
+        spawn_exact(
+            Vec2(1174.0, half_height),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=2500,
@@ -253,8 +255,8 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
     trigger = 5500
     for _ in range(10):
         entries.append(
-            spawn(
-                Vec2(1174.0, float(ctx.height // 2)),
+            spawn_exact(
+                Vec2(1174.0, half_height),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
@@ -264,7 +266,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
         trigger += 4000
 
     entries.append(
-        spawn(
+        spawn_exact(
             Vec2(512.0, 1152.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
@@ -276,8 +278,8 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
     trigger = 59500
     while trigger < 0x184AC:
         entries.append(
-            spawn(
-                Vec2(-150.0, float(ctx.height // 2)),
+            spawn_exact(
+                Vec2(-150.0, half_height),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
@@ -287,7 +289,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: 
         trigger += 4000
 
     entries.append(
-        spawn(
+        spawn_exact(
             Vec2(512.0, 1152.0),
             heading=0.0,
             spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,

@@ -77,8 +77,28 @@ pub inline fn appendSpawn(
     trigger_ms: i32,
     count: i32,
 ) QuestSpawnBuildError!void {
+    try appendSpawnExact(
+        out_entries,
+        len,
+        .{ .x = nativeEntryCoord(pos.x), .y = nativeEntryCoord(pos.y) },
+        heading,
+        spawn_id,
+        trigger_ms,
+        count,
+    );
+}
+
+pub inline fn appendSpawnExact(
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+    len: *usize,
+    pos: spawn_runtime.Vec2,
+    heading: f32,
+    spawn_id: SpawnId,
+    trigger_ms: i32,
+    count: i32,
+) QuestSpawnBuildError!void {
     try appendEntry(out_entries, len, .{
-        .pos = .{ .x = nativeEntryCoord(pos.x), .y = nativeEntryCoord(pos.y) },
+        .pos = pos,
         .heading = heading,
         .spawn_id = spawn_id,
         .trigger_ms = trigger_ms,

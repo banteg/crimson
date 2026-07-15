@@ -10,6 +10,7 @@ from crimson.quests.runtime import (
 from crimson.quests.tier1 import build_1_3_target_practice, build_1_6_the_random_factor
 from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
 from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
+from crimson.quests.tier5 import build_5_4_the_gang_wars
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
@@ -27,6 +28,18 @@ def test_everred_bonus_bottom_y_is_native_constant() -> None:
     assert len(entries) == 34
     assert entries[16].pos == Vec2(1024.0, -64.0)
     assert entries[17].pos == Vec2(1024.0, 1088.0)
+
+
+def test_gang_wars_uses_native_half_height_and_fixed_chain_positions() -> None:
+    ctx = QuestContext(width=2048, height=2049, player_count=1)
+
+    entries = build_5_4_the_gang_wars(ctx, rng=Crand(0), full_version=True)
+
+    assert len(entries) == 24
+    assert entries[0].pos == Vec2(-150.0, 1024.5)
+    assert entries[12].pos == Vec2(512.0, 1152.0)
+    assert entries[13].pos == Vec2(-150.0, 1024.5)
+    assert entries[23].pos == Vec2(512.0, 1152.0)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
