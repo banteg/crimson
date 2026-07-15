@@ -801,6 +801,13 @@
       "type": "float"
     },
     {
+      "address": "0x00473a5c",
+      "comment": "Texture-loading stage count including the terminal sentinel; startup rendering displays this value minus one.",
+      "name": "startup_texture_load_stage_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00473a8c",
       "comment": "Secret-hint string: \"Brave little haxx0r aren't you?\"",
       "name": "secret_hint_haxx0r",
@@ -6301,6 +6308,13 @@
       "name": "render_tint_color_a",
       "program": "crimsonland.exe",
       "type": "float"
+    },
+    {
+      "address": "0x00496698",
+      "comment": "Texture handle looked up by the legacy cache name aim64 at the terminal startup texture stage; no other native references survive.",
+      "name": "aim64_texture",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0049669c",
