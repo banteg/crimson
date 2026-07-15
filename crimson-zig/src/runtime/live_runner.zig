@@ -202,11 +202,12 @@ pub const LiveRunner = struct {
                 quest_level_key = config.quest_level_key;
                 const terrain_slots = runtime_bootstrap.terrainSlotsForQuestLevelKey(config.quest_level_key) orelse
                     return error.InvalidQuestSpawnTable;
-                const built = quest_spawn_logic.buildQuestSpawnTable(
+                const built = quest_spawn_logic.buildQuestSpawnTableWithHardcore(
                     config.quest_level_key,
                     config.player_count,
                     config.seed,
                     config.world_size,
+                    config.hardcore,
                     quest_spawn_entries_storage[0..],
                 ) catch |err| switch (err) {
                     error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,

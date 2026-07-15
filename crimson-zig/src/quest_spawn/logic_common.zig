@@ -18,6 +18,7 @@ pub const BuildContext = struct {
     width: f32,
     height: f32,
     player_count: i32,
+    hardcore: bool = false,
 };
 
 pub const BuildFn = *const fn (

@@ -17,6 +17,7 @@ class QuestContext(msgspec.Struct, frozen=True):
     width: int
     height: int
     player_count: int
+    hardcore: bool = False
 
 
 class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):

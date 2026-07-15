@@ -310,7 +310,7 @@ fn build_407_gauntlet(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const player_count = ctx.player_count + 4;
+    const player_count = ctx.player_count + if (ctx.hardcore) @as(i32, 4) else 0;
     const center = common.centerPoint(ctx.width, ctx.height);
     const edges = common.squareEdgeMidpoints(ctx.width, 64.0);
 
@@ -376,7 +376,7 @@ fn build_408_syntax_terror(
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    const player_count = ctx.player_count + 4;
+    const player_count = ctx.player_count + if (ctx.hardcore) @as(i32, 4) else 0;
     const loop_count = player_count + 9;
 
     var outer_seed: i32 = 0x14C9;

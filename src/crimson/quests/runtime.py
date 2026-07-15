@@ -45,8 +45,9 @@ def build_quest_spawn_table(
     """Build the quest spawn script from the active startup RNG state."""
 
     builder_rng = rng if rng is not None else Crand()
+    builder_ctx = msgspec.structs.replace(ctx, hardcore=hardcore)
     entries = quest.builder(
-        ctx,
+        builder_ctx,
         rng=builder_rng,
         full_version=full_version,
     )

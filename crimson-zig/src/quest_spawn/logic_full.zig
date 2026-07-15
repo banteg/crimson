@@ -25,6 +25,24 @@ pub fn buildQuestSpawnTable(
     world_size: f32,
     out_entries: []spawn_runtime.QuestSpawnEntry,
 ) QuestSpawnBuildError!QuestSpawnBuildResult {
+    return buildQuestSpawnTableWithHardcore(
+        level_key,
+        player_count,
+        seed,
+        world_size,
+        false,
+        out_entries,
+    );
+}
+
+pub fn buildQuestSpawnTableWithHardcore(
+    level_key: i32,
+    player_count: i32,
+    seed: u32,
+    world_size: f32,
+    hardcore: bool,
+    out_entries: []spawn_runtime.QuestSpawnEntry,
+) QuestSpawnBuildError!QuestSpawnBuildResult {
     if (player_count < 1 or player_count > 4) return error.InvalidQuestSpawnTable;
     const descriptor = lookupLevelBuilder(level_key) orelse return error.InvalidQuestSpawnTable;
 
@@ -32,6 +50,7 @@ pub fn buildQuestSpawnTable(
         .width = world_size,
         .height = world_size,
         .player_count = player_count,
+        .hardcore = hardcore,
     };
     var rng = common.QuestRng.init(seed);
     var len: usize = 0;
@@ -41,6 +60,52 @@ pub fn buildQuestSpawnTable(
         .entries = out_entries[0..len],
         .start_weapon_id = descriptor.start_weapon_id,
     };
+}
+
+test "builder-specific hardcore quest branches use context flag" {
+    const Case = struct {
+        level_key: i32,
+        normal_count: usize,
+        hardcore_count: usize,
+    };
+    const cases = [_]Case{
+        .{ .level_key = 210, .normal_count = 3, .hardcore_count = 6 },
+        .{ .level_key = 407, .normal_count = 68, .hardcore_count = 92 },
+        .{ .level_key = 408, .normal_count = 40, .hardcore_count = 56 },
+    };
+
+    for (cases) |case| {
+        const descriptor = lookupLevelBuilder(case.level_key) orelse unreachable;
+        var out_entries = [_]spawn_runtime.QuestSpawnEntry{undefined} ** 128;
+        var rng = common.QuestRng.init(0);
+        var len: usize = 0;
+        try descriptor.build(
+            .{
+                .width = 1024.0,
+                .height = 1024.0,
+                .player_count = 1,
+            },
+            &rng,
+            out_entries[0..],
+            &len,
+        );
+        try std.testing.expectEqual(case.normal_count, len);
+
+        rng = common.QuestRng.init(0);
+        len = 0;
+        try descriptor.build(
+            .{
+                .width = 1024.0,
+                .height = 1024.0,
+                .player_count = 1,
+                .hardcore = true,
+            },
+            &rng,
+            out_entries[0..],
+            &len,
+        );
+        try std.testing.expectEqual(case.hardcore_count, len);
+    }
 }
 
 pub fn lookupLevelBuilder(level_key: i32) ?LevelBuilder {

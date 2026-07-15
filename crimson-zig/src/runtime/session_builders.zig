@@ -153,11 +153,12 @@ pub fn buildReplaySession(
             quest_spawn_entries = quest_spawn_entries_storage[0..entries.len];
         } else {
             const level_key = runtime_bootstrap.resolveQuestLevelKey(header) orelse return error.InvalidQuestSpawnTable;
-            const built = quest_spawn_logic.buildQuestSpawnTable(
+            const built = quest_spawn_logic.buildQuestSpawnTableWithHardcore(
                 level_key,
                 header.player_count,
                 header.seed,
                 header.world_size,
+                header.hardcore,
                 quest_spawn_entries_storage[0..],
             ) catch |build_err| switch (build_err) {
                 error.InvalidQuestSpawnTable => return error.InvalidQuestSpawnTable,

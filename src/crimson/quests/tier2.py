@@ -587,7 +587,7 @@ def build_2_10_spideroids(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             count=1,
         ),
     ]
-    if full_version:
+    if ctx.hardcore:
         entries.append(
             spawn(
                 Vec2(1088.0, 762.0),
@@ -606,7 +606,7 @@ def build_2_10_spideroids(ctx: QuestContext, *, rng: CrandLike, full_version: bo
                 count=1,
             ),
         )
-    if ctx.player_count >= 2 or full_version:
+    if ctx.player_count >= 2 or ctx.hardcore:
         entries.append(
             spawn(
                 Vec2(-64.0, 762.0),

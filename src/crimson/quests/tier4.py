@@ -405,7 +405,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_versio
 )
 def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    player_count = ctx.player_count + (4 if full_version else 0)
+    player_count = ctx.player_count + (4 if ctx.hardcore else 0)
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width)
 
@@ -491,7 +491,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
 )
 def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    player_count = ctx.player_count + (4 if full_version else 0)
+    player_count = ctx.player_count + (4 if ctx.hardcore else 0)
     outer_seed = 0x14C9
     outer_index = 0
     trigger_base = 1500

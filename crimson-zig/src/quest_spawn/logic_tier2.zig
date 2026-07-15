@@ -673,31 +673,35 @@ fn build210Spideroids(
         6_000,
         1,
     );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = edges.right.x, .y = 762.0 },
-        0.0,
-        common.SpawnId.spider_sp2_splitter_01,
-        9_000,
-        1,
-    );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        edges.bottom,
-        0.0,
-        common.SpawnId.spider_sp2_splitter_01,
-        9_000,
-        1,
-    );
-    try common.appendSpawn(
-        out_entries,
-        len,
-        .{ .x = edges.left.x, .y = 762.0 },
-        0.0,
-        common.SpawnId.spider_sp2_splitter_01,
-        9_000,
-        1,
-    );
+    if (ctx.hardcore) {
+        try common.appendSpawn(
+            out_entries,
+            len,
+            .{ .x = edges.right.x, .y = 762.0 },
+            0.0,
+            common.SpawnId.spider_sp2_splitter_01,
+            9_000,
+            1,
+        );
+        try common.appendSpawn(
+            out_entries,
+            len,
+            edges.bottom,
+            0.0,
+            common.SpawnId.spider_sp2_splitter_01,
+            9_000,
+            1,
+        );
+    }
+    if (ctx.player_count >= 2 or ctx.hardcore) {
+        try common.appendSpawn(
+            out_entries,
+            len,
+            .{ .x = edges.left.x, .y = 762.0 },
+            0.0,
+            common.SpawnId.spider_sp2_splitter_01,
+            9_000,
+            1,
+        );
+    }
 }

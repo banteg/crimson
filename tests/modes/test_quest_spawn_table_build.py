@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.spawn import SpawnId
+from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
@@ -50,6 +51,44 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
         2,  # 0x3C excluded
         1,  # count <= 1 excluded
     ]
+
+
+def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
+    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    cases = (
+        (QuestLevel(2, 10), 3, 6),
+        (QuestLevel(4, 7), 68, 92),
+        (QuestLevel(4, 8), 40, 56),
+    )
+
+    for level, normal_count, hardcore_count in cases:
+        quest = quest_by_level(level)
+        assert quest is not None
+        normal = build_quest_spawn_table(
+            quest,
+            ctx,
+            rng=Crand(0),
+            hardcore=False,
+            full_version=True,
+        )
+        demo = build_quest_spawn_table(
+            quest,
+            ctx,
+            rng=Crand(0),
+            hardcore=False,
+            full_version=False,
+        )
+        hardcore = build_quest_spawn_table(
+            quest,
+            ctx,
+            rng=Crand(0),
+            hardcore=True,
+            full_version=True,
+        )
+
+        assert len(normal) == normal_count
+        assert len(demo) == normal_count
+        assert len(hardcore) == hardcore_count
 
 
 def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
