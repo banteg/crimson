@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**555/2172** functions matched, **100090/676653** code bytes (**14.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**558/2172** functions matched, **101494/676653** code bytes (**15.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 423/997 | 80643/386756 | 20.9% | 423/513 |
+| crimsonland.exe | 426/997 | 82047/386756 | 21.2% | 426/516 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**423/997** functions, **80643/386756** bytes (**20.9%**), **423/513** scratches verified.
+**426/997** functions, **82047/386756** bytes (**21.2%**), **426/516** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -100,6 +100,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_apply | 0x00409890 | 2693 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
 | match | ui_draw_clock_gauge_at | 0x0040a4c0 | 70 | 22/22 | 100.00% | 22/22 | 6/0/0 |  | ui-clock-gauge-wrapper |
+| match | ui_render_aim_indicators | 0x0040a510 | 1402 | 343/343 | 100.00% | 343/343 | 105/0/0 |  | ui-aim-reload-and-direction-indicators |
+| match | ui_render_aim_lifetime_destroy | 0x0040aa90 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-aim-second-static-empty-destructor |
+| match | ui_render_aim_screen_destroy | 0x0040aaa0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-aim-screen-vector-empty-destructor |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | plugin_runtime_update_and_render | 0x0040b630 | 265 | 67/67 | 100.00% | 67/67 | 33/0/0 |  | plugin-runtime-frame-lifecycle |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |

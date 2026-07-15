@@ -630,6 +630,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040aa90",
+    "name": "ui_render_aim_lifetime_destroy",
+    "signature": "void ui_render_aim_lifetime_destroy(void)",
+    "comment": "empty VC6 cleanup thunk for the second function-local static in ui_render_aim_indicators"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040aaa0",
+    "name": "ui_render_aim_screen_destroy",
+    "signature": "void ui_render_aim_screen_destroy(void)",
+    "comment": "empty VC6 cleanup thunk for the static aim-screen vector in ui_render_aim_indicators"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040aab0",
     "name": "gameplay_update_and_render",
     "signature": "void gameplay_update_and_render(void)",
