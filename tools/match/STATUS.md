@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**442/2166** functions matched, **57825/676407** code bytes (**8.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**443/2166** functions matched, **58541/676407** code bytes (**8.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 310/991 | 38378/386510 | 9.9% | 310/344 |
+| crimsonland.exe | 311/991 | 39094/386510 | 10.1% | 311/345 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**310/991** functions, **38378/386510** bytes (**9.9%**), **310/344** scratches verified.
+**311/991** functions, **39094/386510** bytes (**10.1%**), **311/345** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -325,6 +325,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
+| match | ui_text_input_update | 0x0043ecf0 | 716 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
 | match | highscore_card_draw_horizontal_divider | 0x004411c0 | 83 | 23/23 | 100.00% | 23/23 | 6/0/0 |  | highscore-card-divider |
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
