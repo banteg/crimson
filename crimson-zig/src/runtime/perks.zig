@@ -36,6 +36,8 @@ const PerkFlagSet = std.EnumSet(PerkFlag);
 pub const perk_id_max: i32 = @intCast(state_mod.perk_count_size - 1);
 const perk_id_max_usize: usize = state_mod.perk_count_size - 1;
 const perk_base_available_max_id: i32 = 27;
+const grim_deal_xp_scale: f32 = @bitCast(@as(u32, 0x3E3851EC));
+const breathing_room_fraction: f32 = @bitCast(@as(u32, 0x3F2AAAAB));
 
 inline fn perkIdIndex(perk_id: PerkId) usize {
     return @intCast(@intFromEnum(perk_id));
@@ -378,8 +380,13 @@ pub fn applyPerkWithContext(
             players[0].experience += 2500;
         },
         PerkId.grim_deal => {
+            const experience = players[0].experience;
+            const bonus: i32 = @intFromFloat(native_math.pc24Mul(
+                @as(f64, @floatFromInt(experience)),
+                grim_deal_xp_scale,
+            ));
             players[0].health = -1.0;
-            players[0].experience += @intFromFloat(@as(f32, @floatFromInt(players[0].experience)) * 0.18);
+            players[0].experience = experience + bonus;
         },
         PerkId.plaguebearer => {
             for (players) |*player| {
@@ -446,8 +453,8 @@ pub fn applyPerkWithContext(
         },
         PerkId.breathing_room => {
             for (players) |*player| {
-                const reduction = narrowF32(player.health * (2.0 / 3.0));
-                player.health = narrowF32(player.health - reduction);
+                const reduction = native_math.pc24Mul(player.health, breathing_room_fraction);
+                player.health = native_math.pc24Sub(player.health, reduction);
             }
             applyPerkImmediateCreatureEffects(perk_id, state, context);
             state.bonus_spawn_guard = false;
@@ -1503,6 +1510,16 @@ test "grim deal kills owner and boosts experience" {
     try std.testing.expectEqual(@as(i32, 7), players[1].experience);
 }
 
+test "grim deal uses native float scale before truncation" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .experience = 1_456_361 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.grim_deal);
+    try std.testing.expectEqual(@as(i32, 1_718_506), players[0].experience);
+}
+
 test "instant winner grants xp to owner only" {
     var state = state_mod.GameplayState.init(1);
     var players = [_]state_mod.PlayerState{
@@ -1588,6 +1605,16 @@ test "breathing room reduces player health and clears bonus spawn guard" {
     try std.testing.expectApproxEqAbs(@as(f32, 30.0), players[0].health, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 15.0), players[1].health, 1e-6);
     try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "breathing room rounds each native float operation" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 1.0 },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.breathing_room);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x3EAAAAAA))), players[0].health);
 }
 
 test "breathing room applies immediate creature lifecycle step when context is provided" {
