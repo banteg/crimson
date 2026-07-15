@@ -1,0 +1,29 @@
+# `quest_build_monster_blues`
+
+Native target: `crimsonland.exe` at `0x00434860` (348 bytes).
+
+Live Binary Ninja evidence recovers four opening entries: a template `0x04`
+lizard at `(-50, height / 2)` at 500 ms/count 10; a template `0x06` alien at
+`(1074, height / 2)` at 7500 ms/count 10; and two template `0x03` spiders at
+`(512, 1088)` and `(512, -64)` at 17500 ms/count 12. Sixty-four entries then
+spawn at `(-64, 512)`, beginning at 27500 ms and advancing by 900 ms. Signed
+`index % 4` selects template `0x06` for remainder zero, `0x03` for remainder
+one, and `0x05` otherwise; the count is signed `index / 8 + 2`. The function
+publishes 68 entries. The Python and Zig ports agree with the recovered table.
+
+The reusable `quest_vec2_t` constructor reproduces the native eight-byte
+position temporary and pair copies. Assigning the loop template directly in
+each branch reproduces the native biased induction pointer, signed remainder
+correction, branch stores, signed divide-by-eight lowering, trigger recurrence,
+constant position registers, pointer stride, loop bound, and epilogue. That
+64-entry loop matches exactly. The full candidate has the same 95 instructions,
+all two references, a nine-instruction prefix, and scores 82.11%.
+
+The residual is independent VC6 scheduling in the four fixed entries. Native
+pushes long-lived loop registers between the first x87 conversion and metadata
+stores, while the candidate completes more entry stores before those pushes;
+the final fixed-entry trigger store also crosses loop initialization. Scalar
+positions, a cursor loop, a local template selector, direct fixed metadata, a
+whole-entry setter, `msvc6.5pp`, `msvc7.0`, and `/G6` were checked. They remove
+the proven temporary, lose the exact loop lowering, or regress the score. This
+remains an honest exact-length WIP without dependency-only scheduler steering.

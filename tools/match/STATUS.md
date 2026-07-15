@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/373 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/374 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/373** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/374** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -249,6 +249,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 32/32 | 78.12% | 12/32 | 7/0/0 |  | quest-fallback-builder |
+| wip | quest_build_monster_blues | 0x00434860 | 348 | 95/95 | 82.11% | 9/95 | 2/0/0 |  | quest-monster-blues-modulo-wave-selector |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
