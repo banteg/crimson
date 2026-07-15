@@ -462,9 +462,10 @@ def test_reference_catalog_scopes_ambiguous_object_alias() -> None:
     assert "address:0x00403000" in scoped.keys_for_object_reference("$E2", 0)
 
 
-def test_match_function_audits_compiler_string_by_content() -> None:
+@pytest.mark.parametrize("literal", [b"%s\x00", b"perk description " * 16 + b"\x00"])
+def test_match_function_audits_compiler_string_by_content(literal: bytes) -> None:
     mapped = bytearray(0x10000)
-    mapped[0x2000:0x2003] = b"%s\x00"
+    mapped[0x2000 : 0x2000 + len(literal)] = literal
     candidate = ObjectFunction(
         name="_foo",
         data=bytes.fromhex("6800000000c3"),
@@ -475,7 +476,7 @@ def test_match_function_audits_compiler_string_by_content() -> None:
                 symbol_name="??_C@_02DILL@?$CFs?$AA@",
                 key=None,
                 explained=False,
-                symbol_data=b"%s\x00",
+                symbol_data=literal,
             ),
         ),
     )

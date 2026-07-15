@@ -896,10 +896,11 @@ def load_image(path: Path, image_base: int | None = None) -> LoadedImage:
 
 
 _OPERAND_SIZE_NAMES = {1: "byte", 2: "word", 4: "dword", 8: "qword", 10: "tword"}
+_MAX_AUDITED_STRING_BYTES = 0x1000
 
 
 def _printable_string_key(data: bytes) -> str | None:
-    end = data.find(b"\x00", 0, 161)
+    end = data.find(b"\x00", 0, _MAX_AUDITED_STRING_BYTES + 1)
     if end <= 0:
         return None
     raw = data[:end]
