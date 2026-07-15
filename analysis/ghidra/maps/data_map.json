@@ -2417,6 +2417,13 @@
       "type": "int"
     },
     {
+      "address": "0x004819c8",
+      "comment": "Function-local static initialization guard for mod_load_info's cached mod_info_t object.",
+      "name": "mod_info_static_guard",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x00481bc0",
       "comment": "Credits secret UI button state for Back (ui_button_update target).",
       "name": "credits_secret_back_button",
