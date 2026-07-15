@@ -995,6 +995,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00410cf0",
+    "name": "quest_failed_main_menu_button_destroy",
+    "signature": "void quest_failed_main_menu_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-failed Main Menu button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00410d00",
+    "name": "quest_failed_play_another_button_destroy",
+    "signature": "void quest_failed_play_another_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-failed Play Another button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00410d10",
+    "name": "quest_failed_play_again_button_destroy",
+    "signature": "void quest_failed_play_again_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-failed Play Again button"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00410d20",
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",

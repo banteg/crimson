@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**516/2167** functions matched, **92476/676448** code bytes (**13.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**517/2167** functions matched, **92878/676448** code bytes (**13.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 384/992 | 73029/386551 | 18.9% | 384/471 |
+| crimsonland.exe | 385/992 | 73431/386551 | 19.0% | 385/472 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**384/992** functions, **73029/386551** bytes (**18.9%**), **384/471** scratches verified.
+**385/992** functions, **73431/386551** bytes (**19.0%**), **385/472** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -132,6 +132,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
+| wip | quest_failed_screen_update | 0x004107e0 | 1261 | 288/292 | 87.93% | 1/292 | 146/0/1 |  | quest-failed-highscore-and-retry-actions |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
 | match | quest_meta_init | 0x00412190 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-construction |
@@ -377,7 +378,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_save_record | 0x0043b450 | 182 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
-| wip | highscore_build_path | 0x0043b5b0 | 402 | 103/104 | 85.99% | 75/104 | 44/0/3 |  | highscore-mode-path-builder |
+| match | highscore_build_path | 0x0043b5b0 | 402 | 104/104 | 100.00% | 104/104 | 54/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | highscore-mode-path-builder |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
 | match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
