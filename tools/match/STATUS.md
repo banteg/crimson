@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/381 |
+| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/382 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**320/991** functions, **42244/386510** bytes (**10.9%**), **320/381** scratches verified.
+**320/991** functions, **42244/386510** bytes (**10.9%**), **320/382** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -250,6 +250,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 32/32 | 78.12% | 12/32 | 7/0/0 |  | quest-fallback-builder |
 | wip | quest_build_monster_blues | 0x00434860 | 348 | 95/95 | 82.11% | 9/95 | 2/0/0 |  | quest-monster-blues-modulo-wave-selector |
+| wip | quest_build_the_gang_wars | 0x00435120 | 424 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
