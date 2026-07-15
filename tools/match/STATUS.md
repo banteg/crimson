@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/372 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/373 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/372** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/373** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -274,6 +274,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 95/95 | 56.84% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
+| wip | quest_build_spiders_inc | 0x004390d0 | 346 | 106/105 | 69.19% | 9/105 | 8/0/0 |  | quest-spiders-inc-staged-spider-waves |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
