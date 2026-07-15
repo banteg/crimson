@@ -3802,6 +3802,13 @@
       "type": "char"
     },
     {
+      "address": "0x004871cb",
+      "comment": "Set when either Grim mouse delta axis is nonzero for the current frame, and cleared when both are zero.",
+      "name": "input_mouse_delta_nonzero",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004871c8",
       "comment": "Terrain texture creation failure flag (safe mode).",
       "name": "terrain_texture_failed",
@@ -3830,6 +3837,9 @@
     },
     {
       "address": "0x004871d8",
+      "aliases": [
+        "camera_shake_offset"
+      ],
       "comment": "Camera shake offset X (applied to camera center).",
       "name": "camera_shake_offset_x",
       "program": "crimsonland.exe"

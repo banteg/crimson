@@ -1202,11 +1202,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004177e0",
+    "name": "ui_element_globals_init_thunk",
+    "signature": "void ui_element_globals_init_thunk(void)",
+    "comment": "CRT initializer thunk for the global menu and perk-prompt UI elements"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004177f0",
+    "name": "ui_element_globals_init",
+    "signature": "void ui_element_globals_init(void)",
+    "comment": "constructs the global menu UI element objects and standalone perk-prompt element"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00417a90",
     "name": "ui_template_slot_ctor_noop",
     "include_library": true,
     "aliases": [
       "??0ui_template_slot_cpp_t@@QAE@XZ",
+      "??0ui_vec2_cpp_t@@QAE@XZ",
+      "?construct@ui_vec2_cpp_t@@QAEXXZ",
       "?construct@ui_template_slot_cpp_t@@QAEXXZ"
     ],
     "signature": "void * ui_template_slot_ctor_noop(void *slot)",
@@ -1216,6 +1232,10 @@
     "program": "crimsonland.exe",
     "address": "0x00417aa0",
     "name": "ui_template_block_set_mode4",
+    "aliases": [
+      "??0ui_template_block_cpp_t@@QAE@XZ",
+      "@ui_template_block_set_mode4@4"
+    ],
     "signature": "void * ui_template_block_set_mode4(void *block)",
     "comment": "sets template block mode sentinel at offset +0xe4 to 4"
   },
@@ -1223,6 +1243,10 @@
     "program": "crimsonland.exe",
     "address": "0x00417ab0",
     "name": "ui_template_triplet_reset_and_seed_modes",
+    "aliases": [
+      "??0ui_element_cpp_t@@QAE@XZ",
+      "@ui_template_triplet_reset_and_seed_modes@4"
+    ],
     "signature": "void * ui_template_triplet_reset_and_seed_modes(void *block)",
     "comment": "resets head flags and seeds three template sub-block mode sentinels (+0x120/+0x208/+0x2f0) to 4"
   },
