@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 317/991 | 41375/386510 | 10.7% | 317/352 |
+| crimsonland.exe | 317/991 | 41375/386510 | 10.7% | 317/353 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**317/991** functions, **41375/386510** bytes (**10.7%**), **317/352** scratches verified.
+**317/991** functions, **41375/386510** bytes (**10.7%**), **317/353** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -254,6 +254,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 48/48 | 95.83% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_zombie_time | 0x00437d70 | 152 | 50/50 | 60.00% | 1/50 | 2/0/0 |  | quest-zombie-time-builder |
+| wip | quest_build_the_massacre | 0x004383e0 | 184 | 61/61 | 88.52% | 16/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
