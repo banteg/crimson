@@ -1531,6 +1531,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e6c0",
+    "name": "creature_pool_global_init_thunk",
+    "signature": "void creature_pool_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 385-entry creature pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e6d0",
+    "name": "creature_pool_global_init",
+    "signature": "void creature_pool_global_init(void)",
+    "comment": "constructs 385 inactive creature entries with zeroed transient state and link index -1"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
     "signature": "int vec2_add(float *dst, float *delta)",
