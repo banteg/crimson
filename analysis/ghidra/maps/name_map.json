@@ -2048,8 +2048,8 @@
     "program": "crimsonland.exe",
     "address": "0x0042f540",
     "name": "effect_spawn_ion_hit_sparks",
-    "signature": "void * effect_spawn_ion_hit_sparks(float *pos, float scale)",
-    "comment": "spawns detail-scaled ion impact sparks (effect id 0) around the hit position"
+    "signature": "void effect_spawn_ion_hit_sparks(float *pos, float scale)",
+    "comment": "spawns detail-scaled ion impact sparks (effect id 0) around the hit position; low detail halves the positive spark count"
   },
   {
     "program": "crimsonland.exe",

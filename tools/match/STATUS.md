@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**430/2165** functions matched, **51437/675677** code bytes (**7.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**431/2165** functions matched, **51815/675677** code bytes (**7.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 298/990 | 31990/385780 | 8.3% | 298/331 |
+| crimsonland.exe | 299/990 | 32368/385780 | 8.4% | 299/332 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**298/990** functions, **31990/385780** bytes (**8.3%**), **298/331** scratches verified.
+**299/990** functions, **32368/385780** bytes (**8.4%**), **299/332** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -217,6 +217,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | effect_spawn_ion_hit_core | 0x0042f270 | 191 | 32/32 | 100.00% | 32/32 | 16/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_plasma_hit_core | 0x0042f330 | 185 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 75/75 | 100.00% | 75/75 | 23/0/0 |  | gameplay-effect-spawn |
+| match | effect_spawn_ion_hit_sparks | 0x0042f540 | 378 | 86/86 | 100.00% | 86/86 | 31/0/0 |  | gameplay-ion-hit-sparks |
 | match | perk_meta_global_construct_and_register | 0x0042fa90 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | perk-metadata-global-lifecycle |
 | match | perk_meta_table_init | 0x0042faa0 | 28 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-construction |
 | match | perk_meta_entry_init | 0x0042fac0 | 27 | 8/8 | 100.00% | 8/8 | 0/0/0 |  | perk-metadata-entry-defaults |
