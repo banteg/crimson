@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**457/2166** functions matched, **66429/676407** code bytes (**9.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**458/2166** functions matched, **67023/676407** code bytes (**9.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 325/991 | 46982/386510 | 12.2% | 325/405 |
+| crimsonland.exe | 326/991 | 47576/386510 | 12.3% | 326/406 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**325/991** functions, **46982/386510** bytes (**12.2%**), **325/405** scratches verified.
+**326/991** functions, **47576/386510** bytes (**12.3%**), **326/406** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -71,6 +71,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_draw_clock_gauge | 0x004061e0 | 362 | 99/99 | 100.00% | 99/99 | 17/0/0 |  | ui-clock-gauge-renderer |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | quest_mode_update | 0x004070e0 | 455 | 103/108 | 65.40% | 23/108 | 35/0/5 |  | quest-completion-transition-coordinator |
+| match | rush_mode_update | 0x004072b0 | 594 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
