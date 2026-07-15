@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**439/2166** functions matched, **55941/676407** code bytes (**8.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**440/2166** functions matched, **56563/676407** code bytes (**8.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 307/991 | 36494/386510 | 9.4% | 307/341 |
+| crimsonland.exe | 308/991 | 37116/386510 | 9.6% | 308/342 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**307/991** functions, **36494/386510** bytes (**9.4%**), **307/341** scratches verified.
+**308/991** functions, **37116/386510** bytes (**9.6%**), **308/342** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -322,6 +322,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_focus_set | 0x0043d7e0 | 75 | 25/25 | 100.00% | 25/25 | 6/0/0 |  | ui-focus-selection |
 | match | ui_focus_update | 0x0043d830 | 268 | 78/78 | 100.00% | 78/78 | 27/0/0 |  | ui-focus-navigation |
 | match | ui_focus_draw | 0x0043d940 | 104 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
+| match | ui_checkbox_update | 0x0043dc80 | 622 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
 | match | highscore_card_draw_horizontal_divider | 0x004411c0 | 83 | 23/23 | 100.00% | 23/23 | 6/0/0 |  | highscore-card-divider |
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
