@@ -147,6 +147,12 @@ test "the end of all stays in native fixed coordinate space" {
     try std.testing.expectApproxEqAbs(@as(f32, 512.0), built.entries[4].pos.y, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, -128.0), built.entries[11].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 1152.0), built.entries[12].pos.x, 1e-6);
+
+    const hardcore = try buildQuestSpawnTableWithHardcore(410, 1, 0, 2048.0, true, out_entries[0..]);
+    try std.testing.expectApproxEqAbs(@as(f32, 332.0), hardcore.entries[26].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 511.0), hardcore.entries[26].pos.y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 667.0), hardcore.entries[31].pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 422.0), hardcore.entries[31].pos.y, 1e-6);
 }
 
 test "cross fire lower spawn stays at native fixed coordinate" {

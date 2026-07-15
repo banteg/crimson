@@ -674,7 +674,9 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
 
     if ctx.hardcore:
         trigger = 62800
-        for pos, _angle in ring_points(center, 180.0, 12, step=0.5235988, start=0.5235988):
+        for ring_index in range(12):
+            angle = float(ring_index + 1) * 0.5235988
+            pos = center + Vec2.from_angle(angle) * 180.0
             entries.append(
                 spawn(
                     pos,

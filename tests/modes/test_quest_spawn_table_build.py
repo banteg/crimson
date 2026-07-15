@@ -107,6 +107,14 @@ def test_end_of_all_stays_in_native_fixed_coordinate_space() -> None:
         Vec2(1152.0, 640.0),
     ]
 
+    hardcore_entries = build_4_10_the_end_of_all(
+        QuestContext(width=2048, height=3072, player_count=1, hardcore=True),
+        rng=Crand(0),
+        full_version=True,
+    )
+    assert hardcore_entries[26].pos == Vec2(332.0, 511.0)
+    assert hardcore_entries[31].pos == Vec2(667.0, 422.0)
+
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
     entries = [

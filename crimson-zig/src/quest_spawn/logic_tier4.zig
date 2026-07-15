@@ -589,20 +589,21 @@ fn build_410_the_end_of_all(
     );
 
     if (ctx.hardcore) {
-        try common.appendRingSpawns(
-            out_entries,
-            len,
-            center,
-            180.0,
-            12,
-            0.5235988,
-            0.5235988,
-            .zero,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
-            62_800,
-            500,
-            1,
-        );
+        var trigger: i32 = 62_800;
+        var ring_index: i32 = 0;
+        while (ring_index < 12) : (ring_index += 1) {
+            const angle = (@as(f32, @floatFromInt(ring_index)) + 1.0) * 0.5235988;
+            try common.appendSpawn(
+                out_entries,
+                len,
+                common.ringPoint(center, 180.0, angle),
+                0.0,
+                common.SpawnId.alien_spawner_child_1d_fast_07,
+                trigger,
+                1,
+            );
+            trigger += 500;
+        }
     }
 
     try appendEndOfAllAlternatingEdgeSpiders(out_entries, len, 48_000);
