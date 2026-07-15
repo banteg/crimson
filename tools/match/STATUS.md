@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**454/2166** functions matched, **65294/676407** code bytes (**9.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**455/2166** functions matched, **65728/676407** code bytes (**9.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 322/991 | 45847/386510 | 11.9% | 322/400 |
+| crimsonland.exe | 323/991 | 46281/386510 | 12.0% | 323/401 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**322/991** functions, **45847/386510** bytes (**11.9%**), **322/400** scratches verified.
+**323/991** functions, **46281/386510** bytes (**12.0%**), **323/401** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -387,6 +387,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | typo_target_name_is_unique | 0x00445310 | 110 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | typo-target-uniqueness |
 | wip | typo_target_name_assign_random | 0x00445380 | 522 | 173/173 | 76.88% | 17/173 | 27/0/0 |  | typo-random-target-name-policy |
 | match | typo_target_find_by_name | 0x00445590 | 98 | 42/42 | 100.00% | 42/42 | 3/0/0 |  | typo-target-lookup |
+| match | typo_target_name_draw_labels | 0x00445600 | 434 | 111/111 | 100.00% | 111/111 | 20/0/0 |  | typo-active-creature-name-labels |
 | match | input_any_key_pressed | 0x00446000 | 40 | 16/16 | 100.00% | 16/16 | 1/0/0 |  | input-any-key |
 | match | input_primary_just_pressed | 0x00446030 | 188 | 62/62 | 100.00% | 62/62 | 14/0/0 |  | input-primary-edge |
 | match | input_primary_is_down | 0x004460f0 | 74 | 24/24 | 100.00% | 24/24 | 5/0/0 |  | input-primary-held |
