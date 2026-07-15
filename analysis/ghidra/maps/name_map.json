@@ -1279,6 +1279,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041a040",
     "name": "ui_cursor_render",
+    "include_library": true,
     "signature": "void ui_cursor_render(void)",
     "comment": "renders the in-game cursor/crosshair sprites"
   },
@@ -4007,6 +4008,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461140",
     "name": "crt_ci_pow",
+    "aliases": [
+      "__CIpow"
+    ],
     "signature": "void crt_ci_pow(void)",
     "comment": "x87 helper for pow(base, exp) using ST0/ST1"
   },
