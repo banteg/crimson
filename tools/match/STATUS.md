@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**517/2167** functions matched, **92878/676448** code bytes (**13.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**525/2167** functions matched, **92989/676448** code bytes (**13.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 385/992 | 73431/386551 | 19.0% | 385/472 |
+| crimsonland.exe | 393/992 | 73542/386551 | 19.0% | 393/480 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**385/992** functions, **73431/386551** bytes (**19.0%**), **385/472** scratches verified.
+**393/992** functions, **73542/386551** bytes (**19.0%**), **393/480** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -202,11 +202,19 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | render_tint_color_global_init_thunk | 0x0041e070 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | render-tint-color-global-init-thunk |
 | match | render_tint_color_global_init | 0x0041e080 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | render-tint-color-global-constructor |
+| match | unused_effect_uv8_prefix_state_global_init_thunk | 0x0041e110 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-effect-prefix-default-state-thunk |
+| match | unused_effect_uv8_prefix_state_global_init | 0x0041e120 | 28 | 6/6 | 100.00% | 6/6 | 4/0/0 |  | unused-effect-prefix-default-state |
+| match | unused_effect_uv16_prefix_vec2_global_init_thunk | 0x0041e140 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-effect-uv16-prefix-vec2-thunk |
+| match | unused_effect_uv16_prefix_vec2_global_init | 0x0041e150 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | unused-effect-uv16-prefix-vec2 |
+| match | unused_effect_uv_strip16_prefix_vec2_global_init_thunk | 0x0041e170 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-effect-strip16-prefix-vec2-thunk |
+| match | unused_effect_uv_strip16_prefix_vec2_global_init | 0x0041e180 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | unused-effect-strip16-prefix-vec2 |
 | match | fx_queue_global_init_thunk | 0x0041e1a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | fx-queue-global-init-thunk |
 | match | fx_queue_global_init | 0x0041e1b0 | 147 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | fx-queue-global-constructor |
 | match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
 | match | player_apply_move_with_spawn_avoidance | 0x0041e290 | 356 | 131/131 | 100.00% | 131/131 | 8/0/0 |  | gameplay-movement |
 | match | vec2_add_inplace | 0x0041e400 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |
+| match | unused_fx_queue_random_prefix_vec2_global_init_thunk | 0x0041e420 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-random-fx-prefix-vec2-thunk |
+| match | unused_fx_queue_random_prefix_vec2_global_init | 0x0041e430 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | unused-random-fx-prefix-vec2 |
 | match | secondary_projectile_pool_global_init_thunk | 0x0041e450 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | secondary-projectile-pool-global-init-thunk |
 | match | secondary_projectile_pool_global_init | 0x0041e460 | 41 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | secondary-projectile-pool-global-constructor |
 | match | sprite_effect_pool_global_init_thunk | 0x0041e490 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | sprite-effect-pool-global-init-thunk |

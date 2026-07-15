@@ -1615,6 +1615,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e110",
+    "name": "unused_effect_uv8_prefix_state_global_init_thunk",
+    "signature": "void unused_effect_uv8_prefix_state_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused four-word state immediately before effect_uv8"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e120",
+    "name": "unused_effect_uv8_prefix_state_global_init",
+    "signature": "void unused_effect_uv8_prefix_state_global_init(void)",
+    "comment": "initializes the unused four-word effect_uv8 prefix state to {0, 0, 0, 1}"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e140",
+    "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+    "signature": "void unused_effect_uv16_prefix_vec2_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused vec2 immediately before effect_uv16"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e150",
+    "name": "unused_effect_uv16_prefix_vec2_global_init",
+    "signature": "void unused_effect_uv16_prefix_vec2_global_init(void)",
+    "comment": "zero-initializes the unused vec2 immediately before effect_uv16"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e170",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "signature": "void unused_effect_uv_strip16_prefix_vec2_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused vec2 immediately before effect_uv_strip16"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e180",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+    "signature": "void unused_effect_uv_strip16_prefix_vec2_global_init(void)",
+    "comment": "zero-initializes the unused vec2 immediately before effect_uv_strip16"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e1a0",
     "name": "fx_queue_global_init_thunk",
     "signature": "void fx_queue_global_init_thunk(void)",
@@ -1626,6 +1668,20 @@
     "name": "fx_queue_global_init",
     "signature": "void fx_queue_global_init(void)",
     "comment": "constructs 128 FX queue entries with zero geometry and opaque white color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e420",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+    "signature": "void unused_fx_queue_random_prefix_vec2_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused vec2 immediately before the random FX color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e430",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init",
+    "signature": "void unused_fx_queue_random_prefix_vec2_global_init(void)",
+    "comment": "zero-initializes the unused vec2 immediately before the random FX color"
   },
   {
     "program": "crimsonland.exe",

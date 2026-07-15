@@ -5343,6 +5343,13 @@
       "type": "char[260]"
     },
     {
+      "address": "0x00490418",
+      "comment": "Unused C++ vec2 startup object immediately before fx_queue_random_color_r; only its initializer references it.",
+      "name": "unused_fx_queue_random_prefix_vec2",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
+    },
+    {
       "address": "0x00490420",
       "aliases": [
         "?color@?4??fx_queue_add_random@@9@4UFxRandomColor@@A"
@@ -5914,11 +5921,25 @@
       "type": "int"
     },
     {
+      "address": "0x00490f78",
+      "comment": "Unused C++ vec2 startup object immediately before effect_uv_strip16; only its initializer references it.",
+      "name": "unused_effect_uv_strip16_prefix_vec2",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
+    },
+    {
       "address": "0x00490f80",
       "comment": "Horizontal UV strip with 16 entries spanning U = 0/16 through 15/16 and V = 0.",
       "name": "effect_uv_strip16",
       "program": "crimsonland.exe",
       "type": "uv2f_t"
+    },
+    {
+      "address": "0x00491000",
+      "comment": "Unused four-word C++ startup object between effect_uv_strip16 and effect_uv8; initialized to {0, 0, 0, 1} and never dereferenced at runtime.",
+      "name": "unused_effect_uv8_prefix_state",
+      "program": "crimsonland.exe",
+      "type": "int[4]"
     },
     {
       "address": "0x00491010",
@@ -6717,6 +6738,13 @@
       "comment": "Creature animation phase accumulator (creature_pool + 0x94).",
       "name": "creature_anim_phase",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aa4d0",
+      "comment": "Unused C++ vec2 startup object immediately before effect_uv16; only its initializer references it.",
+      "name": "unused_effect_uv16_prefix_vec2",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
     },
     {
       "address": "0x004aa4d8",
