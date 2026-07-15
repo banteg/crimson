@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**456/2166** functions matched, **66084/676407** code bytes (**9.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**457/2166** functions matched, **66429/676407** code bytes (**9.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 324/991 | 46637/386510 | 12.1% | 324/402 |
+| crimsonland.exe | 325/991 | 46982/386510 | 12.2% | 325/403 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**324/991** functions, **46637/386510** bytes (**12.1%**), **324/402** scratches verified.
+**325/991** functions, **46982/386510** bytes (**12.2%**), **325/403** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -385,6 +385,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | match | typo_word_pick_fragment | 0x00444f70 | 356 | 117/117 | 100.00% | 117/117 | 54/0/0 |  | typo-random-name-fragment-table |
+| match | typo_word_pick_highscore_name | 0x004451b0 | 345 | 123/123 | 100.00% | 123/123 | 20/0/0 |  | typo-highscore-name-cache |
 | match | typo_target_name_is_unique | 0x00445310 | 110 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | typo-target-uniqueness |
 | wip | typo_target_name_assign_random | 0x00445380 | 522 | 173/173 | 76.88% | 17/173 | 27/0/0 |  | typo-random-target-name-policy |
 | match | typo_target_find_by_name | 0x00445590 | 98 | 42/42 | 100.00% | 42/42 | 3/0/0 |  | typo-target-lookup |
