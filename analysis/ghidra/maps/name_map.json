@@ -210,7 +210,10 @@
     "program": "crimsonland.exe",
     "address": "0x00401a40",
     "name": "console_update",
-    "signature": "void console_update(int console_state)",
+    "aliases": [
+      "?update@console_queue_t@@QAEXXZ"
+    ],
+    "signature": "void __thiscall console_update(console_queue_t *queue)",
     "comment": "console update loop: input polling, history, autocomplete, and key handling"
   },
   {
@@ -255,8 +258,11 @@
     "program": "crimsonland.exe",
     "address": "0x00402580",
     "name": "console_tokenize_line",
-    "signature": "void console_tokenize_line(char *line)",
-    "comment": "splits a console line into tokens"
+    "aliases": [
+      "?console_tokenize_line@console_queue_t@@QAEXPAD@Z"
+    ],
+    "signature": "void __thiscall console_tokenize_line(console_queue_t *queue, char *line)",
+    "comment": "splits a console line into tokens; all native callsites preserve the console queue in ECX"
   },
   {
     "program": "crimsonland.exe",

@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 379/992 | 67330/386551 | 17.4% | 379/464 |
+| crimsonland.exe | 379/992 | 67330/386551 | 17.4% | 379/465 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**379/992** functions, **67330/386551** bytes (**17.4%**), **379/464** scratches verified.
+**379/992** functions, **67330/386551** bytes (**17.4%**), **379/465** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -44,6 +44,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_set_open | 0x004018b0 | 26 | 7/7 | 100.00% | 7/7 | 2/0/0 |  | console-open-state |
 | match | console_history_apply | 0x004018d0 | 99 | 42/42 | 100.00% | 42/42 | 4/0/0 |  | console-history-navigation |
 | match | console_exec_line | 0x00401940 | 254 | 90/90 | 100.00% | 90/90 | 19/0/0 |  | console-command-dispatch |
+| wip | console_update | 0x00401a40 | 904 | 296/296 | 89.19% | 6/296 | 63/0/0 |  | console-input-history-and-animation-update |
 | match | console_register_cvar | 0x00402350 | 295 | 118/118 | 100.00% | 118/118 | 12/0/0 |  | console-cvar-registration |
 | match | console_cvar_find | 0x00402480 | 92 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-cvar-lookup |
 | match | console_cvar_unregister | 0x004024e0 | 72 | 32/32 | 100.00% | 32/32 | 1/0/0 |  | console-cvar-unlink |
