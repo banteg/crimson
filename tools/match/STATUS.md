@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**536/2167** functions matched, **93024/676448** code bytes (**13.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**541/2167** functions matched, **94911/676448** code bytes (**14.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 404/992 | 73577/386551 | 19.0% | 404/492 |
+| crimsonland.exe | 409/992 | 75464/386551 | 19.5% | 409/497 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**404/992** functions, **73577/386551** bytes (**19.0%**), **404/492** scratches verified.
+**409/992** functions, **75464/386551** bytes (**19.5%**), **409/497** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -83,6 +83,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_selection_idle_color_destroy | 0x00406170 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-idle-color-empty-destructor |
 | match | format_ordinal | 0x00406180 | 96 | 33/33 | 100.00% | 33/33 | 8/0/0 |  | ui-ordinal-format |
 | match | ui_draw_clock_gauge | 0x004061e0 | 362 | 99/99 | 100.00% | 99/99 | 17/0/0 |  | ui-clock-gauge-renderer |
+| match | game_update_victory_screen | 0x00406350 | 1883 | 447/447 | 100.00% | 447/447 | 189/0/0 |  | final-quest-victory-message-and-mode-actions |
+| match | game_completed_main_menu_button_destroy | 0x00406ab0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | victory-main-menu-button-empty-destructor |
+| match | game_completed_typo_button_destroy | 0x00406ac0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | victory-typo-button-empty-destructor |
+| match | game_completed_rush_button_destroy | 0x00406ad0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | victory-rush-button-empty-destructor |
+| match | game_completed_survival_button_destroy | 0x00406ae0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | victory-survival-button-empty-destructor |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | perks_update_effects | 0x00406b40 | 1437 | 352/352 | 90.06% | 9/352 | 135/0/0 |  | perk-runtime-effects |
 | wip | quest_mode_update | 0x004070e0 | 455 | 103/108 | 65.40% | 23/108 | 35/0/5 |  | quest-completion-transition-coordinator |

@@ -506,8 +506,36 @@
     "program": "crimsonland.exe",
     "address": "0x00406350",
     "name": "game_update_victory_screen",
-    "signature": "int game_update_victory_screen(void)",
-    "comment": "[binja] int32_t sub_406350()"
+    "signature": "void game_update_victory_screen(void)",
+    "comment": "renders the final-quest completion message and dispatches the unlocked mode/menu actions"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406ab0",
+    "name": "game_completed_main_menu_button_destroy",
+    "signature": "void game_completed_main_menu_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the victory-screen Main Menu button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406ac0",
+    "name": "game_completed_typo_button_destroy",
+    "signature": "void game_completed_typo_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the victory-screen Typ'o'Shooter button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406ad0",
+    "name": "game_completed_rush_button_destroy",
+    "signature": "void game_completed_rush_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the victory-screen Rush button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406ae0",
+    "name": "game_completed_survival_button_destroy",
+    "signature": "void game_completed_survival_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the victory-screen Survival button"
   },
   {
     "program": "crimsonland.exe",
