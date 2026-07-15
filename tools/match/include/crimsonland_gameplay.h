@@ -278,7 +278,7 @@ bonus_entry_t *bonus_spawn_at(float *pos, bonus_id_t bonus_id, int duration_over
 bonus_entry_t *bonus_spawn_at_pos(float *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
-unsigned char console_printf(char *queue, char *fmt, ...);
+void console_printf(char *queue, char *fmt, ...);
 int crt_sprintf(char *dst, const char *fmt, ...);
 int game_is_full_version(void);
 void quest_database_init(void);

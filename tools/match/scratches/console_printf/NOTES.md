@@ -8,4 +8,6 @@ the queue's `void` line-insertion method. The byte that decompilers display as
 a return value is incidental `AL` state from the echo check or callee.
 
 The corrected source type retains the exact 17/17-instruction match with all
-four references aligned.
+four references aligned. `crimsonland_gameplay.h` now carries the same `void`
+declaration instead of propagating the incidental `AL` state to gameplay
+scratches.
