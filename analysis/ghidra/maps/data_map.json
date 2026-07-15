@@ -6670,6 +6670,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004aaeea",
+      "comment": "Startup sound-disabled staging flag loaded from Grim config slot 0x53; also set when SFX initialization fails.",
+      "name": "sfx_init_disabled",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x004aaf0c",
       "comment": "Player index used for overlay rendering passes.",
       "name": "render_overlay_player_index",
