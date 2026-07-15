@@ -1320,6 +1320,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041a7c0",
+    "name": "bonus_hud_slot_table_global_init_thunk",
+    "signature": "void bonus_hud_slot_table_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 16-entry bonus HUD slot table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a7d0",
+    "name": "bonus_hud_slot_table_global_init",
+    "signature": "void bonus_hud_slot_table_global_init(void)",
+    "comment": "constructs 16 inactive bonus HUD slots with their default label, icon, and slide state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041a810",
     "name": "bonus_hud_slot_activate",
     "signature": "void bonus_hud_slot_activate(char *label, int icon_id, float *timer_ptr, float *alt_timer_ptr)",

@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**495/2167** functions matched, **85727/676448** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**497/2167** functions matched, **85788/676448** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 363/992 | 66280/386551 | 17.1% | 363/448 |
+| crimsonland.exe | 365/992 | 66341/386551 | 17.2% | 365/450 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**363/992** functions, **66280/386551** bytes (**17.1%**), **363/448** scratches verified.
+**365/992** functions, **66341/386551** bytes (**17.2%**), **365/450** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -166,6 +166,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_render_aim_enhancement | 0x0041a320 | 518 | 131/131 | 100.00% | 131/131 | 35/0/0 |  | ui-aim-enhancement-overlay |
 | match | ui_elements_update_and_render | 0x0041a530 | 409 | 103/103 | 100.00% | 103/103 | 41/0/0 |  | ui-transition-update-render |
 | match | ui_draw_progress_bar | 0x0041a6d0 | 237 | 66/66 | 100.00% | 66/66 | 11/0/0 |  | ui-progress-bar |
+| match | bonus_hud_slot_table_global_init_thunk | 0x0041a7c0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-hud-slot-table-global-init-thunk |
+| match | bonus_hud_slot_table_global_init | 0x0041a7d0 | 56 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | bonus-hud-slot-table-global-constructor |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
 | match | dx_get_version | 0x0041ccb0 | 251 | 106/106 | 100.00% | 106/106 | 7/0/0 |  | directx-version-query-and-format |
