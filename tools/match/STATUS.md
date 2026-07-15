@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 315/991 | 40847/386510 | 10.6% | 315/350 |
+| crimsonland.exe | 315/991 | 40847/386510 | 10.6% | 315/351 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**315/991** functions, **40847/386510** bytes (**10.6%**), **315/350** scratches verified.
+**315/991** functions, **40847/386510** bytes (**10.6%**), **315/351** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -175,6 +175,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
 | match | config_ensure_file | 0x0041f130 | 112 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
+| wip | config_load_presets | 0x0041f1a0 | 653 | 178/178 | 88.20% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
 | wip | angle_approach | 0x0041f430 | 299 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | bonus_spawn_at | 0x0041f5b0 | 479 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
