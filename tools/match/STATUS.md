@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**525/2167** functions matched, **92989/676448** code bytes (**13.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**531/2167** functions matched, **93019/676448** code bytes (**13.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 393/992 | 73542/386551 | 19.0% | 393/480 |
+| crimsonland.exe | 399/992 | 73572/386551 | 19.0% | 399/486 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**393/992** functions, **73542/386551** bytes (**19.0%**), **393/480** scratches verified.
+**399/992** functions, **73572/386551** bytes (**19.0%**), **399/486** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -56,6 +56,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | console_command_find | 0x00402750 | 93 | 47/47 | 100.00% | 47/47 | 0/0/0 |  | console-command-lookup |
 | match | console_command_autocomplete | 0x004027b0 | 165 | 83/83 | 100.00% | 83/83 | 1/0/0 |  | console-command-autocomplete |
 | match | console_flush_log | 0x00402860 | 121 | 56/56 | 100.00% | 56/56 | 6/0/0 |  | console-log-file-flush |
+| match | j_config_init_defaults | 0x004028e0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-config-defaults |
 | wip | config_init_defaults | 0x004028f0 | 734 | 143/140 | 77.74% | 0/140 | 65/0/2 |  | config-defaults-and-input-bindings |
 | match | game_build_path | 0x00402bd0 | 34 | 9/9 | 100.00% | 9/9 | 5/0/0 |  | game-path-builder |
 | match | register_core_cvars | 0x00402c00 | 326 | 66/66 | 100.00% | 66/66 | 65/0/0 |  | core-console-variable-registration |
@@ -91,6 +92,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
+| match | j_mod_api_init | 0x0040df90 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
 | match | mod_api_debug_printf | 0x0040e000 | 50 | 14/14 | 100.00% | 14/14 | 2/0/0 |  | mod-api-debug-output |
@@ -133,6 +135,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | wip | quest_failed_screen_update | 0x004107e0 | 1261 | 288/292 | 87.93% | 1/292 | 146/0/1 |  | quest-failed-highscore-and-retry-actions |
+| match | j_gameplay_run_state_init | 0x004120a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
 | match | quest_meta_init | 0x00412190 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-construction |
@@ -146,6 +149,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_spawn_slot_table_global_init | 0x00412260 | 45 | 12/12 | 100.00% | 12/12 | 1/0/0 |  | creature-spawn-slot-global-initialization |
 | match | game_status_global_init_thunk | 0x00412290 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | game-status-global-init-thunk |
 | match | game_status_global_init | 0x004122a0 | 171 | 45/45 | 100.00% | 45/45 | 18/0/0 |  | game-status-global-constructor |
+| match | j_highscore_init_sentinels | 0x00412350 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-sentinel-init |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
 | match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | bonus-metadata-global-lifecycle |
 | match | bonus_meta_table_init | 0x004123d0 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-construction |
@@ -164,6 +168,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
+| match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
 | match | ui_menu_template_pool_init | 0x00417690 | 336 | 92/92 | 100.00% | 92/92 | 42/0/0 |  | ui-template-pool-construction |
 | match | ui_element_globals_init_thunk | 0x004177e0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | ui-element-global-init-thunk |
 | match | ui_element_globals_init | 0x004177f0 | 662 | 135/135 | 100.00% | 135/135 | 121/0/0 |  | ui-element-global-construction |
@@ -388,6 +393,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | highscore_rank_index | 0x0043b520 | 133 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
 | match | highscore_build_path | 0x0043b5b0 | 402 | 104/104 | 100.00% | 104/104 | 54/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | highscore-mode-path-builder |
 | match | highscore_record_init | 0x0043b750 | 165 | 46/46 | 100.00% | 46/46 | 17/0/0 |  | highscore-record-finalization |
+| match | j_highscore_load_table | 0x0043b800 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-loader |
 | match | sfx_entry_reset_runtime_state | 0x0043b810 | 54 | 19/19 | 100.00% | 19/19 | 0/0/0 |  | audio-entry-initialization |
 | match | buffer_reader_init | 0x0043b850 | 30 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | resource-buffer-reader |
 | match | buffer_reader_seek | 0x0043b870 | 10 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | resource-buffer-reader |
