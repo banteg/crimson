@@ -416,14 +416,11 @@ fn build26EvilZombiesAtLarge(
 }
 
 fn build27SurvivalOfTheFastest(
-    ctx: common.BuildContext,
-    rng: *common.QuestRng,
+    _: common.BuildContext,
+    _: *common.QuestRng,
     out_entries: []spawn_runtime.QuestSpawnEntry,
     len: *usize,
 ) common.QuestSpawnBuildError!void {
-    _ = rng;
-    const corners = common.insetCornerPoints(ctx.width, ctx.height, 128.0);
-
     var trigger: i32 = 500;
     var x: i32 = 0x100;
     while (x < 0x2B0) : (x += 0x48) {
@@ -502,7 +499,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.top_left,
+        .{ .x = 128.0, .y = 128.0 },
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         22_300,
@@ -511,7 +508,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.top_right,
+        .{ .x = 896.0, .y = 128.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         22_300,
@@ -520,7 +517,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.bottom_left,
+        .{ .x = 128.0, .y = 896.0 },
         0.0,
         common.SpawnId.alien_spawner_child_1d_fast_07,
         24_300,
@@ -529,7 +526,7 @@ fn build27SurvivalOfTheFastest(
     try common.appendSpawn(
         out_entries,
         len,
-        corners.bottom_right,
+        .{ .x = 896.0, .y = 896.0 },
         0.0,
         common.SpawnId.alien_spawner_child_32_fast_10,
         24_300,

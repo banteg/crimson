@@ -12,7 +12,11 @@ from crimson.quests.tier1 import (
     build_1_6_the_random_factor,
     build_1_8_alien_squads,
 )
-from crimson.quests.tier2 import build_2_1_everred_pastures, build_2_5_sweep_stakes
+from crimson.quests.tier2 import (
+    build_2_1_everred_pastures,
+    build_2_5_sweep_stakes,
+    build_2_7_survival_of_the_fastest,
+)
 from crimson.quests.tier3 import build_3_1_the_blighting, build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier4 import build_4_10_the_end_of_all
 from crimson.quests.tier5 import (
@@ -131,6 +135,22 @@ def test_gathering_edges_stay_at_native_fixed_coordinates() -> None:
     assert entries[10].pos == Vec2(-128.0, 512.0)
     assert entries[11].pos == Vec2(1152.0, 512.0)
     assert entries[12].pos == Vec2(1152.0, 512.0)
+
+
+def test_survival_of_the_fastest_corners_stay_at_native_coordinates() -> None:
+    entries = build_2_7_survival_of_the_fastest(
+        QuestContext(width=2048, height=3072, player_count=1),
+        rng=Crand(0),
+        full_version=True,
+    )
+
+    assert len(entries) == 26
+    assert [entry.pos for entry in entries[22:]] == [
+        Vec2(128.0, 128.0),
+        Vec2(896.0, 128.0),
+        Vec2(128.0, 896.0),
+        Vec2(896.0, 896.0),
+    ]
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
