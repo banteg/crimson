@@ -310,7 +310,7 @@ class CreatureNameTable(msgspec.Struct):
                 self.names[idx] = name
                 return name
 
-            too_long_attempts += 1
             if too_long_attempts > 99:
                 self.names[idx] = name
                 return name
+            too_long_attempts += 1
