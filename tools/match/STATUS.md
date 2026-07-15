@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**542/2167** functions matched, **96884/676448** code bytes (**14.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**554/2172** functions matched, **97120/676653** code bytes (**14.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 410/992 | 77437/386551 | 20.0% | 410/499 |
+| crimsonland.exe | 422/997 | 77673/386756 | 20.1% | 422/511 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**410/992** functions, **77437/386551** bytes (**20.0%**), **410/499** scratches verified.
+**422/997** functions, **77673/386756** bytes (**20.1%**), **422/511** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -218,8 +218,20 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_is_full_version | 0x0041df40 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
 | match | demo_trial_time_limit_ms | 0x0041df50 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | demo-trial-duration |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | unused_fx_queue_random_prefix_color_global_init_thunk | 0x0041df70 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-queue-prefix-color-constructor-thunk |
+| match | unused_fx_queue_random_prefix_color_global_init | 0x0041df80 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-queue-prefix-color-constructor |
+| match | unused_fx_rotated_effect_id_prefix_color_global_init_thunk | 0x0041dfb0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor-thunk |
+| match | unused_fx_rotated_effect_id_prefix_color_global_init | 0x0041dfc0 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor |
+| match | unused_aim64_prefix_color_global_init_thunk | 0x0041dff0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-aim64-prefix-color-constructor-thunk |
+| match | unused_aim64_prefix_color_global_init | 0x0041e000 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-aim64-prefix-color-constructor |
+| match | unused_fx_rotated_scale_prefix_color_global_init_thunk | 0x0041e030 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-scale-prefix-color-constructor-thunk |
+| match | unused_fx_rotated_scale_prefix_color_global_init | 0x0041e040 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-rotated-scale-prefix-color-constructor |
 | match | render_tint_color_global_init_thunk | 0x0041e070 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | render-tint-color-global-init-thunk |
 | match | render_tint_color_global_init | 0x0041e080 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | render-tint-color-global-constructor |
+| match | unused_global_noop_init_thunk | 0x0041e0b0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-global-empty-constructor-thunk |
+| match | unused_global_noop_init | 0x0041e0c0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unused-global-empty-constructor |
+| match | unused_particle_pool_suffix_color_global_init_thunk | 0x0041e0d0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-particle-pool-suffix-color-constructor-thunk |
+| match | unused_particle_pool_suffix_color_global_init | 0x0041e0e0 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-particle-pool-suffix-color-constructor |
 | match | unused_effect_uv8_prefix_state_global_init_thunk | 0x0041e110 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-effect-prefix-default-state-thunk |
 | match | unused_effect_uv8_prefix_state_global_init | 0x0041e120 | 28 | 6/6 | 100.00% | 6/6 | 4/0/0 |  | unused-effect-prefix-default-state |
 | match | unused_effect_uv16_prefix_vec2_global_init_thunk | 0x0041e140 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-effect-uv16-prefix-vec2-thunk |

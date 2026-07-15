@@ -1663,6 +1663,66 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041df70",
+    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+    "signature": "void unused_fx_queue_random_prefix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object before the FX queue random globals"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041df80",
+    "include_library": true,
+    "name": "unused_fx_queue_random_prefix_color_global_init",
+    "signature": "void unused_fx_queue_random_prefix_color_global_init(void)",
+    "comment": "initializes the unused FX queue prefix RGBA object to white"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dfb0",
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+    "signature": "void unused_fx_rotated_effect_id_prefix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_effect_id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dfc0",
+    "include_library": true,
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+    "signature": "void unused_fx_rotated_effect_id_prefix_color_global_init(void)",
+    "comment": "initializes the unused fx_rotated_effect_id prefix RGBA object to gray"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dff0",
+    "name": "unused_aim64_prefix_color_global_init_thunk",
+    "signature": "void unused_aim64_prefix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object immediately before aim64_texture"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e000",
+    "include_library": true,
+    "name": "unused_aim64_prefix_color_global_init",
+    "signature": "void unused_aim64_prefix_color_global_init(void)",
+    "comment": "initializes the unused aim64 prefix RGBA object to opaque black"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e030",
+    "name": "unused_fx_rotated_scale_prefix_color_global_init_thunk",
+    "signature": "void unused_fx_rotated_scale_prefix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_scale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e040",
+    "include_library": true,
+    "name": "unused_fx_rotated_scale_prefix_color_global_init",
+    "signature": "void unused_fx_rotated_scale_prefix_color_global_init(void)",
+    "comment": "initializes the unused fx_rotated_scale prefix RGBA object to gray"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e070",
     "name": "render_tint_color_global_init_thunk",
     "signature": "void render_tint_color_global_init_thunk(void)",
@@ -1675,6 +1735,35 @@
     "name": "render_tint_color_global_init",
     "signature": "void render_tint_color_global_init(void)",
     "comment": "initializes the shared UI and HUD tint to (149/255, 175/255, 198/255, 0.7)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e0b0",
+    "name": "unused_global_noop_init_thunk",
+    "signature": "void unused_global_noop_init_thunk(void)",
+    "comment": "CRT initializer thunk for an unused global object whose constructor has no side effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e0c0",
+    "name": "unused_global_noop_init",
+    "signature": "void unused_global_noop_init(void)",
+    "comment": "empty constructor body retained in the CRT initializer chain"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e0d0",
+    "name": "unused_particle_pool_suffix_color_global_init_thunk",
+    "signature": "void unused_particle_pool_suffix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object immediately after particle_pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e0e0",
+    "include_library": true,
+    "name": "unused_particle_pool_suffix_color_global_init",
+    "signature": "void unused_particle_pool_suffix_color_global_init(void)",
+    "comment": "initializes the unused particle-pool suffix RGBA object to (0.6, 0.6, 0.6, 0.5)"
   },
   {
     "program": "crimsonland.exe",

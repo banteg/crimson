@@ -5343,6 +5343,13 @@
       "type": "char[260]"
     },
     {
+      "address": "0x00490408",
+      "comment": "Unused RGBA startup object immediately before the FX queue random globals; only its initializer references its fields.",
+      "name": "unused_fx_queue_random_prefix_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x00490418",
       "comment": "Unused C++ vec2 startup object immediately before fx_queue_random_color_r; only its initializer references it.",
       "name": "unused_fx_queue_random_prefix_vec2",
@@ -5396,6 +5403,13 @@
       "name": "bonus_pool_sentinel",
       "program": "crimsonland.exe",
       "type": "bonus_entry_t"
+    },
+    {
+      "address": "0x00490690",
+      "comment": "Unused gray RGBA startup object in the gap immediately before the rotated FX scale globals; only its initializer references it.",
+      "name": "unused_fx_rotated_scale_prefix_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x004906a8",
@@ -6255,6 +6269,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00495ab8",
+      "comment": "Unused RGBA startup object immediately after the 128-entry particle pool; pool scans also use its address as the one-past-end bound.",
+      "name": "unused_particle_pool_suffix_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x00495ac8",
       "comment": "SYSTEMTIME scratch written by GetLocalTime; year/month used for high score stamps and seasonal checks.",
       "name": "local_system_time",
@@ -6391,6 +6412,13 @@
       "type": "float"
     },
     {
+      "address": "0x00496688",
+      "comment": "Unused opaque-black RGBA startup object immediately before aim64_texture; only its initializer references it.",
+      "name": "unused_aim64_prefix_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x00496698",
       "comment": "Texture handle looked up by the legacy cache name aim64 at the terminal startup texture stage; no other native references survive.",
       "name": "aim64_texture",
@@ -6476,6 +6504,13 @@
       "comment": "Sprite effect scale/size (sprite_effect_pool + 0x28)",
       "name": "sprite_effect_scale",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0049ba20",
+      "comment": "Unused gray RGBA startup object immediately before fx_rotated_effect_id; only its initializer references it.",
+      "name": "unused_fx_rotated_effect_id_prefix_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x0049ba30",
