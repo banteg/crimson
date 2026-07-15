@@ -1040,6 +1040,7 @@ def disassemble_normalized_function(
                     reference.symbol_name,
                     reference.addend or 0,
                 )
+                explained = True
             else:
                 explained = False
         return MaskedReference(

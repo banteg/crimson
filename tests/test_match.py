@@ -462,6 +462,40 @@ def test_reference_catalog_scopes_ambiguous_object_alias() -> None:
     assert "address:0x00403000" in scoped.keys_for_object_reference("$E2", 0)
 
 
+def test_match_function_accepts_scoped_alias_for_compiler_string() -> None:
+    address = 0x402000
+    symbol = "??_C@_00A@?$AA@"
+    catalog = ReferenceCatalog(
+        {address: ("s_empty_string",)},
+        {"s_empty_string": (address,)},
+    ).with_object_aliases(((symbol, "s_empty_string"),))
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("6800000000c3"),
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=1,
+                symbol_name=symbol,
+                key=None,
+                explained=False,
+                symbol_data=b"\x00",
+            ),
+        ),
+    )
+
+    result = match_function(
+        bytes.fromhex("6800204000c3"),
+        candidate,
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0x10000),
+        target_va=0x401000,
+        reference_catalog=catalog,
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+
 @pytest.mark.parametrize("literal", [b"%s\x00", b"perk description " * 16 + b"\x00"])
 def test_match_function_audits_compiler_string_by_content(literal: bytes) -> None:
     mapped = bytearray(0x10000)
