@@ -281,7 +281,7 @@ bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
 void console_printf(char *queue, char *fmt, ...);
 int crt_sprintf(char *dst, const char *fmt, ...);
-int game_is_full_version(void);
+unsigned char game_is_full_version(void);
 void quest_database_init(void);
 void ui_menu_assets_init(void);
 void bonus_metadata_init(void);

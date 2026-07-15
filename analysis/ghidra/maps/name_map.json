@@ -3729,8 +3729,8 @@
     "program": "crimsonland.exe",
     "address": "0x00444980",
     "name": "player_fire_weapon",
-    "signature": "void player_fire_weapon(char param_1, char param_2)",
-    "comment": "handles player firing: cooldowns, ammo, projectiles, and muzzle effects"
+    "signature": "void player_fire_weapon(float *aim, char fire_requested, char reload_requested)",
+    "comment": "runs the bespoke Typ-o Shooter player frame, aim, shotgun fire, and terrain clamp path"
   },
   {
     "program": "crimsonland.exe",
