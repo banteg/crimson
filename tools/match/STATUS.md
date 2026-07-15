@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/376 |
+| crimsonland.exe | 319/991 | 41861/386510 | 10.8% | 319/377 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**319/991** functions, **41861/386510** bytes (**10.8%**), **319/376** scratches verified.
+**319/991** functions, **41861/386510** bytes (**10.8%**), **319/377** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -257,6 +257,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
+| wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_syntax_terror | 0x00436c10 | 339 | 106/104 | 49.52% | 2/104 | 1/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
