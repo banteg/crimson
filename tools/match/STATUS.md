@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**407/2164** functions matched, **49541/675674** code bytes (**7.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**423/2164** functions matched, **49862/675674** code bytes (**7.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 275/989 | 30094/385777 | 7.8% | 275/306 |
+| crimsonland.exe | 291/989 | 30415/385777 | 7.9% | 291/322 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**275/989** functions, **30094/385777** bytes (**7.8%**), **275/306** scratches verified.
+**291/989** functions, **30415/385777** bytes (**7.9%**), **291/322** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -112,8 +112,19 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
+| match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
+| match | quest_meta_init | 0x00412190 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-construction |
+| match | quest_meta_entry_init | 0x004121b0 | 45 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | quest-metadata-entry-defaults |
+| match | quest_meta_entry_release | 0x004121e0 | 15 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | quest-metadata-owned-name-release |
+| match | quest_meta_register_atexit | 0x004121f0 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | quest-metadata-destructor-registration |
+| match | quest_meta_table_destroy | 0x00412200 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-destruction |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
+| match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | bonus-metadata-global-lifecycle |
+| match | bonus_meta_table_init | 0x004123d0 | 25 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-construction |
+| match | bonus_meta_entry_init | 0x004123f0 | 27 | 8/8 | 100.00% | 8/8 | 0/0/0 |  | bonus-metadata-entry-defaults |
 | match | bonus_meta_entry_release | 0x00412410 | 36 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | metadata-owned-string-release |
+| match | bonus_meta_register_atexit | 0x00412440 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | bonus-metadata-destructor-registration |
+| match | bonus_meta_table_destroy | 0x00412450 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
 | wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_reset_availability | 0x00412940 | 26 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
@@ -198,6 +209,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | effect_spawn_ion_hit_core | 0x0042f270 | 191 | 32/32 | 100.00% | 32/32 | 16/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_plasma_hit_core | 0x0042f330 | 185 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 75/75 | 100.00% | 75/75 | 23/0/0 |  | gameplay-effect-spawn |
+| match | perk_meta_global_construct_and_register | 0x0042fa90 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | perk-metadata-global-lifecycle |
+| match | perk_meta_table_init | 0x0042faa0 | 28 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-construction |
+| match | perk_meta_entry_init | 0x0042fac0 | 27 | 8/8 | 100.00% | 8/8 | 0/0/0 |  | perk-metadata-entry-defaults |
+| match | perk_meta_register_atexit | 0x0042fae0 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | perk-metadata-destructor-registration |
+| match | perk_meta_table_destroy | 0x0042faf0 | 23 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-destruction |
 | match | perk_can_offer | 0x0042fb10 | 185 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
 | match | perk_select_random | 0x0042fbd0 | 89 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
 | wip | perks_rebuild_available | 0x0042fc30 | 181 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |

@@ -986,6 +986,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412180",
+    "name": "quest_meta_global_construct_and_register",
+    "signature": "void quest_meta_global_construct_and_register(void)",
+    "comment": "constructs the global quest metadata array and registers its destructor callback"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412190",
     "name": "quest_meta_init",
     "signature": "int quest_meta_init(void)",
@@ -993,10 +1000,37 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004121b0",
+    "name": "quest_meta_entry_init",
+    "aliases": [
+      "??0quest_meta_cpp_t@@QAE@XZ"
+    ],
+    "signature": "quest_meta_cpp_t * __thiscall quest_meta_entry_init(quest_meta_cpp_t *entry)",
+    "comment": "initializes one quest metadata record with default terrain, time limit, and weapon"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004121e0",
+    "name": "quest_meta_entry_release",
+    "aliases": [
+      "??1quest_meta_cpp_t@@QAE@XZ"
+    ],
+    "signature": "void __thiscall quest_meta_entry_release(quest_meta_cpp_t *entry)",
+    "comment": "releases the owned quest name string"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004121f0",
     "name": "quest_meta_register_atexit",
-    "signature": "int quest_meta_register_atexit(void)",
+    "signature": "void quest_meta_register_atexit(void)",
     "comment": "registers quest meta table destructor callback with crt_atexit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412200",
+    "name": "quest_meta_table_destroy",
+    "signature": "void quest_meta_table_destroy(void)",
+    "comment": "destroys the 50-entry global quest metadata array in reverse order"
   },
   {
     "program": "crimsonland.exe",
@@ -1007,6 +1041,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004123c0",
+    "name": "bonus_meta_global_construct_and_register",
+    "signature": "void bonus_meta_global_construct_and_register(void)",
+    "comment": "constructs the global bonus metadata array and registers its destructor callback"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004123d0",
     "name": "bonus_meta_table_init",
     "signature": "int bonus_meta_table_init(void)",
@@ -1014,8 +1055,22 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004123f0",
+    "name": "bonus_meta_entry_init",
+    "aliases": [
+      "??0bonus_meta_cpp_t@@QAE@XZ"
+    ],
+    "signature": "bonus_meta_cpp_t * __thiscall bonus_meta_entry_init(bonus_meta_cpp_t *entry)",
+    "comment": "initializes one bonus metadata record"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412410",
     "name": "bonus_meta_entry_release",
+    "aliases": [
+      "??1bonus_meta_cpp_t@@QAE@XZ",
+      "??1perk_meta_cpp_t@@QAE@XZ"
+    ],
     "signature": "void bonus_meta_entry_release(int *entry)",
     "comment": "frees heap-owned text pointers in one bonus_meta_table entry"
   },
@@ -1023,8 +1078,15 @@
     "program": "crimsonland.exe",
     "address": "0x00412440",
     "name": "bonus_meta_register_atexit",
-    "signature": "int bonus_meta_register_atexit(void)",
+    "signature": "void bonus_meta_register_atexit(void)",
     "comment": "registers bonus meta table destructor callback with crt_atexit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412450",
+    "name": "bonus_meta_table_destroy",
+    "signature": "void bonus_meta_table_destroy(void)",
+    "comment": "destroys the 15-entry global bonus metadata array in reverse order"
   },
   {
     "program": "crimsonland.exe",
@@ -1993,6 +2055,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042fa90",
+    "name": "perk_meta_global_construct_and_register",
+    "signature": "void perk_meta_global_construct_and_register(void)",
+    "comment": "constructs the global perk metadata array and registers its destructor callback"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042faa0",
     "name": "perk_meta_table_init",
     "signature": "int perk_meta_table_init(void)",
@@ -2000,10 +2069,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042fac0",
+    "name": "perk_meta_entry_init",
+    "aliases": [
+      "??0perk_meta_cpp_t@@QAE@XZ"
+    ],
+    "signature": "perk_meta_cpp_t * __thiscall perk_meta_entry_init(perk_meta_cpp_t *entry)",
+    "comment": "initializes one perk metadata record"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042fae0",
     "name": "perk_meta_register_atexit",
-    "signature": "int perk_meta_register_atexit(void)",
+    "signature": "void perk_meta_register_atexit(void)",
     "comment": "registers perk meta table destructor callback with crt_atexit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042faf0",
+    "name": "perk_meta_table_destroy",
+    "signature": "void perk_meta_table_destroy(void)",
+    "comment": "destroys the 128-entry global perk metadata array in reverse order"
   },
   {
     "program": "crimsonland.exe",
@@ -4029,6 +4115,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461981",
     "name": "crt_ehvec_ctor",
+    "aliases": [
+      "??_L@YGXPAXIHP6EX0@Z1@Z"
+    ],
     "signature": "void crt_ehvec_ctor(void *ptr, uint size, int count, void *ctor, void *dtor)",
     "comment": "MSVC __ehvec_ctor: constructs an array; uses dtor to unwind on exception"
   },
@@ -4036,6 +4125,9 @@
     "program": "crimsonland.exe",
     "address": "0x00461a03",
     "name": "crt_ehvec_dtor",
+    "aliases": [
+      "??_M@YGXPAXIHP6EX0@Z@Z"
+    ],
     "signature": "void crt_ehvec_dtor(void *ptr, uint size, int count, void *dtor)",
     "comment": "MSVC __ehvec_dtor: destroys an array with exception handling"
   },
