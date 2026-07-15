@@ -1489,6 +1489,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e1a0",
+    "name": "fx_queue_global_init_thunk",
+    "signature": "void fx_queue_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the 128-entry FX queue"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e1b0",
+    "name": "fx_queue_global_init",
+    "signature": "void fx_queue_global_init(void)",
+    "comment": "constructs 128 FX queue entries with zero geometry and opaque white color"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
     "signature": "int vec2_add(float *dst, float *delta)",
