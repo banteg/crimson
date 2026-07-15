@@ -35,7 +35,9 @@ when the next random entry depends on it. The `while` spelling also preserves
 the native wave-local versus conversion-scratch stack coloring; a `for` loop
 swaps those slots.
 
-The candidate has the exact 173-instruction length, all 14 audited references,
-and scores 99.42%. Its sole residual mismatch is the independent wave-zero
-store moving before, rather than after, the trigger and template register
-initializations. No artificial ordering dependency is used.
+The scalar declaration order is also observable. Declaring trigger time,
+template id, and then wave before the cursor builder makes VC6 initialize the
+two register-resident values before spilling wave zero, matching the native
+prologue without an artificial dependency.
+
+The candidate is exact: 173/173 instructions and 14/0/0 audited references.

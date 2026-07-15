@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**459/2166** functions matched, **67558/676407** code bytes (**10.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**460/2166** functions matched, **68160/676407** code bytes (**10.1%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 327/991 | 48111/386510 | 12.4% | 327/408 |
+| crimsonland.exe | 328/991 | 48713/386510 | 12.6% | 328/408 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**327/991** functions, **48111/386510** bytes (**12.4%**), **327/408** scratches verified.
+**328/991** functions, **48713/386510** bytes (**12.6%**), **328/408** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -298,7 +298,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_blighting | 0x00438050 | 624 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | wip | quest_build_the_massacre | 0x004383e0 | 184 | 61/61 | 88.52% | 16/61 | 4/0/0 |  | quest-the-massacre-builder |
-| wip | quest_build_the_killing | 0x004384a0 | 602 | 173/173 | 99.42% | 7/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
+| match | quest_build_the_killing | 0x004384a0 | 602 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
 | wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 95/95 | 56.84% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |

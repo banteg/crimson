@@ -24,10 +24,10 @@ struct quest_spawn_builder_t {
 extern "C" void quest_build_the_killing(
     quest_spawn_entry_t *entries, int *count)
 {
-    int wave = 0;
-    quest_spawn_builder_t builder((quest_entry_original_t *)entries);
     int trigger_time_ms = 2000;
     int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
+    int wave = 0;
+    quest_spawn_builder_t builder((quest_entry_original_t *)entries);
 
     while (wave < 10) {
         crt_rand();
