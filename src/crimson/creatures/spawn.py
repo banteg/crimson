@@ -45,6 +45,7 @@ from .spawn_ids import (
 from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_NAME, SpawnTemplate
 
 _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
+_NATIVE_RUSH_TINT_SIN_SCALE = f32_from_bits(0x38D1B718)
 NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
@@ -1626,7 +1627,7 @@ def tick_rush_mode_spawns(
         t = f32(float(int(float(survival_elapsed_ms) + 1.0)))
         tint_r = clamp01(f32(t * f32(1.0 / 120000.0) + 0.3))
         tint_g = clamp01(f32(t * 10000.0 + 0.3))
-        tint_b = clamp01(f32(math.sin(float(f32(t * f32(1e-4)))) + 0.3))
+        tint_b = clamp01(f32(math.sin(float(f32(t * _NATIVE_RUSH_TINT_SIN_SCALE))) + 0.3))
         tint_a = 1.0
         tint = (tint_r, tint_g, tint_b, tint_a)
 

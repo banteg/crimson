@@ -1627,8 +1627,9 @@ test "rush run spawn cadence uses raw frame dt, not sim dt" {
     defer replay.deinit(allocator);
 
     const result = try runReplay(replay);
-    // Native rush cooldown arithmetic is float32; at 60 Hz nominal dt this yields a
-    // second batch on tick 15 (0-indexed tick 14), so 4 total creatures in 15 ticks.
+    // Native rush cooldown arithmetic uses integer milliseconds; at 60 Hz nominal
+    // dt this yields a second batch on tick 15 (0-indexed tick 14), so 4 total
+    // creatures in 15 ticks.
     try std.testing.expectEqual(@as(usize, 4), result.wave_spawn_count);
 }
 

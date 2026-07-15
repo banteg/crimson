@@ -117,6 +117,22 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert rng.state == 0x3D6C1037
 
 
+def test_tick_rush_mode_spawns_uses_native_upward_rounded_sine_scale() -> None:
+    rng = Crand(1)
+    _, spawns = tick_rush_mode_spawns(
+        -1.0,
+        0.0,
+        rng,
+        player_count=1,
+        survival_elapsed_ms=63,
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+    )
+
+    assert spawns[0].tint is not None
+    assert spawns[0].tint[2] == 0.30639997124671936
+
+
 def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 

@@ -7,6 +7,7 @@ const crt_rand_inc: u32 = 2_531_011;
 
 const narrowF32 = native_math.roundF32;
 const RngCaller = rng_callers.Caller;
+const rush_tint_sin_scale: f32 = @bitCast(@as(u32, 0x38D1B718));
 
 pub const CreatureTypeId = enum(i32) {
     zombie = 0,
@@ -815,7 +816,7 @@ pub fn tickRushModeSpawnsBatch(
         const tint = [4]f32{
             clamp01(narrowF32(t * (1.0 / 120000.0) + 0.3)),
             clamp01(narrowF32(t * 10000.0 + 0.3)),
-            clamp01(narrowF32(std.math.sin(narrowF32(t * 1e-4)) + 0.3)),
+            clamp01(narrowF32(std.math.sin(narrowF32(t * rush_tint_sin_scale)) + 0.3)),
             1.0,
         };
 
@@ -1767,6 +1768,24 @@ test "rush wave triggers two creatures" {
     try expectFloatClose(1.0, spider.tint[3]);
 
     try std.testing.expectEqual(@as(u32, 0x3D6C1037), rng.state);
+}
+
+test "rush tint uses native upward-rounded sine scale" {
+    var rng = Crand.init(1);
+    const allocator = std.testing.allocator;
+    const out = try tickRushModeSpawns(
+        allocator,
+        -1.0,
+        0.0,
+        &rng,
+        1,
+        63.0,
+        1024,
+        1024,
+    );
+    defer out.deinit(allocator);
+
+    try std.testing.expectEqual(@as(u32, 0x3E9CE075), @as(u32, @bitCast(out.spawns[0].tint[2])));
 }
 
 test "rush wave loops when cooldown is very negative" {
