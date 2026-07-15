@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**493/2166** functions matched, **85681/676407** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**495/2167** functions matched, **85727/676448** code bytes (**12.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 361/991 | 66234/386510 | 17.1% | 361/446 |
+| crimsonland.exe | 363/992 | 66280/386551 | 17.1% | 363/448 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**361/991** functions, **66234/386510** bytes (**17.1%**), **361/446** scratches verified.
+**363/992** functions, **66280/386551** bytes (**17.1%**), **363/448** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -185,6 +185,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_is_full_version | 0x0041df40 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | full-version-constant |
 | match | demo_trial_time_limit_ms | 0x0041df50 | 6 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | demo-trial-duration |
 | match | game_sequence_get | 0x0041df60 | 6 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | render_tint_color_global_init_thunk | 0x0041e070 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | render-tint-color-global-init-thunk |
+| match | render_tint_color_global_init | 0x0041e080 | 41 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | render-tint-color-global-constructor |
 | match | fx_queue_global_init_thunk | 0x0041e1a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | fx-queue-global-init-thunk |
 | match | fx_queue_global_init | 0x0041e1b0 | 147 | 42/42 | 100.00% | 42/42 | 1/0/0 |  | fx-queue-global-constructor |
 | match | vec2_add | 0x0041e270 | 26 | 10/10 | 100.00% | 10/10 | 0/0/0 |  | x87-vector-add |

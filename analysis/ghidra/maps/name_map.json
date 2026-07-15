@@ -1489,6 +1489,21 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e070",
+    "name": "render_tint_color_global_init_thunk",
+    "signature": "void render_tint_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the shared UI and HUD tint color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e080",
+    "include_library": true,
+    "name": "render_tint_color_global_init",
+    "signature": "void render_tint_color_global_init(void)",
+    "comment": "initializes the shared UI and HUD tint to (149/255, 175/255, 198/255, 0.7)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e1a0",
     "name": "fx_queue_global_init_thunk",
     "signature": "void fx_queue_global_init_thunk(void)",
