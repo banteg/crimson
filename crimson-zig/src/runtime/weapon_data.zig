@@ -42,7 +42,7 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
     .ion_rifle = .{ .clip_size = 8, .reload_time = 1.35, .shot_cooldown = 0.4, .pellet_count = 1, .travel_budget = 15.0, .damage_scale = 3.0, .flags = 8, .spread_heat_inc = 0.112 },
     .ion_minigun = .{ .clip_size = 20, .reload_time = 1.8, .shot_cooldown = 0.1, .pellet_count = 1, .travel_budget = 20.0, .damage_scale = 1.4, .flags = 8, .spread_heat_inc = 0.09 },
     .ion_cannon = .{ .clip_size = 3, .reload_time = 3.0, .shot_cooldown = 1.0, .pellet_count = 1, .travel_budget = 10.0, .damage_scale = 16.7, .flags = 0, .spread_heat_inc = 0.68 },
-    .shrinkifier_5k = .{ .clip_size = 8, .reload_time = 1.22, .shot_cooldown = 0.21, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.04 },
+    .shrinkifier_5k = .{ .clip_size = 8, .reload_time = 1.22, .shot_cooldown = 0.21, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 0.0, .flags = 8, .spread_heat_inc = 0.04 },
     .blade_gun = .{ .clip_size = 6, .reload_time = 3.5, .shot_cooldown = 0.35, .pellet_count = 1, .travel_budget = 20.0, .damage_scale = 11.0, .flags = 8, .spread_heat_inc = 0.04 },
     .spider_plasma = .{ .clip_size = 5, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 10.0, .damage_scale = 0.5, .flags = 8, .spread_heat_inc = 0.04 },
     .evil_scythe = .{ .clip_size = 3, .reload_time = 3.0, .shot_cooldown = 1.0, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 0, .spread_heat_inc = 0.68 },
@@ -59,7 +59,7 @@ pub const weapon_stats = std.EnumArray(WeaponId, WeaponStats).init(.{
     .unknown_38 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
     .unknown_39 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
     .unknown_40 = .{ .clip_size = 0, .reload_time = 0.0, .shot_cooldown = 0.0, .pellet_count = 0, .travel_budget = 0.0, .damage_scale = 0.0, .flags = 0, .spread_heat_inc = 0.0 },
-    .plague_spreader_gun = .{ .clip_size = 5, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 15.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.04 },
+    .plague_spreader_gun = .{ .clip_size = 5, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 15.0, .damage_scale = 0.0, .flags = 8, .spread_heat_inc = 0.04 },
     .bubblegun = .{ .clip_size = 15, .reload_time = 1.2, .shot_cooldown = 0.1613, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.05 },
     .rainbow_gun = .{ .clip_size = 10, .reload_time = 1.2, .shot_cooldown = 0.2, .pellet_count = 1, .travel_budget = 10.0, .damage_scale = 1.0, .flags = 8, .spread_heat_inc = 0.09 },
     .grim_weapon = .{ .clip_size = 3, .reload_time = 1.2, .shot_cooldown = 0.5, .pellet_count = 1, .travel_budget = 45.0, .damage_scale = 1.0, .flags = 0, .spread_heat_inc = 0.4 },
@@ -277,4 +277,9 @@ test "weapon icon indices mirror runtime ui wicon metadata" {
     try std.testing.expectEqual(@as(i32, 30), weaponIconIndex(.raygun));
     try std.testing.expectEqual(@as(i32, 52), weaponIconIndex(.nuke_launcher));
     try std.testing.expectEqual(@as(i32, -1), weaponIconIndex(.unknown_34));
+}
+
+test "non-damaging weapon templates preserve native damage scales" {
+    try std.testing.expectEqual(@as(f32, 0.0), weapon_stats.get(.shrinkifier_5k).damage_scale);
+    try std.testing.expectEqual(@as(f32, 0.0), weapon_stats.get(.plague_spreader_gun).damage_scale);
 }
