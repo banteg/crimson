@@ -1680,8 +1680,8 @@
     "program": "crimsonland.exe",
     "address": "0x00422c70",
     "name": "projectile_render",
-    "signature": "void projectile_render(void)",
-    "comment": "renders projectiles/secondary projectiles and related beam/trail effects"
+    "signature": "void projectile_render(float transition_alpha)",
+    "comment": "renders projectiles/secondary projectiles and related beam/trail effects using the caller-supplied transition alpha"
   },
   {
     "program": "crimsonland.exe",
