@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/383 |
+| crimsonland.exe | 320/991 | 42244/386510 | 10.9% | 320/384 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**320/991** functions, **42244/386510** bytes (**10.9%**), **320/383** scratches verified.
+**320/991** functions, **42244/386510** bytes (**10.9%**), **320/384** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -256,6 +256,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
+| wip | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 135/135 | 91.85% | 2/135 | 7/0/0 |  | quest-minor-alien-breach-escalating-edges |
 | wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
