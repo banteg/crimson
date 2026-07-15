@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**426/2165** functions matched, **50025/675677** code bytes (**7.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**427/2165** functions matched, **50361/675677** code bytes (**7.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 294/990 | 30578/385780 | 7.9% | 294/327 |
+| crimsonland.exe | 295/990 | 30914/385780 | 8.0% | 295/328 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**294/990** functions, **30578/385780** bytes (**7.9%**), **294/327** scratches verified.
+**295/990** functions, **30914/385780** bytes (**8.0%**), **295/328** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -133,6 +133,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
+| match | ui_menu_template_pool_init | 0x00417690 | 336 | 92/92 | 100.00% | 92/92 | 42/0/0 |  | ui-template-pool-construction |
 | match | ui_template_slot_ctor_noop | 0x00417a90 | 3 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | ui-template-trivial-slot-constructor |
 | match | ui_template_block_set_mode4 | 0x00417aa0 | 13 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | ui-subtemplate-mode-init |
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |

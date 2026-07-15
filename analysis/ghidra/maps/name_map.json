@@ -1183,8 +1183,8 @@
     "program": "crimsonland.exe",
     "address": "0x00417690",
     "name": "ui_menu_template_pool_init",
-    "signature": "int ui_menu_template_pool_init(void)",
-    "comment": "initializes menu/sign template ui_element blocks and seeds mode/state sentinels used by ui_menu_layout_init"
+    "signature": "void ui_menu_template_pool_init(void)",
+    "comment": "compiler-lowered global initializer for twelve menu/sign template blocks; constructs eight 0x1c-byte slots per block and seeds mode/state sentinels to 4"
   },
   {
     "program": "crimsonland.exe",
@@ -1192,7 +1192,8 @@
     "name": "ui_template_slot_ctor_noop",
     "include_library": true,
     "aliases": [
-      "??0ui_template_slot_cpp_t@@QAE@XZ"
+      "??0ui_template_slot_cpp_t@@QAE@XZ",
+      "?construct@ui_template_slot_cpp_t@@QAEXXZ"
     ],
     "signature": "void * ui_template_slot_ctor_noop(void *slot)",
     "comment": "identity/no-op slot constructor callback used while building ui menu template pools"
