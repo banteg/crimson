@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 321/991 | 44937/386510 | 11.6% | 321/397 |
+| crimsonland.exe | 321/991 | 44937/386510 | 11.6% | 321/398 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**321/991** functions, **44937/386510** bytes (**11.6%**), **321/397** scratches verified.
+**321/991** functions, **44937/386510** bytes (**11.6%**), **321/398** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -247,6 +247,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
 | wip | creature_spawn_template | 0x00430af0 | 14099 | 2722/3159 | 58.09% | 23/3159 | 308/1/2 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
+| wip | quest_spawn_timeline_update | 0x00434250 | 368 | 113/115 | 88.60% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 32/32 | 78.12% | 12/32 | 7/0/0 |  | quest-fallback-builder |
 | wip | quest_build_nagolipoli | 0x00434480 | 983 | 247/258 | 55.05% | 7/258 | 10/0/0 |  | quest-nagolipoli-rings-waves-lines |
