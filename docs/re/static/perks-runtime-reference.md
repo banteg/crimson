@@ -152,7 +152,9 @@ Notes:
 ### Rewrite
 
 - Flag application: `src/crimson/perks/runtime/apply.py`: `perk_apply()` dispatches to:
-- `src/crimson/perks/impl/plaguebearer.py`: `apply_plaguebearer()` (sets `plaguebearer_active` for all players).
+- `src/crimson/perks/impl/plaguebearer.py`: `apply_plaguebearer()` (sets
+  `plaguebearer_active` for all players by default, or player zero only with
+  `--preserve-bugs`).
 - Creature-side behavior: `src/crimson/creatures/runtime.py`: `CreaturePool.update()` (contact infection, tick damage, spread).
 - Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()` hardcore quest gate.
 

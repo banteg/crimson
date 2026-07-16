@@ -389,7 +389,8 @@ pub fn applyPerkWithContext(
             players[0].experience = experience + bonus;
         },
         PerkId.plaguebearer => {
-            for (players) |*player| {
+            const plaguebearer_players = if (state.preserve_bugs) players[0..1] else players;
+            for (plaguebearer_players) |*player| {
                 player.plaguebearer_active = true;
             }
         },
@@ -1678,6 +1679,19 @@ test "plaguebearer apply marks all players active" {
     try applyPerk(&state, players[0..], PerkId.plaguebearer);
     try std.testing.expect(players[0].plaguebearer_active);
     try std.testing.expect(players[1].plaguebearer_active);
+}
+
+test "plaguebearer preserve bugs marks only player zero active" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.plaguebearer);
+    try std.testing.expect(players[0].plaguebearer_active);
+    try std.testing.expect(!players[1].plaguebearer_active);
 }
 
 test "lean mean exp machine ticks xp and ignores double experience multiplier" {

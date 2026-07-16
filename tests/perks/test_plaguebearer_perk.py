@@ -23,6 +23,18 @@ def test_plaguebearer_apply_sets_active_flag_for_all_players() -> None:
     assert other.plaguebearer_active
 
 
+def test_plaguebearer_preserve_bugs_sets_only_player_zero_active() -> None:
+    state = GameplayState()
+    state.preserve_bugs = True
+    owner = PlayerState(index=0, pos=Vec2())
+    other = PlayerState(index=1, pos=Vec2())
+
+    perk_apply(state, [owner, other], PerkId.PLAGUEBEARER)
+
+    assert owner.plaguebearer_active
+    assert not other.plaguebearer_active
+
+
 def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))

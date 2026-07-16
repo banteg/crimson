@@ -528,3 +528,24 @@ Rewrite behavior:
 
 - The rewrite mirrors the native behavior exactly (burn the rolls, branch on
   the wave index) so quest builds stay rng-stream aligned with captures.
+
+## 23) Plaguebearer contact immunity activates player 1 only in co-op
+
+Native behavior:
+
+- In `perk_apply` (`0x004055e0`), acquiring Plaguebearer writes only
+  `player_plaguebearer_active[0]`.
+- Creature contact checks each colliding player's own flag, so player 2 never
+  gains the contact-infection behavior from the shared perk in co-op.
+
+Why it's likely a bug:
+
+- Perk counts are shared across local players, and other immediate perk effects
+  deliberately iterate over the configured player count.
+- Applying the shared perk to only one player's contact flag creates asymmetric
+  co-op behavior with no corresponding player-facing rule.
+
+Rewrite behavior:
+
+- Default: activate Plaguebearer contact infection for every player.
+- With `--preserve-bugs`: keep native player-1-only flag activation.
