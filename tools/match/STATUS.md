@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**563/2172** functions matched, **107138/676653** code bytes (**15.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**566/2172** functions matched, **107141/676653** code bytes (**15.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 431/997 | 87691/386756 | 22.7% | 431/526 |
+| crimsonland.exe | 434/997 | 87694/386756 | 22.7% | 434/530 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**431/997** functions, **87691/386756** bytes (**22.7%**), **431/526** scratches verified.
+**434/997** functions, **87694/386756** bytes (**22.7%**), **434/530** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -73,6 +73,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | perk_prompt_update_and_render | 0x00403550 | 378 | 93/93 | 100.00% | 93/93 | 35/0/0 |  | ui-perk-prompt-animation |
 | match | input_key_name | 0x004036d0 | 2970 | 1097/1097 | 100.00% | 1097/1097 | 256/0/0 |  | input-device-key-label-policy |
 | match | perks_generate_choices | 0x004045a0 | 535 | 139/139 | 100.00% | 139/139 | 54/0/0 |  | perk-choice-generation-policy |
+| wip | demo_trial_overlay_render | 0x004047c0 | 2413 | 616/636 | 94.25% | 205/636 | 171/0/0 |  | demo-trial-overlay-render-and-actions |
+| match | demo_trial_already_paid_button_destroy | 0x00405130 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-already-paid-button-empty-destructor |
+| match | demo_trial_purchase_button_destroy | 0x00405140 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-purchase-button-empty-destructor |
+| match | demo_trial_maybe_later_button_destroy | 0x00405150 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-maybe-later-button-empty-destructor |
 | match | ui_render_keybind_help | 0x00405160 | 1142 | 324/324 | 100.00% | 324/324 | 80/0/0 |  | pause-keybind-help-panel |
 | wip | perk_apply | 0x004055e0 | 885 | 239/241 | 62.50% | 2/241 | 61/0/0 |  | perk-immediate-effect-dispatch |
 | match | gameplay_render_world | 0x00405960 | 625 | 184/184 | 100.00% | 184/184 | 56/0/0 |  | gameplay-world-render-coordinator |
