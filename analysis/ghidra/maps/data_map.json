@@ -6380,6 +6380,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00495b00",
+      "comment": "Constructor-only secondary projectile tail word (secondary_projectile_pool + 0x28); initialized to -100 and never read or rewritten at runtime.",
+      "name": "secondary_proj_unused_0x28",
+      "program": "crimsonland.exe",
+      "type": "uint32_t"
+    },
+    {
       "address": "0x004965d8",
       "comment": "Render scratch float used by FX/overlay render paths (UVs, positions).",
       "name": "render_scratch_f0",

@@ -1,9 +1,9 @@
-# fx_spawn_secondary_projectile WIP
+# fx_spawn_secondary_projectile
 
-Current best local score:
+Verified local score:
 
 ```txt
-match=84.38% prefix=0/65 target_insns=65 candidate_insns=63 refs=13/0/0
+match=100.00% prefix=65/65 target_insns=65 candidate_insns=65 refs=13/0/0
 ```
 
 The recovered source matches the fixed 64-entry pool scan, full-pool fallback,
@@ -18,8 +18,11 @@ copies for the 190-unit override. Although the subtraction is not explicitly
 spilled, gameplay runs with x87 precision control at 24 bits, so the Python and
 Zig ports correctly model it as a PC=24 subtraction before evaluating trig.
 
-The remaining mismatch is a single stack-allocation slot. Native reserves one
-four-byte local in the prologue, while the calibrated compiler reuses argument
-space for the saved cosine and allocates no local. The meaningful FPU sequence
-and field stores otherwise align. Do not introduce a volatile or unused local
-solely to manufacture the native frame.
+The final stack-frame match comes from ordinary source lifetime. Keeping the
+semantic `angle`, trail reset, and `type_id` assignments after the direction
+calculations leaves both scalar arguments live while VC6 schedules their
+independent field stores ahead of the x87 multiplies. It can reuse the dead
+`pos` argument slot for the cosine, but must reserve one genuine four-byte
+local for the sine. This produces native's leading `push ecx`, both saved
+direction components, and the exact store order without volatile storage,
+unused expressions, or other register constraints.

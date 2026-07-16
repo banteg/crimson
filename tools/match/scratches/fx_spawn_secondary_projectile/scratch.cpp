@@ -30,13 +30,15 @@ found:
     projectile->pos_x = pos->x;
     projectile->pos.pos_y = pos->y;
     projectile->life_timer = 2.0f;
+
+    vel_x = (float)cos(angle - 1.57079637f);
+    projectile->pos.vx.vel_x = vel_x * 90.0f;
+
+    vel_y = (float)sin(angle - 1.57079637f);
+    projectile->pos.vx.vy.vel_y = vel_y * 90.0f;
     projectile->angle = angle;
     projectile->pos.vx.vy.trail_timer = 0.0f;
     projectile->pos.vx.vy.type_id = type_id;
-
-    projectile->pos.vx.vel_x = (vel_x = (float)cos(angle - 1.57079637f)) * 90.0f;
-
-    projectile->pos.vx.vy.vel_y = (vel_y = (float)sin(angle - 1.57079637f)) * 90.0f;
 
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
         projectile->pos.vx.vy.target_id =

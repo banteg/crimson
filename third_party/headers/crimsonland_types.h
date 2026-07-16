@@ -465,7 +465,7 @@ typedef struct secondary_projectile_vel_y_block_t {
     secondary_projectile_type_id_t type_id;
     float trail_timer;
     int target_id;
-    unsigned int reserved_0x28;
+    unsigned int unused_0x28;
 } secondary_projectile_vel_y_block_t;
 
 typedef struct secondary_projectile_vel_x_block_t {

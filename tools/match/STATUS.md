@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**560/2172** functions matched, **102947/676653** code bytes (**15.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**561/2172** functions matched, **103165/676653** code bytes (**15.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 428/997 | 83500/386756 | 21.6% | 428/521 |
+| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/521 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**428/997** functions, **83500/386756** bytes (**21.6%**), **428/521** scratches verified.
+**429/997** functions, **83718/386756** bytes (**21.6%**), **429/521** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -285,7 +285,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | creature_find_nearest | 0x00420040 | 225 | 90/89 | 91.62% | 27/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
-| wip | fx_spawn_secondary_projectile | 0x00420360 | 218 | 63/65 | 84.38% | 0/65 | 13/0/0 |  | gameplay-secondary-projectile |
+| match | fx_spawn_secondary_projectile | 0x00420360 | 218 | 65/65 | 100.00% | 65/65 | 13/0/0 |  | gameplay-secondary-projectile |
 | wip | projectile_spawn | 0x00420440 | 400 | 119/126 | 69.39% | 0/126 | 13/0/0 |  | gameplay-projectile |
 | match | projectile_reset_pools | 0x004205d0 | 37 | 11/11 | 100.00% | 11/11 | 4/0/0 |  | gameplay-pool-reset |
 | match | creatures_apply_radius_damage | 0x00420600 | 159 | 57/57 | 100.00% | 57/57 | 6/0/0 |  | gameplay-radius-damage |
