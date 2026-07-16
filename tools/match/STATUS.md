@@ -174,7 +174,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_meta_entry_release | 0x00412410 | 36 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | metadata-owned-string-release |
 | match | bonus_meta_register_atexit | 0x00412440 | 12 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | bonus-metadata-destructor-registration |
 | match | bonus_meta_table_destroy | 0x00412450 | 20 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
-| wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 67.28% | 37/162 | 20/0/0 |  | gameplay-bonus-selection |
+| wip | bonus_pick_random_type | 0x00412470 | 484 | 162/162 | 75.93% | 55/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_metadata_init | 0x00412660 | 735 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
 | match | bonus_reset_availability | 0x00412940 | 26 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | gameplay-bonus-availability-reset |
 | wip | game_mode_label | 0x00412960 | 176 | 69/69 | 86.96% | 6/69 | 10/0/0 |  | game-mode-display-label |

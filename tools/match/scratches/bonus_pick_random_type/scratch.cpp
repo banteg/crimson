@@ -36,76 +36,73 @@ extern "C" bonus_id_t bonus_pick_random_type(void)
 
         {
             bonus_id_t bucket_id = BONUS_ID_WEAPON;
-            do {
+            while (bucket_id < 15) {
                 if (bucket <= 10) {
                     bonus_id = bucket_id;
                     break;
                 }
                 bucket -= 10;
                 bucket_id = (bonus_id_t)(bucket_id + 1);
-                if (bucket_id >= 15) {
-                    break;
-                }
-            } while (true);
+            }
         }
 
 selected:
         if (shock_chain_links_left > 0 && bonus_id == BONUS_ID_SHOCK_CHAIN) {
-            goto retry;
+            continue;
         }
 
         if (config_blob.game_mode == GAME_MODE_QUEST) {
             if (config_blob.hardcore && quest_stage_major == 3) {
                 if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
-                    goto retry;
+                    continue;
                 }
             } else if (
                 quest_stage_major == 2 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE
             ) {
-                goto retry;
+                continue;
             }
 
             if (config_blob.hardcore && quest_stage_major == 2) {
                 if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {
-                    goto retry;
+                    continue;
                 }
             } else if (quest_stage_major == 4) {
-                if (
-                    quest_stage_minor == 10
-                    && (bonus_id == BONUS_ID_NUKE || bonus_id == BONUS_ID_FREEZE)
-                ) {
-                    goto retry;
+                if (quest_stage_minor == 10) {
+                    if (bonus_id == BONUS_ID_NUKE) {
+                        continue;
+                    }
+                    if (bonus_id == BONUS_ID_FREEZE) {
+                        continue;
+                    }
                 }
-            } else if (quest_stage_major == 5 && quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
-                goto retry;
+            } else if (quest_stage_major == 5) {
+                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {
+                    continue;
+                }
             }
         }
 
         if (bonus_freeze_timer > 0.0f && bonus_id == BONUS_ID_FREEZE) {
-            goto retry;
+            continue;
         }
         if (
             (player_state_table[0].shield_timer > 0.0f || player_state_table[1].shield_timer > 0.0f)
             && bonus_id == BONUS_ID_SHIELD
         ) {
-            goto retry;
+            continue;
         }
         if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {
-            goto retry;
+            continue;
         }
         if (perk_count_get(perk_id_death_clock) != 0 && bonus_id == BONUS_ID_MEDIKIT) {
-            goto retry;
+            continue;
         }
         if (bonus_id == BONUS_ID_WEAPON && has_fire_bullets_drop) {
-            goto retry;
+            continue;
         }
         if (bonus_meta_table[bonus_id].enabled) {
             return bonus_id;
         }
-
-retry:
-        if (retries++ >= 100) {
-            return BONUS_ID_POINTS;
-        }
-    } while (true);
+    } while (retries++ < 100);
+    return BONUS_ID_POINTS;
 }
