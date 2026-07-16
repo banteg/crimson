@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**568/2172** functions matched, **110474/676653** code bytes (**16.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**570/2172** functions matched, **110493/676653** code bytes (**16.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 436/997 | 91027/386756 | 23.5% | 436/532 |
+| crimsonland.exe | 438/997 | 91046/386756 | 23.5% | 438/534 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**436/997** functions, **91027/386756** bytes (**23.5%**), **436/532** scratches verified.
+**438/997** functions, **91046/386756** bytes (**23.5%**), **438/534** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -548,6 +548,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | weapon_assign_player | 0x00452d40 | 254 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
 | match | float_near_equal | 0x00452ef0 | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
+| match | vec2_normalize_dispatch_init | 0x00452f1d | 13 | 3/3 | 100.00% | 3/3 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | lazy-vector-normalize-dispatch |
+| match | vec2_normalize_dispatch | 0x00452f2a | 6 | 1/1 | 100.00% | 1/1 | 1/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | vector-normalize-dispatch-thunk |
 | match | vec2_normalize_safe | 0x00455587 | 141 | 57/57 | 100.00% | 57/57 | 3/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | vector-safe-normalize |
 
 ## grim.dll
