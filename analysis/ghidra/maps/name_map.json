@@ -8079,6 +8079,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10016c3b",
+    "name": "grim_pixel_format_quantize_color_key_yuv",
+    "signature": "void grim_pixel_format_quantize_color_key_yuv(void *this)",
+    "comment": "no-op color-key quantizer shared by the UYVY and YUY2 formats"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10016c3c",
     "name": "grim_pixel_format_destroy_dxt",
     "signature": "void grim_pixel_format_destroy_dxt(void *this)",
@@ -8764,10 +8771,9 @@
   {
     "program": "grim.dll",
     "address": "0x1001aec8",
-    "name": "FUN_1001aec8",
-    "signature": "void*** FUN_1001aec8(void*** arg1, char arg2)",
-    "comment": "[binja] void*** __thiscall sub_1001aec8(void*** arg1, char arg2)",
-    "create": false
+    "name": "grim_pixel_format_scalar_deleting_destroy_dxt_base",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_dxt_base(void *this, unsigned int flags)",
+    "comment": "scalar deleting destructor installed by the shared DXT base vtable"
   },
   {
     "program": "grim.dll",
@@ -8779,10 +8785,9 @@
   {
     "program": "grim.dll",
     "address": "0x1001af00",
-    "name": "FUN_1001af00",
-    "signature": "void* FUN_1001af00(void* arg1)",
-    "comment": "[binja] void* __fastcall sub_1001af00(void* arg1)",
-    "create": false
+    "name": "grim_pixel_format_quantize_color_key_dxt",
+    "signature": "void grim_pixel_format_quantize_color_key_dxt(void *this)",
+    "comment": "quantizes the RGBA color key to DXT 5:6:5 color and format-specific alpha precision"
   },
   {
     "program": "grim.dll",
@@ -8951,6 +8956,15 @@
     "name": "grim_pixel_format_create",
     "signature": "void * grim_pixel_format_create(uint *desc)",
     "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bc68",
+    "end": "0x1001bc84",
+    "name": "grim_pixel_format_scalar_deleting_destroy_yuv_base",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_yuv_base(void *this, unsigned int flags)",
+    "comment": "scalar deleting destructor installed by the shared YUV base vtable",
+    "create": true
   },
   {
     "program": "grim.dll",

@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**617/2172** functions matched, **112725/676653** code bytes (**16.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**620/2173** functions matched, **112782/676681** code bytes (**16.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 178/1175 | 21458/289897 | 7.4% | 178/184 |
+| grim.dll | 181/1176 | 21515/289925 | 7.4% | 181/188 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**178/1175** functions, **21458/289897** bytes (**7.4%**), **178/184** scratches verified.
+**181/1176** functions, **21515/289925** bytes (**7.4%**), **181/188** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -700,6 +700,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_format_info_lookup | 0x1000aaa6 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-d3d-format-descriptor-lookup |
 | match | float_near_equal | 0x1000cbff | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-math-float-epsilon |
 | match | grim_vertex_space_converter_destroy | 0x1001692e | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-converted-vertex-buffer-destruction |
+| match | grim_pixel_format_quantize_color_key_yuv | 0x10016c3b | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-yuv-color-key-noop |
 | wip | grim_pixel_format_destroy_dxt | 0x10016c3c | 160 | 51/49 | 66.00% | 6/49 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- /GX | grim-dxt-cache-destruction |
 | match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
 | match | grim_pixel_format_init_yuv | 0x1001a444 | 248 | 69/69 | 100.00% | 69/69 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-format-base-constructor |
@@ -721,7 +722,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_ctor_p8 | 0x1001ae74 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-p8-constructor |
 | match | grim_pixel_format_ctor_l8 | 0x1001ae90 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l8-constructor |
 | match | grim_pixel_format_ctor_a8l8 | 0x1001aeac | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8l8-constructor |
+| match | grim_pixel_format_scalar_deleting_destroy_dxt_base | 0x1001aec8 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- /GX | grim-dxt-base-scalar-deleting-destructor |
 | match | grim_pixel_format_ctor_a4l4 | 0x1001aee4 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a4l4-constructor |
+| wip | grim_pixel_format_quantize_color_key_dxt | 0x1001af00 | 257 | 56/71 | 17.32% | 2/71 | 0/0/5 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt-color-key-quantization |
 | match | grim_pixel_format_ctor_v8u8 | 0x1001b001 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-v8u8-constructor |
 | match | grim_pixel_format_ctor_l6v5u5 | 0x1001b01d | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l6v5u5-constructor |
 | match | grim_pixel_format_ctor_x8l8v8u8 | 0x1001b039 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x8l8v8u8-constructor |
@@ -743,4 +746,5 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_destroy_yuv | 0x1001b493 | 73 | 23/23 | 100.00% | 23/23 | 6/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-cache-destruction |
 | match | grim_pixel_format_ctor_uyvy | 0x1001b4dc | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-uyvy-constructor |
 | match | grim_pixel_format_ctor_yuy2 | 0x1001b4f4 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-yuy2-constructor |
+| match | grim_pixel_format_scalar_deleting_destroy_yuv_base | 0x1001bc68 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-base-scalar-deleting-destructor |
 | match | grim_pixel_format_scalar_deleting_destroy_yuv | 0x1001bc84 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-scalar-deleting-destructor |
