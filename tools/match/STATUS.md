@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**655/2173** functions matched, **117823/676681** code bytes (**17.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**656/2173** functions matched, **117954/676681** code bytes (**17.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 216/1176 | 26556/289925 | 9.2% | 216/224 |
+| grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**216/1176** functions, **26556/289925** bytes (**9.2%**), **216/224** scratches verified.
+**217/1176** functions, **26687/289925** bytes (**9.2%**), **217/225** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -782,5 +782,6 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_scalar_deleting_destroy_yuv_base | 0x1001bc68 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-base-scalar-deleting-destructor |
 | match | grim_pixel_format_scalar_deleting_destroy_yuv | 0x1001bc84 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-scalar-deleting-destructor |
 | match | grim_dxt_unpremultiply_rgba_block | 0x1002065a | 126 | 55/55 | 100.00% | 55/55 | 0/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt-unpremultiply-rgba-block |
+| match | grim_dxt3_decode_block | 0x100219d7 | 131 | 57/57 | 100.00% | 57/57 | 4/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-dxt3-explicit-alpha-decoder |
 | match | grim_dxt2_decode_block | 0x10022114 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt2-decode-wrapper |
 | match | grim_dxt4_decode_block | 0x10022137 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt4-decode-wrapper |
