@@ -8434,18 +8434,16 @@
   {
     "program": "grim.dll",
     "address": "0x1001971b",
-    "name": "FUN_1001971b",
-    "signature": "int* FUN_1001971b(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t* __thiscall sub_1001971b(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a2b10g10r10",
+    "signature": "void grim_pixel_format_read_a2b10g10r10(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed A2B10G10R10 dwords into RGBA float pixels"
   },
   {
     "program": "grim.dll",
     "address": "0x100197f1",
-    "name": "FUN_100197f1",
-    "signature": "int* FUN_100197f1(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t* __thiscall sub_100197f1(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_g16r16",
+    "signature": "void grim_pixel_format_read_g16r16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed G16R16 dwords into RG11 float pixels"
   },
   {
     "program": "grim.dll",
