@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**612/2172** functions matched, **111850/676653** code bytes (**16.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**613/2172** functions matched, **112348/676653** code bytes (**16.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 173/1175 | 20583/289897 | 7.1% | 173/178 |
+| grim.dll | 174/1175 | 21081/289897 | 7.3% | 174/179 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**173/1175** functions, **20583/289897** bytes (**7.1%**), **173/178** scratches verified.
+**174/1175** functions, **21081/289897** bytes (**7.3%**), **174/179** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -713,6 +713,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_ctor_x4r4g4b4 | 0x1001aafa | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x4r4g4b4-constructor |
 | match | grim_pixel_format_ctor_a2b10g10r10 | 0x1001aba3 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a2b10g10r10-constructor |
 | match | grim_pixel_format_ctor_g16r16 | 0x1001ac2e | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-g16r16-constructor |
+| match | grim_pixel_format_init_dxt | 0x1001ac4a | 498 | 109/109 | 100.00% | 109/109 | 12/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt-format-base-constructor |
 | match | grim_pixel_format_ctor_a8p8 | 0x1001ae3c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8p8-constructor |
 | match | grim_pixel_format_scalar_deleting_destroy | 0x1001ae58 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-pixel-format-scalar-deleting-destructor |
 | match | grim_pixel_format_ctor_p8 | 0x1001ae74 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-p8-constructor |

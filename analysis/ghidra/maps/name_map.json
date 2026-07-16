@@ -9226,6 +9226,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10021b96",
+    "name": "grim_dxt1_encode_block",
+    "signature": "int grim_dxt1_encode_block(void *out_block, float *rgba)",
+    "comment": "DXT1 codec callback that enables one-bit alpha color encoding"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10021a5a",
     "name": "grim_dxt5_decode_block",
     "signature": "int grim_dxt5_decode_block(float *out_rgba, unsigned char *block)",
@@ -9244,6 +9251,20 @@
     "name": "grim_dxt5_encode_block",
     "signature": "int grim_dxt5_encode_block(unsigned char *out_block, float *rgba)",
     "comment": "encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022114",
+    "name": "grim_dxt2_decode_block",
+    "signature": "int grim_dxt2_decode_block(float *out_rgba, void *block)",
+    "comment": "decodes a DXT3-style block and removes DXT2 premultiplication"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022137",
+    "name": "grim_dxt4_decode_block",
+    "signature": "int grim_dxt4_decode_block(float *out_rgba, void *block)",
+    "comment": "decodes a DXT5-style block and removes DXT4 premultiplication"
   },
   {
     "program": "grim.dll",

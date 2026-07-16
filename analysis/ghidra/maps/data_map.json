@@ -11235,6 +11235,13 @@
       "type": "void *[]"
     },
     {
+      "address": "0x1004caf8",
+      "comment": "Virtual method table installed by the shared DXT1-DXT5 pixel-format constructor.",
+      "name": "grim_pixel_format_vtable_dxt",
+      "program": "grim.dll",
+      "type": "void *[]"
+    },
+    {
       "address": "0x004795a0",
       "comment": "Active 57-entry vector and matrix dispatch table; reset from renderer_dispatch_defaults and patched for the selected CPU backend.",
       "name": "renderer_dispatch_table",
