@@ -11207,6 +11207,34 @@
       "type": "void *[]"
     },
     {
+      "address": "0x1004c388",
+      "comment": "Fallback 36-byte descriptor returned when a D3D pixel format is not registered.",
+      "name": "grim_format_info_default",
+      "program": "grim.dll",
+      "type": "grim_format_info_t"
+    },
+    {
+      "address": "0x1004c3b0",
+      "comment": "Start of the 36-byte D3D pixel-format descriptor table.",
+      "name": "grim_format_info_entries",
+      "program": "grim.dll",
+      "type": "grim_format_info_t[]"
+    },
+    {
+      "address": "0x10053c50",
+      "comment": "One-past-the-end pointer for the registered D3D pixel-format descriptor table.",
+      "name": "grim_format_info_end",
+      "program": "grim.dll",
+      "type": "grim_format_info_t *"
+    },
+    {
+      "address": "0x1004cae4",
+      "comment": "Virtual method table restored by the vertex-space converter destructor and base pixel-format initializer.",
+      "name": "grim_vertex_space_converter_vtable",
+      "program": "grim.dll",
+      "type": "void *[]"
+    },
+    {
       "address": "0x004795a0",
       "comment": "Active 57-entry vector and matrix dispatch table; reset from renderer_dispatch_defaults and patched for the selected CPU backend.",
       "name": "renderer_dispatch_table",

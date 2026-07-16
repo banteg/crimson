@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**608/2172** functions matched, **111722/676653** code bytes (**16.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**612/2172** functions matched, **111850/676653** code bytes (**16.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 169/1175 | 20455/289897 | 7.1% | 169/174 |
+| grim.dll | 173/1175 | 20583/289897 | 7.1% | 173/178 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**169/1175** functions, **20455/289897** bytes (**7.1%**), **169/174** scratches verified.
+**173/1175** functions, **20583/289897** bytes (**7.1%**), **173/178** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -697,6 +697,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_mouse_init | 0x1000a5a0 | 194 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
 | match | grim_mouse_poll | 0x1000a670 | 351 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
 | match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |
+| match | grim_format_info_lookup | 0x1000aaa6 | 36 | 12/12 | 100.00% | 12/12 | 3/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-d3d-format-descriptor-lookup |
+| match | float_near_equal | 0x1000cbff | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-math-float-epsilon |
+| match | grim_vertex_space_converter_destroy | 0x1001692e | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-converted-vertex-buffer-destruction |
 | match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
 | match | grim_pixel_format_ctor_a8r8g8b8 | 0x1001a53c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r8g8b8-constructor |
 | match | grim_pixel_format_ctor_x8r8g8b8 | 0x1001a558 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x8r8g8b8-constructor |
@@ -711,6 +714,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_ctor_a2b10g10r10 | 0x1001aba3 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a2b10g10r10-constructor |
 | match | grim_pixel_format_ctor_g16r16 | 0x1001ac2e | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-g16r16-constructor |
 | match | grim_pixel_format_ctor_a8p8 | 0x1001ae3c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8p8-constructor |
+| match | grim_pixel_format_scalar_deleting_destroy | 0x1001ae58 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-pixel-format-scalar-deleting-destructor |
 | match | grim_pixel_format_ctor_p8 | 0x1001ae74 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-p8-constructor |
 | match | grim_pixel_format_ctor_l8 | 0x1001ae90 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l8-constructor |
 | match | grim_pixel_format_ctor_a8l8 | 0x1001aeac | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8l8-constructor |

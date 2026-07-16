@@ -8723,10 +8723,9 @@
   {
     "program": "grim.dll",
     "address": "0x1001ae58",
-    "name": "FUN_1001ae58",
-    "signature": "void*** FUN_1001ae58(void*** arg1, char arg2)",
-    "comment": "[binja] void*** __thiscall sub_1001ae58(void*** arg1, char arg2)",
-    "create": false
+    "name": "grim_pixel_format_scalar_deleting_destroy",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy(void *this, unsigned int flags)",
+    "comment": "scalar deleting destructor shared by ordinary pixel-format subclasses"
   },
   {
     "program": "grim.dll",
