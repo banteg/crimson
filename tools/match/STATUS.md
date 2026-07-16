@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**559/2172** functions matched, **101645/676653** code bytes (**15.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**560/2172** functions matched, **102947/676653** code bytes (**15.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 427/997 | 82198/386756 | 21.3% | 427/519 |
+| crimsonland.exe | 428/997 | 83500/386756 | 21.6% | 428/520 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**427/997** functions, **82198/386756** bytes (**21.3%**), **427/519** scratches verified.
+**428/997** functions, **83500/386756** bytes (**21.6%**), **428/520** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -195,6 +195,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | ui_draw_textured_quad | 0x00417ae0 | 158 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
 | match | terrain_render | 0x004188a0 | 693 | 200/200 | 100.00% | 200/200 | 32/0/0 |  | terrain-backbuffer-render |
+| match | creature_render_all | 0x00419680 | 1302 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
 | wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | wip | ui_menu_assets_init | 0x00419dd0 | 551 | 110/110 | 98.18% | 89/110 | 62/0/2 |  | ui-menu-template-assets |
