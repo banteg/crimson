@@ -10976,6 +10976,13 @@
       "type": "float"
     },
     {
+      "address": "0x1004cb3c",
+      "comment": "Single-precision reciprocal of 63 used for UNORM6 luminance expansion.",
+      "name": "grim_unorm6_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1004cb44",
       "comment": "Single-precision reciprocal of 15 used for UNORM4 channel expansion.",
       "name": "grim_unorm4_scale",
@@ -10993,6 +11000,13 @@
       "address": "0x1004cb58",
       "comment": "Single-precision reciprocal of 128 used for SNORM8 component expansion.",
       "name": "grim_snorm8_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb5c",
+      "comment": "Single-precision reciprocal of 16 used for signed 5-bit component expansion.",
+      "name": "grim_snorm5_scale",
       "program": "grim.dll",
       "type": "float"
     },

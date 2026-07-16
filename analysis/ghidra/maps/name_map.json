@@ -8530,10 +8530,9 @@
   {
     "program": "grim.dll",
     "address": "0x10019dd5",
-    "name": "FUN_10019dd5",
-    "signature": "char* FUN_10019dd5(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019dd5(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_l6v5u5",
+    "signature": "void grim_pixel_format_read_l6v5u5(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed signed V5U5 and unsigned L6 channels into XY0L float vectors"
   },
   {
     "program": "grim.dll",
