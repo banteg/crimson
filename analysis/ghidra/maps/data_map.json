@@ -729,6 +729,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00472aec",
+      "comment": "Credits name string \"Ville M\".",
+      "name": "credits_name_ville_m",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00472c58",
+      "comment": "Credits name string \"Petri J\".",
+      "name": "credits_name_petri_j",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00472ccc",
+      "comment": "Credits name string \"Valtteri Pihlajam\".",
+      "name": "credits_name_valtteri_pihlajam",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00472e80",
       "comment": "CString \"Back\" used by menu/back button labels across UI screens.",
       "name": "menu_label_back",
