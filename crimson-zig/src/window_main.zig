@@ -760,6 +760,7 @@ const BonusHudSlotState = struct {
     slide_x: f32 = -184.0,
     timer_value: f32 = 0.0,
     timer_value_alt: f32 = 0.0,
+    has_alt_timer: bool = false,
 };
 
 const HudBonusSpec = struct {
@@ -767,6 +768,7 @@ const HudBonusSpec = struct {
     icon_id: i32,
     timer_value: f32,
     timer_value_alt: f32 = 0.0,
+    has_alt_timer: bool = false,
 };
 
 const HudRuntimeState = struct {
@@ -831,6 +833,7 @@ const HudRuntimeState = struct {
             slot.icon_id = spec.icon_id;
             slot.timer_value = spec.timer_value;
             slot.timer_value_alt = spec.timer_value_alt;
+            slot.has_alt_timer = spec.has_alt_timer;
             slot.slide_x = @min(-2.0, slot.slide_x + @max(frame_dt, 0.0) * 350.0);
             matched[slot_index] = true;
         }
@@ -6856,6 +6859,24 @@ test "hudPlayerRowLayout stacks multiplayer rows like the Python HUD" {
     try std.testing.expectApproxEqAbs(@as(f32, 18.0), row1.ammo_base.y, 1e-6);
 }
 
+test "bonus HUD timer layout follows native alternate pointer presence" {
+    const single = bonusHudTimerLayout(false);
+    try std.testing.expectApproxEqAbs(@as(f32, 21.0), single.primary_y, 1e-6);
+    try std.testing.expectEqual(@as(?f32, null), single.secondary_y);
+    try std.testing.expectApproxEqAbs(@as(f32, 6.0), single.label_y, 1e-6);
+
+    const dual = bonusHudTimerLayout(true);
+    try std.testing.expectApproxEqAbs(@as(f32, 17.0), dual.primary_y, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 23.0), dual.secondary_y.?, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 2.0), dual.label_y, 1e-6);
+
+    var specs: [1]HudBonusSpec = undefined;
+    var count: usize = 0;
+    appendHudBonusSpec(&specs, &count, .shield, 1.0, 0.0, true);
+    try std.testing.expectEqual(@as(usize, 1), count);
+    try std.testing.expect(specs[0].has_alt_timer);
+}
+
 fn drawWorld(
     runner: *const live_runner.LiveRunner,
     runtime_assets: ?*const window_assets.RuntimeAssets,
@@ -7810,11 +7831,11 @@ fn collectHudBonusSpecs(session: *const runtime_session.DeterministicSession, de
     const state = &session.state;
     const players = session.playersConst();
 
-    appendHudBonusSpec(dest, count, .weapon_power_up, state.bonuses.weapon_power_up, 0.0);
-    appendHudBonusSpec(dest, count, .reflex_boost, state.bonuses.reflex_boost, 0.0);
-    appendHudBonusSpec(dest, count, .energizer, state.bonuses.energizer, 0.0);
-    appendHudBonusSpec(dest, count, .double_experience, state.bonuses.double_experience, 0.0);
-    appendHudBonusSpec(dest, count, .freeze, state.bonuses.freeze, 0.0);
+    appendHudBonusSpec(dest, count, .weapon_power_up, state.bonuses.weapon_power_up, 0.0, false);
+    appendHudBonusSpec(dest, count, .reflex_boost, state.bonuses.reflex_boost, 0.0, false);
+    appendHudBonusSpec(dest, count, .energizer, state.bonuses.energizer, 0.0, false);
+    appendHudBonusSpec(dest, count, .double_experience, state.bonuses.double_experience, 0.0, false);
+    appendHudBonusSpec(dest, count, .freeze, state.bonuses.freeze, 0.0, false);
 
     const player0 = if (players.len > 0) players[0] else null;
     const player1 = if (players.len > 1) players[1] else null;
@@ -7824,6 +7845,7 @@ fn collectHudBonusSpecs(session: *const runtime_session.DeterministicSession, de
         .fire_bullets,
         if (player0) |player| player.fire_bullets_timer else 0.0,
         if (player1) |player| player.fire_bullets_timer else 0.0,
+        player1 != null,
     );
     appendHudBonusSpec(
         dest,
@@ -7831,6 +7853,7 @@ fn collectHudBonusSpecs(session: *const runtime_session.DeterministicSession, de
         .shield,
         if (player0) |player| player.shield_timer else 0.0,
         if (player1) |player| player.shield_timer else 0.0,
+        player1 != null,
     );
     appendHudBonusSpec(
         dest,
@@ -7838,10 +7861,11 @@ fn collectHudBonusSpecs(session: *const runtime_session.DeterministicSession, de
         .speed,
         if (player0) |player| player.speed_bonus_timer else 0.0,
         if (player1) |player| player.speed_bonus_timer else 0.0,
+        player1 != null,
     );
 }
 
-fn appendHudBonusSpec(dest: []HudBonusSpec, count: *usize, bonus_id: game_ids.BonusId, timer_value: f32, timer_value_alt: f32) void {
+fn appendHudBonusSpec(dest: []HudBonusSpec, count: *usize, bonus_id: game_ids.BonusId, timer_value: f32, timer_value_alt: f32, has_alt_timer: bool) void {
     if (!(timer_value > 0.0 or timer_value_alt > 0.0)) return;
     if (count.* >= dest.len) return;
     dest[count.*] = .{
@@ -7849,6 +7873,7 @@ fn appendHudBonusSpec(dest: []HudBonusSpec, count: *usize, bonus_id: game_ids.Bo
         .icon_id = hudBonusIconId(bonus_id) orelse -1,
         .timer_value = @max(timer_value, 0.0),
         .timer_value_alt = @max(timer_value_alt, 0.0),
+        .has_alt_timer = has_alt_timer,
     };
     count.* += 1;
 }
@@ -7936,6 +7961,19 @@ fn drawQuestHud(runner: *const live_runner.LiveRunner, update: live_runner.Frame
     }
 }
 
+const BonusHudTimerLayout = struct {
+    primary_y: f32,
+    secondary_y: ?f32,
+    label_y: f32,
+};
+
+fn bonusHudTimerLayout(has_alt_timer: bool) BonusHudTimerLayout {
+    if (has_alt_timer) {
+        return .{ .primary_y = 17.0, .secondary_y = 23.0, .label_y = 2.0 };
+    }
+    return .{ .primary_y = 21.0, .secondary_y = null, .label_y = 6.0 };
+}
+
 fn drawBonusHud(runner: *const live_runner.LiveRunner, hud_state: *const HudRuntimeState, assets: *const window_assets.RuntimeAssets, scale: f32) void {
     var bonus_y: f32 = if (runner.session.game_mode == .quests) hs(201.0, scale) else hs(121.0, scale);
     const bonuses_texture = assets.texture(.bonuses);
@@ -7958,10 +7996,11 @@ fn drawBonusHud(runner: *const live_runner.LiveRunner, hud_state: *const HudRunt
                 rl.Color.white,
             );
         }
-        drawSmallText(assets, game_ids.bonusDisplayName(slot.bonus_id, runner.session.state.preserve_bugs), slide_x + hs(36.0, scale), bonus_y + hs(6.0, scale), HudTextColor.primary);
-        drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(21.0, scale)), hs(100.0, scale), slot.timer_value * 0.05, rl.Color.init(26, 77, 153, 179), scale);
-        if (slot.timer_value_alt > 0.0) {
-            drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(27.0, scale)), hs(100.0, scale), slot.timer_value_alt * 0.05, rl.Color.init(26, 77, 153, 179), scale);
+        const timer_layout = bonusHudTimerLayout(slot.has_alt_timer);
+        drawSmallText(assets, game_ids.bonusDisplayName(slot.bonus_id, runner.session.state.preserve_bugs), slide_x + hs(36.0, scale), bonus_y + hs(timer_layout.label_y, scale), HudTextColor.primary);
+        drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(timer_layout.primary_y, scale)), hs(100.0, scale), slot.timer_value * 0.05, rl.Color.init(26, 77, 153, 179), scale);
+        if (timer_layout.secondary_y) |secondary_y| {
+            drawProgressBar(rl.Vector2.init(slide_x + hs(36.0, scale), bonus_y + hs(secondary_y, scale)), hs(100.0, scale), slot.timer_value_alt * 0.05, rl.Color.init(26, 77, 153, 179), scale);
         }
         bonus_y += hs(52.0, scale);
     }
