@@ -10955,6 +10955,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x1004caf4",
+      "comment": "Single-precision reciprocal of 255 used for UNORM8 channel expansion.",
+      "name": "grim_unorm8_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb50",
+      "comment": "Single-precision reciprocal of 65535 used for UNORM16 channel expansion.",
+      "name": "grim_unorm16_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1004cb6c",
       "comment": "Virtual method table installed by the R8G8B8 pixel-format constructor.",
       "name": "grim_pixel_format_vtable_r8g8b8",

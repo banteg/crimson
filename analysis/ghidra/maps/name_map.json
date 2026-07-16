@@ -8465,10 +8465,9 @@
   {
     "program": "grim.dll",
     "address": "0x10019925",
-    "name": "FUN_10019925",
-    "signature": "char* FUN_10019925(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019925(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a8",
+    "signature": "void grim_pixel_format_read_a8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands one row of A8 samples into zero-RGB RGBA float pixels"
   },
   {
     "program": "grim.dll",
@@ -8496,11 +8495,17 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10019b6f",
+    "name": "grim_pixel_format_read_p8",
+    "signature": "void grim_pixel_format_read_p8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands one row of P8 indices through the embedded 256-entry RGBA float palette"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10019bd3",
-    "name": "FUN_10019bd3",
-    "signature": "char* FUN_10019bd3(void* arg1, int arg2, int arg3, uint arg4)",
-    "comment": "[binja] char* __thiscall sub_10019bd3(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_l8",
+    "signature": "void grim_pixel_format_read_l8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands one row of L8 luminance samples into RGBA float pixels"
   },
   {
     "program": "grim.dll",
@@ -8577,10 +8582,9 @@
   {
     "program": "grim.dll",
     "address": "0x1001a1be",
-    "name": "FUN_1001a1be",
-    "signature": "short* FUN_1001a1be(void* arg1, int arg2, int arg3, uint arg4)",
-    "comment": "[binja] int16_t* __thiscall sub_1001a1be(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_unorm16",
+    "signature": "void grim_pixel_format_read_unorm16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "shared D16_LOCKABLE/L16 reader that expands unsigned 16-bit samples into RGBA floats"
   },
   {
     "program": "grim.dll",
