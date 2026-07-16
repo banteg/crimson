@@ -7133,6 +7133,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000ae4f",
+    "name": "grim_yuv_cache_entry_init",
+    "signature": "void * grim_yuv_cache_entry_init(void *this)",
+    "comment": "empty default constructor for one 16-byte YUV channel-cache entry"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b393",
+    "name": "grim_vector_constructor_iterator",
+    "signature": "void grim_vector_constructor_iterator(void *base, unsigned int size, int count, void *constructor)",
+    "comment": "VC6 vector-construction iterator used for arrays of non-trivial objects"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000aaca",
     "name": "FUN_1000aaca",
     "signature": "int FUN_1000aaca(void* arg1, int arg2)",
@@ -9782,6 +9796,13 @@
     "name": "seh_prolog",
     "signature": "void seh_prolog(void)",
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004ba33",
+    "name": "grim_pixel_format_init_yuv_eh_handler",
+    "signature": "void grim_pixel_format_init_yuv_eh_handler(void)",
+    "comment": "compiler-generated exception-handler thunk for the shared YUV constructor"
   },
   {
     "program": "grim.dll",

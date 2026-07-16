@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**613/2172** functions matched, **112348/676653** code bytes (**16.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**614/2172** functions matched, **112596/676653** code bytes (**16.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 174/1175 | 21081/289897 | 7.3% | 174/179 |
+| grim.dll | 175/1175 | 21329/289897 | 7.4% | 175/180 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**174/1175** functions, **21081/289897** bytes (**7.3%**), **174/179** scratches verified.
+**175/1175** functions, **21329/289897** bytes (**7.4%**), **175/180** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -701,6 +701,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | float_near_equal | 0x1000cbff | 45 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-math-float-epsilon |
 | match | grim_vertex_space_converter_destroy | 0x1001692e | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-converted-vertex-buffer-destruction |
 | match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
+| match | grim_pixel_format_init_yuv | 0x1001a444 | 248 | 69/69 | 100.00% | 69/69 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-format-base-constructor |
 | match | grim_pixel_format_ctor_a8r8g8b8 | 0x1001a53c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r8g8b8-constructor |
 | match | grim_pixel_format_ctor_x8r8g8b8 | 0x1001a558 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x8r8g8b8-constructor |
 | match | grim_pixel_format_ctor_r5g6b5 | 0x1001a579 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r5g6b5-constructor |

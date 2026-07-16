@@ -14,6 +14,7 @@ extern "C" int grim_dxt5_decode_block(void *block, float *pixels);
 class grim_pixel_format_base_t {
 public:
     virtual void placeholder(void);
+    virtual ~grim_pixel_format_base_t();
 
     grim_pixel_format_base_t(
         unsigned int *desc,
@@ -29,7 +30,7 @@ protected:
     unsigned int bottom;
     unsigned int depth_first;
     unsigned int depth_last;
-    unsigned char fields_1048[0x2c];
+    unsigned char fields_1048[0x24];
 };
 
 class grim_pixel_format_dxt_t : public grim_pixel_format_base_t {
@@ -39,6 +40,8 @@ public:
     grim_pixel_format_dxt_t(unsigned int *desc);
 
 private:
+    float alpha_max;
+    float alpha_scale;
     unsigned int has_partial_blocks;
     unsigned int x_mask;
     unsigned int y_mask;
