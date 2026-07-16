@@ -135,6 +135,54 @@ def test_load_manifest_applies_curated_name_map(tmp_path: Path) -> None:
     assert end == 0x1000A323
 
 
+def test_load_manifest_adds_explicit_disjoint_curated_function(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1001BC84","end":"0x1001BCA0","name":"sub_1001BC84","size":28}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1001BC68","end":"0x1001BC84",'
+        '"name":"grim_pixel_format_scalar_deleting_destroy_yuv_base","create":true}]\n',
+        encoding="utf-8",
+    )
+
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=None,
+        image_name="grim.dll",
+        name_map_path=name_map_path,
+    )
+
+    function, start, end = resolve_function(manifest, "grim_pixel_format_scalar_deleting_destroy_yuv_base")
+    assert function.size == 28
+    assert start == 0x1001BC68
+    assert end == 0x1001BC84
+
+
+def test_load_manifest_rejects_overlapping_created_function(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x1001BC70","end":"0x1001BC90","name":"sub_1001BC70","size":32}]\n',
+        encoding="utf-8",
+    )
+    name_map_path = tmp_path / "name_map.json"
+    name_map_path.write_text(
+        '[{"program":"grim.dll","address":"0x1001BC68","end":"0x1001BC84",'
+        '"name":"grim_pixel_format_scalar_deleting_destroy_yuv_base","create":true}]\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="overlaps the existing manifest"):
+        load_function_manifest(
+            functions_path,
+            metadata_path=None,
+            image_name="grim.dll",
+            name_map_path=name_map_path,
+        )
+
+
 def test_load_manifest_can_include_curated_library_false_positive(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(

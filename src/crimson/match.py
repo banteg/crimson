@@ -238,6 +238,7 @@ def load_function_manifest(
     resolved_image_name = image_name or Path(path).parent.name
     name_overrides: dict[int, str] = {}
     included_library_addresses: set[int] = set()
+    created_rows: list[dict[str, Any]] = []
     if name_map_path is not None and name_map_path.exists():
         name_rows = json.loads(name_map_path.read_text(encoding="utf-8"))
         for row in name_rows:
@@ -247,6 +248,8 @@ def load_function_manifest(
             name_overrides[address] = str(row["name"])
             if bool(row.get("include_library")):
                 included_library_addresses.add(address)
+            if bool(row.get("create")) and row.get("end") is not None:
+                created_rows.append(row)
     functions: list[FunctionSymbol] = []
     for row in rows:
         address = parse_int(row["address"])
@@ -263,6 +266,25 @@ def load_function_manifest(
                 size=int(row.get("size") or max(0, end - address)),
             ),
         )
+    existing_addresses = {function.address for function in functions}
+    for row in created_rows:
+        address = parse_int(row["address"])
+        if address in existing_addresses:
+            continue
+        end = parse_int(row["end"])
+        if end <= address:
+            raise ValueError(f"created function {row['name']!r} has invalid extent 0x{address:x}..0x{end:x}")
+        if any(address < function.end and function.address < end for function in functions):
+            raise ValueError(f"created function {row['name']!r} overlaps the existing manifest")
+        functions.append(
+            FunctionSymbol(
+                name=str(row["name"]),
+                address=address,
+                end=end,
+                size=end - address,
+            ),
+        )
+        existing_addresses.add(address)
     return FunctionManifest(
         image_name=resolved_image_name,
         image_base=_load_image_base(metadata_path),
