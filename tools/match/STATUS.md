@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 438/997 | 91046/386756 | 23.5% | 438/534 |
+| crimsonland.exe | 438/997 | 91046/386756 | 23.5% | 438/535 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**438/997** functions, **91046/386756** bytes (**23.5%**), **438/534** scratches verified.
+**438/997** functions, **91046/386756** bytes (**23.5%**), **438/535** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -551,6 +551,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | vec2_normalize_dispatch_init | 0x00452f1d | 13 | 3/3 | 100.00% | 3/3 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | lazy-vector-normalize-dispatch |
 | match | vec2_normalize_dispatch | 0x00452f2a | 6 | 1/1 | 100.00% | 1/1 | 1/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | vector-normalize-dispatch-thunk |
 | match | vec2_normalize_safe | 0x00455587 | 141 | 57/57 | 100.00% | 57/57 | 3/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | vector-safe-normalize |
+| wip | vec3_transform_coord | 0x0045eac0 | 139 | 54/37 | 17.58% | 0/37 | 0/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | 3dnow-vector-coordinate-transform |
 
 ## grim.dll
 
