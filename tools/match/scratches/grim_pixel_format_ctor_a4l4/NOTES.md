@@ -1,0 +1,6 @@
+# `grim_pixel_format_ctor_a4l4`
+
+Native target: `grim.dll` at `0x1001aee4` (28 bytes).
+
+This derived pixel-format constructor delegates `(desc, 8, 1)` to the common
+format base and installs the A4L4 vtable.

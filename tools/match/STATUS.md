@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**571/2172** functions matched, **110714/676653** code bytes (**16.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**608/2172** functions matched, **111722/676653** code bytes (**16.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
+| grim.dll | 169/1175 | 20455/289897 | 7.1% | 169/174 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**132/1175** functions, **19447/289897** bytes (**6.7%**), **132/137** scratches verified.
+**169/1175** functions, **20455/289897** bytes (**7.1%**), **169/174** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -697,3 +697,40 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_mouse_init | 0x1000a5a0 | 194 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
 | match | grim_mouse_poll | 0x1000a670 | 351 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
 | match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |
+| match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
+| match | grim_pixel_format_ctor_a8r8g8b8 | 0x1001a53c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r8g8b8-constructor |
+| match | grim_pixel_format_ctor_x8r8g8b8 | 0x1001a558 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x8r8g8b8-constructor |
+| match | grim_pixel_format_ctor_r5g6b5 | 0x1001a579 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r5g6b5-constructor |
+| match | grim_pixel_format_ctor_x1r5g5b5 | 0x1001a781 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x1r5g5b5-constructor |
+| match | grim_pixel_format_ctor_a1r5g5b5 | 0x1001a79d | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a1r5g5b5-constructor |
+| match | grim_pixel_format_ctor_a4r4g4b4 | 0x1001aa8a | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a4r4g4b4-constructor |
+| match | grim_pixel_format_ctor_r3g3b2 | 0x1001aaa6 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r3g3b2-constructor |
+| match | grim_pixel_format_ctor_a8 | 0x1001aac2 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8-constructor |
+| match | grim_pixel_format_ctor_a8r3g3b2 | 0x1001aade | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r3g3b2-constructor |
+| match | grim_pixel_format_ctor_x4r4g4b4 | 0x1001aafa | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x4r4g4b4-constructor |
+| match | grim_pixel_format_ctor_a2b10g10r10 | 0x1001aba3 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a2b10g10r10-constructor |
+| match | grim_pixel_format_ctor_g16r16 | 0x1001ac2e | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-g16r16-constructor |
+| match | grim_pixel_format_ctor_a8p8 | 0x1001ae3c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8p8-constructor |
+| match | grim_pixel_format_ctor_p8 | 0x1001ae74 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-p8-constructor |
+| match | grim_pixel_format_ctor_l8 | 0x1001ae90 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l8-constructor |
+| match | grim_pixel_format_ctor_a8l8 | 0x1001aeac | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8l8-constructor |
+| match | grim_pixel_format_ctor_a4l4 | 0x1001aee4 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a4l4-constructor |
+| match | grim_pixel_format_ctor_v8u8 | 0x1001b001 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-v8u8-constructor |
+| match | grim_pixel_format_ctor_l6v5u5 | 0x1001b01d | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l6v5u5-constructor |
+| match | grim_pixel_format_ctor_x8l8v8u8 | 0x1001b039 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x8l8v8u8-constructor |
+| match | grim_pixel_format_ctor_q8w8v8u8 | 0x1001b055 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-q8w8v8u8-constructor |
+| match | grim_pixel_format_ctor_v16u16 | 0x1001b071 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-v16u16-constructor |
+| match | grim_pixel_format_ctor_w11v11u10 | 0x1001b08d | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-w11v11u10-constructor |
+| match | grim_pixel_format_ctor_a2w10v10u10 | 0x1001b0a9 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a2w10v10u10-constructor |
+| match | grim_pixel_format_ctor_d16_lockable | 0x1001b0c5 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-d16_lockable-constructor |
+| match | grim_pixel_format_ctor_l16 | 0x1001b0e1 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-l16-constructor |
+| match | grim_pixel_format_ctor_al16 | 0x1001b3a6 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-al16-constructor |
+| match | grim_pixel_format_ctor_r16 | 0x1001b3c2 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r16-constructor |
+| match | grim_pixel_format_ctor_ar16 | 0x1001b3de | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-ar16-constructor |
+| match | grim_pixel_format_ctor_dxt1 | 0x1001b3fa | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt1-constructor |
+| match | grim_pixel_format_ctor_dxt2 | 0x1001b412 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt2-constructor |
+| match | grim_pixel_format_ctor_dxt3 | 0x1001b42a | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt3-constructor |
+| match | grim_pixel_format_ctor_dxt4 | 0x1001b442 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt4-constructor |
+| match | grim_pixel_format_ctor_dxt5 | 0x1001b45a | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt5-constructor |
+| match | grim_pixel_format_ctor_uyvy | 0x1001b4dc | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-uyvy-constructor |
+| match | grim_pixel_format_ctor_yuy2 | 0x1001b4f4 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-yuy2-constructor |
