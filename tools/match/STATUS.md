@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**567/2172** functions matched, **108710/676653** code bytes (**16.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**568/2172** functions matched, **110474/676653** code bytes (**16.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 435/997 | 89263/386756 | 23.1% | 435/531 |
+| crimsonland.exe | 436/997 | 91027/386756 | 23.5% | 436/532 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**435/997** functions, **89263/386756** bytes (**23.1%**), **435/531** scratches verified.
+**436/997** functions, **91027/386756** bytes (**23.5%**), **436/532** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -201,6 +201,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | ui_draw_textured_quad | 0x00417ae0 | 158 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
 | match | terrain_generate | 0x00417b80 | 1569 | 408/408 | 100.00% | 408/408 | 88/0/0 |  | terrain-render-target-scatter-generation |
+| match | terrain_generate_random | 0x004181b0 | 1764 | 465/465 | 100.00% | 465/465 | 110/0/0 |  | random-terrain-selector-and-scatter-generation |
 | match | terrain_render | 0x004188a0 | 693 | 200/200 | 100.00% | 200/200 | 32/0/0 |  | terrain-backbuffer-render |
 | wip | creature_render_type | 0x00418b60 | 2834 | 757/765 | 78.45% | 25/765 | 128/8/5 |  | creature-atlas-animation-tint-and-lifecycle-rendering |
 | match | creature_render_all | 0x00419680 | 1302 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |

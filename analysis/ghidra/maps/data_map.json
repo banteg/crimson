@@ -4841,6 +4841,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0048f53c",
+      "comment": "Three terrain texture selector indices randomized by terrain_generate_random, then fixed to {0, 1, 0} before generation.",
+      "name": "terrain_texture_selectors",
+      "program": "crimsonland.exe",
+      "type": "int[3]"
+    },
+    {
       "address": "0x0048f548",
       "comment": "Array of terrain texture handles. Indexed by quest_meta terrain_id fields (offsets 0x10/0x14/0x18) in terrain_generate.",
       "name": "terrain_texture_handles",
