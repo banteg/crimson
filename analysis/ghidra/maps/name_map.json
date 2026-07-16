@@ -8488,10 +8488,9 @@
   {
     "program": "grim.dll",
     "address": "0x10019ae8",
-    "name": "FUN_10019ae8",
-    "signature": "char* FUN_10019ae8(void* arg1, void* arg2, int arg3, uint arg4)",
-    "comment": "[binja] char* __thiscall sub_10019ae8(void* arg1, void* arg2, int32_t arg3, uint32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a8p8",
+    "signature": "void grim_pixel_format_read_a8p8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed A8P8 samples through the RGBA palette and replaces alpha from the high byte"
   },
   {
     "program": "grim.dll",
@@ -8510,18 +8509,16 @@
   {
     "program": "grim.dll",
     "address": "0x10019c41",
-    "name": "FUN_10019c41",
-    "signature": "char* FUN_10019c41(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019c41(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a8l8",
+    "signature": "void grim_pixel_format_read_a8l8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed A8L8 samples into luminance RGB and alpha floats"
   },
   {
     "program": "grim.dll",
     "address": "0x10019cca",
-    "name": "FUN_10019cca",
-    "signature": "char* FUN_10019cca(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019cca(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a4l4",
+    "signature": "void grim_pixel_format_read_a4l4(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed A4L4 nibbles into luminance RGB and alpha floats"
   },
   {
     "program": "grim.dll",

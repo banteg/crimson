@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**626/2173** functions matched, **113470/676681** code bytes (**16.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**629/2173** functions matched, **113879/676681** code bytes (**16.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 187/1176 | 22203/289925 | 7.7% | 187/195 |
+| grim.dll | 190/1176 | 22612/289925 | 7.8% | 190/198 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**187/1176** functions, **22203/289925** bytes (**7.7%**), **187/195** scratches verified.
+**190/1176** functions, **22612/289925** bytes (**7.8%**), **190/198** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -704,8 +704,11 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | grim_pixel_format_destroy_dxt | 0x10016c3c | 160 | 51/49 | 66.00% | 6/49 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- /GX | grim-dxt-cache-destruction |
 | wip | grim_pixel_format_quantize_color_key | 0x100173dc | 204 | 74/74 | 95.95% | 7/74 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-color-key-roundtrip |
 | match | grim_pixel_format_read_a8 | 0x10019925 | 114 | 41/41 | 100.00% | 41/41 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a8-row-reader |
+| match | grim_pixel_format_read_a8p8 | 0x10019ae8 | 135 | 51/51 | 100.00% | 51/51 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a8p8-palette-row-reader |
 | match | grim_pixel_format_read_p8 | 0x10019b6f | 100 | 38/38 | 100.00% | 38/38 | 1/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-p8-palette-row-reader |
 | match | grim_pixel_format_read_l8 | 0x10019bd3 | 110 | 39/39 | 100.00% | 39/39 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-l8-row-reader |
+| match | grim_pixel_format_read_a8l8 | 0x10019c41 | 137 | 49/49 | 100.00% | 49/49 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a8l8-row-reader |
+| match | grim_pixel_format_read_a4l4 | 0x10019cca | 137 | 50/50 | 100.00% | 50/50 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a4l4-row-reader |
 | match | grim_pixel_format_read_unorm16 | 0x1001a1be | 112 | 40/40 | 100.00% | 40/40 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-unorm16-row-reader |
 | match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
 | match | grim_pixel_format_init_yuv | 0x1001a444 | 248 | 69/69 | 100.00% | 69/69 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-format-base-constructor |
