@@ -24,5 +24,8 @@ char highscore_record_equals(
     if (left->shots_fired != right->shots_fired) {
         return 0;
     }
-    return strcmp(left->player_name, right->player_name) == 0;
+    if (strcmp(left->player_name, right->player_name) != 0) {
+        return 0;
+    }
+    return 1;
 }
