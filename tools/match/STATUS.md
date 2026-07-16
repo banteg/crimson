@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**561/2172** functions matched, **103165/676653** code bytes (**15.2%**). Byte totals are manifest function extents with terminal padding trimmed.
+**562/2172** functions matched, **105241/676653** code bytes (**15.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/523 |
+| crimsonland.exe | 430/997 | 85794/386756 | 22.2% | 430/524 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**429/997** functions, **83718/386756** bytes (**21.6%**), **429/523** scratches verified.
+**430/997** functions, **85794/386756** bytes (**22.2%**), **430/524** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -298,6 +298,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | fx_queue_add_random | 0x00427700 | 291 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
 | match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |
+| match | fx_queue_render | 0x00427920 | 2076 | 543/543 | 100.00% | 543/543 | 162/0/0 |  | terrain-fx-and-corpse-render-passes |
 | match | creature_alloc_slot | 0x00428140 | 145 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |
 | match | creature_reset_all | 0x004281e0 | 46 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
