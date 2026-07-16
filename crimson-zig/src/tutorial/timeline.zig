@@ -53,16 +53,16 @@ const tutorial_stage_text = [_][]const u8{
     "Now pick up the bonuses by walking over them",
     "Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot.",
     "Now, move the mouse to aim at the monsters",
-    "It will help you to move and shoot at the same time. Just keep moving!",
-    "Now let's learn about Perks. You'll receive a perk when you gain enough experience points.",
-    "Perks can give you extra abilities, or boost your skills. Choose wisely!",
-    "Great! Now you are ready to start playing Crimsonland",
+    "It will help you to move and shoot and aim at the same time, so practice!",
+    "Now let's learn about Perks. You can pick a Perk by clicking\nthe 'level up' sign at the upper right corner of the screen.",
+    "Perks can give you extra abilities that help\nyou survive in Crimsonland.",
+    "Great! Now you are ready to start playing Crimsonland!",
 };
 
 const tutorial_hint_text = [_][]const u8{
-    "This is the speed powerup, it makes you move faster!",
-    "This is a weapon powerup. Picking it up gives you a new weapon.",
-    "This powerup doubles all experience points you gain while it's active.",
+    "This is the speed powerup, it makes you move faster for\na limited amount of time.",
+    "This is a weapon powerup. Picking it up gets\nyou another weapon. This one is a submachine gun.",
+    "This powerup doubles all experience points gained when\nx2 powerup is active.",
     "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
     "Reflex Boost powerup slows down time giving you a chance to react better",
     "",
@@ -70,9 +70,9 @@ const tutorial_hint_text = [_][]const u8{
 };
 
 const tutorial_hint_text_bugs = [_][]const u8{
-    "This is the speed powerup, it makes you move faster!",
-    "This is a weapon powerup. Picking it you gets a new weapon.",
-    "This powerup doubles all experience points you gain while it's active.",
+    "This is the speed powerup, it makes you move faster for\na limited amount of time.",
+    "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun.",
+    "This powerup doubles all experience points gained when\nx2 powerup is active.",
     "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
     "Reflex Boost powerup slows down time giving you a chance to react better",
     "",
@@ -320,6 +320,50 @@ pub fn tickTutorialTimeline(
         .state = state,
         .actions = actions,
     };
+}
+
+test "tutorial copy preserves the native script" {
+    try std.testing.expectEqualStrings(
+        "It will help you to move and shoot and aim at the same time, so practice!",
+        promptText(5),
+    );
+    try std.testing.expectEqualStrings(
+        "Now let's learn about Perks. You can pick a Perk by clicking\nthe 'level up' sign at the upper right corner of the screen.",
+        promptText(6),
+    );
+    try std.testing.expectEqualStrings(
+        "Perks can give you extra abilities that help\nyou survive in Crimsonland.",
+        promptText(7),
+    );
+    try std.testing.expectEqualStrings(
+        "Great! Now you are ready to start playing Crimsonland!",
+        promptText(8),
+    );
+
+    try std.testing.expectEqualStrings(
+        "This is the speed powerup, it makes you move faster for\na limited amount of time.",
+        hintText(0, true),
+    );
+    try std.testing.expectEqualStrings(
+        "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun.",
+        hintText(1, true),
+    );
+    try std.testing.expectEqualStrings(
+        "This powerup doubles all experience points gained when\nx2 powerup is active.",
+        hintText(2, true),
+    );
+    try std.testing.expectEqualStrings(
+        "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
+        hintText(3, true),
+    );
+    try std.testing.expectEqualStrings(
+        "This is a weapon powerup. Picking it up gets\nyou another weapon. This one is a submachine gun.",
+        hintText(1, false),
+    );
+    try std.testing.expectEqualStrings(
+        "This is the nuke powerup, picking it up causes a huge\nexplosion harming all monsters nearby!",
+        hintText(3, false),
+    );
 }
 
 test "tutorial stage 1 movement spawns three point bonuses" {
