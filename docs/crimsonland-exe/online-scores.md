@@ -39,7 +39,7 @@ High scores:
 - Host: `scores.crimsonland.com`
 - Port: `80`
 - Method: `POST`
-- Path: `/scoringv27.php`
+- Path: `/scoring_v2_7.php`
 - HTTP version: `HTTP/1.1`
 - Referrer: `none`
 - Accept types array includes:
@@ -120,10 +120,12 @@ The client reads the HTTP response body and expects a binary payload:
 
 - The client validates `payload_len - 3 == (count_a + count_b) * 0x44`.
 - Each record is `0x44` bytes (bytes `0x00..0x43` of the high score record).
-- For each record, the client pads the tail before saving:
-  - `record[0x44] = 0` (flags)
-  - `record[0x46] = 0x7c` (`'|'` sentinel)
-  - `record[0x47] = 0xff`
+- Before parsing, the client prepares a reusable local record with the native
+  tail sentinels. For each `0x44`-byte response record it then:
+  - copies bytes `0x00..0x43` from the response;
+  - sets `record[0x44] = 1` (flags);
+  - sets `record[0x45] = 0x75` in hardcore mode, otherwise `0`;
+  - preserves `record[0x46] = 0x7c` (`'|'`) and `record[0x47] = 0xff`.
 - Records are saved via `highscore_save_record` (`0x0043b450`).
 
 Note: The response record size (0x44) includes bytes `0x40..0x43` (date fields),
@@ -133,7 +135,9 @@ not critical for correctness.
 ## Practical server notes
 
 - The client expects raw binary bodies, not JSON or text.
-- Mismatched length or missing `0x15` magic will be logged as invalid feedback.
+- A mismatched record length is a hard receive failure. A missing `0x15` magic
+  byte is logged as invalid feedback, but the native worker still follows its
+  success/status path after printing the response diagnostics.
 - The simplest compatible response is:
   - `0x15`, `count_a`, `count_b`, then `0x44 * (count_a + count_b)` bytes.
   - You can return zero records by sending three bytes: `0x15 0x00 0x00`.
