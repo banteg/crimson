@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 427/997 | 82198/386756 | 21.3% | 427/517 |
+| crimsonland.exe | 427/997 | 82198/386756 | 21.3% | 427/518 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**427/997** functions, **82198/386756** bytes (**21.3%**), **427/517** scratches verified.
+**427/997** functions, **82198/386756** bytes (**21.3%**), **427/518** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -318,6 +318,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | startup_audio_load_thread | 0x0042b250 | 63 | 14/14 | 100.00% | 14/14 | 11/0/0 |  | startup-audio-thread |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
+| wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 371/361 | 69.95% | 21/361 | 101/1/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | effect_init_entry | 0x0042de80 | 143 | 36/36 | 100.00% | 36/36 | 0/0/0 |  | gameplay-effect-pool |
