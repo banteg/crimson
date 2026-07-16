@@ -9188,7 +9188,7 @@
     "program": "grim.dll",
     "address": "0x1002065a",
     "name": "grim_dxt_unpremultiply_rgba_block",
-    "signature": "int grim_dxt_unpremultiply_rgba_block(float *rgba)",
+    "signature": "int __fastcall grim_dxt_unpremultiply_rgba_block(float *rgba)",
     "comment": "divides rgb by alpha for a 4x4 RGBA block"
   },
   {
@@ -9279,14 +9279,14 @@
     "program": "grim.dll",
     "address": "0x10022114",
     "name": "grim_dxt2_decode_block",
-    "signature": "int grim_dxt2_decode_block(float *out_rgba, void *block)",
+    "signature": "int grim_dxt2_decode_block(float *out_rgba, unsigned int *block)",
     "comment": "decodes a DXT3-style block and removes DXT2 premultiplication"
   },
   {
     "program": "grim.dll",
     "address": "0x10022137",
     "name": "grim_dxt4_decode_block",
-    "signature": "int grim_dxt4_decode_block(float *out_rgba, void *block)",
+    "signature": "int grim_dxt4_decode_block(float *out_rgba, unsigned int *block)",
     "comment": "decodes a DXT5-style block and removes DXT4 premultiplication"
   },
   {
