@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**614/2172** functions matched, **112596/676653** code bytes (**16.6%**). Byte totals are manifest function extents with terminal padding trimmed.
+**616/2172** functions matched, **112697/676653** code bytes (**16.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 175/1175 | 21329/289897 | 7.4% | 175/180 |
+| grim.dll | 177/1175 | 21430/289897 | 7.4% | 177/182 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**175/1175** functions, **21329/289897** bytes (**7.4%**), **175/180** scratches verified.
+**177/1175** functions, **21430/289897** bytes (**7.4%**), **177/182** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -738,5 +738,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_ctor_dxt3 | 0x1001b42a | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt3-constructor |
 | match | grim_pixel_format_ctor_dxt4 | 0x1001b442 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt4-constructor |
 | match | grim_pixel_format_ctor_dxt5 | 0x1001b45a | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-dxt5-constructor |
+| match | grim_pixel_format_destroy_yuv | 0x1001b493 | 73 | 23/23 | 100.00% | 23/23 | 6/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-cache-destruction |
 | match | grim_pixel_format_ctor_uyvy | 0x1001b4dc | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-uyvy-constructor |
 | match | grim_pixel_format_ctor_yuy2 | 0x1001b4f4 | 24 | 8/8 | 100.00% | 8/8 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-yuy2-constructor |
+| match | grim_pixel_format_scalar_deleting_destroy_yuv | 0x1001bc84 | 28 | 11/11 | 100.00% | 11/11 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-scalar-deleting-destructor |

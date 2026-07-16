@@ -8922,10 +8922,9 @@
   {
     "program": "grim.dll",
     "address": "0x1001b493",
-    "name": "FUN_1001b493",
-    "signature": "int FUN_1001b493(void*** arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1001b493(void*** arg1)",
-    "create": false
+    "name": "grim_pixel_format_destroy_yuv",
+    "signature": "void grim_pixel_format_destroy_yuv(void *this)",
+    "comment": "flushes and frees the shared UYVY/YUY2 cache before base destruction"
   },
   {
     "program": "grim.dll",
@@ -8951,10 +8950,16 @@
   {
     "program": "grim.dll",
     "address": "0x1001bc84",
-    "name": "FUN_1001bc84",
-    "signature": "void*** FUN_1001bc84(void*** arg1, char arg2)",
-    "comment": "[binja] void*** __thiscall sub_1001bc84(void*** arg1, char arg2)",
-    "create": false
+    "name": "grim_pixel_format_scalar_deleting_destroy_yuv",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_yuv(void *this, unsigned int flags)",
+    "comment": "scalar deleting destructor shared by the UYVY and YUY2 subclasses"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bca0",
+    "name": "j_grim_pixel_format_destroy_yuv",
+    "signature": "void j_grim_pixel_format_destroy_yuv(void *this)",
+    "comment": "tail thunk to the shared UYVY/YUY2 regular destructor"
   },
   {
     "program": "grim.dll",
@@ -9803,6 +9808,13 @@
     "name": "grim_pixel_format_init_yuv_eh_handler",
     "signature": "void grim_pixel_format_init_yuv_eh_handler(void)",
     "comment": "compiler-generated exception-handler thunk for the shared YUV constructor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004ba59",
+    "name": "grim_pixel_format_destroy_yuv_eh_handler",
+    "signature": "void grim_pixel_format_destroy_yuv_eh_handler(void)",
+    "comment": "compiler-generated exception-handler thunk for the shared YUV destructor"
   },
   {
     "program": "grim.dll",
