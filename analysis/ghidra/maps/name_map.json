@@ -8579,26 +8579,23 @@
   {
     "program": "grim.dll",
     "address": "0x1001a22e",
-    "name": "FUN_1001a22e",
-    "signature": "int* FUN_1001a22e(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t* __thiscall sub_1001a22e(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_al16",
+    "signature": "void grim_pixel_format_read_al16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed 16-bit luminance and alpha channels into RGBA float pixels"
   },
   {
     "program": "grim.dll",
     "address": "0x1001a2bc",
-    "name": "FUN_1001a2bc",
-    "signature": "void* FUN_1001a2bc(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] void* __thiscall sub_1001a2bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_r16",
+    "signature": "void grim_pixel_format_read_r16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands 48-bit B16G16R16 rows into RGB1 float pixels"
   },
   {
     "program": "grim.dll",
     "address": "0x1001a348",
-    "name": "FUN_1001a348",
-    "signature": "uint FUN_1001a348(uint arg1, uint arg2, int arg3, uint arg4)",
-    "comment": "[binja] uint32_t __thiscall sub_1001a348(uint32_t arg1, uint32_t arg2, int32_t arg3, uint32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_ar16",
+    "signature": "void grim_pixel_format_read_ar16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed A16B16G16R16 words into RGBA float pixels"
   },
   {
     "program": "grim.dll",
