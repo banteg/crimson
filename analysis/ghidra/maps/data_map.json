@@ -9735,6 +9735,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x10054398",
+      "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
+      "name": "grim_dither_half_pattern",
+      "program": "grim.dll",
+      "type": "float[32]"
+    },
+    {
       "address": "0x10059768",
       "comment": "Frame delta time (seconds) used for input decay.",
       "name": "grim_frame_dt",

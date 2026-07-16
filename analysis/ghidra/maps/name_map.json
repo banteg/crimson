@@ -8131,10 +8131,9 @@
   {
     "program": "grim.dll",
     "address": "0x100173dc",
-    "name": "FUN_100173dc",
-    "signature": "int FUN_100173dc(int* arg1)",
-    "comment": "[binja] int32_t __fastcall sub_100173dc(int32_t* arg1)",
-    "create": false
+    "name": "grim_pixel_format_quantize_color_key",
+    "signature": "void grim_pixel_format_quantize_color_key(void *this)",
+    "comment": "round-trips the RGBA color key through a neutral-dither one-pixel buffer in the format's working color space"
   },
   {
     "program": "grim.dll",

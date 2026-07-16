@@ -9,7 +9,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 181/1176 | 21515/289925 | 7.4% | 181/188 |
+| grim.dll | 181/1176 | 21515/289925 | 7.4% | 181/189 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**181/1176** functions, **21515/289925** bytes (**7.4%**), **181/188** scratches verified.
+**181/1176** functions, **21515/289925** bytes (**7.4%**), **181/189** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -702,6 +702,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_vertex_space_converter_destroy | 0x1001692e | 19 | 5/5 | 100.00% | 5/5 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | grim-converted-vertex-buffer-destruction |
 | match | grim_pixel_format_quantize_color_key_yuv | 0x10016c3b | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-yuv-color-key-noop |
 | wip | grim_pixel_format_destroy_dxt | 0x10016c3c | 160 | 51/49 | 66.00% | 6/49 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- /GX | grim-dxt-cache-destruction |
+| wip | grim_pixel_format_quantize_color_key | 0x100173dc | 204 | 74/74 | 95.95% | 7/74 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-color-key-roundtrip |
 | match | grim_pixel_format_ctor_r8g8b8 | 0x1001a428 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-r8g8b8-constructor |
 | match | grim_pixel_format_init_yuv | 0x1001a444 | 248 | 69/69 | 100.00% | 69/69 | 7/0/0 | msvc6.5pp /O1 /Oi /G6 /Ob0 /W3 /GR- /GX | grim-yuv-format-base-constructor |
 | match | grim_pixel_format_ctor_a8r8g8b8 | 0x1001a53c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r8g8b8-constructor |
