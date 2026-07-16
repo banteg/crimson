@@ -288,6 +288,7 @@ void bonus_metadata_init(void);
 void game_state_set(game_state_id_t state);
 void gameplay_render_world(void);
 void terrain_render(void);
+void terrain_generate(quest_meta_t *quest);
 void ui_elements_update_and_render(void);
 void perk_prompt_update_and_render(void);
 void ui_cursor_render(void);

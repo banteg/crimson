@@ -1446,7 +1446,7 @@
     "program": "crimsonland.exe",
     "address": "0x00417b80",
     "name": "terrain_generate",
-    "signature": "void terrain_generate(void *desc)",
+    "signature": "void terrain_generate(quest_meta_t *quest)",
     "comment": "generates terrain texture into a render target using a level descriptor"
   },
   {
