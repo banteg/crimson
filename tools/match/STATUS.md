@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/521 |
+| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/522 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**429/997** functions, **83718/386756** bytes (**21.6%**), **429/521** scratches verified.
+**429/997** functions, **83718/386756** bytes (**21.6%**), **429/522** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -511,6 +511,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_get_element_index | 0x00446150 | 31 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | ui-element-index |
 | match | ui_elements_reset_state | 0x00446170 | 31 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | ui-element-state-reset |
 | match | ui_elements_max_timeline | 0x00446190 | 35 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | ui-element-timeline-extent |
+| wip | game_state_set | 0x004461c0 | 1854 | 393/399 | 85.35% | 166/399 | 161/1/0 |  | game-state-ui-transition-dispatch |
 | match | ui_element_update | 0x00446900 | 831 | 226/226 | 100.00% | 226/226 | 29/0/0 |  | ui-element-interaction-and-transition |
 | match | ui_menu_main_click_mods | 0x00447350 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
 | match | ui_menu_main_click_options | 0x00447370 | 18 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | ui-menu-state-callback |
