@@ -8559,18 +8559,16 @@
   {
     "program": "grim.dll",
     "address": "0x1001a031",
-    "name": "FUN_1001a031",
-    "signature": "int* FUN_1001a031(void* arg1, uint arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t* __thiscall sub_1001a031(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_w11v11u10",
+    "signature": "void grim_pixel_format_read_w11v11u10(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed signed W11V11U10 channels into XYZ1 float vectors"
   },
   {
     "program": "grim.dll",
     "address": "0x1001a0eb",
-    "name": "FUN_1001a0eb",
-    "signature": "int* FUN_1001a0eb(void* arg1, uint arg2, int arg3, int arg4)",
-    "comment": "[binja] int32_t* __thiscall sub_1001a0eb(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_a2w10v10u10",
+    "signature": "void grim_pixel_format_read_a2w10v10u10(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed signed W10V10U10 and unsigned A2 channels into float vectors"
   },
   {
     "program": "grim.dll",

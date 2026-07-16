@@ -10955,6 +10955,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x1004ca2c",
+      "comment": "Single-precision 2^32 correction used by MSVC unsigned integer to x87 conversion paths.",
+      "name": "grim_uint32_float_bias",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb48",
+      "comment": "Single-precision reciprocal of 3 used for UNORM2 alpha expansion.",
+      "name": "grim_unorm2_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1004caf4",
       "comment": "Single-precision reciprocal of 255 used for UNORM8 channel expansion.",
       "name": "grim_unorm8_scale",
@@ -10986,6 +11000,20 @@
       "address": "0x1004cb60",
       "comment": "Single-precision reciprocal of 32768 used for SNORM16 component expansion.",
       "name": "grim_snorm16_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb64",
+      "comment": "Single-precision reciprocal of 512 used for signed 10-bit component expansion.",
+      "name": "grim_snorm10_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb68",
+      "comment": "Single-precision reciprocal of 1024 used for signed 11-bit component expansion.",
+      "name": "grim_snorm11_scale",
       "program": "grim.dll",
       "type": "float"
     },
