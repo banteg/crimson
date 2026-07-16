@@ -10,12 +10,13 @@ log chain, and draws a sine-squared blinking caret in either mono or small-font
 mode.
 
 The natural VC6 reconstruction has the same 400-instruction extent and a
-94.75% order-sensitive score. All 61 aligned references resolve. The remaining
-code delta is register allocation: native keeps the visible-line count in
-`EBP` and the text Y coordinate or temporary vtable in `EBX`, while the current
-source assigns those two roles in the opposite order. The only non-register
-spelling difference is native `add eax, -2` versus candidate `sub eax, 2` when
-recomputing the visible-line bound.
+99.50% order-sensitive score. All 61 aligned references resolve. Expressing
+the first visible-line selection as an explicit ternary minimum, with the log
+node declared between the bound and selection, reproduces the native `EBP`
+visible-line count, `EBX` text-Y/vtable role, and complete instruction order.
+The only remaining delta is two equivalent opcode spellings: native uses
+`add eax, -2` while VC6 emits `sub eax, 2` for each source-level
+`height / 16 - 2` bound.
 
 The background and border reuse one ordinary two-float position and one
 four-float color value, which reproduces the native 28-byte local frame. The

@@ -62,11 +62,12 @@ void console_queue_t::render(void)
 {
     if ((float)-height < slide_y) {
         int line_y;
-        int visible_lines = height / 16 - 2;
+        int visible_line_limit = height / 16 - 2;
         console_log_node_t *node = log_head;
-        if (log_count <= visible_lines) {
-            visible_lines = log_count;
-        }
+        int visible_lines =
+            log_count > visible_line_limit
+                ? visible_line_limit
+                : log_count;
 
         float ratio = ((float)height + slide_y) / (float)height;
         if (ratio > 1.0f) {
