@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**620/2173** functions matched, **112782/676681** code bytes (**16.7%**). Byte totals are manifest function extents with terminal padding trimmed.
+**622/2173** functions matched, **113034/676681** code bytes (**16.7%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 181/1176 | 21515/289925 | 7.4% | 181/189 |
+| grim.dll | 183/1176 | 21767/289925 | 7.5% | 183/191 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**181/1176** functions, **21515/289925** bytes (**7.4%**), **181/189** scratches verified.
+**183/1176** functions, **21767/289925** bytes (**7.5%**), **183/191** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -715,7 +715,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_ctor_a8 | 0x1001aac2 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8-constructor |
 | match | grim_pixel_format_ctor_a8r3g3b2 | 0x1001aade | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8r3g3b2-constructor |
 | match | grim_pixel_format_ctor_x4r4g4b4 | 0x1001aafa | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-x4r4g4b4-constructor |
+| match | grim_pixel_format_write_yuv_cache | 0x1001ab16 | 141 | 45/45 | 100.00% | 45/45 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-yuv-cache-write |
 | match | grim_pixel_format_ctor_a2b10g10r10 | 0x1001aba3 | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a2b10g10r10-constructor |
+| match | grim_pixel_format_read_yuv_cache | 0x1001abbf | 111 | 37/37 | 100.00% | 37/37 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-yuv-cache-read |
 | match | grim_pixel_format_ctor_g16r16 | 0x1001ac2e | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-g16r16-constructor |
 | match | grim_pixel_format_init_dxt | 0x1001ac4a | 498 | 109/109 | 100.00% | 109/109 | 12/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-dxt-format-base-constructor |
 | match | grim_pixel_format_ctor_a8p8 | 0x1001ae3c | 28 | 10/10 | 100.00% | 10/10 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-pixel-format-a8p8-constructor |

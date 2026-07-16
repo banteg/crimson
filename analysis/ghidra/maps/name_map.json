@@ -8720,6 +8720,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001abbf",
+    "name": "grim_pixel_format_read_yuv_cache",
+    "signature": "void grim_pixel_format_read_yuv_cache(void *this, unsigned int x, unsigned int y, float *pixels)",
+    "comment": "loads the packed YUV cache window, copies its RGBA floats to the caller, and applies the active color key"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001ac2e",
     "name": "grim_pixel_format_ctor_g16r16",
     "signature": "void * grim_pixel_format_ctor_g16r16(void *this, uint *desc)",
