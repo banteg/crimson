@@ -1517,8 +1517,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041a8b0",
     "name": "bonus_hud_slot_update_and_render",
-    "signature": "void bonus_hud_slot_update_and_render(float *xy, int slot)",
-    "comment": "updates bonus HUD slot animation and renders icon/timers"
+    "signature": "void bonus_hud_slot_update_and_render(float *y, int slot, float transition_alpha)",
+    "comment": "updates bonus HUD slot animation and renders icon/timers using the caller-supplied transition alpha"
   },
   {
     "program": "crimsonland.exe",

@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/522 |
+| crimsonland.exe | 429/997 | 83718/386756 | 21.6% | 429/523 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**429/997** functions, **83718/386756** bytes (**21.6%**), **429/522** scratches verified.
+**429/997** functions, **83718/386756** bytes (**21.6%**), **429/523** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -207,6 +207,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_hud_slot_table_global_init_thunk | 0x0041a7c0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-hud-slot-table-global-init-thunk |
 | match | bonus_hud_slot_table_global_init | 0x0041a7d0 | 56 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | bonus-hud-slot-table-global-constructor |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
+| wip | bonus_hud_slot_update_and_render | 0x0041a8b0 | 1566 | 407/405 | 77.83% | 5/405 | 69/0/0 |  | bonus-hud-slot-animation-and-rendering |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
 | match | dx_get_version | 0x0041ccb0 | 251 | 106/106 | 100.00% | 106/106 | 7/0/0 |  | directx-version-query-and-format |
 | match | dx_get_version_from_dxdiag | 0x0041cdb0 | 556 | 190/190 | 100.00% | 190/190 | 12/0/0 |  | directx-dxdiag-com-version-probe |
