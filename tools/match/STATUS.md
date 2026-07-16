@@ -2,14 +2,14 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**648/2173** functions matched, **117016/676681** code bytes (**17.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**651/2173** functions matched, **117515/676681** code bytes (**17.4%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
 | crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
-| grim.dll | 209/1176 | 25749/289925 | 8.9% | 209/217 |
+| grim.dll | 212/1176 | 26248/289925 | 9.1% | 212/220 |
 
 ## crimsonland.exe
 
@@ -556,7 +556,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**209/1176** functions, **25749/289925** bytes (**8.9%**), **209/217** scratches verified.
+**212/1176** functions, **26248/289925** bytes (**9.1%**), **212/220** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -712,7 +712,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | grim_pixel_format_read_a4r4g4b4 | 0x1001966c | 175 | 64/64 | 100.00% | 64/64 | 2/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-a4r4g4b4-row-reader |
 | match | grim_pixel_format_read_a2b10g10r10 | 0x1001971b | 214 | 73/73 | 100.00% | 73/73 | 7/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-a2b10g10r10-row-reader |
 | match | grim_pixel_format_read_g16r16 | 0x100197f1 | 146 | 50/50 | 100.00% | 50/50 | 3/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-g16r16-row-reader |
+| match | grim_pixel_format_read_r3g3b2 | 0x10019883 | 162 | 58/58 | 100.00% | 58/58 | 3/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-r3g3b2-row-reader |
 | match | grim_pixel_format_read_a8 | 0x10019925 | 114 | 41/41 | 100.00% | 41/41 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a8-row-reader |
+| match | grim_pixel_format_read_a8r3g3b2 | 0x10019997 | 178 | 63/63 | 100.00% | 63/63 | 4/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-a8r3g3b2-row-reader |
+| match | grim_pixel_format_read_x4r4g4b4 | 0x10019a49 | 159 | 59/59 | 100.00% | 59/59 | 2/0/0 | msvc7.0 /O1 /Oi /G6 /W3 /GR- | grim-x4r4g4b4-row-reader |
 | match | grim_pixel_format_read_a8p8 | 0x10019ae8 | 135 | 51/51 | 100.00% | 51/51 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-a8p8-palette-row-reader |
 | match | grim_pixel_format_read_p8 | 0x10019b6f | 100 | 38/38 | 100.00% | 38/38 | 1/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-p8-palette-row-reader |
 | match | grim_pixel_format_read_l8 | 0x10019bd3 | 110 | 39/39 | 100.00% | 39/39 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | grim-l8-row-reader |

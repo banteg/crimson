@@ -11011,6 +11011,13 @@
       "type": "float"
     },
     {
+      "address": "0x1004cb54",
+      "comment": "Single-precision reciprocal of 7 used for UNORM3 channel expansion.",
+      "name": "grim_unorm3_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1004cb58",
       "comment": "Single-precision reciprocal of 128 used for SNORM8 component expansion.",
       "name": "grim_snorm8_scale",
