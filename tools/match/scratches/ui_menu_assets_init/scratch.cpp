@@ -19,6 +19,7 @@ struct ui_menu_vec2_t {
         y += other.y;
         return *this;
     }
+
 };
 
 struct ui_menu_vertex_t {
@@ -28,6 +29,10 @@ struct ui_menu_vertex_t {
     unsigned int color;
     float u;
     float v;
+
+    ui_menu_vertex_t()
+    {
+    }
 };
 
 struct ui_menu_template_t {
@@ -39,8 +44,7 @@ struct ui_menu_template_t {
 extern "C" ui_menu_template_t ui_sign_crimson_template;
 extern "C" ui_menu_template_t ui_menu_item_element;
 extern "C" ui_menu_template_t ui_menu_panel_template;
-extern "C" ui_menu_template_t ui_menu_item_subtemplate_block_01;
-extern "C" ui_menu_template_t ui_menu_item_subtemplate_block_02;
+extern "C" ui_menu_template_t ui_menu_item_subtemplate_block_01[6];
 
 extern "C" void ui_menu_layout_init(void);
 
@@ -81,39 +85,35 @@ extern "C" void ui_menu_assets_init(void)
         256.0f,
         &offset.x);
 
-    ui_menu_item_subtemplate_block_01 = ui_menu_panel_template;
-    ui_menu_item_subtemplate_block_01.quad_mode = 8;
-    ui_menu_item_subtemplate_block_01.slots[7] =
-        ui_menu_item_subtemplate_block_01.slots[3];
-    ui_menu_item_subtemplate_block_01.slots[6] =
-        ui_menu_item_subtemplate_block_01.slots[2];
+    ui_menu_template_t *subtemplates = ui_menu_item_subtemplate_block_01;
+    subtemplates[0] = ui_menu_panel_template;
+    subtemplates[0].quad_mode = 8;
+    subtemplates[0].slots[7] = subtemplates[0].slots[3];
+    subtemplates[0].slots[6] = subtemplates[0].slots[2];
 
-    ui_menu_item_subtemplate_block_01.slots[2].position.y -= 116.0f;
-    ui_menu_item_subtemplate_block_01.slots[3].position.y -= 116.0f;
-    ui_menu_item_subtemplate_block_01.slots[2].v = 0.5078125f;
-    ui_menu_item_subtemplate_block_01.slots[3].v = 0.5078125f;
+    subtemplates[0].slots[2].position.y -= 116.0f;
+    subtemplates[0].slots[3].position.y -= 116.0f;
+    subtemplates[0].slots[2].v = 0.5078125f;
+    subtemplates[0].slots[3].v = 0.5078125f;
 
-    ui_menu_item_subtemplate_block_01.slots[4] =
-        ui_menu_item_subtemplate_block_01.slots[3];
-    ui_menu_item_subtemplate_block_01.slots[5] =
-        ui_menu_item_subtemplate_block_01.slots[2];
-    ui_menu_item_subtemplate_block_01.slots[4].position.y += 124.0f;
-    ui_menu_item_subtemplate_block_01.slots[5].position.y += 124.0f;
-    ui_menu_item_subtemplate_block_01.slots[4].v = 0.5859375f;
-    ui_menu_item_subtemplate_block_01.slots[5].v = 0.5859375f;
-    ui_menu_item_subtemplate_block_01.slots[6].position.y += 124.0f;
-    ui_menu_item_subtemplate_block_01.slots[7].position.y += 124.0f;
+    subtemplates[0].slots[4] = subtemplates[0].slots[3];
+    subtemplates[0].slots[5] = subtemplates[0].slots[2];
+    subtemplates[0].slots[4].position.y += 124.0f;
+    subtemplates[0].slots[5].position.y += 124.0f;
+    subtemplates[0].slots[4].v = 0.5859375f;
+    subtemplates[0].slots[5].v = 0.5859375f;
+    subtemplates[0].slots[6].position.y += 124.0f;
+    subtemplates[0].slots[7].position.y += 124.0f;
 
     for (int i = 0; i < 8; ++i) {
-        ui_menu_item_subtemplate_block_01.slots[i].position +=
-            ui_menu_vec2_t(-84.0f, 0.0f);
+        subtemplates[0].slots[i].position += ui_menu_vec2_t(-84.0f, 0.0f);
     }
 
-    ui_menu_item_subtemplate_block_02 = ui_menu_item_subtemplate_block_01;
-    ui_menu_item_subtemplate_block_02.slots[4].position.y -= 100.0f;
-    ui_menu_item_subtemplate_block_02.slots[5].position.y -= 100.0f;
-    ui_menu_item_subtemplate_block_02.slots[6].position.y -= 100.0f;
-    ui_menu_item_subtemplate_block_02.slots[7].position.y -= 100.0f;
+    subtemplates[1] = subtemplates[0];
+    subtemplates[1].slots[4].position.y -= 100.0f;
+    subtemplates[1].slots[5].position.y -= 100.0f;
+    subtemplates[1].slots[6].position.y -= 100.0f;
+    subtemplates[1].slots[7].position.y -= 100.0f;
 
     ui_menu_layout_init();
 }

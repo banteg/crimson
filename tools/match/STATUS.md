@@ -199,7 +199,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_render_all | 0x00419680 | 1302 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
 | wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
-| wip | ui_menu_assets_init | 0x00419dd0 | 551 | 110/110 | 98.18% | 89/110 | 62/0/2 |  | ui-menu-template-assets |
+| audit | ui_menu_assets_init | 0x00419dd0 | 551 | 110/110 | 100.00% | 110/110 | 64/0/2 |  | ui-menu-template-assets |
 | wip | ui_cursor_render | 0x0041a040 | 730 | 177/177 | 98.87% | 158/177 | 57/0/0 |  | ui-cursor-particle-renderer |
 | match | ui_render_aim_enhancement | 0x0041a320 | 518 | 131/131 | 100.00% | 131/131 | 35/0/0 |  | ui-aim-enhancement-overlay |
 | match | ui_elements_update_and_render | 0x0041a530 | 409 | 103/103 | 100.00% | 103/103 | 41/0/0 |  | ui-transition-update-render |
