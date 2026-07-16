@@ -8523,10 +8523,9 @@
   {
     "program": "grim.dll",
     "address": "0x10019d53",
-    "name": "FUN_10019d53",
-    "signature": "char* FUN_10019d53(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019d53(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_v8u8",
+    "signature": "void grim_pixel_format_read_v8u8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands signed V8U8 pairs into XY01 float vectors"
   },
   {
     "program": "grim.dll",
@@ -8555,10 +8554,9 @@
   {
     "program": "grim.dll",
     "address": "0x10019fae",
-    "name": "FUN_10019fae",
-    "signature": "short* FUN_10019fae(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] int16_t* __thiscall sub_10019fae(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_v16u16",
+    "signature": "void grim_pixel_format_read_v16u16(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands signed V16U16 pairs into XY01 float vectors"
   },
   {
     "program": "grim.dll",

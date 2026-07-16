@@ -10976,6 +10976,20 @@
       "type": "float"
     },
     {
+      "address": "0x1004cb58",
+      "comment": "Single-precision reciprocal of 128 used for SNORM8 component expansion.",
+      "name": "grim_snorm8_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
+      "address": "0x1004cb60",
+      "comment": "Single-precision reciprocal of 32768 used for SNORM16 component expansion.",
+      "name": "grim_snorm16_scale",
+      "program": "grim.dll",
+      "type": "float"
+    },
+    {
       "address": "0x1004cb6c",
       "comment": "Virtual method table installed by the R8G8B8 pixel-format constructor.",
       "name": "grim_pixel_format_vtable_r8g8b8",
