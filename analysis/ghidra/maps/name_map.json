@@ -4391,6 +4391,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004564e6",
+    "name": "renderer_registry_read",
+    "signature": "int renderer_registry_read(unsigned long type, const char *name, unsigned char *data, unsigned long size)",
+    "comment": "Reads a typed Direct3D registry value from HKLM\\Software\\Microsoft\\Direct3D."
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045661f",
+    "name": "renderer_processor_feature_available",
+    "signature": "int renderer_processor_feature_available(unsigned long feature)",
+    "comment": "Checks 3DNow, SSE, and SSE2 availability with legacy-Windows fallbacks."
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004566d3",
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",
@@ -4398,10 +4412,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004567b0",
+    "name": "renderer_patch_sse",
+    "signature": "void renderer_patch_sse(void **table)",
+    "comment": "Patches the vector and matrix dispatch table with SSE implementations."
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004568c0",
+    "name": "renderer_patch_sse2",
+    "signature": "void renderer_patch_sse2(void **table)",
+    "comment": "Patches the vector and matrix dispatch table with SSE2 implementations."
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004569d0",
     "name": "FUN_004569d0",
     "signature": "int FUN_004569d0(void)",
     "comment": "[binja] int32_t sub_4569d0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00456aa5",
+    "name": "renderer_patch_3dnow",
+    "signature": "void renderer_patch_3dnow(void **table)",
+    "comment": "Patches the vector and matrix dispatch table with 3DNow implementations."
   },
   {
     "program": "crimsonland.exe",
@@ -4423,6 +4458,13 @@
     "name": "FUN_00457099",
     "signature": "void * FUN_00457099(void *arg1, int arg2, int arg3)",
     "comment": "[binja] void* __stdcall sub_457099(void* arg1, int32_t arg2, int32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457127",
+    "name": "renderer_patch_portable",
+    "signature": "void renderer_patch_portable(void **table)",
+    "comment": "Applies the portable baseline entries before optional CPU-specific dispatch patches."
   },
   {
     "program": "crimsonland.exe",
