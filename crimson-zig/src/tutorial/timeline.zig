@@ -198,15 +198,18 @@ fn tickHint(
     frame_dt_ms: i32,
     hint_bonus_died: bool,
 ) void {
-    if (!state.hint_fade_in and hint_bonus_died) {
-        state.hint_fade_in = true;
-        state.hint_index += 1;
-        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 128.0, .y = 128.0 }, .heading = std.math.pi });
-        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = 152.0, .y = 160.0 }, .heading = std.math.pi });
-    }
-
     const delta = frame_dt_ms * 3;
-    state.hint_alpha += if (state.hint_fade_in) delta else -delta;
+    if (!state.hint_fade_in) {
+        if (hint_bonus_died) {
+            state.hint_fade_in = true;
+            state.hint_index += 1;
+            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 128.0, .y = 128.0 }, .heading = std.math.pi });
+            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = 152.0, .y = 160.0 }, .heading = std.math.pi });
+        }
+        state.hint_alpha -= delta;
+    } else {
+        state.hint_alpha += delta;
+    }
     state.hint_alpha = std.math.clamp(state.hint_alpha, @as(i32, 0), @as(i32, 1000));
     actions.hint_index = state.hint_index;
     actions.hint_alpha = if (hintText(state.hint_index, state.preserve_bugs).len == 0)
@@ -373,4 +376,24 @@ test "tutorial stage 1 movement spawns three point bonuses" {
     }, 16, true, false, false, false, 0, false);
     try std.testing.expectEqual(@as(usize, 3), result.actions.spawn_bonus_count);
     try std.testing.expect(result.actions.play_levelup_sfx);
+}
+
+test "tutorial hint fade changes direction after the carrier death frame" {
+    var state: tutorial_state.TutorialState = .{
+        .hint_index = -1,
+        .hint_alpha = 300,
+        .hint_fade_in = false,
+    };
+    var actions: TutorialFrameActions = .{};
+
+    tickHint(&state, &actions, 16, true);
+    try std.testing.expect(state.hint_fade_in);
+    try std.testing.expectEqual(@as(i32, 0), state.hint_index);
+    try std.testing.expectEqual(@as(i32, 252), state.hint_alpha);
+    try std.testing.expectEqual(@as(usize, 2), actions.spawn_template_count);
+
+    actions = .{};
+    tickHint(&state, &actions, 16, false);
+    try std.testing.expectEqual(@as(i32, 300), state.hint_alpha);
+    try std.testing.expectEqual(@as(usize, 0), actions.spawn_template_count);
 }
