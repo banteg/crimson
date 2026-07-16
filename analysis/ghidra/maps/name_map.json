@@ -8080,10 +8080,9 @@
   {
     "program": "grim.dll",
     "address": "0x10016c3c",
-    "name": "FUN_10016c3c",
-    "signature": "int FUN_10016c3c(void*** arg1)",
-    "comment": "[binja] int32_t __fastcall sub_10016c3c(void*** arg1)",
-    "create": false
+    "name": "grim_pixel_format_destroy_dxt",
+    "signature": "void grim_pixel_format_destroy_dxt(void *this)",
+    "comment": "frees DXT staging buffers and cache arrays before base destruction"
   },
   {
     "program": "grim.dll",
@@ -8914,10 +8913,16 @@
   {
     "program": "grim.dll",
     "address": "0x1001b472",
-    "name": "FUN_1001b472",
-    "signature": "void*** FUN_1001b472(void*** arg1, char arg2)",
-    "comment": "[binja] void*** __thiscall sub_1001b472(void*** arg1, char arg2)",
-    "create": false
+    "name": "grim_pixel_format_scalar_deleting_destroy_dxt",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_dxt(void *this, unsigned int flags)",
+    "comment": "scalar deleting destructor shared by the DXT1 through DXT5 subclasses"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b48e",
+    "name": "j_grim_pixel_format_destroy_dxt",
+    "signature": "void j_grim_pixel_format_destroy_dxt(void *this)",
+    "comment": "tail thunk to the shared DXT1-DXT5 regular destructor"
   },
   {
     "program": "grim.dll",
@@ -9808,6 +9813,13 @@
     "name": "grim_pixel_format_init_yuv_eh_handler",
     "signature": "void grim_pixel_format_init_yuv_eh_handler(void)",
     "comment": "compiler-generated exception-handler thunk for the shared YUV constructor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b9ef",
+    "name": "grim_pixel_format_destroy_dxt_eh_handler",
+    "signature": "void grim_pixel_format_destroy_dxt_eh_handler(void)",
+    "comment": "compiler-generated exception-handler thunk for the shared DXT destructor"
   },
   {
     "program": "grim.dll",
