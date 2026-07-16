@@ -1,10 +1,16 @@
 # `quest_build_fallback`
 
 High-confidence 150-byte WIP with the same 32-instruction multiset as the
-native and all seven masked references aligned. The remaining difference is
-VC6 scheduling: the native completes each two-float position copy before
-interleaving the independent integer field stores, while the candidate moves
-some of those stores across the x87 work.
+native, all seven masked references aligned, and an 87.50% order-sensitive
+score. Modeling the three integer metadata fields with the same inline
+`set_spawn` member shape recovered in the staged quest builders keeps the
+entire second entry in native order and improves the prior 78.12% candidate.
+
+The remaining difference is confined to the first entry. VC6 moves its
+template, trigger, and count stores through the still-live x87 height result,
+where native finishes the two-float position copy first; it also swaps the
+independent second height load and cached `-50.0f` load. The source retains the
+ordinary member call rather than adding an artificial ordering dependency.
 
 Live Binary Ninja shows the fallback selected by `quest_start_selected` when a
 quest has no builder. It logs the fallback, then creates two template `0x40`
