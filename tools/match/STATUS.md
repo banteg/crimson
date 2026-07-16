@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 431/997 | 87691/386756 | 22.7% | 431/525 |
+| crimsonland.exe | 431/997 | 87691/386756 | 22.7% | 431/526 |
 | grim.dll | 132/1175 | 19447/289897 | 6.7% | 132/137 |
 
 ## crimsonland.exe
 
-**431/997** functions, **87691/386756** bytes (**22.7%**), **431/525** scratches verified.
+**431/997** functions, **87691/386756** bytes (**22.7%**), **431/526** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -110,6 +110,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | credits_build_lines | 0x0040d090 | 1897 | 544/544 | 100.00% | 544/544 | 261/0/0 |  | credits-line-table-population |
+| wip | credits_screen_update | 0x0040d800 | 1857 | 454/454 | 98.90% | 48/454 | 175/0/0 |  | credits-scroll-and-secret-puzzle |
 | match | j_mod_api_init | 0x0040df90 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
