@@ -8538,18 +8538,16 @@
   {
     "program": "grim.dll",
     "address": "0x10019e86",
-    "name": "FUN_10019e86",
-    "signature": "char* FUN_10019e86(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019e86(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_x8l8v8u8",
+    "signature": "void grim_pixel_format_read_x8l8v8u8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed signed V8U8 and unsigned L8 channels into XY0L float vectors"
   },
   {
     "program": "grim.dll",
     "address": "0x10019f17",
-    "name": "FUN_10019f17",
-    "signature": "char* FUN_10019f17(void* arg1, int arg2, int arg3, int arg4)",
-    "comment": "[binja] char* __thiscall sub_10019f17(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
-    "create": false
+    "name": "grim_pixel_format_read_q8w8v8u8",
+    "signature": "void grim_pixel_format_read_q8w8v8u8(void *this, unsigned int row, unsigned int depth, float *pixels)",
+    "comment": "expands packed signed Q8W8V8U8 channels into four-component float vectors"
   },
   {
     "program": "grim.dll",
