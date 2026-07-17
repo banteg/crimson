@@ -46,6 +46,8 @@ from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_N
 
 _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
 _NATIVE_RUSH_TINT_SIN_SCALE = f32_from_bits(0x38D1B718)
+_NATIVE_FORMATION_CHAIN_LIZARD_ANGLE_STEP = f32_from_bits(0x3EC90FDB)
+_NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP = f32_from_bits(0x3EB2B8C3)
 NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
@@ -2054,8 +2056,11 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset = Vec2(-256.0 + float(idx) * 64.0, -256.0)
-        angle = float(2 + idx * 2) * (math.pi / 8.0)
-        child.pos = Vec2.from_angle(angle) * 256.0 + ctx.pos
+        angle = x87_pc24_mul(f32(float(2 + idx * 2)), _NATIVE_FORMATION_CHAIN_LIZARD_ANGLE_STEP)
+        child.pos = Vec2(
+            x87_pc24_add(f32(ctx.pos.x), x87_pc24_cos_mul(angle, f32(256.0))),
+            x87_pc24_add(f32(ctx.pos.y), x87_pc24_sin_mul(angle, f32(256.0))),
+        )
 
     chain_prev = ctx.chain_children(
         count=4,
@@ -2097,8 +2102,11 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
-        angle = float(angle_idx) * math.radians(20.0)
-        child.pos = Vec2.from_angle(angle) * 256.0 + ctx.pos
+        angle = x87_pc24_mul(f32(float(angle_idx)), _NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP)
+        child.pos = Vec2(
+            x87_pc24_add(f32(ctx.pos.x), x87_pc24_cos_mul(angle, f32(256.0))),
+            x87_pc24_add(f32(ctx.pos.y), x87_pc24_sin_mul(angle, f32(256.0))),
+        )
 
     chain_prev = ctx.chain_children(
         count=10,

@@ -560,6 +560,23 @@ test "formation child headings preserve or clear recycled slot state" {
     }
 }
 
+test "alien chain formation uses the native twenty-degree literal" {
+    var pool: cz.creatures.CreaturePool = .{};
+    var rng = cz.spawn.Crand.init(0xBEEF);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = 0x13,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &rng,
+    );
+
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x443106DE))), pool.entries[10].pos.x);
+    try std.testing.expectEqual(@as(f32, @bitCast(@as(u32, 0x44292370))), pool.entries[10].pos.y);
+}
+
 test "spawn templates preserve recycled ranged orbit fields" {
     const projectile_type = @intFromEnum(cz.game_ids.ProjectileTypeId.spider_plasma);
     var pool: cz.creatures.CreaturePool = .{};

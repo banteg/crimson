@@ -195,6 +195,18 @@ def test_ring_formation_uses_native_angle_stores_and_fallthrough(default_spawn_e
     assert plan.creatures[-1].health == 20.0
 
 
+def test_chain_formation_uses_native_angle_literals(default_spawn_env: SpawnEnv) -> None:
+    plan = build_spawn_plan(
+        SpawnId.FORMATION_CHAIN_ALIEN_10_13,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+
+    assert plan.creatures[-1].pos == Vec2(296.1072998046875, 364.5537109375)
+
+
 def test_spawn_template_clears_root_force_target_but_preserves_formation_children(
     default_spawn_env: SpawnEnv,
 ) -> None:

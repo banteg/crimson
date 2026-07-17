@@ -208,6 +208,8 @@ fn formationOffset(index: usize, angle_step: f32, radius: f32) state_mod.Vec2 {
     };
 }
 
+const formation_chain_alien_angle_step: f32 = @bitCast(@as(u32, 0x3EB2B8C3));
+
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
@@ -805,7 +807,7 @@ pub const CreaturePool = struct {
                 for (0..10) |idx| {
                     const offset = formationOffset(
                         2 + idx * 2,
-                        @as(f32, 20.0 * std.math.pi / 180.0),
+                        formation_chain_alien_angle_step,
                         256.0,
                     );
                     const child_idx = self.spawnFromStatsWithFlags(

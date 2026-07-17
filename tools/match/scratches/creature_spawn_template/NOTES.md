@@ -131,6 +131,12 @@ Frame/prefix notes:
   zeros that field at `0x0043154b`, as does the `0x0e` ring at `0x004320f6`.
   Both ports now distinguish preserved chain/ring-child residue from explicit
   zero initialization in grid and spawner-ring children.
+- The `0x13` chain multiplies its cursor by the single-precision literal at
+  `0x0046f70c` (`0x3eb2b8c3`, `0.3490658700466156f`) at `0x00431354`.
+  Computing `20*pi/180` rounds one ULP lower (`0x3eb2b8c2`) before the x87
+  multiply and visibly shifts the last child. Both ports now use the native
+  literal and preserve the x87 PC=24 multiply/trig/add store boundaries; the
+  analogous `0x11` literal is `0x3ec90fdb` at `0x0046f374`.
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.
