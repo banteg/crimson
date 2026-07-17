@@ -363,6 +363,39 @@ test "freeze pauses native creature spawn-slot timers" {
     try std.testing.expectEqual(@as(usize, 2), pool.activeCount());
 }
 
+test "spawn-slot child templates resolve the native random-heading sentinel" {
+    const child_template_ids = [_]i32{ 0x1C, 0x1D, 0x31, 0x32, 0x3C, 0x41 };
+
+    for (child_template_ids, 0..) |template_id, idx| {
+        const seed: u32 = @intCast(0x1234 + idx);
+        var expected_rng = cz.spawn.Crand.init(seed);
+        const expected_phase_seed: i32 = @intCast(
+            expected_rng.randTagged(cz.rng_caller_static.creature_alloc_slot_phase_seed) & 0x17f,
+        );
+        const heading_roll = expected_rng.randTagged(
+            cz.rng_caller_static.creature_spawn_template_random_heading,
+        ) % 628;
+        const expected_heading = cz.native_math.pc24Mul(
+            @as(f32, @floatFromInt(heading_roll)),
+            @as(f32, 0.01),
+        );
+
+        var pool: cz.creatures.CreaturePool = .{};
+        var rng = cz.spawn.Crand.init(seed);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = -100.0,
+            },
+            &rng,
+        );
+
+        try std.testing.expectEqual(expected_phase_seed, pool.entries[0].phase_seed);
+        try std.testing.expectApproxEqAbs(expected_heading, pool.entries[0].heading, 0.000001);
+    }
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 

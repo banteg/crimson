@@ -25,6 +25,10 @@ final body culling.
   after the owner's clamp/movement and inside the global Freeze gate. The Zig
   runtime now preserves that ordering, so Freeze pauses both the countdown and
   child spawning instead of advancing slots before the creature sweep.
+- A fired slot calls `creature_spawn_template` with the native `-100.0f`
+  random-heading sentinel, not the owner's heading. The Zig child templates
+  now consume that heading roll between the allocation phase-seed draw and the
+  template's transient base-heading draw, preserving both heading and RNG order.
 - Linked AI modes use their live-link path as the native fallthrough, while
   dead links reset to orbit mode and the tethered variants apply 1,000 damage
   through fresh zero-vector temporaries.

@@ -34,6 +34,10 @@ first_candidate=mov dword [esp+0x14], edi
 Frame/prefix notes:
 
 - The source now reproduces the native `0x48`-byte stack frame.
+- Native allocates the root slot before resolving a `-100.0f` input heading,
+  so the random-heading draw occurs after the allocation phase-seed draw and
+  before the transient base-heading draw. The Zig runtime now preserves that
+  order for every template emitted by a native creature spawn slot.
 - Moving the saved position pointer below the random-heading sentinel improved
   the prefix from `1/3159` to `20/3159`.
 - The first blocker is now root-slot address arithmetic versus reloading `pos`

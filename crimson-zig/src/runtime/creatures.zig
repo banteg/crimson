@@ -39,6 +39,7 @@ const owner_local_player: owner_ref.OwnerRef = owner_ref.OwnerRef.fromLocalPlaye
 const native_half_pi: f32 = native_math.native_half_pi;
 const native_pi: f32 = native_math.native_pi;
 const native_tau: f32 = native_math.native_tau;
+const random_heading_sentinel: f32 = -100.0;
 const target_reeval_period: i32 = 0x46;
 
 pub const CreatureRuntimeError = error{
@@ -750,15 +751,15 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x1C => {
-                const phase_seed = drawPhaseSeedWithTransientHeading(rng);
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_ai1_blue_tint_1c) % 40;
 
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = narrowF32(call.heading),
+                    .heading = narrowF32(prelude.heading),
                     .set_heading = true,
-                    .phase_seed = phase_seed,
+                    .phase_seed = prelude.phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
                     .ai_mode = spawn_mod.CreatureAiMode.orbit_player_tight,
                     .flags = 0,
@@ -824,7 +825,7 @@ pub const CreaturePool = struct {
                 applyUnhandledCreatureTypeFallback(&self.entries[chain_prev]);
             },
             0x1D => {
-                const phase_seed = drawPhaseSeedWithTransientHeading(rng);
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_size, 20, 1.0, 35.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
                 const move_speed = randfTagged(rng, rng_callers.creature_spawn_template_alien_random_1d_move_speed, 15, 0.1, 1.1);
@@ -837,9 +838,9 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = narrowF32(call.heading),
+                    .heading = narrowF32(prelude.heading),
                     .set_heading = true,
-                    .phase_seed = phase_seed,
+                    .phase_seed = prelude.phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.alien,
                     .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
                     .flags = 0,
@@ -1616,26 +1617,28 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_ranged_variant_3c) => {
-                const idx = self.spawnFromStatsWithFlags(
-                    rng,
-                    .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    call.heading,
-                    .{
-                        .type_id = .spider_sp1,
-                        .health = 200.0,
-                        .move_speed = 2.4,
-                        .reward_value = 200.0,
-                        .size = 40.0,
-                        .contact_damage = 20.0,
-                    },
-                    spawn_mod.CreatureFlags.ranged_attack_variant | spawn_mod.CreatureFlags.ai7_link_timer,
-                    true,
-                );
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
+                const idx = self.spawnInit(.{
+                    .origin_template_id = -1,
+                    .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
+                    .heading = narrowF32(prelude.heading),
+                    .set_heading = true,
+                    .phase_seed = prelude.phase_seed,
+                    .preserve_force_target = true,
+                    .type_id = .spider_sp1,
+                    .ai_mode = .orbit_player,
+                    .flags = spawn_mod.CreatureFlags.ranged_attack_variant | spawn_mod.CreatureFlags.ai7_link_timer,
+                    .size = 40.0,
+                    .move_speed = 2.4,
+                    .health = 200.0,
+                    .max_health = 200.0,
+                    .reward_value = 200.0,
+                    .contact_damage = 20.0,
+                });
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
                 self.entries[idx].orbit_angle = 0.4;
                 self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.spider_plasma);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x2E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
@@ -1698,7 +1701,7 @@ pub const CreaturePool = struct {
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x31 => {
-                const phase_seed = drawPhaseSeedWithTransientHeading(rng);
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_lizard_random_31_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
@@ -1709,9 +1712,9 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = narrowF32(call.heading),
+                    .heading = narrowF32(prelude.heading),
                     .set_heading = true,
-                    .phase_seed = phase_seed,
+                    .phase_seed = prelude.phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.lizard,
                     .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
                     .flags = 0,
@@ -1724,7 +1727,7 @@ pub const CreaturePool = struct {
                 });
             },
             0x32 => {
-                const phase_seed = drawPhaseSeedWithTransientHeading(rng);
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_spider_sp1_random_32_size, 25, 1.0, 40.0);
                 const health = narrowF32(size + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
@@ -1735,9 +1738,9 @@ pub const CreaturePool = struct {
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = narrowF32(call.heading),
+                    .heading = narrowF32(prelude.heading),
                     .set_heading = true,
-                    .phase_seed = phase_seed,
+                    .phase_seed = prelude.phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.spider_sp1,
                     .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
                     .flags = 0,
@@ -1881,8 +1884,7 @@ pub const CreaturePool = struct {
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x41 => {
-                const phase_seed = drawAllocPhaseSeed(rng);
-                _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+                const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const size = randfTagged(rng, rng_callers.creature_spawn_template_zombie_random_41_size, 30, 1.0, 40.0);
                 const health = narrowF32(size * (8.0 / 7.0) + 10.0);
                 const reward_value = narrowF32(size + size + 50.0);
@@ -1893,9 +1895,9 @@ pub const CreaturePool = struct {
                 _ = self.spawnInit(.{
                     .origin_template_id = -1,
                     .pos = .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                    .heading = narrowF32(call.heading),
+                    .heading = narrowF32(prelude.heading),
                     .set_heading = true,
-                    .phase_seed = phase_seed,
+                    .phase_seed = prelude.phase_seed,
                     .type_id = spawn_mod.CreatureTypeId.zombie,
                     .ai_mode = spawn_mod.CreatureAiMode.orbit_player,
                     .flags = 0,
@@ -2200,13 +2202,12 @@ pub const CreaturePool = struct {
                         self.spawn_slots[slot_idx].owner_creature == @as(i32, @intCast(idx)))
                     {
                         const spawn_pos = creature.pos;
-                        const spawn_heading = creature.heading;
                         if (spawn_mod.tickSpawnSlot(&self.spawn_slots[slot_idx], dt_f32)) |child_template_id| {
                             try self.spawnTemplateCallWithRuntimeContext(
                                 .{
                                     .template_id = child_template_id,
                                     .pos = .{ .x = spawn_pos.x, .y = spawn_pos.y },
-                                    .heading = spawn_heading,
+                                    .heading = random_heading_sentinel,
                                 },
                                 &state.rng,
                                 state,
@@ -3413,6 +3414,24 @@ fn drawPhaseSeedWithTransientHeading(rng: *spawn_mod.Crand) i32 {
     const phase_seed = drawAllocPhaseSeed(rng);
     _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
     return phase_seed;
+}
+
+const SpawnTemplatePrelude = struct {
+    phase_seed: i32,
+    heading: f32,
+};
+
+fn drawSpawnTemplatePrelude(rng: *spawn_mod.Crand, requested_heading: f32) SpawnTemplatePrelude {
+    const phase_seed = drawAllocPhaseSeed(rng);
+    const heading = if (requested_heading == random_heading_sentinel)
+        native_math.pc24Mul(
+            @as(f32, @floatFromInt(rng.randTagged(rng_callers.creature_spawn_template_random_heading) % 628)),
+            @as(f32, 0.01),
+        )
+    else
+        requested_heading;
+    _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
+    return .{ .phase_seed = phase_seed, .heading = heading };
 }
 
 fn applyUnhandledCreatureTypeFallback(creature: *CreatureState) void {
