@@ -38,6 +38,12 @@ Frame/prefix notes:
   so the random-heading draw occurs after the allocation phase-seed draw and
   before the transient base-heading draw. The Zig runtime now preserves that
   order for every template emitted by a native creature spawn slot.
+- Live disassembly at `0x00430b69..0x00430b72` shows the common template
+  prologue clearing `creature+0x4c` (`force_target`) on the root immediately
+  after allocation. The ring-child loop at `0x00430c47..0x00430d13` allocates
+  and initializes children without touching that byte. Both ports therefore
+  clear the template root while retaining native recycled-slot residue in
+  formation children.
 - Moving the saved position pointer below the random-heading sentinel improved
   the prefix from `1/3159` to `20/3159`.
 - The first blocker is now root-slot address arithmetic versus reloading `pos`

@@ -195,6 +195,21 @@ def test_ring_formation_uses_native_angle_stores_and_fallthrough(default_spawn_e
     assert plan.creatures[-1].health == 20.0
 
 
+def test_spawn_template_clears_root_force_target_but_preserves_formation_children(
+    default_spawn_env: SpawnEnv,
+) -> None:
+    plan = build_spawn_plan(
+        SpawnId.FORMATION_RING_ALIEN_8_12,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+
+    assert plan.creatures[0].preserve_force_target is False
+    assert all(creature.preserve_force_target is True for creature in plan.creatures[1:])
+
+
 def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: SpawnEnv) -> None:
     with pytest.raises(UnsupportedSpawnTemplateError, match=r"unsupported spawn template id: 0x2"):
         build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)

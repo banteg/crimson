@@ -1947,6 +1947,9 @@ pub const CreaturePool = struct {
         }
 
         if (findSpawnTemplatePrimaryIndex(self, &was_active)) |primary_idx| {
+            // creature_spawn_template clears this byte on its root after the
+            // raw slot allocation. Formation children retain recycled state.
+            self.entries[primary_idx].force_target = 0;
             const maybe_slot_idx = blk: {
                 const link_index = self.entries[primary_idx].link_index;
                 if (link_index < 0) break :blk null;

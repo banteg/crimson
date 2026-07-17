@@ -956,8 +956,12 @@ class PlanBuilder(msgspec.Struct):
         rng: CrandLike,
         env: SpawnEnv,
     ) -> tuple["PlanBuilder", float]:
-        # creature_alloc_slot() for the base creature.
-        creatures: list[CreatureInit] = [alloc_creature(template_id, pos, rng)]
+        # creature_alloc_slot() for the base creature, followed by the template
+        # prologue's explicit force-target reset. Formation children only run
+        # the allocator and therefore retain that recycled byte.
+        base = alloc_creature(template_id, pos, rng)
+        base.preserve_force_target = False
+        creatures: list[CreatureInit] = [base]
         spawn_slots: list[SpawnSlotInit] = []
         effects: list[BurstEffect] = []
 

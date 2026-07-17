@@ -396,6 +396,25 @@ test "spawn-slot child templates resolve the native random-heading sentinel" {
     }
 }
 
+test "spawn templates clear root force target but preserve formation children" {
+    var pool: cz.creatures.CreaturePool = .{};
+    pool.entries[0].force_target = 1;
+    pool.entries[1].force_target = 1;
+    var rng = cz.spawn.Crand.init(0xBEEF);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = 0x12,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &rng,
+    );
+
+    try std.testing.expectEqual(@as(u8, 0), pool.entries[0].force_target);
+    try std.testing.expectEqual(@as(u8, 1), pool.entries[1].force_target);
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 
