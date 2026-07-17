@@ -144,11 +144,15 @@ extern "C" void player_update(void)
     if (player->low_health_timer != 100.0f && player->health < 20.0f) {
         player->low_health_timer = player->low_health_timer - frame_dt;
         if (player->low_health_timer < 0.0f) {
+            scratch_pos.x =
+                (float)cos(player->aim_heading + 1.5707964f - 0.5f);
+            scratch_pos.y =
+                (float)sin(player->aim_heading + 1.5707964f - 0.5f);
+            scratch_pos.x *= -6.0f;
+            scratch_pos.y *= -6.0f;
+            scratch_pos.x += player->pos_x;
+            scratch_pos.y += player->pos_y;
             float angle = player->aim_heading;
-            scratch_pos.x = (float)cos(angle + 1.5707964f - 0.5f) * -6.0f
-                + player->pos_x;
-            scratch_pos.y = (float)sin(angle + 1.5707964f - 0.5f) * -6.0f
-                + player->pos_y;
             effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
             effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
             effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);

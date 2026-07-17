@@ -56,10 +56,21 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=38.72% prefix=7/4206 target_insns=4206 candidate_insns=3806 refs=588/0/34
+match=39.10% prefix=7/4206 target_insns=4206 candidate_insns=3814 refs=594/0/32
 first_target=jne L3f7a
-first_candidate=jne L3a5d
+first_candidate=jne L3a87
 ```
+
+The low-health pulse at `0x00413795..0x00413830` constructs its blood offset
+in explicit vector phases: evaluate the heading-relative cosine and sine,
+scale both components by `-6.0`, then translate them by the player's position.
+It reloads `aim_heading` for the second trigonometric expression and only
+captures the value used by the three effect calls after the translation.
+Representing those natural value lifetimes recovers eight candidate
+instructions and six additional reference matches, raising the whole-function
+score from `38.72%` to `39.10%`. A temporary aggregate/constructor form grew
+the stack frame, while combining scale and translation let VC6 reassociate the
+arithmetic; neither reflects the observed native staging and both scored lower.
 
 The native entry copies the adjacent `ui_mouse_x`/`ui_mouse_y` pair into the
 selected two-float aim-screen slot with two integer moves. Representing both
