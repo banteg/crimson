@@ -25,11 +25,11 @@ and player-key bounds retain the native signed pointer comparisons. The three
 stage-one point bonuses also preserve the otherwise easy-to-miss reload of
 bonus zero's `time_left` into bonuses one and two's `time_max` fields.
 
-The current honest VC6.5 result is 63.71%: 695 target instructions versus 702
+The current honest VC6.5 result is 63.75%: 695 target instructions versus 701
 candidate instructions, with references `153/0/4`. The stack frame is the
-native `0x5c` bytes. Remaining differences are dominated by prompt-alpha CFG
-tail sharing, register scheduling after the stage-one point-bonus stores,
-reusable vector stack-slot assignment, and switch-case block placement. The
+native `0x5c` bytes. Remaining differences are dominated by prompt-alpha
+default-store placement, register scheduling after the stage-one point-bonus
+stores, reusable vector stack-slot assignment, and switch-case block placement. The
 structured source keeps exact runtime behavior; no volatile qualifiers, dummy
 references, fake externals, artificial dependencies, inline assembly, or
 register constraints are used to hide those residuals.
@@ -42,3 +42,11 @@ timer references without changing behavior, instruction count, frame size, or
 the total similarity score. The three remaining data mismatches are the
 already-recovered point-bonus X/Y copies using different value registers; the
 fourth is the stage-five local jump table.
+
+The neutral prompt-transition state (`-1`) uses alpha `1.0` directly in the
+native CFG, while positive and earlier negative transitions scale milliseconds
+by `0.001`. Initializing the source value to `1.0` and overriding it only for
+those timer arms removes the candidate's artificial `1000.0 * 0.001`
+conversion, drops one instruction, and raises the score from `63.71%` to
+`63.75%`. VC6 still sinks the native default store later than the candidate;
+forcing that final placement would require source-level control-flow steering.

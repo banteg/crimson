@@ -121,15 +121,13 @@ extern "C" void tutorial_timeline_update(void)
     {
         int prompt_transition = tutorial_stage_transition_timer;
         int stage_timer = tutorial_stage_timer;
-        float prompt_alpha;
+        float prompt_alpha = 1.0f;
         if (prompt_transition >= 0) {
-            prompt_alpha = (float)tutorial_stage_transition_timer;
+            prompt_alpha =
+                (float)tutorial_stage_transition_timer * 0.001f;
         } else if (prompt_transition < -1) {
-            prompt_alpha = (float)-prompt_transition;
-        } else {
-            prompt_alpha = 1000.0f;
+            prompt_alpha = (float)-prompt_transition * 0.001f;
         }
-        prompt_alpha *= 0.001f;
 
         stage = tutorial_stage_index;
         if (prompt_alpha >= 1.0f) {
