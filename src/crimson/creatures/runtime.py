@@ -252,6 +252,7 @@ class CreatureState(msgspec.Struct):
     link_index: int = -1
     target_offset: Vec2 | None = None
     orbit_angle: float = 0.0
+    # Semantic view of native's orbit-radius/projectile-type union.
     orbit_radius: float = 0.0
     # Native stores this as int32 and uses `fild` when forming orbit phase.
     phase_seed: int = 0
@@ -1531,14 +1532,14 @@ class CreaturePool:
 
         if init.target_offset is not None:
             entry.target_offset = f32_vec2(init.target_offset)
-        entry.orbit_angle = f32(float(init.orbit_angle or 0.0))
+        # creature_alloc_slot leaves the native orbit-angle/radius union stale.
+        # Only overwrite an arm when the selected spawn path explicitly does.
+        if init.orbit_angle is not None:
+            entry.orbit_angle = f32(float(init.orbit_angle))
         if init.orbit_radius is not None:
-            orbit_radius = float(init.orbit_radius)
+            entry.orbit_radius = f32(float(init.orbit_radius))
         elif init.ranged_projectile_type is not None:
-            orbit_radius = float(init.ranged_projectile_type)
-        else:
-            orbit_radius = 0.0
-        entry.orbit_radius = f32(orbit_radius)
+            entry.orbit_radius = f32(float(init.ranged_projectile_type))
 
         entry.spawn_slot_index = None
         entry.attack_cooldown = 0.0

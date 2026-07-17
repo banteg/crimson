@@ -415,6 +415,27 @@ test "spawn templates clear root force target but preserve formation children" {
     try std.testing.expectEqual(@as(u8, 1), pool.entries[1].force_target);
 }
 
+test "spawn templates preserve recycled ranged orbit fields" {
+    const projectile_type = @intFromEnum(cz.game_ids.ProjectileTypeId.spider_plasma);
+    var pool: cz.creatures.CreaturePool = .{};
+    pool.entries[0].orbit_angle = 0.4;
+    pool.entries[0].orbit_radius = @bitCast(projectile_type);
+    pool.entries[0].ranged_projectile_type = projectile_type;
+    var rng = cz.spawn.Crand.init(0xBEEF);
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = 0x37,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &rng,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.4), pool.entries[0].orbit_angle);
+    try std.testing.expectEqual(projectile_type, pool.entries[0].ranged_projectile_type);
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 

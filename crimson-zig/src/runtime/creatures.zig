@@ -82,6 +82,7 @@ pub const CreatureState = struct {
     // Native keeps this stale across slot reuse for some spawn paths.
     link_index: i32 = -1,
     orbit_angle: f32 = 0.0,
+    // Two typed views of the native union at creature+0x88.
     orbit_radius: f32 = 0.0,
     ranged_projectile_type: i32 = 0,
     hp: f32 = 0.0,
@@ -168,6 +169,7 @@ pub fn applyPoolResidue(
             .link_index = slot.link_index,
             .orbit_angle = slot.orbit_angle,
             .orbit_radius = @bitCast(slot.orbit_radius_u32),
+            .ranged_projectile_type = @bitCast(slot.orbit_radius_u32),
             .hp = slot.hp,
             .max_hp = slot.max_hp,
             .move_speed = slot.move_speed,
@@ -265,6 +267,9 @@ pub const CreaturePool = struct {
         const stale_target = self.entries[slot].target;
         const stale_target_player = self.entries[slot].target_player;
         const stale_target_offset = self.entries[slot].target_offset;
+        const stale_orbit_angle = self.entries[slot].orbit_angle;
+        const stale_orbit_radius = self.entries[slot].orbit_radius;
+        const stale_ranged_projectile_type = self.entries[slot].ranged_projectile_type;
 
         self.entries[slot] = .{
             .active = true,
@@ -285,6 +290,9 @@ pub const CreaturePool = struct {
             .target_player = stale_target_player,
             .ai_mode = init.ai_mode,
             .link_index = stale_link_index,
+            .orbit_angle = stale_orbit_angle,
+            .orbit_radius = stale_orbit_radius,
+            .ranged_projectile_type = stale_ranged_projectile_type,
             .hp = narrowF32(init.health),
             .max_hp = narrowF32(init.max_health),
             .move_speed = narrowF32(init.move_speed),
@@ -813,7 +821,7 @@ pub const CreaturePool = struct {
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
                     self.entries[child_idx].orbit_angle = std.math.pi;
-                    self.entries[child_idx].orbit_radius = 10.0;
+                    setOrbitRadius(&self.entries[child_idx], 10.0);
                     self.entries[child_idx].pos = .{
                         .x = narrowF32(call.pos.x + offset.x),
                         .y = narrowF32(call.pos.y + offset.y),
@@ -1491,7 +1499,7 @@ pub const CreaturePool = struct {
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_ai7_orbiter_tint_g) % 5;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.hold_timer;
-                self.entries[idx].orbit_radius = 1.5;
+                setOrbitRadius(&self.entries[idx], 1.5);
             },
             0x37 => {
                 const phase_seed = drawAllocPhaseSeed(rng);
@@ -1596,7 +1604,10 @@ pub const CreaturePool = struct {
                     true,
                 );
                 self.entries[idx].orbit_angle = 0.9;
-                self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
+                setRangedProjectileType(
+                    &self.entries[idx],
+                    @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
+                );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
             0x3B => {
@@ -1638,7 +1649,10 @@ pub const CreaturePool = struct {
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
                 self.entries[idx].orbit_angle = 0.4;
-                self.entries[idx].ranged_projectile_type = @intFromEnum(game_ids.ProjectileTypeId.spider_plasma);
+                setRangedProjectileType(
+                    &self.entries[idx],
+                    @intFromEnum(game_ids.ProjectileTypeId.spider_plasma),
+                );
             },
             0x2E => {
                 const phase_seed = drawPhaseSeedWithTransientHeading(rng);
@@ -3190,7 +3204,7 @@ fn creatureAiUpdateTarget(
                 .x = narrowF32(creature.pos.x),
                 .y = narrowF32(creature.pos.y),
             };
-            creature.orbit_radius = narrowF32(creature.orbit_radius - dt);
+            setOrbitRadius(creature, narrowF32(creature.orbit_radius - dt));
         } else {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
         }
@@ -3435,6 +3449,16 @@ fn drawSpawnTemplatePrelude(rng: *spawn_mod.Crand, requested_heading: f32) Spawn
         requested_heading;
     _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
     return .{ .phase_seed = phase_seed, .heading = heading };
+}
+
+fn setOrbitRadius(creature: *CreatureState, radius: f32) void {
+    creature.orbit_radius = radius;
+    creature.ranged_projectile_type = @bitCast(radius);
+}
+
+fn setRangedProjectileType(creature: *CreatureState, projectile_type: i32) void {
+    creature.ranged_projectile_type = projectile_type;
+    creature.orbit_radius = @bitCast(projectile_type);
 }
 
 fn applyUnhandledCreatureTypeFallback(creature: *CreatureState) void {

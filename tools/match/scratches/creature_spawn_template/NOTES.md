@@ -44,6 +44,13 @@ Frame/prefix notes:
   and initializes children without touching that byte. Both ports therefore
   clear the template root while retaining native recycled-slot residue in
   formation children.
+- The exact `creature_alloc_slot` body at `0x00428193..0x004281c7` clears only
+  flags, the four-byte field at `+0x74`, and animation phase while seeding the
+  phase word. In particular it preserves `orbit_angle` (`+0x84`) and the
+  `orbit_radius`/projectile-type union (`+0x88`). Template `0x37` at
+  `0x00433d41..0x00433dcd` enables ranged-variant fire without writing either
+  field, unlike template `0x3c` at `0x00433a78..0x00433afd`. Both ports now
+  retain those recycled values, and Zig mirrors both views of the native union.
 - Moving the saved position pointer below the random-heading sentinel improved
   the prefix from `1/3159` to `20/3159`.
 - The first blocker is now root-slot address arithmetic versus reloading `pos`

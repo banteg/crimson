@@ -26,6 +26,7 @@ from crimson.gameplay import GameplayState
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
+from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import prepare_weapon_availability
@@ -1542,6 +1543,32 @@ def test_spawn_init_preserves_stale_force_target_from_recycled_slot() -> None:
 
     assert idx == 0
     assert pool.entries[idx].force_target == 1
+
+
+def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
+    pool = CreaturePool()
+    pool.entries[0].orbit_angle = 0.4
+    pool.entries[0].orbit_radius = float(ProjectileTemplateId.SPIDER_PLASMA)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+
+    mapping, primary = pool.spawn_template(
+        SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+        env=env,
+    )
+
+    assert mapping == [0]
+    assert primary == 0
+    assert_float_close(pool.entries[0].orbit_angle, 0.4)
+    assert pool.entries[0].orbit_radius == float(ProjectileTemplateId.SPIDER_PLASMA)
 
 
 def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
