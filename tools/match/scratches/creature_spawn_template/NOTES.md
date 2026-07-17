@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=60.28% prefix=23/3159 target_insns=3159 candidate_insns=2866 refs=315/0/2
+match=60.97% prefix=23/3159 target_insns=3159 candidate_insns=2900 refs=315/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -78,3 +78,14 @@ Frame/prefix notes:
   the shape broadly to later special cases perturbs VC6 register allocation and
   loses alignment, so those cases remain direct-field WIPs rather than being
   forced.
+- The native root initialization loads both position components before its
+  zero-velocity store. Restoring that aggregate-like order raises the score
+  from `60.28%` to `60.32%` without changing the frame, prefix, or references.
+- A second live disassembly pass proves that the late `0x37`, `0x39`, `0x3a`,
+  and `0x40` bodies also build RGBA in `[esp+0x48..0x54]` and copy the complete
+  value into `creature+0x3c`. Recovering those four value assignments adds 34
+  native-shaped instructions and raises the score from `60.32%` to `60.97%`,
+  again preserving the `0x48` frame and `315/0/2` reference audit. The adjacent
+  `0x38` and `0x00` cases and a broad late-ladder conversion were tested and
+  rejected because they regressed alignment; only independently improving
+  cases are retained.

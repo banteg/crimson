@@ -217,8 +217,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
 
     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
     creature->pos_x = *pos;
-    creature->vel_x = 0.0f;
     creature->pos_y = pos[1];
+    creature->vel_x = 0.0f;
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->active = 1;
@@ -866,18 +866,18 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     creature->flags = CREATURE_FLAG_AI7_LINK_TIMER;
                     creature->link_index = 0;
                 } else if (template_id == SPAWN_ID_SPIDER_SP2_RANGED_VARIANT_37) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP2, 50.0f, 3.2f, 433.0f,
-                                   1.0f, 0.75f, 0.1f, 1.0f, (float)(crt_rand() % 4 + 0x29), 10.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP2, 50.0f, 3.2f, 433.0f,
+                                             1.0f, 0.75f, 0.1f, 1.0f, (float)(crt_rand() % 4 + 0x29), 10.0f);
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
                     creature->link_index = 0;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_WEAK_39) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 4.0f, 4.8f, 50.0f,
-                                   0.8f, 0.65f, 0.1f, 1.0f, (float)(crt_rand() % 4 + 0x1a), 10.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 4.0f, 4.8f, 50.0f,
+                                             0.8f, 0.65f, 0.1f, 1.0f, (float)(crt_rand() % 4 + 0x1a), 10.0f);
                     creature->flags = CREATURE_FLAG_AI7_LINK_TIMER;
                     creature->link_index = 0;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 4500.0f, 2.0f, 4500.0f,
-                                   1.0f, 1.0f, 1.0f, 1.0f, 64.0f, 50.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 4500.0f, 2.0f, 4500.0f,
+                                             1.0f, 1.0f, 1.0f, 1.0f, 64.0f, 50.0f);
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_SHOCK;
                     creature->orbit_angle = 0.9f;
                     creature->orbit_radius.projectile_type = PROJECTILE_TYPE_PLASMA_RIFLE;
@@ -885,8 +885,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 200.0f, 2.3f, 210.0f,
                                    0.7f, 0.4f, 0.1f, 1.0f, 35.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_BLUE_40) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 70.0f, 2.2f, 160.0f,
-                                   0.5f, 0.6f, 0.9f, 1.0f, 45.0f, 5.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 70.0f, 2.2f, 160.0f,
+                                             0.5f, 0.6f, 0.9f, 1.0f, 45.0f, 5.0f);
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREY_42) {
                     SET_ROOT_STATS(CREATURE_TYPE_ZOMBIE, 200.0f, 1.7f, 160.0f,
                                    0.9f, 0.9f, 0.9f, 1.0f, 45.0f, 15.0f);
