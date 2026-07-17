@@ -215,28 +215,7 @@ extern "C" void projectile_update(void)
                                     if (!config_violence_disabled) {
                                         if (perk_count_get(
                                                 perk_id_bloody_mess_quick_learner)
-                                            == 0) {
-                                            if (bonus_freeze_timer <= 0.0f) {
-                                                int count = 2;
-                                                do {
-                                                    effect_spawn_blood_splatter(
-                                                        pos,
-                                                        projectile->angle
-                                                            - 1.5707964f,
-                                                        0.0f);
-                                                    if ((crt_rand() & 7)
-                                                        == 2) {
-                                                        effect_spawn_blood_splatter(
-                                                            pos,
-                                                            projectile->angle
-                                                                - 1.5707964f
-                                                                + 3.1415927f,
-                                                            0.0f);
-                                                    }
-                                                    --count;
-                                                } while (count != 0);
-                                            }
-                                        } else {
+                                            != 0) {
                                             int count = 8;
                                             do {
                                                 effect_spawn_blood_splatter(
@@ -256,6 +235,24 @@ extern "C" void projectile_update(void)
                                                     - 1.5707964f
                                                     + 3.1415927f,
                                                 0.0f);
+                                        } else if (bonus_freeze_timer <= 0.0f) {
+                                            int count = 2;
+                                            do {
+                                                effect_spawn_blood_splatter(
+                                                    pos,
+                                                    projectile->angle
+                                                        - 1.5707964f,
+                                                    0.0f);
+                                                if ((crt_rand() & 7) == 2) {
+                                                    effect_spawn_blood_splatter(
+                                                        pos,
+                                                        projectile->angle
+                                                            - 1.5707964f
+                                                            + 3.1415927f,
+                                                        0.0f);
+                                                }
+                                                --count;
+                                            } while (count != 0);
                                         }
                                     }
 

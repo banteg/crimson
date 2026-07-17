@@ -12,7 +12,7 @@ expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
 It produces 2,101 instructions against 2,203 native instructions, scores
-43.31%, and aligns 296 candidate references. The candidate's natural local
+44.05%, and aligns 301 candidate references. The candidate's natural local
 frame is `0x90`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
@@ -35,6 +35,12 @@ Native constants read directly from the image recover the lingering cases:
 The native damage impulse deliberately writes both vector components from the
 same cosine term. The source retains that oddity because the disassembly and
 the existing runtime parity implementation independently agree on it.
+
+The primary impact blood branch keeps the perk-active eight-splatter path as
+the native fallthrough. The perk-inactive arm branches to the two-splatter
+path, which is additionally gated by the freeze timer. This condition ordering
+is semantically equivalent to checking the inactive arm first, but reproduces
+the native block layout without a source-level jump.
 
 The secondary detonation path reuses `vel_x` as expansion time and `vel_y` as
 scale, applies `frame_dt * scale * 700` damage inside `scale * time * 80`, and
