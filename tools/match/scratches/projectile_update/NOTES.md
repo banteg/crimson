@@ -1,17 +1,19 @@
 # `projectile_update`
 
-The current MSVC 6.5 `/O2 /GB` candidate recovers both native projectile-pool
+The current MSVC 6.5 `/O2 /GB` candidate recovers all four native simulation
 phases at `0x00420b90`. The primary pool covers active/lifetime handling,
 lingering ion and Gauss damage, world-bounds expiry, travel-budget microsteps,
 creature and player collision, perk hooks, projectile-specific hit behavior,
 penetration damage, decals, freeze effects, and impact audio. The secondary
 pool covers rocket acceleration, seeker steering, smoke trails, collision
-damage, detonation AoE, and type-specific debris and freeze bursts.
+damage, detonation AoE, and type-specific debris and freeze bursts. The
+trailing phases cover sprite-effect integration plus particle movement,
+expiry, style-specific steering, collision attachment or deflection, fire
+damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 1,596 instructions against 2,203 native instructions, scores
-37.69%, and resolves 221 candidate references. The candidate's natural local
-frame is `0x8c`; the native function's `0xf4` frame also carries the
-still-missing trailing sprite/particle maintenance lifetimes.
+It produces 2,101 instructions against 2,203 native instructions, scores
+43.31%, and aligns 296 candidate references. The candidate's natural local
+frame is `0x90`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
@@ -40,10 +42,21 @@ keeps processing its TTL check after a hit. The latter can overwrite a freshly
 selected type-specific detonation scale with `0.5`; the recovered source keeps
 that observable ordering.
 
+The live particle tail confirms three deliberately duplicated jitter branches:
+style zero uses a `1.96` turn factor and speed `82`, style eight uses `1.1` and
+speed `62`, and the remaining styles use `1.1` and speed `82`. A particle hit
+uses radius `intensity * 8`, deflects by `1.2566371`, scales the reflected speed
+by `(rand() % 10) * 0.1`, and applies `intensity * 10` damage. Creature tint is
+only darkened when the RGB sum exceeds `1.6`, using
+`1 - intensity * 0.01`, followed by per-channel clamping.
+
 ## Remaining work
 
-The 384-entry sprite-effect maintenance loop and 128-entry particle simulation
-remain unrecovered here. Both projectile phases retain scheduling and
-stack-slot differences expected from those absent later lifetimes. No dummy
-locals, volatile expressions, forced references, inline assembly, or
-layout-only gotos are used to imitate the native frame.
+The native behavior is substantially represented, but whole-function MSVC
+scheduling still differs. In particular, the native `0xf4` frame reuses many
+long-lived vector temporaries across projectile and particle branches, whereas
+the recovered structured source naturally compiles to `0x90`. Further work
+should improve original declaration/lifetime shape only when supported by
+control-flow evidence. No dummy locals, volatile expressions, forced
+references, inline assembly, or layout-only gotos are used to imitate the
+native frame.

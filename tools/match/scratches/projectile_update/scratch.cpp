@@ -13,6 +13,7 @@ extern int music_track_extra_0;
 extern int sfx_bullet_hit_01;
 extern int weapon_ammo_class[];
 extern int config_detail_preset;
+extern creature_type_table_t creature_type_table;
 
 void creatures_apply_radius_damage(
     float *pos,
@@ -1025,4 +1026,231 @@ extern "C" void projectile_update(void)
         }
         ++secondary;
     } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);
+
+    sprite_effect_t *sprite = sprite_effect_pool;
+    do {
+        if (sprite->active) {
+            float move_x = frame_dt * sprite->vel_x;
+            float move_y = frame_dt * sprite->vel_y;
+            sprite->pos_x += move_x;
+            sprite->pos_y += move_y;
+            sprite->rotation += frame_dt * 3.0f;
+            sprite->color_a -= frame_dt;
+            if (sprite->color_a <= 0.0f) {
+                sprite->active = 0;
+            }
+            sprite->scale += frame_dt * 60.0f;
+        }
+        ++sprite;
+    } while ((int)sprite < (int)&sprite_effect_pool[0x180]);
+
+    int particle_index = 0;
+    particle_t *particle = particle_pool;
+    do {
+        if (particle->active) {
+            unsigned char style_id = particle->style_id;
+            if (style_id == 8) {
+                particle->intensity -= frame_dt * 0.11f;
+                particle->spin += frame_dt * 5.0f;
+                if (particle->render_flag) {
+                    float move_x = frame_dt * particle->vel_x;
+                    if (particle->intensity <= 0.15f) {
+                        particle->pos_x +=
+                            move_x * 0.55f * particle->intensity;
+                        particle->pos_y += frame_dt * particle->vel_y
+                            * 0.55f * particle->intensity;
+                    } else {
+                        vec2f_t movement = {
+                            move_x * particle->intensity,
+                            frame_dt * particle->vel_y
+                                * particle->intensity,
+                        };
+                        vec2_add(&particle->pos_x, &movement.x);
+                    }
+                }
+            } else {
+                particle->intensity -= frame_dt * 0.9f;
+                particle->spin += frame_dt;
+                float move_x = frame_dt * particle->vel_x;
+                if (particle->intensity <= 0.15f) {
+                    particle->pos_x += move_x * 2.5f * 0.15f;
+                    particle->pos_y += frame_dt * particle->vel_y
+                        * 2.5f * 0.15f;
+                } else {
+                    vec2f_t movement = {
+                        move_x * 2.5f * particle->intensity,
+                        frame_dt * particle->vel_y * 2.5f
+                            * particle->intensity,
+                    };
+                    vec2_add(&particle->pos_x, &movement.x);
+                }
+            }
+
+            if ((style_id == 0 && particle->intensity <= 0.0f)
+                || (style_id != 0 && particle->intensity <= 0.8f)) {
+                particle->active = 0;
+                if (style_id == 8 && particle->target_id != -1) {
+                    int target_id = particle->target_id;
+                    if (creature_pool[target_id].active) {
+                        int sfx_id = creature_type_table[
+                            creature_pool[target_id].type_id]
+                            .sfx_bank_a[crt_rand() % 3];
+                        sfx_play_panned(
+                            sfx_id,
+                            &creature_pool[target_id].pos_x,
+                            1.0f);
+                    }
+                    creature_handle_death(target_id, 0);
+                }
+            } else {
+                if (particle->render_flag == 1) {
+                    if (style_id == 0) {
+                        int turn = crt_rand() % 100 - 50;
+                        particle->angle -= (float)turn * 0.06f
+                            * particle->intensity * frame_dt * 1.96f;
+                        particle->vel_x =
+                            (float)(cos(particle->angle) * 82.0f);
+                        particle->vel_y =
+                            (float)(sin(particle->angle) * 82.0f);
+                    } else if (style_id == 8) {
+                        int turn = crt_rand() % 100 - 50;
+                        particle->angle -= (float)turn * 0.06f
+                            * particle->intensity * frame_dt * 1.1f;
+                        particle->vel_x =
+                            (float)(cos(particle->angle) * 62.0f);
+                        particle->vel_y =
+                            (float)(sin(particle->angle) * 62.0f);
+                    } else {
+                        int turn = crt_rand() % 100 - 50;
+                        particle->angle -= (float)turn * 0.06f
+                            * particle->intensity * frame_dt * 1.1f;
+                        particle->vel_x =
+                            (float)(cos(particle->angle) * 82.0f);
+                        particle->vel_y =
+                            (float)(sin(particle->angle) * 82.0f);
+                    }
+                }
+                if (particle->intensity <= 1.0f) {
+                    particle->age = particle->intensity;
+                } else {
+                    particle->age = 1.0f;
+                }
+                particle->scale_x = 1.0f - particle->intensity * 0.95f;
+                particle->scale_y = particle->scale_x;
+
+                if (particle->render_flag) {
+                    int hit_id = creature_find_in_radius(
+                        &particle->pos_x,
+                        particle->intensity * 8.0f,
+                        0);
+                    if (hit_id != -1) {
+                        particle->render_flag = 0;
+                        if (style_id == 8) {
+                            particle->pos_x = creature_pool[hit_id].pos_x;
+                            particle->pos_y = creature_pool[hit_id].pos_y;
+                            particle->vel_x = 0.0f;
+                            particle->vel_y = 0.0f;
+                            creature_pool[hit_id].state_flag = 0;
+                            particle->target_id = hit_id;
+                        } else {
+                            while (6.2831855f < particle->angle) {
+                                particle->angle -= 6.2831855f;
+                            }
+                            while (particle->angle < 0.0f) {
+                                particle->angle += 6.2831855f;
+                            }
+
+                            double hit_angle = atan2(
+                                particle->pos_y
+                                    - frame_dt * particle->vel_y
+                                    - creature_pool[hit_id].pos_y,
+                                particle->pos_x
+                                    - frame_dt * particle->vel_x
+                                    - creature_pool[hit_id].pos_x);
+                            while (6.2831855f < hit_angle) {
+                                hit_angle -= 6.2831855f;
+                            }
+                            while (hit_angle < 0.0f) {
+                                hit_angle += 6.2831855f;
+                            }
+
+                            if ((double)particle->angle <= hit_angle) {
+                                particle->angle += 1.2566371f;
+                            } else {
+                                particle->angle -= 1.2566371f;
+                            }
+                            particle->vel_x =
+                                (float)(cos(particle->angle) * 82.0f);
+                            particle->vel_y =
+                                (float)(sin(particle->angle) * 82.0f);
+                            int speed_scale = crt_rand() % 10;
+                            particle->vel_x *= (float)speed_scale * 0.1f;
+                            particle->vel_y *= (float)speed_scale * 0.1f;
+                            creature_pool[hit_id].state_flag = 1;
+                            vec2f_t impulse = {0.0f, 0.0f};
+                            creature_apply_damage(
+                                hit_id,
+                                particle->intensity * 10.0f,
+                                4,
+                                &impulse.x);
+
+                            creature_t *hit_creature =
+                                &creature_pool[hit_id];
+                            if (hit_creature->tint_r
+                                    + hit_creature->tint_g
+                                    + hit_creature->tint_b
+                                > 1.6f) {
+                                float tint_scale =
+                                    1.0f - particle->intensity * 0.01f;
+                                hit_creature->tint_r *= tint_scale;
+                                hit_creature->tint_g *= tint_scale;
+                                hit_creature->tint_b *= tint_scale;
+
+                                if (hit_creature->tint_r < 0.0f) {
+                                    hit_creature->tint_r = 0.0f;
+                                } else if (hit_creature->tint_r > 1.0f) {
+                                    hit_creature->tint_r = 1.0f;
+                                }
+                                if (hit_creature->tint_g < 0.0f) {
+                                    hit_creature->tint_g = 0.0f;
+                                } else if (hit_creature->tint_g > 1.0f) {
+                                    hit_creature->tint_g = 1.0f;
+                                }
+                                if (hit_creature->tint_b < 0.0f) {
+                                    hit_creature->tint_b = 0.0f;
+                                } else if (hit_creature->tint_b > 1.0f) {
+                                    hit_creature->tint_b = 1.0f;
+                                }
+                                if (hit_creature->tint_a < 0.0f) {
+                                    hit_creature->tint_a = 0.0f;
+                                } else if (hit_creature->tint_a > 1.0f) {
+                                    hit_creature->tint_a = 1.0f;
+                                }
+                            }
+
+                            if (particle_index % 3 == 0) {
+                                vec2f_t velocity = {
+                                    (float)(crt_rand() % 60 - 30),
+                                    (float)(crt_rand() % 60 - 30),
+                                };
+                                int effect_id = fx_spawn_sprite(
+                                    &hit_creature->pos_x,
+                                    &velocity.x,
+                                    13.0f);
+                                sprite_effect_pool[effect_id].color_a = 0.7f;
+                            }
+                            fx_queue_add_random(
+                                (vec2f_t *)&hit_creature->pos_x);
+                            hit_creature->pos_x +=
+                                frame_dt * particle->vel_x;
+                            hit_creature->pos_y +=
+                                frame_dt * particle->vel_y;
+                        }
+                    }
+                }
+            }
+        }
+        ++particle;
+        ++particle_index;
+    } while ((int)particle < (int)&particle_pool[0x80]);
 }
