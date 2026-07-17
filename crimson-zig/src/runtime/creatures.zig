@@ -1976,6 +1976,7 @@ pub const CreaturePool = struct {
                 self,
                 &self.entries[primary_idx],
                 if (maybe_slot_idx) |slot_idx| &self.spawn_slots[slot_idx] else null,
+                call.template_id,
             );
         }
 
@@ -2872,6 +2873,7 @@ pub const CreaturePool = struct {
         self: *const CreaturePool,
         creature: *CreatureState,
         spawn_slot: ?*spawn_mod.SpawnSlotInit,
+        template_id: i32,
     ) void {
         if (!self.hardcore) {
             if (spawn_slot) |slot| {
@@ -2923,6 +2925,9 @@ pub const CreaturePool = struct {
             return;
         }
 
+        if (template_id == @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38)) {
+            creature.move_speed = narrowF32(creature.move_speed * 0.7);
+        }
         creature.move_speed = narrowF32(creature.move_speed * 1.05);
         creature.contact_damage = narrowF32(creature.contact_damage * 1.4);
         creature.hp = narrowF32(creature.hp * 1.2);

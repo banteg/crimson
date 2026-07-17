@@ -57,6 +57,11 @@ Frame/prefix notes:
   `0x004340d3..0x004341b9` subsequently write current health (`+0x24`) but
   never max health (`+0x28`). Both ports now retain the unscaled base maximum;
   this matters to native health-ratio behavior rather than presentation.
+- The template-specific tail at `0x00431142..0x00431158` compares the spawn id
+  with `0x38`, gates on hardcore, and multiplies move speed (`+0x5c`) by the
+  `0.7f` stored at `0x0046f334`. This precedes the common hardcore `1.05f`
+  multiplier at `0x004311a7..0x004311b0`. Zig now preserves both operations
+  and their order; neighboring template `0x39` receives only the common buff.
 - Moving the saved position pointer below the random-heading sentinel improved
   the prefix from `1/3159` to `20/3159`.
 - The first blocker is now root-slot address arithmetic versus reloading `pos`

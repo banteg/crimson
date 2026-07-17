@@ -475,6 +475,43 @@ test "spawn difficulty scales current health but preserves base max health" {
     try std.testing.expectEqual(@as(f32, 53.0), hardcore_pool.entries[0].max_hp);
 }
 
+test "hardcore applies the template 0x38 speed penalty before its global buff" {
+    var penalized_pool: cz.creatures.CreaturePool = .{};
+    penalized_pool.hardcore = true;
+    var penalized_rng = cz.spawn.Crand.init(0xBEEF);
+
+    try penalized_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x38,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &penalized_rng,
+    );
+
+    const penalized_speed = cz.native_math.pc24Mul(
+        cz.native_math.pc24Mul(@as(f32, 4.8), @as(f32, 0.7)),
+        @as(f32, 1.05),
+    );
+    try std.testing.expectEqual(penalized_speed, penalized_pool.entries[0].move_speed);
+
+    var ordinary_pool: cz.creatures.CreaturePool = .{};
+    ordinary_pool.hardcore = true;
+    var ordinary_rng = cz.spawn.Crand.init(0xBEEF);
+
+    try ordinary_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x39,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &ordinary_rng,
+    );
+
+    const ordinary_speed = cz.native_math.pc24Mul(@as(f32, 4.8), @as(f32, 1.05));
+    try std.testing.expectEqual(ordinary_speed, ordinary_pool.entries[0].move_speed);
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 
