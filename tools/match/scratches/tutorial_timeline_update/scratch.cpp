@@ -87,8 +87,8 @@ extern "C" void tutorial_timeline_update(void)
         tutorial_empty_string,
     };
     int dt_ms = frame_dt_ms;
-    tutorial_stage_timer += dt_ms;
     quest_spawn_timeline += dt_ms;
+    tutorial_stage_timer += dt_ms;
     player_state_table[0].health = 100.0f;
     if (tutorial_stage_index != 6) {
         player_state_table[0].experience = 0;

@@ -26,10 +26,19 @@ stage-one point bonuses also preserve the otherwise easy-to-miss reload of
 bonus zero's `time_left` into bonuses one and two's `time_max` fields.
 
 The current honest VC6.5 result is 63.71%: 695 target instructions versus 702
-candidate instructions, with references `149/0/8`. The stack frame is the
+candidate instructions, with references `153/0/4`. The stack frame is the
 native `0x5c` bytes. Remaining differences are dominated by prompt-alpha CFG
 tail sharing, register scheduling after the stage-one point-bonus stores,
 reusable vector stack-slot assignment, and switch-case block placement. The
 structured source keeps exact runtime behavior; no volatile qualifiers, dummy
 references, fake externals, artificial dependencies, inline assembly, or
 register constraints are used to hide those residuals.
+
+At entry, native VC6 loads and stores `tutorial_stage_timer` first while
+keeping `quest_spawn_timeline` live across construction of the two local text
+tables. The compiler schedules these independent compound assignments in
+reverse source order, so placing the timeline update first recovers all four
+timer references without changing behavior, instruction count, frame size, or
+the total similarity score. The three remaining data mismatches are the
+already-recovered point-bonus X/Y copies using different value registers; the
+fourth is the stage-five local jump table.

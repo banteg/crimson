@@ -100,7 +100,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | survival_spawn_creature | 0x00407510 | 1973 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
 | wip | survival_update | 0x00407cd0 | 2102 | 504/504 | 98.21% | 102/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
-| wip | tutorial_timeline_update | 0x00408990 | 2907 | 702/695 | 63.71% | 6/695 | 149/0/8 |  | tutorial-script-prompts-hints-and-spawns |
+| wip | tutorial_timeline_update | 0x00408990 | 2907 | 702/695 | 63.71% | 6/695 | 153/0/4 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
