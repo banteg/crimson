@@ -26,13 +26,20 @@ conservatively: the initialized creature-type count, a write-only auxiliary
 Survival handout flag, and a write-only float in the gameplay timer block. Each
 write-only name is explicitly limited to its sole Binary Ninja xref.
 
-The current honest VC6.5 result is 90.58%: 307 target instructions versus 309
-candidate instructions, with references `206/0/1`. The remaining mismatch is
-not missing behavior. VC6 rebases the first typed HUD walk for its record-end
-comparison, adding one `lea` and saving `edi` four instructions early; it also
-chooses `creature_t::state_flag` rather than `target_player` as the creature
-walk's induction base. The other differences are independent sound-table and
-camera-flag scheduling. The typed record walks and natural sequential sound
-bank assignments are retained instead of hiding those residuals with volatile
-state, dummy dependencies, hard-coded addresses, or artificial register
-constraints.
+The recovered local-index `for` loops are important source evidence. VC6
+strength-reduces the 16-entry HUD loop to a pointer based at `slide_x`, so its
+end comparison needs no rebase. The 384-entry creature loop keeps the integer
+index in `edi` and a pointer based at `target_player` in `esi`, exactly matching
+the native negative field offsets and post-increment `anim_phase` store. The
+native sound-table scheduling is recovered by placing the lizard and second
+spider's second death sound after their animation constants.
+
+The current honest VC6.5 result is 99.02%: 307/307 instructions and references
+`213/0/0`. Only two independent scheduling swaps remain. Native places the two
+one-byte perk/bonus flags before the 256-byte weapon-usage `memset`, and places
+the second `-1.0f` vector-temporary store between the two dwords of the
+eight-byte player auxiliary clear. All six natural orderings of the camera,
+flags, and clear operations, plus reusable-temporary and scalar-clear variants,
+were checked; they either retain these swaps or diverge more broadly. The
+plausible source is retained instead of adding volatile state, dummy
+dependencies, hard-coded addresses, or artificial register constraints.

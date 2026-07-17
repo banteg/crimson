@@ -189,7 +189,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_sequence_load | 0x00412a10 | 101 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | status-sequence-registry-load |
 | match | game_save_status | 0x00412a80 | 399 | 123/123 | 100.00% | 123/123 | 36/0/0 |  | game-status-save-transform |
 | match | game_load_status | 0x00412c10 | 420 | 134/134 | 100.00% | 134/134 | 43/0/0 |  | game-status-load-transform |
-| wip | gameplay_reset_state | 0x00412dc0 | 1639 | 309/307 | 90.58% | 7/307 | 206/0/1 |  | gameplay-session-state-reset |
+| wip | gameplay_reset_state | 0x00412dc0 | 1639 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
 | wip | player_update | 0x004136b0 | 16257 | 3513/4206 | 25.65% | 1/4206 | 299/0/46 |  | core-player-simulation |

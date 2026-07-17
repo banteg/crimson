@@ -115,17 +115,16 @@ int crt_rand(void);
 
 void gameplay_reset_state(void)
 {
-    bonus_hud_slot_t *slot = &bonus_hud_slot_table[0];
     player_overlay_suppressed_latch = 0;
-    do {
+    for (int slot_index = 0; slot_index < 16; ++slot_index) {
+        bonus_hud_slot_t *slot = &bonus_hud_slot_table[slot_index];
         slot->slide.field_0x1c = 5.0f;
         slot->active = 0;
         slot->slide.slide_x = 0.0f;
         slot->slide.icon_id = 1;
         slot->slide.label = "Empty";
         slot->slide.field_0x08 = 1.0f;
-        ++slot;
-    } while ((int)slot < (int)&bonus_hud_slot_table[16]);
+    }
 
     quest_spawn_timeline = 0;
     shock_chain_links_left = 0;
@@ -169,9 +168,9 @@ void gameplay_reset_state(void)
     creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_b[1] =
         sfx_lizard_attack_02;
     creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[0] = sfx_lizard_die_01;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[1] = sfx_lizard_die_02;
     creature_type_table[CREATURE_TYPE_LIZARD].field_0x20 = 1.0f;
     creature_type_table[CREATURE_TYPE_LIZARD].anim_rate = 1.6f;
+    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[1] = sfx_lizard_die_02;
     creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[2] = sfx_lizard_die_03;
     creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[3] = sfx_lizard_die_04;
     creature_type_table[CREATURE_TYPE_LIZARD].anim_flags = 1;
@@ -201,9 +200,9 @@ void gameplay_reset_state(void)
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_b[1] =
         sfx_spider_attack_02;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[0] = sfx_spider_die_01;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[1] = sfx_spider_die_02;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].field_0x20 = 1.0f;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].anim_rate = 1.5f;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[1] = sfx_spider_die_02;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[2] = sfx_spider_die_03;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[3] = sfx_spider_die_04;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].anim_flags = 1;
@@ -311,23 +310,19 @@ void gameplay_reset_state(void)
         ++secondary;
     } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);
 
-    int creature_id = 0;
-    creature_t *creature = &creature_pool[0];
-    do {
-        creature->hit_flash_timer = 0.0f;
-        creature->active = 0;
+    for (int creature_id = 0; creature_id < 0x180; ++creature_id) {
+        creature_pool[creature_id].hit_flash_timer = 0.0f;
+        creature_pool[creature_id].active = 0;
         if (config_blob.player_count != 0) {
-            creature->target_player = creature_id % config_blob.player_count;
+            creature_pool[creature_id].target_player =
+                creature_id % config_blob.player_count;
         } else {
-            creature->target_player = 0;
+            creature_pool[creature_id].target_player = 0;
         }
-        creature->state_flag = 1;
-        creature->flags = 0;
-        creature->anim_phase = (float)(crt_rand() % 31);
-        ++creature;
-        ++creature_id;
-    } while ((int)&creature->target_player <
-             (int)&creature_pool[0x180].target_player);
+        creature_pool[creature_id].state_flag = 1;
+        creature_pool[creature_id].flags = 0;
+        creature_pool[creature_id].anim_phase = (float)(crt_rand() % 31);
+    }
 
     creature_spawn_slot_t *spawn = &creature_spawn_slot_table[0];
     do {
