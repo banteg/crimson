@@ -308,7 +308,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | projectile_update | 0x00420b90 | 8409 | 2101/2203 | 44.05% | 0/2203 | 301/0/28 |  | core-projectile-simulation |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
-| wip | creature_update_all | 0x00426220 | 5330 | 1292/1338 | 48.90% | 0/1338 | 206/0/5 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
+| wip | creature_update_all | 0x00426220 | 5330 | 1290/1338 | 49.09% | 0/1338 | 207/0/4 |  | creature-ai-movement-attacks-and-corpse-lifecycle |
 | match | fx_queue_add_random | 0x00427700 | 291 | 73/73 | 100.00% | 73/73 | 23/0/0 |  | gameplay-random-fx-queue |
 | match | fx_queue_random_color_destroy | 0x00427830 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | fx-random-color-trivial-destructor |
 | match | fx_queue_add_rotated | 0x00427840 | 210 | 55/55 | 100.00% | 55/55 | 18/0/0 |  | gameplay-rotated-fx-queue |

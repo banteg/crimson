@@ -12,8 +12,10 @@ final body culling.
 ## Recovered source shape
 
 - The two-player retarget path indexes the other player directly as
-  `1 - current_player`; this reproduces the native subtract-from-player-two
-  addressing and the long-lived loop-index spill.
+  `1 - current_player`. Native `0x00426453..0x004264ae` addresses health
+  separately, then forms one pointer to the adjacent `pos_x`/`pos_y` pair;
+  the recovered local `alternate_pos` reproduces that shape and the native
+  subtract-from-player-two addressing.
 - Linked AI modes use their live-link path as the native fallthrough, while
   dead links reset to orbit mode and the tethered variants apply 1,000 damage
   through fresh zero-vector temporaries.
@@ -31,14 +33,16 @@ final body culling.
 
 ## Remaining mismatch
 
-The complete natural reconstruction is an honest 48.90% WIP: 1,292 candidate
+The complete natural reconstruction is an honest 49.09% WIP: 1,290 candidate
 instructions against 1,338 native instructions, with masked references
-`206/0/5`. The residual is dominated by global register allocation: native
-keeps the creature index in a scaled form and spills health, lifecycle, and
-collision pointers into a `0x7c` frame, while VC6 coalesces the same source
-values into a byte offset and a `0x64` frame. That changes repeated SIB
-addressing, x87 cleanup, and alignment through the melee block. The five
-reference mismatches are sequence-alignment artifacts over otherwise evidenced
-player coordinates, constants, and perk calls; there are no unresolved
-references. No volatile state, dead expression, inline assembly, register
-constraint, fake alias, or artificial stack padding is used.
+`207/0/4`. The adjacent-position pointer removes two candidate instructions,
+aligns one additional reference, and eliminates the player-two `pos_x`
+reference mismatch. The residual is dominated by global register allocation:
+native keeps the creature index in a scaled form and spills health, lifecycle,
+and collision pointers into a `0x7c` frame, while VC6 coalesces the same source
+values into a byte offset and a `0x60` frame. That changes repeated SIB
+addressing, x87 cleanup, and alignment through the melee block. The four
+remaining audit entries are sequence-alignment artifacts over otherwise
+evidenced player coordinates, constants, and perk calls; there are no
+unresolved references. No volatile state, dead expression, inline assembly,
+register constraint, fake alias, or artificial stack padding is used.

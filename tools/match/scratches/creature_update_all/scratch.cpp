@@ -145,8 +145,10 @@ extern "C" void creature_update_all(void)
                     if (creature_update_tick % 70 != 0) {
                         if (config_player_count == 2) {
                             if (player_state_table[1 - current_player].health > 0.0f) {
-                                dx = player_state_table[1 - current_player].pos_x - pos[0];
-                                dy = player_state_table[1 - current_player].pos_y - pos[1];
+                                float *alternate_pos =
+                                    &player_state_table[1 - current_player].pos_x;
+                                dx = alternate_pos[0] - pos[0];
+                                dy = alternate_pos[1] - pos[1];
                                 alternate_distance = (float)sqrt(dx * dx + dy * dy);
                                 if (alternate_distance < distance) {
                                     creature_pool[creature_index].target_player =
