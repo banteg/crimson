@@ -179,21 +179,21 @@ extern "C" void player_update(void)
         player->man_bomb_timer = player->man_bomb_timer + frame_dt;
         if (player->man_bomb_timer > perk_man_bomb_trigger_interval_s) {
             int owner_id;
-            if (cv_friendlyFire->value == 0.0f) {
-                owner_id = -100;
-            } else {
+            if (cv_friendlyFire->value != 0.0f) {
                 owner_id = -1 - render_overlay_player_index;
+            } else {
+                owner_id = -100;
             }
 
             int projectile_index = 0;
             do {
-                if ((projectile_index & 1) == 0) {
+                if ((projectile_index & 1) != 0) {
                     projectile_spawn(
                         &player->pos_x,
                         (float)projectile_index * 0.7853982f
                             + (float)(crt_rand() % 0x32) * 0.01f
                             - 0.25f,
-                        PROJECTILE_TYPE_ION_MINIGUN,
+                        PROJECTILE_TYPE_ION_RIFLE,
                         owner_id);
                 } else {
                     projectile_spawn(
@@ -201,7 +201,7 @@ extern "C" void player_update(void)
                         (float)projectile_index * 0.7853982f
                             + (float)(crt_rand() % 0x32) * 0.01f
                             - 0.25f,
-                        PROJECTILE_TYPE_ION_RIFLE,
+                        PROJECTILE_TYPE_ION_MINIGUN,
                         owner_id);
                 }
                 ++projectile_index;
@@ -230,10 +230,10 @@ extern "C" void player_update(void)
         player->fire_cough_timer = player->fire_cough_timer + frame_dt;
         if (player->fire_cough_timer > perk_fire_cough_trigger_interval_s) {
             int owner_id;
-            if (cv_friendlyFire->value == 0.0f) {
-                owner_id = -100;
-            } else {
+            if (cv_friendlyFire->value != 0.0f) {
                 owner_id = -1 - render_overlay_player_index;
+            } else {
+                owner_id = -100;
             }
 
             sfx_play_panned(
@@ -301,24 +301,20 @@ extern "C" void player_update(void)
         player->hot_tempered_timer = player->hot_tempered_timer + frame_dt;
         if (player->hot_tempered_timer > perk_hot_tempered_trigger_interval_s) {
             int owner_id;
-            if (cv_friendlyFire->value == 0.0f) {
-                owner_id = -100;
-            } else {
+            if (cv_friendlyFire->value != 0.0f) {
                 owner_id = -1 - render_overlay_player_index;
+            } else {
+                owner_id = -100;
             }
 
             int projectile_index = 0;
             do {
-                int projectile_type;
-                if ((projectile_index & 1) == 0) {
-                    projectile_type = PROJECTILE_TYPE_PLASMA_MINIGUN;
-                } else {
-                    projectile_type = PROJECTILE_TYPE_PLASMA_RIFLE;
-                }
                 projectile_spawn(
                     &player->pos_x,
                     (float)projectile_index * 0.7853982f,
-                    projectile_type,
+                    (projectile_index & 1) != 0
+                        ? PROJECTILE_TYPE_PLASMA_RIFLE
+                        : PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
                 ++projectile_index;
             } while (projectile_index < 8);
@@ -333,17 +329,17 @@ extern "C" void player_update(void)
         player->hot_tempered_timer = 0.0f;
     }
 
-    if (player_spread_damping_gate <= 0.0f) {
-        player_spread_damping_scalar =
-            frame_dt * 0.8f + player_spread_damping_scalar;
-        if (player_spread_damping_scalar > 1.0f) {
-            player_spread_damping_scalar = 1.0f;
-        }
-    } else {
+    if (player_spread_damping_gate > 0.0f) {
         player_spread_damping_scalar =
             player_spread_damping_scalar - frame_dt;
         if (player_spread_damping_scalar < 0.3f) {
             player_spread_damping_scalar = 0.3f;
+        }
+    } else {
+        player_spread_damping_scalar =
+            frame_dt * 0.8f + player_spread_damping_scalar;
+        if (player_spread_damping_scalar > 1.0f) {
+            player_spread_damping_scalar = 1.0f;
         }
     }
 
@@ -835,10 +831,10 @@ extern "C" void player_update(void)
         if (player->reload_timer <= player->reload_timer_max * 0.5f) {
             int owner_id;
             bonus_spawn_guard = 1;
-            if (cv_friendlyFire->value == 0.0f) {
-                owner_id = -100;
-            } else {
+            if (cv_friendlyFire->value != 0.0f) {
                 owner_id = -1 - render_overlay_player_index;
+            } else {
+                owner_id = -100;
             }
 
             int projectile_count =
@@ -1133,10 +1129,10 @@ extern "C" void player_update(void)
         }
 
         scalar = 1.0f;
-        if (cv_friendlyFire->value == 0.0f) {
-            owner_id = -100;
-        } else {
+        if (cv_friendlyFire->value != 0.0f) {
             owner_id = -1 - render_overlay_player_index;
+        } else {
+            owner_id = -100;
         }
 
         random_offset.x = player->aim_x;

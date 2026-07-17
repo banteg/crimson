@@ -56,7 +56,7 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=38.19% prefix=7/4206 target_insns=4206 candidate_insns=3806 refs=581/0/33
+match=38.72% prefix=7/4206 target_insns=4206 candidate_insns=3806 refs=588/0/34
 first_target=jne L3f7a
 first_candidate=jne L3a5d
 ```
@@ -98,6 +98,24 @@ even and odd projectile arms each evaluate their randomized angle before
 tail-merging at the common spawn, reproducing both native RNG call sites. The
 Ammunition Within damage choice likewise converges on the single native
 `player_take_damage` call instead of emitting one call per damage value.
+
+Five native friendly-fire owner selections at `0x004138ea`, `0x00413a36`,
+`0x00413cb5`, `0x0041512c`, and `0x00415be8` leave the enabled calculation
+(`-1 - render_overlay_player_index`) in the fallthrough and branch to the
+disabled sentinel (`-100`). The scratch now preserves that repeated natural
+source order. The spread-damping gate at `0x00413d66` similarly leaves its
+positive subtract-and-clamp arm in the fallthrough and branches to the
+add-and-clamp arm. These source-level reversals recover six native references
+without changing the instruction count or stack frame.
+
+The two alternating projectile rings now also reproduce their native argument
+selection. Man Bomb at `0x00413917` falls through on odd indices to the Ion
+Rifle arm and branches on even indices to Ion Minigun, keeping the two native
+random-angle evaluations. Hot Tempered at `0x00413ce1` selects Plasma Rifle or
+Plasma Minigun directly in the call argument, which makes VC6 emit the native
+`push owner; test parity; push type; shared call` sequence instead of reducing
+a temporary projectile type arithmetically. Together with the owner and spread
+ordering, this raises the whole-function score from `38.19%` to `38.72%`.
 
 Live Binary Ninja isolates the native demo movement phase at
 `0x00414c7f..0x00414f3e`. With no live target it derives an orbiting heading
