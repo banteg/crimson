@@ -3,10 +3,10 @@
 Native target: `crimsonland.exe` at `0x004070e0` (455 bytes, 108
 instructions).
 
-The recovered MSVC 6.5 `/O2 /GB` source is an honest WIP:
+The recovered MSVC 6.5 `/O2 /GB` source is exact:
 
 ```txt
-match=65.40% prefix=23/108 target_insns=108 candidate_insns=103 refs=35/0/5
+match=100.00% prefix=108/108 target_insns=108 candidate_insns=108 refs=52/0/0
 ```
 
 ## Recovered source shape
@@ -21,29 +21,27 @@ match=65.40% prefix=23/108 target_insns=108 candidate_insns=103 refs=35/0/5
   qualifying frame.
 - A negative transition timer starts completion by muting the extra music
   track, incrementing completed-quest counter `40 + major * 10 + minor`, and
-  seeding the timer with the integer frame delta.
-- The quest-hit stinger fires only for `800 < timer <= 850` and snaps the timer
-  to `851 + dt`. Completion music fires only for `2000 < timer <= 2050`, snaps
-  to `2051 + dt`, and starts its volume at zero.
+  seeding the timer at zero.
+- The mutually exclusive transition branches share one final integer frame
+  delta increment. The quest-hit stinger fires only for `800 < timer <= 850`
+  and seeds the timer at 851; completion music fires only for
+  `2000 < timer <= 2050`, seeds it at 2051, and starts its volume at zero.
+  The common increment therefore produces the observed `dt`, `851 + dt`, and
+  `2051 + dt` results without branch-local arithmetic.
 - Once the pre-increment timer is strictly above 2500 ms, the function advances
   the normal unlock index to `major * 10 + minor - 10`; hardcore completion
   additionally advances the full unlock index. It then saves status, requests
   quest results, resets the transition direction, flushes input through Grim2D,
   polls the console, and clears the active high-score XP field.
 
-## Remaining compiler delta
+## Matching evidence
 
-The first 23 instructions and the complete control-flow/side-effect graph agree.
-The calibrated compiler emits a five-instruction-shorter body: it folds the
-negative-branch counter increment into an indexed memory `inc`, folds the hit
-timer seed into an immediate add, and schedules the music/unlock global loads
-differently. Those shifts also change downstream branch-label tokens and cause
-the five reported reference mismatches at otherwise aligned instructions.
-
-MSVC 6.5pp and 6.6 produce the same best body. MSVC 7.0 and `/G6` both score
-worse, while `/Og-` introduces a stack frame and broadly deoptimizes the
-function. No volatile qualifier, dummy access, or other register-forcing source
-is retained.
+The zero seed must occur before the completed-quest counter update. With that
+source order and the shared tail increment, VC6 retains the zero in `eax`,
+emits the native indexed load/increment/store, and reproduces the hit, music,
+unlock, and final timer blocks instruction for instruction. No volatile
+qualifier, dummy access, artificial reference, or register-forcing construct is
+used.
 
 ## Port parity
 

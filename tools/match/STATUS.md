@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**657/2173** functions matched, **120794/676681** code bytes (**17.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**658/2173** functions matched, **121249/676681** code bytes (**17.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 440/997 | 94107/386756 | 24.3% | 440/538 |
+| crimsonland.exe | 441/997 | 94562/386756 | 24.5% | 441/538 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**440/997** functions, **94107/386756** bytes (**24.3%**), **440/538** scratches verified.
+**441/997** functions, **94562/386756** bytes (**24.5%**), **441/538** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -95,7 +95,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_completed_survival_button_destroy | 0x00406ae0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | victory-survival-button-empty-destructor |
 | match | game_update_generic_menu | 0x00406af0 | 72 | 19/19 | 100.00% | 19/19 | 9/0/0 |  | generic-menu-render-coordinator |
 | wip | perks_update_effects | 0x00406b40 | 1437 | 352/352 | 90.06% | 9/352 | 135/0/0 |  | perk-runtime-effects |
-| wip | quest_mode_update | 0x004070e0 | 455 | 103/108 | 65.40% | 23/108 | 35/0/5 |  | quest-completion-transition-coordinator |
+| match | quest_mode_update | 0x004070e0 | 455 | 108/108 | 100.00% | 108/108 | 52/0/0 |  | quest-completion-transition-coordinator |
 | match | rush_mode_update | 0x004072b0 | 594 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
 | match | survival_spawn_creature | 0x00407510 | 1973 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
 | wip | survival_update | 0x00407cd0 | 2102 | 506/504 | 98.22% | 55/504 | 134/0/1 |  | survival-handouts-milestones-and-edge-wave-spawns |

@@ -44,32 +44,19 @@ extern "C" void quest_mode_update(void)
     bonus_reflex_boost_timer = 0.0f;
     if (timer < 0) {
         sfx_mute_all(music_track_extra_0);
+        quest_transition_timer_ms = 0;
         int quest_index = quest_stage_major * 10 + quest_stage_minor;
         int play_count = game_status_blob.quest_play_counts[40 + quest_index];
         ++play_count;
         game_status_blob.quest_play_counts[40 + quest_index] = play_count;
-        quest_transition_timer_ms = frame_dt_ms;
-        return;
-    }
-
-    if (timer > 800 && timer <= 850) {
+    } else if (timer > 800 && timer <= 850) {
         sfx_play(sfx_questhit, 1.0f);
-        int next_timer = 851;
-        next_timer += frame_dt_ms;
-        quest_transition_timer_ms = next_timer;
-        return;
-    }
-
-    if (timer > 2000 && timer <= 2050) {
+        quest_transition_timer_ms = 851;
+    } else if (timer > 2000 && timer <= 2050) {
         quest_transition_timer_ms = 2051;
         sfx_play_exclusive(music_track_crimsonquest_id);
-        int next_timer = frame_dt_ms + quest_transition_timer_ms;
         sfx_volume_table[music_track_crimsonquest_id] = 0.0f;
-        quest_transition_timer_ms = next_timer;
-        return;
-    }
-
-    if (timer > 2500) {
+    } else if (timer > 2500) {
         int next_unlock =
             quest_stage_major * 10 + quest_stage_minor - 10;
         if (next_unlock > quest_unlock_index) {
