@@ -6,6 +6,14 @@ struct creature_tint_t {
     float g;
     float b;
     float a;
+
+    void set(float red, float green, float blue, float alpha)
+    {
+        r = red;
+        g = green;
+        b = blue;
+        a = alpha;
+    }
 };
 
 typedef struct creature_spawn_template_named_locals_t {
@@ -126,6 +134,18 @@ typedef union creature_spawn_template_locals_t {
         creature->tint_a = (alpha);                                                                                  \
         creature->size = (size_value);                                                                               \
         creature->contact_damage = (damage);                                                                         \
+    } while (0)
+
+#define SET_ROOT_STATS_WITH_TINT(creature_type, health_value, speed_value, reward, red, green, blue, alpha, size_value, damage) \
+    do {                                                                                                                       \
+        creature->type_id = (creature_type);                                                                                   \
+        creature->health = (health_value);                                                                                     \
+        creature->move_speed = (speed_value);                                                                                  \
+        creature->reward_value = (reward);                                                                                     \
+        child_tint.set((red), (green), (blue), (alpha));                                                                       \
+        *(creature_tint_t *)&creature->tint_r = child_tint;                                                                    \
+        creature->size = (size_value);                                                                                         \
+        creature->contact_damage = (damage);                                                                                   \
     } while (0)
 
 #define INIT_ALIEN_SPAWNER(timer, limit_value, interval, child_template, size_value, health_value, speed_value, reward, red, green, blue) \
@@ -756,60 +776,60 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     RAND_FIELD(creature->tint_b, 0x32, 0.001f, 0.6f);
                     RAND_FIELD(creature->contact_damage, 0x23, 1.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_24) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 20.0f, 2.0f, 110.0f,
-                                   0.1f, 0.7f, 0.11f, 1.0f, 50.0f, 4.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 20.0f, 2.0f, 110.0f,
+                                             0.1f, 0.7f, 0.11f, 1.0f, 50.0f, 4.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_SMALL_25) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 25.0f, 2.5f, 125.0f,
-                                   0.1f, 0.8f, 0.11f, 1.0f, 30.0f, 3.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 25.0f, 2.5f, 125.0f,
+                                             0.1f, 0.8f, 0.11f, 1.0f, 30.0f, 3.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PALE_GREEN_26) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 50.0f, 2.2f, 125.0f,
-                                   0.6f, 0.8f, 0.6f, 1.0f, 45.0f, 10.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.2f, 125.0f,
+                                             0.6f, 0.8f, 0.6f, 1.0f, 45.0f, 10.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 50.0f, 2.1f, 125.0f,
-                                   1.0f, 0.8f, 0.1f, 1.0f, 45.0f, 10.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.1f, 125.0f,
+                                             1.0f, 0.8f, 0.1f, 1.0f, 45.0f, 10.0f);
                     creature->flags = CREATURE_FLAG_BONUS_ON_DEATH;
                     *(unsigned short *)&creature->link_index = 3;
                     *(unsigned short *)((char *)&creature->link_index + 2) = 5;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 53.0f, 1.7f, 120.0f,
-                                   0.7f, 0.1f, 0.51f, 0.5f, 55.0f, 8.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 53.0f, 1.7f, 120.0f,
+                                             0.7f, 0.1f, 0.51f, 0.5f, 55.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_GHOST_22) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 25.0f, 1.7f, 150.0f,
-                                   0.1f, 0.7f, 0.51f, 0.05f, 50.0f, 8.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 25.0f, 1.7f, 150.0f,
+                                             0.1f, 0.7f, 0.51f, 0.05f, 50.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_GHOST_SMALL_23) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 5.0f, 1.7f, 180.0f,
-                                   0.1f, 0.7f, 0.51f, 0.04f, 45.0f, 8.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 5.0f, 1.7f, 180.0f,
+                                             0.1f, 0.7f, 0.51f, 0.04f, 45.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 50.0f, 1.7f, 150.0f,
-                                   0.7f, 0.1f, 0.51f, 1.0f, 55.0f, 8.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 1.7f, 150.0f,
+                                             0.7f, 0.1f, 0.51f, 1.0f, 55.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 800.0f, 2.5f, 450.0f,
-                                   0.8f, 0.8f, 0.8f, 1.0f, 70.0f, 20.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 800.0f, 2.5f, 450.0f,
+                                             0.8f, 0.8f, 0.8f, 1.0f, 70.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREY_FAST_2A) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 50.0f, 3.1f, 300.0f,
-                                   0.3f, 0.3f, 0.3f, 1.0f, 60.0f, 8.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 3.1f, 300.0f,
+                                             0.3f, 0.3f, 0.3f, 1.0f, 60.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_RED_FAST_2B) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 30.0f, 3.6f, 450.0f,
-                                   1.0f, 0.3f, 0.3f, 1.0f, 35.0f, 20.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 30.0f, 3.6f, 450.0f,
+                                             1.0f, 0.3f, 0.3f, 1.0f, 35.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_RED_BOSS_2C) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 3800.0f, 2.0f, 1500.0f,
-                                   0.85f, 0.2f, 0.2f, 1.0f, 80.0f, 40.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 3800.0f, 2.0f, 1500.0f,
+                                             0.85f, 0.2f, 0.2f, 1.0f, 80.0f, 40.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_CYAN_AI2_2D) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 45.0f, 3.1f, 200.0f,
-                                   0.0f, 0.9f, 0.8f, 1.0f, 38.0f, 3.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 45.0f, 3.1f, 200.0f,
+                                             0.0f, 0.9f, 0.8f, 1.0f, 38.0f, 3.0f);
                     creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
                 } else if (template_id == SPAWN_ID_LIZARD_CONST_GREY_2F) {
-                    SET_ROOT_STATS(CREATURE_TYPE_LIZARD, 20.0f, 2.5f, 150.0f,
-                                   0.8f, 0.8f, 0.8f, 1.0f, 45.0f, 4.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_LIZARD, 20.0f, 2.5f, 150.0f,
+                                             0.8f, 0.8f, 0.8f, 1.0f, 45.0f, 4.0f);
                 } else if (template_id == SPAWN_ID_LIZARD_CONST_YELLOW_BOSS_30) {
-                    SET_ROOT_STATS(CREATURE_TYPE_LIZARD, 1000.0f, 2.0f, 400.0f,
-                                   0.9f, 0.8f, 0.1f, 1.0f, 65.0f, 10.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_LIZARD, 1000.0f, 2.0f, 400.0f,
+                                             0.9f, 0.8f, 0.1f, 1.0f, 65.0f, 10.0f);
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_RED_BOSS_3B) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 1200.0f, 2.0f, 4000.0f,
-                                   0.9f, 0.0f, 0.0f, 1.0f, 70.0f, 20.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 1200.0f, 2.0f, 4000.0f,
+                                             0.9f, 0.0f, 0.0f, 1.0f, 70.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 200.0f, 2.0f, 200.0f,
-                                   0.9f, 0.1f, 0.1f, 1.0f, 40.0f, 20.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 200.0f, 2.0f, 200.0f,
+                                             0.9f, 0.1f, 0.1f, 1.0f, 40.0f, 20.0f);
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
                     creature->orbit_angle = 0.4f;
                     creature->orbit_radius.projectile_type = PROJECTILE_TYPE_SPIDER_PLASMA;
@@ -973,6 +993,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
 #undef INIT_GRID_CHILD
 #undef SPAWN_GRID
 #undef SET_ROOT_STATS
+#undef SET_ROOT_STATS_WITH_TINT
 #undef INIT_ALIEN_SPAWNER
 #undef RAND_FIELD
 #undef RAND_FIELD_INT_BASE

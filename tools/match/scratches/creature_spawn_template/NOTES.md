@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=59.31% prefix=23/3159 target_insns=3159 candidate_insns=2719 refs=315/0/2
+match=60.28% prefix=23/3159 target_insns=3159 candidate_insns=2866 refs=315/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -67,7 +67,14 @@ Frame/prefix notes:
   aggregates preserves the exact `0x48`-byte frame. Recovering the first root's
   whole-value assignment adds nine native-shaped construction/copy instructions
   and raises the score from `59.06%` to `59.31%` without changing the prefix or
-  reference audit. The later fixed-template ladder also constructs tint values
-  at `[esp+0x48..0x54]`, but a broad POD aggregate conversion schedules the
-  copies in the wrong order and regresses the score, so that extrapolation is
-  intentionally left unresolved.
+  reference audit.
+- Live disassembly shows the fixed-stat ladder repeatedly constructing RGBA in
+  the same `[esp+0x48..0x54]` slot and copying the four dwords into the creature.
+  This is the same value-object shape that gives the exact
+  `survival_spawn_creature` scratch its tint assignments. Recovering it for the
+  constant templates `0x21..0x2d`, `0x2f`, `0x30`, `0x3b`, and `0x3c` adds
+  147 candidate instructions, raises the score from `59.31%` to `60.28%`, and
+  preserves the exact frame, prefix, and `315/0/2` reference audit. Applying
+  the shape broadly to later special cases perturbs VC6 register allocation and
+  loses alignment, so those cases remain direct-field WIPs rather than being
+  forced.
