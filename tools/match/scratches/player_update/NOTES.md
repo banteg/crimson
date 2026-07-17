@@ -69,6 +69,15 @@ both demo mode and control mode `5` to the shared autoplay arm at
 computer-controlled movement behavior and raises the whole-function match from
 `29.02%` to `37.79%`.
 
+The same evidence revealed two rewrite-runtime parity defects. Aim scheme `5`
+participates in the auto-target scan but does not select autoplay movement;
+only demo mode or movement mode `5` does. The rewrite previously coupled
+computer aim to computer movement. Also, the no-live-target arm at
+`0x00414c7f` derives a tangential heading from the vector away from `(512,
+512)`, so it orbits the arena rather than returning to center. The local input
+interpreter now preserves the configured movement mode for computer aim and
+reproduces that no-target orbit for computer movement.
+
 The firing dispatcher now follows the same native branch layout: an active Fire
 Bullets timer falls through to the replacement path at `0x00415d13`, while an
 inactive timer branches to the normal weapon cases at `0x00415eb8`. Man Bomb's

@@ -432,7 +432,31 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
     assert_float_close(float(out.move.y), float(expected.y))
 
 
-def test_local_input_computer_aim_scheme_forces_computer_movement(
+def test_local_input_computer_move_mode_without_target_orbits_center(
+    mocker: MockerFixture,
+) -> None:
+    _patch_no_user_input(mocker)
+
+    interpreter = local_input.LocalInputInterpreter()
+    player = PlayerState(index=0, pos=Vec2(612.0, 512.0), aim=Vec2(672.0, 512.0))
+    config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
+
+    out = interpreter.build_player_input(
+        player_index=0,
+        player=player,
+        config=config,
+        mouse_screen=Vec2(),
+        mouse_world=Vec2(),
+        screen_center=Vec2(),
+        dt=0.1,
+        creatures=[],
+    )
+
+    assert_float_close(float(out.move.x), 0.0)
+    assert_float_close(float(out.move.y), 1.0)
+
+
+def test_local_input_computer_aim_scheme_preserves_configured_movement(
     mocker: MockerFixture,
 ) -> None:
     _patch_no_user_input(mocker)
@@ -440,7 +464,11 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
     creatures = [_DummyCreature(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
-    config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
+    config = _set_player_modes(
+        _test_config(),
+        aim_scheme=AimScheme.COMPUTER,
+        move_mode=MovementControlType.DUAL_ACTION_PAD,
+    )
 
     out = interpreter.build_player_input(
         player_index=0,
@@ -453,8 +481,7 @@ def test_local_input_computer_aim_scheme_forces_computer_movement(
         creatures=creatures,
     )
 
-    assert_float_close(float(out.move.x), 1.0)
-    assert_float_close(float(out.move.y), 0.0)
+    assert out.move == Vec2()
 
 
 def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(

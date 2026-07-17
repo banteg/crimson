@@ -691,9 +691,7 @@ def player_update(
     move = _direction_from_heading_native(float(player.heading))
     speed = 0.0
     move_delta_override: Vec2 | None = None
-    player_controlled_movement = (
-        (not state.demo_mode_active) and move_mode != MovementControlType.COMPUTER and aim_scheme != AimScheme.COMPUTER
-    )
+    player_controlled_movement = (not state.demo_mode_active) and move_mode != MovementControlType.COMPUTER
     if player_controlled_movement:
         if move_mode == MovementControlType.RELATIVE:
             turning_left = bool(input_state.turn_left_pressed)

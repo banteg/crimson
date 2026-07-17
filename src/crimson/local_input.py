@@ -277,10 +277,7 @@ class LocalInputInterpreter:
         turn_right_pressed: bool | None = None
         move_to_cursor_pressed = False
         computer_target_index: int | None = None
-        computer_move_active = (
-            move_mode_type is MovementControlType.COMPUTER
-            or aim_scheme is AimScheme.COMPUTER
-        )
+        computer_move_active = move_mode_type is MovementControlType.COMPUTER
 
         if computer_move_active:
             if creatures:
@@ -291,20 +288,26 @@ class LocalInputInterpreter:
                 )
             center_delta = _COMPUTER_ARENA_CENTER - player.pos
             center_dist = center_delta.length()
-            if (
+            has_live_target = (
                 creatures is not None
                 and computer_target_index is not None
                 and 0 <= int(computer_target_index) < len(creatures)
-                and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS
-            ):
-                target_pos = Vec2(
+            )
+            if has_live_target and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS:
+                assert creatures is not None
+                assert computer_target_index is not None
+                move_delta = Vec2(
                     float(creatures[int(computer_target_index)].pos.x),
                     float(creatures[int(computer_target_index)].pos.y),
-                )
+                ) - player.pos
+            elif has_live_target:
+                move_delta = center_delta
             else:
-                target_pos = _COMPUTER_ARENA_CENTER
+                move_delta = (player.pos - _COMPUTER_ARENA_CENTER).perp_left()
+                if move_delta.length_sq() <= 1e-12:
+                    move_delta = Vec2(0.0, 1.0)
 
-            move_dir, move_dist = (target_pos - player.pos).normalized_with_length()
+            move_dir, move_dist = move_delta.normalized_with_length()
             if float(move_dist) > 1e-6:
                 move_vec = move_dir
         elif move_mode_type is MovementControlType.RELATIVE:
