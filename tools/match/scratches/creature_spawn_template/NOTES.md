@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=59.06% prefix=23/3159 target_insns=3159 candidate_insns=2710 refs=315/0/2
+match=59.31% prefix=23/3159 target_insns=3159 candidate_insns=2719 refs=315/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -61,3 +61,13 @@ Frame/prefix notes:
   `"Unhandled creatureType.\n"` diagnostic. Naming that data object in the
   curated map replaces the address-derived scratch placeholder and resolves
   the remaining unknown masked reference (`315/0/2`).
+- Binary Ninja's native stack view and the normalized listing show two adjacent
+  16-byte tint values: the first formation root uses `[esp+0x38..0x44]`, while
+  its child tint occupies `[esp+0x48..0x54]`. Modeling those as contiguous RGBA
+  aggregates preserves the exact `0x48`-byte frame. Recovering the first root's
+  whole-value assignment adds nine native-shaped construction/copy instructions
+  and raises the score from `59.06%` to `59.31%` without changing the prefix or
+  reference audit. The later fixed-template ladder also constructs tint values
+  at `[esp+0x48..0x54]`, but a broad POD aggregate conversion schedules the
+  copies in the wrong order and regresses the score, so that extrapolation is
+  intentionally left unresolved.

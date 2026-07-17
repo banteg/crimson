@@ -1,18 +1,38 @@
 #include <math.h>
 #include "crimsonland_gameplay.h"
 
+struct creature_tint_t {
+    float r;
+    float g;
+    float b;
+    float a;
+};
+
+typedef struct creature_spawn_template_named_locals_t {
+    int scratch[7];
+    creature_tint_t tint;
+    creature_tint_t child_tint;
+} creature_spawn_template_named_locals_t;
+
 typedef union creature_spawn_template_locals_t {
     int i[15];
     float f[15];
+    creature_spawn_template_named_locals_t named;
 } creature_spawn_template_locals_t;
 
 #define slot_10_i locals.i[0]
 #define slot_14_i locals.i[1]
 #define slot_18_i locals.i[2]
-#define tint_r_bits locals.i[10]
-#define tint_g_bits locals.i[11]
-#define tint_b_bits locals.i[12]
-#define tint_a_bits locals.i[13]
+#define tint locals.named.tint
+#define tint_r_bits (*(int *)&tint.r)
+#define tint_g_bits (*(int *)&tint.g)
+#define tint_b_bits (*(int *)&tint.b)
+#define tint_a_bits (*(int *)&tint.a)
+#define child_tint locals.named.child_tint
+#define child_tint_r_bits (*(int *)&child_tint.r)
+#define child_tint_g_bits (*(int *)&child_tint.g)
+#define child_tint_b_bits (*(int *)&child_tint.b)
+#define child_tint_a_bits (*(int *)&child_tint.a)
 
 #define STORE_FLOAT_BITS(field, slot, bits) \
     do {                                    \
@@ -191,10 +211,11 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     creature->heading = (float)(random_heading_roll % 0x13a) * 0.01f;
 
     if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_8_12) {
-        STORE_FLOAT_BITS(creature->tint_r, tint_r_bits, 0x3f266666);
-        STORE_FLOAT_BITS(creature->tint_g, tint_g_bits, 0x3f59999a);
-        STORE_FLOAT_BITS(creature->tint_b, tint_b_bits, 0x3f7851ec);
-        STORE_FLOAT_BITS(creature->tint_a, tint_a_bits, 0x3f800000);
+        tint.r = 0.65f;
+        tint.g = 0.85f;
+        tint.b = 0.97f;
+        tint.a = 1.0f;
+        *(creature_tint_t *)&creature->tint_r = tint;
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->health = 200.0f;
         creature->move_speed = 2.2f;
@@ -206,10 +227,10 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         ring_member_idx = 0;
         slot_18_i = 0;
         slot_14_i = 0;
-        tint_r_bits = 0x3ea3d70b;
-        tint_g_bits = 0x3f16872c;
-        tint_b_bits = 0x3eda1cac;
-        tint_a_bits = 0x3f800000;
+        child_tint_r_bits = 0x3ea3d70b;
+        child_tint_g_bits = 0x3f16872c;
+        child_tint_b_bits = 0x3eda1cac;
+        child_tint_a_bits = 0x3f800000;
         do {
             child_slot_idx = creature_alloc_slot();
             creature = &creature_pool[child_slot_idx];
@@ -223,12 +244,12 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->vel_x = 0.0f;
             creature->vel_y = 0.0f;
             creature->collision_flag = 0;
-            *(int *)&creature->tint_r = tint_r_bits;
+            *(int *)&creature->tint_r = child_tint_r_bits;
             creature->health = 40.0f;
             creature->max_health = 40.0f;
-            *(int *)&creature->tint_g = tint_g_bits;
+            *(int *)&creature->tint_g = child_tint_g_bits;
             ring_member_idx = ring_member_idx + 1;
-            *(int *)&creature->tint_b = tint_b_bits;
+            *(int *)&creature->tint_b = child_tint_b_bits;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -237,7 +258,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 2.4f;
             creature->reward_value = 60.0f;
-            *(int *)&creature->tint_a = tint_a_bits;
+            *(int *)&creature->tint_a = child_tint_a_bits;
             creature->size = 50.0f;
             creature->contact_damage = 4.0f;
         } while (ring_member_idx < 8);
@@ -257,10 +278,10 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         ring_member_idx = 0;
         slot_10_i = 0;
         slot_14_i = 0;
-        tint_r_bits = 0x3f366666;
-        tint_g_bits = 0x3ed33334;
-        tint_b_bits = 0x3e8e147b;
-        tint_a_bits = 0x3f19999a;
+        child_tint_r_bits = 0x3f366666;
+        child_tint_g_bits = 0x3ed33334;
+        child_tint_b_bits = 0x3e8e147b;
+        child_tint_a_bits = 0x3f19999a;
         do {
             child_slot_idx = creature_alloc_slot();
             creature = &creature_pool[child_slot_idx];
@@ -275,11 +296,11 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->vel_y = 0.0f;
             creature->health = 220.0f;
             creature->max_health = 220.0f;
-            *(int *)&creature->tint_r = tint_r_bits;
+            *(int *)&creature->tint_r = child_tint_r_bits;
             ring_member_idx = ring_member_idx + 1;
-            *(int *)&creature->tint_g = tint_g_bits;
+            *(int *)&creature->tint_g = child_tint_g_bits;
             creature->collision_flag = 0;
-            *(int *)&creature->tint_b = tint_b_bits;
+            *(int *)&creature->tint_b = child_tint_b_bits;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -288,7 +309,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 3.8f;
             creature->reward_value = 60.0f;
-            *(int *)&creature->tint_a = tint_a_bits;
+            *(int *)&creature->tint_a = child_tint_a_bits;
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
         } while (ring_member_idx < 5);
@@ -959,7 +980,13 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
 #undef slot_10_i
 #undef slot_14_i
 #undef slot_18_i
+#undef tint
 #undef tint_r_bits
 #undef tint_g_bits
 #undef tint_b_bits
 #undef tint_a_bits
+#undef child_tint
+#undef child_tint_r_bits
+#undef child_tint_g_bits
+#undef child_tint_b_bits
+#undef child_tint_a_bits
