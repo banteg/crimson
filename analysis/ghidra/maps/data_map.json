@@ -9346,9 +9346,23 @@
       "type": "float"
     },
     {
+      "address": "0x004d7a24",
+      "comment": "First of three frame-loop full-version recheck latches; this slot requests recheck variant 1.",
+      "name": "full_version_recheck_pending_slot_1",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x004d7a25",
       "comment": "Main-menu full-version recheck latch set by ui_menu_main_click_recheck_full_version and consumed in frame loop.",
       "name": "full_version_recheck_pending",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d7a26",
+      "comment": "Third of three frame-loop full-version recheck latches; this slot requests recheck variant 3.",
+      "name": "full_version_recheck_pending_slot_3",
       "program": "crimsonland.exe",
       "type": "char"
     },

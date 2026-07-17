@@ -695,7 +695,7 @@
     "program": "crimsonland.exe",
     "address": "0x0040c1c0",
     "name": "game_frame_update",
-    "signature": "void game_frame_update(void)",
+    "signature": "unsigned char game_frame_update(void)",
     "comment": "top-level per-frame update/render dispatcher: frame_dt + reflex-boosted time scale, console toggle (DIK_GRAVE at 0x0040c360) and F12 screenshot input, ESC pause, demo trial timing, screen fade, mouse/analog cursor, game_state dispatch to gameplay/menu/perk/game-over screens, FPS overlay, audio_update, and a discarded per-frame crt_rand() at 0x0040cac7 (advances the shared LCG once per frame); entry identified via WinDbg"
   },
   {
