@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**656/2173** functions matched, **117954/676681** code bytes (**17.4%**). Byte totals are manifest function extents with terminal padding trimmed.
+**657/2173** functions matched, **120794/676681** code bytes (**17.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/537 |
+| crimsonland.exe | 440/997 | 94107/386756 | 24.3% | 440/538 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**439/997** functions, **91267/386756** bytes (**23.6%**), **439/537** scratches verified.
+**440/997** functions, **94107/386756** bytes (**24.3%**), **440/538** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -108,6 +108,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_render_aim_indicators | 0x0040a510 | 1402 | 343/343 | 100.00% | 343/343 | 105/0/0 |  | ui-aim-reload-and-direction-indicators |
 | match | ui_render_aim_lifetime_destroy | 0x0040aa90 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-aim-second-static-empty-destructor |
 | match | ui_render_aim_screen_destroy | 0x0040aaa0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-aim-screen-vector-empty-destructor |
+| match | gameplay_update_and_render | 0x0040aab0 | 2840 | 713/713 | 100.00% | 713/713 | 291/0/0 |  | core-gameplay-frame-coordinator |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | plugin_runtime_update_and_render | 0x0040b630 | 265 | 67/67 | 100.00% | 67/67 | 33/0/0 |  | plugin-runtime-frame-lifecycle |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
