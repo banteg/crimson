@@ -26,9 +26,9 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=57.28% prefix=20/3159 target_insns=3159 candidate_insns=2731
-first_target=lea edx, dword [ebp+ebp*8]
-first_candidate=mov edi, dword [esp+0x60]
+match=58.42% prefix=23/3159 target_insns=3159 candidate_insns=2716 refs=311/1/2
+first_target=lea esi, dword [ebp+edx*2]
+first_candidate=mov dword [esp+0x14], edi
 ```
 
 Frame/prefix notes:
@@ -44,3 +44,8 @@ Frame/prefix notes:
 - Moving the `0x13` chain formation ahead of the grid/fixed-stat ladder improved
   total body alignment from `55.06%` to `57.28%`; the prefix remains blocked at
   the same root-slot address arithmetic mismatch.
+- In all four trigonometric child-spawn loops, materializing the allocated
+  creature pointer before declaring the angle keeps the angle live on x87
+  across the paired `cos`/`sin`, as native does. This removes six candidate
+  instructions, raises the score from `58.09%` to `58.42%`, and improves the
+  masked-reference audit from `308/1/2` to `311/1/2` without changing behavior.

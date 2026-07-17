@@ -214,8 +214,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         tint_a_bits = 0x3f800000;
         do {
             child_slot_idx = creature_alloc_slot();
-            float angle = (float)ring_member_idx * 0.78539819f;
             creature = &creature_pool[child_slot_idx];
+            float angle = (float)ring_member_idx * 0.78539819f;
             creature->ai_mode = CREATURE_AI_FOLLOW_LINK;
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 100.0f;
@@ -265,8 +265,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         tint_a_bits = 0x3f19999a;
         do {
             child_slot_idx = creature_alloc_slot();
-            float angle = (float)ring_member_idx * 1.2566371f;
             creature = &creature_pool[child_slot_idx];
+            float angle = (float)ring_member_idx * 1.2566371f;
             creature->ai_mode = CREATURE_AI_FOLLOW_LINK_TETHERED;
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 110.0f;
@@ -373,8 +373,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 chain_link_idx = root_slot_idx;
                 do {
                     child_slot_idx = creature_alloc_slot();
-                    float angle = (float)(int)pos * 0.34906587f;
                     creature = &creature_pool[child_slot_idx];
+                    float angle = (float)(int)pos * 0.34906587f;
                     creature->ai_mode = CREATURE_AI_ORBIT_LINK;
                     creature->link_index = chain_link_idx;
                     creature->orbit_angle = 3.1415927f;
@@ -464,8 +464,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     ring_member_idx = 0;
                     do {
                         child_slot_idx = creature_alloc_slot();
-                        float angle = (float)ring_member_idx * 0.2617994f;
                         creature = &creature_pool[child_slot_idx];
+                        float angle = (float)ring_member_idx * 0.2617994f;
                         creature->ai_mode = CREATURE_AI_FOLLOW_LINK;
                         creature->heading = 0.0f;
                         creature->anim_phase = 0.0f;
