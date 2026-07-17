@@ -56,10 +56,26 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=27.95% prefix=1/4206 target_insns=4206 candidate_insns=3779 refs=361/0/42
-first_target=sub esp, 0x48
-first_candidate=sub esp, 0x54
+match=37.79% prefix=2/4206 target_insns=4206 candidate_insns=3811 refs=574/0/36
+first_target=push ebx
+first_candidate=push ebp
 ```
+
+Live Binary Ninja shows the movement dispatcher at
+`0x00413f19..0x00414f3e` laying out player-controlled modes first and branching
+both demo mode and control mode `5` to the shared autoplay arm at
+`0x00414c7f`. The earlier scratch put the demo arm first and left control mode
+`5` stationary. Restoring the native condition and block order recovers the
+computer-controlled movement behavior and raises the whole-function match from
+`29.02%` to `37.79%`.
+
+The firing dispatcher now follows the same native branch layout: an active Fire
+Bullets timer falls through to the replacement path at `0x00415d13`, while an
+inactive timer branches to the normal weapon cases at `0x00415eb8`. Man Bomb's
+even and odd projectile arms each evaluate their randomized angle before
+tail-merging at the common spawn, reproducing both native RNG call sites. The
+Ammunition Within damage choice likewise converges on the single native
+`player_take_damage` call instead of emitting one call per damage value.
 
 Live Binary Ninja isolates the native demo movement phase at
 `0x00414c7f..0x00414f3e`. With no live target it derives an orbiting heading
