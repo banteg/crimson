@@ -20,14 +20,18 @@ phases:
 - mouse, analog-stick, joystick-cursor, keyboard, POV, and smoothed auto-target
   aim updates;
 - manual reload, Sharpshooter cooling, Anxious Loader, Stationary Reloader, and
-  Angry Reloader's projectile ring; and
+  Angry Reloader's projectile ring;
+- normal and perk-funded fire gates, Regression Bullets/Ammunition Within
+  costs, muzzle smoke, projectile ownership, randomized spread, and shared
+  weapon cooldown/SFX setup; and
 - movement-phase normalization, speed-bonus removal, terrain clamping, and the
   final muzzle-flash clamp.
 
 Known missing work:
 
 - the shared auto-target movement acquisition/re-entry path;
-- alternate-weapon swapping and the full inlined weapon-fire dispatcher; and
+- alternate-weapon swapping, individual weapon cases, the Fire Bullets branch,
+  and the common post-fire ammo/perk tail; and
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -37,11 +41,11 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=16.21% prefix=1/4206 target_insns=4206 candidate_insns=1767 refs=156/0/47
-first_target=sub esp, 0x48
-first_candidate=sub esp, 0x44
+match=17.21% prefix=3/4206 target_insns=4206 candidate_insns=2068 refs=186/0/36
+first_target=xor ebx, ebx
+first_candidate=push ebp
 ```
 
-The candidate's natural frame grew from `0x40` to `0x44` as recovered locals
-and their lifetimes were introduced. The remaining four bytes are expected to
-emerge from the missing fire/control source; no artificial padding is used.
+The candidate's natural frame is now the native `0x48`. VC6 still saves `ebp`
+early because the partial source gives it a different register lifetime; no
+register constraints or artificial padding are used.

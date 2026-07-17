@@ -43,6 +43,8 @@ extern int player_alt_turn_key_right;
 extern float camera_offset_x;
 extern float camera_offset_y;
 extern cvar_float_t *cv_padAimDistMul;
+extern unsigned char survival_reward_fire_seen;
+extern int weapon_ammo_class[];
 extern int sfx_bloodspill_01;
 extern int sfx_explosion_small;
 extern int fire_bullets_primary_shot_sfx_id;
@@ -57,6 +59,7 @@ bool input_aim_pov_right_active(void);
 float player_heading_approach_target(float target_heading);
 float *__stdcall vec2_normalize_dispatch(float *dst, float *src);
 void player_start_reload(void);
+void player_take_damage(int player_index, float damage);
 }
 
 static __inline void player_accelerate_move_speed(player_state_t *player)
@@ -103,6 +106,9 @@ extern "C" void player_update(void)
     player_update_vec2_t movement_input;
     player_update_vec2_t scratch_pos;
     player_update_vec2_t move_delta;
+    bool auto_fire;
+    bool normal_fire_ready;
+    bool perk_fire_ready;
 
     if (console_open_flag != 0) {
         return;
@@ -755,6 +761,7 @@ extern "C" void player_update(void)
         player_start_reload();
     }
 
+    auto_fire = false;
     if (demo_mode_active == 0 && config_aim_scheme[player_index] != 5) {
         int aim_scheme = config_aim_scheme[player_index];
         if (aim_scheme == 0) {
@@ -870,6 +877,9 @@ extern "C" void player_update(void)
             player->aim_x = creature_pool[target_index].pos_x;
             player->aim_y = creature_pool[target_index].pos_y;
         }
+        if (scalar < 128.0f && creature_pool[target_index].health > 0.0f) {
+            auto_fire = true;
+        }
     }
 
     player->aim_heading =
@@ -877,6 +887,125 @@ extern "C" void player_update(void)
             player->pos_y - player->aim_y,
             player->pos_x - player->aim_x)
         - 1.5707964f;
+
+    normal_fire_ready = false;
+    perk_fire_ready = false;
+    if (player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {
+        normal_fire_ready = true;
+        player->reload_active = 0;
+    }
+    if (player->shot_cooldown <= 0.0f
+        && player->experience > 0
+        && (perk_count_get(perk_id_regression_bullets) != 0
+            || perk_count_get(perk_id_ammunition_within) != 0)) {
+        perk_fire_ready = true;
+    }
+
+    if ((normal_fire_ready || perk_fire_ready)
+        && (grim_interface_ptr->grim_is_key_active(player->input.fire_key)
+            || auto_fire)) {
+        int owner_id;
+        survival_reward_fire_seen = 1;
+
+        if (!normal_fire_ready) {
+            if (perk_count_get(perk_id_regression_bullets) == 0) {
+                if (perk_count_get(perk_id_ammunition_within) != 0) {
+                    if (weapon_ammo_class[player->weapon_id * 31] == 1) {
+                        player_take_damage(player_index, 0.15f);
+                    } else {
+                        player_take_damage(player_index, 1.0f);
+                    }
+                }
+            } else if (weapon_ammo_class[player->weapon_id * 31] == 1) {
+                player->experience = (int)((float)player->experience
+                    - weapon_table[player->weapon_id].reload_time * 4.0f);
+            } else {
+                player->experience = (int)((float)player->experience
+                    - weapon_table[player->weapon_id].reload_time * 200.0f);
+            }
+            if (player->experience < 0) {
+                player->experience = 0;
+            }
+        }
+
+        movement_heading = player->aim_heading;
+        angle_step = movement_heading - 1.5707964f;
+        scalar = angle_step - 0.150915f;
+        movement_input.x = (float)cos(scalar) * 16.0f;
+        movement_input.y = (float)sin(scalar) * 16.0f;
+
+        if ((weapon_table[player->weapon_id].flags & 1) != 0) {
+            effect_color_t smoke_color;
+            angle_step = (float)(crt_rand() & 0x3f) * 0.01f
+                + movement_heading;
+            scalar = (float)(crt_rand() & 0x3f) * 0.022727273f + 1.0f;
+            smoke_color.r = 1.0f;
+            smoke_color.g = 1.0f;
+            smoke_color.b = 1.0f;
+            smoke_color.a = 0.6f;
+            effect_template.flags = 0x1c5;
+            effect_template.color = smoke_color;
+            effect_template.lifetime = 0.15f;
+            effect_template.age = 0.0f;
+            move_delta.x = (float)cos(angle_step) * scalar;
+            move_delta.y = (float)sin(angle_step) * scalar;
+            effect_template.half_width = 2.0f;
+            effect_template.half_height = 2.0f;
+            effect_template.rotation =
+                (float)((crt_rand() & 0x3f) - 0x20) * 0.1f;
+            effect_template.vel_x = move_delta.x * 100.0f;
+            effect_template.vel_y = move_delta.y * 100.0f;
+            effect_template.scale_step = 0.0f;
+            effect_template.rotation_step =
+                ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 14.0f;
+            scratch_pos.x = movement_input.x + player->pos_x;
+            scratch_pos.y = movement_input.y + player->pos_y;
+            effect_spawn(0x12, &scratch_pos.x);
+        }
+
+        if (player->spread_heat > 1.0f) {
+            player->spread_heat = 1.0f;
+        }
+
+        scalar = 1.0f;
+        if (cv_friendlyFire->value == 0.0f) {
+            owner_id = -100;
+        } else {
+            owner_id = -1 - player_index;
+        }
+
+        random_offset.x = player->aim_x;
+        random_offset.y = player->aim_y;
+        move_delta.x = random_offset.x - player->pos_x;
+        move_delta.y = random_offset.y - player->pos_y;
+        angle_step = vec2_length(&move_delta.x) * 0.5f;
+        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;
+        angle_step = angle_step * player->spread_heat
+            * (float)(crt_rand() & 0x1ff) * 0.001953125f;
+        random_offset.x =
+            (float)cos(scratch_pos.x) * angle_step + random_offset.x;
+        random_offset.y =
+            (float)sin(scratch_pos.x) * angle_step + random_offset.y;
+        angle_step = (float)atan2(
+            player->pos_y - random_offset.y,
+            player->pos_x - random_offset.x) - 1.5707964f;
+
+        if (grim_interface_ptr->grim_is_key_active(0x22)) {
+            player->fire_bullets_timer = 10.0f;
+        }
+        if (player->fire_bullets_timer <= 0.0f) {
+            player->shot_cooldown =
+                weapon_table[player->weapon_id].shot_cooldown;
+            player->spread_heat = player->spread_heat
+                + weapon_table[player->weapon_id].spread_heat;
+            sfx_play_panned(
+                crt_rand()
+                        % weapon_table[player->weapon_id].shot_sfx_variant_count
+                    + weapon_table[player->weapon_id].shot_sfx_base_id,
+                &player->pos_x,
+                1.0f);
+        }
+    }
 
     while (player->move_phase > 14.0f) {
         player->move_phase = player->move_phase - 14.0f;
