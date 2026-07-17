@@ -16,8 +16,8 @@ Initial scope:
 Known missing work:
 
 - tighter local/field ordering in the dispatch ladder
-- the `0x13` chain formation is now in the native ladder slot, but its body
-  still differs in local ordering
+- the `0x13` chain formation value objects are recovered, but its remaining
+  field scheduling still differs
 - tail modifier ordering/codegen still diverges after the large dispatch
 
 Keep tracking prefix, not just total match percent. This scratch is expected to
@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=60.97% prefix=23/3159 target_insns=3159 candidate_insns=2900 refs=315/0/2
+match=61.52% prefix=23/3159 target_insns=3159 candidate_insns=2950 refs=316/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -89,3 +89,20 @@ Frame/prefix notes:
   `0x38` and `0x00` cases and a broad late-ladder conversion were tested and
   rejected because they regressed alignment; only independently improving
   cases are retained.
+- The `0x13` chain body at `0x00431217..0x00431445` exposes four reusable value
+  shapes: zero velocity in `[esp+0x20..0x24]`, root/child position in
+  `[esp+0x28..0x2c]`, orbit direction in `[esp+0x38..0x3c]`, and tint in
+  `[esp+0x48..0x54]`. Modeling those as two-float and four-float aggregates
+  recovers the native root construction and ten-child copy loop. A
+  block-scoped signed cursor keeps the formation index plausible; reusing the
+  typed position parameter as an integer scored slightly higher but was
+  rejected as implausible source.
+- Native template `0x42` at `0x00433fcc` also constructs its grey tint in
+  `[esp+0x48..0x54]` before copying all four components. Converting that case
+  independently adds eight native-shaped instructions and improves the global
+  match, while the similarly evidenced `0x3e`, `0x3f`, and `0x43` conversions
+  still perturb whole-function allocation and were rejected after isolated
+  tests. Together the accepted `0x13` and `0x42` recoveries add 50 candidate
+  instructions, raise the score from `60.97%` to `61.52%`, and improve the
+  reference audit to `316/0/2` without changing the exact `0x48` frame or
+  23-instruction prefix.

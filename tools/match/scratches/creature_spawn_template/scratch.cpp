@@ -16,9 +16,28 @@ struct creature_tint_t {
     }
 };
 
-typedef struct creature_spawn_template_named_locals_t {
-    int scratch[7];
+struct creature_spawn_vec2_t {
+    float x;
+    float y;
+
+    void set(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+};
+
+typedef union creature_spawn_tint_scratch_t {
     creature_tint_t tint;
+    creature_spawn_vec2_t orbit_direction;
+} creature_spawn_tint_scratch_t;
+
+typedef struct creature_spawn_template_named_locals_t {
+    int scratch_head;
+    creature_spawn_vec2_t zero_velocity;
+    creature_spawn_vec2_t chain_position;
+    int scratch_tail[2];
+    creature_spawn_tint_scratch_t tint_scratch;
     creature_tint_t child_tint;
 } creature_spawn_template_named_locals_t;
 
@@ -31,7 +50,7 @@ typedef union creature_spawn_template_locals_t {
 #define slot_10_i locals.i[0]
 #define slot_14_i locals.i[1]
 #define slot_18_i locals.i[2]
-#define tint locals.named.tint
+#define tint locals.named.tint_scratch.tint
 #define tint_r_bits (*(int *)&tint.r)
 #define tint_g_bits (*(int *)&tint.g)
 #define tint_b_bits (*(int *)&tint.b)
@@ -41,6 +60,9 @@ typedef union creature_spawn_template_locals_t {
 #define child_tint_g_bits (*(int *)&child_tint.g)
 #define child_tint_b_bits (*(int *)&child_tint.b)
 #define child_tint_a_bits (*(int *)&child_tint.a)
+#define zero_velocity locals.named.zero_velocity
+#define chain_position locals.named.chain_position
+#define orbit_direction locals.named.tint_scratch.orbit_direction
 
 #define STORE_FLOAT_BITS(field, slot, bits) \
     do {                                    \
@@ -390,49 +412,56 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             APPLY_UNHANDLED_TEMPLATE_FALLBACK();
         } else {
             if (template_id == SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13) {
+                int alien_chain_cursor;
                 creature->type_id = CREATURE_TYPE_ALIEN;
-                slot_10_i = terrain_texture_height / 2;
+                alien_chain_cursor = terrain_texture_height / 2;
                 creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
-                creature->pos_x = -10.0f;
-                creature->tint_r = 0.6f;
-                creature->pos_y = (float)slot_10_i;
-                creature->tint_g = 0.8f;
-                creature->tint_b = 0.91f;
+                chain_position.set(-10.0f, (float)alien_chain_cursor);
+                *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                 creature->health = 200.0f;
                 creature->move_speed = 2.0f;
                 creature->reward_value = 600.0f;
-                creature->tint_a = 1.0f;
+                child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);
+                *(creature_tint_t *)&creature->tint_r = child_tint;
                 creature->size = 40.0f;
                 creature->contact_damage = 20.0f;
-                pos = (float *)0x2;
+                zero_velocity.set(0.0f, 0.0f);
+                child_tint.set(0.4f, 0.7f, 0.11f, 1.0f);
+                alien_chain_cursor = 2;
                 creature->max_health = 200.0f;
-                creature->pos_x = (float)cos(0.0f) * 256.0f + *origin_pos_ptr;
+                orbit_direction.x = (float)cos(0.0f);
+                orbit_direction.y = (float)sin(0.0f);
+                orbit_direction.x = orbit_direction.x * 256.0f;
+                orbit_direction.y = orbit_direction.y * 256.0f;
+                chain_position.x = orbit_direction.x + *origin_pos_ptr;
                 creature->ai_mode = CREATURE_AI_ORBIT_LINK;
-                creature->pos_y = (float)sin(0.0f) * 256.0f + origin_pos_ptr[1];
+                chain_position.y = orbit_direction.y + origin_pos_ptr[1];
+                *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                 chain_link_idx = root_slot_idx;
                 do {
                     child_slot_idx = creature_alloc_slot();
                     creature = &creature_pool[child_slot_idx];
-                    float angle = (float)(int)pos * 0.34906587f;
+                    float angle = (float)alien_chain_cursor * 0.34906587f;
                     creature->ai_mode = CREATURE_AI_ORBIT_LINK;
                     creature->link_index = chain_link_idx;
                     creature->orbit_angle = 3.1415927f;
                     creature->orbit_radius.raw_u32 = 0x41200000;
-                    creature->pos_x = (float)cos(angle) * 256.0f + *origin_pos_ptr;
-                    creature->vel_x = 0.0f;
+                    orbit_direction.x = (float)cos(angle);
+                    orbit_direction.y = (float)sin(angle);
+                    orbit_direction.x = orbit_direction.x * 256.0f;
+                    orbit_direction.y = orbit_direction.y * 256.0f;
+                    chain_position.x = orbit_direction.x + *origin_pos_ptr;
                     creature->health = 60.0f;
-                    creature->pos_y = (float)sin(angle) * 256.0f + origin_pos_ptr[1];
-                    creature->vel_y = 0.0f;
+                    chain_position.y = orbit_direction.y + origin_pos_ptr[1];
+                    *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
+                    *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
                     creature->reward_value = 60.0f;
                     creature->max_health = 60.0f;
-                    creature->tint_r = 0.4f;
-                    pos = (float *)((int)pos + 2);
-                    creature->tint_g = 0.7f;
+                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    alien_chain_cursor = alien_chain_cursor + 2;
                     creature->collision_flag = 0;
-                    creature->tint_b = 0.11f;
                     creature->collision_timer = 0.0f;
                     creature->active = 1;
-                    creature->tint_a = 1.0f;
                     creature->state_flag = 1;
                     creature->lifecycle_stage = 16.0f;
                     creature->attack_cooldown = 0.0f;
@@ -441,7 +470,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     creature->size = 50.0f;
                     creature->contact_damage = 4.0f;
                     chain_link_idx = child_slot_idx;
-                } while ((int)pos < 0x16);
+                } while (alien_chain_cursor < 0x16);
                 creature_pool[root_slot_idx].link_index = child_slot_idx;
                 APPLY_UNHANDLED_TEMPLATE_FALLBACK();
             } else {
@@ -888,8 +917,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 70.0f, 2.2f, 160.0f,
                                              0.5f, 0.6f, 0.9f, 1.0f, 45.0f, 5.0f);
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREY_42) {
-                    SET_ROOT_STATS(CREATURE_TYPE_ZOMBIE, 200.0f, 1.7f, 160.0f,
-                                   0.9f, 0.9f, 0.9f, 1.0f, 45.0f, 15.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ZOMBIE, 200.0f, 1.7f, 160.0f,
+                                             0.9f, 0.9f, 0.9f, 1.0f, 45.0f, 15.0f);
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43) {
                     SET_ROOT_STATS(CREATURE_TYPE_ZOMBIE, 2000.0f, 2.1f, 460.0f,
                                    0.2f, 0.6f, 0.1f, 1.0f, 70.0f, 15.0f);
@@ -1011,3 +1040,6 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
 #undef child_tint_g_bits
 #undef child_tint_b_bits
 #undef child_tint_a_bits
+#undef zero_velocity
+#undef chain_position
+#undef orbit_direction
