@@ -52,6 +52,8 @@ extern int sfx_bloodspill_01;
 extern int sfx_explosion_small;
 extern int fire_bullets_primary_shot_sfx_id;
 extern int fire_bullets_secondary_shot_sfx_id;
+extern float fire_bullets_fallback_shot_cooldown;
+extern float fire_bullets_fallback_spread_heat;
 
 void effect_spawn_blood_splatter(float *pos, float angle, float age);
 float vec2_length(float *v);
@@ -1090,7 +1092,7 @@ extern "C" void player_update(void)
         if (player->fire_bullets_timer <= 0.0f) {
             player->shot_cooldown =
                 weapon_table[player->weapon_id].shot_cooldown;
-            player->spread_heat = player->spread_heat
+            player->muzzle_flash_alpha = player->muzzle_flash_alpha
                 + weapon_table[player->weapon_id].spread_heat;
             sfx_play_panned(
                 crt_rand()
@@ -1733,6 +1735,59 @@ extern "C" void player_update(void)
             }
             if (bonus_reflex_boost_timer <= 0.0f) {
                 player->ammo = player->ammo - scalar;
+            }
+        } else {
+            sfx_play_panned(
+                fire_bullets_primary_shot_sfx_id,
+                &player->pos_x,
+                1.0f);
+            sfx_play_panned(
+                fire_bullets_secondary_shot_sfx_id,
+                &player->pos_x,
+                1.0f);
+
+            if (weapon_table[player->weapon_id].pellet_count == 1) {
+                player->shot_cooldown =
+                    fire_bullets_fallback_shot_cooldown;
+                player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                    + fire_bullets_fallback_spread_heat;
+            } else {
+                player->shot_cooldown =
+                    weapon_table[player->weapon_id].shot_cooldown;
+                player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                    + weapon_table[player->weapon_id].spread_heat;
+            }
+
+            for (int pellet_index = 0;
+                 pellet_index < weapon_table[player->weapon_id].pellet_count;
+                 ++pellet_index) {
+                scalar = (float)(crt_rand() % 200 - 100) * 0.0015f
+                    + angle_step;
+                scratch_pos.x = movement_input.x + player->pos_x;
+                scratch_pos.y = movement_input.y + player->pos_y;
+                projectile_spawn(
+                    &scratch_pos.x,
+                    scalar,
+                    PROJECTILE_TYPE_FIRE_BULLETS,
+                    owner_id);
+            }
+
+            move_delta.x = (float)cos(movement_heading) * 25.0f;
+            move_delta.y = (float)sin(movement_heading) * 25.0f;
+            scratch_pos.x = movement_input.x + player->pos_x;
+            scratch_pos.y = movement_input.y + player->pos_y;
+            int effect_index = fx_spawn_sprite(
+                &scratch_pos.x,
+                &move_delta.x,
+                1.0f);
+            sprite_effect_pool[effect_index].color_r = 0.5f;
+            sprite_effect_pool[effect_index].color_g = 0.5f;
+            sprite_effect_pool[effect_index].color_b = 0.5f;
+            sprite_effect_pool[effect_index].color_a = 0.413f;
+
+            if (perk_count_get(perk_id_sharpshooter) == 0) {
+                player->spread_heat = player->spread_heat
+                    + fire_bullets_fallback_spread_heat * 1.3f;
             }
         }
 

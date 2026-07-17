@@ -26,6 +26,9 @@ phases:
 - normal and perk-funded fire gates, Regression Bullets/Ammunition Within
   costs, muzzle smoke, projectile ownership, randomized spread, and shared
   weapon cooldown/SFX setup;
+- the dedicated Fire Bullets replacement path, including its paired SFX,
+  single-pellet fallback cadence, per-weapon pellet count, signed shot jitter,
+  muzzle sprite, Sharpshooter spread rule, and ammo bypass;
 - Alternate Weapon's complete field swap, reload SFX, cooldown penalty, and
   200-millisecond reload-key debounce;
 - direct projectile dispatch for pistol, assault rifle, SMG, plasma, ion,
@@ -42,7 +45,6 @@ phases:
 Known missing work:
 
 - the shared demo/AI auto-target movement path after acquisition;
-- the Fire Bullets branch;
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -52,15 +54,31 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=25.6510% prefix=1/4206 target_insns=4206 candidate_insns=3513 refs=299/0/46
+match=25.2142% prefix=1/4206 target_insns=4206 candidate_insns=3615 refs=292/0/50
 first_target=sub esp, 0x48
-first_candidate=sub esp, 0x4c
+first_candidate=sub esp, 0x54
 ```
+
+Live Binary Ninja isolates the native Fire Bullets path at
+`0x00415d13..0x00415eb3`. The recovered source plays both dedicated shot
+sounds, uses the fallback cooldown and muzzle-flash increment only when the
+equipped weapon has one pellet, emits `pellet_count` type-`0x2d` projectiles
+with `(rand() % 200 - 100) * 0.0015`, skips ammo consumption, spawns the gray
+muzzle sprite, and adds the fallback spread term times `1.3` only without
+Sharpshooter. It also corrects the normal path's first weapon heat increment:
+native adds it to `muzzle_flash_alpha` (`player+0x2fc`), not `spread_heat`.
+
+The new Fire Bullets block is 101 candidate instructions against 111 native
+instructions and closes the whole-function instruction gap from 693 to 591.
+The global similarity ratio nevertheless falls from `25.6510%` because the
+corrected long-lived muzzle field and new branch perturb whole-function MSVC
+register allocation and grow the candidate frame from `0x4c` to `0x54` while
+native remains `0x48`. This is retained as substantive source recovery, not
+represented as a matching-score improvement.
 
 The accepted loop-family source follows the native weapon-case order and
 restores 778 candidate instructions. Live Binary Ninja confirms the native
 spread constants (`0.0013`, `0.004`, `0.002`, and `0.0026`), the Gauss/Ion
-speed base of `1.4`, and the swarmer angular step of pi/3. The candidate keeps
-its natural `0x4c` frame; the four-byte excess and the remaining whole-function
-alignment delta come from incomplete local-slot coalescing and control paths.
-No register constraints or artificial padding are used.
+speed base of `1.4`, and the swarmer angular step of pi/3. The remaining
+whole-function alignment delta comes from incomplete local-slot coalescing and
+control paths. No register constraints or artificial padding are used.
