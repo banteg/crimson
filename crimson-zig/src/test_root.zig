@@ -436,6 +436,45 @@ test "spawn templates preserve recycled ranged orbit fields" {
     try std.testing.expectEqual(projectile_type, pool.entries[0].ranged_projectile_type);
 }
 
+test "spawn difficulty scales current health but preserves base max health" {
+    const retry_counts = [_]i32{ 1, 2, 3, 4, 5 };
+    const health_scales = [_]f32{ 0.95, 0.9, 0.8, 0.7, 0.5 };
+
+    for (retry_counts, health_scales) |retry_count, health_scale| {
+        var pool: cz.creatures.CreaturePool = .{};
+        pool.quest_fail_retry_count = retry_count;
+        var rng = cz.spawn.Crand.init(0xBEEF);
+
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = 0x21,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &rng,
+        );
+
+        try std.testing.expectApproxEqAbs(@as(f32, 53.0) * health_scale, pool.entries[0].hp, 0.000001);
+        try std.testing.expectEqual(@as(f32, 53.0), pool.entries[0].max_hp);
+    }
+
+    var hardcore_pool: cz.creatures.CreaturePool = .{};
+    hardcore_pool.hardcore = true;
+    var hardcore_rng = cz.spawn.Crand.init(0xBEEF);
+
+    try hardcore_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x21,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &hardcore_rng,
+    );
+
+    try std.testing.expectApproxEqAbs(@as(f32, 53.0) * 1.2, hardcore_pool.entries[0].hp, 0.000001);
+    try std.testing.expectEqual(@as(f32, 53.0), hardcore_pool.entries[0].max_hp);
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 

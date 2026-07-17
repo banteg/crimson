@@ -2888,35 +2888,30 @@ pub const CreaturePool = struct {
                         creature.move_speed = narrowF32(creature.move_speed * 0.95);
                         creature.contact_damage = narrowF32(creature.contact_damage * 0.95);
                         creature.hp = narrowF32(creature.hp * 0.95);
-                        creature.max_hp = narrowF32(creature.max_hp * 0.95);
                     },
                     2 => {
                         creature.reward_value = narrowF32(creature.reward_value * 0.85);
                         creature.move_speed = narrowF32(creature.move_speed * 0.9);
                         creature.contact_damage = narrowF32(creature.contact_damage * 0.9);
                         creature.hp = narrowF32(creature.hp * 0.9);
-                        creature.max_hp = narrowF32(creature.max_hp * 0.9);
                     },
                     3 => {
                         creature.reward_value = narrowF32(creature.reward_value * 0.85);
                         creature.move_speed = narrowF32(creature.move_speed * 0.8);
                         creature.contact_damage = narrowF32(creature.contact_damage * 0.8);
                         creature.hp = narrowF32(creature.hp * 0.8);
-                        creature.max_hp = narrowF32(creature.max_hp * 0.8);
                     },
                     4 => {
                         creature.reward_value = narrowF32(creature.reward_value * 0.8);
                         creature.move_speed = narrowF32(creature.move_speed * 0.7);
                         creature.contact_damage = narrowF32(creature.contact_damage * 0.7);
                         creature.hp = narrowF32(creature.hp * 0.7);
-                        creature.max_hp = narrowF32(creature.max_hp * 0.7);
                     },
                     else => {
                         creature.reward_value = narrowF32(creature.reward_value * 0.8);
                         creature.move_speed = narrowF32(creature.move_speed * 0.6);
                         creature.contact_damage = narrowF32(creature.contact_damage * 0.5);
                         creature.hp = narrowF32(creature.hp * 0.5);
-                        creature.max_hp = narrowF32(creature.max_hp * 0.5);
                     },
                 }
                 if (spawn_slot) |slot| {
@@ -2931,7 +2926,6 @@ pub const CreaturePool = struct {
         creature.move_speed = narrowF32(creature.move_speed * 1.05);
         creature.contact_damage = narrowF32(creature.contact_damage * 1.4);
         creature.hp = narrowF32(creature.hp * 1.2);
-        creature.max_hp = narrowF32(creature.max_hp * 1.2);
 
         if (spawn_slot) |slot| {
             if ((creature.flags & 0x04) != 0) {

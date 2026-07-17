@@ -51,6 +51,12 @@ Frame/prefix notes:
   `0x00433d41..0x00433dcd` enables ranged-variant fire without writing either
   field, unlike template `0x3c` at `0x00433a78..0x00433afd`. Both ports now
   retain those recycled values, and Zig mirrors both views of the native union.
+- The common tail snapshots `health` into `max_health` at `0x00431114`, before
+  applying any difficulty modifier. The hardcore block at
+  `0x004311a1..0x004311c8` and retry ladder at
+  `0x004340d3..0x004341b9` subsequently write current health (`+0x24`) but
+  never max health (`+0x28`). Both ports now retain the unscaled base maximum;
+  this matters to native health-ratio behavior rather than presentation.
 - Moving the saved position pointer below the random-heading sentinel improved
   the prefix from `1/3159` to `20/3159`.
 - The first blocker is now root-slot address arithmetic versus reloading `pos`
