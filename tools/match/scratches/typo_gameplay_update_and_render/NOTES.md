@@ -26,7 +26,9 @@ match=98.43% prefix=33/508 target_insns=508 candidate_insns=508 refs=194/0/0
   skipped that full-buffer sound path.
 - The mode applies perk effects, the native 0.3 time scale, creature and
   projectile simulation, and the bespoke `player_fire_weapon` loop. It then
-  forces weapon id 3 and ammo 30 for player zero.
+  forces Shotgun weapon id 3 and ammo 30 for player zero. This evidence also
+  corrected an enum-migration regression that had selected Sawed-off Shotgun
+  id 4 in both ports.
 - Spawn cooldown decreases by `player_count * frame_dt_ms`, then adds
   `3500 - elapsed_ms / 800` until nonnegative, with a minimum increment of 100.
   Every event emits a type-4 creature at the right edge and a type-2 creature

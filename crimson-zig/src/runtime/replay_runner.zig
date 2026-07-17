@@ -1080,7 +1080,7 @@ test "typo run reports submit count as shots fired" {
     const result = try runReplay(replay);
     try std.testing.expectEqual(@as(i32, 1), result.shots_fired);
     try std.testing.expectEqual(@as(i32, 0), result.shots_hit);
-    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.sawed_off_shotgun), result.most_used_weapon_id);
+    try std.testing.expectEqual(@intFromEnum(game_ids.WeaponId.shotgun), result.most_used_weapon_id);
 }
 
 test "typo run spawns creatures after creature update phase" {

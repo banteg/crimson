@@ -8,6 +8,11 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
+def test_typo_weapon_matches_native_shotgun_id() -> None:
+    assert TYPO_WEAPON_ID == WeaponId.SHOTGUN
+    assert int(TYPO_WEAPON_ID) == 3
+
+
 def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
@@ -21,7 +26,7 @@ def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
 
     enforce_typo_player_frame(player, state=state)
 
-    assert player.weapon.weapon_id == TYPO_WEAPON_ID
+    assert player.weapon.weapon_id == WeaponId.SHOTGUN
     assert player.weapon.shot_cooldown == 0.0
     assert player.spread_heat == 0.0
     assert player.weapon.reload_active is False

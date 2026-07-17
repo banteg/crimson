@@ -11,8 +11,11 @@ projectiles when firing, applies perk-dependent spread/cooldown rules, wraps the
 movement phase, and clamps the player to the terrain bounds.
 
 The signature and source are grounded in the live Binary Ninja disassembly.
-The port already mirrors the Typ-o frame reset and command-to-aim/fire/reload
-policy in `src/crimson/typo/player.py` and `src/crimson/typo/runtime.py`.
+The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
+`src/crimson/typo/player.py`, `src/crimson/typo/runtime.py`, and
+`crimson-zig/src/typo/player.zig`. Both now retain the native Shotgun weapon id
+3; Sawed-off Shotgun id 4 has distinct ordinary-runtime recipes and is not the
+mode loadout.
 
 MSVC 6.5 currently produces 378 instructions against the native 378 at an
 86.77% match, with all 141 masked references resolved and no mismatches. The

@@ -2,7 +2,7 @@ const game_ids = @import("../game_ids.zig");
 const player_runtime = @import("../runtime/player.zig");
 const state_mod = @import("../runtime/state.zig");
 
-pub const typo_weapon_id = game_ids.WeaponId.sawed_off_shotgun;
+pub const typo_weapon_id = game_ids.WeaponId.shotgun;
 
 pub fn enforceTypoPlayerFrame(
     player: *state_mod.PlayerState,

@@ -15,7 +15,7 @@ Unlocked after completing all tier 1-4 quests on normal difficulty.
 
 ## Starting conditions
 
-- Weapon: typing rifle (internal, not selectable).
+- Weapon: Shotgun (weapon ID 3), controlled by the mode and not selectable.
 - Bonuses: disabled. Weapon Power Up and Reflex Boost timers are cleared
   every frame.
 - Perks: disabled.
@@ -61,9 +61,10 @@ the course of a run.
 
 ## Player state
 
-The typing rifle overrides normal weapon behavior every frame: shot
-cooldown is zeroed, spread is reset, ammo is kept full, and reload is
-inactive.
+The mode forces the Shotgun and overrides its normal behavior every frame:
+shot cooldown is zeroed, spread is reset, ammo is kept full, and reload is
+inactive. Typing a creature name is what requests its bespoke twelve-pellet
+shot.
 
 ## Scoring
 

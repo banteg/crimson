@@ -7,14 +7,14 @@ from ..sim.state_types import GameplayState, PlayerState
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 
-TYPO_WEAPON_ID = WeaponId.SAWED_OFF_SHOTGUN
+TYPO_WEAPON_ID = WeaponId.SHOTGUN
 
 
 def enforce_typo_player_frame(player: PlayerState, *, state: GameplayState) -> None:
     """Match Typ-o Shooter's bespoke player loop (`player_fire_weapon @ 0x00444980`).
 
-    Typ-o resets timers and tops up ammo each frame, so typing speed (not weapon
-    cooldown) controls rate of fire.
+    Typ-o forces the native shotgun (weapon id 3), resets timers, and tops up
+    ammo each frame, so typing speed (not weapon cooldown) controls rate of fire.
     """
 
     if player.weapon.weapon_id != TYPO_WEAPON_ID:
