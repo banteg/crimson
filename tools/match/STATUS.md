@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**659/2173** functions matched, **122686/676681** code bytes (**18.1%**). Byte totals are manifest function extents with terminal padding trimmed.
+**660/2173** functions matched, **128152/676681** code bytes (**18.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 442/997 | 95999/386756 | 24.8% | 442/543 |
+| crimsonland.exe | 443/997 | 101465/386756 | 26.2% | 443/544 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**442/997** functions, **95999/386756** bytes (**24.8%**), **442/543** scratches verified.
+**443/997** functions, **101465/386756** bytes (**26.2%**), **443/544** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -425,6 +425,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 291/291 | 70.10% | 12/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
 | wip | quest_build_the_end_of_all | 0x00438e10 | 692 | 173/174 | 66.28% | 4/174 | 18/0/0 |  | quest-the-end-of-all-fixed-rings |
 | wip | quest_build_spiders_inc | 0x004390d0 | 346 | 106/105 | 69.19% | 9/105 | 8/0/0 |  | quest-spiders-inc-staged-spider-waves |
+| match | quest_database_init | 0x00439230 | 5466 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
 | wip | quest_start_selected | 0x0043a790 | 434 | 116/116 | 91.38% | 80/116 | 47/0/0 |  | quest-start-state-and-spawn-table |
 | match | highscore_date_checksum | 0x0043a950 | 262 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
