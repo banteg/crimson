@@ -24,7 +24,7 @@ extern "C" int survival_recent_death_count;
 extern "C" int survival_spawn_cooldown;
 extern "C" int quest_spawn_timeline;
 extern "C" int demo_time_limit_ms;
-extern "C" vec2f_t survival_recent_death_pos[3];
+extern "C" survival_vec2_t survival_recent_death_pos[3];
 
 extern "C" void *creature_spawn_template(
     int template_id,
@@ -50,7 +50,6 @@ extern "C" void survival_update(void)
     }
 
     {
-        survival_vec2_t pos;
         if (config_player_count == 1) {
         if (!survival_reward_damage_seen
             && !survival_reward_fire_seen
@@ -67,17 +66,14 @@ extern "C" void survival_update(void)
 
         if (survival_recent_death_count == 3
             && !survival_reward_fire_seen) {
-            survival_vec2_t *death_pos =
-                (survival_vec2_t *)survival_recent_death_pos;
-            pos.x = death_pos[0].x;
-            pos.y = death_pos[0].y;
-            pos += death_pos[1];
-            float centroid_x = pos.x;
-            centroid_x += death_pos[2].x;
-            pos.y += death_pos[2].y;
-            centroid_x *= 0.333333343f;
+            survival_vec2_t pos;
+            pos.x = survival_recent_death_pos[0].x;
+            pos.y = survival_recent_death_pos[0].y;
+            pos += survival_recent_death_pos[1];
+            pos += survival_recent_death_pos[2];
+            pos.x *= 0.333333343f;
             pos.y *= 0.333333343f;
-            float dx = player_state_table[0].pos_x - centroid_x;
+            float dx = player_state_table[0].pos_x - pos.x;
             float dy = player_state_table[0].pos_y - pos.y;
             if ((float)sqrt(dx * dx + dy * dy) < 16.0f
                 && player_state_table[0].health < 15.0f) {
@@ -89,6 +85,7 @@ extern "C" void survival_update(void)
         }
         }
 
+        survival_vec2_t pos;
         if (survival_spawn_stage == 0) {
         if (player_state_table[0].level <= 4) {
             goto update_wave_spawns;

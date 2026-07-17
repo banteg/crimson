@@ -98,7 +98,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | quest_mode_update | 0x004070e0 | 455 | 108/108 | 100.00% | 108/108 | 52/0/0 |  | quest-completion-transition-coordinator |
 | match | rush_mode_update | 0x004072b0 | 594 | 136/136 | 100.00% | 136/136 | 51/0/0 |  | rush-mode-edge-wave-spawn-update |
 | match | survival_spawn_creature | 0x00407510 | 1973 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
-| wip | survival_update | 0x00407cd0 | 2102 | 506/504 | 98.22% | 55/504 | 134/0/1 |  | survival-handouts-milestones-and-edge-wave-spawns |
+| wip | survival_update | 0x00407cd0 | 2102 | 504/504 | 98.21% | 102/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
 | wip | tutorial_timeline_update | 0x00408990 | 2907 | 702/695 | 63.71% | 6/695 | 149/0/8 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
