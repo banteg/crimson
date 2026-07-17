@@ -145,12 +145,10 @@ typedef union creature_spawn_template_locals_t {
 
 #define CLAMP_TINT_COMPONENT(field) \
     do {                            \
-        if (0.0f <= (field)) {      \
-            if (1.0f < (field)) {   \
-                (field) = 1.0f;     \
-            }                       \
-        } else {                    \
+        if ((field) < 0.0f) {       \
             (field) = 0.0f;         \
+        } else if ((field) > 1.0f) { \
+            (field) = 1.0f;         \
         }                           \
     } while (0)
 

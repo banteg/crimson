@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=58.59% prefix=23/3159 target_insns=3159 candidate_insns=2716 refs=311/1/2
+match=59.06% prefix=23/3159 target_insns=3159 candidate_insns=2710 refs=314/1/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -52,3 +52,8 @@ Frame/prefix notes:
 - The five grid-spawn loops use the native inclusive vertical-offset guard
   `offset <= 0x100`. Replacing the equivalent `< 0x101` spelling recovers the
   native compare/branch tokens and raises the score from `58.42%` to `58.59%`.
+- Native clamps the four tint components with the direct two-sided shape
+  `if (x < 0) x = 0; else if (x > 1) x = 1`. Recovering that spelling across
+  the three randomized template families fixes twelve clamp sites, removes six
+  candidate instructions, raises the score to `59.06%`, and improves the
+  reference audit to `314/1/2`.
