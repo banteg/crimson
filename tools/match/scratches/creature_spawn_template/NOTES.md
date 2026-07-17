@@ -137,6 +137,13 @@ Frame/prefix notes:
   multiply and visibly shifts the last child. Both ports now use the native
   literal and preserve the x87 PC=24 multiply/trig/add store boundaries; the
   analogous `0x11` literal is `0x3ec90fdb` at `0x0046f374`.
+- The exact demo setup functions prove three additional live sentinel callers:
+  `demo_setup_variant_0` (`0x00402ed0`) passes `-100.0f` to template `0x38`,
+  while variant 1 (`0x004030f0`) passes it to `0x34` and `0x35`. Those paths
+  now resolve the random heading between the allocator phase draw and transient
+  base-heading draw, matching the universal prologue at
+  `0x00430afc..0x00430ba6`. Variant 2's template `0x41` path already used that
+  ordering and remains covered by the same regression table.
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.

@@ -396,6 +396,39 @@ test "spawn-slot child templates resolve the native random-heading sentinel" {
     }
 }
 
+test "demo creature templates resolve the native random-heading sentinel" {
+    const template_ids = [_]i32{ 0x34, 0x35, 0x38, 0x41 };
+
+    for (template_ids, 0..) |template_id, idx| {
+        const seed: u32 = @intCast(0x4567 + idx);
+        var expected_rng = cz.spawn.Crand.init(seed);
+        const expected_phase_seed: i32 = @intCast(
+            expected_rng.randTagged(cz.rng_caller_static.creature_alloc_slot_phase_seed) & 0x17f,
+        );
+        const heading_roll = expected_rng.randTagged(
+            cz.rng_caller_static.creature_spawn_template_random_heading,
+        ) % 628;
+        const expected_heading = cz.native_math.pc24Mul(
+            @as(f32, @floatFromInt(heading_roll)),
+            @as(f32, 0.01),
+        );
+
+        var pool: cz.creatures.CreaturePool = .{};
+        var rng = cz.spawn.Crand.init(seed);
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = -100.0,
+            },
+            &rng,
+        );
+
+        try std.testing.expectEqual(expected_phase_seed, pool.entries[0].phase_seed);
+        try std.testing.expectEqual(expected_heading, pool.entries[0].heading);
+    }
+}
+
 test "spawn templates clear root force target but preserve formation children" {
     var pool: cz.creatures.CreaturePool = .{};
     pool.entries[0].force_target = 1;
