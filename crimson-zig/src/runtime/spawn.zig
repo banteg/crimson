@@ -220,6 +220,7 @@ pub const CreatureInit = struct {
     set_heading: bool = true,
     phase_seed: i32 = 0,
     preserve_force_target: bool = false,
+    preserve_max_health: bool = false,
     type_id: CreatureTypeId = .alien,
     ai_mode: CreatureAiMode = .orbit_player,
     flags: u32 = 0,

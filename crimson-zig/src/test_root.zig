@@ -455,6 +455,47 @@ test "spawn template tail modifiers follow the final formation child" {
     try std.testing.expectEqual(@as(f32, 1.05), spawner_pool.spawn_slots[0].interval);
 }
 
+test "formation roots retain transient headings and untouched max health" {
+    var expected_rng = cz.spawn.Crand.init(0xBEEF);
+    _ = expected_rng.randTagged(cz.rng_caller_static.creature_alloc_slot_phase_seed);
+    const transient_heading = cz.native_math.pc24Mul(
+        @as(f32, @floatFromInt(
+            expected_rng.randTagged(cz.rng_caller_static.creature_spawn_template_base_heading) % 314,
+        )),
+        @as(f32, 0.01),
+    );
+
+    var chain_pool: cz.creatures.CreaturePool = .{};
+    var chain_rng = cz.spawn.Crand.init(0xBEEF);
+    try chain_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x11,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.75,
+        },
+        &chain_rng,
+    );
+
+    try std.testing.expectEqual(transient_heading, chain_pool.entries[0].heading);
+    try std.testing.expectEqual(@as(f32, 0.75), chain_pool.entries[4].heading);
+
+    var spawner_pool: cz.creatures.CreaturePool = .{};
+    spawner_pool.entries[0].max_hp = 321.0;
+    var spawner_rng = cz.spawn.Crand.init(0xBEEF);
+    try spawner_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x0E,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.75,
+        },
+        &spawner_rng,
+    );
+
+    try std.testing.expectEqual(transient_heading, spawner_pool.entries[0].heading);
+    try std.testing.expectEqual(@as(f32, 321.0), spawner_pool.entries[0].max_hp);
+    try std.testing.expectEqual(@as(f32, 0.75), spawner_pool.entries[24].heading);
+}
+
 test "spawn templates preserve recycled ranged orbit fields" {
     const projectile_type = @intFromEnum(cz.game_ids.ProjectileTypeId.spider_plasma);
     var pool: cz.creatures.CreaturePool = .{};

@@ -115,6 +115,15 @@ Frame/prefix notes:
   `0x0e` no longer applies the non-hardcore spawn-slot interval increase to its
   root spawner. The in-bounds spawn burst likewise uses the tail creature's
   position, matching the native `creature+0x14/+0x18` tests.
+- Root initialization consumes and stores its transient `rand() % 314`
+  heading at `0x00430b83..0x00430ba6`. Multi-creature formations leave that
+  value on the root while the common store at `0x0043115b..0x0043115f` writes
+  the requested heading only to the final child. Zig now retains both values
+  instead of initializing every formation slot from the requested heading.
+  Because template `0x0e` likewise leaves the root before the common
+  `max_health = health` store, its root's recycled max-health field is now
+  preserved rather than eagerly initialized; the last ring child still gets
+  the common snapshot.
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.
