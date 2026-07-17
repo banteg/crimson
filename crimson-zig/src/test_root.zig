@@ -331,6 +331,38 @@ test "creature target selection follows native two-player cadence" {
     );
 }
 
+test "freeze pauses native creature spawn-slot timers" {
+    var pool: cz.creatures.CreaturePool = .{};
+    var effects: cz.effects.EffectPool = .{};
+    var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+    var state = cz.state.GameplayState.init(1);
+    var bonuses: cz.bonuses.BonusPool = .{};
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+    };
+    pool.effects = &effects;
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = 0x07,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = std.math.pi,
+        },
+        &state.rng,
+    );
+
+    state.bonuses.freeze = 5.0;
+    try pool.update(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
+    try std.testing.expectEqual(@as(i32, 0), pool.spawn_slots[0].count);
+    try std.testing.expectEqual(@as(f32, 1.0), pool.spawn_slots[0].timer);
+    try std.testing.expectEqual(@as(usize, 1), pool.activeCount());
+
+    state.bonuses.freeze = 0.0;
+    try pool.update(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
+    try std.testing.expectEqual(@as(i32, 1), pool.spawn_slots[0].count);
+    try std.testing.expectEqual(@as(usize, 2), pool.activeCount());
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 

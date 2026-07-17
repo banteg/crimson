@@ -21,6 +21,10 @@ final body culling.
   dead current target. The Python runtime already preserved this policy; the
   Zig runtime now carries the native update counter and uses the selected
   player for AI, ranged distance, and contact behavior instead of player zero.
+- Spawn-slot owners tick their linked slot only in the ping-pong movement arm,
+  after the owner's clamp/movement and inside the global Freeze gate. The Zig
+  runtime now preserves that ordering, so Freeze pauses both the countdown and
+  child spawning instead of advancing slots before the creature sweep.
 - Linked AI modes use their live-link path as the native fallthrough, while
   dead links reset to orbit mode and the tethered variants apply 1,000 damage
   through fresh zero-vector temporaries.

@@ -2004,31 +2004,6 @@ pub const CreaturePool = struct {
         const effect_pool = self.effects orelse unreachable;
         const dt_f32 = dt;
 
-        if (!self.capture_spawn_events_authoritative) {
-            const slot_count_snapshot = self.spawn_slot_count;
-            for (self.spawn_slots[0..slot_count_snapshot]) |*slot| {
-                if (slot.owner_creature < 0) continue;
-                const owner_idx: usize = @intCast(slot.owner_creature);
-                if (owner_idx >= self.entries.len) continue;
-
-                const owner = self.entries[owner_idx];
-                if (!owner.active) continue;
-
-                if (spawn_mod.tickSpawnSlot(slot, dt)) |child_template_id| {
-                    try self.spawnTemplateCallWithRuntimeContext(
-                        .{
-                            .template_id = child_template_id,
-                            .pos = .{ .x = owner.pos.x, .y = owner.pos.y },
-                            .heading = owner.heading,
-                        },
-                        &state.rng,
-                        state,
-                        world_size,
-                    );
-                }
-            }
-        }
-
         const dt_ms = @max(@as(i32, 0), timing.ftolMsI32(dt));
         const player = &players[0];
         if (players.len == 1) {
@@ -2213,6 +2188,32 @@ pub const CreaturePool = struct {
                         .x = moved_x,
                         .y = moved_y,
                     };
+                }
+
+                // Native ticks an owner-bound spawn slot here, after the
+                // spawner's clamp/movement and inside the global Freeze gate.
+                if (!self.capture_spawn_events_authoritative and
+                    creature.link_index >= 0)
+                {
+                    const slot_idx: usize = @intCast(creature.link_index);
+                    if (slot_idx < self.spawn_slot_count and
+                        self.spawn_slots[slot_idx].owner_creature == @as(i32, @intCast(idx)))
+                    {
+                        const spawn_pos = creature.pos;
+                        const spawn_heading = creature.heading;
+                        if (spawn_mod.tickSpawnSlot(&self.spawn_slots[slot_idx], dt_f32)) |child_template_id| {
+                            try self.spawnTemplateCallWithRuntimeContext(
+                                .{
+                                    .template_id = child_template_id,
+                                    .pos = .{ .x = spawn_pos.x, .y = spawn_pos.y },
+                                    .heading = spawn_heading,
+                                },
+                                &state.rng,
+                                state,
+                                world_size,
+                            );
+                        }
+                    }
                 }
             }
             if (runtime_anim.creatureAnimInfoForRawTypeId(creature.type_id)) |anim_info| {
