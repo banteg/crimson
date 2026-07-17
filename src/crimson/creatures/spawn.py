@@ -905,6 +905,7 @@ def spawn_grid_children(
             child = alloc_creature(template_id, pos, rng)
             child.ai_mode = ai_mode
             child.ai_link_parent = link_parent
+            child.heading = 0.0
             child.target_offset = Vec2(float(x_offset), float(y_offset))
             child.pos = Vec2(pos.x + float(x_offset), pos.y + float(y_offset))
             apply_child_spec(child, child_spec)

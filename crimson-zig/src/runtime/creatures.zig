@@ -608,7 +608,7 @@ pub const CreaturePool = struct {
                             .x = narrowF32(call.pos.x),
                             .y = narrowF32(call.pos.y),
                         },
-                        call.heading,
+                        0.0,
                         .{
                             .type_id = .alien,
                             .health = 40.0,
@@ -618,7 +618,7 @@ pub const CreaturePool = struct {
                             .contact_damage = 30.0,
                         },
                         0,
-                        false,
+                        true,
                         false,
                     );
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
@@ -686,7 +686,7 @@ pub const CreaturePool = struct {
                 var chain_prev = parent_idx;
                 for (0..4) |idx| {
                     const offset = formationOffset(2 + idx * 2, @as(f32, std.math.pi / 8.0), 256.0);
-                    const child_idx = self.spawnFromStats(
+                    const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
@@ -698,6 +698,9 @@ pub const CreaturePool = struct {
                             .size = 50.0,
                             .contact_damage = 14.0,
                         },
+                        0,
+                        false,
+                        false,
                     );
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
@@ -805,7 +808,7 @@ pub const CreaturePool = struct {
                         @as(f32, 20.0 * std.math.pi / 180.0),
                         256.0,
                     );
-                    const child_idx = self.spawnFromStats(
+                    const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
@@ -817,6 +820,9 @@ pub const CreaturePool = struct {
                             .size = 50.0,
                             .contact_damage = 4.0,
                         },
+                        0,
+                        false,
+                        false,
                     );
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
@@ -1128,10 +1134,10 @@ pub const CreaturePool = struct {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
                         const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
-                        const child_idx = self.spawnFromStats(
+                        const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                            call.heading,
+                            0.0,
                             .{
                                 .type_id = .alien,
                                 .health = 40.0,
@@ -1140,6 +1146,9 @@ pub const CreaturePool = struct {
                                 .size = 50.0,
                                 .contact_damage = 4.0,
                             },
+                            0,
+                            true,
+                            false,
                         );
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
@@ -1179,10 +1188,10 @@ pub const CreaturePool = struct {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
                         const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
-                        const child_idx = self.spawnFromStats(
+                        const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                            call.heading,
+                            0.0,
                             .{
                                 .type_id = .alien,
                                 .health = 40.0,
@@ -1191,6 +1200,9 @@ pub const CreaturePool = struct {
                                 .size = 50.0,
                                 .contact_damage = 4.0,
                             },
+                            0,
+                            true,
+                            false,
                         );
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
@@ -1230,10 +1242,10 @@ pub const CreaturePool = struct {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
                         const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
-                        const child_idx = self.spawnFromStats(
+                        const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                            call.heading,
+                            0.0,
                             .{
                                 .type_id = .lizard,
                                 .health = 40.0,
@@ -1242,6 +1254,9 @@ pub const CreaturePool = struct {
                                 .size = 60.0,
                                 .contact_damage = 4.0,
                             },
+                            0,
+                            true,
+                            false,
                         );
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
@@ -1281,10 +1296,10 @@ pub const CreaturePool = struct {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
                         const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
-                        const child_idx = self.spawnFromStats(
+                        const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                            call.heading,
+                            0.0,
                             .{
                                 .type_id = .spider_sp1,
                                 .health = 40.0,
@@ -1293,6 +1308,9 @@ pub const CreaturePool = struct {
                                 .size = 50.0,
                                 .contact_damage = 4.0,
                             },
+                            0,
+                            true,
+                            false,
                         );
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
@@ -1331,10 +1349,10 @@ pub const CreaturePool = struct {
                     const x_offset = -64.0 * @as(f32, @floatFromInt(x_idx));
                     for (0..9) |y_idx| {
                         const y_offset = 128.0 + 16.0 * @as(f32, @floatFromInt(y_idx));
-                        const child_idx = self.spawnFromStats(
+                        const child_idx = self.spawnFromStatsWithFlags(
                             rng,
                             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
-                            call.heading,
+                            0.0,
                             .{
                                 .type_id = .alien,
                                 .health = 260.0,
@@ -1343,6 +1361,9 @@ pub const CreaturePool = struct {
                                 .size = 50.0,
                                 .contact_damage = 35.0,
                             },
+                            0,
+                            true,
+                            false,
                         );
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
@@ -1377,7 +1398,7 @@ pub const CreaturePool = struct {
                 const angle_step: f32 = (2.0 * std.math.pi) / 5.0;
                 for (0..5) |idx| {
                     const offset = formationOffset(idx, angle_step, 110.0);
-                    const child_idx = self.spawnFromStats(
+                    const child_idx = self.spawnFromStatsWithFlags(
                         rng,
                         .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
                         call.heading,
@@ -1389,6 +1410,9 @@ pub const CreaturePool = struct {
                             .size = 50.0,
                             .contact_damage = 35.0,
                         },
+                        0,
+                        false,
+                        false,
                     );
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
                     self.entries[child_idx].link_index = 0;

@@ -124,6 +124,13 @@ Frame/prefix notes:
   `max_health = health` store, its root's recycled max-health field is now
   preserved rather than eagerly initialized; the last ring child still gets
   the common snapshot.
+- Formation child heading writes are template-specific rather than an
+  allocator default. The `0x13` chain loop at `0x00431348..0x0043143f` never
+  touches `creature+0x2c`, so recycled headings survive until the common tail
+  overwrites only the final child. Conversely, the `0x14` grid loop explicitly
+  zeros that field at `0x0043154b`, as does the `0x0e` ring at `0x004320f6`.
+  Both ports now distinguish preserved chain/ring-child residue from explicit
+  zero initialization in grid and spawner-ring children.
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.

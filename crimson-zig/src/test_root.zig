@@ -496,6 +496,70 @@ test "formation roots retain transient headings and untouched max health" {
     try std.testing.expectEqual(@as(f32, 0.75), spawner_pool.entries[24].heading);
 }
 
+test "formation child headings preserve or clear recycled slot state" {
+    const preserved_cases = [_]struct {
+        template_id: i32,
+        final_idx: usize,
+    }{
+        .{ .template_id = 0x11, .final_idx = 4 },
+        .{ .template_id = 0x12, .final_idx = 8 },
+        .{ .template_id = 0x13, .final_idx = 10 },
+        .{ .template_id = 0x19, .final_idx = 5 },
+    };
+
+    for (preserved_cases) |case| {
+        var pool: cz.creatures.CreaturePool = .{};
+        pool.entries[1].heading = 1.25;
+        pool.entries[2].heading = 2.5;
+        var rng = cz.spawn.Crand.init(0xBEEF);
+
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = case.template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.75,
+            },
+            &rng,
+        );
+
+        try std.testing.expectEqual(@as(f32, 1.25), pool.entries[1].heading);
+        try std.testing.expectEqual(@as(f32, 2.5), pool.entries[2].heading);
+        try std.testing.expectEqual(@as(f32, 0.75), pool.entries[case.final_idx].heading);
+    }
+
+    const zeroed_cases = [_]struct {
+        template_id: i32,
+        final_idx: usize,
+    }{
+        .{ .template_id = 0x0E, .final_idx = 24 },
+        .{ .template_id = 0x14, .final_idx = 81 },
+        .{ .template_id = 0x15, .final_idx = 81 },
+        .{ .template_id = 0x16, .final_idx = 81 },
+        .{ .template_id = 0x17, .final_idx = 81 },
+        .{ .template_id = 0x18, .final_idx = 81 },
+    };
+
+    for (zeroed_cases) |case| {
+        var pool: cz.creatures.CreaturePool = .{};
+        pool.entries[1].heading = 1.25;
+        pool.entries[2].heading = 2.5;
+        var rng = cz.spawn.Crand.init(0xBEEF);
+
+        try pool.spawnTemplateCall(
+            .{
+                .template_id = case.template_id,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.75,
+            },
+            &rng,
+        );
+
+        try std.testing.expectEqual(@as(f32, 0.0), pool.entries[1].heading);
+        try std.testing.expectEqual(@as(f32, 0.0), pool.entries[2].heading);
+        try std.testing.expectEqual(@as(f32, 0.75), pool.entries[case.final_idx].heading);
+    }
+}
+
 test "spawn templates preserve recycled ranged orbit fields" {
     const projectile_type = @intFromEnum(cz.game_ids.ProjectileTypeId.spider_plasma);
     var pool: cz.creatures.CreaturePool = .{};

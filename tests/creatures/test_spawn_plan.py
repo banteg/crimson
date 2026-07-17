@@ -210,6 +210,38 @@ def test_spawn_template_clears_root_force_target_but_preserves_formation_childre
     assert all(creature.preserve_force_target is True for creature in plan.creatures[1:])
 
 
+def test_formation_child_heading_writes_follow_native_template_paths(default_spawn_env: SpawnEnv) -> None:
+    chain = build_spawn_plan(
+        SpawnId.FORMATION_CHAIN_ALIEN_10_13,
+        Vec2(100.0, 200.0),
+        0.75,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+    assert all(creature.heading is None for creature in chain.creatures[1:-1])
+    assert chain.creatures[-1].heading == 0.75
+
+    grid = build_spawn_plan(
+        SpawnId.FORMATION_GRID_ALIEN_GREEN_14,
+        Vec2(100.0, 200.0),
+        0.75,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+    assert all(creature.heading == 0.0 for creature in grid.creatures[1:-1])
+    assert grid.creatures[-1].heading == 0.75
+
+    spawner_ring = build_spawn_plan(
+        SpawnId.ALIEN_SPAWNER_RING_24_0E,
+        Vec2(100.0, 200.0),
+        0.75,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+    assert all(creature.heading == 0.0 for creature in spawner_ring.creatures[1:-1])
+    assert spawner_ring.creatures[-1].heading == 0.75
+
+
 def test_build_spawn_plan_rejects_unsupported_template_id(default_spawn_env: SpawnEnv) -> None:
     with pytest.raises(UnsupportedSpawnTemplateError, match=r"unsupported spawn template id: 0x2"):
         build_spawn_plan(SpawnId.UNUSED_02, Vec2(100.0, 200.0), 0.0, Crand(0xBEEF), default_spawn_env)
