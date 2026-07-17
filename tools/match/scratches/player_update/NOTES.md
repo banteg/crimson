@@ -56,10 +56,23 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=37.79% prefix=2/4206 target_insns=4206 candidate_insns=3811 refs=574/0/36
-first_target=push ebx
-first_candidate=push ebp
+match=38.19% prefix=7/4206 target_insns=4206 candidate_insns=3806 refs=581/0/33
+first_target=jne L3f7a
+first_candidate=jne L3a5d
 ```
+
+The native entry copies the adjacent `ui_mouse_x`/`ui_mouse_y` pair into the
+selected two-float aim-screen slot with two integer moves. Representing both
+pairs as the already-recovered local vector aggregate preserves that source
+shape without bit-casting the individual floats merely to steer codegen.
+
+Live disassembly also shows each early perk timer testing the perk count and
+branching a zero result to its reset store, leaving the active update as the
+fallthrough: Man Bomb at `0x004138bf`, Living Fortress at `0x004139c3`, Fire
+Cough at `0x00413a0b`, and Hot Tempered at `0x00413c8a`. Restoring that natural
+active-first source order changes no gameplay semantics, but recovers the
+native `ebx`/`esi`/`edi` prologue through seven normalized instructions and
+improves both whole-function alignment and reference recovery.
 
 Live Binary Ninja shows the movement dispatcher at
 `0x00413f19..0x00414f3e` laying out player-controlled modes first and branching

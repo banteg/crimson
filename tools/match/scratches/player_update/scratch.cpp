@@ -125,8 +125,8 @@ extern "C" void player_update(void)
     }
 
     int player_index = render_overlay_player_index;
-    player_aim_screen_x[player_index * 2] = ui_mouse_x;
-    player_aim_screen_x[player_index * 2 + 1] = ui_mouse_y;
+    *(player_update_vec2_t *)&player_aim_screen_x[player_index * 2] =
+        *(player_update_vec2_t *)&ui_mouse_x;
 
     player_state_t *player = &player_state_table[player_index];
     previous_pos.x = player->pos_x;
@@ -175,9 +175,7 @@ extern "C" void player_update(void)
         player->shot_cooldown = 0.0f;
     }
 
-    if (perk_count_get(perk_id_man_bomb) == 0) {
-        player->man_bomb_timer = 0.0f;
-    } else {
+    if (perk_count_get(perk_id_man_bomb) != 0) {
         player->man_bomb_timer = player->man_bomb_timer + frame_dt;
         if (player->man_bomb_timer > perk_man_bomb_trigger_interval_s) {
             int owner_id;
@@ -214,21 +212,21 @@ extern "C" void player_update(void)
                 player->man_bomb_timer - perk_man_bomb_trigger_interval_s;
             perk_man_bomb_trigger_interval_s = 4.0f;
         }
+    } else {
+        player->man_bomb_timer = 0.0f;
     }
 
-    if (perk_count_get(perk_id_living_fortress) == 0) {
-        player->living_fortress_timer = 0.0f;
-    } else {
+    if (perk_count_get(perk_id_living_fortress) != 0) {
         player->living_fortress_timer =
             player->living_fortress_timer + frame_dt;
         if (player->living_fortress_timer > 30.0f) {
             player->living_fortress_timer = 30.0f;
         }
+    } else {
+        player->living_fortress_timer = 0.0f;
     }
 
-    if (perk_count_get(perk_id_fire_caugh) == 0) {
-        player->fire_cough_timer = 0.0f;
-    } else {
+    if (perk_count_get(perk_id_fire_caugh) != 0) {
         player->fire_cough_timer = player->fire_cough_timer + frame_dt;
         if (player->fire_cough_timer > perk_fire_cough_trigger_interval_s) {
             int owner_id;
@@ -295,11 +293,11 @@ extern "C" void player_update(void)
             perk_fire_cough_trigger_interval_s =
                 (float)(crt_rand() % 4) + 2.0f;
         }
+    } else {
+        player->fire_cough_timer = 0.0f;
     }
 
-    if (perk_count_get(perk_id_hot_tempered) == 0) {
-        player->hot_tempered_timer = 0.0f;
-    } else {
+    if (perk_count_get(perk_id_hot_tempered) != 0) {
         player->hot_tempered_timer = player->hot_tempered_timer + frame_dt;
         if (player->hot_tempered_timer > perk_hot_tempered_trigger_interval_s) {
             int owner_id;
@@ -331,6 +329,8 @@ extern "C" void player_update(void)
             perk_hot_tempered_trigger_interval_s =
                 (float)(crt_rand() % 8) + 2.0f;
         }
+    } else {
+        player->hot_tempered_timer = 0.0f;
     }
 
     if (player_spread_damping_gate <= 0.0f) {
