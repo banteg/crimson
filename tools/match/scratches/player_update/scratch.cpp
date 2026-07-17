@@ -44,6 +44,8 @@ extern int player_alt_turn_key_right;
 extern float camera_offset_x;
 extern float camera_offset_y;
 extern cvar_float_t *cv_padAimDistMul;
+extern int frame_dt_ms;
+extern int player_alt_weapon_swap_cooldown_ms;
 extern unsigned char survival_reward_fire_seen;
 extern int weapon_ammo_class[];
 extern int sfx_bloodspill_01;
@@ -902,6 +904,51 @@ extern "C" void player_update(void)
         && (perk_count_get(perk_id_regression_bullets) != 0
             || perk_count_get(perk_id_ammunition_within) != 0)) {
         perk_fire_ready = true;
+    }
+
+    if (perk_count_get(perk_id_alternate_weapon) != 0) {
+        if ((player_alt_weapon_swap_cooldown_ms < 1
+                || (player_alt_weapon_swap_cooldown_ms =
+                        player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
+                    player_alt_weapon_swap_cooldown_ms < 1))
+            && grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+            int swap_weapon_id = player->alt_weapon_id;
+            player->alt_weapon_id = player->weapon_id;
+            player->weapon_id = swap_weapon_id;
+
+            float swap_clip_size = player->alt_clip_size;
+            player->alt_clip_size = player->clip_size;
+            player->clip_size = swap_clip_size;
+
+            unsigned char swap_reload_active = player->alt_reload_active;
+            player->alt_reload_active = player->reload_active;
+            player->reload_active = swap_reload_active;
+
+            float swap_ammo = player->alt_ammo;
+            player->alt_ammo = player->ammo;
+            player->ammo = swap_ammo;
+
+            float swap_reload_timer = player->alt_reload_timer;
+            player->alt_reload_timer = player->reload_timer;
+            player->reload_timer = swap_reload_timer;
+
+            float swap_shot_cooldown = player->alt_shot_cooldown;
+            player->alt_shot_cooldown = player->shot_cooldown;
+            player->shot_cooldown = swap_shot_cooldown;
+
+            float swap_reload_timer_max = player->alt_reload_timer_max;
+            player->alt_reload_timer_max = player->reload_timer_max;
+            player->reload_timer_max = swap_reload_timer_max;
+
+            sfx_play_panned(
+                weapon_table[player->weapon_id].reload_sfx_id,
+                &player->pos_x,
+                1.0f);
+            player->shot_cooldown = player->shot_cooldown + 0.1f;
+            player_alt_weapon_swap_cooldown_ms = 200;
+        } else if (!grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+            player_alt_weapon_swap_cooldown_ms = 0;
+        }
     }
 
     if ((normal_fire_ready || perk_fire_ready)

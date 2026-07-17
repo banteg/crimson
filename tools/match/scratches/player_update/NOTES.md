@@ -24,6 +24,8 @@ phases:
 - normal and perk-funded fire gates, Regression Bullets/Ammunition Within
   costs, muzzle smoke, projectile ownership, randomized spread, and shared
   weapon cooldown/SFX setup;
+- Alternate Weapon's complete field swap, reload SFX, cooldown penalty, and
+  200-millisecond reload-key debounce;
 - direct projectile dispatch for pistol, assault rifle, SMG, plasma, ion,
   pulse, blade, splitter, minigun, plague, rainbow, and Bubblegun families,
   including Shrinkifier muzzle effects and the three flame emitters; and
@@ -33,8 +35,7 @@ phases:
 Known missing work:
 
 - the shared auto-target movement acquisition/re-entry path;
-- alternate-weapon swapping, shotgun/rocket/Gauss loop-family weapon cases,
-  and the Fire Bullets branch; and
+- shotgun/rocket/Gauss loop-family weapon cases and the Fire Bullets branch;
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -44,7 +45,7 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=24.15% prefix=1/4206 target_insns=4206 candidate_insns=2592 refs=273/0/44
+match=24.08% prefix=1/4206 target_insns=4206 candidate_insns=2662 refs=273/0/47
 first_target=sub esp, 0x48
 first_candidate=sub esp, 0x4c
 ```
