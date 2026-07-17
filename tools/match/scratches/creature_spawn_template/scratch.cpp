@@ -89,7 +89,7 @@ typedef union creature_spawn_template_locals_t {
             do {                                                                                                     \
                 INIT_GRID_CHILD((child_ai_mode), (child_type), (child_health), (red), (green), (blue),               \
                                 (child_speed), (alpha), (child_size), (damage));                                     \
-            } while ((int)pos < 0x101);                                                                              \
+            } while ((int)pos <= 0x100);                                                                             \
             slot_10_i = slot_10_i + -0x40;                                                                           \
         } while (-0x240 < slot_10_i);                                                                                \
     } while (0)

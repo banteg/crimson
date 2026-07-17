@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=58.42% prefix=23/3159 target_insns=3159 candidate_insns=2716 refs=311/1/2
+match=58.59% prefix=23/3159 target_insns=3159 candidate_insns=2716 refs=311/1/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -49,3 +49,6 @@ Frame/prefix notes:
   across the paired `cos`/`sin`, as native does. This removes six candidate
   instructions, raises the score from `58.09%` to `58.42%`, and improves the
   masked-reference audit from `308/1/2` to `311/1/2` without changing behavior.
+- The five grid-spawn loops use the native inclusive vertical-offset guard
+  `offset <= 0x100`. Replacing the equivalent `< 0x101` spelling recovers the
+  native compare/branch tokens and raises the score from `58.42%` to `58.59%`.
