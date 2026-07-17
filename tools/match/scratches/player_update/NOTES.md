@@ -23,15 +23,18 @@ phases:
   Angry Reloader's projectile ring;
 - normal and perk-funded fire gates, Regression Bullets/Ammunition Within
   costs, muzzle smoke, projectile ownership, randomized spread, and shared
-  weapon cooldown/SFX setup; and
+  weapon cooldown/SFX setup;
+- direct projectile dispatch for pistol, assault rifle, SMG, plasma, ion,
+  pulse, blade, splitter, minigun, plague, rainbow, and Bubblegun families,
+  including Shrinkifier muzzle effects and the three flame emitters; and
 - movement-phase normalization, speed-bonus removal, terrain clamping, and the
   final muzzle-flash clamp.
 
 Known missing work:
 
 - the shared auto-target movement acquisition/re-entry path;
-- alternate-weapon swapping, individual weapon cases, the Fire Bullets branch,
-  and the common post-fire ammo/perk tail; and
+- alternate-weapon swapping, shotgun/rocket/Gauss loop-family weapon cases,
+  and the Fire Bullets branch; and
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -41,11 +44,11 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=17.21% prefix=3/4206 target_insns=4206 candidate_insns=2068 refs=186/0/36
-first_target=xor ebx, ebx
-first_candidate=push ebp
+match=24.15% prefix=1/4206 target_insns=4206 candidate_insns=2592 refs=273/0/44
+first_target=sub esp, 0x48
+first_candidate=sub esp, 0x4c
 ```
 
-The candidate's natural frame is now the native `0x48`. VC6 still saves `ebp`
-early because the partial source gives it a different register lifetime; no
-register constraints or artificial padding are used.
+The accepted direct-weapon source raises the candidate's natural frame to
+`0x4c`; the four-byte excess currently comes from incomplete weapon-loop local
+coalescing. No register constraints or artificial padding are used.
