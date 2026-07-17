@@ -6941,10 +6941,10 @@
     },
     {
       "address": "0x004aaf30",
-      "comment": "Unknown player-reset global; player_reset_all is its only observed access and clears it once per player slot.",
+      "comment": "Write-only float in the gameplay timer block; player_reset_all is its only observed access and clears it once per player slot.",
       "name": "player_reset_reserved_zero",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "float"
     },
     {
       "address": "0x004aaf34",
