@@ -2,8 +2,7 @@
 
 Native target: `crimsonland.exe` at `0x00406b40` (1437 bytes).
 
-Work in progress: 90.06% normalized match, 9/352-instruction exact prefix,
-352/352 candidate instructions, and 135/0/0 reference audit.
+Exact match: 100.00%, 352/352 instructions, and 136/0/0 reference audit.
 
 Binary Ninja and the MSVC candidate establish the complete runtime behavior:
 
@@ -28,11 +27,11 @@ recovers the five repeated stack constructions exactly. The two bounded
 player/creature loops recover the native global-index updates, including the
 383-slot Jinxed modulus which excludes the last creature slot.
 
-The honest residual is VC6 basic-block placement: native leaves the
-Regeneration false-path player-count reload out of line between Death Clock's
-subtract and zero-health blocks, while the equivalent structured candidate
-places it immediately after the heal block. This changes short versus near
-branch encodings and therefore later branch labels, but not the instruction
-count or audited references. VC6.5pp, VC7.0, `/G6`, and persistent-local
-variants diverged in floating-point tests, scheduling, or register allocation
-and were rejected rather than retained as matching aids.
+The Regeneration source is an ordinary local-index `for` loop over
+`config_player_count`, even though its index is unused in the body. VC6
+strength-reduces that loop to the native `dec ecx` countdown, keeps player
+zero's health on the x87 stack, reuses the configured count for the later
+per-player loop, and places the false-path reload in the exact native cold
+block. Encoding the optimized countdown directly was semantically equivalent
+but produced the wrong block order; restoring the plausible pre-optimization
+source shape resolves the complete function without artificial control flow.

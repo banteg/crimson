@@ -36,20 +36,16 @@ extern "C" void perks_update_effects(void)
 {
     if (perk_count_get(perk_id_regeneration) != 0) {
         if ((crt_rand() & 1) != 0) {
-            int player_count = config_player_count;
-            if (player_count > 0) {
-                float health = player_state_table[0].health;
-                int count = player_count;
-                do {
-                    if (health < 100.0f && health > 0.0f) {
-                        health += frame_dt;
-                        if (health > 100.0f) {
-                            health = 100.0f;
-                        }
+            for (int player_index = 0;
+                 player_index < config_player_count;
+                 ++player_index) {
+                if (player_state_table[0].health < 100.0f
+                    && player_state_table[0].health > 0.0f) {
+                    player_state_table[0].health += frame_dt;
+                    if (player_state_table[0].health > 100.0f) {
+                        player_state_table[0].health = 100.0f;
                     }
-                    --count;
-                } while (count != 0);
-                player_state_table[0].health = health;
+                }
             }
         }
     }
@@ -66,7 +62,7 @@ extern "C" void perks_update_effects(void)
 
     for (render_overlay_player_index = 0;
          render_overlay_player_index < config_player_count;
-         ++render_overlay_player_index) {
+        ++render_overlay_player_index) {
         if (perk_count_get(perk_id_death_clock) != 0) {
             if (player_state_table[render_overlay_player_index].health > 0.0f) {
                 player_state_table[render_overlay_player_index].health -=
