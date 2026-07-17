@@ -412,7 +412,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 48/48 | 95.83% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 79/79 | 34.18% | 4/79 | 2/0/0 |  | quest-the-lizquidation-builder |
-| wip | quest_build_zombie_time | 0x00437d70 | 152 | 50/50 | 60.00% | 1/50 | 2/0/0 |  | quest-zombie-time-builder |
+| wip | quest_build_zombie_time | 0x00437d70 | 152 | 50/50 | 82.00% | 16/50 | 3/0/0 |  | quest-zombie-time-builder |
 | wip | quest_build_frontline_assault | 0x00437e10 | 285 | 81/84 | 75.15% | 10/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 86/86 | 77.91% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
 | wip | quest_build_the_blighting | 0x00438050 | 624 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
