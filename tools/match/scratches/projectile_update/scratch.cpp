@@ -12,6 +12,7 @@ extern unsigned char music_playlist_randomized_latch;
 extern int music_track_extra_0;
 extern int sfx_bullet_hit_01;
 extern int weapon_ammo_class[];
+extern int config_detail_preset;
 
 void creatures_apply_radius_damage(
     float *pos,
@@ -29,6 +30,10 @@ void effect_spawn_shrinkifier_hit(float *pos);
 void fx_queue_add_random(vec2f_t *pos);
 void creature_handle_death(int creature_id, unsigned char keep_corpse);
 void sfx_play_exclusive(int sfx_id);
+int fx_spawn_sprite(float *pos, float *vel, float scale);
+vec2f_t *__stdcall vec2_normalize_dispatch(
+    vec2f_t *dst,
+    const vec2f_t *src);
 }
 
 extern "C" void projectile_update(void)
@@ -665,4 +670,359 @@ extern "C" void projectile_update(void)
         }
         ++projectile_index;
     } while (projectile_index < 0x60);
+
+    secondary_projectile_t *secondary = secondary_projectile_pool;
+    do {
+        if (secondary->active) {
+            if (secondary->pos.vx.vy.type_id
+                == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+                camera_shake_pulses = 4;
+                secondary->pos.vx.vel_x += frame_dt * 3.0f;
+
+                if (secondary->pos.vx.vel_x > 1.0f) {
+                    float extent = secondary->pos.vx.vy.vel_y * 256.0f;
+                    effect_color_t color = {
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.25f,
+                    };
+                    fx_queue_add(
+                        0x10,
+                        (vec2f_t *)&secondary->pos_x,
+                        extent,
+                        extent,
+                        0.0f,
+                        &color);
+                    secondary->active = 0;
+                }
+
+                float radius = secondary->pos.vx.vy.vel_y
+                    * secondary->pos.vx.vel_x * 80.0f;
+                int creature_id = 0;
+                do {
+                    creature_t *creature = &creature_pool[creature_id];
+                    if (creature->active && creature->health > 0.0f) {
+                        float dx = creature->pos_x - secondary->pos_x;
+                        float dy = creature->pos_y - secondary->pos.pos_y;
+                        float distance =
+                            (float)sqrt(dx * dx + dy * dy);
+                        if (distance < radius) {
+                            vec2f_t impulse = {dx, dy};
+                            vec2_normalize_dispatch(&impulse, &impulse);
+                            impulse.x *= 0.1f;
+                            impulse.y *= 0.1f;
+                            creature_apply_damage(
+                                creature_id,
+                                frame_dt
+                                    * secondary->pos.vx.vy.vel_y * 700.0f,
+                                3,
+                                &impulse.x);
+                            if (creature->health <= 0.0f) {
+                                fx_queue_add_random(
+                                    (vec2f_t *)&creature->pos_x);
+                                fx_queue_add_random(
+                                    (vec2f_t *)&creature->pos_x);
+                                creature_handle_death(creature_id, 1);
+                            }
+                        }
+                    }
+                    ++creature_id;
+                } while (creature_id < 0x180);
+            } else {
+                vec2f_t movement = {
+                    frame_dt * secondary->pos.vx.vel_x,
+                    frame_dt * secondary->pos.vx.vy.vel_y,
+                };
+                vec2_add(&secondary->pos_x, &movement.x);
+
+                secondary_projectile_type_id_t type_id =
+                    secondary->pos.vx.vy.type_id;
+                if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+                    float speed = (float)sqrt(
+                        secondary->pos.vx.vel_x
+                                * secondary->pos.vx.vel_x
+                            + secondary->pos.vx.vy.vel_y
+                                * secondary->pos.vx.vy.vel_y);
+                    if (speed < 500.0f) {
+                        float scale = frame_dt * 3.0f + 1.0f;
+                        secondary->pos.vx.vel_x *= scale;
+                        secondary->pos.vx.vy.vel_y *= scale;
+                    }
+                    secondary->life_timer -= frame_dt;
+                } else if (type_id
+                    == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
+                    float speed = (float)sqrt(
+                        secondary->pos.vx.vel_x
+                                * secondary->pos.vx.vel_x
+                            + secondary->pos.vx.vy.vel_y
+                                * secondary->pos.vx.vy.vel_y);
+                    if (speed < 600.0f) {
+                        float scale = frame_dt * 4.0f + 1.0f;
+                        secondary->pos.vx.vel_x *= scale;
+                        secondary->pos.vx.vy.vel_y *= scale;
+                    }
+                    secondary->life_timer -= frame_dt;
+                } else if (type_id
+                    == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+                    if (!creature_pool[secondary->pos.vx.vy.target_id]
+                            .active) {
+                        secondary->pos.vx.vy.target_id =
+                            creature_find_nearest(
+                                &secondary->pos_x,
+                                -1,
+                                0.0f);
+                    }
+
+                    creature_t *target = &creature_pool[
+                        secondary->pos.vx.vy.target_id];
+                    float target_angle = (float)atan2(
+                        secondary->pos.pos_y - target->pos_y,
+                        secondary->pos_x - target->pos_x);
+                    secondary->angle = target_angle - 1.5707964f;
+                    secondary->pos.vx.vel_x +=
+                        (float)(cos(
+                            (target_angle - 1.5707964f) - 1.5707964f)
+                            * frame_dt * 800.0f);
+                    secondary->pos.vx.vy.vel_y +=
+                        (float)(sin(secondary->angle - 1.5707964f)
+                            * frame_dt * 800.0f);
+
+                    float speed = (float)sqrt(
+                        secondary->pos.vx.vel_x
+                                * secondary->pos.vx.vel_x
+                            + secondary->pos.vx.vy.vel_y
+                                * secondary->pos.vx.vy.vel_y);
+                    if (speed > 350.0f) {
+                        secondary->pos.vx.vel_x -=
+                            (float)(cos(
+                                secondary->angle - 1.5707964f)
+                                * frame_dt * 800.0f);
+                        secondary->pos.vx.vy.vel_y -=
+                            (float)(sin(
+                                secondary->angle - 1.5707964f)
+                                * frame_dt * 800.0f);
+                    }
+                    secondary->life_timer -= frame_dt * 0.5f;
+                }
+
+                secondary->pos.vx.vy.trail_timer -=
+                    ((float)fabs(secondary->pos.vx.vel_x)
+                        + (float)fabs(secondary->pos.vx.vy.vel_y))
+                    * frame_dt * 0.01f;
+                if (secondary->pos.vx.vy.trail_timer < 0.0f) {
+                    float trail_cos =
+                        (float)cos(secondary->angle + 1.5707964f);
+                    vec2f_t trail_velocity = {
+                        trail_cos * 90.0f,
+                        (float)(cos(secondary->angle + 1.5707964f)
+                            * 90.0f),
+                    };
+                    float trail_heading =
+                        secondary->angle - 1.5707964f;
+                    vec2f_t trail_pos = {
+                        secondary->pos_x
+                            - (float)(cos(trail_heading) * 9.0f),
+                        secondary->pos.pos_y
+                            - (float)(sin(trail_heading) * 9.0f),
+                    };
+                    int effect_id = fx_spawn_sprite(
+                        &trail_pos.x,
+                        &trail_velocity.x,
+                        14.0f);
+                    secondary->pos.vx.vy.trail_timer = 0.06f;
+                    sprite_effect_pool[effect_id].color_a = 0.25f;
+                }
+
+                int hit_id = creature_find_in_radius(
+                    &secondary->pos_x,
+                    8.0f,
+                    0);
+                if (hit_id != -1) {
+                    if (creature_pool[hit_id].lifecycle_stage == 16.0f) {
+                        ++highscore_record_shots_hit;
+                    }
+
+                    if (bonus_freeze_timer <= 0.0f) {
+                        int count = 3;
+                        do {
+                            vec2f_t decal_pos = {
+                                (float)(crt_rand() % 20 - 10)
+                                    + creature_pool[hit_id].pos_x,
+                                (float)(crt_rand() % 20 - 10)
+                                    + creature_pool[hit_id].pos_y,
+                            };
+                            fx_queue_add_random(&decal_pos);
+                            --count;
+                        } while (count != 0);
+                    } else {
+                        int count = 4;
+                        do {
+                            effect_spawn_freeze_shard(
+                                &secondary->pos_x,
+                                (float)(crt_rand() % 612) * 0.01f);
+                            --count;
+                        } while (count != 0);
+                    }
+
+                    float damage = 150.0f;
+                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+                        damage = secondary->life_timer * 50.0f + 500.0f;
+                        if (config_detail_preset > 2) {
+                            effect_spawn_explosion_burst(
+                                &secondary->pos_x,
+                                0.4f);
+                        }
+                    } else if (type_id
+                        == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+                        damage = secondary->life_timer * 20.0f + 80.0f;
+                    } else if (type_id
+                        == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
+                        damage = secondary->life_timer * 20.0f + 40.0f;
+                    }
+
+                    if (!demo_mode_active
+                        && !music_playlist_randomized_latch
+                        && config_game_mode != GAME_MODE_RUSH) {
+                        sfx_play_exclusive(music_track_extra_0);
+                    } else {
+                        sfx_play_panned(
+                            sfx_explosion_medium,
+                            &secondary->pos_x,
+                            1.0f);
+                    }
+
+                    float inverse_dt = 1.0f / frame_dt;
+                    creature_pool[hit_id].state_flag = 1;
+                    vec2f_t impulse = {
+                        inverse_dt * secondary->pos.vx.vel_x,
+                        inverse_dt * secondary->pos.vx.vy.vel_y,
+                    };
+                    creature_apply_damage(
+                        hit_id,
+                        damage,
+                        3,
+                        &impulse.x);
+
+                    float freeze_timer = bonus_freeze_timer;
+                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+                        secondary->pos.vx.vy.type_id =
+                            SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary->pos.vx.vel_x = 0.0f;
+                        secondary->pos.vx.vy.vel_y = 1.0f;
+                        if (freeze_timer <= 0.0f) {
+                            int count = 20;
+                            do {
+                                float angle =
+                                    (float)(crt_rand() % 628) * 0.01f;
+                                int radius = crt_rand() % 90;
+                                vec2f_t decal_pos = {
+                                    (float)(cos(angle) * radius)
+                                        + creature_pool[hit_id].pos_x,
+                                    (float)(sin(angle) * radius)
+                                        + creature_pool[hit_id].pos_y,
+                                };
+                                fx_queue_add_random(&decal_pos);
+                                --count;
+                            } while (count != 0);
+                        } else {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &secondary->pos_x,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        }
+                    } else if (type_id
+                        == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+                        secondary->pos.vx.vy.type_id =
+                            SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary->pos.vx.vel_x = 0.0f;
+                        secondary->pos.vx.vy.vel_y = 0.35f;
+                        if (freeze_timer <= 0.0f) {
+                            int count = 10;
+                            do {
+                                float angle =
+                                    (float)(crt_rand() % 628) * 0.01f;
+                                int radius = crt_rand() % 64;
+                                vec2f_t decal_pos = {
+                                    (float)(cos(angle) * radius)
+                                        + creature_pool[hit_id].pos_x,
+                                    (float)(sin(angle) * radius)
+                                        + creature_pool[hit_id].pos_y,
+                                };
+                                fx_queue_add_random(&decal_pos);
+                                --count;
+                            } while (count != 0);
+                        } else {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &secondary->pos_x,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        }
+                    } else if (type_id
+                        == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
+                        secondary->pos.vx.vy.type_id =
+                            SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary->pos.vx.vel_x = 0.0f;
+                        secondary->pos.vx.vy.vel_y = 0.25f;
+                        if (freeze_timer <= 0.0f) {
+                            int count = 3;
+                            do {
+                                float angle =
+                                    (float)(crt_rand() % 628) * 0.01f;
+                                int radius = crt_rand() % 44;
+                                vec2f_t decal_pos = {
+                                    (float)(cos(angle) * radius)
+                                        + creature_pool[hit_id].pos_x,
+                                    (float)(sin(angle) * radius)
+                                        + creature_pool[hit_id].pos_y,
+                                };
+                                fx_queue_add_random(&decal_pos);
+                                --count;
+                            } while (count != 0);
+                        } else {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &creature_pool[hit_id].pos_x,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        }
+                    }
+
+                    int burst_index = 0;
+                    do {
+                        float magnitude =
+                            (float)(crt_rand() % 800) * 0.1f;
+                        float angle =
+                            (float)burst_index * 0.62831855f;
+                        vec2f_t velocity = {
+                            (float)(cos(angle) * magnitude),
+                            (float)(sin(angle) * magnitude),
+                        };
+                        int effect_id = fx_spawn_sprite(
+                            &secondary->pos_x,
+                            &velocity.x,
+                            14.0f);
+                        sprite_effect_pool[effect_id].color_a = 0.37f;
+                        ++burst_index;
+                    } while (burst_index < 10);
+                }
+
+                if (secondary->life_timer <= 0.0f) {
+                    secondary->pos.vx.vy.type_id =
+                        SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                    secondary->pos.vx.vel_x = 0.0f;
+                    secondary->pos.vx.vy.vel_y = 0.5f;
+                }
+            }
+        }
+        ++secondary;
+    } while ((int)secondary < (int)&secondary_projectile_pool[0x40]);
 }
