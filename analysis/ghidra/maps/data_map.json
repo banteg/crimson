@@ -169,6 +169,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004712f4",
+      "comment": "Signed tutorial bonus id copied from the dead bonus carrier's packed link-index low word before the hint advances.",
+      "name": "tutorial_hint_bonus_id",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004712f8",
+      "comment": "Signed tutorial bonus amount copied from the dead bonus carrier's packed link-index high word before the hint advances.",
+      "name": "tutorial_hint_bonus_amount",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004712fc",
       "comment": "Tutorial hint index used for secondary prompt overlay (increments when bonus object deactivates).",
       "name": "tutorial_hint_index",
@@ -2307,7 +2321,7 @@
       "comment": "Tutorial hint-bonus consumed latch toggled after hint bonus death/flag checks in tutorial_timeline_update.",
       "name": "tutorial_hint_bonus_consumed_latch",
       "program": "crimsonland.exe",
-      "type": "char"
+      "type": "bool"
     },
     {
       "address": "0x004808b4",

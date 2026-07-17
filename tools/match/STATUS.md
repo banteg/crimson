@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/536 |
+| crimsonland.exe | 439/997 | 91267/386756 | 23.6% | 439/537 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**439/997** functions, **91267/386756** bytes (**23.6%**), **439/536** scratches verified.
+**439/997** functions, **91267/386756** bytes (**23.6%**), **439/537** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -100,6 +100,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | survival_spawn_creature | 0x00407510 | 1973 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
 | wip | survival_update | 0x00407cd0 | 2102 | 506/504 | 98.22% | 55/504 | 134/0/1 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
+| wip | tutorial_timeline_update | 0x00408990 | 2907 | 702/695 | 63.71% | 6/695 | 149/0/8 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
