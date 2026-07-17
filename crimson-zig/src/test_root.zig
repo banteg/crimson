@@ -415,6 +415,46 @@ test "spawn templates clear root force target but preserve formation children" {
     try std.testing.expectEqual(@as(u8, 1), pool.entries[1].force_target);
 }
 
+test "spawn template tail modifiers follow the final formation child" {
+    var hardcore_pool: cz.creatures.CreaturePool = .{};
+    hardcore_pool.hardcore = true;
+    var hardcore_rng = cz.spawn.Crand.init(0xBEEF);
+
+    try hardcore_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x12,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &hardcore_rng,
+    );
+
+    try std.testing.expectEqual(@as(f32, 200.0), hardcore_pool.entries[0].hp);
+    try std.testing.expectEqual(@as(f32, 20.0), hardcore_pool.entries[8].max_hp);
+    try std.testing.expectEqual(
+        cz.native_math.pc24Mul(@as(f32, 20.0), @as(f32, 1.2)),
+        hardcore_pool.entries[8].hp,
+    );
+    try std.testing.expectEqual(
+        cz.native_math.pc24Mul(@as(f32, 2.4), @as(f32, 1.05)),
+        hardcore_pool.entries[8].move_speed,
+    );
+
+    var spawner_pool: cz.creatures.CreaturePool = .{};
+    var spawner_rng = cz.spawn.Crand.init(0xBEEF);
+
+    try spawner_pool.spawnTemplateCall(
+        .{
+            .template_id = 0x0E,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &spawner_rng,
+    );
+
+    try std.testing.expectEqual(@as(f32, 1.05), spawner_pool.spawn_slots[0].interval);
+}
+
 test "spawn templates preserve recycled ranged orbit fields" {
     const projectile_type = @intFromEnum(cz.game_ids.ProjectileTypeId.spider_plasma);
     var pool: cz.creatures.CreaturePool = .{};

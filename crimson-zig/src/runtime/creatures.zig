@@ -1960,51 +1960,64 @@ pub const CreaturePool = struct {
             else => return error.InvalidSpawnTemplate,
         }
 
-        if (findSpawnTemplatePrimaryIndex(self, &was_active)) |primary_idx| {
+        if (findSpawnTemplateRootIndex(self, &was_active)) |root_idx| {
             // creature_spawn_template clears this byte on its root after the
             // raw slot allocation. Formation children retain recycled state.
-            self.entries[primary_idx].force_target = 0;
+            self.entries[root_idx].force_target = 0;
+        }
+
+        if (findSpawnTemplateTailIndex(self, &was_active)) |tail_idx| {
+            if (state) |game_state| {
+                const tail_pos = self.entries[tail_idx].pos;
+                if (!game_state.demo_mode_active and
+                    terrain_size > 0.0 and
+                    tail_pos.x > 0.0 and tail_pos.x < terrain_size and
+                    tail_pos.y > 0.0 and tail_pos.y < terrain_size)
+                {
+                    const effects = self.effects orelse unreachable;
+                    effects.spawnBurst(
+                        @constCast(game_state),
+                        tail_pos,
+                        8,
+                        5,
+                        0.4,
+                        null,
+                        .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
+                    );
+                }
+            }
+
+            self.entries[tail_idx].max_hp = self.entries[tail_idx].hp;
+            applySpiderSp1Ai7Tail(&self.entries[tail_idx]);
             const maybe_slot_idx = blk: {
-                const link_index = self.entries[primary_idx].link_index;
+                const link_index = self.entries[tail_idx].link_index;
                 if (link_index < 0) break :blk null;
                 const slot_idx: usize = @intCast(link_index);
                 if (slot_idx >= self.spawn_slot_count) break :blk null;
-                if (self.spawn_slots[slot_idx].owner_creature != @as(i32, @intCast(primary_idx))) break :blk null;
+                if (self.spawn_slots[slot_idx].owner_creature != @as(i32, @intCast(tail_idx))) break :blk null;
                 break :blk slot_idx;
             };
             applySpawnDifficultyAdjustments(
                 self,
-                &self.entries[primary_idx],
+                &self.entries[tail_idx],
                 if (maybe_slot_idx) |slot_idx| &self.spawn_slots[slot_idx] else null,
                 call.template_id,
             );
         }
-
-        if (state) |game_state| {
-            const call_pos_x = narrowF32(call.pos.x);
-            const call_pos_y = narrowF32(call.pos.y);
-            if (!game_state.demo_mode_active and
-                terrain_size > 0.0 and
-                call_pos_x > 0.0 and call_pos_x < terrain_size and
-                call_pos_y > 0.0 and call_pos_y < terrain_size)
-            {
-                const effects = self.effects orelse unreachable;
-                effects.spawnBurst(
-                    @constCast(game_state),
-                    .{ .x = call_pos_x, .y = call_pos_y },
-                    8,
-                    5,
-                    0.4,
-                    null,
-                    .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
-                );
-            }
-        }
     }
 
-    fn findSpawnTemplatePrimaryIndex(self: *const CreaturePool, was_active: *const [max_creatures]bool) ?usize {
+    fn findSpawnTemplateRootIndex(self: *const CreaturePool, was_active: *const [max_creatures]bool) ?usize {
         for (self.entries, 0..) |creature, idx| {
             if (!was_active[idx] and creature.active) return idx;
+        }
+        return null;
+    }
+
+    fn findSpawnTemplateTailIndex(self: *const CreaturePool, was_active: *const [max_creatures]bool) ?usize {
+        var idx = self.entries.len;
+        while (idx > 0) {
+            idx -= 1;
+            if (!was_active[idx] and self.entries[idx].active) return idx;
         }
         return null;
     }

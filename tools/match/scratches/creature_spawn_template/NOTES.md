@@ -106,6 +106,15 @@ Frame/prefix notes:
   the shape broadly to later special cases perturbs VC6 register allocation and
   loses alignment, so those cases remain direct-field WIPs rather than being
   forced.
+- The common tail operates on the current `creature` pointer, not necessarily
+  the root allocated in the prologue. Formation loops leave that pointer on
+  their final child before joining the effect/max-health/AI/difficulty tail at
+  `0x0043108a..0x004311d2`; the root-only force-target clear remains at
+  `0x00430b72`. Zig now tracks these as two distinct slots. In particular,
+  template `0x12` buffs its final fallback child in hardcore, while template
+  `0x0e` no longer applies the non-hardcore spawn-slot interval increase to its
+  root spawner. The in-bounds spawn burst likewise uses the tail creature's
+  position, matching the native `creature+0x14/+0x18` tests.
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.
