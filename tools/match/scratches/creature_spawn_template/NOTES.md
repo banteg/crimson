@@ -26,7 +26,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=59.06% prefix=23/3159 target_insns=3159 candidate_insns=2710 refs=314/1/2
+match=59.06% prefix=23/3159 target_insns=3159 candidate_insns=2710 refs=315/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x14], edi
 ```
@@ -57,3 +57,7 @@ Frame/prefix notes:
   the three randomized template families fixes twelve clamp sites, removes six
   candidate instructions, raises the score to `59.06%`, and improves the
   reference audit to `314/1/2`.
+- Binary Ninja and the IDA string inventory both identify `0x00477758` as the
+  `"Unhandled creatureType.\n"` diagnostic. Naming that data object in the
+  curated map replaces the address-derived scratch placeholder and resolves
+  the remaining unknown masked reference (`315/0/2`).

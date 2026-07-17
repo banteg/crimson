@@ -349,7 +349,7 @@ extern int fx_rotated_effect_id[];
 extern effect_color_t fx_rotated_color_r[];
 
 extern char console_log_queue;
-extern char s_Unhandled_creatureType__00477758[];
+extern char s_unhandled_creature_type[];
 
 #ifdef __cplusplus
 }

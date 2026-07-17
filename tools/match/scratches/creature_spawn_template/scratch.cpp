@@ -24,7 +24,7 @@ typedef union creature_spawn_template_locals_t {
     do {                                                                         \
         creature->type_id = CREATURE_TYPE_ALIEN;                                 \
         creature->health = 20.0f;                                                \
-        console_printf(&console_log_queue, s_Unhandled_creatureType__00477758);  \
+        console_printf(&console_log_queue, s_unhandled_creature_type);          \
     } while (0)
 
 #define INIT_GRID_ROOT(creature_type, root_ai_mode, red, green, blue, health_value, speed_value, size_value) \

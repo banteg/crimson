@@ -983,6 +983,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00477758",
+      "comment": "Unhandled creature-template diagnostic string (\"Unhandled creatureType.\\n\").",
+      "name": "s_unhandled_creature_type",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00477bf4",
       "comment": "Typ-o target name format used for two-part fragment names (\"%s%s\").",
       "name": "s_fmt_typo_target_name_2_parts",
