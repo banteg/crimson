@@ -396,8 +396,67 @@ extern "C" void player_update(void)
         } while ((int)candidate < (int)&creature_pool[384]);
     }
 
-    if (demo_mode_active == 0
-        && config_player_mode_flags[player_index] != 5) {
+    if (demo_mode_active != 0) {
+        if (player->auto_target < 0
+            || creature_pool[player->auto_target].health <= 0.0f) {
+            movement_heading = (float)atan2(
+                player->pos_y - 512.0f,
+                player->pos_x - 512.0f) + 3.1415927f;
+        } else {
+            if ((float)sqrt(
+                    (player->pos_y - 512.0f)
+                            * (player->pos_y - 512.0f)
+                        + (player->pos_x - 512.0f)
+                            * (player->pos_x - 512.0f))
+                <= 300.0f) {
+                scratch_pos.y = player->pos_y
+                    - creature_pool[player->auto_target].pos_y;
+                scratch_pos.x = player->pos_x
+                    - creature_pool[player->auto_target].pos_x;
+            } else {
+                scratch_pos.y = player->pos_y - 512.0f;
+                scratch_pos.x = player->pos_x - 512.0f;
+            }
+            movement_input.x = scratch_pos.x;
+            movement_input.y = scratch_pos.y;
+            movement_heading = (float)atan2(
+                movement_input.y,
+                movement_input.x) - 1.5707964f;
+        }
+
+        if (movement_heading == -1.0f) {
+            player_decelerate_move_speed(player);
+            player->move_dx =
+                (float)cos(player->heading - 1.5707964f)
+                * player->move_speed * scalar * 25.0f;
+            player->move_dy =
+                (float)sin(player->heading - 1.5707964f)
+                * player->move_speed * scalar * 25.0f;
+        } else {
+            angle_step = player_heading_approach_target(
+                movement_heading);
+            player_accelerate_move_speed(player);
+            player_apply_move_speed_cap(player);
+
+            movement_heading = 3.1415927f - angle_step;
+            player->move_dx =
+                (float)cos(player->heading - 1.5707964f)
+                * player->move_speed * movement_heading * scalar
+                * 7.957747f;
+            player->move_dy =
+                (float)sin(player->heading - 1.5707964f)
+                * player->move_speed * movement_heading * scalar
+                * 7.957747f;
+        }
+        move_delta.x = frame_dt * player->move_dx;
+        move_delta.y = frame_dt * player->move_dy;
+        player_apply_move_with_spawn_avoidance(
+            render_overlay_player_index,
+            &player->pos_x,
+            &move_delta.x);
+        player->move_phase =
+            frame_dt * player->move_speed * 19.0f + player->move_phase;
+    } else if (config_player_mode_flags[player_index] != 5) {
         int move_mode = config_player_mode_flags[player_index];
         if (move_mode == 4) {
             if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {

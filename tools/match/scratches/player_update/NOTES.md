@@ -19,6 +19,9 @@ phases:
   including acceleration, the weapon speed cap, and spawn avoidance;
 - demo/AI auto-target validation plus the full 384-creature nearest-target scan
   with its 64-unit replacement hysteresis;
+- demo autoplay movement, including center-orbit fallback, target pursuit inside
+  the 300-unit arena radius, center return outside it, heading smoothing,
+  acceleration/deceleration, weapon speed capping, and spawn avoidance;
 - mouse, analog-stick, joystick-cursor, keyboard, POV, and smoothed auto-target
   aim updates;
 - manual reload, Sharpshooter cooling, Anxious Loader, Stationary Reloader, and
@@ -44,7 +47,6 @@ phases:
 
 Known missing work:
 
-- the shared demo/AI auto-target movement path after acquisition;
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -54,10 +56,26 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=25.2142% prefix=1/4206 target_insns=4206 candidate_insns=3615 refs=292/0/50
+match=27.95% prefix=1/4206 target_insns=4206 candidate_insns=3779 refs=361/0/42
 first_target=sub esp, 0x48
 first_candidate=sub esp, 0x54
 ```
+
+Live Binary Ninja isolates the native demo movement phase at
+`0x00414c7f..0x00414f3e`. With no live target it derives an orbiting heading
+from the vector away from `(512, 512)`. With a live target it pursues that
+target while the player is within 300 units of center, otherwise steering back
+toward center. Both cases reuse the normal heading approach, Long Distance
+Runner acceleration, minigun speed cap, movement scaling, spawn avoidance, and
+move-phase update. The recovered control flow places this as the demo arm of
+the movement dispatch, so it joins the shared post-movement path without a
+redundant demo-mode test.
+
+This phase adds a net 164 candidate instructions against 186 native
+instructions, closes the whole-function instruction gap from 591 to 427, and
+raises the similarity ratio from `25.2142%` to `27.95%`. The Python demo driver
+already implements the same orbit/pursuit/center-return policy, so no parity
+port change is needed.
 
 Live Binary Ninja isolates the native Fire Bullets path at
 `0x00415d13..0x00415eb3`. The recovered source plays both dedicated shot
