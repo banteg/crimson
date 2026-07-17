@@ -39,6 +39,7 @@ const owner_local_player: owner_ref.OwnerRef = owner_ref.OwnerRef.fromLocalPlaye
 const native_half_pi: f32 = native_math.native_half_pi;
 const native_pi: f32 = native_math.native_pi;
 const native_tau: f32 = native_math.native_tau;
+const target_reeval_period: i32 = 0x46;
 
 pub const CreatureRuntimeError = error{
     InvalidSpawnTemplate,
@@ -96,6 +97,48 @@ pub const CreatureState = struct {
     last_hit_owner: owner_ref.OwnerRef = owner_local_player,
     flags: u32 = 0,
 };
+
+/// Reproduces the native two-player target choice: on every update except
+/// multiples of 70, prefer the other live player when closer; always switch
+/// away from a dead current target.
+pub fn resolveNativeTargetPlayer(
+    creature: *CreatureState,
+    players: []const state_mod.PlayerState,
+    update_tick: i32,
+) usize {
+    if (players.len == 0) return 0;
+
+    var target_index: usize = 0;
+    if (creature.target_player >= 0) {
+        const candidate: usize = @intCast(creature.target_player);
+        if (candidate < players.len) target_index = candidate;
+    }
+
+    if (players.len == 2) {
+        if (@mod(update_tick, target_reeval_period) != 0) {
+            const alternate_index = 1 - target_index;
+            if (players[alternate_index].health > 0.0) {
+                const current_distance = state_mod.Vec2.sub(
+                    players[target_index].pos,
+                    creature.pos,
+                ).length();
+                const alternate_distance = state_mod.Vec2.sub(
+                    players[alternate_index].pos,
+                    creature.pos,
+                ).length();
+                if (alternate_distance < current_distance) {
+                    target_index = alternate_index;
+                }
+            }
+        }
+        if (players[target_index].health <= 0.0) {
+            target_index = 1 - target_index;
+        }
+    }
+
+    creature.target_player = @intCast(target_index);
+    return target_index;
+}
 
 pub fn applyPoolResidue(
     pool: *CreaturePool,
@@ -165,6 +208,7 @@ fn formationOffset(index: usize, angle_step: f32, radius: f32) state_mod.Vec2 {
 pub const CreaturePool = struct {
     entries: [max_creatures]CreatureState = [_]CreatureState{CreatureState{}} ** max_creatures,
     kill_count: i32 = 0,
+    update_tick: i32 = 0,
     capture_spawn_events_authoritative: bool = false,
     hardcore: bool = false,
     demo_mode_active: bool = false,
@@ -177,6 +221,7 @@ pub const CreaturePool = struct {
     pub fn reset(self: *CreaturePool) void {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
         self.kill_count = 0;
+        self.update_tick = 0;
         self.capture_spawn_events_authoritative = false;
         self.hardcore = false;
         self.demo_mode_active = false;
@@ -1955,6 +2000,7 @@ pub const CreaturePool = struct {
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
+        self.update_tick +%= 1;
         const effect_pool = self.effects orelse unreachable;
         const dt_f32 = dt;
 
@@ -2037,11 +2083,16 @@ pub const CreaturePool = struct {
                     &self.single_player_dormant_target
                 else
                     null;
+            const target_player_index = if (players.len == 2)
+                resolveNativeTargetPlayer(creature, players, self.update_tick)
+            else
+                0;
+            const selected_player = &players[target_player_index];
             const distance_player_pos = if (single_player_dormant_target) |dormant_target|
                 if (creature.target_player == 1) dormant_target.pos else player.pos
             else
-                player.pos;
-            const contact_player = single_player_dormant_target orelse player;
+                selected_player.pos;
+            const contact_player = single_player_dormant_target orelse selected_player;
             if (single_player_dormant_target != null) {
                 creature.target_player = 1;
             }

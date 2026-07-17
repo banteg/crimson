@@ -302,6 +302,35 @@ test {
     _ = @import("wasm_exports.zig");
 }
 
+test "creature target selection follows native two-player cadence" {
+    var creature: cz.creatures.CreatureState = .{
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .target_player = 0,
+    };
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 100.0, .y = 0.0 } },
+        .{ .index = 1, .pos = .{ .x = 10.0, .y = 0.0 } },
+    };
+
+    try std.testing.expectEqual(
+        @as(usize, 1),
+        cz.creatures.resolveNativeTargetPlayer(&creature, players[0..], 1),
+    );
+    try std.testing.expectEqual(@as(i32, 1), creature.target_player);
+
+    creature.target_player = 0;
+    try std.testing.expectEqual(
+        @as(usize, 0),
+        cz.creatures.resolveNativeTargetPlayer(&creature, players[0..], 70),
+    );
+
+    players[0].health = 0.0;
+    try std.testing.expectEqual(
+        @as(usize, 1),
+        cz.creatures.resolveNativeTargetPlayer(&creature, players[0..], 70),
+    );
+}
+
 test "aggregate dbg health summarizes native CDT trace" {
     const allocator = std.testing.allocator;
 

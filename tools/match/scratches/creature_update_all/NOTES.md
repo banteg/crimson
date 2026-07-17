@@ -16,6 +16,11 @@ final body culling.
   separately, then forms one pointer to the adjacent `pos_x`/`pos_y` pair;
   the recovered local `alternate_pos` reproduces that shape and the native
   subtract-from-player-two addressing.
+- The same block retargets on every update except multiples of 70, prefers the
+  other player only while alive and closer, and always switches away from a
+  dead current target. The Python runtime already preserved this policy; the
+  Zig runtime now carries the native update counter and uses the selected
+  player for AI, ranged distance, and contact behavior instead of player zero.
 - Linked AI modes use their live-link path as the native fallthrough, while
   dead links reset to orbit mode and the tethered variants apply 1,000 damage
   through fresh zero-vector temporaries.
