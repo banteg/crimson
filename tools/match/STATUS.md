@@ -192,7 +192,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 309/307 | 90.58% | 7/307 | 206/0/1 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 2735/4206 | 24.67% | 1/4206 | 282/0/44 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 3513/4206 | 25.65% | 1/4206 | 299/0/46 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |

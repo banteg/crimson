@@ -30,14 +30,19 @@ phases:
   200-millisecond reload-key debounce;
 - direct projectile dispatch for pistol, assault rifle, SMG, plasma, ion,
   pulse, blade, splitter, minigun, plague, rainbow, and Bubblegun families,
-  including Shrinkifier muzzle effects and the three flame emitters; and
+  including Shrinkifier muzzle effects and the three flame emitters;
+- the Shotgun, Sawed-off Shotgun, Jackhammer, Gauss Gun, Gauss Shotgun, Ion
+  Shotgun, and Plasma Shotgun pellet loops, including their per-projectile
+  spread and speed randomization;
+- Rocket Launcher, Seeker Rockets, Mini-Rocket Swarmers, and Rocket Minigun
+  secondary-projectile dispatch, including the ammo-scaled swarmer fan; and
 - movement-phase normalization, speed-bonus removal, terrain clamping, and the
   final muzzle-flash clamp.
 
 Known missing work:
 
 - the shared demo/AI auto-target movement path after acquisition;
-- shotgun/rocket/Gauss loop-family weapon cases and the Fire Bullets branch;
+- the Fire Bullets branch;
 - exact local lifetimes/register allocation around the recovered control paths.
 
 This scratch is intentionally an honest partial reconstruction. It does not
@@ -47,11 +52,15 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=24.6650% prefix=1/4206 target_insns=4206 candidate_insns=2735 refs=282/0/44
+match=25.6510% prefix=1/4206 target_insns=4206 candidate_insns=3513 refs=299/0/46
 first_target=sub esp, 0x48
 first_candidate=sub esp, 0x4c
 ```
 
-The accepted direct-weapon source raises the candidate's natural frame to
-`0x4c`; the four-byte excess currently comes from incomplete weapon-loop local
-coalescing. No register constraints or artificial padding are used.
+The accepted loop-family source follows the native weapon-case order and
+restores 778 candidate instructions. Live Binary Ninja confirms the native
+spread constants (`0.0013`, `0.004`, `0.002`, and `0.0026`), the Gauss/Ion
+speed base of `1.4`, and the swarmer angular step of pi/3. The candidate keeps
+its natural `0x4c` frame; the four-byte excess and the remaining whole-function
+alignment delta come from incomplete local-slot coalescing and control paths.
+No register constraints or artificial padding are used.
