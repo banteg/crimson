@@ -17,6 +17,8 @@ phases:
 - the shared spread-damping scalar update;
 - mouse-to-point, dual-axis, relative-direction, and keyboard movement modes,
   including acceleration, the weapon speed cap, and spawn avoidance;
+- demo/AI auto-target validation plus the full 384-creature nearest-target scan
+  with its 64-unit replacement hysteresis;
 - mouse, analog-stick, joystick-cursor, keyboard, POV, and smoothed auto-target
   aim updates;
 - manual reload, Sharpshooter cooling, Anxious Loader, Stationary Reloader, and
@@ -34,7 +36,7 @@ phases:
 
 Known missing work:
 
-- the shared auto-target movement acquisition/re-entry path;
+- the shared demo/AI auto-target movement path after acquisition;
 - shotgun/rocket/Gauss loop-family weapon cases and the Fire Bullets branch;
 - exact local lifetimes/register allocation around the recovered control paths.
 
@@ -45,7 +47,7 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=24.08% prefix=1/4206 target_insns=4206 candidate_insns=2662 refs=273/0/47
+match=24.6650% prefix=1/4206 target_insns=4206 candidate_insns=2735 refs=282/0/44
 first_target=sub esp, 0x48
 first_candidate=sub esp, 0x4c
 ```

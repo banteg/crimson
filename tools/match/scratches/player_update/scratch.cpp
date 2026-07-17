@@ -349,9 +349,49 @@ extern "C" void player_update(void)
         frame_dt = (0.6f / time_scale_factor) * frame_dt;
     }
 
+    if (demo_mode_active != 0
+        || config_player_mode_flags[player_index] == 5
+        || config_aim_scheme[player_index] == 5) {
+        if (player->auto_target < 0) {
+            player->auto_target = 0;
+        }
+
+        int target_index = player->auto_target;
+        float nearest_distance;
+        if (!creature_pool[target_index].active
+            || creature_pool[target_index].health <= 0.0f) {
+            nearest_distance = 100000.0f;
+        } else {
+            nearest_distance = (float)sqrt(
+                (player->pos_y - creature_pool[target_index].pos_y)
+                        * (player->pos_y
+                            - creature_pool[target_index].pos_y)
+                    + (player->pos_x - creature_pool[target_index].pos_x)
+                        * (player->pos_x
+                            - creature_pool[target_index].pos_x));
+        }
+
+        int creature_index = 0;
+        creature_t *candidate = creature_pool;
+        do {
+            if (candidate->active && candidate->health > 0.0f) {
+                float distance = (float)sqrt(
+                    (player->pos_y - candidate->pos_y)
+                            * (player->pos_y - candidate->pos_y)
+                        + (player->pos_x - candidate->pos_x)
+                            * (player->pos_x - candidate->pos_x));
+                if (distance < nearest_distance - 64.0f) {
+                    player->auto_target = creature_index;
+                    nearest_distance = distance;
+                }
+            }
+            ++candidate;
+            ++creature_index;
+        } while ((int)candidate < (int)&creature_pool[384]);
+    }
+
     if (demo_mode_active == 0
-        && config_player_mode_flags[player_index] != 5
-        && config_aim_scheme[player_index] != 5) {
+        && config_player_mode_flags[player_index] != 5) {
         int move_mode = config_player_mode_flags[player_index];
         if (move_mode == 4) {
             if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
