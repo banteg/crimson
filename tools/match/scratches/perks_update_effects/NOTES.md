@@ -46,3 +46,10 @@ Python previously retained host-double remainders: at 36 Hz it awarded the
 quarter-second Lean Mean XP tick on frame 9 and expired all three combat
 bonuses, while native retains `1.1175871e-8` through that frame and crosses the
 boundary on frame 10.
+
+Regeneration's stored health add at `0x00406b96..0x00406bb4` and Death Clock's
+multiply-then-subtract at `0x00406c4e..0x00406c5c` use the same PC=24 frame
+arithmetic. Both ports now expose those operations directly. Python's former
+host-double Death Clock drain left `+0.000001` HP after 900 updates at 30 Hz;
+native is already at `-0.0008849055` on that frame and clamps the dead player
+to zero on the following update.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.perks.runtime.effects import perks_update_effects
@@ -60,7 +61,28 @@ def test_death_clock_drains_health_over_time() -> None:
 
     perks_update_effects(state, [player], 1.0)
 
-    assert_float_close(player.health, 96.6666667)
+    assert_float_close(
+        player.health,
+        x87_pc24_sub(
+            f32(100.0),
+            x87_pc24_mul(f32(1.0), f32(3.33333325)),
+        ),
+    )
+
+
+def test_death_clock_reaches_native_zero_crossing_at_30hz() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+
+    for _ in range(900):
+        perks_update_effects(state, [player], 1.0 / 30.0)
+
+    assert player.health == -0.0008849054574966431
+
+    perks_update_effects(state, [player], 1.0 / 30.0)
+
+    assert player.health == 0.0
 
 
 def test_death_clock_clamps_dead_health_to_zero() -> None:
@@ -93,5 +115,9 @@ def test_death_clock_tick_applies_to_all_players_when_player0_has_perk() -> None
 
     perks_update_effects(state, [player0, player1], 1.0)
 
-    assert_float_close(player0.health, 96.6666667)
-    assert_float_close(player1.health, 96.6666667)
+    expected = x87_pc24_sub(
+        f32(100.0),
+        x87_pc24_mul(f32(1.0), f32(3.33333325)),
+    )
+    assert_float_close(player0.health, expected)
+    assert_float_close(player1.health, expected)

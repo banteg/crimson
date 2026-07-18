@@ -599,7 +599,7 @@ pub fn updatePerkEffects(
             var repeat: usize = 0;
             while (repeat < players.len) : (repeat += 1) {
                 if (players[0].health <= 0.0 or players[0].health >= 100.0) continue;
-                players[0].health += dt;
+                players[0].health = native_math.pc24Add(players[0].health, dt);
                 if (players[0].health > 100.0) {
                     players[0].health = 100.0;
                 }
@@ -607,11 +607,11 @@ pub fn updatePerkEffects(
         } else {
             var heal_amount = dt;
             if (perkActive(&players[0], PerkId.greater_regeneration)) {
-                heal_amount = dt * 2.0;
+                heal_amount = native_math.pc24Mul(dt, @as(f32, 2.0));
             }
             for (players) |*player| {
                 if (player.health <= 0.0 or player.health >= 100.0) continue;
-                player.health += heal_amount;
+                player.health = native_math.pc24Add(player.health, heal_amount);
                 if (player.health > 100.0) {
                     player.health = 100.0;
                 }
@@ -630,11 +630,12 @@ pub fn updatePerkEffects(
 
     if (!perkActive(&players[0], PerkId.death_clock)) return;
 
+    const death_clock_drain = native_math.pc24Mul(dt, @as(f32, 3.33333325));
     for (players) |*player| {
         if (player.health <= 0.0) {
             player.health = 0.0;
         } else {
-            player.health -= dt * 3.3333333;
+            player.health = native_math.pc24Sub(player.health, death_clock_drain);
         }
     }
 }
@@ -1296,6 +1297,28 @@ test "death clock apply and update mirror runtime hooks" {
 
     updatePerkEffects(&state, players[0..], 1.0 / 60.0);
     try std.testing.expectApproxEqAbs(@as(f32, 99.944444445), players[0].health, 1e-5);
+}
+
+test "death clock reaches native zero crossing at 30hz" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts.set(PerkId.death_clock, 1);
+
+    for (0..900) |_| {
+        updatePerkEffects(&state, players[0..], 1.0 / 30.0);
+    }
+
+    try std.testing.expectEqual(@as(f32, -0.0008849054574966431), players[0].health);
+
+    updatePerkEffects(&state, players[0..], 1.0 / 30.0);
+
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].health);
 }
 
 test "regeneration heals when rng allows" {
