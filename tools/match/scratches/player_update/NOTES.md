@@ -49,6 +49,22 @@ Known missing work:
 
 - exact local lifetimes/register allocation around the recovered control paths.
 
+The entry death arm is now pinned across both ports. Live instructions at
+`0x004136f9..0x0041372c` capture the previous position, test health, store the
+float32 result of `death_timer - frame_dt * 20.0f`, and return before the
+low-health, muzzle-flash, cooldown, perk, or movement phases. Python now keeps
+the x87 PC=24/store boundary on the death decrement. Zig previously narrowed
+that decrement correctly but decayed muzzle flash before testing health; its
+preprocess path now leaves every other live-player field untouched for a dead
+player.
+
+The adjacent low-health pulse is also recovered through the three native blood
+effect calls. Instructions `0x00413795..0x004137ed` evaluate
+`(aim_heading + 1.5707964f) - 0.5f`, multiply both wide trig results by
+`-6.0f`, add the player position, and pass that offset point to all three
+calls. Both ports now preserve those PC=24 arithmetic boundaries; Zig had
+previously emitted the blood effects directly at the player center.
+
 This scratch is intentionally an honest partial reconstruction. It does not
 use volatile state, dead expressions, dummy references, inline assembly, or
 layout-only gotos.

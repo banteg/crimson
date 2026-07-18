@@ -67,6 +67,43 @@ def test_preserve_mode_uses_player_zero_timed_perk_for_player_one() -> None:
     assert_float_close(player1.living_fortress_timer, f32(0.1))
 
 
+def test_dead_player_update_only_advances_native_death_timer() -> None:
+    state = GameplayState(player_spread_damping_scalar=0.5)
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        health=0.0,
+        death_timer=16.0,
+        low_health_timer=0.25,
+        muzzle_flash_alpha=0.75,
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.5),
+    )
+
+    player_update(player, PlayerInput(), f32(0.1), state)
+
+    assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), f32(20.0)))
+    assert player.low_health_timer == 0.25
+    assert player.muzzle_flash_alpha == 0.75
+    assert player.weapon.shot_cooldown == 0.5
+    assert state.player_spread_damping_scalar == 0.5
+
+
+def test_player_update_muzzle_flash_decay_keeps_native_store() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        muzzle_flash_alpha=0.75,
+    )
+
+    player_update(player, PlayerInput(), f32(0.1), state)
+
+    assert player.muzzle_flash_alpha == x87_pc24_sub(
+        0.75,
+        x87_pc24_mul(f32(0.1), f32(2.0)),
+    )
+
+
 def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     state = GameplayState()
     state.bonuses.weapon_power_up = 1.0
@@ -125,16 +162,25 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
     player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
 
     expected_angle = float(aim_heading_before)
-    expected_bleed_dir_angle = float(aim_heading_before) + (1.5707964 - 0.5)
-    expected_x = f32(math.cos(expected_bleed_dir_angle) * -6.0 + 100.0)
-    expected_y = f32(math.sin(expected_bleed_dir_angle) * -6.0 + 200.0)
+    expected_bleed_dir_angle = x87_pc24_sub(
+        x87_pc24_add(aim_heading_before, NATIVE_HALF_PI),
+        f32(0.5),
+    )
+    expected_x = x87_pc24_add(
+        x87_pc24_mul(math.cos(expected_bleed_dir_angle), f32(-6.0)),
+        100.0,
+    )
+    expected_y = x87_pc24_add(
+        x87_pc24_mul(math.sin(expected_bleed_dir_angle), f32(-6.0)),
+        200.0,
+    )
 
     assert spawn_blood_splatter.call_count == 3
     for call in spawn_blood_splatter.call_args_list:
         pos = call.kwargs["pos"]
         assert isinstance(pos, Vec2)
-        assert_float_close(pos.x, expected_x)
-        assert_float_close(pos.y, expected_y)
+        assert pos.x == expected_x
+        assert pos.y == expected_y
         assert call.kwargs["angle"] == expected_angle
         assert call.kwargs["age"] == 0.0
         assert call.kwargs["detail_preset"] == 5

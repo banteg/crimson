@@ -109,7 +109,6 @@ _RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
 _RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
-_LOW_HEALTH_BLEED_DIR_OFFSET = 1.5707964 - 0.5
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
@@ -610,7 +609,10 @@ def player_update(
     prev_pos = player.pos
 
     if player.health <= 0.0:
-        player.death_timer -= dt * 20.0
+        player.death_timer = x87_pc24_sub(
+            player.death_timer,
+            x87_pc24_mul(dt, f32(20.0)),
+        )
         return
 
     # Native's player_update perk queries all read the global slot-zero table,
@@ -624,10 +626,19 @@ def player_update(
         next_low_health_timer = float(f32(float(player.low_health_timer) - float(dt)))
         player.low_health_timer = next_low_health_timer
         if next_low_health_timer < 0.0:
-            bleed_dir_angle = float(player.aim_heading) + _LOW_HEALTH_BLEED_DIR_OFFSET
+            bleed_dir_angle = x87_pc24_sub(
+                x87_pc24_add(float(player.aim_heading), NATIVE_HALF_PI),
+                f32(0.5),
+            )
             bleed_pos = Vec2(
-                f32(math.cos(bleed_dir_angle) * -6.0 + float(player.pos.x)),
-                f32(math.sin(bleed_dir_angle) * -6.0 + float(player.pos.y)),
+                x87_pc24_add(
+                    x87_pc24_mul(math.cos(bleed_dir_angle), f32(-6.0)),
+                    float(player.pos.x),
+                ),
+                x87_pc24_add(
+                    x87_pc24_mul(math.sin(bleed_dir_angle), f32(-6.0)),
+                    float(player.pos.y),
+                ),
             )
             aim_heading = float(player.aim_heading)
             for _ in range(3):
@@ -656,7 +667,13 @@ def player_update(
             damping_scalar = 0.3
     state.player_spread_damping_scalar = float(damping_scalar)
 
-    player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
+    player.muzzle_flash_alpha = max(
+        0.0,
+        x87_pc24_sub(
+            player.muzzle_flash_alpha,
+            x87_pc24_mul(dt, f32(2.0)),
+        ),
+    )
     cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
     next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))

@@ -121,8 +121,6 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
 ) bool {
     if (!(dt > 0.0)) return false;
 
-    player.muzzle_flash_alpha = @max(0.0, narrowF32(player.muzzle_flash_alpha - dt * 2.0));
-
     if (player.health <= 0.0) {
         player.death_timer = narrowF32(player.death_timer - dt * 20.0);
         return false;
@@ -132,10 +130,24 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
         const next_low_health_timer = narrowF32(player.low_health_timer - dt);
         player.low_health_timer = next_low_health_timer;
         if (next_low_health_timer < 0.0) {
+            const bleed_dir_angle = native_math.pc24Sub(
+                native_math.pc24Add(player.aim_heading, native_math.native_half_pi),
+                @as(f32, 0.5),
+            );
+            const bleed_pos: state_mod.Vec2 = .{
+                .x = native_math.pc24Add(
+                    native_math.pc24Mul(@cos(@as(f64, bleed_dir_angle)), @as(f32, -6.0)),
+                    player.pos.x,
+                ),
+                .y = native_math.pc24Add(
+                    native_math.pc24Mul(@sin(@as(f64, bleed_dir_angle)), @as(f32, -6.0)),
+                    player.pos.y,
+                ),
+            };
             for (0..3) |_| {
                 effects.spawnBloodSplatter(
                     state,
-                    player.pos,
+                    bleed_pos,
                     player.aim_heading,
                     0.0,
                     detail_preset,
@@ -148,7 +160,71 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
         }
     }
 
+    player.muzzle_flash_alpha = @max(0.0, narrowF32(player.muzzle_flash_alpha - dt * 2.0));
+
     return true;
+}
+
+test "dead player preprocessing only advances death timer" {
+    var state = state_mod.GameplayState.init(1);
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .health = 0.0,
+        .death_timer = 16.0,
+        .low_health_timer = 0.25,
+        .muzzle_flash_alpha = 0.75,
+        .weapon = .{ .weapon_id = .pistol, .shot_cooldown = 0.5 },
+    };
+
+    try std.testing.expect(!preprocessPlayerForPerkTicks(&state, &player, 0.1));
+    try std.testing.expectEqual(narrowF32(16.0 - 0.1 * 20.0), player.death_timer);
+    try std.testing.expectEqual(@as(f32, 0.25), player.low_health_timer);
+    try std.testing.expectEqual(@as(f32, 0.75), player.muzzle_flash_alpha);
+    try std.testing.expectEqual(@as(f32, 0.5), player.weapon.shot_cooldown);
+}
+
+test "low-health preprocessing offsets blood effects from the player" {
+    var state = state_mod.GameplayState.init(1);
+    var effects: effects_mod.EffectPool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .health = 19.0,
+        .low_health_timer = 0.0,
+        .aim_heading = 1.25,
+        .weapon = .{ .weapon_id = .pistol },
+    };
+
+    try std.testing.expect(preprocessPlayerForPerkTicksWithEffects(
+        &state,
+        &player,
+        &effects,
+        5,
+        0.016,
+    ));
+
+    const bleed_dir_angle = native_math.pc24Sub(
+        native_math.pc24Add(player.aim_heading, native_math.native_half_pi),
+        @as(f32, 0.5),
+    );
+    const expected_pos: state_mod.Vec2 = .{
+        .x = native_math.pc24Add(
+            native_math.pc24Mul(@cos(@as(f64, bleed_dir_angle)), @as(f32, -6.0)),
+            player.pos.x,
+        ),
+        .y = native_math.pc24Add(
+            native_math.pc24Mul(@sin(@as(f64, bleed_dir_angle)), @as(f32, -6.0)),
+            player.pos.y,
+        ),
+    };
+    for (effects.entries[0..6]) |entry| {
+        try std.testing.expectEqual(@intFromEnum(effects_mod.EffectId.blood_splatter), entry.effect_id);
+        try std.testing.expectEqual(expected_pos.x, entry.pos.x);
+        try std.testing.expectEqual(expected_pos.y, entry.pos.y);
+    }
+    try std.testing.expectEqual(@as(f32, 1.0), player.low_health_timer);
+    try std.testing.expectEqual(@as(usize, 1), state.sfx_queue.len);
 }
 
 pub fn stepPlayerForTick(
