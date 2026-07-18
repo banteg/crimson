@@ -130,6 +130,7 @@ extern "C" void player_update(void)
 
     player_state_t *player = &player_state_table[player_index];
     float *player_pos = &player->pos_x;
+    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
     previous_pos.x = player_pos[0];
     previous_pos.y = player_pos[1];
 
@@ -165,10 +166,9 @@ extern "C" void player_update(void)
         }
     }
 
-    player->muzzle_flash_alpha =
-        player->muzzle_flash_alpha - (frame_dt + frame_dt);
-    if (player->muzzle_flash_alpha < 0.0f) {
-        player->muzzle_flash_alpha = 0.0f;
+    *muzzle_flash_alpha = *muzzle_flash_alpha - (frame_dt + frame_dt);
+    if (*muzzle_flash_alpha < 0.0f) {
+        *muzzle_flash_alpha = 0.0f;
     }
 
     if (bonus_weapon_power_up_timer <= 0.0f) {
@@ -1172,12 +1172,12 @@ extern "C" void player_update(void)
             if (weapon_table[player->weapon_id].pellet_count == 1) {
                 player->shot_cooldown =
                     fire_bullets_fallback_shot_cooldown;
-                player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                *muzzle_flash_alpha = *muzzle_flash_alpha
                     + fire_bullets_fallback_spread_heat;
             } else {
                 player->shot_cooldown =
                     weapon_table[player->weapon_id].shot_cooldown;
-                player->muzzle_flash_alpha = player->muzzle_flash_alpha
+                *muzzle_flash_alpha = *muzzle_flash_alpha
                     + weapon_table[player->weapon_id].spread_heat;
             }
 
@@ -1215,7 +1215,7 @@ extern "C" void player_update(void)
         } else {
             player->shot_cooldown =
                 weapon_table[player->weapon_id].shot_cooldown;
-            player->muzzle_flash_alpha = player->muzzle_flash_alpha
+            *muzzle_flash_alpha = *muzzle_flash_alpha
                 + weapon_table[player->weapon_id].spread_heat;
             sfx_play_panned(
                 crt_rand()
@@ -1953,13 +1953,13 @@ extern "C" void player_update(void)
     if ((float)terrain_texture_width - scalar < player_pos[0]) {
         player_pos[0] = (float)terrain_texture_width - scalar;
     }
-    if (player_pos[1] < scalar) {
-        player_pos[1] = scalar;
+    if (player->pos_y < scalar) {
+        player->pos_y = scalar;
     }
-    if ((float)terrain_texture_height - scalar < player_pos[1]) {
-        player_pos[1] = (float)terrain_texture_height - scalar;
+    if ((float)terrain_texture_height - scalar < player->pos_y) {
+        player->pos_y = (float)terrain_texture_height - scalar;
     }
-    if (player->muzzle_flash_alpha > 0.8f) {
-        player->muzzle_flash_alpha = 0.8f;
+    if (*muzzle_flash_alpha > 0.8f) {
+        *muzzle_flash_alpha = 0.8f;
     }
 }

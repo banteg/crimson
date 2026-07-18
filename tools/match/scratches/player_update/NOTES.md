@@ -88,9 +88,9 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=51.54% prefix=7/4206 target_insns=4206 candidate_insns=3932 refs=677/0/16
+match=51.73% prefix=7/4206 target_insns=4206 candidate_insns=3936 refs=678/0/16
 first_target=jne L3f7a
-first_candidate=jne L3c15
+first_candidate=jne L3c23
 ```
 
 The native function keeps two related addresses live for essentially the
@@ -128,6 +128,28 @@ three and two `__ftol` sites against three. Natural scoped movement values grow
 the frame to `0x4c`, while alternate existing temporaries regress the proven
 body. Those residuals are left honest rather than adding layout-only control
 flow or artificial dependencies.
+
+The muzzle-flash decay at `0x00413842..0x0041384e` takes the address of
+`player+0x2fc`, spills it to `[esp+0x24]`, and updates through that pointer.
+The final clamp reloads the same pointer at `0x00417611`. Retaining an ordinary
+source alias for this long-lived field adds four native-shaped candidate
+instructions and one aligned reference, raising the match from `51.54%` to
+`51.71%` without changing the exact `0x48` frame. A C++ reference compiled
+identically, so the less ornate pointer spelling is retained.
+
+The final bounds block uses the long-lived `ESI` position pointer for X but
+tests Y as `player+0x18` through `EDI` at `0x004175ed`, then advances `EDI` to
+that field for the remaining stores. Expressing the Y clamps through the
+player record rather than the position alias recovers that source distinction
+and raises the combined score to `51.73%`. A short-lived Y pointer compiles
+identically; the direct field spelling remains the simplest plausible source.
+
+Two stronger-looking alternatives were measured and rejected. Copying the
+entry position as one aggregate lowers the score to `51.41%` and loses two
+reference alignments. Giving Shrinkifier and Pistol separate scoped first-
+sprite position/velocity values does preserve both native callsites, but grows
+the frame to `0x50` and regresses the whole function to `50.87%`; the current
+honest shared-local residual is kept instead.
 
 The native reload preload gate at `0x00415037..0x00415069` first tests
 `reload_timer - frame_dt < 0`, then tests `reload_timer > 0`. It never reads
