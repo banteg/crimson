@@ -11,7 +11,7 @@ from grim.sfx_map import SfxId
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
-from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
+from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.helpers import perk_active
@@ -100,7 +100,7 @@ _TROOPER_DEATH_SFX_PRESERVE_BUGS: tuple[SfxId, ...] = (
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
     if not _damage_perk_active(ctx, PerkId.URANIUM_FILLED_BULLETS):
         return
-    ctx.damage *= 2.0
+    ctx.damage = x87_pc24_add(ctx.damage, ctx.damage)
 
 
 def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
@@ -111,19 +111,20 @@ def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
             continue
         timer = float(player.living_fortress_timer)
         if timer > 0.0:
-            ctx.damage *= timer * 0.05 + 1.0
+            scale = x87_pc24_add(x87_pc24_mul(timer, f32(0.05)), 1.0)
+            ctx.damage = x87_pc24_mul(ctx.damage, scale)
 
 
 def _damage_type1_barrel_greaser(ctx: _CreatureDamageCtx) -> None:
     if not _damage_perk_active(ctx, PerkId.BARREL_GREASER):
         return
-    ctx.damage *= 1.4
+    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.4))
 
 
 def _damage_type1_doctor(ctx: _CreatureDamageCtx) -> None:
     if not _damage_perk_active(ctx, PerkId.DOCTOR):
         return
-    ctx.damage *= 1.2
+    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
 
 
 def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
@@ -143,13 +144,13 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
     if _damage_perk_active(ctx, PerkId.ION_GUN_MASTER):
-        ctx.damage *= 1.2
+        ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
 
 
 def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
     if not _damage_perk_active(ctx, PerkId.PYROMANIAC):
         return
-    ctx.damage *= 1.5
+    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.5))
     ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
 
 
@@ -256,15 +257,15 @@ def creature_apply_damage(
     """
 
     creature.last_hit_owner = owner
-    creature.hit_flash_timer = 0.2
+    creature.hit_flash_timer = f32(0.2)
 
     ctx = _CreatureDamageCtx(
         creature=creature,
-        damage=float(damage_amount),
+        damage=f32(damage_amount),
         damage_type=int(damage_type),
-        impulse=impulse,
+        impulse=Vec2(f32(impulse.x), f32(impulse.y)),
         owner=owner,
-        dt=float(dt),
+        dt=f32(dt),
         players=players,
         rng=rng,
         preserve_bugs=bool(preserve_bugs),
@@ -279,31 +280,30 @@ def creature_apply_damage(
         _damage_type1_heading_jitter(ctx)
 
     if creature.hp <= 0.0:
-        if dt > 0.0:
-            creature.lifecycle_stage = float(
-                f32(float(creature.lifecycle_stage) - float(f32(float(dt) * 15.0))),
+        if ctx.dt > 0.0:
+            creature.lifecycle_stage = x87_pc24_sub(
+                creature.lifecycle_stage,
+                x87_pc24_mul(ctx.dt, 15.0),
             )
         return True
 
     for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
         step(ctx)
 
-    creature.hp = f32(float(creature.hp) - float(ctx.damage))
+    creature.hp = x87_pc24_sub(creature.hp, ctx.damage)
     creature.vel = Vec2(
-        f32(float(creature.vel.x) - float(ctx.impulse.x)),
-        f32(float(creature.vel.y) - float(ctx.impulse.y)),
+        x87_pc24_sub(creature.vel.x, ctx.impulse.x),
+        x87_pc24_sub(creature.vel.y, ctx.impulse.y),
     )
 
     if creature.hp <= 0.0:
-        if dt > 0.0:
-            creature.lifecycle_stage = float(
-                f32(float(creature.lifecycle_stage) - float(f32(float(dt)))),
-            )
+        if ctx.dt > 0.0:
+            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, ctx.dt)
         else:
-            creature.lifecycle_stage = float(f32(float(creature.lifecycle_stage) - 0.001))
+            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
         creature.vel = Vec2(
-            f32(float(creature.vel.x) - float(f32(float(impulse.x) * 2.0))),
-            f32(float(creature.vel.y) - float(f32(float(impulse.y) * 2.0))),
+            x87_pc24_sub(creature.vel.x, x87_pc24_mul(ctx.impulse.x, 2.0)),
+            x87_pc24_sub(creature.vel.y, x87_pc24_mul(ctx.impulse.y, 2.0)),
         )
         return True
 

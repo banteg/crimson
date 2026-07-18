@@ -21,6 +21,10 @@ reads player 0 only. Both ports now preserve that native asymmetry when
 Greaser, Doctor, Ion Gun Master, and Pyromaniac; corrected mode deliberately
 keeps the co-op-wide perk policy. Once player 0 enables Living Fortress, the
 subsequent timer fold still visits every configured player exactly as native.
+The Python port now also rounds the incoming float arguments and every modifier,
+Living Fortress scale, health subtraction, and impulse subtraction through the
+shared x87 PC=24 helpers. A focused Barrel Greaser plus Doctor boundary differs
+by 17 micro-units from host-double arithmetic and pins the native result.
 
 The natural VC6 reconstruction reaches 89.87% with exactly 237/237 normalized
 instructions and 80/0/0 reference agreement. The remaining structural delta

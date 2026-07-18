@@ -173,6 +173,50 @@ def test_damage_perks_use_player_zero_only_when_preserving_native_bugs() -> None
     assert_float_close(native_creature.hp, 90.0)
 
 
+def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
+    creature = CreatureState(
+        active=True,
+        hp=435.9342956542969,
+        size=50.0,
+        flags=CreatureFlags.ANIM_PING_PONG,
+    )
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
+    player.perk_counts[int(PerkId.DOCTOR)] = 1
+
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=261.8189392089844,
+        damage_type=CreatureDamageType.BULLET,
+        impulse=Vec2(),
+        owner=OwnerRef.from_player(0),
+        dt=0.016,
+        players=[player],
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
+
+    assert killed is True
+    assert creature.hp == -3.921539306640625
+
+
+def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
+    creature = CreatureState(active=True, hp=554.2709350585938, size=50.0)
+
+    killed = creature_apply_damage(
+        creature,
+        damage_amount=616.6504260335757,
+        damage_type=CreatureDamageType.EXPLOSION,
+        impulse=Vec2(),
+        owner=OwnerRef.from_player(0),
+        dt=0.016,
+        players=[],
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
+
+    assert killed is True
+    assert creature.hp == -62.3795166015625
+
+
 def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
     creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
 
