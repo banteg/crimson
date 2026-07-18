@@ -691,6 +691,54 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
     ]
 
 
+def test_plague_infection_timer_keeps_native_stored_cadence() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 100.0
+    creature.max_hp = 100.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
+    creature.orbit_radius = 1.0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.pos = Vec2(100.0, 100.0)
+    creature.plague_infected = True
+    creature.collision_timer = 0.0
+
+    for _ in range(25):
+        pool.update(0.02, options=make_creature_update_options(state=state, players=[player]))
+
+    assert creature.hp == 70.0
+    assert creature.collision_timer == 0.49999991059303284
+
+
+def test_radioactive_timer_keeps_native_stored_cadence() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 100.0
+    creature.max_hp = 100.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
+    creature.orbit_radius = 1.0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.pos = Vec2(90.0, 0.0)
+    creature.collision_timer = 0.0
+
+    for _ in range(41):
+        pool.update(1.0 / 120.0, options=make_creature_update_options(state=state, players=[player]))
+
+    assert creature.hp == 97.0
+    assert creature.collision_timer == 1.8440186977386475e-07
+
+
 def test_single_player_dead_player_uses_dead_target_position() -> None:
     state = GameplayState()
     pool = CreaturePool()

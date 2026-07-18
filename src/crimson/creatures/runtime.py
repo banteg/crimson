@@ -1111,10 +1111,13 @@ class CreaturePool:
                 continue
 
             if creature.plague_infected:
-                creature.collision_timer -= float(dt)
+                creature.collision_timer = x87_pc24_sub(float(creature.collision_timer), float(dt))
                 if creature.collision_timer < 0.0:
-                    creature.collision_timer += CONTACT_DAMAGE_PERIOD
-                    creature.hp -= 15.0
+                    creature.collision_timer = x87_pc24_add(
+                        float(creature.collision_timer),
+                        f32(CONTACT_DAMAGE_PERIOD),
+                    )
+                    creature.hp = x87_pc24_sub(float(creature.hp), f32(15.0))
                     plague_killed = False
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
@@ -1331,10 +1334,18 @@ class CreaturePool:
             )
             if radioactive_active:
                 if target_dist < 100.0:
-                    creature.collision_timer -= float(dt) * 1.5
+                    pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
+                    creature.collision_timer = x87_pc24_sub(
+                        float(creature.collision_timer),
+                        pulse_timer_step,
+                    )
                     if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
-                        creature.hp -= (100.0 - target_dist) * 0.3
+                        pulse_damage = x87_pc24_mul(
+                            x87_pc24_sub(f32(100.0), target_dist),
+                            f32(0.3),
+                        )
+                        creature.hp = x87_pc24_sub(float(creature.hp), pulse_damage)
                         if fx_queue is not None:
                             fx_queue.add_random(pos=creature.pos, rng=rng)
 
@@ -1345,7 +1356,10 @@ class CreaturePool:
                                 players[0].experience = int(
                                     float(players[0].experience) + float(creature.reward_value),
                                 )
-                                creature.lifecycle_stage -= float(dt)
+                                creature.lifecycle_stage = x87_pc24_sub(
+                                    float(creature.lifecycle_stage),
+                                    float(dt),
+                                )
 
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)

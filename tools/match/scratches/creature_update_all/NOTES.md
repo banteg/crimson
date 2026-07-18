@@ -44,6 +44,11 @@ final body culling.
   Radioactive (`100`), ranged (`64`), eat (`20`), and contact (`30`) gates.
   The ports now compare that stored scalar rather than substituting squared
   distance checks, which differ at strict float32 radius boundaries.
+- Plaguebearer stores the decremented timer at `0x004265ac`, its `+0.5` wrap at
+  `0x004265d0`, and the `-15` HP result at `0x004265df`. Radioactive similarly
+  stores its `dt * 1.5` timer subtraction at `0x00426fda` and pulse damage at
+  `0x0042702a`. Both ports preserve those PC=24 stores so repeated ticks keep
+  the native pulse cadence instead of accumulating host-double residue.
 - Bounded spawner creatures and expired corpses are the native fallthrough
   arms. Reversing those high-level conditions recovers the large middle and
   tail control-flow blocks without layout-only gotos.

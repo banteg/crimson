@@ -2210,10 +2210,13 @@ pub const CreaturePool = struct {
                 }
             }
             if (creature.plague_infected) {
-                creature.collision_timer = narrowF32(creature.collision_timer - dt_f32);
+                creature.collision_timer = native_math.pc24Sub(creature.collision_timer, dt_f32);
                 if (creature.collision_timer < 0.0) {
-                    creature.collision_timer = narrowF32(creature.collision_timer + plague_collision_period);
-                    creature.hp = narrowF32(creature.hp - 15.0);
+                    creature.collision_timer = native_math.pc24Add(
+                        creature.collision_timer,
+                        plague_collision_period,
+                    );
+                    creature.hp = native_math.pc24Sub(creature.hp, 15.0);
                     if (creature.hp < 0.0) {
                         state.plaguebearer_infection_count += 1;
                         _ = self.handleSecondaryDetonationDeathFollowup(
@@ -2360,18 +2363,27 @@ pub const CreaturePool = struct {
             const target_dist = native_math.pc24Hypot(target_dx, target_dy);
             if (radioactive_active) {
                 if (target_dist < 100.0) {
-                    creature.collision_timer -= dt_f32 * 1.5;
+                    creature.collision_timer = native_math.pc24Sub(
+                        creature.collision_timer,
+                        native_math.pc24Mul(dt_f32, 1.5),
+                    );
                     if (creature.collision_timer < 0.0 and creature.hp > 0.0) {
                         creature.collision_timer = plague_collision_period;
-                        const pulse_damage = (100.0 - target_dist) * 0.3;
-                        creature.hp = narrowF32(creature.hp - pulse_damage);
+                        const pulse_damage = native_math.pc24Mul(
+                            native_math.pc24Sub(100.0, target_dist),
+                            0.3,
+                        );
+                        creature.hp = native_math.pc24Sub(creature.hp, pulse_damage);
                         _ = terrain_fx.decals.addRandom(state, creature.pos);
                         if (creature.hp < 0.0) {
                             if (creature.type_id == @intFromEnum(spawn_mod.CreatureTypeId.lizard)) {
                                 creature.hp = 1.0;
                             } else {
                                 awardBaseExperienceFromReward(player, creature.reward_value);
-                                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_f32);
+                                creature.lifecycle_stage = native_math.pc24Sub(
+                                    creature.lifecycle_stage,
+                                    dt_f32,
+                                );
                             }
                         }
                     }
@@ -6724,6 +6736,44 @@ test "radioactive tick deals damage and wraps collision timer" {
     try expectFloatClose(narrowF32(50.0 - expected_damage), pool.entries[0].hp);
 }
 
+test "radioactive timer keeps native stored cadence" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts.set(PerkId.radioactive, 1);
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 90.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 0.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].ai_mode = .hold_timer;
+    pool.entries[0].orbit_radius = 1.0;
+    pool.entries[0].collision_timer = 0.0;
+
+    for (0..41) |_| {
+        try pool.update(&state, players[0..], 1.0 / 120.0, 1024.0, &bonuses);
+    }
+
+    try std.testing.expectEqual(@as(f32, 97.0), pool.entries[0].hp);
+    try std.testing.expectEqual(@as(f32, 1.8440186977386475e-07), pool.entries[0].collision_timer);
+}
+
 test "radioactive kill awards base xp without death multipliers" {
     const dt = 0.2;
     var pool: CreaturePool = .{};
@@ -7803,6 +7853,44 @@ test "plaguebearer infection timer wrap applies damage" {
     try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
     try expectFloatClose(0.4, pool.entries[0].collision_timer);
     try expectFloatClose(85.0, pool.entries[0].hp);
+}
+
+test "plaguebearer infection timer keeps native stored cadence" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 500.0 },
+            .health = 100.0,
+        },
+    };
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 0.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].ai_mode = .hold_timer;
+    pool.entries[0].orbit_radius = 1.0;
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.0;
+
+    for (0..25) |_| {
+        try pool.update(&state, players[0..], 0.02, 1024.0, &bonuses);
+    }
+
+    try std.testing.expectEqual(@as(f32, 70.0), pool.entries[0].hp);
+    try std.testing.expectEqual(@as(f32, 0.49999991059303284), pool.entries[0].collision_timer);
 }
 
 test "energizer eat preserves native position owner and guard stores" {
