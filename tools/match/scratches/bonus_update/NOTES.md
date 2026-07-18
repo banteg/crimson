@@ -25,3 +25,10 @@ distance. At offset `(25.9999981, 0.00960000046)`, that double sum is below
 `26^2`, while native rounds the PC24 sum to 676 and the hypotenuse to exactly
 26, so no pickup occurs. Python and Zig now call their shared native-radius
 helpers, with this strict boundary covered directly.
+
+The separate Telekinetic pickup loop is embedded in `bonus_render`, not this
+exact target. It advances per-player hover state at `0x00429df8`, but calls the
+singleton `perk_count_get` at `0x00429e07` before passing the iterated player to
+`bonus_apply` at `0x00429f0e`. Because `perk_count_get` reads player slot zero,
+both ports now retain slot-zero Telekinetic ownership in bug-compatible mode;
+corrected mode keeps intuitive ownership by the player aiming at the pickup.

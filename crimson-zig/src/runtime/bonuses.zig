@@ -522,7 +522,10 @@ fn bonusTelekineticUpdate(
         player.bonus_aim_hover_timer_ms += dt_ms;
 
         if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
-        if (!perkActive(player.*, PerkId.telekinetic)) continue;
+        // Native calls the singleton perk_count_get here, so player zero owns
+        // the perk gate even though the iterated player receives the pickup.
+        const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
+        if (!perkActive(perk_player, PerkId.telekinetic)) continue;
 
         var entry = &pool.entries[hovered.index];
         if (entry.picked or entry.bonus_id == .unused) continue;
@@ -1970,6 +1973,79 @@ test "telekinetic picks up bonus after hover timer threshold" {
 
     try std.testing.expect(pool.entries[0].picked);
     try std.testing.expectEqual(@as(i32, 500), perk_players[0].experience);
+}
+
+test "telekinetic keeps native player zero ownership in bug mode" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var pool: BonusPool = .{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        .points,
+        .{ .x = 100.0, .y = 100.0 },
+        500,
+    );
+
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 100.0, .aim = .{} },
+        .{ .index = 1, .pos = .{}, .health = 100.0, .aim = .{ .x = 100.0, .y = 100.0 } },
+    };
+    players[0].perk_counts.set(PerkId.telekinetic, 1);
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+
+    try std.testing.expect(pool.entries[0].picked);
+    try std.testing.expectEqual(@as(i32, 500), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 0), players[1].experience);
+}
+
+test "telekinetic ignores secondary player perk in bug mode" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var pool: BonusPool = .{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        .points,
+        .{ .x = 100.0, .y = 100.0 },
+        500,
+    );
+
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 100.0, .aim = .{} },
+        .{ .index = 1, .pos = .{}, .health = 100.0, .aim = .{ .x = 100.0, .y = 100.0 } },
+    };
+    players[1].perk_counts.set(PerkId.telekinetic, 1);
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expectEqual(@as(i32, 0), players[1].experience);
+}
+
+test "telekinetic keeps secondary player ownership in corrected mode" {
+    var state = state_mod.GameplayState.init(1);
+    var pool: BonusPool = .{};
+    setTestBonusEntry(
+        &pool,
+        0,
+        .points,
+        .{ .x = 100.0, .y = 100.0 },
+        500,
+    );
+
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 100.0, .aim = .{} },
+        .{ .index = 1, .pos = .{}, .health = 100.0, .aim = .{ .x = 100.0, .y = 100.0 } },
+    };
+    players[1].perk_counts.set(PerkId.telekinetic, 1);
+
+    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
+
+    try std.testing.expect(pool.entries[0].picked);
+    try std.testing.expectEqual(@as(i32, 500), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 0), players[1].experience);
 }
 
 test "telekinetic nuke stores pending origin from bonus position" {
