@@ -61,7 +61,7 @@ def bonus_apply(
     freeze_corpse_indices: set[int] | None = None,
     creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> None:
-    """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
+    """Apply a bonus to the player and shared gameplay state."""
 
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:
@@ -69,7 +69,10 @@ def bonus_apply(
     if amount is None:
         amount = int(meta.native_amount or 0)
 
-    economist_multiplier = 1.5 if perk_count_get(player, PerkId.BONUS_ECONOMIST) != 0 else 1.0
+    # Native perk_count_get always reads player slot zero, even when player one
+    # is the pickup owner. Corrected mode keeps intuitive per-player ownership.
+    perk_player = players[0] if state.preserve_bugs and players else player
+    economist_multiplier = 1.5 if perk_count_get(perk_player, PerkId.BONUS_ECONOMIST) != 0 else 1.0
     icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
     label = meta.name
     ctx = BonusApplyCtx(
@@ -91,6 +94,3 @@ def bonus_apply(
     handler = _BONUS_APPLY_HANDLERS.get(bonus_id)
     if handler is not None:
         handler(ctx)
-
-    # Bonus types not modeled yet.
-    return

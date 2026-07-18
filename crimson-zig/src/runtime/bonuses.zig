@@ -724,7 +724,10 @@ fn applyBonus(
         effective_amount = defaultBonusAmount(bonus_id);
     }
 
-    const economist_multiplier: f32 = if (perkActive(player.*, PerkId.bonus_economist)) 1.5 else 1.0;
+    // Native perk_count_get always reads player slot zero, even when player one
+    // is the pickup owner. Corrected mode keeps intuitive per-player ownership.
+    const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
+    const economist_multiplier: f32 = if (perkActive(perk_player, PerkId.bonus_economist)) 1.5 else 1.0;
     state.sfx_queue.append(.ui_bonus);
 
     switch (bonus_id) {
@@ -1620,6 +1623,58 @@ test "bonus economist extends double experience timer" {
         null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 9.0), perk_state.bonuses.double_experience, 1e-6);
+}
+
+test "bonus economist keeps native player zero ownership in bug mode" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+    players[0].perk_counts.set(PerkId.bonus_economist, 1);
+
+    try applyBonus(
+        &state,
+        &players[1],
+        players[0..],
+        .double_experience,
+        10,
+        null,
+    );
+    try std.testing.expectApproxEqAbs(@as(f32, 9.0), state.bonuses.double_experience, 1e-6);
+
+    state.bonuses.double_experience = 0.0;
+    players[0].perk_counts.set(PerkId.bonus_economist, 0);
+    players[1].perk_counts.set(PerkId.bonus_economist, 1);
+    try applyBonus(
+        &state,
+        &players[1],
+        players[0..],
+        .double_experience,
+        10,
+        null,
+    );
+    try std.testing.expectApproxEqAbs(@as(f32, 6.0), state.bonuses.double_experience, 1e-6);
+}
+
+test "bonus economist keeps pickup owner in corrected mode" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+    players[1].perk_counts.set(PerkId.bonus_economist, 1);
+
+    try applyBonus(
+        &state,
+        &players[1],
+        players[0..],
+        .double_experience,
+        10,
+        null,
+    );
+    try std.testing.expectApproxEqAbs(@as(f32, 9.0), state.bonuses.double_experience, 1e-6);
 }
 
 test "alternate weapon starts with preloaded pistol alt slot" {

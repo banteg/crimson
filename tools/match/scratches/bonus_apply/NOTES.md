@@ -43,6 +43,10 @@ Port parity:
   `0.049087387f` burst rotation scale. Both ports also preserve the native
   literal guard resets for Shock Chain, Fireblast, and Nuke; parity tests enter
   each path with the guard already set so restoring the incoming value fails.
+- The Bonus Economist gate at `0x004098b2` calls the singleton
+  `perk_count_get`, whose body at `0x0042fcf0` indexes player slot zero. Both
+  ports now retain that co-op ownership in bug-compatible mode while corrected
+  mode continues to use the player who collected the pickup.
 
 Discarded variants:
 
