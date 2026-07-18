@@ -1,4 +1,5 @@
 const std = @import("std");
+const native_math = @import("crimson_zig").native_math;
 
 pub const QuestFinalTime = struct {
     base_time_ms: i32,
@@ -45,11 +46,19 @@ pub fn computeQuestFinalTime(
 ) QuestFinalTime {
     const base_ms = base_time_ms;
     var life_bonus_ms: i32 = 0;
-    for (player_health_values) |health| {
-        // Native converts health through __ftol (truncation toward zero).
-        life_bonus_ms += @intFromFloat(@trunc(health));
+    if (player_health_values.len > 0) {
+        // Native stores player 0's __ftol-truncated health back to the player
+        // record before multiplying it by 50. Later players multiply first.
+        const player0_health: i32 = @intFromFloat(@trunc(player_health_values[0]));
+        life_bonus_ms = @intFromFloat(@trunc(native_math.pc24Mul(
+            @as(f32, @floatFromInt(player0_health)),
+            @as(f32, 50.0),
+        )));
+        for (player_health_values[1..]) |health| {
+            life_bonus_ms += @intFromFloat(@trunc(native_math.pc24Mul(health, @as(f32, 50.0))));
+        }
     }
-    const unpicked_perk_bonus_ms = @max(0, pending_perk_count) * 1000;
+    const unpicked_perk_bonus_ms = pending_perk_count * 1000;
     // Native records negative final times; only an exactly-zero result is
     // remapped to 1 ms.
     var final_time_ms = base_ms - life_bonus_ms - unpicked_perk_bonus_ms;
@@ -126,17 +135,24 @@ pub fn tickQuestResultsBreakdownAnim(
 test "compute quest final time mirrors native formula" {
     const breakdown = computeQuestFinalTime(32_500, &.{ 83.6, 41.2 }, 2);
     try std.testing.expectEqual(@as(i32, 32_500), breakdown.base_time_ms);
-    // Native __ftol truncates each health value (83 + 41).
-    try std.testing.expectEqual(@as(i32, 124), breakdown.life_bonus_ms);
+    // Player 0 truncates before the multiply; player 1 multiplies first.
+    try std.testing.expectEqual(@as(i32, 6_210), breakdown.life_bonus_ms);
     try std.testing.expectEqual(@as(i32, 2_000), breakdown.unpicked_perk_bonus_ms);
-    try std.testing.expectEqual(@as(i32, 30_376), breakdown.final_time_ms);
+    try std.testing.expectEqual(@as(i32, 24_290), breakdown.final_time_ms);
+}
+
+test "quest life bonus rounds later-player multiplication at native pc24" {
+    const boundary_health: f32 = @bitCast(@as(u32, 0x3d23d70a));
+    const breakdown = computeQuestFinalTime(100, &.{ 0.0, boundary_health }, 0);
+    try std.testing.expectEqual(@as(i32, 2), breakdown.life_bonus_ms);
+    try std.testing.expectEqual(@as(i32, 98), breakdown.final_time_ms);
 }
 
 test "compute quest final time keeps negative results" {
     // Native only remaps an exactly-zero result to 1 ms.
     const breakdown = computeQuestFinalTime(100, &.{ 60.0, 60.0 }, 5);
-    try std.testing.expectEqual(@as(i32, -5_020), breakdown.final_time_ms);
-    const zero = computeQuestFinalTime(5_120, &.{ 60.0, 60.0 }, 5);
+    try std.testing.expectEqual(@as(i32, -10_900), breakdown.final_time_ms);
+    const zero = computeQuestFinalTime(11_000, &.{ 60.0, 60.0 }, 5);
     try std.testing.expectEqual(@as(i32, 1), zero.final_time_ms);
 }
 

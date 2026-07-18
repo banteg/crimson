@@ -46,6 +46,10 @@ Recovered staged-reveal globals:
 
 - `quest_results_final_time_ms` (`DAT_0048270c`) is computed as
   `quest_spawn_timeline + perk_pending_count * -1000 - quest_results_health_bonus_ms`.
+- `quest_results_health_bonus_ms` truncates player 0's health, stores the
+  truncated float back to player 0, and contributes `trunc(health) * 50` ms.
+  When `config_player_count == 2`, player 1 additionally contributes
+  `trunc(health * 50)` ms; its health is not rewritten.
 - `quest_results_reveal_base_time_ms` (`DAT_00482710`) animates up to `quest_spawn_timeline`.
 - `quest_results_reveal_health_bonus_ms` (`DAT_00482714`) animates up to
   `quest_results_health_bonus_ms` (displayed as a subtraction).

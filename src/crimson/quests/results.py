@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from ..math_parity import f32, x87_pc24_mul
+
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatusData
 
@@ -81,23 +83,29 @@ def compute_quest_final_time(
     """Compute quest final time (ms) and breakdown.
 
     Modeled after `quest_results_screen_update`:
-      final_time_ms = base_time_ms - round(player_health) - (pending_perk_count * 1000)
-      clamped to at least 1ms.
+      final_time_ms = base_time_ms - life_bonus_ms - (pending_perk_count * 1000)
+
+    Native truncates player 0's health before multiplying it by 50. Additional
+    players use ``__ftol(health * 50.0f)``; applying that rule to every later
+    slot preserves the original one/two-player results while extending it to
+    the rewrite's three/four-player sessions.
     """
 
     base_ms = int(base_time_ms)
-    # Native converts health through __ftol (truncation toward zero), not
-    # rounding.
+    health_values: tuple[float, ...]
     if player_health_values is not None and len(player_health_values) > 0:
-        life_bonus_ms = 0
-        for health in player_health_values:
-            life_bonus_ms += int(math.trunc(float(health)))
+        health_values = tuple(float(health) for health in player_health_values)
     else:
-        life_bonus_ms = int(math.trunc(float(player_health)))
+        health_values = (float(player_health),)
         if player2_health is not None:
-            life_bonus_ms += int(math.trunc(float(player2_health)))
+            health_values += (float(player2_health),)
 
-    unpicked_perk_bonus_ms = max(0, int(pending_perk_count)) * 1000
+    player0_health = int(math.trunc(f32(health_values[0])))
+    life_bonus_ms = int(math.trunc(x87_pc24_mul(float(player0_health), f32(50.0))))
+    for health in health_values[1:]:
+        life_bonus_ms += int(math.trunc(x87_pc24_mul(f32(health), f32(50.0))))
+
+    unpicked_perk_bonus_ms = int(pending_perk_count) * 1000
     final_ms = base_ms - int(life_bonus_ms) - int(unpicked_perk_bonus_ms)
     # Native records negative final times; only an exactly-zero result is
     # remapped to 1 ms.
