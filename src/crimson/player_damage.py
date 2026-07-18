@@ -48,11 +48,15 @@ def player_take_damage(
     if state.debug_god_mode:
         return 0.0
 
-    if perk_active(player, PerkId.DEATH_CLOCK):
+    # Native perk_count_get() is hard-wired to player 1 even though the
+    # surrounding player fields are indexed by the actual damage target.
+    perk_player = players[0] if state.preserve_bugs and players else player
+
+    if perk_active(perk_player, PerkId.DEATH_CLOCK):
         return 0.0
 
     damage_scaled = float(raw_damage)
-    if perk_active(player, PerkId.TOUGH_RELOADER) and player.weapon.reload_active:
+    if perk_active(perk_player, PerkId.TOUGH_RELOADER) and player.weapon.reload_active:
         damage_scaled = x87_pc24_mul(damage_scaled, f32(0.5))
     spread_heat_damage = float(damage_scaled)
 
@@ -61,26 +65,21 @@ def player_take_damage(
     if float(player.shield_timer) > 0.0:
         return 0.0
 
-    was_alive_source = player
-    # Native bug: the pre-hit alive flag is read from player 1 health even when
-    # damaging player 2; preserve this under `--preserve-bugs`.
-    if state.preserve_bugs and players:
-        was_alive_source = players[0]
-    was_alive = float(was_alive_source.health) > 0.0
+    was_alive = float(perk_player.health) > 0.0
 
-    if perk_active(player, PerkId.THICK_SKINNED):
+    if perk_active(perk_player, PerkId.THICK_SKINNED):
         # Native uses an f32 constant (`~0.666`) here, not exact 2/3.
         damage_scaled = float(f32(float(damage_scaled) * float(_THICK_SKINNED_DAMAGE_SCALE_F32)))
 
     dodged = False
-    if perk_active(player, PerkId.NINJA):
+    if perk_active(perk_player, PerkId.NINJA):
         dodged = (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_NINJA) % 3) == 0
-    elif perk_active(player, PerkId.DODGER):
+    elif perk_active(perk_player, PerkId.DODGER):
         dodged = (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DODGER) % 5) == 0
 
     health_before = float(player.health)
     if not dodged:
-        if perk_active(player, PerkId.HIGHLANDER):
+        if perk_active(perk_player, PerkId.HIGHLANDER):
             if (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER) % 10) == 0:
                 player.health = 0.0
         else:
@@ -109,15 +108,19 @@ def player_take_damage(
             return max(0.0, health_before - float(player.health))
     else:
         if not was_alive:
+            if state.preserve_bugs:
+                # The generic post-damage hook must not resurrect Final Revenge
+                # after native returned because player 1 was already dead.
+                state.player_death_hook_skip_indices.add(int(player.index))
             return max(0.0, health_before - float(player.health))
-        if not perk_active(player, PerkId.FINAL_REVENGE):
+        if not perk_active(perk_player, PerkId.FINAL_REVENGE):
             state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1])
         elif death_runtime is not None:
             death_runtime.on_player_lethal(player, dt=0.0 if dt is None else float(dt))
             state.player_death_hook_skip_indices.add(int(player.index))
 
     if not dodged:
-        if not perk_active(player, PerkId.UNSTOPPABLE):
+        if not perk_active(perk_player, PerkId.UNSTOPPABLE):
             heading_jitter = x87_pc24_mul(
                 float((state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING) % 100) - 50),
                 f32(0.04),

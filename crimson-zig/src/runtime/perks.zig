@@ -753,6 +753,7 @@ pub fn applyFinalRevengeOnDeathTransition(
     players: []state_mod.PlayerState,
     player_index: usize,
     health_before: f32,
+    player1_health_before: f32,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     dt: f32,
@@ -766,6 +767,7 @@ pub fn applyFinalRevengeOnDeathTransition(
         players,
         player_index,
         health_before,
+        player1_health_before,
         creatures,
         bonuses,
         &effects,
@@ -781,6 +783,7 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
     players: []state_mod.PlayerState,
     player_index: usize,
     health_before: f32,
+    player1_health_before: f32,
     creatures: *creatures_mod.CreaturePool,
     bonuses: *bonus_runtime.BonusPool,
     effects: *effects_mod.EffectPool,
@@ -791,8 +794,11 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
 ) void {
     if (player_index >= players.len) return;
     const player = &players[player_index];
-    if (!(health_before > 0.0) or !(player.health <= 0.0)) return;
-    if (!perkActive(player, PerkId.final_revenge)) return;
+    const perk_player = if (state.preserve_bugs) &players[0] else player;
+    const was_alive = if (state.preserve_bugs) player1_health_before > 0.0 else health_before > 0.0;
+    const lethal = if (state.preserve_bugs) player.health < 0.0 else player.health <= 0.0;
+    if (!was_alive or !lethal) return;
+    if (!perkActive(perk_player, PerkId.final_revenge)) return;
 
     effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
     const prev_spawn_guard = state.bonus_spawn_guard;
@@ -1893,6 +1899,7 @@ test "final revenge uses native blast arithmetic and explosion scale" {
         players[0..],
         0,
         1.0,
+        1.0,
         &creatures,
         &bonuses,
         &effects,
@@ -1904,4 +1911,72 @@ test "final revenge uses native blast arithmetic and explosion scale" {
 
     try std.testing.expectEqual(@as(u32, 0x460e568a), @as(u32, @bitCast(creatures.entries[0].hp)));
     try std.testing.expectEqual(@as(f32, 45.0), effects.entries[0].scale_step);
+}
+
+test "final revenge preserve mode uses player one source and strict lethal boundary" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 100.0 },
+        .{ .index = 1, .pos = .{}, .health = -1.0 },
+    };
+    players[0].perk_counts.set(PerkId.final_revenge, 1);
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+
+    applyFinalRevengeOnDeathTransitionWithEffects(
+        &state,
+        players[0..],
+        1,
+        1.0,
+        100.0,
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        0.0,
+        1024.0,
+        5,
+    );
+    try std.testing.expectEqual(@as(usize, 2), state.sfx_queue.items.len);
+
+    var exact_zero_state = state_mod.GameplayState.init(1);
+    exact_zero_state.preserve_bugs = true;
+    players[1].health = 0.0;
+    applyFinalRevengeOnDeathTransitionWithEffects(
+        &exact_zero_state,
+        players[0..],
+        1,
+        1.0,
+        100.0,
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        0.0,
+        1024.0,
+        5,
+    );
+    try std.testing.expectEqual(@as(usize, 0), exact_zero_state.sfx_queue.items.len);
+
+    var dead_player1_state = state_mod.GameplayState.init(1);
+    dead_player1_state.preserve_bugs = true;
+    players[1].health = -1.0;
+    applyFinalRevengeOnDeathTransitionWithEffects(
+        &dead_player1_state,
+        players[0..],
+        1,
+        1.0,
+        -1.0,
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        0.0,
+        1024.0,
+        5,
+    );
+    try std.testing.expectEqual(@as(usize, 0), dead_player1_state.sfx_queue.items.len);
 }

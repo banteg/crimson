@@ -66,7 +66,8 @@ def apply_final_revenge_on_player_death(
     """Apply Final Revenge perk behavior when a player dies."""
     from ...creatures.damage import creature_apply_damage_with_lethal_followup
 
-    if not perk_active(player, PerkId.FINAL_REVENGE):
+    perk_player = players[0] if state.preserve_bugs and players else player
+    if not perk_active(perk_player, PerkId.FINAL_REVENGE):
         return
 
     player_pos = player.pos

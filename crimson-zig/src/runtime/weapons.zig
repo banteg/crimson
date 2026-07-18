@@ -419,9 +419,10 @@ fn tryFireWeaponWithForce(
                 @as(f32, 0.15)
             else
                 @as(f32, 1.0);
-            creatures_mod.applyPlayerContactDamage(
+            creatures_mod.applyPlayerContactDamageWithPlayers(
                 state,
                 player,
+                all_players,
                 health_cost,
                 0.0,
             );

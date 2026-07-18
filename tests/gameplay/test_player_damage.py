@@ -226,3 +226,58 @@ def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
     assert player2.health == -5.0
     assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
     assert state.sfx_queue == []
+    assert state.player_death_hook_skip_indices == {1}
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "player1_has_perk", "target_has_perk", "expected_health"),
+    [
+        (True, True, False, 95.0),
+        (True, False, True, 90.0),
+        (False, False, True, 95.0),
+    ],
+    ids=["native-player1-source", "native-ignores-target-perk", "corrected-target-source"],
+)
+def test_player_take_damage_tough_reloader_perk_source(
+    preserve_bugs: bool,
+    player1_has_perk: bool,
+    target_has_perk: bool,
+    expected_health: float,
+) -> None:
+    state = GameplayState(
+        preserve_bugs=preserve_bugs,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
+    player1 = PlayerState(index=0, pos=Vec2(), health=100.0)
+    target = PlayerState(index=1, pos=Vec2(), health=100.0)
+    target.weapon.reload_active = True
+    player1.perk_counts[int(PerkId.TOUGH_RELOADER)] = int(player1_has_perk)
+    target.perk_counts[int(PerkId.TOUGH_RELOADER)] = int(target_has_perk)
+
+    player_take_damage(state, target, 10.0, players=[player1, target])
+
+    assert target.health == expected_health
+
+
+@pytest.mark.parametrize(
+    ("player1_has_perk", "target_has_perk", "expected_applied"),
+    [(True, False, 0.0), (False, True, 10.0)],
+    ids=["player1-blocks-target-damage", "target-perk-is-ignored"],
+)
+def test_player_take_damage_preserve_bugs_death_clock_perk_source(
+    player1_has_perk: bool,
+    target_has_perk: bool,
+    expected_applied: float,
+) -> None:
+    state = GameplayState(
+        preserve_bugs=True,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
+    player1 = PlayerState(index=0, pos=Vec2(), health=100.0)
+    target = PlayerState(index=1, pos=Vec2(), health=100.0)
+    player1.perk_counts[int(PerkId.DEATH_CLOCK)] = int(player1_has_perk)
+    target.perk_counts[int(PerkId.DEATH_CLOCK)] = int(target_has_perk)
+
+    applied = player_take_damage(state, target, 10.0, players=[player1, target])
+
+    assert applied == expected_applied

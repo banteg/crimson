@@ -314,6 +314,7 @@ pub fn stepTick(
             players,
             player_idx,
             health_before_creatures[player_idx],
+            health_before_creatures[0],
             &context.creatures,
             &context.bonuses,
             &context.effects,
@@ -400,6 +401,7 @@ pub fn stepTick(
             continue;
         }
         const health_before_player_step = player.health;
+        const player1_health_before_player_step = players[0].health;
         const input = if (context.game_mode == .typo and player_idx == 0)
             typo_runtime.transformPrimaryInput(&context.state, raw_input)
         else if (context.game_mode == .tutorial and player_idx == 0)
@@ -444,6 +446,7 @@ pub fn stepTick(
             players,
             player_idx,
             health_before_player_step,
+            player1_health_before_player_step,
             &context.creatures,
             &context.bonuses,
             &context.effects,

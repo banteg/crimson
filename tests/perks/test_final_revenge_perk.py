@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -174,3 +176,40 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
     )
 
     assert damage_amounts == [890.364990234375]
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "player1_has_perk", "target_has_perk", "expected_trigger"),
+    [
+        (True, True, False, True),
+        (True, False, True, False),
+        (False, False, True, True),
+    ],
+    ids=["native-player1-source", "native-ignores-target-perk", "corrected-target-source"],
+)
+def test_final_revenge_perk_source(
+    preserve_bugs: bool,
+    player1_has_perk: bool,
+    target_has_perk: bool,
+    expected_trigger: bool,
+) -> None:
+    state = GameplayState(preserve_bugs=preserve_bugs)
+    player1 = PlayerState(index=0, pos=Vec2())
+    target = PlayerState(index=1, pos=Vec2())
+    player1.perk_counts[int(PerkId.FINAL_REVENGE)] = int(player1_has_perk)
+    target.perk_counts[int(PerkId.FINAL_REVENGE)] = int(target_has_perk)
+
+    apply_final_revenge_on_player_death(
+        state=state,
+        creatures=CreaturePool(size=0),
+        players=[player1, target],
+        player=target,
+        dt=0.1,
+        world_size=1024.0,
+        detail_preset=0,
+        fx_queue=None,
+        deaths=[],
+    )
+
+    expected_sfx = [SfxId.EXPLOSION_LARGE, SfxId.SHOCKWAVE] if expected_trigger else []
+    assert state.sfx_queue == expected_sfx
