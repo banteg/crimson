@@ -88,9 +88,9 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=49.05% prefix=7/4206 target_insns=4206 candidate_insns=3887 refs=667/0/16
+match=51.54% prefix=7/4206 target_insns=4206 candidate_insns=3932 refs=677/0/16
 first_target=jne L3f7a
-first_candidate=jne L3b91
+first_candidate=jne L3c15
 ```
 
 The native function keeps two related addresses live for essentially the
@@ -105,6 +105,29 @@ whole-function score from `39.13%` to `49.05%`, and improves reference
 agreement from `594/0/32` to `667/0/16` without changing behavior or the exact
 `0x48` frame. The remaining first mismatch is local scheduling around the
 previous-position copy, not a missing simulation path.
+
+The native weapon dispatch retains 33 direct `projectile_spawn` callsites and
+four `fx_spawn_secondary_projectile` callsites. The earlier candidate emitted
+only 26 and three: reusing one function-wide position temporary let VC6 merge
+otherwise distinct one-shot weapon tails. Native repeatedly materializes the
+same two-float physical stack slot in those branches while still retaining
+their separate calls, which is evidence for short-lived source values whose
+storage was coalesced after their lifetimes ended. Giving every simple direct
+or secondary weapon arm its own scoped `spawn_pos` recovers that value shape
+without growing the exact `0x48` frame. It raises the candidate to 32 direct
+and all four secondary callsites, adds 45 native-shaped instructions, improves
+reference agreement from `667/0/16` to `677/0/16`, and raises the score from
+`49.05%` to `51.54%`.
+
+The sole remaining direct-projectile collapse is the adjacent Shrinkifier and
+Pistol pair. Native duplicates their projectile and first-sprite prefixes but
+shares only the second-sprite tail at `0x0041600e`; the calibrated compiler
+still merges the complete identical pair. The candidate therefore retains 24
+sprite calls against 25 native, as well as two movement-avoidance calls against
+three and two `__ftol` sites against three. Natural scoped movement values grow
+the frame to `0x4c`, while alternate existing temporaries regress the proven
+body. Those residuals are left honest rather than adding layout-only control
+flow or artificial dependencies.
 
 The native reload preload gate at `0x00415037..0x00415069` first tests
 `reload_timer - frame_dt < 0`, then tests `reload_timer > 0`. It never reads
