@@ -425,6 +425,7 @@ class WorldState(msgspec.Struct):
             self._advance_creature_anim(dt)
         if mid_step_runtime is not None:
             mid_step_runtime.run_mid_step()
+        self.state.highscore_score_xp = int(self.players[0].experience) if self.players else 0
         if not bool(defer_camera_shake_update):
             camera_shake_update(self.state, dt)
         # Native level-up/perk-pending check runs before `bonus_update` in

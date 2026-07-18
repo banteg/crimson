@@ -28,4 +28,9 @@ happens before `gameplay_render_world` and ordinary bonus pickup, so a newly
 collected weapon begins accumulating on the next frame. High-score finalization
 uses this table instead of the former per-weapon shot-count heuristic.
 
+The same boundary now stages `highscore_active_record.score_xp` immediately
+after mode logic and before world rendering or bonus pickup. Results consume
+that staged player-0 value rather than reconstructing the active record from
+the later live player state.
+
 MSVC 6.5 matches all 713 instructions and all 291 references exactly.

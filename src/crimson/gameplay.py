@@ -165,6 +165,7 @@ class GameplayState(msgspec.Struct):
         default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)],
     )
     weapon_usage_time: list[int] = msgspec.field(default_factory=lambda: [0] * WEAPON_USAGE_TIME_SLOT_COUNT)
+    highscore_score_xp: int = 0
     debug_god_mode: bool = False
 
     def __post_init__(self) -> None:

@@ -35,7 +35,7 @@ def build_highscore_record_for_game_over(
     hardcore: bool = False,
 ) -> HighScoreRecord:
     record = HighScoreRecord.blank(rng=state.rng)
-    record.score_xp = int(player.experience)
+    record.score_xp = int(state.highscore_score_xp)
     record.survival_elapsed_ms = int(survival_elapsed_ms)
     record.creature_kill_count = int(creature_kill_count)
 

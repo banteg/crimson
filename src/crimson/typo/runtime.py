@@ -122,7 +122,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
         typo.names.assign_random(
             int(creature_idx),
             ctx.world.state.rng,
-            score_xp=int(ctx.world.players[0].experience) if ctx.world.players else 0,
+            score_xp=int(ctx.world.state.highscore_score_xp),
             active_mask=active_mask,
             dictionary_words=typo.dictionary_words,
             highscore_names=typo.highscore_names,

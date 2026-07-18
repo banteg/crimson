@@ -128,6 +128,56 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
     assert world.state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] == 16
 
 
+def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), experience=10)
+    world.players.append(player)
+    entry = world.state.bonus_pool.spawn_at(
+        pos=player.pos,
+        bonus_id=BonusId.POINTS,
+        duration_override=500,
+        state=world.state,
+        emit_burst=False,
+    )
+    assert entry is not None
+
+    first = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert len(first.pickups) == 1
+    assert world.state.highscore_score_xp == 10
+    assert player.experience == 510
+
+    world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert world.state.highscore_score_xp == 510
+
+
 def test_projectile_kill_awards_xp_same_step() -> None:
     world_size = 1024.0
     world = WorldState.build(

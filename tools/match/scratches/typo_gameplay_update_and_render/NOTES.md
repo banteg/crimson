@@ -51,6 +51,14 @@ The three reference aliases identify the compiler-generated local-static guard,
 object, and destructor with their proven native storage/callbacks. They do not
 relax the instruction or operand audit.
 
+## Port parity
+
+The two spawn-side `typo_target_name_assign_random` calls precede the write to
+`highscore_active_record.score_xp`. Python and Zig therefore now feed name-tier
+selection from the explicitly staged prior-frame score, then update that score
+from player 0 after the mode spawn loop. Previously both ports passed the live
+player experience and advanced Typ-o name difficulty one frame too early.
+
 ## Remaining mismatch
 
 Only eight normalized instructions differ. Native assigns the long-lived UI

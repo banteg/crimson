@@ -591,6 +591,7 @@ pub fn stepTick(
         else => {},
     }
     frame.rng_after_spawns = context.state.rng.state;
+    context.state.highscore_score_xp = if (players.len > 0) players[0].experience else 0;
 
     callPhaseHook(options.hooks, context, .pre_bonus_effects, &frame);
     const dt_after_player = movement.playerFrameDtAfterRoundtrip(
@@ -1255,4 +1256,45 @@ test "weapon usage time precedes same-frame weapon pickup" {
 
     try std.testing.expectEqual(@as(u32, 16), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.pistol)]);
     try std.testing.expectEqual(@as(u32, 16), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.assault_rifle)]);
+}
+
+test "highscore score stages before same-frame points pickup" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    players[0].experience = 10;
+    context.bonuses.entries[0] = .{
+        .bonus_id = .points,
+        .picked = false,
+        .time_left = 5.0,
+        .time_max = 5.0,
+        .pos = players[0].pos,
+        .amount = 500,
+    };
+
+    const pickup_tick = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), pickup_tick.bonus_pickups.len);
+    try std.testing.expectEqual(@as(i32, 10), context.state.highscore_score_xp);
+    try std.testing.expectEqual(@as(i32, 510), players[0].experience);
+
+    _ = try stepTick(
+        &context,
+        1,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(i32, 510), context.state.highscore_score_xp);
 }

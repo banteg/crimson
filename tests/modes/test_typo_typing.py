@@ -9,6 +9,7 @@ from crimson.sim.input_providers import TypoBackspaceCommand, TypoCharCommand, T
 from crimson.sim.sessions import DeterministicSession, MidStepContext, SessionModeRuntime
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.typo.names import CreatureNameTable
 from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mid_step
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
@@ -149,7 +150,7 @@ def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) ->
     ]
 
 
-def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
+def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     from crimson.sim.world_state import WorldState
 
     world = WorldState.build(
@@ -158,9 +159,11 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0), experience=130))
     reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
     world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world.state.highscore_score_xp = 7
+    assign_random = mocker.spy(CreatureNameTable, "assign_random")
 
     typo_mid_step(
         MidStepContext(
@@ -192,3 +195,4 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers() -> None:
         RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING,
         RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
     ]
+    assert [call.kwargs["score_xp"] for call in assign_random.call_args_list] == [7, 7]

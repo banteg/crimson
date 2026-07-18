@@ -232,11 +232,7 @@ class QuestMode(BaseGameplayMode):
         return int(self._quest_spawn_state.spawn_timeline_ms)
 
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        replay_level = (
-            ""
-            if replay.header.quest_level is None
-            else replay.header.quest_level.text
-        )
+        replay_level = "" if replay.header.quest_level is None else replay.header.quest_level.text
         level = self._quest_level.text if self._quest_level is not None else (replay_level or "quest")
         kind = str(self._outcome.kind) if self._outcome is not None else "quest"
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
@@ -317,7 +313,7 @@ class QuestMode(BaseGameplayMode):
                     player2_health=player2_health,
                     player_health_values=player_health_values,
                     pending_perk_count=int(self.state.perk_selection.pending_count),
-                    experience=int(self.player.experience),
+                    experience=int(self.state.highscore_score_xp),
                     kill_count=int(self.creatures.kill_count),
                     weapon_id=self.player.weapon.weapon_id,
                     shots_fired=fired,
@@ -563,7 +559,7 @@ class QuestMode(BaseGameplayMode):
                 player2_health=player2_health,
                 player_health_values=player_health_values,
                 pending_perk_count=int(self.state.perk_selection.pending_count),
-                experience=int(self.player.experience),
+                experience=int(self.state.highscore_score_xp),
                 kill_count=int(self.creatures.kill_count),
                 weapon_id=self.player.weapon.weapon_id,
                 shots_fired=fired,

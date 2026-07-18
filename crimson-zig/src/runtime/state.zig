@@ -306,6 +306,7 @@ pub const GameplayState = struct {
     shots_hit: [max_players]i32 = [_]i32{0} ** max_players,
     weapon_shots_fired: [max_players][weapon_count_size]i32 = [_][weapon_count_size]i32{[_]i32{0} ** weapon_count_size} ** max_players,
     weapon_usage_time: [weapon_usage_time_slot_count]u32 = [_]u32{0} ** weapon_usage_time_slot_count,
+    highscore_score_xp: i32 = 0,
     bonus_spawn_guard: bool = false,
     camera_shake_pulses: i32 = 0,
     camera_shake_timer: f32 = 0.0,

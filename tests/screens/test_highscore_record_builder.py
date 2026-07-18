@@ -28,7 +28,8 @@ def test_shots_from_state_handles_out_of_bounds_player() -> None:
 def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    player.experience = 1234
+    player.experience = 9999
+    state.highscore_score_xp = 1234
     player.weapon.weapon_id = WeaponId.PISTOL
 
     state.weapon_usage_time[2] = 10

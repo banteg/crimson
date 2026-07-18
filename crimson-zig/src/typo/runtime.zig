@@ -114,7 +114,7 @@ pub fn midStep(
         active_mask[idx] = entry.active;
     }
 
-    const score_xp: i32 = if (players.len > 0) players[0].experience else 0;
+    const score_xp = state.highscore_score_xp;
     var dict_storage: [typo_names.max_dictionary_words][]const u8 = undefined;
     for (0..state.typo.dictionary_word_count) |idx| {
         dict_storage[idx] = state.typo.dictionaryWordSlice(idx);
@@ -171,4 +171,22 @@ pub fn postStep(state: *state_mod.GameplayState) void {
     state.bonuses.weapon_power_up = 0.0;
     state.bonuses.reflex_boost = 0.0;
     state.time_scale_active = false;
+}
+
+test "typo spawn naming ignores current xp until score staging" {
+    var state_a = state_mod.GameplayState.init(1234);
+    var state_b = state_mod.GameplayState.init(1234);
+    state_a.highscore_score_xp = 0;
+    state_b.highscore_score_xp = 0;
+    const players_a = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{}, .experience = 0 }};
+    const players_b = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{}, .experience = 130 }};
+    var creatures_a: creatures_mod.CreaturePool = .{};
+    var creatures_b: creatures_mod.CreaturePool = .{};
+
+    midStep(&state_a, players_a[0..], &creatures_a, 0.0, 1.0, 1024.0);
+    midStep(&state_b, players_b[0..], &creatures_b, 0.0, 1.0, 1024.0);
+
+    try std.testing.expectEqual(state_a.rng.state, state_b.rng.state);
+    try std.testing.expectEqualStrings(state_a.typo.names.nameSlice(0), state_b.typo.names.nameSlice(0));
+    try std.testing.expectEqualStrings(state_a.typo.names.nameSlice(1), state_b.typo.names.nameSlice(1));
 }
