@@ -209,6 +209,12 @@ fn formationOffset(index: usize, angle_step: f32, radius: f32) state_mod.Vec2 {
     };
 }
 
+fn isKnownTemplateId(template_id: i32) bool {
+    return template_id == 0x00 or
+        template_id == 0x01 or
+        (template_id >= 0x03 and template_id <= 0x43);
+}
+
 const formation_chain_alien_angle_step: f32 = @bitCast(@as(u32, 0x3EB2B8C3));
 
 pub const CreaturePool = struct {
@@ -251,18 +257,23 @@ pub const CreaturePool = struct {
         inits: []const spawn_mod.CreatureInit,
     ) void {
         for (inits) |init| {
-            _ = self.spawnInit(init);
+            if (self.spawnInit(init) == null) break;
         }
     }
 
-    pub fn spawnInit(self: *CreaturePool, init: spawn_mod.CreatureInit) usize {
-        var slot: usize = self.entries.len - 1;
+    fn findFreeSlot(self: *const CreaturePool) ?usize {
         for (self.entries, 0..) |creature, idx| {
-            if (!creature.active) {
-                slot = idx;
-                break;
-            }
+            if (!creature.active) return idx;
         }
+        return null;
+    }
+
+    pub fn spawnInit(self: *CreaturePool, init: spawn_mod.CreatureInit) ?usize {
+        const slot = self.findFreeSlot() orelse return null;
+        return self.spawnInitAt(slot, init);
+    }
+
+    fn spawnInitAt(self: *CreaturePool, slot: usize, init: spawn_mod.CreatureInit) usize {
         const stale_link_index = self.entries[slot].link_index;
         const stale_target_heading = self.entries[slot].target_heading;
         const stale_heading = self.entries[slot].heading;
@@ -339,6 +350,11 @@ pub const CreaturePool = struct {
         state: ?*const state_mod.GameplayState,
         terrain_size: f32,
     ) CreatureRuntimeError!void {
+        if (!isKnownTemplateId(call.template_id)) return error.InvalidSpawnTemplate;
+        // Native returns the one-past-the-pool sentinel when all 384 entries are
+        // active. The safe ports decline that spawn instead of dereferencing it.
+        if (self.findFreeSlot() == null) return;
+
         const resolved_heading = previewSpawnTemplateHeading(rng.*, call.heading);
         var was_active: [max_creatures]bool = undefined;
         for (self.entries, 0..) |creature, idx| {
@@ -359,7 +375,7 @@ pub const CreaturePool = struct {
                         .size = 55.0,
                         .contact_damage = 14.0,
                     },
-                );
+                ) orelse return;
                 // Native template planning consumes a transient base-heading draw
                 // after base allocation but before child allocations.
                 const transient_heading = drawTransientSpawnHeading(rng);
@@ -387,7 +403,7 @@ pub const CreaturePool = struct {
                         0,
                         false,
                         false,
-                    );
+                    ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                     self.entries[child_idx].link_index = @intCast(parent_idx);
                     self.entries[child_idx].target_offset = .{
@@ -600,7 +616,7 @@ pub const CreaturePool = struct {
                     64,
                     1.05,
                     0x1C,
-                );
+                ) orelse return;
 
                 const angle_step: f32 = std.math.pi / 12.0;
                 var primary_child_idx: usize = parent_idx;
@@ -624,7 +640,7 @@ pub const CreaturePool = struct {
                         0,
                         true,
                         false,
-                    );
+                    ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                     self.entries[child_idx].link_index = @intCast(parent_idx);
                     self.entries[child_idx].target_offset = .{
@@ -683,7 +699,7 @@ pub const CreaturePool = struct {
                         .size = 69.0,
                         .contact_damage = 150.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_player_tight;
 
@@ -705,7 +721,7 @@ pub const CreaturePool = struct {
                         0,
                         false,
                         false,
-                    );
+                    ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
                     self.entries[child_idx].target_offset = .{
@@ -762,7 +778,7 @@ pub const CreaturePool = struct {
                     .max_health = 40.0,
                     .reward_value = 125.0,
                     .contact_damage = 5.0,
-                });
+                }) orelse return;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x1C => {
@@ -799,7 +815,7 @@ pub const CreaturePool = struct {
                         .size = 40.0,
                         .contact_damage = 20.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_link;
                 self.entries[parent_idx].pos.x = narrowF32(call.pos.x + 256.0);
@@ -827,7 +843,7 @@ pub const CreaturePool = struct {
                         0,
                         false,
                         false,
-                    );
+                    ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.orbit_link;
                     self.entries[child_idx].link_index = @intCast(chain_prev);
                     self.entries[child_idx].orbit_angle = std.math.pi;
@@ -1064,7 +1080,7 @@ pub const CreaturePool = struct {
                     spawn_mod.CreatureFlags.bonus_on_death,
                     true,
                     false,
-                );
+                ) orelse return;
                 self.entries[idx].link_index = packBonusOnDeathArgs(.weapon, 5);
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
@@ -1129,7 +1145,7 @@ pub const CreaturePool = struct {
                         .size = 50.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
@@ -1153,7 +1169,7 @@ pub const CreaturePool = struct {
                             0,
                             true,
                             false,
-                        );
+                        ) orelse break;
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
@@ -1183,7 +1199,7 @@ pub const CreaturePool = struct {
                         .size = 60.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
@@ -1207,7 +1223,7 @@ pub const CreaturePool = struct {
                             0,
                             true,
                             false,
-                        );
+                        ) orelse break;
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
@@ -1237,7 +1253,7 @@ pub const CreaturePool = struct {
                         .size = 64.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
@@ -1261,7 +1277,7 @@ pub const CreaturePool = struct {
                             0,
                             true,
                             false,
-                        );
+                        ) orelse break;
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
@@ -1291,7 +1307,7 @@ pub const CreaturePool = struct {
                         .size = 60.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
@@ -1315,7 +1331,7 @@ pub const CreaturePool = struct {
                             0,
                             true,
                             false,
-                        );
+                        ) orelse break;
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.link_guard;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
@@ -1345,7 +1361,7 @@ pub const CreaturePool = struct {
                         .size = 40.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
                 self.entries[parent_idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
 
@@ -1368,7 +1384,7 @@ pub const CreaturePool = struct {
                             0,
                             true,
                             false,
-                        );
+                        ) orelse break;
                         self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link;
                         self.entries[child_idx].link_index = @intCast(parent_idx);
                         self.entries[child_idx].target_offset = .{
@@ -1396,7 +1412,7 @@ pub const CreaturePool = struct {
                         .size = 55.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
 
                 const angle_step: f32 = (2.0 * std.math.pi) / 5.0;
@@ -1417,7 +1433,7 @@ pub const CreaturePool = struct {
                         0,
                         false,
                         false,
-                    );
+                    ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
                     self.entries[child_idx].link_index = 0;
                     self.entries[child_idx].target_offset = .{
@@ -1476,7 +1492,7 @@ pub const CreaturePool = struct {
                         .size = 38.0,
                         .contact_damage = 3.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
             },
@@ -1521,7 +1537,7 @@ pub const CreaturePool = struct {
                         .size = 50.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_ai7_orbiter_tint_g) % 5;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.hold_timer;
@@ -1567,7 +1583,7 @@ pub const CreaturePool = struct {
                     .max_health = 50.0,
                     .reward_value = 433.0,
                     .contact_damage = 10.0,
-                });
+                }) orelse return;
                 self.entries[idx].link_index = 0;
             },
             0x39 => {
@@ -1589,7 +1605,7 @@ pub const CreaturePool = struct {
                     .max_health = 4.0,
                     .reward_value = 50.0,
                     .contact_damage = 10.0,
-                });
+                }) orelse return;
                 self.entries[idx].link_index = 0;
             },
             @intFromEnum(spawn_mod.SpawnId.spider_sp2_splitter_01) => {
@@ -1627,7 +1643,7 @@ pub const CreaturePool = struct {
                     spawn_mod.CreatureFlags.ranged_attack_shock,
                     true,
                     false,
-                );
+                ) orelse return;
                 self.entries[idx].orbit_angle = 0.9;
                 setRangedProjectileType(
                     &self.entries[idx],
@@ -1648,7 +1664,7 @@ pub const CreaturePool = struct {
                         .size = 70.0,
                         .contact_damage = 20.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
@@ -1670,7 +1686,7 @@ pub const CreaturePool = struct {
                     .max_health = 200.0,
                     .reward_value = 200.0,
                     .contact_damage = 20.0,
-                });
+                }) orelse return;
                 self.entries[idx].ai_mode = spawn_mod.CreatureAiMode.chase_player;
                 self.entries[idx].link_index = 0;
                 self.entries[idx].orbit_angle = 0.4;
@@ -1789,7 +1805,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
-                });
+                }) orelse return;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x33 => {
@@ -1816,7 +1832,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
-                });
+                }) orelse return;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x34 => {
@@ -1843,7 +1859,7 @@ pub const CreaturePool = struct {
                     .max_health = health,
                     .reward_value = reward_value,
                     .contact_damage = contact_damage,
-                });
+                }) orelse return;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3D => {
@@ -1867,7 +1883,7 @@ pub const CreaturePool = struct {
                     .max_health = 70.0,
                     .reward_value = 120.0,
                     .contact_damage = contact_damage,
-                });
+                }) orelse return;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
             0x3E => {
@@ -1883,7 +1899,7 @@ pub const CreaturePool = struct {
                         .size = 64.0,
                         .contact_damage = 40.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
@@ -1900,7 +1916,7 @@ pub const CreaturePool = struct {
                         .size = 35.0,
                         .contact_damage = 20.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
@@ -1917,7 +1933,7 @@ pub const CreaturePool = struct {
                         .size = 45.0,
                         .contact_damage = 5.0,
                     },
-                );
+                ) orelse return;
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
@@ -2916,7 +2932,7 @@ pub const CreaturePool = struct {
         pos: state_mod.Vec2,
         heading: f32,
         stats: SpawnStats,
-    ) usize {
+    ) ?usize {
         return self.spawnFromStatsWithFlags(rng, pos, heading, stats, 0, true, false);
     }
 
@@ -2930,7 +2946,7 @@ pub const CreaturePool = struct {
         limit: i32,
         interval: f32,
         child_template_id: i32,
-    ) usize {
+    ) ?usize {
         const parent_idx = self.spawnFromStatsWithFlags(
             rng,
             .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -2939,7 +2955,7 @@ pub const CreaturePool = struct {
             flags,
             true,
             call.template_id == @intFromEnum(spawn_mod.SpawnId.alien_spawner_ring_24_0e),
-        );
+        ) orelse return null;
         self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
         const slot_idx = self.registerSpawnSlot(parent_idx, timer, limit, interval, child_template_id);
         self.entries[parent_idx].link_index = slot_idx;
@@ -2955,12 +2971,13 @@ pub const CreaturePool = struct {
         flags: u32,
         set_heading: bool,
         preserve_max_health: bool,
-    ) usize {
+    ) ?usize {
+        const slot = self.findFreeSlot() orelse return null;
         const phase_seed = drawAllocPhaseSeed(rng);
         if (set_heading) {
             _ = drawResolvedSpawnHeadingAfterAlloc(rng, heading);
         }
-        return self.spawnInit(.{
+        return self.spawnInitAt(slot, .{
             .origin_template_id = -1,
             .pos = .{
                 .x = pos.x,
@@ -3154,7 +3171,7 @@ pub const CreaturePool = struct {
             .max_health = health,
             .reward_value = reward_value,
             .contact_damage = contact_damage,
-        });
+        }) orelse return;
         if (creature_type == .spider_sp1) {
             self.entries[idx].link_index = 0;
         }
@@ -3888,7 +3905,7 @@ fn spawnSplitChildrenOnDeath(
 
     const heading_offsets = [_]f32{ -native_half_pi, native_half_pi };
     for (heading_offsets) |heading_offset| {
-        const child_idx = allocCreatureSlot(self, &state.rng);
+        const child_idx = allocCreatureSlot(self) orelse continue;
         // Native creature_alloc_slot draws a phase seed (rand & 0x17f) that the
         // struct copy from the parent immediately overwrites; only the draw
         // itself matters for the stream.
@@ -3922,23 +3939,8 @@ fn spawnSplitChildrenOnDeath(
 
 fn allocCreatureSlot(
     self: *CreaturePool,
-    rng: ?*spawn_mod.Crand,
-) usize {
-    var slot: usize = self.entries.len - 1;
-    for (self.entries, 0..) |entry, idx| {
-        if (!entry.active) {
-            slot = idx;
-            break;
-        }
-    }
-    if (slot == self.entries.len - 1 and self.entries[slot].active) {
-        if (rng) |r| {
-            if (self.entries.len == 0) return 0;
-            const roll: u32 = @intCast(r.rand());
-            slot = @intCast(roll % @as(u32, @intCast(self.entries.len)));
-        }
-    }
-    return slot;
+) ?usize {
+    return self.findFreeSlot();
 }
 
 fn emitBonusOnKillBurst(
@@ -4705,9 +4707,20 @@ test "bloody mess quick learner reward is still doubled by double experience bon
     try std.testing.expectEqual(@as(i32, -1), pool.spawn_slots[0].owner_creature);
 }
 
-test "split-on-death children use original source when first child reuses source slot" {
+test "split-on-death uses only the remaining free creature slot" {
     const seed: u32 = 243_988;
-    const sibling_idx: usize = 244;
+    const child_idx: usize = 244;
+
+    const AllocationTrace = struct {
+        const Self = @This();
+
+        count: usize = 0,
+
+        fn onDraw(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            if (draw.caller == rng_callers.creature_alloc_slot_phase_seed) self.count += 1;
+        }
+    };
 
     var pool: CreaturePool = .{};
     var effects: effects_mod.EffectPool = .{};
@@ -4721,6 +4734,7 @@ test "split-on-death children use original source when first child reuses source
             .reward_value = 50.0,
         };
     }
+    pool.entries[child_idx].active = false;
     pool.entries[0] = .{
         .active = true,
         .flags = spawn_mod.CreatureFlags.split_on_death,
@@ -4731,19 +4745,24 @@ test "split-on-death children use original source when first child reuses source
         .move_speed = 2.0,
         .contact_damage = 10.0,
     };
+    const untouched_live_entry = pool.entries[max_creatures - 1];
 
     var state = state_mod.GameplayState.init(seed);
+    var trace: AllocationTrace = .{};
+    state.rng.setTraceSink(&trace, AllocationTrace.onDraw, false);
     spawnSplitChildrenOnDeath(&pool, &state, &pool.entries[0]);
 
-    try expectFloatClose(32.0, pool.entries[0].size);
-    try expectFloatClose(32.0, pool.entries[sibling_idx].size);
-    try expectFloatClose(100.0, pool.entries[0].hp);
-    try expectFloatClose(100.0, pool.entries[sibling_idx].hp);
-    try expectFloatClose(87.791496, pool.entries[0].reward_value);
-    try expectFloatClose(87.791496, pool.entries[sibling_idx].reward_value);
+    try expectFloatClose(40.0, pool.entries[0].size);
+    try expectFloatClose(-5.0, pool.entries[0].hp);
+    try expectFloatClose(131.687241, pool.entries[0].reward_value);
+    try expectFloatClose(32.0, pool.entries[child_idx].size);
+    try expectFloatClose(100.0, pool.entries[child_idx].hp);
+    try expectFloatClose(87.791496, pool.entries[child_idx].reward_value);
+    try std.testing.expectEqual(@as(usize, 1), trace.count);
+    try std.testing.expectEqualDeep(untouched_live_entry, pool.entries[max_creatures - 1]);
 }
 
-test "explosion xp uses pre-split reward when source slot is reused by split child" {
+test "explosion xp uses pre-split reward when a full pool declines children" {
     const seed: u32 = 243_988;
     const sibling_idx: usize = 244;
 
@@ -4768,6 +4787,7 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         .contact_damage = 10.0,
         .vel = .{ .x = 10.0, .y = 20.0 },
     };
+    const sibling_before = pool.entries[sibling_idx];
 
     var state = state_mod.GameplayState.init(seed);
     var effects: effects_mod.EffectPool = .{};
@@ -4796,13 +4816,11 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         null,
     );
     try std.testing.expectEqual(@as(i32, 171), gained);
-    // Both split children copy the velocity after the first impulse. Native
-    // applies the doubled lethal impulse only after creature_handle_death, so
-    // it reaches the child that reused the source index but not its sibling.
+    // The lethal impulse still applies to the source record, but a failed
+    // one-past-the-pool allocation must not redirect it into a live sibling.
     try expectFloatClose(7.0, pool.entries[0].vel.x);
     try expectFloatClose(14.0, pool.entries[0].vel.y);
-    try expectFloatClose(9.0, pool.entries[sibling_idx].vel.x);
-    try expectFloatClose(18.0, pool.entries[sibling_idx].vel.y);
+    try std.testing.expectEqualDeep(sibling_before, pool.entries[sibling_idx]);
 }
 
 test "applyDamage skips death side effects when lifecycle is already below alive sentinel" {
@@ -4948,7 +4966,7 @@ test "spawn init preserves recycled force target" {
         .type_id = .alien,
         .health = 40.0,
         .max_health = 40.0,
-    });
+    }).?;
 
     try std.testing.expectEqual(@as(usize, 0), idx);
     try std.testing.expectEqual(@as(i32, 1), pool.entries[idx].force_target);
@@ -4966,9 +4984,47 @@ test "spawn init stores creature tint" {
     const idx = pool.spawnInit(.{
         .pos = .{ .x = 100.0, .y = 200.0 },
         .tint = tint,
-    });
+    }).?;
 
     try std.testing.expectEqual(tint, pool.entries[idx].tint);
+}
+
+test "full creature pool declines spawns without replacing a live entry" {
+    var pool: CreaturePool = .{};
+    for (&pool.entries, 0..) |*entry, idx| {
+        entry.* = .{
+            .active = true,
+            .type_id = @intCast(idx),
+            .hp = @floatFromInt(idx + 1),
+            .size = 32.0,
+        };
+    }
+    const final_entry_before = pool.entries[max_creatures - 1];
+
+    try std.testing.expectEqual(
+        @as(?usize, null),
+        pool.spawnInit(.{
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .type_id = .zombie,
+            .health = 9999.0,
+            .size = 99.0,
+        }),
+    );
+    try std.testing.expectEqualDeep(final_entry_before, pool.entries[max_creatures - 1]);
+
+    var rng = spawn_mod.Crand.init(0xBEEF);
+    const rng_state_before = rng.state;
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp1_random_03),
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = random_heading_sentinel,
+        },
+        &rng,
+    );
+    try std.testing.expectEqual(rng_state_before, rng.state);
+    try std.testing.expectEqualDeep(final_entry_before, pool.entries[max_creatures - 1]);
+    try std.testing.expectEqual(max_creatures, pool.activeCount());
 }
 
 test "pool residue restores creature tint" {
@@ -6244,12 +6300,6 @@ test "template spawn child references resolve to known template ids" {
             try std.testing.expect(isKnownTemplateId(slot.child_template_id));
         }
     }
-}
-
-fn isKnownTemplateId(template_id: i32) bool {
-    return template_id == 0x00 or
-        template_id == 0x01 or
-        (template_id >= 0x03 and template_id <= 0x43);
 }
 
 test "creature update applies contact damage and movement" {

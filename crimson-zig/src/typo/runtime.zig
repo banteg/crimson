@@ -125,6 +125,7 @@ pub fn midStep(
     }
 
     for (batch.slice()) |call| {
+        if (creatures.activeCount() == creatures_mod.max_creatures) break;
         // creature_spawn_tinted allocates via creature_alloc_slot, which seeds
         // phase_seed = crt_rand() & 0x17f before the heading/size draws.
         const phase_seed: i32 = @intCast(state.rng.randTagged(rng_callers.creature_alloc_slot_phase_seed) & 0x17f);
@@ -153,7 +154,7 @@ pub fn midStep(
             .size = size,
             .contact_damage = 100.0,
             .tint = .{ call.tint_r, call.tint_g, call.tint_b, 1.0 },
-        });
+        }) orelse continue;
         active_mask[creature_idx] = true;
         _ = state.typo.names.assignRandom(
             creature_idx,
