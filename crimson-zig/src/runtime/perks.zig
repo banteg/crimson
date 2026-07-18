@@ -809,9 +809,7 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
     if (!perkActive(perk_player, PerkId.final_revenge)) return;
 
     effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
-    const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_spawn_guard;
 
     const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
     for (creatures.entries, 0..) |creature, idx| {
@@ -837,6 +835,7 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
             null,
         );
     }
+    state.bonus_spawn_guard = false;
     state.sfx_queue.append(.explosion_large);
     state.sfx_queue.append(.shockwave);
 }
@@ -1885,6 +1884,7 @@ test "evil eyes targeting assigns each alive owner" {
 
 test "final revenge uses native blast arithmetic and explosion scale" {
     var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 0.0 },
     };
@@ -1917,6 +1917,7 @@ test "final revenge uses native blast arithmetic and explosion scale" {
 
     try std.testing.expectEqual(@as(u32, 0x460e568a), @as(u32, @bitCast(creatures.entries[0].hp)));
     try std.testing.expectEqual(@as(f32, 45.0), effects.entries[0].scale_step);
+    try std.testing.expect(!state.bonus_spawn_guard);
 }
 
 test "final revenge preserve mode uses player one source and strict lethal boundary" {

@@ -78,7 +78,6 @@ def apply_final_revenge_on_player_death(
         detail_preset=int(detail_preset),
     )
 
-    prev_guard = bool(state.bonus_spawn_guard)
     state.bonus_spawn_guard = True
     creature_damage_runtime = _FinalRevengeCreatureDamageRuntime(
         state=state,
@@ -120,7 +119,7 @@ def apply_final_revenge_on_player_death(
             creature_damage_runtime=creature_damage_runtime,
         )
 
-    state.bonus_spawn_guard = prev_guard
+    state.bonus_spawn_guard = False
     state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
     state.sfx_queue.append(SfxId.SHOCKWAVE)
 

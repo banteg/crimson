@@ -144,6 +144,7 @@ def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> No
 
 def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
     state = GameplayState()
+    state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2())
     player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
 
@@ -176,6 +177,7 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
     )
 
     assert damage_amounts == [890.364990234375]
+    assert not state.bonus_spawn_guard
 
 
 @pytest.mark.parametrize(

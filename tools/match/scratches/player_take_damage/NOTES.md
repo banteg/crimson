@@ -8,6 +8,12 @@ shape around dodge handling, the strict `health < 0.0f` lethal branch, the
 player-1 pre-hit alive guard, Final Revenge's inline radius blast, and the
 post-hit heading/spread updates.
 
+Final Revenge sets `bonus_spawn_guard` to `1` at `0x00426004`, scans the full
+384-entry creature pool, then unconditionally stores `0` at `0x004260ef`
+before its sound effects. This is a literal reset, not restoration of an
+incoming guard value; Python and Zig preserve that transition and exercise it
+from an initially set guard.
+
 Every perk query is a call to the global `perk_count_get`; unlike the indexed
 health, shield, reload, position, and timer fields, it always reads player 1.
 This includes Death Clock, Tough Reloader, Thick Skinned, Ninja, Dodger,
