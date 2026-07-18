@@ -14,12 +14,15 @@ def apply_breathing_room(ctx: PerkApplyCtx) -> None:
         reduction = x87_pc24_mul(health, _BREATHING_ROOM_FRACTION)
         player.health = x87_pc24_sub(health, reduction)
 
-    frame_dt = ctx.frame_dt()
+    frame_dt = f32(ctx.frame_dt())
     creatures = ctx.creatures
     if creatures is not None:
         for creature in creatures:
             if creature.active:
-                creature.lifecycle_stage = float(creature.lifecycle_stage) - frame_dt
+                creature.lifecycle_stage = x87_pc24_sub(
+                    f32(creature.lifecycle_stage),
+                    frame_dt,
+                )
 
     ctx.state.bonus_spawn_guard = False
 

@@ -47,6 +47,17 @@ def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
     ]
 
 
+def test_bandage_rounds_native_health_store() -> None:
+    state = GameplayState()
+    state.preserve_bugs = True
+    state.rng = ScriptedCrand(2, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = PlayerState(index=0, pos=Vec2(), health=0.1)
+
+    perk_apply(state, [player], PerkId.BANDAGE)
+
+    assert player.health == 0.30000001192092896
+
+
 def test_bandage_preserve_bugs_draws_for_dead_players() -> None:
     state = GameplayState()
     state.preserve_bugs = True

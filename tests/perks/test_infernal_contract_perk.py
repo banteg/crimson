@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.perks.state import PerkSelectionState
@@ -20,5 +21,5 @@ def test_infernal_contract_grants_levels_and_sets_low_health() -> None:
     assert owner.level == 8
     assert perk_state.pending_count == 3
     assert perk_state.choices_dirty is True
-    assert owner.health == 0.1
-    assert other.health == 0.1
+    assert owner.health == f32(0.1)
+    assert other.health == f32(0.1)

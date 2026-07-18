@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ...rng_caller_static import RngCallerStatic
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
@@ -19,12 +20,13 @@ def apply_bandage(ctx: PerkApplyCtx) -> None:
             % 50
             + 1,
         )
+        health = f32(player.health)
         if ctx.state.preserve_bugs:
             # Original exe behavior (likely bug): health multiplier.
-            player.health = min(100.0, player.health * amount)
+            player.health = min(100.0, x87_pc24_mul(health, amount))
         else:
             # Intended behavior from in-game text: restore up to 50% HP.
-            player.health = min(100.0, player.health + amount)
+            player.health = min(100.0, x87_pc24_add(health, amount))
         ctx.state.effects.spawn_burst(
             pos=player.pos,
             count=8,

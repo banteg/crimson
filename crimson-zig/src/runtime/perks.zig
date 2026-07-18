@@ -420,7 +420,10 @@ pub fn applyPerkWithContext(
                     // Native computes `h - h * 0.33333334f` and stores f32. Its
                     // `= 1.0` clamp only fires when the result is <= 0, which
                     // cannot happen for positive health - dead code, no floor.
-                    player.health = narrowF32(player.health - player.health * 0.33333334);
+                    player.health = native_math.pc24Sub(
+                        player.health,
+                        native_math.pc24Mul(player.health, 0.33333334),
+                    );
                 }
             }
         },
@@ -470,9 +473,9 @@ pub fn applyPerkWithContext(
                 if (!state.preserve_bugs and player.health <= 0.0) continue;
                 const amount: f32 = @floatFromInt(state.rng.randTagged(rng_callers.perk_apply_bandage_heal) % 50 + 1);
                 if (state.preserve_bugs) {
-                    player.health = @min(100.0, narrowF32(player.health * amount));
+                    player.health = @min(100.0, native_math.pc24Mul(player.health, amount));
                 } else {
-                    player.health = @min(100.0, narrowF32(player.health + amount));
+                    player.health = @min(100.0, native_math.pc24Add(player.health, amount));
                 }
                 effects.spawnBurst(
                     state,
@@ -525,7 +528,7 @@ fn applyPerkImmediateCreatureEffectsWithEffects(
         PerkId.breathing_room => {
             for (&creatures.entries) |*creature| {
                 if (!creature.active) continue;
-                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt_frame);
+                creature.lifecycle_stage = native_math.pc24Sub(creature.lifecycle_stage, dt_frame);
             }
         },
         PerkId.lifeline_50_50 => {
@@ -1656,7 +1659,7 @@ test "breathing room applies immediate creature lifecycle step when context is p
     try std.testing.expectApproxEqAbs(@as(f32, 3.3), creatures.entries[0].lifecycle_stage, 1e-6);
 }
 
-test "thick skinned clamps health floor at one" {
+test "thick skinned keeps two thirds without a health floor" {
     var state = state_mod.GameplayState.init(1);
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{}, .health = 90.0 },
@@ -1667,6 +1670,19 @@ test "thick skinned clamps health floor at one" {
     try std.testing.expectApproxEqAbs(@as(f32, 60.0), players[0].health, 1e-4);
     // Native has no health floor: low-health players keep 2/3 of their health.
     try std.testing.expectApproxEqAbs(@as(f32, 0.8), players[1].health, 1e-4);
+}
+
+test "thick skinned rounds multiply before health subtraction" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = @bitCast(@as(u32, 0x41CC0E4A)) },
+    };
+
+    try applyPerk(&state, players[0..], PerkId.thick_skinned);
+    try std.testing.expectEqual(
+        @as(f32, @bitCast(@as(u32, 0x41880986))),
+        players[0].health,
+    );
 }
 
 test "plaguebearer apply marks all players active" {

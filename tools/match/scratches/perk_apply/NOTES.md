@@ -7,6 +7,13 @@ increments player zero's count, applies a mutually exclusive first group, then
 runs the independent contract, health, ammo, bandage, clip-size, and
 plaguebearer effects in order.
 
+The live x87 stores also pin the arithmetic boundaries: Thick Skinned rounds
+its multiply before subtracting health (`0x004056cd..0x004056e6`), Breathing
+Room stores each active creature lifecycle subtraction (`0x0040574a..0x00405752`),
+and Bandage stores the multiplied health before its clamp (`0x004058d5..0x004058e3`).
+Both ports now route these operations through the shared PC=24 helpers; the
+Python port also stores Infernal Contract's literal as the native f32 value.
+
 The reconstruction preserves the native quirks instead of the rewrite's
 intentional fixes: Lifeline walks all 384 creature slots and directly disables
 every other eligible entry; Breathing Room reduces every configured player and

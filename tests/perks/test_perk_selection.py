@@ -3,6 +3,7 @@ from __future__ import annotations
 import crimson.perks.selection as perk_selection_module
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.selection import (
     PERK_ID_MAX,
@@ -50,7 +51,7 @@ def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
 
     assert picked == PerkId.INFERNAL_CONTRACT
     assert player.level == 4
-    assert player.health == 0.1
+    assert player.health == f32(0.1)
     assert perk_state.pending_count == 3
     assert perk_state.choices_dirty is True
 

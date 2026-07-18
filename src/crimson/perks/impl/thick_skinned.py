@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ...math_parity import f32
+from ...math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from ..ids import PerkId
 from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.hook_types import PerkHooks
@@ -15,8 +15,11 @@ def apply_thick_skinned(ctx: PerkApplyCtx) -> None:
             # Native computes `h - h * 0.33333334f` and stores f32. Its `= 1.0`
             # clamp only fires when the result is <= 0, which cannot happen for
             # positive health - dead code, so no floor here.
-            health = float(f32(player.health))
-            player.health = float(f32(health - health * _THICK_SKINNED_FRACTION))
+            health = f32(player.health)
+            player.health = x87_pc24_sub(
+                health,
+                x87_pc24_mul(health, _THICK_SKINNED_FRACTION),
+            )
 
 
 HOOKS = PerkHooks(

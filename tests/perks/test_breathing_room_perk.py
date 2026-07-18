@@ -43,3 +43,19 @@ def test_perk_apply_breathing_room_rounds_each_native_float_operation() -> None:
     perk_apply(state, [player], PerkId.BREATHING_ROOM)
 
     assert player.health == f32(0.3333333134651184)
+
+
+def test_perk_apply_breathing_room_rounds_creature_lifecycle_store() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(), health=90.0)
+    creature = CreatureState(active=True, lifecycle_stage=1.2345678)
+
+    perk_apply(
+        state,
+        [player],
+        PerkId.BREATHING_ROOM,
+        dt=0.1,
+        creatures=[creature],
+    )
+
+    assert creature.lifecycle_stage == f32(f32(1.2345678) - f32(0.1))
