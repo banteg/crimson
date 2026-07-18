@@ -901,6 +901,43 @@ test "perk target search rejects native radius equality" {
     try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
 }
 
+test "particle hits reject native radius equality" {
+    var state = cz.state.GameplayState.init(1);
+    var players = [_]cz.state.PlayerState{.{ .index = 0, .pos = .{} }};
+    var creatures: cz.creatures.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 17.0, .y = 0.0 },
+        .lifecycle_stage = cz.lifecycle.CreatureLifecycle.alive,
+        .size = 42.0,
+        .hp = 100.0,
+    };
+    var particles: cz.particles.ParticlePool = .{};
+    particles.entries[0] = .{
+        .active = true,
+        .render_flag = true,
+        .intensity = 1.11,
+        .style_id = .bubblegun,
+    };
+    var bonuses: cz.bonuses.BonusPool = .{};
+    var sprite_effects: cz.effects.SpriteEffectPool = .{};
+    var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+
+    particles.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &sprite_effects,
+        &terrain_fx,
+        1.0,
+        1024.0,
+    );
+
+    try std.testing.expect(particles.entries[0].render_flag);
+    try std.testing.expectEqual(@as(i32, -1), particles.entries[0].target_id);
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

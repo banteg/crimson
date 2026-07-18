@@ -334,13 +334,12 @@ fn creatureFindInRadius(
         if (!creature.active) continue;
         if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
 
-        const size = narrowF32(creature.size);
-        const dx = narrowF32(creature.pos.x - pos.x);
-        const dy = narrowF32(creature.pos.y - pos.y);
-        const dist_sq = dx * dx + dy * dy;
-        const dist = std.math.sqrt(dist_sq) - radius;
-        const threshold = size * 0.14285715 + 3.0;
-        if (threshold < dist) continue;
+        if (!runtime_helpers.withinNativeFindRadius(
+            pos,
+            creature.pos,
+            radius,
+            creature.size,
+        )) continue;
         return idx;
     }
     return null;

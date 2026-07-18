@@ -17,4 +17,6 @@ matching the native loop back-edge and block order exactly.
 
 The radius comparison is strict: `distance - radius < size * 0.14285715f +
 3.0f`. Python and Zig now route perk targeting through the shared PC=24
-predicate, including rejection when the two sides are exactly equal.
+predicate, including rejection when the two sides are exactly equal. Zig's
+damaging-particle collision path now reuses the same predicate instead of its
+former equality-accepting duplicate.
