@@ -929,7 +929,7 @@ def player_update(
         preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
 
     reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
-    if player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
+    if reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
         player.weapon.ammo = float(player.weapon.clip_size)
 
     if player.weapon.reload_timer > 0.0:

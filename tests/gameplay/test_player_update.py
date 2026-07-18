@@ -226,6 +226,27 @@ def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
     assert_float_close(player.weapon.ammo, 6.0)
 
 
+def test_player_update_preload_gate_ignores_reload_active_byte() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon=WeaponSlot(
+            weapon_id=WeaponId.ION_CANNON,
+            clip_size=6,
+            ammo=-1.0,
+            reload_active=False,
+            reload_timer=0.01,
+            reload_timer_max=3.0,
+            shot_cooldown=0.5,
+        ),
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
+
+    assert_float_close(player.weapon.ammo, 6.0)
+
+
 def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None:
     state = GameplayState()
     player = PlayerState(

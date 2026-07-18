@@ -234,7 +234,7 @@ pub fn stepPlayerForTickWithEffects(
         preload_dt = narrowF32(reload_scale * dt);
     }
     const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
-    if (player.weapon.reload_active and reload_timer_now > 0.0 and reload_preload_underflow < 0.0) {
+    if (reload_timer_now > 0.0 and reload_preload_underflow < 0.0) {
         player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
 
@@ -1203,6 +1203,40 @@ test "weapon runtime starts reload when ammo is depleted" {
     );
     try std.testing.expect(!player.weapon.reload_active);
     try std.testing.expectEqual(@as(f32, @floatFromInt(player.weapon.clip_size)), player.weapon.ammo);
+}
+
+test "reload preload gate ignores reload active byte" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{},
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.ion_cannon,
+            .clip_size = 6,
+            .ammo = -1.0,
+            .reload_active = false,
+            .reload_timer = 0.01,
+            .reload_timer_max = 3.0,
+            .shot_cooldown = 0.5,
+        },
+    };
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        0.016,
+    );
+
+    try expectFloatClose(6.0, player.weapon.ammo);
 }
 
 test "manual reload starts even when clip is full" {

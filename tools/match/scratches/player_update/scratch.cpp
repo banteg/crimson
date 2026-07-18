@@ -812,7 +812,7 @@ extern "C" void player_update(void)
     }
 
     if (player->reload_timer - frame_dt < 0.0f
-        && player->reload_timer >= 0.0f) {
+        && player->reload_timer > 0.0f) {
         player->ammo = player->clip_size;
     }
 

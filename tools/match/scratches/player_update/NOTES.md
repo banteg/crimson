@@ -56,10 +56,18 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=39.10% prefix=7/4206 target_insns=4206 candidate_insns=3814 refs=594/0/32
+match=39.13% prefix=7/4206 target_insns=4206 candidate_insns=3814 refs=594/0/32
 first_target=jne L3f7a
 first_candidate=jne L3a87
 ```
+
+The native reload preload gate at `0x00415037..0x00415069` first tests
+`reload_timer - frame_dt < 0`, then tests `reload_timer > 0`. It never reads
+the adjacent reload-active byte. Using the strict positive bound in the
+scratch recovers the native second comparison and raises the whole-function
+score from `39.10%` to `39.13%`. Both ports likewise key the preload only from
+the positive timer crossing, including when a stale reload-active byte is
+clear.
 
 The low-health pulse at `0x00413795..0x00413830` constructs its blood offset
 in explicit vector phases: evaluate the heading-relative cosine and sine,
