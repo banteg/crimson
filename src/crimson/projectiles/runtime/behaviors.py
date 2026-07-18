@@ -70,9 +70,9 @@ _ProjectileHitPerkHook = Callable[[_ProjectileHitPerkCtx], None]
 
 
 def _projectile_hit_perk_poison_bullets(ctx: _ProjectileHitPerkCtx) -> None:
-    # Native gates on the global perk count, so the rand is drawn for every
-    # projectile hit while any player owns the perk - including creature-owned
-    # projectiles such as splitter children and shock-chain segments.
+    # Native gates on player slot zero, so the rand is drawn for every projectile
+    # hit while that player owns the perk - including creature-owned projectiles
+    # such as splitter children and shock-chain segments.
     if (
         ctx.poison_bullets_active
         and (ctx.rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7) == 1

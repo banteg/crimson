@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
+from crimson.gameplay import GameplayState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
@@ -35,7 +38,11 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
     assert_float_close(creature.hp, 86.0)
 
 
-def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
+def _step_pistol_projectile(
+    *,
+    barrel_greaser_player: int | None,
+    preserve_bugs: bool = False,
+) -> float:
     pool = ProjectilePool(size=1)
     travel_budget = float(weapon_entry_for_projectile_type_id(ProjectileTemplateId.PISTOL).travel_budget)
     pool.spawn(
@@ -46,9 +53,10 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
         travel_budget=travel_budget,
     )
 
-    players = [PlayerState(index=0, pos=Vec2())]
-    if barrel_greaser_active:
-        players[0].perk_counts[int(PerkId.BARREL_GREASER)] = 1
+    state = GameplayState(preserve_bugs=preserve_bugs)
+    players = [PlayerState(index=0, pos=Vec2()), PlayerState(index=1, pos=Vec2())]
+    if barrel_greaser_player is not None:
+        players[barrel_greaser_player].perk_counts[int(PerkId.BARREL_GREASER)] = 1
 
     pool.step(
         PrimaryStepCtx(
@@ -57,6 +65,7 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
             options=make_projectile_update_options(
                 world_size=10000.0,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+                runtime_state=state,
                 players=players,
             ),
         ),
@@ -66,10 +75,25 @@ def _step_pistol_projectile(*, barrel_greaser_active: bool) -> float:
 
 
 def test_barrel_greaser_doubles_projectile_speed_steps() -> None:
-    base_x = _step_pistol_projectile(barrel_greaser_active=False)
-    greased_x = _step_pistol_projectile(barrel_greaser_active=True)
+    base_x = _step_pistol_projectile(barrel_greaser_player=None)
+    greased_x = _step_pistol_projectile(barrel_greaser_player=0)
     # Movement is flushed from an accumulator in chunks, so doubling internal
     # step count does not map to an exact x2 world-space displacement.
     assert_float_close(base_x, 18.240001678466797)
     assert_float_close(greased_x, 35.519996643066406)
     assert greased_x > base_x
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_x"),
+    [
+        (True, 18.240001678466797),
+        (False, 35.519996643066406),
+    ],
+)
+def test_barrel_greaser_selects_native_player_zero_or_corrected_any_player(
+    preserve_bugs: bool,
+    expected_x: float,
+) -> None:
+    pos_x = _step_pistol_projectile(barrel_greaser_player=1, preserve_bugs=preserve_bugs)
+    assert_float_close(pos_x, expected_x)

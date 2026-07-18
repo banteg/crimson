@@ -42,6 +42,17 @@ path, which is additionally gated by the freeze timer. This condition ordering
 is semantically equivalent to checking the inactive arm first, but reproduces
 the native block layout without a source-level jump.
 
+Live callsite inspection also establishes that all six perk queries use the
+singleton `perk_count_get` helper, which returns
+`player_state_table[0].perk_counts[perk_id]`: Ion Gun Master at `0x00420bb5`,
+Barrel Greaser at `0x00420d97`, Poison Bullets at `0x00420e73`, and Bloody
+Mess / Quick Learner at `0x00420fbf`, `0x004210a7`, and `0x0042175a`. The last
+query's return value is deliberately unused by the native Gauss / Fire Bullets
+effect branch. Both ports now use player slot zero for the observable gates in
+bug-compatible mode. Outside it, Ion Gun Master, Barrel Greaser, and Poison
+Bullets retain their any-player behavior, while Zig retains owner-based Bloody
+Mess presentation; Python presentation was already player-zero.
+
 The secondary detonation path reuses `vel_x` as expansion time and `vel_y` as
 scale, applies `frame_dt * scale * 700` damage inside `scale * time * 80`, and
 keeps processing its TTL check after a hit. The latter can overwrite a freshly

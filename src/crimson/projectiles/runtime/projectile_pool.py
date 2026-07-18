@@ -215,7 +215,10 @@ class ProjectilePool:
         poison_idx = int(PerkId.POISON_BULLETS)
         barrel_idx = int(PerkId.BARREL_GREASER)
         ion_idx = int(PerkId.ION_GUN_MASTER)
-        for player in players:
+        # Native's perk_count_get helper always reads player slot zero. Keep the
+        # generalized any-player behavior available outside bug-compatible mode.
+        perk_players = players[:1] if runtime_state.preserve_bugs else players
+        for player in perk_players:
             perk_counts = player.perk_counts
 
             if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:

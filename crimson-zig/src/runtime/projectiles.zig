@@ -164,7 +164,10 @@ pub const ProjectilePool = struct {
         var barrel_greaser_active = false;
         var ion_gun_master_active = false;
         var ion_scale: f32 = 1.0;
-        for (players) |*player| {
+        // Native's perk_count_get helper always reads player slot zero. Keep the
+        // generalized any-player behavior outside bug-compatible mode.
+        const perk_players = if (state.preserve_bugs and players.len > 0) players[0..1] else players;
+        for (perk_players) |*player| {
             if (perks.perkActive(player, PerkId.barrel_greaser)) {
                 barrel_greaser_active = true;
             }
@@ -373,12 +376,15 @@ pub const ProjectilePool = struct {
 
                 const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
                 const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
+                const presentation_perk_player = if (state.preserve_bugs and players.len > 0)
+                    &players[0]
+                else
+                    presentation_player;
 
-                // Native gates on the global perk count, so the rand is drawn for
-                // every projectile hit while any player owns the perk - including
-                // creature-owned projectiles such as splitter children.
+                // Native gates on player slot zero for every projectile hit,
+                // including creature-owned splitter children.
                 var poison_bullets_active = false;
-                for (players) |*player| {
+                for (perk_players) |*player| {
                     if (perks.perkActive(player, PerkId.poison_bullets)) {
                         poison_bullets_active = true;
                         break;
@@ -390,7 +396,7 @@ pub const ProjectilePool = struct {
                         creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
-                if (presentation_player) |player| {
+                if (presentation_perk_player) |player| {
                     emitProjectileHitPresentationPre(
                         state,
                         player,

@@ -510,6 +510,180 @@ test "native player update uses player zero perk source" {
     );
 }
 
+test "projectile movement and ion perk sources follow bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var state = cz.state.GameplayState.init(1);
+        state.preserve_bugs = preserve_bugs;
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{} },
+            .{ .index = 1, .pos = .{} },
+        };
+        players[1].perk_counts.set(.barrel_greaser, 1);
+        players[1].perk_counts.set(.ion_gun_master, 1);
+        var creatures: cz.creatures.CreaturePool = .{};
+        var bonuses: cz.bonuses.BonusPool = .{};
+
+        var movement_pool: cz.projectiles.ProjectilePool = .{};
+        _ = movement_pool.spawn(
+            .{},
+            std.math.pi / 2.0,
+            @intFromEnum(cz.game_ids.ProjectileTypeId.pistol),
+            .{ .player = .{ .index = 1 } },
+            cz.weapon_data.weapon_stats.get(.pistol).travel_budget,
+            false,
+        );
+        _ = movement_pool.update(
+            &state,
+            players[0..],
+            &creatures,
+            &bonuses,
+            0.016,
+            10_000.0,
+        );
+        try std.testing.expectApproxEqAbs(
+            if (preserve_bugs) @as(f32, 18.240001678466797) else @as(f32, 35.519996643066406),
+            movement_pool.entries[0].pos.x,
+            1e-6,
+        );
+
+        var ion_creatures: cz.creatures.CreaturePool = .{};
+        _ = ion_creatures.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 105.0, .y = 0.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .size = 50.0,
+            .move_speed = 0.0,
+            .health = 10.0,
+            .max_health = 10.0,
+            .reward_value = 50.0,
+            .contact_damage = 4.0,
+        });
+        var ion_bonuses: cz.bonuses.BonusPool = .{};
+        var ion_pool: cz.projectiles.ProjectilePool = .{};
+        const ion_idx = ion_pool.spawn(
+            .{},
+            0.0,
+            @intFromEnum(cz.game_ids.ProjectileTypeId.ion_rifle),
+            .{ .player = .{ .index = 1 } },
+            45.0,
+            false,
+        );
+        ion_pool.entries[ion_idx].life_timer = 0.39;
+        _ = ion_pool.update(
+            &state,
+            players[0..],
+            &ion_creatures,
+            &ion_bonuses,
+            0.016,
+            10_000.0,
+        );
+        try std.testing.expectEqual(!preserve_bugs, ion_creatures.entries[0].hp < 10.0);
+    }
+}
+
+test "projectile poison bullets source follows bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var state = cz.state.GameplayState.init(1);
+        state.preserve_bugs = preserve_bugs;
+        state.rng.state = 1;
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{ .x = 100.0, .y = 100.0 } },
+            .{ .index = 1, .pos = .{ .x = 100.0, .y = 100.0 } },
+        };
+        players[1].perk_counts.set(.poison_bullets, 1);
+        var creatures: cz.creatures.CreaturePool = .{};
+        _ = creatures.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 102.0, .y = 100.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = cz.spawn.CreatureFlags.anim_ping_pong,
+            .size = 44.0,
+            .move_speed = 0.0,
+            .health = 1000.0,
+            .max_health = 1000.0,
+            .reward_value = 50.0,
+            .contact_damage = 4.0,
+        });
+        var bonuses: cz.bonuses.BonusPool = .{};
+        var pool: cz.projectiles.ProjectilePool = .{};
+        _ = pool.spawn(
+            players[1].pos,
+            0.0,
+            @intFromEnum(cz.game_ids.ProjectileTypeId.pistol),
+            .{ .player = .{ .index = 1 } },
+            45.0,
+            false,
+        );
+
+        const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
+        try std.testing.expect(tick.hit_count > 0);
+        try std.testing.expectEqual(
+            !preserve_bugs,
+            (creatures.entries[0].flags & cz.spawn.CreatureFlags.self_damage_tick) != 0,
+        );
+    }
+}
+
+test "projectile bloody mess source follows bug mode" {
+    var decal_counts: [2]usize = undefined;
+    for ([_]bool{ true, false }, 0..) |preserve_bugs, case_idx| {
+        var state = cz.state.GameplayState.init(1);
+        state.preserve_bugs = preserve_bugs;
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{ .x = 100.0, .y = 100.0 } },
+            .{ .index = 1, .pos = .{ .x = 100.0, .y = 100.0 } },
+        };
+        players[1].perk_counts.set(.bloody_mess_quick_learner, 1);
+        var creatures: cz.creatures.CreaturePool = .{};
+        _ = creatures.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 102.0, .y = 100.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = cz.spawn.CreatureFlags.anim_ping_pong,
+            .size = 44.0,
+            .move_speed = 0.0,
+            .health = 1000.0,
+            .max_health = 1000.0,
+            .reward_value = 50.0,
+            .contact_damage = 4.0,
+        });
+        var bonuses: cz.bonuses.BonusPool = .{};
+        var effects: cz.effects.EffectPool = .{};
+        var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+        var pool: cz.projectiles.ProjectilePool = .{};
+        _ = pool.spawn(
+            players[1].pos,
+            0.0,
+            @intFromEnum(cz.game_ids.ProjectileTypeId.pistol),
+            .{ .player = .{ .index = 1 } },
+            45.0,
+            false,
+        );
+
+        const tick = pool.updateWithEffects(
+            &state,
+            players[0..],
+            &creatures,
+            &bonuses,
+            &effects,
+            &terrain_fx,
+            5,
+            0.016,
+            1024.0,
+        );
+        try std.testing.expect(tick.hit_count > 0);
+        decal_counts[case_idx] = terrain_fx.decals.count;
+    }
+
+    try std.testing.expectEqual(decal_counts[0] + 6, decal_counts[1]);
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};
