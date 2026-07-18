@@ -24,6 +24,7 @@ pub const spawn_plan_native = @import("spawn_plan_native.zig");
 pub const replay_codec = @import("replay_codec.zig");
 pub const replay_runner = @import("runtime/replay_runner.zig");
 pub const spawn = @import("runtime/spawn.zig");
+pub const survival_progression = @import("runtime/survival_progression.zig");
 pub const anim = @import("runtime/anim.zig");
 pub const fire_recipes = @import("runtime/fire_recipes.zig");
 pub const creatures = @import("runtime/creatures.zig");

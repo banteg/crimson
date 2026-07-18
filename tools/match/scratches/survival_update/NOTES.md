@@ -20,7 +20,9 @@ the native three-entry global. Its two `operator+=` calls and component scaling
 reproduce the complete native x87 window: X remains live while Y is rounded
 through the stack after each addition and after the one-third scale. Live
 Binary Ninja disassembly confirms those rounding points and the subsequent
-distance/health reward test.
+distance/health reward test at `0x00407da5..0x00407e2f`. Both ports now express
+the arithmetic through the shared PC=24 helpers; a boundary regression records
+the native exact-16 result rejected by the strict radius test.
 
 The current honest VC6.5 result is 98.21% with the exact 504-instruction count
 and references `139/0/0`. The sole mismatch is the first three scripted spawn

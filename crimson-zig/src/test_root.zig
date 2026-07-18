@@ -852,6 +852,36 @@ test "infernal contract player scope follows bug mode" {
     }
 }
 
+test "survival handout centroid keeps native pc24 radius boundary" {
+    var state = cz.state.GameplayState.init(1);
+    state.survival_reward_handout_enabled = false;
+    state.survival_reward_damage_seen = true;
+    state.survival_reward_fire_seen = false;
+    state.survival_recent_death_count = 3;
+    state.survival_recent_death_pos = .{
+        .{ .x = 315.8760681152344, .y = 836.8428344726562 },
+        .{ .x = 1131.1593017578125, .y = 1372.648681640625 },
+        .{ .x = -1691.9703369140625, .y = -574.5670776367188 },
+    };
+    var players = [_]cz.state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = -97.64498138427734, .y = 544.9747924804688 },
+            .health = 14.0,
+            .weapon = .{ .weapon_id = .pistol },
+        },
+    };
+
+    cz.survival_progression.survivalUpdateWeaponHandouts(
+        &state,
+        players[0..],
+        0.0,
+    );
+
+    try std.testing.expectEqual(cz.game_ids.WeaponId.pistol, players[0].weapon.weapon_id);
+    try std.testing.expect(!state.survival_reward_fire_seen);
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

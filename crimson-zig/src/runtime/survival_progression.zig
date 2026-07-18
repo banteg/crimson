@@ -163,12 +163,18 @@ pub fn survivalUpdateWeaponHandouts(
         const pos2 = state.survival_recent_death_pos[2];
 
         const centroid_scale = narrowF32(0.33333334);
-        const centroid_x = narrowF32(narrowF32(pos0.x + pos1.x + pos2.x) * centroid_scale);
-        const centroid_y = narrowF32(narrowF32(pos0.y + pos1.y + pos2.y) * centroid_scale);
+        const centroid_x = native_math.pc24Mul(
+            native_math.pc24Add(native_math.pc24Add(pos0.x, pos1.x), pos2.x),
+            centroid_scale,
+        );
+        const centroid_y = native_math.pc24Mul(
+            native_math.pc24Add(native_math.pc24Add(pos0.y, pos1.y), pos2.y),
+            centroid_scale,
+        );
 
-        const dx = player.pos.x - centroid_x;
-        const dy = player.pos.y - centroid_y;
-        const distance = std.math.sqrt(dx * dx + dy * dy);
+        const dx = native_math.pc24Sub(player.pos.x, centroid_x);
+        const dy = native_math.pc24Sub(player.pos.y, centroid_y);
+        const distance = native_math.pc24Hypot(dx, dy);
         if (distance < 16.0 and player.health < 15.0) {
             weaponAssignPlayerWithState(player, WeaponId.blade_gun, state);
             state.survival_reward_weapon_guard_id = WeaponId.blade_gun;

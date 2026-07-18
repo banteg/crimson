@@ -94,6 +94,34 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
     assert state.survival_reward_handout_enabled is False
 
 
+def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(-97.64498138427734, 544.9747924804688),
+        health=14.0,
+    )
+    weapon_assign_player(player, WeaponId.PISTOL, state=state)
+    state.survival_reward_handout_enabled = False
+    state.survival_reward_damage_seen = True
+    state.survival_reward_fire_seen = False
+    state.survival_recent_death_count = 3
+    state.survival_recent_death_pos = [
+        Vec2(315.8760681152344, 836.8428344726562),
+        Vec2(1131.1593017578125, 1372.648681640625),
+        Vec2(-1691.9703369140625, -574.5670776367188),
+    ]
+
+    survival_update_weapon_handouts(
+        state,
+        [player],
+        survival_elapsed_ms=0.0,
+    )
+
+    assert player.weapon.weapon_id == WeaponId.PISTOL
+    assert state.survival_reward_fire_seen is False
+
+
 def test_creature_handle_death_tracks_survival_recent_death_samples() -> None:
     state = GameplayState()
     prepare_weapon_availability(state)

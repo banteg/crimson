@@ -26,6 +26,7 @@ from .math_parity import (
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_div,
+    x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sub,
@@ -272,7 +273,7 @@ def survival_progression_update(
     survival_check_level_up(players[0], state.perk_selection)
 
 
-_SURVIVAL_RECENT_DEATH_CENTROID_SCALE = 0.33333334
+_SURVIVAL_RECENT_DEATH_CENTROID_SCALE = f32(0.33333334)
 
 
 def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
@@ -322,15 +323,23 @@ def survival_update_weapon_handouts(
 
     if int(state.survival_recent_death_count) == 3 and (not bool(state.survival_reward_fire_seen)):
         pos0, pos1, pos2 = state.survival_recent_death_pos
-        centroid_x = f32(
-            float(f32(float(pos0.x) + float(pos1.x) + float(pos2.x))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
+        centroid_x = x87_pc24_mul(
+            x87_pc24_add(
+                x87_pc24_add(float(pos0.x), float(pos1.x)),
+                float(pos2.x),
+            ),
+            _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
         )
-        centroid_y = f32(
-            float(f32(float(pos0.y) + float(pos1.y) + float(pos2.y))) * _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
+        centroid_y = x87_pc24_mul(
+            x87_pc24_add(
+                x87_pc24_add(float(pos0.y), float(pos1.y)),
+                float(pos2.y),
+            ),
+            _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
         )
-        dx = float(player.pos.x) - float(centroid_x)
-        dy = float(player.pos.y) - float(centroid_y)
-        if math.sqrt(dx * dx + dy * dy) < 16.0 and float(player.health) < 15.0:
+        dx = x87_pc24_sub(float(player.pos.x), centroid_x)
+        dy = x87_pc24_sub(float(player.pos.y), centroid_y)
+        if x87_pc24_hypot(dx, dy) < 16.0 and float(player.health) < 15.0:
             _weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
             state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
             state.survival_reward_fire_seen = True
