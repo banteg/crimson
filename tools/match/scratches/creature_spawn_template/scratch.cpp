@@ -27,6 +27,16 @@ struct creature_spawn_vec2_t {
     }
 };
 
+struct creature_spawn_root_vec2_t {
+    float x;
+    float y;
+
+    creature_spawn_root_vec2_t(float x_value, float y_value)
+        : x(x_value), y(y_value)
+    {
+    }
+};
+
 typedef union creature_spawn_tint_scratch_t {
     creature_tint_t tint;
     creature_spawn_vec2_t orbit_direction;
@@ -101,20 +111,20 @@ typedef union creature_spawn_template_locals_t {
     do {                                                                                                                   \
         child_slot_idx = creature_alloc_slot();                                                                            \
         creature = &creature_pool[child_slot_idx];                                                                         \
-        creature->target_offset_y = (float)(int)pos;                                                                       \
+        creature->target_offset_y = (float)grid_vertical_offset;                                                           \
         creature->ai_mode = (child_ai_mode);                                                                               \
         creature->heading = 0.0f;                                                                                          \
         creature->anim_phase = 0.0f;                                                                                       \
         creature->link_index = root_slot_idx;                                                                              \
         creature->target_offset_x = (float)slot_10_i;                                                                      \
         creature->vel_x = 0.0f;                                                                                            \
-        creature->pos_x = *origin_pos_ptr + creature->target_offset_x;                                                     \
+        creature->pos_x = *pos + creature->target_offset_x;                                                                \
         creature->vel_y = 0.0f;                                                                                            \
-        creature->pos_y = creature->target_offset_y + origin_pos_ptr[1];                                                   \
+        creature->pos_y = creature->target_offset_y + pos[1];                                                              \
         creature->health = (child_health);                                                                                 \
         creature->max_health = (child_health);                                                                             \
         creature->tint_r = (red);                                                                                          \
-        pos = pos + 0x10;                                                                                                  \
+        grid_vertical_offset = grid_vertical_offset + 0x40;                                                                \
         creature->tint_g = (green);                                                                                        \
         creature->collision_flag = 0;                                                                                      \
         creature->tint_b = (blue);                                                                                         \
@@ -135,11 +145,11 @@ typedef union creature_spawn_template_locals_t {
     do {                                                                                                             \
         slot_10_i = 0;                                                                                               \
         do {                                                                                                         \
-            pos = (float *)0x80;                                                                                     \
+            grid_vertical_offset = 0x80;                                                                             \
             do {                                                                                                     \
                 INIT_GRID_CHILD((child_ai_mode), (child_type), (child_health), (red), (green), (blue),               \
                                 (child_speed), (alpha), (child_size), (damage));                                     \
-            } while ((int)pos <= 0x100);                                                                             \
+            } while (grid_vertical_offset <= 0x100);                                                                 \
             slot_10_i = slot_10_i + -0x40;                                                                           \
         } while (-0x240 < slot_10_i);                                                                                \
     } while (0)
@@ -217,12 +227,12 @@ typedef union creature_spawn_template_locals_t {
 extern "C" void *creature_spawn_template(int template_id, float *pos, float heading)
 {
     creature_spawn_template_locals_t locals;
-    float *origin_pos_ptr;
     int root_slot_idx;
     int child_slot_idx;
     int random_heading_roll;
     int ring_member_idx;
     int chain_link_idx;
+    int grid_vertical_offset;
     creature_t *creature;
 
     root_slot_idx = creature_alloc_slot();
@@ -232,20 +242,17 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     }
 
     creature = &creature_pool[root_slot_idx];
-    origin_pos_ptr = pos;
-    slot_10_i = 0;
-    slot_14_i = 0;
 
     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
     *(creature_spawn_vec2_t *)&creature->pos_x = *(creature_spawn_vec2_t *)pos;
-    creature->vel_x = 0.0f;
+    *(creature_spawn_root_vec2_t *)&creature->vel_x =
+        creature_spawn_root_vec2_t(0.0f, 0.0f);
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->active = 1;
     *(unsigned char *)&creature->force_target = 0;
     creature->state_flag = 1;
     creature->lifecycle_stage = 16.0f;
-    creature->vel_y = 0.0f;
     random_heading_roll = crt_rand();
     creature->attack_cooldown = 0.0f;
     creature->heading = (float)(random_heading_roll % 0x13a) * 0.01f;
@@ -279,8 +286,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 100.0f;
             creature->target_offset_y = (float)sin(angle) * 100.0f;
-            creature->pos_x = *origin_pos_ptr;
-            creature->pos_y = origin_pos_ptr[1];
+            creature->pos_x = *pos;
+            creature->pos_y = pos[1];
             creature->vel_x = 0.0f;
             creature->vel_y = 0.0f;
             creature->collision_flag = 0;
@@ -330,9 +337,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 110.0f;
             creature->target_offset_y = (float)sin(angle) * 110.0f;
-            creature->pos_x = creature->target_offset_x + *origin_pos_ptr;
+            creature->pos_x = creature->target_offset_x + *pos;
             creature->vel_x = 0.0f;
-            creature->pos_y = creature->target_offset_y + origin_pos_ptr[1];
+            creature->pos_y = creature->target_offset_y + pos[1];
             creature->vel_y = 0.0f;
             creature->health = 220.0f;
             creature->max_health = 220.0f;
@@ -355,6 +362,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         } while (ring_member_idx < 5);
     } else {
         if (template_id == SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11) {
+            int chain_target_offset;
             creature->type_id = CREATURE_TYPE_LIZARD;
             creature->pos_x = *pos;
             creature->pos_y = pos[1];
@@ -371,20 +379,20 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->max_health = 1500.0f;
 
             slot_10_i = 2;
-            pos = (float *)0xffffff00;
+            chain_target_offset = -0x100;
             chain_link_idx = root_slot_idx;
             do {
                 child_slot_idx = creature_alloc_slot();
                 creature = &creature_pool[child_slot_idx];
-                creature->target_offset_x = (float)(int)pos;
+                creature->target_offset_x = (float)chain_target_offset;
                 creature->ai_mode = CREATURE_AI_FOLLOW_LINK;
                 creature->link_index = chain_link_idx;
                 creature->target_offset_y = -256.0f;
                 float angle = (float)slot_10_i * 0.39269909f;
-                creature->pos_x = (float)cos(angle) * 256.0f + *origin_pos_ptr;
+                creature->pos_x = (float)cos(angle) * 256.0f + *pos;
                 creature->vel_x = 0.0f;
                 creature->tint_r = 0.6f;
-                creature->pos_y = (float)sin(angle) * 256.0f + origin_pos_ptr[1];
+                creature->pos_y = (float)sin(angle) * 256.0f + pos[1];
                 creature->tint_g = 0.6f;
                 creature->vel_y = 0.0f;
                 creature->tint_b = 0.31f;
@@ -392,7 +400,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 creature->reward_value = 60.0f;
                 creature->max_health = 60.0f;
                 creature->tint_a = 1.0f;
-                pos = pos + 0x10;
+                chain_target_offset = chain_target_offset + 0x40;
                 slot_10_i = slot_10_i + 2;
                 creature->collision_flag = 0;
                 creature->collision_timer = 0.0f;
@@ -405,7 +413,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 creature->size = 50.0f;
                 creature->contact_damage = 14.0f;
                 chain_link_idx = child_slot_idx;
-            } while ((int)pos < 0);
+            } while (chain_target_offset < 0);
             creature_pool[root_slot_idx].link_index = child_slot_idx;
             APPLY_UNHANDLED_TEMPLATE_FALLBACK();
         } else {
@@ -431,9 +439,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 orbit_direction.y = (float)sin(0.0f);
                 orbit_direction.x = orbit_direction.x * 256.0f;
                 orbit_direction.y = orbit_direction.y * 256.0f;
-                chain_position.x = orbit_direction.x + *origin_pos_ptr;
+                chain_position.x = orbit_direction.x + *pos;
                 creature->ai_mode = CREATURE_AI_ORBIT_LINK;
-                chain_position.y = orbit_direction.y + origin_pos_ptr[1];
+                chain_position.y = orbit_direction.y + pos[1];
                 *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                 chain_link_idx = root_slot_idx;
                 do {
@@ -448,9 +456,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     orbit_direction.y = (float)sin(angle);
                     orbit_direction.x = orbit_direction.x * 256.0f;
                     orbit_direction.y = orbit_direction.y * 256.0f;
-                    chain_position.x = orbit_direction.x + *origin_pos_ptr;
+                    chain_position.x = orbit_direction.x + *pos;
                     creature->health = 60.0f;
-                    chain_position.y = orbit_direction.y + origin_pos_ptr[1];
+                    chain_position.y = orbit_direction.y + pos[1];
                     *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                     *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
                     creature->reward_value = 60.0f;
@@ -538,8 +546,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                         creature->link_index = root_slot_idx;
                         creature->target_offset_x = (float)cos(angle) * 100.0f;
                         creature->target_offset_y = (float)sin(angle) * 100.0f;
-                        creature->pos_x = *origin_pos_ptr;
-                        creature->pos_y = origin_pos_ptr[1];
+                        creature->pos_x = *pos;
+                        creature->pos_y = pos[1];
                         creature->vel_x = 0.0f;
                         creature->vel_y = 0.0f;
                         creature->collision_flag = 0;

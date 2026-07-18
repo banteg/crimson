@@ -27,9 +27,9 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=61.82% prefix=23/3159 target_insns=3159 candidate_insns=2959 refs=314/0/2
-first_target=lea esi, dword [ebp+edx*2]
-first_candidate=mov dword [esp+0x18], edi
+match=63.94% prefix=26/3159 target_insns=3159 candidate_insns=2937 refs=316/0/2
+first_target=mov dword [esp+0x18], esi
+first_candidate=mov dword [esp+0x10], esi
 ```
 
 Frame/prefix notes:
@@ -213,3 +213,16 @@ Frame/prefix notes:
   with 2,959 candidate instructions and the reference audit improves to
   `314/0/2`; only local scheduling inside the hardcore multiplier block still
   differs.
+- A complete stack-use map shows the native prologue's three low locals are a
+  two-float zero-velocity value in `[esp+0x10..0x14]` and the root creature's
+  byte offset in `[esp+0x18]`. The previous scratch instead saved the position
+  pointer because the `0x11` chain and five grid formations reused `pos` as a
+  signed integer cursor. Recovering explicit signed formation offsets lets VC6
+  retain the original position in `edi`, while the zero velocity now uses the
+  same constructor-expression shape as the exact `survival_spawn_creature`
+  scratch. This removes 22 candidate instructions, raises the score to
+  `63.94%`, improves the prefix to 26 instructions and references to
+  `316/0/2`, and preserves the exact `0x48` frame. VC6 still assigns the root
+  byte-offset spill before the two value slots (`0x10` versus native `0x18`),
+  so the remaining first mismatch is honest local-slot allocation rather than
+  missing gameplay.
