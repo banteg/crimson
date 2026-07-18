@@ -6,7 +6,7 @@ instructions).
 The recovered MSVC 6.5 `/O2 /GB` source is an honest WIP:
 
 ```txt
-match=88.60% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
+match=91.23% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
 ```
 
 ## Recovered source shape
@@ -26,6 +26,10 @@ match=88.60% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
 - The entry heading and template id are forwarded unchanged to
   `creature_spawn_template`. Firing any group clears the global none-active
   flag.
+- The entry's first two floats are the same position value object recovered in
+  the quest builders. Adding the alternating offset through its inlined vector
+  operator reproduces the native x87 construction and right-to-left call-
+  argument schedule for the temporary passed to `creature_spawn_template`.
 
 The first 51 instructions, complete scan/fail-safe policy, 28-byte frame, x87
 spread loop, group-consumption tail, and all 13 masked references agree.
@@ -35,10 +39,13 @@ spread loop, group-consumption tail, and all 13 masked references agree.
 Native creates an interior pointer to the current entry's template-id field
 after the positive-count guard, briefly homes it in the stack slot that is then
 reused by the integer spread, and loads heading/template through that pointer.
-The calibrated compiler folds the clean scoped pointer back to the entry base,
-removing the `lea` and dead home store. Those are the candidate's only two
-missing instructions; their byte-length shift also changes local branch-label
-tokens in the normalized diff.
+The source retains that clean scoped pointer, but the calibrated compiler folds
+it back to the typed entry base, removing the `lea` and dead home store. Those
+are the candidate's only two missing instructions; their byte-length shift also
+changes local branch-label tokens in the normalized diff. Recovering the typed
+position and vector addition raises the honest score from `88.60%` to `91.23%`
+without changing the exact prefix, instruction count delta, frame, or reference
+audit.
 
 MSVC 6.0 and 6.6 produce the same best body, 6.5pp is slightly worse, and 7.0
 adds its aligned-frame prologue. `/Og-` broadly deoptimizes the function. No
