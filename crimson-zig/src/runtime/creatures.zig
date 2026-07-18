@@ -2390,21 +2390,9 @@ pub const CreaturePool = struct {
             }
 
             if (target_dist_sq < 20.0 * 20.0) {
-                var reverted_x = native_math.pc24Sub(creature.pos.x, creature.vel.x);
-                var reverted_y = native_math.pc24Sub(creature.pos.y, creature.vel.y);
-                if (reverted_x < 0.0) {
-                    reverted_x = 0.0;
-                } else if (reverted_x > world_size) {
-                    reverted_x = world_size;
-                }
-                if (reverted_y < 0.0) {
-                    reverted_y = 0.0;
-                } else if (reverted_y > world_size) {
-                    reverted_y = world_size;
-                }
                 creature.pos = .{
-                    .x = reverted_x,
-                    .y = reverted_y,
+                    .x = native_math.pc24Sub(creature.pos.x, creature.vel.x),
+                    .y = native_math.pc24Sub(creature.pos.y, creature.vel.y),
                 };
 
                 if (state.bonuses.energizer > 0.0 and creature.max_hp < 380.0) {
@@ -2420,8 +2408,6 @@ pub const CreaturePool = struct {
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
                     );
-                    creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index));
-                    const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
                     emitDeathPrelude(
                         state,
@@ -2441,7 +2427,7 @@ pub const CreaturePool = struct {
                         &creature.pos,
                         @floatCast(world_size),
                     );
-                    state.bonus_spawn_guard = prev_spawn_guard;
+                    state.bonus_spawn_guard = false;
                     _ = awardExperienceFromReward(state, player, creature.reward_value);
                     creature.active = false;
                     continue;
@@ -7682,6 +7668,40 @@ test "plaguebearer infection timer wrap applies damage" {
     try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
     try expectFloatClose(0.4, pool.entries[0].collision_timer);
     try expectFloatClose(85.0, pool.entries[0].hp);
+}
+
+test "energizer eat preserves native position owner and guard stores" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    state.bonuses.energizer = 1.0;
+    state.bonus_spawn_guard = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = -10.0, .y = 0.0 },
+        },
+    };
+
+    pool.entries[0] = .{
+        .active = true,
+        .pos = players[0].pos,
+        .hp = 10.0,
+        .max_hp = 300.0,
+        .move_speed = 0.0,
+        .reward_value = 10.0,
+        .contact_damage = 999.0,
+        .last_hit_owner = owner_ref.OwnerRef.fromCreature(77),
+    };
+
+    try pool.update(&state, players[0..], 0.016, 1024.0, &bonuses);
+
+    try std.testing.expect(!pool.entries[0].active);
+    try expectFloatClose(-10.0, pool.entries[0].pos.x);
+    try expectFloatClose(0.0, pool.entries[0].pos.y);
+    try std.testing.expectEqual(@as(?usize, 77), pool.entries[0].last_hit_owner.creatureIndex());
+    try std.testing.expectEqual(@as(i32, 20), players[0].experience);
+    try std.testing.expect(!state.bonus_spawn_guard);
 }
 
 test "plaguebearer spreads between nearby creatures" {

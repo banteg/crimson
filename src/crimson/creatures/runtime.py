@@ -472,9 +472,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     )
     ctx.sfx.append(SfxId.UI_BONUS)
 
-    prev_guard = bool(ctx.state.bonus_spawn_guard)
     ctx.state.bonus_spawn_guard = True
-    creature.last_hit_owner = OwnerRef.from_player(int(ctx.player.index))
     ctx.deaths.append(
         ctx.pool.handle_death(
             ctx.creature_index,
@@ -489,7 +487,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             keep_corpse=False,
         ),
     )
-    ctx.state.bonus_spawn_guard = prev_guard
+    ctx.state.bonus_spawn_guard = False
     ctx.skip_creature = True
 
 

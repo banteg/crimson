@@ -51,6 +51,14 @@ final body culling.
   and damage ownership still use the selected player. Both ports now preserve
   that split in bug-compatible mode; corrected mode retains per-target contact
   perks and an any-player Radioactive gate. Plaguebearer was already slot-zero.
+- The Energizer eat path reverts the just-applied movement with direct position
+  subtracts at `0x00427161..0x00427176`; there is no bounds clamp. After its
+  direct player-zero XP award and burst/SFX, native pushes `(creature_id, 0)`,
+  stores `bonus_spawn_guard = 1` at `0x004271d8`, calls
+  `creature_handle_death`, and unconditionally clears the guard at
+  `0x004271e7`. The disassembly contains no intervening creature-owner store.
+  Python and Zig preserve the off-world position, stale owner, and literal
+  guard reset, with regression fixtures initialized to expose all three.
 
 ## Remaining mismatch
 
