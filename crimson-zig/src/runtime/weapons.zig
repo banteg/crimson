@@ -839,6 +839,7 @@ pub fn applyPlayerPerkTicksWithEffects(
     tickLivingFortress(player, perk_player, dt);
     tickFireCaugh(state, player, perk_player, all_players, projectiles, sprite_effects, dt);
     tickHotTempered(state, player, perk_player, all_players, projectiles, dt);
+    tickPlayerSpreadDamping(state, dt);
 }
 
 fn tickManBomb(
@@ -1005,6 +1006,17 @@ fn tickHotTempered(
 
     player.hot_tempered_timer = native_math.pc24Sub(player.hot_tempered_timer, state.perk_interval_hot_tempered);
     state.perk_interval_hot_tempered = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.player_update_hot_tempered_interval_reset) % 8)) + 2.0;
+}
+
+fn tickPlayerSpreadDamping(state: *state_mod.GameplayState, dt: f32) void {
+    if (state.player_spread_damping_gate > 0.0) {
+        const next_scalar = native_math.pc24Sub(state.player_spread_damping_scalar, dt);
+        state.player_spread_damping_scalar = if (next_scalar < 0.3) 0.3 else next_scalar;
+    } else {
+        const recovery = native_math.pc24Mul(dt, @as(f32, 0.8));
+        const next_scalar = native_math.pc24Add(recovery, state.player_spread_damping_scalar);
+        state.player_spread_damping_scalar = if (next_scalar > 1.0) 1.0 else next_scalar;
+    }
 }
 
 fn spawnPerkProjectile(
@@ -1586,6 +1598,24 @@ test "man bomb and living fortress timers keep native stored cadence" {
     try std.testing.expectEqual(@as(usize, 8), activeProjectileCount(&projectiles));
     try std.testing.expectEqual(@as(f32, 0.016663551330566406), player.man_bomb_timer);
     try std.testing.expectEqual(@as(f32, 4.016663551330566), player.living_fortress_timer);
+}
+
+test "player perk phase advances shared spread damping once per player update" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var player: state_mod.PlayerState = .{ .index = 0, .pos = .{} };
+    state.player_spread_damping_scalar = 0.5;
+
+    applyPlayerPerkTicks(&state, &player, &projectiles, 0.5);
+
+    try std.testing.expectEqual(@as(f32, 0.9), state.player_spread_damping_scalar);
+
+    state.player_spread_damping_gate = 1.0;
+    state.player_spread_damping_scalar = 0.35;
+
+    applyPlayerPerkTicks(&state, &player, &projectiles, 0.1);
+
+    try std.testing.expectEqual(@as(f32, 0.3), state.player_spread_damping_scalar);
 }
 
 test "hot tempered spawns alternating plasma projectiles when charged" {

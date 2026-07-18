@@ -172,6 +172,15 @@ positive subtract-and-clamp arm in the fallthrough and branches to the
 add-and-clamp arm. These source-level reversals recover six native references
 without changing the instruction count or stack frame.
 
+The spread-damping block is also active simulation state, not inert rendering
+glue. Live instructions `0x00413d66..0x00413dcf` round the positive-gate
+subtraction and the non-positive `frame_dt * 0.8f` recovery path at x87 PC=24,
+then clamp the shared scalar to `[0.3, 1.0]`. The sole caller at `0x0040ad74`
+loops `player_update` over every configured player, so the global advances once
+for each live player. The Zig runtime previously declared both globals without
+advancing them; its per-player perk phase now performs the native update after
+Hot Tempered, matching both arithmetic staging and call cadence.
+
 The two alternating projectile rings now also reproduce their native argument
 selection. Man Bomb at `0x00413917` falls through on odd indices to the Ion
 Rifle arm and branches on even indices to Ion Minigun, keeping the two native
