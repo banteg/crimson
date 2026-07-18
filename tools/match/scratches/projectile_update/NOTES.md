@@ -59,6 +59,18 @@ keeps processing its TTL check after a hit. The latter can overwrite a freshly
 selected type-specific detonation scale with `0.5`; the recovered source keeps
 that observable ordering.
 
+The direct secondary-hit sequence at `0x00421e70..0x00422381` preserves the
+incoming rocket type in a local before changing the pool entry to detonation.
+Its impact-audio branch (`0x00422079..0x004220b6`) precedes the damage call at
+`0x004220eb`, so the first-hit playlist draw occurs before any lethal creature
+death draws. The four pre-hit Freeze shards all use caller-static `0x00421eb3`;
+the later eight-shard burst is type-specific, and Rocket Minigun emits it from
+the hit creature position while Rocket and Seeker Rocket use the projectile
+position. The exploding-secondary kill branch also emits its two random decals
+even while Freeze is active, before calling the secondary death follow-up.
+Zig now preserves this ordering, source local, caller provenance, and position
+choice; focused trace tests guard the shared RNG stream.
+
 The live particle tail confirms three deliberately duplicated jitter branches:
 style zero uses a `1.96` turn factor and speed `82`, style eight uses `1.1` and
 speed `62`, and the remaining styles use `1.1` and speed `82`. A particle hit
