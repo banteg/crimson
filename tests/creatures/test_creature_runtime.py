@@ -2249,6 +2249,33 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     assert stub_rand._idx == 0
 
 
+def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player.evil_eyes_target_creature = 0
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 100.0
+    creature.max_hp = 100.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.plague_infected = True
+    creature.collision_timer = 0.1
+    creature.target_player = 0
+    creature.pos = Vec2(640.0, 512.0)
+    creature.move_speed = 1.0
+    creature.size = 50.0
+
+    before_pos = creature.pos
+    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
+
+    assert_float_close(creature.hp, 85.0)
+    assert creature.collision_timer == f32(0.4)
+    assert creature.pos == before_pos
+
+
 def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
 

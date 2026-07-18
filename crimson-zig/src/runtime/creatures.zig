@@ -2164,6 +2164,36 @@ pub const CreaturePool = struct {
             }
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
+            // Native advances infection at 0x00426599..0x00426649 before
+            // comparing this slot with the Evil Eyes target at 0x0042665f.
+            // A frozen target therefore still takes its periodic plague tick
+            // and can run the associated death side effects.
+            if (creature.plague_infected) {
+                creature.collision_timer = native_math.pc24Sub(creature.collision_timer, dt_f32);
+                if (creature.collision_timer < 0.0) {
+                    creature.collision_timer = native_math.pc24Add(
+                        creature.collision_timer,
+                        plague_collision_period,
+                    );
+                    creature.hp = native_math.pc24Sub(creature.hp, 15.0);
+                    if (creature.hp < 0.0) {
+                        state.plaguebearer_infection_count += 1;
+                        _ = self.handleSecondaryDetonationDeathFollowup(
+                            state,
+                            players,
+                            bonus_pool,
+                            terrain_fx,
+                            idx,
+                            creature.last_hit_owner,
+                            dt_f32,
+                            world_size,
+                        );
+                        // Plague timer kills consume one contact-SFX bank select draw.
+                        consumeContactSfxRng(state, creature.type_id);
+                    }
+                    _ = terrain_fx.decals.addRandom(state, creature.pos);
+                }
+            }
             if (creatureFrozenByEvilEyes(state, players, idx)) {
                 creature.force_target = 0;
                 continue;
@@ -2213,32 +2243,6 @@ pub const CreaturePool = struct {
                         tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                     }
                     continue;
-                }
-            }
-            if (creature.plague_infected) {
-                creature.collision_timer = native_math.pc24Sub(creature.collision_timer, dt_f32);
-                if (creature.collision_timer < 0.0) {
-                    creature.collision_timer = native_math.pc24Add(
-                        creature.collision_timer,
-                        plague_collision_period,
-                    );
-                    creature.hp = native_math.pc24Sub(creature.hp, 15.0);
-                    if (creature.hp < 0.0) {
-                        state.plaguebearer_infection_count += 1;
-                        _ = self.handleSecondaryDetonationDeathFollowup(
-                            state,
-                            players,
-                            bonus_pool,
-                            terrain_fx,
-                            idx,
-                            creature.last_hit_owner,
-                            dt_f32,
-                            world_size,
-                        );
-                        // Plague timer kills consume one contact-SFX bank select draw.
-                        consumeContactSfxRng(state, creature.type_id);
-                    }
-                    _ = terrain_fx.decals.addRandom(state, creature.pos);
                 }
             }
             if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
@@ -7107,6 +7111,43 @@ test "evil eyes freezes targeted creature movement" {
 
     try expectFloatClose(before_x, pool.entries[0].pos.x);
     try expectFloatClose(before_y, pool.entries[0].pos.y);
+}
+
+test "evil eyes target still takes plague infection tick" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 300.0, .y = 100.0 },
+        .health = 100.0,
+    }};
+    players[0].perk_counts.set(PerkId.evil_eyes, 1);
+    players[0].evil_eyes_target_creature = 0;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 1.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.1;
+
+    const before_pos = pool.entries[0].pos;
+    try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+
+    try expectFloatClose(85.0, pool.entries[0].hp);
+    try expectFloatClose(0.4, pool.entries[0].collision_timer);
+    try expectFloatClose(before_pos.x, pool.entries[0].pos.x);
+    try expectFloatClose(before_pos.y, pool.entries[0].pos.y);
 }
 
 test "ai7 link timer consumes rng when timer crosses zero" {

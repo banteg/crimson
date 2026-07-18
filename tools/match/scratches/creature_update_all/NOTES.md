@@ -49,6 +49,10 @@ final body culling.
   stores its `dt * 1.5` timer subtraction at `0x00426fda` and pulse damage at
   `0x0042702a`. Both ports preserve those PC=24 stores so repeated ticks keep
   the native pulse cadence instead of accumulating host-double residue.
+- Infection damage and its lethal side effects complete at
+  `0x00426599..0x00426649` before the Evil Eyes target comparison at
+  `0x0042665f`. Zig now preserves that order, so Evil Eyes stops the target's
+  movement and later interactions without making it immune to Plaguebearer.
 - An entry that begins the sweep dead at lifecycle `16.0` is decremented by
   `frame_dt` at `0x004262cf` before periodic poison calls
   `creature_apply_damage`. That callee contributes its separate
