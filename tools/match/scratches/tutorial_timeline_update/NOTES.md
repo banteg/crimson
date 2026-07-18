@@ -14,7 +14,10 @@ The bonus-hint handoff is also explicit. A dead inactive carrier with creature
 flag `0x400` supplies two signed packed words from its link-index fields. The
 function records those as the tutorial bonus id and amount, advances the hint,
 and applies the native one-frame negative fade before subsequent frames fade
-back in. The corresponding latch is a byte-sized C++ `bool`; its two payload
+back in. The Python port previously selected the fade direction from the newly
+set latch and therefore faded upward one frame too early; it now selects the
+direction from the entry latch and has a regression for the negative handoff
+frame. The corresponding latch is a byte-sized C++ `bool`; its two payload
 globals are mapped at `0x004712f4` and `0x004712f8`.
 
 Stage one does not call `bonus_spawn_at`. At `0x00408e26..0x00408f0c` it

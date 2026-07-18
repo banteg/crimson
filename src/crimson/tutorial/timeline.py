@@ -149,6 +149,7 @@ def _tick_hint(
     hint_bonus_died: bool,
 ) -> tuple[tuple[SpawnTemplateCall, ...], str, float]:
     hint_spawns: list[SpawnTemplateCall] = []
+    fade_in_this_frame = bool(state.hint_fade_in)
 
     if (not state.hint_fade_in) and bool(hint_bonus_died):
         state.hint_fade_in = True
@@ -165,7 +166,7 @@ def _tick_hint(
         )
 
     delta = int(frame_dt_ms) * 3
-    state.hint_alpha = int(state.hint_alpha) + (delta if state.hint_fade_in else -delta)
+    state.hint_alpha = int(state.hint_alpha) + (delta if fade_in_this_frame else -delta)
     if state.hint_alpha < 0:
         state.hint_alpha = 0
     elif state.hint_alpha > 1000:

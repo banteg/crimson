@@ -138,3 +138,41 @@ def test_stage5_emits_bonus_carrier_drop_for_first_repeats(repeat: int) -> None:
         perk_pending_count=0,
     )
     assert actions.stage5_bonus_carrier_drop == tutorial_stage5_bonus_carrier_config(repeat)
+
+
+def test_hint_carrier_death_keeps_native_one_frame_fade_out() -> None:
+    state = TutorialState(
+        stage_index=5,
+        stage_timer_ms=0,
+        stage_transition_timer_ms=-1,
+        hint_index=-1,
+        hint_alpha=600,
+        hint_fade_in=False,
+    )
+    state, actions = tick_tutorial_timeline(
+        state,
+        frame_dt_ms=100.0,
+        any_move_active=False,
+        any_fire_active=False,
+        creatures_none_active=False,
+        bonus_pool_empty=False,
+        perk_pending_count=0,
+        hint_bonus_died=True,
+    )
+
+    assert state.hint_fade_in is True
+    assert state.hint_index == 0
+    assert state.hint_alpha == 300
+    assert actions.hint_alpha == pytest.approx(0.3)
+
+    state, actions = tick_tutorial_timeline(
+        state,
+        frame_dt_ms=100.0,
+        any_move_active=False,
+        any_fire_active=False,
+        creatures_none_active=False,
+        bonus_pool_empty=False,
+        perk_pending_count=0,
+    )
+    assert state.hint_alpha == 600
+    assert actions.hint_alpha == pytest.approx(0.6)
