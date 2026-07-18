@@ -15,6 +15,13 @@ burst only overwrites flags, color, lifetime, half-size, and each particle's
 rotation, velocity, and scale step; it deliberately leaves the remaining
 global effect-template fields untouched.
 
+Every perk gate in this function calls the exact `perk_count_get` helper, which
+reads player 0 only. Both ports now preserve that native asymmetry when
+`preserve_bugs` is enabled for Uranium Filled Bullets, Living Fortress, Barrel
+Greaser, Doctor, Ion Gun Master, and Pyromaniac; corrected mode deliberately
+keeps the co-op-wide perk policy. Once player 0 enables Living Fortress, the
+subsequent timer fold still visits every configured player exactly as native.
+
 The natural VC6 reconstruction reaches 89.87% with exactly 237/237 normalized
 instructions and 80/0/0 reference agreement. The remaining structural delta
 is one exact 12-instruction ion-gun perk block: native block layout places it

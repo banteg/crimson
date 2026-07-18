@@ -8,6 +8,7 @@ from crimson.creatures.damage import (
     resolve_native_death_sfx,
 )
 from crimson.creatures.damage_runtime import CreatureDamageRuntime
+from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
@@ -133,6 +134,43 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
 
     assert killed is True
     assert creature.hp == -131.92474365234375
+
+
+def test_damage_perks_use_player_zero_only_when_preserving_native_bugs() -> None:
+    player0 = PlayerState(index=0, pos=Vec2())
+    player1 = PlayerState(index=1, pos=Vec2())
+    player1.perk_counts[int(PerkId.URANIUM_FILLED_BULLETS)] = 1
+
+    corrected_creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0))
+    native_creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0))
+
+    corrected_killed = creature_apply_damage(
+        corrected_creature,
+        damage_amount=10.0,
+        damage_type=CreatureDamageType.BULLET,
+        impulse=Vec2(),
+        owner=OwnerRef.from_player(1),
+        dt=0.016,
+        players=[player0, player1],
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        preserve_bugs=False,
+    )
+    native_killed = creature_apply_damage(
+        native_creature,
+        damage_amount=10.0,
+        damage_type=CreatureDamageType.BULLET,
+        impulse=Vec2(),
+        owner=OwnerRef.from_player(1),
+        dt=0.016,
+        players=[player0, player1],
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        preserve_bugs=True,
+    )
+
+    assert corrected_killed is False
+    assert native_killed is False
+    assert_float_close(corrected_creature.hp, 80.0)
+    assert_float_close(native_creature.hp, 90.0)
 
 
 def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:

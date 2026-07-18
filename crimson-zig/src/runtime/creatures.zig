@@ -2530,16 +2530,16 @@ pub const CreaturePool = struct {
             }
         }
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, PerkId.uranium_filled_bullets)) {
+        if (damagePerkActive(state, players, PerkId.uranium_filled_bullets)) {
             damage_amount *= 2.0;
         }
-        if (anyPlayerHasPerk(players, PerkId.barrel_greaser)) {
+        if (damagePerkActive(state, players, PerkId.barrel_greaser)) {
             damage_amount *= 1.4;
         }
-        if (anyPlayerHasPerk(players, PerkId.doctor)) {
+        if (damagePerkActive(state, players, PerkId.doctor)) {
             damage_amount *= 1.2;
         }
-        if (anyPlayerHasPerk(players, PerkId.living_fortress)) {
+        if (damagePerkActive(state, players, PerkId.living_fortress)) {
             for (players) |player| {
                 if (!(player.health > 0.0)) continue;
                 if (!(player.living_fortress_timer > 0.0)) continue;
@@ -2575,7 +2575,7 @@ pub const CreaturePool = struct {
         world_size: f32,
     ) i32 {
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, PerkId.ion_gun_master)) {
+        if (damagePerkActive(state, players, PerkId.ion_gun_master)) {
             damage_amount *= 1.2;
         }
         return self.applyDamage(
@@ -2606,7 +2606,7 @@ pub const CreaturePool = struct {
         world_size: f32,
     ) i32 {
         var damage_amount = damage;
-        if (anyPlayerHasPerk(players, PerkId.pyromaniac)) {
+        if (damagePerkActive(state, players, PerkId.pyromaniac)) {
             damage_amount *= 1.5;
             _ = state.rng.randTagged(rng_callers.creature_apply_damage_pyromaniac);
         }
@@ -3593,6 +3593,17 @@ fn anyPlayerHasPerk(players: []const state_mod.PlayerState, perk_id: PerkId) boo
         if (perkActive(player, perk_id)) return true;
     }
     return false;
+}
+
+fn damagePerkActive(
+    state: *const state_mod.GameplayState,
+    players: []const state_mod.PlayerState,
+    perk_id: PerkId,
+) bool {
+    if (state.preserve_bugs) {
+        return players.len > 0 and perkActive(&players[0], perk_id);
+    }
+    return anyPlayerHasPerk(players, perk_id);
 }
 
 fn creatureFrozenByEvilEyes(
@@ -6746,6 +6757,30 @@ test "doctor increases projectile damage by 20 percent" {
         10_000.0,
     );
     try expectFloatClose(88.0, pool.entries[0].hp);
+}
+
+test "damage perk native policy reads player zero only" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+    };
+    const perk_ids = [_]PerkId{
+        .uranium_filled_bullets,
+        .living_fortress,
+        .barrel_greaser,
+        .doctor,
+        .ion_gun_master,
+        .pyromaniac,
+    };
+    for (perk_ids) |perk_id| {
+        players[1].perk_counts.set(perk_id, 1);
+        try std.testing.expect(!damagePerkActive(&state, players[0..], perk_id));
+        state.preserve_bugs = false;
+        try std.testing.expect(damagePerkActive(&state, players[0..], perk_id));
+        state.preserve_bugs = true;
+    }
 }
 
 test "pyromaniac increases fire damage and consumes rng" {

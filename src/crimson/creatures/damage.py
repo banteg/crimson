@@ -27,6 +27,12 @@ def _any_player_has_perk(players: list[PlayerState], perk_id: PerkId) -> bool:
     return any(perk_active(player, perk_id) for player in players)
 
 
+def _damage_perk_active(ctx: _CreatureDamageCtx, perk_id: PerkId) -> bool:
+    if ctx.preserve_bugs:
+        return bool(ctx.players) and perk_active(ctx.players[0], perk_id)
+    return _any_player_has_perk(ctx.players, perk_id)
+
+
 class _CreatureDamageCtx(msgspec.Struct):
     creature: CreatureState
     damage: float
@@ -36,6 +42,7 @@ class _CreatureDamageCtx(msgspec.Struct):
     dt: float
     players: list[PlayerState]
     rng: CrandLike
+    preserve_bugs: bool
 
 
 _CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
@@ -91,13 +98,13 @@ _TROOPER_DEATH_SFX_PRESERVE_BUGS: tuple[SfxId, ...] = (
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
-    if not _any_player_has_perk(ctx.players, PerkId.URANIUM_FILLED_BULLETS):
+    if not _damage_perk_active(ctx, PerkId.URANIUM_FILLED_BULLETS):
         return
     ctx.damage *= 2.0
 
 
 def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
-    if not _any_player_has_perk(ctx.players, PerkId.LIVING_FORTRESS):
+    if not _damage_perk_active(ctx, PerkId.LIVING_FORTRESS):
         return
     for player in ctx.players:
         if float(player.health) <= 0.0:
@@ -108,13 +115,13 @@ def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type1_barrel_greaser(ctx: _CreatureDamageCtx) -> None:
-    if not _any_player_has_perk(ctx.players, PerkId.BARREL_GREASER):
+    if not _damage_perk_active(ctx, PerkId.BARREL_GREASER):
         return
     ctx.damage *= 1.4
 
 
 def _damage_type1_doctor(ctx: _CreatureDamageCtx) -> None:
-    if not _any_player_has_perk(ctx.players, PerkId.DOCTOR):
+    if not _damage_perk_active(ctx, PerkId.DOCTOR):
         return
     ctx.damage *= 1.2
 
@@ -135,12 +142,12 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
-    if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in ctx.players):
+    if _damage_perk_active(ctx, PerkId.ION_GUN_MASTER):
         ctx.damage *= 1.2
 
 
 def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
-    if not _any_player_has_perk(ctx.players, PerkId.PYROMANIAC):
+    if not _damage_perk_active(ctx, PerkId.PYROMANIAC):
         return
     ctx.damage *= 1.5
     ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
@@ -157,12 +164,16 @@ def _damage_lethal_ranged_shock_burst(
     if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
         return
     for _ in range(5):
-        rotation = float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F) * 0.049087387
+        rotation = (
+            float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F) * 0.049087387
+        )
         vel = Vec2(
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X) & 0x7F) - 0x40),
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y) & 0x7F) - 0x40),
         )
-        scale_step = float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140) * 0.01 + 0.3
+        scale_step = (
+            float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140) * 0.01 + 0.3
+        )
         if effects is None:
             continue
         effects.spawn(
@@ -232,6 +243,7 @@ def creature_apply_damage(
     dt: float,
     players: list[PlayerState],
     rng: CrandLike,
+    preserve_bugs: bool = False,
 ) -> bool:
     """Apply damage to a creature, returning True if the hit killed it.
 
@@ -255,6 +267,7 @@ def creature_apply_damage(
         dt=float(dt),
         players=players,
         rng=rng,
+        preserve_bugs=bool(preserve_bugs),
     )
 
     for step in _CREATURE_DAMAGE_GLOBAL_PRE_STEPS.get(ctx.damage_type, ()):
@@ -332,6 +345,7 @@ def creature_apply_damage_with_lethal_followup(
         dt=float(dt),
         players=players,
         rng=rng,
+        preserve_bugs=bool(preserve_bugs),
     )
     if killed and death_start_needed:
 
