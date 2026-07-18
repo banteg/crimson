@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
-from crimson.math_parity import f32
+from crimson.math_parity import f32, f32_from_bits
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -23,14 +23,16 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert_float_close(c.move_speed, float(f32(0.9)))
     assert_float_close(c.health, 64.0)
     assert_float_close(c.max_health, 64.0)
-    assert_float_close(c.contact_damage, 4.190476268529892)
-    assert_float_close(c.reward_value, 36.3619047164917)
+    assert c.contact_damage == f32_from_bits(0x40861862)
+    assert c.reward_value == f32_from_bits(0x42117297)
 
     assert c.tint is not None
-    assert_float_close(c.tint[0], 0.9)
-    assert_float_close(c.tint[1], 0.88)
-    assert_float_close(c.tint[2], 0.78)
-    assert_float_close(c.tint[3], 1.0)
+    assert c.tint == (
+        f32_from_bits(0x3F666666),
+        f32_from_bits(0x3F6147AD),
+        f32_from_bits(0x3F47AE14),
+        f32_from_bits(0x3F800000),
+    )
 
     assert rng.state == 0xC1BBB05F
 
@@ -115,6 +117,25 @@ def _expected_survival_spawn_callers(
         ],
     )
     return callers
+
+
+def test_survival_spawn_creature_rounds_native_stat_chain_at_each_pc24_operation() -> None:
+    values = _survival_spawn_exact_values(type_roll=0, include_parity=False)
+    values[8] = 1  # reward bonus becomes 11; this exposes the association difference.
+    c = build_survival_spawn_creature(
+        Vec2(1.0, 2.0),
+        ScriptedCrand(values),
+        player_experience=0,
+    )
+
+    assert c.contact_damage == f32_from_bits(0x40861862)
+    assert c.reward_value == f32_from_bits(0x41FDC677)
+    assert c.tint == (
+        f32_from_bits(0x3F666666),
+        f32_from_bits(0x3F4CCCCC),
+        f32_from_bits(0x3F333333),
+        f32_from_bits(0x3F800000),
+    )
 
 
 @pytest.mark.parametrize(
@@ -211,15 +232,15 @@ def test_survival_spawn_creature_rare_variants(
     assert c.ai_mode == 0
 
     assert_float_close(c.size, expected_size)
-    assert_float_close(c.contact_damage, expected_contact_damage)
+    assert c.contact_damage == f32(expected_contact_damage)
     assert_float_close(c.health, expected_health)
     assert_float_close(c.max_health, expected_health)
     assert_float_close(c.reward_value, expected_reward_value)
 
     assert c.tint is not None
-    assert_float_close(c.tint[0], expected_tint_r)
-    assert_float_close(c.tint[1], expected_tint_g)
-    assert_float_close(c.tint[2], expected_tint_b)
-    assert_float_close(c.tint[3], 1.0)
+    assert c.tint[0] == f32(expected_tint_r)
+    assert c.tint[1] == f32(expected_tint_g)
+    assert c.tint[2] == f32(expected_tint_b)
+    assert c.tint[3] == f32(1.0)
 
     assert rng.state == expected_rng_state

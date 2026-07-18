@@ -17,3 +17,16 @@ recover the native negative-remainder correction for the two-way type roll.
 Focused result: **100.00%**, 517/517 instructions and 85/0/0 references. The
 anti-fakematch validator passes; there are no volatile operations, synthetic
 references, dead expressions, or register-forcing constructs.
+
+## Port parity
+
+The exact instruction stream also fixes Python's survival stat staging. Native
+stores `size * 0.0952381f` at PC24/f32 precision, builds reward left-to-right as
+random base plus speed, contact damage, and health terms, then rounds the final
+`* 0.8f`. Each tint arithmetic instruction likewise runs at PC24 precision.
+The old Python builder kept those expressions as doubles; some rewards differed
+after their eventual f32 store, and the baseline green tint was one ULP high.
+Zig stored f32 values but associated reward from health back toward the random
+base; seed 10 exposed a one-ULP final reward difference. Both ports now follow
+the recovered left-to-right PC24 chain, with bit-exact contact, reward, and tint
+regressions.

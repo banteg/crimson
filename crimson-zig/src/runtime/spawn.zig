@@ -649,13 +649,19 @@ pub fn buildSurvivalSpawnCreature(
         tint_a,
     };
 
-    const contact_damage = narrowF32(size * (2.0 / 21.0));
+    const contact_damage = native_math.pc24Mul(size, @as(f32, 0.0952381));
     creature.contact_damage = contact_damage;
-    const reward_value = narrowF32(
-        health * 0.4 +
-            contact_damage * 0.8 +
-            move_speed * 5.0 +
-            @as(f32, @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_reward_bonus) % 10 + 10)),
+    var reward_value = native_math.pc24Add(
+        @as(f32, @floatFromInt(rng.randTagged(rng_callers.survival_spawn_creature_reward_bonus) % 10 + 10)),
+        native_math.pc24Mul(move_speed, @as(f32, 5.0)),
+    );
+    reward_value = native_math.pc24Add(
+        reward_value,
+        native_math.pc24Mul(contact_damage, @as(f32, 0.8)),
+    );
+    reward_value = native_math.pc24Add(
+        reward_value,
+        native_math.pc24Mul(health, @as(f32, 0.4)),
     );
     creature.reward_value = reward_value;
 
@@ -697,7 +703,7 @@ pub fn buildSurvivalSpawnCreature(
     }
 
     creature.max_health = creature.health;
-    creature.reward_value = narrowF32(creature.reward_value * 0.8);
+    creature.reward_value = native_math.pc24Mul(creature.reward_value, @as(f32, 0.8));
     creature.tint = .{
         clamp01(creature.tint[0]),
         clamp01(creature.tint[1]),
@@ -1832,13 +1838,21 @@ test "survival spawn baseline seed1 xp0" {
     try expectFloatClose(@floatCast(@as(f32, 0.9)), creature.move_speed);
     try expectFloatClose(64.0, creature.health);
     try expectFloatClose(64.0, creature.max_health);
-    try expectFloatClose(4.19047619047619, creature.contact_damage);
-    try expectFloatClose(36.36190466653733, creature.reward_value);
-    try expectFloatClose(0.9, creature.tint[0]);
-    try expectFloatClose(0.88, creature.tint[1]);
-    try expectFloatClose(0.78, creature.tint[2]);
-    try expectFloatClose(1.0, creature.tint[3]);
+    try std.testing.expectEqual(@as(u32, 0x40861862), @as(u32, @bitCast(creature.contact_damage)));
+    try std.testing.expectEqual(@as(u32, 0x42117297), @as(u32, @bitCast(creature.reward_value)));
+    try std.testing.expectEqual(@as(u32, 0x3F666666), @as(u32, @bitCast(creature.tint[0])));
+    try std.testing.expectEqual(@as(u32, 0x3F6147AD), @as(u32, @bitCast(creature.tint[1])));
+    try std.testing.expectEqual(@as(u32, 0x3F47AE14), @as(u32, @bitCast(creature.tint[2])));
+    try std.testing.expectEqual(@as(u32, 0x3F800000), @as(u32, @bitCast(creature.tint[3])));
     try std.testing.expectEqual(@as(u32, 0xC1BBB05F), rng.state);
+}
+
+test "survival spawn reward follows native x87 association" {
+    var rng = Crand.init(10);
+    const creature = buildSurvivalSpawnCreature(.{ .x = 1.0, .y = 2.0 }, &rng, 0);
+
+    try std.testing.expectEqual(@as(u32, 0x40B0C30C), @as(u32, @bitCast(creature.contact_damage)));
+    try std.testing.expectEqual(@as(u32, 0x4220DC68), @as(u32, @bitCast(creature.reward_value)));
 }
 
 test "survival spawn xp threshold 25000 consumes extra rand" {
