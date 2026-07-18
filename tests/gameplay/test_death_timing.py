@@ -8,11 +8,12 @@ import crimson.sim.world_state as world_state_mod
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
-from crimson.effects import FxQueue, FxQueueRotated
+from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, SecondaryProjectileTypeId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -224,6 +225,57 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
         key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
         for key in events.sfx
     ) == 1
+
+
+def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
+
+    creature = world.creatures.entries[0]
+    creature.active = True
+    creature.type_id = CreatureTypeId.ZOMBIE
+    creature.pos = Vec2(256.0, 256.0)
+    creature.hp = 0.0
+    creature.max_hp = 25.0
+    creature.size = 50.0
+    creature.reward_value = 0.0
+    creature.lifecycle_stage = 16.0
+
+    mocker.patch.object(world.creatures, "update", return_value=CreatureUpdateResult())
+    rng = ScriptedCrand(2, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world.state.rng = rng
+    world.state.particles = ParticlePool(rng=rng)
+    particle = world.state.particles.entries[0]
+    particle.active = True
+    particle.render_flag = False
+    particle.intensity = 0.81
+    particle.style_id = ParticleStyleId.BUBBLEGUN
+    particle.target_id = 0
+    particle.owner = OwnerRef.from_player(0)
+    before_calls = rng.calls
+
+    events = world.step(
+        0.1,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert not creature.active
+    assert len(events.deaths) == 1
+    assert events.sfx == [SfxId.ZOMBIE_DIE_03]
+    assert rng.records_since(before_calls)[0].caller == RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX
 
 
 def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> None:

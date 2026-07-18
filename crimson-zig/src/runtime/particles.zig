@@ -8,6 +8,7 @@ const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
 const runtime_helpers = @import("helpers.zig");
+const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
 const terrain_fx_mod = @import("terrain_fx.zig");
 
@@ -169,18 +170,26 @@ pub const ParticlePool = struct {
                 entry.active = false;
                 if (style == ParticleStyleId.bubblegun and entry.target_id != -1) {
                     const target_idx_i32 = entry.target_id;
-                    entry.target_id = -1;
                     if (target_idx_i32 >= 0 and target_idx_i32 < creatures.entries.len) {
-                        _ = creatures.killNoCorpse(
-                            state,
-                            players,
-                            bonuses,
-                            terrain_fx,
-                            @intCast(target_idx_i32),
-                            entry.owner,
-                            dt_f32,
-                            world_size,
-                        );
+                        const target_idx: usize = @intCast(target_idx_i32);
+                        if (creatures.entries[target_idx].active) {
+                            const sound_slot = state.rng.randTagged(
+                                rng_callers.projectile_update_particle_bubblegun_expiry_sfx,
+                            ) % 3;
+                            if (bubblegunExpirySfx(creatures.entries[target_idx].type_id, sound_slot)) |sfx_id| {
+                                state.sfx_queue.append(sfx_id);
+                            }
+                            _ = creatures.killNoCorpse(
+                                state,
+                                players,
+                                bonuses,
+                                terrain_fx,
+                                target_idx,
+                                entry.owner,
+                                dt_f32,
+                                world_size,
+                            );
+                        }
                     }
                 }
                 continue;
@@ -213,22 +222,6 @@ pub const ParticlePool = struct {
             entry.age = alpha;
             entry.scale_x = shade;
             entry.scale_y = shade;
-
-            if (style == ParticleStyleId.bubblegun and
-                !entry.render_flag and
-                entry.target_id != -1)
-            {
-                const target_idx_i32 = entry.target_id;
-                if (target_idx_i32 >= 0 and target_idx_i32 < creatures.entries.len) {
-                    const target = creatures.entries[@intCast(target_idx_i32)];
-                    if (target.active) {
-                        entry.pos = .{
-                            .x = narrowF32(target.pos.x),
-                            .y = narrowF32(target.pos.y),
-                        };
-                    }
-                }
-            }
 
             if (entry.render_flag) {
                 const radius = @max(entry.intensity, 0.0) * 8.0;
@@ -355,6 +348,18 @@ fn nativeClampUnit(value: f32) f32 {
     if (!(value >= 0.0)) return 0.0;
     if (value > 1.0) return 1.0;
     return value;
+}
+
+fn bubblegunExpirySfx(type_id: i32, sound_slot: u32) ?state_mod.SfxId {
+    const creature_type = std.enums.fromInt(spawn_mod.CreatureTypeId, type_id) orelse return null;
+    const bank: [3]state_mod.SfxId = switch (creature_type) {
+        .zombie => .{ .zombie_die_01, .zombie_die_02, .zombie_die_03 },
+        .lizard => .{ .lizard_die_01, .lizard_die_02, .lizard_die_03 },
+        .alien => .{ .alien_die_01, .alien_die_02, .alien_die_03 },
+        .spider_sp1, .spider_sp2 => .{ .spider_die_01, .spider_die_02, .spider_die_03 },
+        .trooper => .{ .trooper_die_01, .trooper_die_02, .trooper_die_03 },
+    };
+    return bank[@intCast(sound_slot % 3)];
 }
 
 fn creatureFindInRadius(

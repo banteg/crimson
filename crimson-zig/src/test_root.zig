@@ -938,6 +938,75 @@ test "particle hits reject native radius equality" {
     try std.testing.expectEqual(@as(i32, -1), particles.entries[0].target_id);
 }
 
+test "bubblegun expiry reenters active corpse death with native sound draw" {
+    const FirstDrawTrace = struct {
+        const Self = @This();
+
+        first: ?cz.spawn.Crand.TraceDraw = null,
+
+        fn onDraw(ctx: ?*anyopaque, draw: cz.spawn.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            if (self.first == null) self.first = draw;
+        }
+    };
+
+    var state = cz.state.GameplayState.init(2);
+    var trace: FirstDrawTrace = .{};
+    state.rng.setTraceSink(&trace, FirstDrawTrace.onDraw, true);
+    var expected_rng = cz.spawn.Crand.init(2);
+    const sound_slot = expected_rng.rand() % 3;
+    const expected_sfx: cz.state.SfxId = switch (sound_slot) {
+        0 => .zombie_die_01,
+        1 => .zombie_die_02,
+        else => .zombie_die_03,
+    };
+
+    var players = [_]cz.state.PlayerState{.{ .index = 0, .pos = .{} }};
+    var effects: cz.effects.EffectPool = .{};
+    var creatures: cz.creatures.CreaturePool = .{ .effects = &effects };
+    creatures.entries[0] = .{
+        .active = true,
+        .type_id = @intFromEnum(cz.spawn.CreatureTypeId.zombie),
+        .pos = .{ .x = 64.0, .y = 96.0 },
+        .lifecycle_stage = cz.lifecycle.CreatureLifecycle.alive,
+        .size = 50.0,
+        .hp = 0.0,
+    };
+    var particles: cz.particles.ParticlePool = .{};
+    particles.entries[0] = .{
+        .active = true,
+        .render_flag = false,
+        .intensity = 0.81,
+        .style_id = .bubblegun,
+        .target_id = 0,
+    };
+    var bonuses: cz.bonuses.BonusPool = .{};
+    var sprite_effects: cz.effects.SpriteEffectPool = .{};
+    var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+
+    particles.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &sprite_effects,
+        &terrain_fx,
+        0.1,
+        1024.0,
+    );
+
+    try std.testing.expect(!particles.entries[0].active);
+    try std.testing.expectEqual(@as(i32, 0), particles.entries[0].target_id);
+    try std.testing.expect(!creatures.entries[0].active);
+    try std.testing.expectEqual(@as(usize, 1), state.sfx_queue.len);
+    try std.testing.expectEqual(expected_sfx, state.sfx_queue.items[0]);
+    try std.testing.expectEqual(
+        cz.rng_caller_static.projectile_update_particle_bubblegun_expiry_sfx,
+        trace.first.?.caller.?,
+    );
+    try std.testing.expect(!state.rng.consumeMissingTraceCaller());
+}
+
 test "particle hits apply native tint fade and creature displacement" {
     var state = cz.state.GameplayState.init(1);
     var players = [_]cz.state.PlayerState{.{ .index = 0, .pos = .{} }};

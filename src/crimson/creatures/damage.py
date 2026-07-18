@@ -97,6 +97,14 @@ _TROOPER_DEATH_SFX_PRESERVE_BUGS: tuple[SfxId, ...] = (
 )
 
 
+def creature_death_sfx_for_slot(type_id: CreatureTypeId, sound_slot: int) -> SfxId | None:
+    options = _TROOPER_DEATH_SFX if type_id == CreatureTypeId.TROOPER else _CREATURE_DEATH_SFX.get(type_id)
+    slot = int(sound_slot)
+    if options is None or not (0 <= slot < len(options)):
+        return None
+    return options[slot]
+
+
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
     if not _damage_perk_active(ctx, PerkId.URANIUM_FILLED_BULLETS):
         return

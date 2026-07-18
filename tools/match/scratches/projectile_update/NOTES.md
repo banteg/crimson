@@ -74,6 +74,15 @@ reflected particle velocity times `frame_dt`. Python now preserves the exact
 PC=24 arithmetic without fading alpha, and Zig now models both the tint update
 and the gameplay displacement instead of stopping after damage.
 
+Bubblegun attachment copies the hit position once, zeros the particle velocity,
+and retains the target id, but native does not make the attached particle follow
+later creature movement. On expiry, an attached particle checks only the target's
+active byte: it draws `sfx_bank_a[rand() % 3]` at caller-static `0x00422723`,
+plays it at the creature position, then calls `creature_handle_death(target,
+false)`. The target id remains stored in the now-inactive particle. Both ports
+now preserve that order and stale-position/target state; Python no longer adds
+an HP guard that suppressed native active-corpse death re-entry.
+
 ## Remaining work
 
 The native behavior is substantially represented, but whole-function MSVC

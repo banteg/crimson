@@ -287,12 +287,16 @@ class ParticlePool:
                 expired.append(idx)
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
-                    entry.target_id = -1
-                    if creature_damage_runtime is not None:
-                        creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
-                    elif creatures is not None and 0 <= target_id < len(creatures):
-                        creatures[target_id].hp = -1.0
-                        creatures[target_id].active = False
+                    if creatures is not None and 0 <= target_id < len(creatures) and creatures[target_id].active:
+                        sound_slot = int(
+                            rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
+                        )
+                        if creature_damage_runtime is not None:
+                            creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
+                            creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
+                        else:
+                            creatures[target_id].hp = -1.0
+                            creatures[target_id].active = False
                 continue
 
             if entry.render_flag:
@@ -330,16 +334,6 @@ class ParticlePool:
             entry.scale_x = shade
             entry.scale_y = shade
             # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
-
-            if (
-                style == int(ParticleStyleId.BUBBLEGUN)
-                and (not entry.render_flag)
-                and entry.target_id != -1
-                and creatures is not None
-            ):
-                target_id = int(entry.target_id)
-                if 0 <= target_id < len(creatures) and creatures[target_id].active:
-                    entry.pos = creatures[target_id].pos
 
             if entry.render_flag and creatures is not None:
                 hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0)

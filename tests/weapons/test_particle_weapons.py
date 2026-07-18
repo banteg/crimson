@@ -6,6 +6,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import GameplayState
 from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos
 from crimson.owner_ref import OwnerRef
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import (
@@ -172,7 +173,8 @@ def test_particle_hits_damage_creatures() -> None:
 
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2())
     player.aim_dir = Vec2(1.0, 0.0)
     player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
@@ -198,6 +200,17 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     damage_runtime = RecordingCreatureDamageRuntime(creatures=[creature])
 
     state.particles.update(0.016, creatures=[creature], creature_damage_runtime=damage_runtime)
+    particle = next(entry for entry in state.particles.entries if entry.active)
+    attached_pos = particle.pos
+    assert particle.target_id == 0
+    assert not particle.render_flag
+
+    creature.pos = Vec2(80.0, 40.0)
+    state.particles.update(0.1, creatures=[creature], creature_damage_runtime=damage_runtime)
+    assert particle.pos == attached_pos
+
     state.particles.update(2.0, creatures=[creature], creature_damage_runtime=damage_runtime)
 
     assert damage_runtime.kills == [(0, OwnerRef.from_player(0))]
+    assert particle.target_id == 0
+    assert rng.records[-1].caller == RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX

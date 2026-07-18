@@ -12,7 +12,7 @@ from ..bonuses.pickup_fx import emit_bonus_pickup_effects
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.anim import creature_anim_advance_phase
-from ..creatures.damage import creature_apply_damage_with_lethal_followup
+from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
 from ..creatures.spawn import SpawnEnv
@@ -206,8 +206,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
         creature = self.world.creatures.entries[idx]
         if not creature.active:
             return
-        if float(creature.hp) <= 0.0:
-            return
         creature.last_hit_owner = owner
         self.world._record_creature_death(
             creature_index=idx,
@@ -219,6 +217,14 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             sfx=self.sfx,
             keep_corpse=False,
         )
+
+    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
+        idx = int(creature_index)
+        if not (0 <= idx < len(self.world.creatures.entries)):
+            return
+        sfx_id = creature_death_sfx_for_slot(self.world.creatures.entries[idx].type_id, int(sound_slot))
+        if sfx_id is not None:
+            self.sfx.append(sfx_id)
 
     def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
         self.world._run_player_death_hooks(

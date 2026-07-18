@@ -28,6 +28,9 @@ class CreatureDamageRuntime(msgspec.Struct):
     def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
         _ = creature_index, owner
 
+    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
+        _ = creature_index, sound_slot
+
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
         _ = creature_index
 
