@@ -37,6 +37,7 @@ pub const effects = @import("runtime/effects.zig");
 pub const terrain_fx = @import("runtime/terrain_fx.zig");
 pub const secondary_projectiles = @import("runtime/secondary_projectiles.zig");
 pub const state = @import("runtime/state.zig");
+pub const movement = @import("runtime/movement.zig");
 pub const weapons = @import("runtime/weapons.zig");
 pub const projectiles = @import("runtime/projectiles.zig");
 pub const bonuses = @import("runtime/bonuses.zig");

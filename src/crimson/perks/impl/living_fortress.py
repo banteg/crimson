@@ -7,7 +7,7 @@ from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_living_fortress(ctx: PlayerPerkTickCtx) -> None:
-    if perk_active(ctx.player, PerkId.LIVING_FORTRESS):
+    if perk_active(ctx.perk_player, PerkId.LIVING_FORTRESS):
         ctx.player.living_fortress_timer = min(30.0, ctx.player.living_fortress_timer + ctx.dt)
     else:
         ctx.player.living_fortress_timer = 0.0

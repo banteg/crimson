@@ -25,9 +25,11 @@ def apply_player_perk_ticks(
     owner_ref_for_player_projectiles: OwnerRefForPlayerProjectilesFn,
     projectile_spawn: ProjectileSpawnFn,
 ) -> None:
+    perk_player = players[0] if state.preserve_bugs and players else player
     ctx = PlayerPerkTickCtx(
         state=state,
         player=player,
+        perk_player=perk_player,
         player_pos_before_move=player_pos_before_move,
         players=players,
         dt=dt,

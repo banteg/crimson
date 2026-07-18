@@ -56,6 +56,17 @@ def _active_type_ids(pool: ProjectilePool) -> list[int]:
     return [entry.type_id for entry in pool.entries if entry.active]
 
 
+def test_preserve_mode_uses_player_zero_timed_perk_for_player_one() -> None:
+    state = GameplayState(preserve_bugs=True)
+    player0 = PlayerState(index=0, pos=Vec2())
+    player0.perk_counts[int(PerkId.LIVING_FORTRESS)] = 1
+    player1 = PlayerState(index=1, pos=Vec2())
+
+    player_update(player1, PlayerInput(), 0.1, state, players=[player0, player1])
+
+    assert_float_close(player1.living_fortress_timer, f32(0.1))
+
+
 def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
     state = GameplayState()
     state.bonuses.weapon_power_up = 1.0

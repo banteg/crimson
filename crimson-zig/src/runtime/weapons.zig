@@ -81,6 +81,17 @@ inline fn projectileSpawnType(
         type_id;
 }
 
+fn playerUpdatePerkSource(
+    state: *const state_mod.GameplayState,
+    player: *const state_mod.PlayerState,
+    all_players: ?[]const state_mod.PlayerState,
+) *const state_mod.PlayerState {
+    if (!state.preserve_bugs) return player;
+    const players = all_players orelse return player;
+    if (players.len == 0) return player;
+    return &players[0];
+}
+
 pub const TickInputFlags = struct {
     fire_down: bool = false,
     fire_pressed: bool = false,
@@ -190,6 +201,8 @@ pub fn stepPlayerForTickWithEffects(
         return;
     }
 
+    const perk_player = playerUpdatePerkSource(state, player, all_players);
+
     if (input_flags.fire_down) {
         state.survival_reward_fire_seen = true;
     }
@@ -203,11 +216,11 @@ pub fn stepPlayerForTickWithEffects(
     );
     player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
 
-    const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(player, PerkId.stationary_reloader))
+    const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(perk_player, PerkId.stationary_reloader))
         3.0
     else
         1.0;
-    if (perks.perkActive(player, PerkId.anxious_loader) and input_flags.fire_pressed and player.weapon.reload_timer > 0.0) {
+    if (perks.perkActive(perk_player, PerkId.anxious_loader) and input_flags.fire_pressed and player.weapon.reload_timer > 0.0) {
         const anxious_next = narrowF32(player.weapon.reload_timer - 0.05);
         player.weapon.reload_timer = anxious_next;
         if (anxious_next <= 0.0) {
@@ -226,7 +239,7 @@ pub fn stepPlayerForTickWithEffects(
     }
 
     if (player.weapon.reload_timer > 0.0) {
-        if (perks.perkActive(player, PerkId.angry_reloader) and
+        if (perks.perkActive(perk_player, PerkId.angry_reloader) and
             player.weapon.reload_timer_max > 0.5 and
             player.weapon.reload_timer > player.weapon.reload_timer_max * 0.5)
         {
@@ -261,7 +274,7 @@ pub fn stepPlayerForTickWithEffects(
         }
     }
 
-    const has_alt_weapon_perk = perks.perkActive(player, PerkId.alternate_weapon);
+    const has_alt_weapon_perk = perks.perkActive(perk_player, PerkId.alternate_weapon);
     // Native gates on grim_is_key_active (key held), so holding reload chains
     // reloads back-to-back as each one completes.
     const manual_reload_allowed =
@@ -275,7 +288,7 @@ pub fn stepPlayerForTickWithEffects(
         player_runtime.playerStartReloadWithPlayers(player, state, all_players);
     }
 
-    if (perks.perkActive(player, PerkId.sharpshooter)) {
+    if (perks.perkActive(perk_player, PerkId.sharpshooter)) {
         player.spread_heat = 0.02;
     } else {
         player.spread_heat = @max(
@@ -401,12 +414,13 @@ fn tryFireWeaponWithForce(
     detail_preset: i32,
     force_pre_swap_fire_gate: bool,
 ) WeaponRuntimeError!bool {
+    const perk_player = playerUpdatePerkSource(state, player, all_players);
     if (player.weapon.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
     const weapon_id = player.weapon.weapon_id;
     if (player.weapon.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
         if (player.experience <= 0) return false;
 
-        if (perks.perkActive(player, PerkId.regression_bullets)) {
+        if (perks.perkActive(perk_player, PerkId.regression_bullets)) {
             const reload_time = weapon_data.weapon_stats.get(weapon_id).reload_time;
             const factor: f32 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
             const drained = narrowF32(reload_time * factor);
@@ -414,7 +428,7 @@ fn tryFireWeaponWithForce(
             var after: i32 = @intFromFloat(before - drained);
             if (after < 0) after = 0;
             player.experience = after;
-        } else if (perks.perkActive(player, PerkId.ammunition_within)) {
+        } else if (perks.perkActive(perk_player, PerkId.ammunition_within)) {
             const health_cost: f32 = if (weaponUsesFireAmmoClass(weapon_id))
                 @as(f32, 0.15)
             else
@@ -474,10 +488,10 @@ fn tryFireWeaponWithForce(
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
-    if (perks.perkActive(player, PerkId.fastshot)) {
+    if (perks.perkActive(perk_player, PerkId.fastshot)) {
         shot_cooldown = narrowF32(shot_cooldown * 0.88);
     }
-    if (perks.perkActive(player, PerkId.sharpshooter)) {
+    if (perks.perkActive(perk_player, PerkId.sharpshooter)) {
         shot_cooldown = narrowF32(shot_cooldown * 1.05);
     }
     player.weapon.shot_cooldown = @max(0.0, shot_cooldown);
@@ -671,7 +685,7 @@ fn tryFireWeaponWithForce(
 
     player.shot_seq += 1;
 
-    if (!perks.perkActive(player, PerkId.sharpshooter)) {
+    if (!perks.perkActive(perk_player, PerkId.sharpshooter)) {
         const spread_heat_base = if (is_fire_bullets) fire_bullets_spread_heat else weapon_spread_heat;
         const spread_inc = native_math.pc24Mul(spread_heat_base, @as(f32, 1.3));
         player.spread_heat = std.math.clamp(
@@ -711,20 +725,22 @@ pub fn applyPlayerPerkTicksWithEffects(
     sprite_effects: *effects_mod.SpriteEffectPool,
     dt: f32,
 ) void {
-    tickManBomb(state, player, all_players, projectiles, dt);
-    tickLivingFortress(player, dt);
-    tickFireCaugh(state, player, all_players, projectiles, sprite_effects, dt);
-    tickHotTempered(state, player, all_players, projectiles, dt);
+    const perk_player = playerUpdatePerkSource(state, player, all_players);
+    tickManBomb(state, player, perk_player, all_players, projectiles, dt);
+    tickLivingFortress(player, perk_player, dt);
+    tickFireCaugh(state, player, perk_player, all_players, projectiles, sprite_effects, dt);
+    tickHotTempered(state, player, perk_player, all_players, projectiles, dt);
 }
 
 fn tickManBomb(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     all_players: ?[]const state_mod.PlayerState,
     projectiles: *projectiles_mod.ProjectilePool,
     dt: f32,
 ) void {
-    if (!perks.perkActive(player, PerkId.man_bomb)) {
+    if (!perks.perkActive(perk_player, PerkId.man_bomb)) {
         player.man_bomb_timer = 0.0;
         return;
     }
@@ -762,9 +778,10 @@ fn tickManBomb(
 
 fn tickLivingFortress(
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     dt: f32,
 ) void {
-    if (perks.perkActive(player, PerkId.living_fortress)) {
+    if (perks.perkActive(perk_player, PerkId.living_fortress)) {
         player.living_fortress_timer = @min(30.0, player.living_fortress_timer + dt);
     } else {
         player.living_fortress_timer = 0.0;
@@ -774,12 +791,13 @@ fn tickLivingFortress(
 fn tickFireCaugh(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     all_players: ?[]const state_mod.PlayerState,
     projectiles: *projectiles_mod.ProjectilePool,
     sprite_effects: *effects_mod.SpriteEffectPool,
     dt: f32,
 ) void {
-    if (!perks.perkActive(player, PerkId.fire_caugh)) {
+    if (!perks.perkActive(perk_player, PerkId.fire_caugh)) {
         player.fire_cough_timer = 0.0;
         return;
     }
@@ -834,11 +852,12 @@ fn tickFireCaugh(
 fn tickHotTempered(
     state: *state_mod.GameplayState,
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     all_players: ?[]const state_mod.PlayerState,
     projectiles: *projectiles_mod.ProjectilePool,
     dt: f32,
 ) void {
-    if (!perks.perkActive(player, PerkId.hot_tempered)) {
+    if (!perks.perkActive(perk_player, PerkId.hot_tempered)) {
         player.hot_tempered_timer = 0.0;
         return;
     }

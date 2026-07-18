@@ -19,7 +19,7 @@ from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.player, PerkId.FIRE_CAUGH):
+    if not perk_active(ctx.perk_player, PerkId.FIRE_CAUGH):
         ctx.player.fire_cough_timer = 0.0
         return
 

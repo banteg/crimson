@@ -22,3 +22,7 @@ Recovering the fixed slot scan also exposed a port bug: the Python runtime had
 an unbounded append-only list, while Zig had a 384-entry monotonic pool. Both
 ports now use the native 32-slot first-free allocator, overwrite the final slot
 on exhaustion, and release owner pointers through the native death path.
+
+The exact helper's Alternate Weapon query calls `perk_count_get`, so it reads
+player slot 0 even while moving another indexed player. Preserve mode now uses
+that slot-zero perk source in both ports; corrected mode remains per-player.

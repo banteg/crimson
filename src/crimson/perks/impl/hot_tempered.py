@@ -13,7 +13,7 @@ from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.player, PerkId.HOT_TEMPERED):
+    if not perk_active(ctx.perk_player, PerkId.HOT_TEMPERED):
         ctx.player.hot_tempered_timer = 0.0
         return
 

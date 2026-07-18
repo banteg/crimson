@@ -411,10 +411,11 @@ pub fn stepTick(
         const flags = input.flags;
         const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
 
-        movement.updatePlayerFromGameInput(
+        movement.updatePlayerFromGameInputWithPlayers(
             player,
             input,
             &context.state,
+            players,
             &context.creatures,
             frame.dt_sim,
         );

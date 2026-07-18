@@ -302,6 +302,124 @@ test {
     _ = @import("wasm_exports.zig");
 }
 
+test "native movement uses player zero perk source" {
+    var state = cz.state.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{}, .move_speed = 2.1 },
+    };
+    players[0].perk_counts.set(.long_distance_runner, 1);
+    const input: cz.movement.GameInput = .{
+        .move_x = 1.0,
+        .move_y = 0.0,
+        .aim_x = 1.0,
+        .aim_y = 0.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+        },
+    };
+
+    cz.movement.updatePlayerFromGameInputWithPlayers(
+        &players[1],
+        input,
+        &state,
+        players[0..],
+        null,
+        0.1,
+    );
+
+    try std.testing.expectApproxEqAbs(cz.native_math.roundF32(2.2), players[1].move_speed, 1e-6);
+}
+
+test "native player update uses player zero perk source" {
+    var state = cz.state.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{
+            .index = 1,
+            .pos = .{},
+            .aim = .{ .x = 10.0, .y = 0.0 },
+            .weapon = .{ .weapon_id = .pistol, .ammo = 2.0 },
+        },
+    };
+    players[0].perk_counts.set(.living_fortress, 1);
+    players[0].perk_counts.set(.fastshot, 1);
+    var projectiles: cz.projectiles.ProjectilePool = .{};
+    var secondary_projectiles: cz.secondary_projectiles.SecondaryProjectilePool = .{};
+    var creatures: cz.creatures.CreaturePool = .{};
+    var particles: cz.particles.ParticlePool = .{};
+    var effects: cz.effects.EffectPool = .{};
+    var sprite_effects: cz.effects.SpriteEffectPool = .{};
+
+    cz.weapons.applyPlayerPerkTicksWithEffects(
+        &state,
+        &players[1],
+        players[0..],
+        &projectiles,
+        &sprite_effects,
+        0.1,
+    );
+    try std.testing.expectApproxEqAbs(@as(f32, 0.1), players[1].living_fortress_timer, 1e-6);
+
+    try cz.weapons.stepPlayerForTickWithEffects(
+        &state,
+        &players[1],
+        players[0..],
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        &effects,
+        &sprite_effects,
+        5,
+        .{ .fire_down = true, .preprocessed_player_tick = true },
+        0.1,
+    );
+
+    const base_cooldown = cz.weapon_data.weapon_stats.get(.pistol).shot_cooldown;
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.roundF32(base_cooldown * 0.88),
+        players[1].weapon.shot_cooldown,
+        1e-6,
+    );
+}
+
+test "bonus pickup uses native pc24 radius boundary" {
+    var state = cz.state.GameplayState.init(1);
+    var pool: cz.bonuses.BonusPool = .{};
+    pool.entries[0] = .{
+        .bonus_id = .shield,
+        .time_left = 1.0,
+        .time_max = 1.0,
+        .pos = .{},
+    };
+    var players = [_]cz.state.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 25.999998092651367, .y = 0.009600000455975533 },
+        },
+    };
+    var pickup_bonus_ids = [_]cz.game_ids.BonusId{.unused} ** cz.bonuses.bonus_pool_size;
+    var pickup_count: usize = 0;
+
+    try pool.update(
+        &state,
+        players[0..],
+        0.01,
+        &pickup_bonus_ids,
+        &pickup_count,
+        null,
+    );
+
+    try std.testing.expectEqual(@as(usize, 0), pickup_count);
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].shield_timer);
+}
+
 test "creature target selection follows native two-player cadence" {
     var creature: cz.creatures.CreatureState = .{
         .pos = .{ .x = 0.0, .y = 0.0 },

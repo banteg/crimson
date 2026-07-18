@@ -199,6 +199,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     players = ctx.players
     force_pre_swap_fire_gate = bool(ctx.force_pre_swap_fire_gate)
     player_death_runtime = ctx.player_death_runtime
+    perk_player = players[0] if state.preserve_bugs and players else player
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
@@ -213,7 +214,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     if (not force_pre_swap_fire_gate) and player.weapon.reload_timer > 0.0:
         if player.experience <= 0:
             return WeaponFireResult(fired=False)
-        if perk_active(player, PerkId.REGRESSION_BULLETS):
+        if perk_active(perk_player, PerkId.REGRESSION_BULLETS):
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             reload_time = float(weapon.reload_time)
@@ -221,7 +222,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             player.experience = int(float(player.experience) - reload_time * factor)
             if player.experience < 0:
                 player.experience = 0
-        elif perk_active(player, PerkId.AMMUNITION_WITHIN):
+        elif perk_active(perk_player, PerkId.AMMUNITION_WITHIN):
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             from ..player_damage import player_take_damage
@@ -251,9 +252,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = x87_pc24_mul(spread_heat_base, f32(1.3))
 
-    if perk_active(player, PerkId.FASTSHOT):
+    if perk_active(perk_player, PerkId.FASTSHOT):
         shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
-    if perk_active(player, PerkId.SHARPSHOOTER):
+    if perk_active(perk_player, PerkId.SHARPSHOOTER):
         shot_cooldown = float(f32(float(shot_cooldown) * 1.05))
     player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
@@ -478,7 +479,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             fire_bullets_active=bool(is_fire_bullets),
         )
 
-    if not perk_active(player, PerkId.SHARPSHOOTER):
+    if not perk_active(perk_player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
 
     muzzle_inc = weapon_spread_heat

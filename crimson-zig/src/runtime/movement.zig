@@ -9,7 +9,7 @@ const survival_progression = @import("survival_progression.zig");
 
 const narrowF32 = native_math.roundF32;
 const PerkId = perks.PerkId;
-const GameInput = player_runtime.GameInput;
+pub const GameInput = player_runtime.GameInput;
 const GameInputFlags = player_runtime.GameInputFlags;
 const native_half_pi: f32 = native_math.native_half_pi;
 const native_pi: f32 = native_math.native_pi;
@@ -38,6 +38,21 @@ pub fn updatePlayerFromGameInput(
     creatures: ?*const creatures_mod.CreaturePool,
     dt: f32,
 ) void {
+    updatePlayerFromGameInputWithPlayers(player, input, state, null, creatures, dt);
+}
+
+pub fn updatePlayerFromGameInputWithPlayers(
+    player: *state_mod.PlayerState,
+    input: GameInput,
+    state: *const state_mod.GameplayState,
+    all_players: ?[]const state_mod.PlayerState,
+    creatures: ?*const creatures_mod.CreaturePool,
+    dt: f32,
+) void {
+    const perk_player: *const state_mod.PlayerState = if (state.preserve_bugs and all_players != null and all_players.?.len > 0)
+        &all_players.?[0]
+    else
+        player;
     const prev_pos = player.pos;
     var movement_dt = dt;
     if (state.time_scale_active and movement_dt > 0.0) {
@@ -102,11 +117,11 @@ pub fn updatePlayerFromGameInput(
             }
 
             if (moving_forward) {
-                playerAccelerateMoveSpeed(player, movement_dt);
+                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
             } else if (moving_backward) {
-                playerAccelerateMoveSpeed(player, movement_dt);
+                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
                 phase_sign = -1.0;
                 move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, -25.0);
             } else {
@@ -162,7 +177,7 @@ pub fn updatePlayerFromGameInput(
                     movement_dt,
                 );
                 player.aim_heading = narrowF32(player.aim_heading + heading_result.turn_delta);
-                playerAccelerateMoveSpeed(player, movement_dt);
+                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
                 playerApplyMoveSpeedCaps(player);
                 move_ext = directionFromHeadingNativeExt(player.heading);
                 const velocity = playerTurnAlignedVelocityNative(
@@ -182,7 +197,7 @@ pub fn updatePlayerFromGameInput(
                 const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
                 move_ext = directionFromHeadingNativeExt(player.heading);
                 turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
-                playerAccelerateMoveSpeed(player, movement_dt);
+                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
             } else {
                 playerDecelerateMoveSpeed(player, movement_dt);
                 move_ext = directionFromHeadingNativeExt(player.heading);
@@ -205,7 +220,7 @@ pub fn updatePlayerFromGameInput(
             const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
             move_ext = directionFromHeadingNativeExt(player.heading);
             turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
-            playerAccelerateMoveSpeed(player, movement_dt);
+            playerAccelerateMoveSpeed(player, perk_player, movement_dt);
         } else {
             playerDecelerateMoveSpeed(player, movement_dt);
             move_ext = directionFromHeadingNativeExt(player.heading);
@@ -226,7 +241,7 @@ pub fn updatePlayerFromGameInput(
             .x = headingMulNarrow(move_ext.x, narrowF32(speed * movement_dt)),
             .y = headingMulNarrow(move_ext.y, narrowF32(speed * movement_dt)),
         };
-    playerApplyMoveWithSpawnAvoidance(player, delta, creatures);
+    playerApplyMoveWithSpawnAvoidance(player, perk_player, delta, creatures);
 
     const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
     const reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0;
@@ -388,12 +403,13 @@ fn distanceF32Xy(
 
 fn playerApplyMoveWithSpawnAvoidance(
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     delta: state_mod.Vec2,
     creatures: ?*const creatures_mod.CreaturePool,
 ) void {
     var dx = delta.x;
     var dy = delta.y;
-    if (perks.perkActive(player, PerkId.alternate_weapon)) {
+    if (perks.perkActive(perk_player, PerkId.alternate_weapon)) {
         dx = narrowF32(dx * 0.8);
         dy = narrowF32(dy * 0.8);
     }
@@ -461,9 +477,10 @@ fn aimHeadingFromAimPointNative(player_pos: state_mod.Vec2, aim_pos: state_mod.V
 
 fn playerAccelerateMoveSpeed(
     player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
     dt: f32,
 ) void {
-    if (perks.perkActive(player, PerkId.long_distance_runner)) {
+    if (perks.perkActive(perk_player, PerkId.long_distance_runner)) {
         if (player.move_speed < 2.0) {
             player.move_speed = narrowF32(player.move_speed + dt * 4.0);
         }

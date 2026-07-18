@@ -13,7 +13,7 @@ from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.player, PerkId.MAN_BOMB):
+    if not perk_active(ctx.perk_player, PerkId.MAN_BOMB):
         ctx.player.man_bomb_timer = 0.0
         return
 

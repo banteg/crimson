@@ -167,3 +167,18 @@ spread constants (`0.0013`, `0.004`, `0.002`, and `0.0026`), the Gauss/Ion
 speed base of `1.4`, and the swarmer angular step of pi/3. The remaining
 whole-function alignment delta comes from incomplete local-slot coalescing and
 control paths. No register constraints or artificial padding are used.
+
+## Port parity: slot-zero perk ownership
+
+Live Binary Ninja identifies 16 calls from `player_update` to the exact
+`perk_count_get` helper, which always reads player slot 0. They cover Man Bomb,
+Living Fortress, Fire Cough, Hot Tempered, Sharpshooter, Anxious Loader,
+Stationary Reloader, Angry Reloader, Alternate Weapon, Regression Bullets, and
+Ammunition Within. The recovered source also directly reads slot 0 for Long
+Distance Runner, Fastshot, and the firing-path Sharpshooter check.
+
+Both ports now select player 0 as the perk source for these phases when
+`preserve_bugs` is enabled, while continuing to mutate the actual overlay
+player's movement, timers, health, weapon, and projectile ownership. Corrected
+mode retains intuitive per-player perk ownership. Focused co-op regressions
+cover movement, a timed perk, and firing cooldown policy in both runtimes.
