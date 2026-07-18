@@ -1774,9 +1774,11 @@ class CreaturePool:
 
         killer: PlayerState | None = None
         if players:
-            player_index = _owner_to_player_index(creature.last_hit_owner)
-            if player_index is None or not (0 <= player_index < len(players)):
-                player_index = 0
+            player_index = 0
+            if not bool(state.preserve_bugs):
+                player_index = _owner_to_player_index(creature.last_hit_owner)
+                if player_index is None or not (0 <= player_index < len(players)):
+                    player_index = 0
             killer = players[player_index]
 
         xp_awarded = 0

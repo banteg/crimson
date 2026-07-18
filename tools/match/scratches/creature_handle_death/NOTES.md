@@ -42,3 +42,9 @@ to the opening register allocation and two recent-death-count reloads that this
 typed array candidate coalesces; their absence shifts later branch labels.
 MSVC 6.5pp, MSVC 7.0, `/G6`, and volatility experiments diverged elsewhere and
 were rejected rather than retained as matching aids.
+
+The XP path is also unambiguously player-zero-owned. This function receives no
+owner argument, and both Bloody Mess / Quick Learner tests plus both ordinary
+and Double Experience stores address `player_state_table[0]` directly at
+`0x0041eb43..0x0041ebb0`. Python and Zig now retain that source and destination
+in bug-preserving mode; corrected mode deliberately keeps last-hit-owner XP.

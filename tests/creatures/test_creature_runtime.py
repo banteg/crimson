@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import cast
 
+import pytest
+
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry
@@ -1128,6 +1130,45 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert len(state.effects.iter_active()) == 16
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert stub_rand._idx == 67
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_experience"),
+    [
+        (True, (13, 0)),
+        (False, (0, 10)),
+    ],
+    ids=["native-player-zero", "corrected-last-hit-owner"],
+)
+def test_death_award_player_source_policy(
+    preserve_bugs: bool,
+    expected_experience: tuple[int, int],
+) -> None:
+    state = GameplayState(preserve_bugs=preserve_bugs)
+    state.bonus_spawn_guard = True
+    players = [
+        PlayerState(index=0, pos=Vec2()),
+        PlayerState(index=1, pos=Vec2()),
+    ]
+    players[0].perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
+    pool = CreaturePool()
+    pool.entries[0].active = True
+    pool.entries[0].hp = 0.0
+    pool.entries[0].reward_value = 10.0
+    pool.entries[0].last_hit_owner = OwnerRef.from_local_player(1)
+
+    death = pool.handle_death(
+        0,
+        state=state,
+        players=players,
+        rng=state.rng,
+        world_width=1024.0,
+        world_height=1024.0,
+        fx_queue=None,
+    )
+
+    assert death.xp_awarded == max(expected_experience)
+    assert (players[0].experience, players[1].experience) == expected_experience
 
 
 def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:

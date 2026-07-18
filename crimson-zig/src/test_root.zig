@@ -713,6 +713,61 @@ test "corrected shock-chain retarget has no fallback target" {
     );
 }
 
+test "creature death xp source follows bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var state = cz.state.GameplayState.init(2);
+        state.preserve_bugs = preserve_bugs;
+        state.bonus_spawn_guard = true;
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{} },
+            .{ .index = 1, .pos = .{} },
+        };
+        players[0].perk_counts.set(.bloody_mess_quick_learner, 1);
+        var creatures: cz.creatures.CreaturePool = .{};
+        var effects: cz.effects.EffectPool = .{};
+        var bonuses: cz.bonuses.BonusPool = .{};
+        var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+        creatures.effects = &effects;
+        _ = creatures.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 0.0, .y = 0.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = cz.spawn.CreatureFlags.anim_ping_pong,
+            .size = 44.0,
+            .move_speed = 0.0,
+            .health = 10.0,
+            .max_health = 10.0,
+            .reward_value = 10.0,
+            .contact_damage = 0.0,
+        });
+
+        const gained = creatures.applyProjectileDamage(
+            &state,
+            players[0..],
+            &bonuses,
+            &terrain_fx,
+            0,
+            20.0,
+            .{},
+            .{ .player = .{ .index = 1 } },
+            1.0 / 60.0,
+            1024.0,
+        );
+
+        if (preserve_bugs) {
+            try std.testing.expectEqual(@as(i32, 13), gained);
+            try std.testing.expectEqual(@as(i32, 13), players[0].experience);
+            try std.testing.expectEqual(@as(i32, 0), players[1].experience);
+        } else {
+            try std.testing.expectEqual(@as(i32, 10), gained);
+            try std.testing.expectEqual(@as(i32, 0), players[0].experience);
+            try std.testing.expectEqual(@as(i32, 10), players[1].experience);
+        }
+    }
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

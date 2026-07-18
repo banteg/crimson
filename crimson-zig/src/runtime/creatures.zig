@@ -3716,7 +3716,10 @@ fn awardExperienceForOwner(
     reward_value: f32,
 ) i32 {
     if (players.len == 0) return 0;
-    const slot = ownerToPlayerIndex(owner, players.len) orelse 0;
+    const slot = if (state.preserve_bugs)
+        0
+    else
+        ownerToPlayerIndex(owner, players.len) orelse 0;
     return awardExperienceFromReward(state, &players[slot], reward_value);
 }
 
