@@ -144,6 +144,18 @@ Frame/prefix notes:
   base-heading draw, matching the universal prologue at
   `0x00430afc..0x00430ba6`. Variant 2's template `0x41` path already used that
   ordering and remains covered by the same regression table.
+- A complete direct-xref audit shows that demos use the sentinel for `0x34`,
+  `0x35`, `0x38`, and `0x41`, while `creature_update_all` uses it for every
+  spawn-slot child. Survival and tutorial callers pass native pi instead, and
+  demo variant 3 passes zero. The callee itself is nevertheless universal:
+  after the root allocation at `0x00430afc`, the compare and optional
+  `rand() % 628` at `0x00430b00..0x00430b3e` precede the transient
+  `rand() % 314` initialization at `0x00430b83..0x00430ba6`, before any
+  template dispatch. Zig now preserves that ordering for all 67 supported
+  ids, including API-level combinations absent from native callers. A tagged
+  RNG regression asserts the first two draws for every id, and the exhaustive
+  Python/Zig diagnostic is clean in default, hardcore, retry, and sentinel
+  scenarios (`0` mismatching templates in each).
 - The native root initialization loads both position components before its
   zero-velocity store. Restoring that aggregate-like order raises the score
   from `60.28%` to `60.32%` without changing the frame, prefix, or references.
