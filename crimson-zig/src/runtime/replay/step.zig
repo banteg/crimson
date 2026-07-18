@@ -281,7 +281,7 @@ pub fn stepTick(
 
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
     context.effects.update(frame.dt, &context.terrain_fx.decals);
-    perks.updateEvilEyesTargets(players, context.creatures.entries[0..]);
+    perks.updateEvilEyesTargets(context.state.preserve_bugs, players, context.creatures.entries[0..]);
     perks.updatePerkEffects(&context.state, players, frame.dt_sim);
     perks.applyJinxedEffects(&context.state, players, &context.creatures, &context.terrain_fx, frame.dt_sim);
     perks.applyPyrokineticEffects(

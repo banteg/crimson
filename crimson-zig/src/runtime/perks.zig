@@ -635,12 +635,14 @@ pub fn updatePerkEffects(
 }
 
 pub fn updateEvilEyesTargets(
+    preserve_bugs: bool,
     players: []state_mod.PlayerState,
     creatures: []const creatures_mod.CreatureState,
 ) void {
     if (players.len == 0) return;
-    for (players) |*player| {
-        if (player.health <= 0.0 or !perkActive(player, PerkId.evil_eyes)) {
+    const effect_players = if (preserve_bugs) players[0..1] else players;
+    for (effect_players) |*player| {
+        if ((!preserve_bugs and player.health <= 0.0) or !perkActive(player, PerkId.evil_eyes)) {
             player.evil_eyes_target_creature = -1;
             continue;
         }
@@ -661,8 +663,9 @@ pub fn applyPyrokineticEffects(
 
     const burn_intensities = [_]f32{ 0.8, 0.6, 0.4, 0.3, 0.2 };
 
-    for (players) |*player| {
-        if (player.health <= 0.0) continue;
+    const effect_players = if (state.preserve_bugs) players[0..1] else players;
+    for (effect_players) |*player| {
+        if (!state.preserve_bugs and player.health <= 0.0) continue;
         if (!perkActive(player, PerkId.pyrokinetic)) continue;
 
         const target_idx = creatureFindInRadius(creatures.entries[0..], player.aim, 12.0, 0);
@@ -1832,7 +1835,7 @@ test "evil eyes targeting defaults to alive player slot" {
         },
     };
 
-    updateEvilEyesTargets(players[0..], creatures[0..]);
+    updateEvilEyesTargets(false, players[0..], creatures[0..]);
     try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
     try std.testing.expectEqual(@as(i32, 0), players[1].evil_eyes_target_creature);
 }
@@ -1872,7 +1875,7 @@ test "evil eyes targeting assigns each alive owner" {
         },
     };
 
-    updateEvilEyesTargets(players[0..], creatures[0..]);
+    updateEvilEyesTargets(false, players[0..], creatures[0..]);
     try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
     try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
 }

@@ -768,6 +768,71 @@ test "creature death xp source follows bug mode" {
     }
 }
 
+test "perk aim effect source follows bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var state = cz.state.GameplayState.init(2);
+        state.preserve_bugs = preserve_bugs;
+        var players = [_]cz.state.PlayerState{
+            .{
+                .index = 0,
+                .pos = .{},
+                .health = 0.0,
+                .aim = .{ .x = 100.0, .y = 200.0 },
+            },
+            .{
+                .index = 1,
+                .pos = .{},
+                .health = 100.0,
+                .aim = .{ .x = 200.0, .y = 200.0 },
+            },
+        };
+        players[0].perk_counts.set(.evil_eyes, 1);
+        players[0].perk_counts.set(.pyrokinetic, 1);
+        players[1].perk_counts.set(.evil_eyes, 1);
+        players[1].perk_counts.set(.pyrokinetic, 1);
+
+        var creatures: cz.creatures.CreaturePool = .{};
+        for (0..2) |idx| {
+            creatures.entries[idx] = .{
+                .active = true,
+                .pos = .{ .x = 100.0 + @as(f32, @floatFromInt(idx)) * 100.0, .y = 200.0 },
+                .lifecycle_stage = cz.lifecycle.CreatureLifecycle.alive,
+                .size = 50.0,
+                .hp = 100.0,
+                .collision_timer = 0.1,
+            };
+        }
+
+        cz.perks.updateEvilEyesTargets(
+            preserve_bugs,
+            players[0..],
+            creatures.entries[0..],
+        );
+        var particles: cz.particles.ParticlePool = .{};
+        var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+        cz.perks.applyPyrokineticEffects(
+            &state,
+            players[0..],
+            &creatures,
+            &particles,
+            &terrain_fx,
+            0.2,
+        );
+
+        if (preserve_bugs) {
+            try std.testing.expectEqual(@as(i32, 0), players[0].evil_eyes_target_creature);
+            try std.testing.expectEqual(@as(i32, -1), players[1].evil_eyes_target_creature);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[0].collision_timer, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.1), creatures.entries[1].collision_timer, 1e-6);
+        } else {
+            try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
+            try std.testing.expectEqual(@as(i32, 1), players[1].evil_eyes_target_creature);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.1), creatures.entries[0].collision_timer, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.5), creatures.entries[1].collision_timer, 1e-6);
+        }
+    }
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};
