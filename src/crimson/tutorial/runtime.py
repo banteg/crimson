@@ -79,25 +79,21 @@ def tutorial_post_step(ctx) -> None:
     if actions.play_levelup_sfx:
         state.sfx_queue.append(SfxId.UI_LEVELUP)
 
-    for call in actions.spawn_bonuses:
-        # Native tutorial code writes the bonus pool directly (no
-        # bonus_spawn_at 16-burst) and emits its own 12-particle burst below.
-        spawned = state.bonus_pool.spawn_at(
+    for index, call in enumerate(actions.spawn_bonuses):
+        # Native tutorial code overwrites slots 0..2 directly with 100-second
+        # timers (no bonus_spawn_at clamp or 16-particle burst).
+        spawned = state.bonus_pool.seed_tutorial_entry(
+            index,
             pos=call.pos,
             bonus_id=call.bonus_id,
-            duration_override=int(call.amount),
-            state=state,
-            world_width=float(ctx.world_size),
-            world_height=float(ctx.world_size),
-            emit_burst=False,
+            amount=int(call.amount),
         )
-        if spawned is not None:
-            state.effects.spawn_burst(
-                pos=spawned.pos,
-                count=12,
-                rng=state.rng,
-                detail_preset=int(ctx.detail_preset),
-            )
+        state.effects.spawn_burst(
+            pos=spawned.pos,
+            count=12,
+            rng=state.rng,
+            detail_preset=int(ctx.detail_preset),
+        )
 
     for call in actions.spawn_templates:
         mapping, primary = ctx.world.creatures.spawn_template(

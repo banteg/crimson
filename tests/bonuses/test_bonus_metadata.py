@@ -31,6 +31,28 @@ def test_bonus_spawn_uses_native_constructor_default_amount(bonus_id: BonusId) -
     assert entry.amount == 1
 
 
+def test_tutorial_bonus_seed_overwrites_fixed_slot_with_native_timer() -> None:
+    pool = BonusPool(size=3)
+    pool.entries[1].bonus_id = BonusId.NUKE
+    pool.entries[1].time_left = 7.0
+
+    entry = pool.seed_tutorial_entry(
+        1,
+        pos=Vec2(600.0, 400.0),
+        bonus_id=BonusId.POINTS,
+        amount=1000,
+    )
+
+    assert entry is pool.entries[1]
+    assert pool.entries[0].bonus_id == BonusId.UNUSED
+    assert entry.bonus_id == BonusId.POINTS
+    assert entry.time_left == 100.0
+    assert entry.time_max == 100.0
+    assert entry.picked is False
+    assert entry.amount == 1000
+    assert entry.pos == Vec2(600.0, 400.0)
+
+
 def test_bonus_spawn_spacing_uses_native_pc24_hypotenuse_boundary() -> None:
     pool = BonusPool(size=2)
     active = pool.entries[0]

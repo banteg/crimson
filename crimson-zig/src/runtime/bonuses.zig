@@ -204,6 +204,23 @@ pub const BonusPool = struct {
         return if (slot == .sentinel) null else entry;
     }
 
+    pub fn seedTutorialEntry(
+        self: *BonusPool,
+        index: usize,
+        pos: state_mod.Vec2,
+        bonus_id: BonusId,
+        amount: i32,
+    ) *BonusEntry {
+        const entry = &self.entries[index];
+        entry.bonus_id = bonus_id;
+        entry.time_left = 100.0;
+        entry.time_max = 100.0;
+        entry.picked = false;
+        entry.amount = amount;
+        entry.pos = pos;
+        return entry;
+    }
+
     pub fn update(
         self: *BonusPool,
         state: *state_mod.GameplayState,
@@ -1353,6 +1370,29 @@ test "bonus update pre-pickup decrements timers" {
     try std.testing.expect(state.bonuses.weapon_power_up < 2.0);
     try std.testing.expect(state.bonuses.energizer < 2.0);
     try std.testing.expect(state.bonuses.reflex_boost < 0.5);
+}
+
+test "tutorial bonus seed overwrites its fixed slot with the native timer" {
+    var pool: BonusPool = .{};
+    pool.entries[1].bonus_id = .nuke;
+    pool.entries[1].time_left = 7.0;
+
+    const entry = pool.seedTutorialEntry(
+        1,
+        .{ .x = 600.0, .y = 400.0 },
+        .points,
+        1000,
+    );
+
+    try std.testing.expect(entry == &pool.entries[1]);
+    try std.testing.expectEqual(BonusId.unused, pool.entries[0].bonus_id);
+    try std.testing.expectEqual(BonusId.points, entry.bonus_id);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), entry.time_left, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), entry.time_max, 1e-6);
+    try std.testing.expect(!entry.picked);
+    try std.testing.expectEqual(@as(i32, 1000), entry.amount);
+    try std.testing.expectApproxEqAbs(@as(f32, 600.0), entry.pos.x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 400.0), entry.pos.y, 1e-6);
 }
 
 test "bonus spawn-on-kill rng cadence matches observed pistol path" {

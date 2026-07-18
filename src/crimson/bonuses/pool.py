@@ -186,6 +186,23 @@ class BonusPool:
             )
         return None if self._is_sentinel_entry(entry) else entry
 
+    def seed_tutorial_entry(
+        self,
+        index: int,
+        *,
+        pos: Vec2,
+        bonus_id: BonusId,
+        amount: int,
+    ) -> BonusEntry:
+        entry = self._entries[int(index)]
+        entry.bonus_id = bonus_id
+        entry.time_left = 100.0
+        entry.time_max = 100.0
+        entry.picked = False
+        entry.amount = int(amount)
+        entry.pos = pos
+        return entry
+
     def spawn_at_pos(
         self,
         pos: Vec2,

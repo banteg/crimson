@@ -17,6 +17,16 @@ and applies the native one-frame negative fade before subsequent frames fade
 back in. The corresponding latch is a byte-sized C++ `bool`; its two payload
 globals are mapped at `0x004712f4` and `0x004712f8`.
 
+Stage one does not call `bonus_spawn_at`. At `0x00408e26..0x00408f0c` it
+overwrites bonus slots 0, 1, and 2 directly with Points amounts 500, 1000, and
+500; each slot gets both timer fields set to `100.0f`, state byte zero, and its
+fixed position before a 12-particle `effect_spawn_burst` call. The second and
+third max-timer stores deliberately reload slot zero's 100-second timer. Both
+ports previously reused the ordinary constructor and therefore assigned only
+10 seconds. They now expose a fixed-slot tutorial seed operation, preserve the
+100-second lifetime and overwrite policy, and retain only the native 12-particle
+burst.
+
 Stage five alternates left and right creature formations, optionally adds a
 bonus carrier through wave five, assigns the five packed bonus drops, and adds
 the blue spider on wave four. Both formation branches join at the third green
