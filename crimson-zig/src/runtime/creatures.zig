@@ -2164,6 +2164,28 @@ pub const CreaturePool = struct {
             }
 
             tickAi7LinkTimer(creature, dt_ms, &state.rng);
+            // Native completes target-player reevaluation before infection and
+            // before the Evil Eyes loop-tail jump.  Even a frozen creature can
+            // therefore switch to a nearer live player this frame.
+            const single_player_dormant_target: ?*state_mod.PlayerState =
+                if (players.len == 1 and players[0].health <= 0.0)
+                    &self.single_player_dormant_target
+                else
+                    null;
+            const target_player_index = if (players.len == 2)
+                resolveNativeTargetPlayer(creature, players, self.update_tick)
+            else
+                0;
+            const selected_player = &players[target_player_index];
+            const distance_player_pos = if (single_player_dormant_target) |dormant_target|
+                if (creature.target_player == 1) dormant_target.pos else player.pos
+            else
+                selected_player.pos;
+            const contact_player = single_player_dormant_target orelse selected_player;
+            if (single_player_dormant_target != null) {
+                creature.target_player = 1;
+            }
+            const target_player_pos = contact_player.pos;
             // Native advances infection at 0x00426599..0x00426649 before
             // comparing this slot with the Evil Eyes target at 0x0042665f.
             // A frozen target therefore still takes its periodic plague tick
@@ -2198,25 +2220,6 @@ pub const CreaturePool = struct {
                 creature.force_target = 0;
                 continue;
             }
-            const single_player_dormant_target: ?*state_mod.PlayerState =
-                if (players.len == 1 and players[0].health <= 0.0)
-                    &self.single_player_dormant_target
-                else
-                    null;
-            const target_player_index = if (players.len == 2)
-                resolveNativeTargetPlayer(creature, players, self.update_tick)
-            else
-                0;
-            const selected_player = &players[target_player_index];
-            const distance_player_pos = if (single_player_dormant_target) |dormant_target|
-                if (creature.target_player == 1) dormant_target.pos else player.pos
-            else
-                selected_player.pos;
-            const contact_player = single_player_dormant_target orelse selected_player;
-            if (single_player_dormant_target != null) {
-                creature.target_player = 1;
-            }
-            const target_player_pos = contact_player.pos;
             const ai_update = creatureAiUpdateTarget(
                 creature,
                 target_player_pos,
@@ -7146,6 +7149,48 @@ test "evil eyes target still takes plague infection tick" {
 
     try expectFloatClose(85.0, pool.entries[0].hp);
     try expectFloatClose(0.4, pool.entries[0].collision_timer);
+    try expectFloatClose(before_pos.x, pool.entries[0].pos.x);
+    try expectFloatClose(before_pos.y, pool.entries[0].pos.y);
+}
+
+test "evil eyes target still reevaluates target player" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 500.0, .y = 100.0 },
+            .health = 100.0,
+        },
+        .{
+            .index = 1,
+            .pos = .{ .x = 110.0, .y = 100.0 },
+            .health = 100.0,
+        },
+    };
+    players[0].perk_counts.set(PerkId.evil_eyes, 1);
+    players[0].evil_eyes_target_creature = 0;
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 50.0,
+        .move_speed = 1.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].target_player = 0;
+
+    const before_pos = pool.entries[0].pos;
+    try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
     try expectFloatClose(before_pos.x, pool.entries[0].pos.x);
     try expectFloatClose(before_pos.y, pool.entries[0].pos.y);
 }

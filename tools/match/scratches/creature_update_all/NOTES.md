@@ -21,6 +21,9 @@ final body culling.
   dead current target. The Python runtime already preserved this policy; the
   Zig runtime now carries the native update counter and uses the selected
   player for AI, ranged distance, and contact behavior instead of player zero.
+- This reevaluation completes before infection handling and the Evil Eyes
+  comparison. Zig now preserves that ordering as well, so an Evil Eyes target
+  still switches to a nearer live player before its remaining update is frozen.
 - Spawn-slot owners tick their linked slot only in the ping-pong movement arm,
   after the owner's clamp/movement and inside the global Freeze gate. The Zig
   runtime now preserves that ordering, so Freeze pauses both the countdown and
