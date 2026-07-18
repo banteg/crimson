@@ -10,7 +10,8 @@ Initial scope:
   `0x31..0x36`, `0x3d`, `0x41`
 - fixed-stat/special ids `0x00`, `0x01`, `0x0f`, `0x21..0x2d`,
   `0x2f`, `0x30`, `0x37..0x3c`, `0x3e..0x40`, `0x42`, `0x43`
-- unhandled-template fallback for `0x11` and `0x13`
+- unhandled-template fallback for both ring formations, both chain formations,
+  and grid formations `0x14..0x17`
 - shared post-dispatch tail modifiers
 
 Known missing work:
@@ -27,7 +28,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=63.94% prefix=26/3159 target_insns=3159 candidate_insns=2937 refs=316/0/2
+match=63.91% prefix=26/3159 target_insns=3159 candidate_insns=2950 refs=315/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -226,3 +227,23 @@ Frame/prefix notes:
   byte-offset spill before the two value slots (`0x10` versus native `0x18`),
   so the remaining first mismatch is honest local-slot allocation rather than
   missing gameplay.
+- Live Binary Ninja xrefs to the diagnostic block at `0x00431094` include the
+  ring exits at `0x00430d19` (template `0x12`) and `0x00430eb6` (template
+  `0x19`), followed by the `0x14..0x17` grid exits and the `0x0f` path. The
+  block stores alien type `2` at `creature+0x6c` and `20.0f` at
+  `creature+0x24` before joining the common max-health tail. Both ring cases
+  now retain that surprising fallthrough, and both ports apply it to the final
+  allocated child. Template `0x19` had previously left that child at
+  `220/220`; its plan snapshot was updated to the proven native `20/20`.
+- The same `0x19` loop stores `ebp` to each child's link field at
+  `0x00430df9`; the prologue at `0x00430af7..0x00430b06` proves `ebp` is the
+  root slot returned by `creature_alloc_slot`. Zig now links children to the
+  actual root slot instead of hardcoding zero, with a regression that occupies
+  slot zero before spawning the ring.
+- The first ring's child loop loads a zero two-float value and a four-float
+  RGBA value from the stack before copying them into each allocated creature.
+  Recovering those source-level aggregates adds 13 candidate instructions.
+  The independently measured aggregate shape reached `64.07%`; retaining the
+  two native fallback edges changes block placement and settles the honest
+  combined scratch at `63.91%`. The semantic edges are kept despite that small
+  normalized-score decrease rather than being fakematched away.

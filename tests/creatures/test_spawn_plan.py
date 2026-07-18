@@ -6,6 +6,7 @@ from syrupy import SnapshotAssertion
 from crimson.creatures.spawn import (
     RANDOM_HEADING_SENTINEL,
     SPAWN_TEMPLATES,
+    CreatureTypeId,
     SpawnEnv,
     SpawnId,
     UnsupportedSpawnTemplateError,
@@ -181,7 +182,7 @@ def test_spawn_plan_seed_stability(default_spawn_env: SpawnEnv) -> None:
     assert baseline != changed_seed
 
 
-def test_ring_formation_uses_native_angle_stores_and_fallthrough(default_spawn_env: SpawnEnv) -> None:
+def test_ring_formation_uses_native_angle_stores_and_fallback(default_spawn_env: SpawnEnv) -> None:
     plan = build_spawn_plan(
         SpawnId.FORMATION_RING_ALIEN_8_12,
         Vec2(100.0, 200.0),
@@ -192,7 +193,24 @@ def test_ring_formation_uses_native_angle_stores_and_fallthrough(default_spawn_e
 
     assert plan.creatures[3].target_offset == Vec2(-4.371138857095502e-06, 100.0)
     assert plan.creatures[6].target_offset == Vec2(-70.71066284179688, -70.710693359375)
+    assert plan.creatures[-1].type_id is CreatureTypeId.ALIEN
     assert plan.creatures[-1].health == 20.0
+    assert plan.creatures[-1].max_health == 20.0
+
+
+def test_second_ring_formation_uses_native_fallback(default_spawn_env: SpawnEnv) -> None:
+    plan = build_spawn_plan(
+        SpawnId.FORMATION_RING_ALIEN_5_19,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+        default_spawn_env,
+    )
+
+    assert len(plan.creatures) == 6
+    assert plan.creatures[-1].type_id is CreatureTypeId.ALIEN
+    assert plan.creatures[-1].health == 20.0
+    assert plan.creatures[-1].max_health == 20.0
 
 
 def test_chain_formation_uses_native_angle_literals(default_spawn_env: SpawnEnv) -> None:

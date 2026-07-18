@@ -423,7 +423,7 @@ pub const CreaturePool = struct {
                     primary_child_idx = child_idx;
                 }
                 self.entries[primary_child_idx].heading = narrowF32(call.heading);
-                self.entries[primary_child_idx].hp = 20.0;
+                applyUnhandledCreatureTypeFallback(&self.entries[primary_child_idx]);
             },
             0x03 => {
                 self.spawnBasicRandomTemplate(
@@ -1426,6 +1426,7 @@ pub const CreaturePool = struct {
                 self.entries[parent_idx].heading = drawTransientSpawnHeading(rng);
 
                 const angle_step: f32 = (2.0 * std.math.pi) / 5.0;
+                var last_idx = parent_idx;
                 for (0..5) |idx| {
                     const offset = formationOffset(idx, angle_step, 110.0);
                     const child_idx = self.spawnFromStatsWithFlags(
@@ -1445,7 +1446,7 @@ pub const CreaturePool = struct {
                         false,
                     ) orelse break;
                     self.entries[child_idx].ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered;
-                    self.entries[child_idx].link_index = 0;
+                    self.entries[child_idx].link_index = @intCast(parent_idx);
                     self.entries[child_idx].target_offset = .{
                         .x = narrowF32(offset.x),
                         .y = narrowF32(offset.y),
@@ -1455,7 +1456,9 @@ pub const CreaturePool = struct {
                         .y = narrowF32(call.pos.y + offset.y),
                     };
                     self.entries[child_idx].target = self.entries[child_idx].pos;
+                    last_idx = child_idx;
                 }
+                applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
             },
             @intFromEnum(spawn_mod.SpawnId.alien_const_red_fast_2b) => {
                 _ = self.spawnFromStats(
@@ -5090,7 +5093,34 @@ test "template spawn supports survival early-stage templates" {
     try std.testing.expectEqual(@as(u32, 0xb692abcc), @as(u32, @bitCast(pool.entries[3].target_offset.x)));
     try std.testing.expectEqual(@as(u32, 0xc28d6bdc), @as(u32, @bitCast(pool.entries[6].target_offset.x)));
     try std.testing.expectEqual(@as(u32, 0xc28d6be0), @as(u32, @bitCast(pool.entries[6].target_offset.y)));
-    try expectFloatClose(20.0, pool.entries[8].hp);
+    const final_child = pool.entries[8];
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), final_child.type_id);
+    try expectFloatClose(20.0, final_child.hp);
+    try expectFloatClose(20.0, final_child.max_hp);
+}
+
+test "template 19 applies the native ring fallback to its final child" {
+    var pool: CreaturePool = .{};
+    var rng = spawn_mod.Crand.init(7);
+    pool.entries[0].active = true;
+
+    try pool.spawnTemplateCall(
+        .{
+            .template_id = @intFromEnum(spawn_mod.SpawnId.formation_ring_alien_5_19),
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = std.math.pi,
+        },
+        &rng,
+    );
+
+    try std.testing.expectEqual(@as(usize, 7), pool.activeCount());
+    for (pool.entries[2..7]) |child| {
+        try std.testing.expectEqual(@as(i32, 1), child.link_index);
+    }
+    const final_child = pool.entries[6];
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), final_child.type_id);
+    try expectFloatClose(20.0, final_child.hp);
+    try expectFloatClose(20.0, final_child.max_hp);
 }
 
 test "spawn init preserves recycled force target" {

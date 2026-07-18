@@ -271,13 +271,13 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
         creature->contact_damage = 14.0f;
         creature->max_health = 200.0f;
 
+        creature_spawn_vec2_t child_velocity;
         ring_member_idx = 0;
-        slot_18_i = 0;
-        slot_14_i = 0;
-        child_tint_r_bits = 0x3ea3d70b;
-        child_tint_g_bits = 0x3f16872c;
-        child_tint_b_bits = 0x3eda1cac;
-        child_tint_a_bits = 0x3f800000;
+        child_velocity.set(0.0f, 0.0f);
+        tint.r = 0.32000002f;
+        tint.g = 0.58800006f;
+        tint.b = 0.426f;
+        tint.a = 1.0f;
         do {
             child_slot_idx = creature_alloc_slot();
             creature = &creature_pool[child_slot_idx];
@@ -288,15 +288,12 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->target_offset_y = (float)sin(angle) * 100.0f;
             creature->pos_x = *pos;
             creature->pos_y = pos[1];
-            creature->vel_x = 0.0f;
-            creature->vel_y = 0.0f;
+            *(creature_spawn_vec2_t *)&creature->vel_x = child_velocity;
             creature->collision_flag = 0;
-            *(int *)&creature->tint_r = child_tint_r_bits;
+            *(creature_tint_t *)&creature->tint_r = tint;
             creature->health = 40.0f;
             creature->max_health = 40.0f;
-            *(int *)&creature->tint_g = child_tint_g_bits;
             ring_member_idx = ring_member_idx + 1;
-            *(int *)&creature->tint_b = child_tint_b_bits;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -305,10 +302,10 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 2.4f;
             creature->reward_value = 60.0f;
-            *(int *)&creature->tint_a = child_tint_a_bits;
             creature->size = 50.0f;
             creature->contact_damage = 4.0f;
         } while (ring_member_idx < 8);
+        APPLY_UNHANDLED_TEMPLATE_FALLBACK();
     } else if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_5_19) {
         STORE_FLOAT_BITS(creature->tint_r, tint_r_bits, 0x3f733333);
         STORE_FLOAT_BITS(creature->tint_g, tint_g_bits, 0x3f0ccccd);
@@ -360,6 +357,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
         } while (ring_member_idx < 5);
+        APPLY_UNHANDLED_TEMPLATE_FALLBACK();
     } else {
         if (template_id == SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11) {
             int chain_target_offset;

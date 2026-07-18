@@ -663,6 +663,7 @@ RING_FORMATIONS: dict[SpawnId, RingFormationSpec] = {
         count=5,
         angle_step=math.tau / 5.0,
         radius=110.0,
+        apply_fallback=True,
         set_position=True,
     ),
 }
@@ -1879,8 +1880,8 @@ def apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], p
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
     # See artifacts/creature_spawn_template/binja-hlil.txt (label_431099).
-    # Notably: several grid/ring templates in the late formation switch ladder
-    # (e.g. 0x11, 0x13..0x17) reach LAB_00431094.
+    # Notably: both rings (0x12, 0x19), both chains (0x11, 0x13), and the
+    # 0x14..0x17 grids reach LAB_00431094.
     c = plan_creatures[primary_idx]
     c.type_id = CreatureTypeId.ALIEN
     c.health = 20.0
