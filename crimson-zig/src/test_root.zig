@@ -833,6 +833,25 @@ test "perk aim effect source follows bug mode" {
     }
 }
 
+test "infernal contract player scope follows bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var state = cz.state.GameplayState.init(3);
+        state.preserve_bugs = preserve_bugs;
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{}, .health = 100.0 },
+            .{ .index = 1, .pos = .{}, .health = 80.0 },
+            .{ .index = 2, .pos = .{}, .health = 60.0 },
+        };
+
+        try cz.perks.applyPerk(&state, players[0..], .infernal_contract);
+
+        try std.testing.expectApproxEqAbs(@as(f32, 0.1), players[0].health, 1e-6);
+        try std.testing.expectApproxEqAbs(@as(f32, 0.1), players[1].health, 1e-6);
+        const expected_player2_health: f32 = if (preserve_bugs) 60.0 else 0.1;
+        try std.testing.expectApproxEqAbs(expected_player2_health, players[2].health, 1e-6);
+    }
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

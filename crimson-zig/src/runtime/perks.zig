@@ -410,7 +410,11 @@ pub fn applyPerkWithContext(
             players[0].level += 3;
             state.perk_selection.pending_count += 3;
             state.perk_selection.choices_dirty = true;
-            for (players) |*player| {
+            const contract_players = if (state.preserve_bugs)
+                players[0..@min(players.len, 2)]
+            else
+                players;
+            for (contract_players) |*player| {
                 if (player.health > 0.0) player.health = 0.1;
             }
         },

@@ -13,6 +13,9 @@ Room stores each active creature lifecycle subtraction (`0x0040574a..0x00405752`
 and Bandage stores the multiplied health before its clamp (`0x004058d5..0x004058e3`).
 Both ports now route these operations through the shared PC=24 helpers; the
 Python port also stores Infernal Contract's literal as the native f32 value.
+Infernal Contract addresses player slots zero and one explicitly at
+`0x004057a2..0x004057f5`, rather than iterating `config_player_count`; both
+ports now retain that two-slot scope in bug-compatible mode.
 
 The reconstruction preserves the native quirks instead of the rewrite's
 intentional fixes: Lifeline walks all 384 creature slots and directly disables
