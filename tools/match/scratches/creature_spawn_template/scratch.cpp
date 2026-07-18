@@ -949,65 +949,67 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     }
 
     creature->heading = heading;
+    if (!config_blob.hardcore
+        && (creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+        creature_spawn_slot_t *spawn_slot =
+            &creature_spawn_slot_table[creature->link_index];
+        spawn_slot->interval_s = spawn_slot->interval_s + 0.2f;
+    }
+
     if (config_blob.hardcore) {
         quest_fail_retry_count = 0;
         creature->move_speed = creature->move_speed * 1.05f;
         creature->contact_damage = creature->contact_damage * 1.4f;
         creature->health = creature->health * 1.2f;
         if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-            int slot_index = creature->link_index;
-            creature_spawn_slot_table[slot_index].interval_s =
-                creature_spawn_slot_table[slot_index].interval_s - 0.2f;
-            if (creature_spawn_slot_table[slot_index].interval_s < 0.1f) {
-                creature_spawn_slot_table[slot_index].interval_s = 0.1f;
+            creature_spawn_slot_t *spawn_slot =
+                &creature_spawn_slot_table[creature->link_index];
+            spawn_slot->interval_s = spawn_slot->interval_s - 0.2f;
+            if (spawn_slot->interval_s < 0.1f) {
+                spawn_slot->interval_s = 0.1f;
             }
         }
-    } else {
+    } else if (quest_fail_retry_count > 0) {
+        switch (quest_fail_retry_count) {
+        case 1:
+            creature->reward_value = creature->reward_value * 0.9f;
+            creature->move_speed = creature->move_speed * 0.95f;
+            creature->contact_damage = creature->contact_damage * 0.95f;
+            creature->health = creature->health * 0.95f;
+            break;
+        case 2:
+            creature->reward_value = creature->reward_value * 0.85f;
+            creature->move_speed = creature->move_speed * 0.9f;
+            creature->contact_damage = creature->contact_damage * 0.9f;
+            creature->health = creature->health * 0.9f;
+            break;
+        case 3:
+            creature->reward_value = creature->reward_value * 0.85f;
+            creature->move_speed = creature->move_speed * 0.8f;
+            creature->contact_damage = creature->contact_damage * 0.8f;
+            creature->health = creature->health * 0.8f;
+            break;
+        case 4:
+            creature->reward_value = creature->reward_value * 0.8f;
+            creature->move_speed = creature->move_speed * 0.7f;
+            creature->contact_damage = creature->contact_damage * 0.7f;
+            creature->health = creature->health * 0.7f;
+            break;
+        default:
+            creature->reward_value = creature->reward_value * 0.8f;
+            creature->move_speed = creature->move_speed * 0.6f;
+            creature->contact_damage = creature->contact_damage * 0.5f;
+            creature->health = creature->health * 0.5f;
+            break;
+        }
         if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-            creature_spawn_slot_table[creature->link_index].interval_s =
-                creature_spawn_slot_table[creature->link_index].interval_s + 0.2f;
-        }
-        if (quest_fail_retry_count > 0) {
-            switch (quest_fail_retry_count) {
-            case 1:
-                creature->reward_value = creature->reward_value * 0.9f;
-                creature->move_speed = creature->move_speed * 0.95f;
-                creature->contact_damage = creature->contact_damage * 0.95f;
-                creature->health = creature->health * 0.95f;
-                break;
-            case 2:
-                creature->reward_value = creature->reward_value * 0.85f;
-                creature->move_speed = creature->move_speed * 0.9f;
-                creature->contact_damage = creature->contact_damage * 0.9f;
-                creature->health = creature->health * 0.9f;
-                break;
-            case 3:
-                creature->reward_value = creature->reward_value * 0.85f;
-                creature->move_speed = creature->move_speed * 0.8f;
-                creature->contact_damage = creature->contact_damage * 0.8f;
-                creature->health = creature->health * 0.8f;
-                break;
-            case 4:
-                creature->reward_value = creature->reward_value * 0.8f;
-                creature->move_speed = creature->move_speed * 0.7f;
-                creature->contact_damage = creature->contact_damage * 0.7f;
-                creature->health = creature->health * 0.7f;
-                break;
-            default:
-                creature->reward_value = creature->reward_value * 0.8f;
-                creature->move_speed = creature->move_speed * 0.6f;
-                creature->contact_damage = creature->contact_damage * 0.5f;
-                creature->health = creature->health * 0.5f;
-                break;
+            float retry_interval = (float)quest_fail_retry_count * 0.35f;
+            creature_spawn_slot_t *spawn_slot =
+                &creature_spawn_slot_table[creature->link_index];
+            if (retry_interval > 3.0f) {
+                retry_interval = 3.0f;
             }
-            if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-                float retry_interval = (float)quest_fail_retry_count * 0.35f;
-                if (retry_interval > 3.0f) {
-                    retry_interval = 3.0f;
-                }
-                creature_spawn_slot_table[creature->link_index].interval_s =
-                    creature_spawn_slot_table[creature->link_index].interval_s + retry_interval;
-            }
+            spawn_slot->interval_s = spawn_slot->interval_s + retry_interval;
         }
     }
 

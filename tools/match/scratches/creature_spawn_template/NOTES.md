@@ -18,7 +18,8 @@ Known missing work:
 - tighter local/field ordering in the dispatch ladder
 - the `0x13` chain formation value objects are recovered, but its remaining
   field scheduling still differs
-- tail modifier ordering/codegen still diverges after the large dispatch
+- residual register scheduling still diverges inside the hardcore modifier
+  block after the large dispatch
 
 Keep tracking prefix, not just total match percent. This scratch is expected to
 be low percentage until more template families are added.
@@ -26,7 +27,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=61.70% prefix=23/3159 target_insns=3159 candidate_insns=2954 refs=313/0/2
+match=61.82% prefix=23/3159 target_insns=3159 candidate_insns=2959 refs=314/0/2
 first_target=lea esi, dword [ebp+edx*2]
 first_candidate=mov dword [esp+0x18], edi
 ```
@@ -201,3 +202,14 @@ Frame/prefix notes:
   raise the score from `61.52%` to `61.70%` with 2,954 candidate instructions,
   preserve the exact `0x48` frame and 23-instruction prefix, and leave the
   masked-reference audit at `313/0/2`.
+- The common difficulty tail at `0x00431162..0x004311a1` is two independent
+  decisions, not one `if/else`: native first tests `!hardcore` for the
+  ping-pong interval increase, then reloads the global hardcore byte before
+  choosing the modifier or retry path. Its three interval updates also
+  materialize a `creature_spawn_slot_t *` before storing. Recovering those
+  source shapes reproduces the second global load, both pointer-based stores,
+  and the outlined retry entry; the retry clamp at `0x004341c5..0x004341f6`
+  now has the same instruction order as native. The score rises to `61.82%`
+  with 2,959 candidate instructions and the reference audit improves to
+  `314/0/2`; only local scheduling inside the hardcore multiplier block still
+  differs.
