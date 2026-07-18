@@ -928,24 +928,28 @@ def player_update(
         and input_state.fire_pressed
         and player.weapon.reload_timer > 0.0
     ):
-        anxious_next = f32(float(player.weapon.reload_timer) - 0.05)
+        anxious_next = x87_pc24_sub(
+            float(player.weapon.reload_timer),
+            f32(0.05),
+        )
         player.weapon.reload_timer = float(anxious_next)
         if float(anxious_next) <= 0.0:
             # Native restarts the tail of the reload at `frame_dt * 0.8` when
             # Anxious Loader overcuts the timer.
-            player.weapon.reload_timer = float(f32(float(dt) * 0.8))
+            player.weapon.reload_timer = x87_pc24_mul(float(dt), f32(0.8))
 
     reload_timer_now = float(f32(float(player.weapon.reload_timer)))
     dt_f32 = float(f32(float(dt)))
+    reload_step = x87_pc24_mul(f32(float(reload_scale)), dt_f32)
     # Native preloads ammo one frame before reload timer underflows using the
     # unscaled `frame_dt` (before Stationary Reloader scale is applied). That
     # can miss reload completion when Stationary Reloader is active, leaving the
     # clip empty and causing a one-shot reload loop (fixed by default).
     preload_dt = dt_f32
     if not state.preserve_bugs:
-        preload_dt = float(f32(float(reload_scale) * float(dt_f32)))
+        preload_dt = reload_step
 
-    reload_preload_underflow = float(f32(reload_timer_now - preload_dt))
+    reload_preload_underflow = x87_pc24_sub(reload_timer_now, preload_dt)
     if reload_timer_now > 0.0 and reload_preload_underflow < 0.0:
         player.weapon.ammo = float(player.weapon.clip_size)
 
@@ -953,10 +957,10 @@ def player_update(
         if (
             perk_active(perk_player, PerkId.ANGRY_RELOADER)
             and player.weapon.reload_timer_max > 0.5
-            and (player.weapon.reload_timer_max * 0.5) < player.weapon.reload_timer
+            and x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5)) < player.weapon.reload_timer
         ):
-            half = player.weapon.reload_timer_max * 0.5
-            next_timer = float(f32(float(player.weapon.reload_timer) - float(reload_scale) * float(dt)))
+            half = x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5))
+            next_timer = x87_pc24_sub(float(player.weapon.reload_timer), reload_step)
             player.weapon.reload_timer = next_timer
             if next_timer <= half:
                 count = 7 + int(player.weapon.reload_timer_max * 4.0)
@@ -974,7 +978,10 @@ def player_update(
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
         else:
-            player.weapon.reload_timer = float(f32(float(player.weapon.reload_timer) - float(reload_scale) * float(dt)))
+            player.weapon.reload_timer = x87_pc24_sub(
+                float(player.weapon.reload_timer),
+                reload_step,
+            )
 
     if player.weapon.reload_timer < 0.0:
         player.weapon.reload_timer = 0.0

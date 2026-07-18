@@ -251,6 +251,33 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
     assert_float_close(player.weapon.reload_timer, f32(0.7))
 
 
+def test_player_update_stationary_reload_keeps_native_completion_frame() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(50.0, 50.0),
+        weapon=WeaponSlot(
+            weapon_id=WeaponId.PISTOL,
+            clip_size=10,
+            ammo=10,
+            reload_active=True,
+            reload_timer=1.5,
+            reload_timer_max=1.5,
+        ),
+    )
+    player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
+    input_state = PlayerInput(aim=Vec2(51.0, 50.0))
+
+    for _ in range(19):
+        player_update(player, input_state, 1.0 / 38.0, state)
+
+    assert player.weapon.reload_timer == 4.172325134277344e-07
+
+    player_update(player, input_state, 1.0 / 38.0, state)
+
+    assert player.weapon.reload_timer == 0.0
+
+
 def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
     state = GameplayState()
     player = PlayerState(

@@ -297,19 +297,20 @@ pub fn stepPlayerForTickWithEffects(
     else
         1.0;
     if (perks.perkActive(perk_player, PerkId.anxious_loader) and input_flags.fire_pressed and player.weapon.reload_timer > 0.0) {
-        const anxious_next = narrowF32(player.weapon.reload_timer - 0.05);
+        const anxious_next = native_math.pc24Sub(player.weapon.reload_timer, @as(f32, 0.05));
         player.weapon.reload_timer = anxious_next;
         if (anxious_next <= 0.0) {
-            player.weapon.reload_timer = dt * 0.8;
+            player.weapon.reload_timer = native_math.pc24Mul(dt, @as(f32, 0.8));
         }
     }
 
     const reload_timer_now = narrowF32(player.weapon.reload_timer);
+    const reload_step = native_math.pc24Mul(reload_scale, dt);
     var preload_dt = dt;
     if (!state.preserve_bugs) {
-        preload_dt = narrowF32(reload_scale * dt);
+        preload_dt = reload_step;
     }
-    const reload_preload_underflow = narrowF32(reload_timer_now - preload_dt);
+    const reload_preload_underflow = native_math.pc24Sub(reload_timer_now, preload_dt);
     if (reload_timer_now > 0.0 and reload_preload_underflow < 0.0) {
         player.weapon.ammo = @floatFromInt(@max(0, player.weapon.clip_size));
     }
@@ -317,10 +318,10 @@ pub fn stepPlayerForTickWithEffects(
     if (player.weapon.reload_timer > 0.0) {
         if (perks.perkActive(perk_player, PerkId.angry_reloader) and
             player.weapon.reload_timer_max > 0.5 and
-            player.weapon.reload_timer > player.weapon.reload_timer_max * 0.5)
+            player.weapon.reload_timer > native_math.pc24Mul(player.weapon.reload_timer_max, @as(f32, 0.5)))
         {
-            const half_reload = narrowF32(player.weapon.reload_timer_max * 0.5);
-            const next_timer = narrowF32(player.weapon.reload_timer - narrowF32(reload_scale * dt));
+            const half_reload = native_math.pc24Mul(player.weapon.reload_timer_max, @as(f32, 0.5));
+            const next_timer = native_math.pc24Sub(player.weapon.reload_timer, reload_step);
             player.weapon.reload_timer = next_timer;
             if (next_timer <= half_reload) {
                 const count = 7 + @as(i32, @intFromFloat(player.weapon.reload_timer_max * 4.0));
@@ -342,7 +343,7 @@ pub fn stepPlayerForTickWithEffects(
                 state.bonus_spawn_guard = false;
             }
         } else {
-            player.weapon.reload_timer = narrowF32(player.weapon.reload_timer - narrowF32(reload_scale * dt));
+            player.weapon.reload_timer = native_math.pc24Sub(player.weapon.reload_timer, reload_step);
         }
         if (player.weapon.reload_timer < 0.0) {
             player.weapon.reload_timer = 0.0;
@@ -1668,6 +1669,55 @@ test "stationary reloader triples reload speed" {
 
     try expectFloatClose(0.9, base_player.weapon.reload_timer);
     try expectFloatClose(0.7, perk_player.weapon.reload_timer);
+}
+
+test "stationary reload keeps native completion frame" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var particles: particles_mod.ParticlePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 50.0, .y = 50.0 },
+        .weapon = .{
+            .weapon_id = game_ids.WeaponId.pistol,
+            .clip_size = 10,
+            .ammo = 10.0,
+            .reload_active = true,
+            .reload_timer = 1.5,
+            .reload_timer_max = 1.5,
+        },
+    };
+    player.perk_counts.set(PerkId.stationary_reloader, 1);
+
+    for (0..19) |_| {
+        try stepPlayerForTick(
+            &state,
+            &player,
+            &projectiles,
+            &secondary_projectiles,
+            &creatures,
+            &particles,
+            .{},
+            1.0 / 38.0,
+        );
+    }
+
+    try std.testing.expectEqual(@as(f32, 4.172325134277344e-07), player.weapon.reload_timer);
+
+    try stepPlayerForTick(
+        &state,
+        &player,
+        &projectiles,
+        &secondary_projectiles,
+        &creatures,
+        &particles,
+        .{},
+        1.0 / 38.0,
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.0), player.weapon.reload_timer);
 }
 
 test "alternate weapon reload press swaps and adds cooldown" {

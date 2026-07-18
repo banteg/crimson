@@ -72,6 +72,15 @@ those PC=24 boundaries. In particular, repeated 60 Hz updates leave Man Bomb
 at `3.9999969` on frame 240 and fire its projectile ring on frame 241, rather
 than accumulating host-double residue and firing one frame early.
 
+The reload paths at `0x00415107..0x00415117` and
+`0x004151e6..0x004151f6` round `reload_scale * frame_dt` at PC=24 before
+subtracting it from the stored reload timer. Both ports now make that staging
+explicit. Python had instead kept the scaled frame delta wide: at 38 Hz, a
+stationary 1.5-second reload reached zero on frame 19, while native retains
+`4.172325e-7` until frame 20. The adjacent Anxious Loader subtract/multiply,
+half-reload comparison, and preload-underflow arithmetic now preserve the same
+observed boundaries.
+
 This scratch is intentionally an honest partial reconstruction. It does not
 use volatile state, dead expressions, dummy references, inline assembly, or
 layout-only gotos.
