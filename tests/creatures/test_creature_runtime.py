@@ -2183,6 +2183,41 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     assert creature.ai_mode == 7
 
 
+@pytest.mark.parametrize(
+    ("hp", "lifecycle_stage"),
+    [(1.0, CREATURE_LIFECYCLE_ALIVE), (-1.0, 10.0), (10.0, 10.0)],
+)
+def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stage: float) -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    prepare_weapon_availability(state)
+    player0 = PlayerState(index=0, pos=Vec2(500.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = hp
+    creature.max_hp = max(1.0, hp)
+    creature.lifecycle_stage = lifecycle_stage
+    creature.flags = CreatureFlags.SELF_DAMAGE_TICK_STRONG if hp > 0.0 else CreatureFlags(0)
+    creature.target_player = 0
+    creature.pos = Vec2(100.0, 100.0)
+    creature.move_speed = 0.0
+    creature.size = 45.0
+
+    pool.update(
+        0.1,
+        options=make_creature_update_options(
+            state=state,
+            players=[player0, player1],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert creature.lifecycle_stage != CREATURE_LIFECYCLE_ALIVE
+    assert creature.target_player == 1
+
+
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))

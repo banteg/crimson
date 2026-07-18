@@ -1101,6 +1101,38 @@ class CreaturePool:
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
             creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
+
+            uses_dormant_target = (
+                single_player_dormant_target is not None
+                and float(players[0].health) <= 0.0
+                and int(creature.target_player) == 1
+            )
+            target_player = 1 if uses_dormant_target else self._resolve_target_player_index(creature, players)
+            # Native only updates player auto-target feedback inside the
+            # `creature_update_tick % 0x46 != 0` retarget cadence block.
+            if not uses_dormant_target and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                self._update_player_auto_target(
+                    players=players,
+                    preserve_bugs=bool(state.preserve_bugs),
+                    player_index=int(target_player),
+                    creature_index=int(idx),
+                    creature=creature,
+                )
+            if uses_dormant_target:
+                assert single_player_dormant_target is not None
+                distance_player = single_player_dormant_target
+            else:
+                distance_player = players[target_player]
+            player = distance_player
+            distance_player_pos = distance_player.pos
+            player_pos = player.pos
+            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
+                # Native calculates distance before redirecting creatures from
+                # the dead player to the dormant second-player position.
+                creature.target_player = 1
+                player = single_player_dormant_target
+                player_pos = player.pos
+
             if poison_killed:
                 if creature.active:
                     self._tick_dead(
@@ -1154,37 +1186,6 @@ class CreaturePool:
                         # `creature_handle_death` in this timer-wrap kill path.
                         # Do not run `_tick_dead` immediately here.
                         pass
-
-            uses_dormant_target = (
-                single_player_dormant_target is not None
-                and float(players[0].health) <= 0.0
-                and int(creature.target_player) == 1
-            )
-            target_player = 1 if uses_dormant_target else self._resolve_target_player_index(creature, players)
-            # Native only updates player auto-target feedback inside the
-            # `creature_update_tick % 0x46 != 0` retarget cadence block.
-            if not uses_dormant_target and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
-                self._update_player_auto_target(
-                    players=players,
-                    preserve_bugs=bool(state.preserve_bugs),
-                    player_index=int(target_player),
-                    creature_index=int(idx),
-                    creature=creature,
-                )
-            if uses_dormant_target:
-                assert single_player_dormant_target is not None
-                distance_player = single_player_dormant_target
-            else:
-                distance_player = players[target_player]
-            player = distance_player
-            distance_player_pos = distance_player.pos
-            player_pos = player.pos
-            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
-                # Native calculates distance before redirecting creatures from
-                # the dead player to the dormant second-player position.
-                creature.target_player = 1
-                player = single_player_dormant_target
-                player_pos = player.pos
 
             frozen_by_evil_eyes = idx in evil_targets
             if frozen_by_evil_eyes:

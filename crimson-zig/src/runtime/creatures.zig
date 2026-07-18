@@ -2135,31 +2135,21 @@ pub const CreaturePool = struct {
                     creature.lifecycle_stage = native_math.pc24Sub(creature.lifecycle_stage, dt_f32);
                 }
                 applySelfDamageTickToDead(creature, dt_f32);
-                tickAi7LinkTimer(creature, dt_ms, &state.rng);
-                tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
-                continue;
-            }
-
-            const self_tick_damage = selfDamageTickAmount(creature.flags, dt_f32);
-            if (self_tick_damage > 0.0) {
-                _ = self.applyDamage(
-                    state,
-                    players,
-                    bonus_pool,
-                    terrain_fx,
-                    idx,
-                    self_tick_damage,
-                    .{},
-                    creature.last_hit_owner,
-                    dt_f32,
-                    world_size,
-                );
-                if (!(creature.hp > 0.0)) {
-                    tickAi7LinkTimer(creature, dt_ms, &state.rng);
-                    if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
-                    }
-                    continue;
+            } else {
+                const self_tick_damage = selfDamageTickAmount(creature.flags, dt_f32);
+                if (self_tick_damage > 0.0) {
+                    _ = self.applyDamage(
+                        state,
+                        players,
+                        bonus_pool,
+                        terrain_fx,
+                        idx,
+                        self_tick_damage,
+                        .{},
+                        creature.last_hit_owner,
+                        dt_f32,
+                        world_size,
+                    );
                 }
             }
 
@@ -2186,6 +2176,15 @@ pub const CreaturePool = struct {
                 creature.target_player = 1;
             }
             const target_player_pos = contact_player.pos;
+            // The native lifecycle split follows targeting. Periodic damage
+            // deaths and already-fading corpses therefore still update their
+            // selected player before entering corpse motion.
+            if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) {
+                if (creature.active) {
+                    tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
+                }
+                continue;
+            }
             // Native advances infection at 0x00426599..0x00426649 before
             // comparing this slot with the Evil Eyes target at 0x0042665f.
             // A frozen target therefore still takes its periodic plague tick
@@ -6794,6 +6793,71 @@ test "lethal self damage still advances ai7 link timer" {
 
     try std.testing.expect(pool.entries[0].hp <= 0.0);
     try std.testing.expectEqual(@as(i32, -1373), pool.entries[0].link_index);
+}
+
+test "dead creatures still reevaluate target player" {
+    const cases = [_]struct {
+        hp: f32,
+        lifecycle_stage: f32,
+        flags: u32,
+    }{
+        .{
+            .hp = 1.0,
+            .lifecycle_stage = creature_lifecycle.alive,
+            .flags = spawn_mod.CreatureFlags.self_damage_tick_strong,
+        },
+        .{
+            .hp = -1.0,
+            .lifecycle_stage = 10.0,
+            .flags = 0,
+        },
+        .{
+            .hp = 10.0,
+            .lifecycle_stage = 10.0,
+            .flags = 0,
+        },
+    };
+
+    for (cases) |case| {
+        var pool: CreaturePool = .{};
+        var state = state_mod.GameplayState.init(1);
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var players = [_]state_mod.PlayerState{
+            .{
+                .index = 0,
+                .pos = .{ .x = 500.0, .y = 100.0 },
+                .health = 100.0,
+            },
+            .{
+                .index = 1,
+                .pos = .{ .x = 110.0, .y = 100.0 },
+                .health = 100.0,
+            },
+        };
+
+        _ = pool.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = case.flags,
+            .size = 45.0,
+            .move_speed = 0.0,
+            .health = @max(@as(f32, 1.0), case.hp),
+            .max_health = @max(@as(f32, 1.0), case.hp),
+            .reward_value = 60.0,
+            .contact_damage = 0.0,
+        });
+        pool.entries[0].hp = case.hp;
+        pool.entries[0].lifecycle_stage = case.lifecycle_stage;
+        pool.entries[0].target_player = 0;
+
+        try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+        try std.testing.expect(!creature_lifecycle.isAlive(pool.entries[0].lifecycle_stage));
+        try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
+    }
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {

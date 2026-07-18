@@ -24,6 +24,10 @@ final body culling.
 - This reevaluation completes before infection handling and the Evil Eyes
   comparison. Zig now preserves that ordering as well, so an Evil Eyes target
   still switches to a nearer live player before its remaining update is frozen.
+- The lifecycle live/dead split also follows reevaluation. Both ports now let a
+  creature killed by its periodic self-damage update its multiplayer target
+  before corpse decay, and Zig does the same for entries already fading at the
+  start of the sweep.
 - Spawn-slot owners tick their linked slot only in the ping-pong movement arm,
   after the owner's clamp/movement and inside the global Freeze gate. The Zig
   runtime now preserves that ordering, so Freeze pauses both the countdown and
