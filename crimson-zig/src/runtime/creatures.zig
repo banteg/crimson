@@ -2127,11 +2127,15 @@ pub const CreaturePool = struct {
             if (!creature.active) continue;
             if (state.bonuses.freeze > 0.0) continue;
             if (!(creature.hp > 0.0)) {
+                // Native advances a fresh 16.0 death stage before routing the
+                // periodic poison flag through creature_apply_damage.  The
+                // latter then contributes its distinct dt * 15 dead-entry
+                // decrement before the normal dt * 28 corpse decay below.
+                if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
+                    creature.lifecycle_stage = native_math.pc24Sub(creature.lifecycle_stage, dt_f32);
+                }
                 applySelfDamageTickToDead(creature, dt_f32);
                 tickAi7LinkTimer(creature, dt_ms, &state.rng);
-                if (creature_lifecycle.isAlive(creature.lifecycle_stage)) {
-                    creature.lifecycle_stage -= dt_f32;
-                }
                 tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
                 continue;
             }
@@ -6711,6 +6715,46 @@ test "self damage product stores native precision" {
     const damage = native_math.pc24Mul(dt, @as(f32, 60.0));
     const expected = native_math.pc24Sub(@as(f32, 8.0), damage);
     try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].hp)));
+}
+
+test "newly dead self damage preserves native prologue order" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 512.0, .y = 512.0 },
+        .health = 100.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 128.0, .y = 128.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .flags = spawn_mod.CreatureFlags.self_damage_tick,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 8.0,
+        .max_health = 8.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].hp = -1.0;
+    pool.entries[0].lifecycle_stage = creature_lifecycle.alive;
+
+    const dt: f32 = 0.03800000250339508;
+    try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    const expected = native_math.pc24Sub(
+        native_math.pc24Sub(
+            native_math.pc24Sub(creature_lifecycle.alive, dt),
+            native_math.pc24Mul(dt, @as(f32, 15.0)),
+        ),
+        native_math.pc24Mul(dt, @as(f32, 28.0)),
+    );
+    try std.testing.expectEqual(@as(u32, @bitCast(expected)), @as(u32, @bitCast(pool.entries[0].lifecycle_stage)));
 }
 
 test "lethal self damage still advances ai7 link timer" {

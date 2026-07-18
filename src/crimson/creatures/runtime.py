@@ -1052,6 +1052,13 @@ class CreaturePool:
                 continue
 
             if not creature_lifecycle_is_alive(creature.lifecycle_stage) or creature.hp <= 0.0:
+                # Native performs this first death-stage tick before calling
+                # creature_apply_damage for periodic poison flags.  Keeping it
+                # ahead of that call matters when a corpse enters the sweep at
+                # exactly 16.0: creature_apply_damage then applies its separate
+                # dead-entry dt * 15 decrement before the usual dt * 28 decay.
+                if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
+                    creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
                 _apply_self_damage_tick(idx, creature)
                 # Native still ticks AI7 link-timer state (and its RNG draws) for
                 # dead creatures inside `creature_update_all`.
@@ -1074,8 +1081,6 @@ class CreaturePool:
                             creature_index=int(idx),
                             creature=creature,
                         )
-                if creature_lifecycle_is_alive(creature.lifecycle_stage):
-                    creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
                 if dt > 0.0:
                     self._tick_dead(
                         creature,

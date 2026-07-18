@@ -49,6 +49,12 @@ final body culling.
   stores its `dt * 1.5` timer subtraction at `0x00426fda` and pulse damage at
   `0x0042702a`. Both ports preserve those PC=24 stores so repeated ticks keep
   the native pulse cadence instead of accumulating host-double residue.
+- An entry that begins the sweep dead at lifecycle `16.0` is decremented by
+  `frame_dt` at `0x004262cf` before periodic poison calls
+  `creature_apply_damage`. That callee contributes its separate
+  `frame_dt * 15.0` dead-entry decrement, followed by the ordinary
+  `frame_dt * 28.0` corpse decay. Both ports now preserve this narrow ordering
+  case instead of losing the prologue tick on poisoned corpses.
 - Bounded spawner creatures and expired corpses are the native fallthrough
   arms. Reversing those high-level conditions recovers the large middle and
   tail control-flow blocks without layout-only gotos.

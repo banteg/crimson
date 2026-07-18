@@ -25,7 +25,7 @@ from crimson.creatures.spawn import (
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_sub
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
@@ -1925,6 +1925,37 @@ def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() 
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
+
+
+def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    pool = CreaturePool()
+
+    corpse = pool.entries[42]
+    corpse.active = True
+    corpse.hp = -1.0
+    corpse.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
+
+    dt = f32(0.03800000250339508)
+    pool.update(
+        dt,
+        options=make_creature_update_options(
+            state=state,
+            players=[player],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    expected = x87_pc24_sub(
+        x87_pc24_sub(
+            x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, dt),
+            x87_pc24_mul(dt, 15.0),
+        ),
+        x87_pc24_mul(dt, 28.0),
+    )
+    assert corpse.lifecycle_stage == expected
 
 
 def test_live_self_damage_product_is_stored_at_native_precision() -> None:
