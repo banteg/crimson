@@ -88,10 +88,23 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=39.13% prefix=7/4206 target_insns=4206 candidate_insns=3814 refs=594/0/32
+match=49.05% prefix=7/4206 target_insns=4206 candidate_insns=3887 refs=667/0/16
 first_target=jne L3f7a
-first_candidate=jne L3a87
+first_candidate=jne L3b91
 ```
+
+The native function keeps two related addresses live for essentially the
+entire frame: `EDI` is the selected `player_state_t`, while `ESI` is the
+address of its adjacent `pos_x`/`pos_y` pair. The earlier flattened scratch
+re-derived those fields from `player` at each use, so VC6 assigned the two
+bases to the opposite registers and repeatedly lost the native value lifetime.
+Materializing one ordinary `float *player_pos = &player->pos_x` alias and using
+it for coordinate reads, writes, and vector arguments recovers that evidenced
+source shape. It adds 73 native-shaped candidate instructions, raises the
+whole-function score from `39.13%` to `49.05%`, and improves reference
+agreement from `594/0/32` to `667/0/16` without changing behavior or the exact
+`0x48` frame. The remaining first mismatch is local scheduling around the
+previous-position copy, not a missing simulation path.
 
 The native reload preload gate at `0x00415037..0x00415069` first tests
 `reload_timer - frame_dt < 0`, then tests `reload_timer > 0`. It never reads
