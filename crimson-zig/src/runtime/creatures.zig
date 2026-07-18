@@ -12,6 +12,7 @@ const perks = @import("perks.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
+const survival_progression = @import("survival_progression.zig");
 const terrain_fx_mod = @import("terrain_fx.zig");
 const math = @import("math.zig");
 const timing = @import("timing.zig");
@@ -2395,14 +2396,21 @@ pub const CreaturePool = struct {
                     creature.last_hit_owner = owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index));
                     const prev_spawn_guard = state.bonus_spawn_guard;
                     state.bonus_spawn_guard = true;
+                    emitDeathPrelude(
+                        state,
+                        bonus_pool,
+                        effect_pool,
+                        creature.flags,
+                        creature.link_index,
+                        &creature.pos,
+                        @floatCast(world_size),
+                    );
                     emitDeathSideEffects(
                         state,
                         players,
                         bonus_pool,
                         effect_pool,
                         terrain_fx,
-                        creature.flags,
-                        creature.link_index,
                         &creature.pos,
                         @floatCast(world_size),
                         true,
@@ -2665,6 +2673,15 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
         }
         if (!death_start_needed) return 0;
+        emitDeathPrelude(
+            state,
+            bonus_pool,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.link_index,
+            &creature.pos,
+            world_size,
+        );
         self.disableSpawnSlotForCreature(creature);
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
@@ -2684,8 +2701,6 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects orelse unreachable,
             terrain_fx,
-            creature.flags,
-            creature.link_index,
             &creature.pos,
             world_size,
             true,
@@ -2719,8 +2734,17 @@ pub const CreaturePool = struct {
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
-        if (!creature.active) return 0;
         if (creature.hp > 0.0) return 0;
+        emitDeathPrelude(
+            state,
+            bonus_pool,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.link_index,
+            &creature.pos,
+            world_size,
+        );
+        if (!creature.active) return 0;
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
@@ -2736,8 +2760,6 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects orelse unreachable,
             terrain_fx,
-            creature.flags,
-            creature.link_index,
             &creature.pos,
             world_size,
             false,
@@ -2771,8 +2793,16 @@ pub const CreaturePool = struct {
         if (players.len == 0) return 0;
 
         var creature = &self.entries[creature_index];
+        emitDeathPrelude(
+            state,
+            bonus_pool,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.link_index,
+            &creature.pos,
+            world_size,
+        );
         if (!creature.active) return 0;
-        if (!(creature.hp > 0.0)) return 0;
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
@@ -2789,8 +2819,6 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects orelse unreachable,
             terrain_fx,
-            creature.flags,
-            creature.link_index,
             &creature.pos,
             world_size,
             true,
@@ -3129,6 +3157,15 @@ pub const CreaturePool = struct {
             creature.lifecycle_stage -= 0.001;
         }
         if (!death_start_needed) return 0;
+        emitDeathPrelude(
+            state,
+            bonus_pool,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.link_index,
+            &creature.pos,
+            world_size,
+        );
         self.disableSpawnSlotForCreature(creature);
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
@@ -3147,8 +3184,6 @@ pub const CreaturePool = struct {
             bonus_pool,
             self.effects orelse unreachable,
             terrain_fx,
-            creature.flags,
-            creature.link_index,
             &creature.pos,
             world_size,
             true,
@@ -3833,17 +3868,14 @@ fn emitBonusOnKillBurst(
     );
 }
 
-fn emitDeathSideEffects(
+fn emitDeathPrelude(
     state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
     bonus_pool: *bonus_runtime.BonusPool,
     effects: *effects_mod.EffectPool,
-    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     creature_flags: u32,
     creature_link_index: i32,
     death_pos: *state_mod.Vec2,
     world_size: f32,
-    plan_death_sfx: bool,
 ) void {
     if ((creature_flags & spawn_mod.CreatureFlags.bonus_on_death) != 0) {
         death_pos.* = bonus_runtime.clampSpawnPosition(death_pos.*, world_size);
@@ -3869,6 +3901,19 @@ fn emitDeathSideEffects(
             }
         }
     }
+    survival_progression.survivalRecordRecentDeath(state, death_pos.*);
+}
+
+fn emitDeathSideEffects(
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    bonus_pool: *bonus_runtime.BonusPool,
+    effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    death_pos: *state_mod.Vec2,
+    world_size: f32,
+    plan_death_sfx: bool,
+) void {
     const spawned_bonus = bonus_pool.trySpawnOnKill(
         .{
             .x = narrowF32(death_pos.x),
@@ -4192,14 +4237,21 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
     var trace: BurstTrace = .{};
     state.rng.setTraceSink(&trace, BurstTrace.onDraw, true);
 
+    emitDeathPrelude(
+        &state,
+        &bonuses,
+        &effects,
+        spawn_mod.CreatureFlags.bonus_on_death,
+        packBonusOnDeathArgs(.points, 5),
+        &death_pos,
+        1024.0,
+    );
     emitDeathSideEffects(
         &state,
         &.{},
         &bonuses,
         &effects,
         &terrain_fx,
-        spawn_mod.CreatureFlags.bonus_on_death,
-        packBonusOnDeathArgs(.points, 5),
         &death_pos,
         1024.0,
         false,
@@ -4207,6 +4259,9 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
 
     try expectFloatClose(32.0, death_pos.x);
     try expectFloatClose(992.0, death_pos.y);
+    try std.testing.expectEqual(@as(i32, 1), state.survival_recent_death_count);
+    try expectFloatClose(32.0, state.survival_recent_death_pos[0].x);
+    try expectFloatClose(992.0, state.survival_recent_death_pos[0].y);
     try std.testing.expectEqual(@as(usize, 1), bonuses.activeCount());
     try expectFloatClose(32.0, bonuses.entries[0].pos.x);
     try expectFloatClose(992.0, bonuses.entries[0].pos.y);
@@ -4225,22 +4280,110 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
     var rush_bonuses: bonus_runtime.BonusPool = .{};
     var rush_effects: effects_mod.EffectPool = .{};
     var rush_pos: state_mod.Vec2 = .{ .x = 5.0, .y = 1010.0 };
+    emitDeathPrelude(
+        &rush_state,
+        &rush_bonuses,
+        &rush_effects,
+        spawn_mod.CreatureFlags.bonus_on_death,
+        packBonusOnDeathArgs(.points, 5),
+        &rush_pos,
+        1024.0,
+    );
     emitDeathSideEffects(
         &rush_state,
         &.{},
         &rush_bonuses,
         &rush_effects,
         &terrain_fx,
-        spawn_mod.CreatureFlags.bonus_on_death,
-        packBonusOnDeathArgs(.points, 5),
         &rush_pos,
         1024.0,
         false,
     );
     try expectFloatClose(32.0, rush_pos.x);
     try expectFloatClose(992.0, rush_pos.y);
+    try std.testing.expectEqual(@as(i32, 1), rush_state.survival_recent_death_count);
+    try expectFloatClose(32.0, rush_state.survival_recent_death_pos[0].x);
+    try expectFloatClose(992.0, rush_state.survival_recent_death_pos[0].y);
     try std.testing.expectEqual(@as(usize, 0), rush_bonuses.activeCount());
     try std.testing.expectEqual(effects_mod.effect_pool_size, rush_effects.free_len);
+}
+
+test "secondary death followup records history before its inactive guard" {
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    pool.entries[0] = .{
+        .active = false,
+        .hp = -1.0,
+        .pos = .{ .x = 123.0, .y = 456.0 },
+        .reward_value = 90.0,
+    };
+
+    var state = state_mod.GameplayState.init(1);
+    state.survival_recent_death_count = 2;
+    state.survival_reward_fire_seen = true;
+    state.survival_reward_handout_enabled = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .experience = 10 },
+    };
+
+    const gained = pool.handleSecondaryDetonationDeathFollowup(
+        &state,
+        players[0..],
+        &bonuses,
+        &terrain_fx,
+        0,
+        owner_local_player,
+        1.0 / 60.0,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), gained);
+    try std.testing.expectEqual(@as(i32, 10), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 3), state.survival_recent_death_count);
+    try expectFloatClose(123.0, state.survival_recent_death_pos[2].x);
+    try expectFloatClose(456.0, state.survival_recent_death_pos[2].y);
+    try std.testing.expect(!state.survival_reward_fire_seen);
+    try std.testing.expect(!state.survival_reward_handout_enabled);
+    try std.testing.expectEqual(effects_mod.effect_pool_size, effects.free_len);
+}
+
+test "kill no corpse preserves native active-corpse reentry" {
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    pool.entries[0] = .{
+        .active = true,
+        .hp = -1.0,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .reward_value = 25.0,
+    };
+
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0 },
+    };
+
+    const gained = pool.killNoCorpse(
+        &state,
+        players[0..],
+        &bonuses,
+        &terrain_fx,
+        0,
+        owner_local_player,
+        1.0 / 60.0,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 25), gained);
+    try std.testing.expectEqual(@as(i32, 25), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 1), state.survival_recent_death_count);
+    try std.testing.expect(!pool.entries[0].active);
 }
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {

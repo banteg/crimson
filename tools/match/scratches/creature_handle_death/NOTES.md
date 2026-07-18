@@ -28,6 +28,14 @@ mutates the corpse position, bypasses `bonus_spawn_at_pos` spacing policy,
 emits the forced burst, and feeds the clamped position to subsequent random
 drop and Freeze effects.
 
+Zig now also runs the complete native death prelude at every modeled entry:
+forced bonus/clamp first, then recent-death history, then the active guard and
+ordinary death body. This includes the inactive secondary-detonation re-entry
+and the no-corpse projectile path; the latter intentionally retains native
+active-corpse re-entry instead of adding an HP guard. Production deaths now
+populate the three stored survival positions, advance the capped six-death
+counter, and clear the two reward gates when the counter reaches three.
+
 The indexed child-record form and direct freeze-effect arguments recover the
 native copy/register and stack-argument shapes. The honest residual is confined
 to the opening register allocation and two recent-death-count reloads that this
