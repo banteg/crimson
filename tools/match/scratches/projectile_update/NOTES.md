@@ -50,7 +50,8 @@ as owner before entering the shared hit presentation. Plasma Cannon type
 `0x1c` branches at `0x00421367`, computes `creature.size * 0.5 + 1`, raises the
 bonus-spawn guard, and loops 12 times over `i * 0.5235988`; each iteration calls
 `projectile_spawn` at `0x004213e3` for local-player-owned Plasma Rifle type 9,
-then the branch clears the guard.
+then the branch unconditionally clears the guard rather than restoring its
+incoming value. Both runtimes preserve that literal guard transition.
 
 Shrinkifier type `0x18` starts at `0x0042144b`: after the impact effect it
 multiplies creature size by `0.65`, stores projectile lifetime `0.25`, and for

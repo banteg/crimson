@@ -20,6 +20,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
     runtime_state = GameplayState()
+    runtime_state.bonus_spawn_guard = True
 
     pool.spawn(
         pos=Vec2(),
@@ -43,6 +44,7 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     )
 
     assert runtime_state.sfx_queue == [SfxId.EXPLOSION_MEDIUM, SfxId.SHOCKWAVE]
+    assert not runtime_state.bonus_spawn_guard
 
     rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
     assert len(rings) == 2

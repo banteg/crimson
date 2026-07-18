@@ -262,9 +262,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     plasma_meta = float(plasma_entry.travel_budget)
 
     runtime_state = ctx.runtime_state
-    prev_guard = False
     if runtime_state is not None:
-        prev_guard = bool(runtime_state.bonus_spawn_guard)
         runtime_state.bonus_spawn_guard = True
     try:
         for ring_idx in range(12):
@@ -279,7 +277,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
             )
     finally:
         if runtime_state is not None:
-            runtime_state.bonus_spawn_guard = prev_guard
+            runtime_state.bonus_spawn_guard = False
 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
