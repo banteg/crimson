@@ -43,6 +43,14 @@ final body culling.
 - Damage and corpse-effect vector arguments use natural C++ temporaries bound
   by reference. VC6 therefore constructs the evidenced stack vectors at the
   call sites without fake references or dummy state.
+- Live callsite inspection establishes that all five perk gates in this sweep
+  call the singleton `perk_count_get` helper: Plaguebearer at `0x00426e00`,
+  Radioactive at `0x00426fb7`, Mr Melee at `0x004272a6`, Toxic Avenger at
+  `0x00427301`, and Veins of Poison at `0x0042731e`. The helper always reads
+  player slot zero. Creature targeting, distance, shielding, contact damage,
+  and damage ownership still use the selected player. Both ports now preserve
+  that split in bug-compatible mode; corrected mode retains per-target contact
+  perks and an any-player Radioactive gate. Plaguebearer was already slot-zero.
 
 ## Remaining mismatch
 

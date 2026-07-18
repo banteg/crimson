@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
+from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
@@ -63,3 +66,40 @@ def test_mr_melee_is_inert_when_not_active() -> None:
     pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
 
     assert_float_close(creature.hp, 100.0)
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_hp", "expected_strong_poison"),
+    [
+        (True, 75.0, False),
+        (False, 100.0, True),
+    ],
+)
+def test_contact_perks_select_native_player_zero_or_corrected_target(
+    preserve_bugs: bool,
+    expected_hp: float,
+    expected_strong_poison: bool,
+) -> None:
+    state = GameplayState(preserve_bugs=preserve_bugs)
+    player0 = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=100.0)
+    player0.perk_counts[int(PerkId.MR_MELEE)] = 1
+    player0.perk_counts[int(PerkId.VEINS_OF_POISON)] = 1
+    player1 = PlayerState(index=1, pos=Vec2(100.0, 100.0), health=100.0)
+    player1.perk_counts[int(PerkId.TOXIC_AVENGER)] = 1
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 100.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.contact_damage = 10.0
+    creature.target_player = 1
+
+    pool.update(0.2, options=make_creature_update_options(state=state, players=[player0, player1]))
+
+    assert_float_close(creature.hp, expected_hp)
+    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert bool(creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG) is expected_strong_poison
+    assert_float_close(player1.health, 90.0)

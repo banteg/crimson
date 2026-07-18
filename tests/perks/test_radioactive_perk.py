@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue
@@ -126,8 +128,8 @@ def test_radioactive_pulse_measures_distance_to_target_player() -> None:
     dt = 0.2
     state = GameplayState()
 
-    # Only player 1 owns the perk (native gates on the global count), while the
-    # creature targets player 2 and is only in range of player 2.
+    # Player slot zero owns the perk, while the creature targets player slot one
+    # and is only in range of that selected target.
     player1 = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=100.0)
     player1.perk_counts[int(PerkId.RADIOACTIVE)] = 1
     player2 = PlayerState(index=1, pos=Vec2(), health=100.0)
@@ -154,6 +156,46 @@ def test_radioactive_pulse_measures_distance_to_target_player() -> None:
     assert creature.hp < 50.0
     # Kill XP is credited to player 1 (native writes the global _player_experience).
     assert player2.experience == 0
+
+
+@pytest.mark.parametrize(
+    ("preserve_bugs", "expected_pulse"),
+    [
+        (True, False),
+        (False, True),
+    ],
+)
+def test_radioactive_selects_native_player_zero_or_corrected_any_player(
+    preserve_bugs: bool,
+    expected_pulse: bool,
+) -> None:
+    dt = 0.2
+    state = GameplayState(preserve_bugs=preserve_bugs)
+    player0 = PlayerState(index=0, pos=Vec2(900.0, 900.0), health=100.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
+    player1.perk_counts[int(PerkId.RADIOACTIVE)] = 1
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.pos = Vec2(46.0, 0.0)
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.collision_timer = 0.1
+    creature.target_player = 1
+
+    pool.update(
+        dt,
+        options=make_creature_update_options(
+            state=state,
+            players=[player0, player1],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert (creature.hp < 50.0) is expected_pulse
+    assert_float_close(creature.collision_timer, 0.5 if expected_pulse else 0.1)
 
 
 def test_radioactive_pulse_requires_living_creature() -> None:

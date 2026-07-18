@@ -571,6 +571,104 @@ test "creature target selection follows native two-player cadence" {
     );
 }
 
+test "creature contact perk source follows bug mode" {
+    const cases = [_]struct {
+        preserve_bugs: bool,
+        expected_hp: f32,
+        expected_strong_poison: bool,
+    }{
+        .{ .preserve_bugs = true, .expected_hp = 75.0, .expected_strong_poison = false },
+        .{ .preserve_bugs = false, .expected_hp = 100.0, .expected_strong_poison = true },
+    };
+
+    for (cases) |case| {
+        var pool: cz.creatures.CreaturePool = .{};
+        var effects: cz.effects.EffectPool = .{};
+        var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+        var state = cz.state.GameplayState.init(1);
+        state.preserve_bugs = case.preserve_bugs;
+        var bonuses: cz.bonuses.BonusPool = .{};
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{ .x = 900.0, .y = 900.0 }, .health = 100.0 },
+            .{ .index = 1, .pos = .{ .x = 100.0, .y = 100.0 }, .health = 100.0 },
+        };
+        players[0].perk_counts.set(.mr_melee, 1);
+        players[0].perk_counts.set(.veins_of_poison, 1);
+        players[1].perk_counts.set(.toxic_avenger, 1);
+        pool.effects = &effects;
+
+        _ = pool.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 100.0, .y = 100.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = cz.spawn.CreatureFlags.anim_ping_pong,
+            .size = 44.0,
+            .move_speed = 0.0,
+            .health = 100.0,
+            .max_health = 100.0,
+            .reward_value = 60.0,
+            .contact_damage = 10.0,
+        });
+        pool.entries[0].target_player = 1;
+
+        try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
+
+        try std.testing.expectApproxEqAbs(case.expected_hp, pool.entries[0].hp, 1e-6);
+        try std.testing.expect((pool.entries[0].flags & cz.spawn.CreatureFlags.self_damage_tick) != 0);
+        try std.testing.expectEqual(
+            case.expected_strong_poison,
+            (pool.entries[0].flags & cz.spawn.CreatureFlags.self_damage_tick_strong) != 0,
+        );
+        try std.testing.expectApproxEqAbs(@as(f32, 90.0), players[1].health, 1e-6);
+    }
+}
+
+test "creature radioactive perk source follows bug mode" {
+    for ([_]bool{ true, false }) |preserve_bugs| {
+        var pool: cz.creatures.CreaturePool = .{};
+        var effects: cz.effects.EffectPool = .{};
+        var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+        var state = cz.state.GameplayState.init(1);
+        state.preserve_bugs = preserve_bugs;
+        var bonuses: cz.bonuses.BonusPool = .{};
+        var players = [_]cz.state.PlayerState{
+            .{ .index = 0, .pos = .{ .x = 900.0, .y = 900.0 }, .health = 100.0 },
+            .{ .index = 1, .pos = .{}, .health = 100.0 },
+        };
+        players[1].perk_counts.set(.radioactive, 1);
+        pool.effects = &effects;
+
+        _ = pool.spawnInit(.{
+            .origin_template_id = -1,
+            .pos = .{ .x = 46.0, .y = 0.0 },
+            .heading = 0.0,
+            .phase_seed = 0,
+            .type_id = .alien,
+            .flags = cz.spawn.CreatureFlags.anim_ping_pong,
+            .size = 44.0,
+            .move_speed = 0.0,
+            .health = 50.0,
+            .max_health = 50.0,
+            .reward_value = 0.0,
+            .contact_damage = 0.0,
+        });
+        pool.entries[0].collision_timer = 0.1;
+        pool.entries[0].target_player = 1;
+
+        try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
+
+        if (preserve_bugs) {
+            try std.testing.expectApproxEqAbs(@as(f32, 50.0), pool.entries[0].hp, 1e-6);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.1), pool.entries[0].collision_timer, 1e-6);
+        } else {
+            try std.testing.expect(pool.entries[0].hp < 50.0);
+            try std.testing.expectApproxEqAbs(@as(f32, 0.5), pool.entries[0].collision_timer, 1e-6);
+        }
+    }
+}
+
 test "freeze pauses native creature spawn-slot timers" {
     var pool: cz.creatures.CreaturePool = .{};
     var effects: cz.effects.EffectPool = .{};

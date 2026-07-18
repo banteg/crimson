@@ -516,8 +516,12 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if options is not None:
         ctx.sfx.append(options[ctx.rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1])
 
+    # Native's perk_count_get helper always reads player slot zero, even though
+    # the surrounding contact path targets and damages the selected player.
+    perk_player = ctx.players[0] if ctx.state.preserve_bugs and ctx.players else ctx.player
+
     mr_melee_killed = False
-    if perk_active(ctx.player, PerkId.MR_MELEE):
+    if perk_active(perk_player, PerkId.MR_MELEE):
         from .damage import creature_apply_damage_with_lethal_followup
 
         mr_melee_killed = creature_apply_damage_with_lethal_followup(
@@ -537,9 +541,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
-        if perk_active(ctx.player, PerkId.TOXIC_AVENGER):
+        if perk_active(perk_player, PerkId.TOXIC_AVENGER):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-        elif perk_active(ctx.player, PerkId.VEINS_OF_POISON):
+        elif perk_active(perk_player, PerkId.VEINS_OF_POISON):
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
     player_take_damage(
@@ -1306,10 +1310,15 @@ class CreaturePool:
 
             # Native radioactive contact pulse runs after movement/AI/cooldown
             # synthesis inside the live-creature branch. The distance is measured
-            # to the creature's target player, the perk gate reads the global
-            # count (any player), the kill XP is credited to player 1, and the
-            # timer-fire requires the creature to still be alive (hp > 0).
-            if players and any(perk_active(p, PerkId.RADIOACTIVE) for p in players):
+            # to the creature's target player, the perk gate reads player slot
+            # zero, the kill XP is credited to player 1, and the timer-fire
+            # requires the creature to still be alive (hp > 0).
+            radioactive_active = bool(players) and (
+                perk_active(players[0], PerkId.RADIOACTIVE)
+                if state.preserve_bugs
+                else any(perk_active(p, PerkId.RADIOACTIVE) for p in players)
+            )
+            if radioactive_active:
                 dist = (creature.pos - player_pos).length()
                 if dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5

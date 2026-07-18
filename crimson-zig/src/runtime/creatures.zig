@@ -2296,9 +2296,13 @@ pub const CreaturePool = struct {
                 creature.attack_cooldown = native_math.pc24Sub(creature.attack_cooldown, dt_f32);
             }
 
-            // Native gates on the global perk count and only fires the pulse
-            // while the creature is still alive (hp > 0).
-            if (anyPlayerHasPerk(players, PerkId.radioactive)) {
+            // Native perk_count_get reads player slot zero even while distance
+            // is measured to this creature's selected target player.
+            const radioactive_active = if (state.preserve_bugs)
+                perkActive(&players[0], PerkId.radioactive)
+            else
+                anyPlayerHasPerk(players, PerkId.radioactive);
+            if (radioactive_active) {
                 const dist = state_mod.Vec2.sub(creature.pos, target_player_pos).length();
                 if (dist < 100.0) {
                     creature.collision_timer -= dt_f32 * 1.5;
@@ -2430,7 +2434,10 @@ pub const CreaturePool = struct {
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
-                if (perkActive(contact_player, PerkId.mr_melee)) {
+                // Native perk_count_get reads player slot zero; contact damage,
+                // shielding, and ownership still use the selected target.
+                const contact_perk_player = if (state.preserve_bugs) &players[0] else contact_player;
+                if (perkActive(contact_perk_player, PerkId.mr_melee)) {
                     _ = self.applyDamage(
                         state,
                         players,
@@ -2448,9 +2455,9 @@ pub const CreaturePool = struct {
                     }
                 }
                 if (contact_player.shield_timer <= 0.0) {
-                    if (perkActive(contact_player, PerkId.toxic_avenger)) {
+                    if (perkActive(contact_perk_player, PerkId.toxic_avenger)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick | spawn_mod.CreatureFlags.self_damage_tick_strong;
-                    } else if (perkActive(contact_player, PerkId.veins_of_poison)) {
+                    } else if (perkActive(contact_perk_player, PerkId.veins_of_poison)) {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
