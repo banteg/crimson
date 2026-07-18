@@ -66,6 +66,7 @@ pub const version = "0.1.0-dev";
 test {
     _ = effects;
     _ = net;
+    _ = projectiles;
     _ = quest_level;
     _ = quest_spawn_logic_full;
 }

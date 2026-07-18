@@ -1180,7 +1180,7 @@ test "creature contact perk source follows bug mode" {
         });
         pool.entries[0].target_player = 1;
 
-        try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
+        try pool.updateWithTerrainFx(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
 
         try std.testing.expectApproxEqAbs(case.expected_hp, pool.entries[0].hp, 1e-6);
         try std.testing.expect((pool.entries[0].flags & cz.spawn.CreatureFlags.self_damage_tick) != 0);
@@ -1224,7 +1224,7 @@ test "creature radioactive perk source follows bug mode" {
         pool.entries[0].collision_timer = 0.1;
         pool.entries[0].target_player = 1;
 
-        try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
+        try pool.updateWithTerrainFx(&state, players[0..], 0.2, 1024.0, &bonuses, &terrain_fx);
 
         if (preserve_bugs) {
             try std.testing.expectApproxEqAbs(@as(f32, 50.0), pool.entries[0].hp, 1e-6);
@@ -1257,13 +1257,13 @@ test "freeze pauses native creature spawn-slot timers" {
     );
 
     state.bonuses.freeze = 5.0;
-    try pool.update(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
+    try pool.updateWithTerrainFx(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
     try std.testing.expectEqual(@as(i32, 0), pool.spawn_slots[0].count);
     try std.testing.expectEqual(@as(f32, 1.0), pool.spawn_slots[0].timer);
     try std.testing.expectEqual(@as(usize, 1), pool.activeCount());
 
     state.bonuses.freeze = 0.0;
-    try pool.update(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
+    try pool.updateWithTerrainFx(&state, players[0..], 1.1, 1024.0, &bonuses, &terrain_fx);
     try std.testing.expectEqual(@as(i32, 1), pool.spawn_slots[0].count);
     try std.testing.expectEqual(@as(usize, 2), pool.activeCount());
 }

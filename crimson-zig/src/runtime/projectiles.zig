@@ -143,6 +143,9 @@ pub const ProjectilePool = struct {
         world_size: f32,
     ) ProjectileTickStats {
         var effects: effects_mod.EffectPool = .{};
+        const previous_creature_effects = creatures.effects;
+        if (previous_creature_effects == null) creatures.effects = &effects;
+        defer creatures.effects = previous_creature_effects;
         var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
         return self.updateWithEffects(state, players, creatures, bonuses, &effects, &terrain_fx, 5, dt, world_size);
     }
@@ -396,6 +399,24 @@ pub const ProjectilePool = struct {
                         creatures.entries[hit_idx.?].flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.splitter_gun)) {
+                    // Native emits the splitter burst and creates both child
+                    // projectiles before the shared blood/decal hit branch.
+                    emitProjectileTypeHitEffects(
+                        state,
+                        proj.type_id,
+                        proj.pos,
+                        effects,
+                        detail_preset,
+                    );
+                    spawnSplitterChildren(
+                        self,
+                        proj.pos,
+                        proj.angle,
+                        proj.travel_budget,
+                        hit_idx.?,
+                    );
+                }
                 if (presentation_perk_player) |player| {
                     emitProjectileHitPresentationPre(
                         state,
@@ -452,13 +473,42 @@ pub const ProjectilePool = struct {
                         .y = narrowF32(creatures.entries[hit_idx.?].pos.y + move.y * 3.0),
                     };
                 }
-                emitProjectileTypeHitEffects(
-                    state,
-                    proj.type_id,
-                    proj.pos,
-                    effects,
-                    detail_preset,
-                );
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon)) {
+                    spawnPlasmaCannonChildren(
+                        state,
+                        self,
+                        proj.pos,
+                        creatures.entries[hit_idx.?].size,
+                    );
+                }
+                if (proj.type_id != @intFromEnum(game_ids.ProjectileTypeId.splitter_gun)) {
+                    emitProjectileTypeHitEffects(
+                        state,
+                        proj.type_id,
+                        proj.pos,
+                        effects,
+                        detail_preset,
+                    );
+                }
+                if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.shrinkifier)) {
+                    const new_size = narrowF32(creatures.entries[hit_idx.?].size * 0.65);
+                    proj.life_timer = 0.25;
+                    creatures.entries[hit_idx.?].size = new_size;
+                    if (new_size < 16.0) {
+                        _ = creatures.handleKeepCorpseDeath(
+                            state,
+                            players,
+                            bonuses,
+                            terrain_fx,
+                            hit_idx.?,
+                            proj.owner,
+                            dt,
+                            world_size,
+                        );
+                    }
+                } else if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.plague_spreader)) {
+                    creatures.entries[hit_idx.?].plague_infected = true;
+                }
 
                 var dist = state_mod.Vec2.sub(proj.origin, proj.pos).length();
                 if (dist < 50.0) dist = 50.0;
@@ -602,6 +652,82 @@ fn resetShockChainIfOwner(
     if (state.shock_chain_projectile_id != @as(i32, @intCast(proj_index))) return;
     state.shock_chain_projectile_id = -1;
     state.shock_chain_links_left = 0;
+}
+
+fn spawnSplitterChildren(
+    pool: *ProjectilePool,
+    pos: state_mod.Vec2,
+    angle: f32,
+    travel_budget: f32,
+    hit_idx: usize,
+) void {
+    const angle_offset: f32 = 1.0471976;
+    const child_type = @intFromEnum(game_ids.ProjectileTypeId.splitter_gun);
+    const child_owner = owner_ref.OwnerRef.fromCreature(hit_idx);
+    _ = pool.spawn(
+        pos,
+        native_math.pc24Sub(angle, angle_offset),
+        child_type,
+        child_owner,
+        travel_budget,
+        true,
+    );
+    _ = pool.spawn(
+        pos,
+        native_math.pc24Add(angle, angle_offset),
+        child_type,
+        child_owner,
+        travel_budget,
+        true,
+    );
+}
+
+fn spawnPlasmaCannonChildren(
+    state: *state_mod.GameplayState,
+    pool: *ProjectilePool,
+    pos: state_mod.Vec2,
+    target_size: f32,
+) void {
+    const child_type = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
+    const child_travel_budget = projectileTravelBudgetFromRawId(child_type);
+    const ring_radius = native_math.pc24Add(
+        native_math.pc24Mul(target_size, @as(f32, 0.5)),
+        @as(f32, 1.0),
+    );
+    const angle_step: f32 = 0.5235988;
+    state.bonus_spawn_guard = true;
+    defer state.bonus_spawn_guard = false;
+
+    for (0..12) |ring_idx| {
+        const ring_angle = native_math.pc24Mul(
+            @as(f32, @floatFromInt(ring_idx)),
+            angle_step,
+        );
+        const child_pos: state_mod.Vec2 = .{
+            .x = native_math.pc24Add(
+                native_math.pc24Mul(
+                    std.math.cos(@as(f64, @floatCast(ring_angle))),
+                    ring_radius,
+                ),
+                pos.x,
+            ),
+            .y = native_math.pc24Add(
+                native_math.pc24Mul(
+                    std.math.sin(@as(f64, @floatCast(ring_angle))),
+                    ring_radius,
+                ),
+                pos.y,
+            ),
+        };
+        _ = pool.spawn(
+            child_pos,
+            ring_angle,
+            child_type,
+            owner_ref.OwnerRef.fromLocalPlayer(0),
+            child_travel_budget,
+            false,
+        );
+    }
 }
 
 fn applyIonLingerDamage(
@@ -1179,7 +1305,7 @@ test "ion and plasma hit rings use native small impact geometry" {
     try expectFloatClose(4.0, ion_ring.?.half_height);
     try expectFloatClose(0.0, ion_ring.?.age);
     try expectFloatClose(0.32, ion_ring.?.lifetime);
-    try expectFloatClose(54.0, ion_ring.?.scale_step);
+    try expectFloatClose(@as(f32, 1.2) * @as(f32, 45.0), ion_ring.?.scale_step);
     const first_spark = effects.entries[1];
     try expectFloatClose(expected_rotation, first_spark.rotation);
     try expectFloatClose(expected_vel.x, first_spark.vel.x);
@@ -1269,6 +1395,208 @@ test "pulse gun hit applies post-hit target push" {
     const pulse_displacement = std.math.sqrt(pulse_dx * pulse_dx + pulse_dy * pulse_dy);
     try std.testing.expect(pulse_tick.hit_count > 0);
     try std.testing.expect(pulse_displacement > base_displacement + 1.5);
+}
+
+test "splitter hit spawns native creature-owned child projectiles" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 1000.0,
+        .max_hp = 1000.0,
+        .size = 44.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var pool: ProjectilePool = .{};
+    const parent_idx = pool.spawn(
+        .{ .x = 100.0, .y = 100.0 },
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.splitter_gun),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        30.0,
+        false,
+    );
+
+    const tick = pool.updateWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        5,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(tick.hit_count > 0);
+    try std.testing.expectEqual(@as(usize, 0), parent_idx);
+    for (pool.entries[1..3]) |child| {
+        try std.testing.expect(child.active);
+        try std.testing.expectEqual(
+            @intFromEnum(game_ids.ProjectileTypeId.splitter_gun),
+            child.type_id,
+        );
+        try std.testing.expectEqual(@as(i32, 0), child.owner.toLegacy());
+        try std.testing.expect(child.hits_players);
+    }
+    try expectFloatClose(-1.0471976, pool.entries[1].angle);
+    try expectFloatClose(1.0471976, pool.entries[2].angle);
+}
+
+test "plasma cannon hit spawns native twelve-projectile ring" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 1000.0,
+        .max_hp = 1000.0,
+        .size = 44.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var pool: ProjectilePool = .{};
+    _ = pool.spawn(
+        .{ .x = 100.0, .y = 100.0 },
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        10.0,
+        false,
+    );
+
+    const tick = pool.updateWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        5,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(tick.hit_count > 0);
+    var plasma_children: usize = 0;
+    for (pool.entries[1..]) |child| {
+        if (!child.active) continue;
+        if (child.type_id != @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)) continue;
+        plasma_children += 1;
+        try std.testing.expectEqual(@as(i32, -100), child.owner.toLegacy());
+    }
+    try std.testing.expectEqual(@as(usize, 12), plasma_children);
+    try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "shrinkifier hit shrinks and handles sub-sixteen corpse death" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 100.0,
+        .max_hp = 100.0,
+        .reward_value = 20.0,
+        .size = 20.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var pool: ProjectilePool = .{};
+    _ = pool.spawn(
+        .{ .x = 100.0, .y = 100.0 },
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.shrinkifier),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        45.0,
+        false,
+    );
+
+    const tick = pool.updateWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        5,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(tick.hit_count > 0);
+    try expectFloatClose(13.0, creatures.entries[0].size);
+    try std.testing.expect(creatures.entries[0].active);
+    try std.testing.expect(creatures.entries[0].hp > 0.0);
+    try std.testing.expect(!creature_lifecycle.isAlive(creatures.entries[0].lifecycle_stage));
+    try std.testing.expectEqual(@as(i32, 20), players[0].experience);
+    try std.testing.expectEqual(@as(i32, 1), state.survival_recent_death_count);
+    try expectFloatClose(0.25, pool.entries[0].life_timer);
+}
+
+test "plague spreader hit infects the target before damage" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 1000.0,
+        .max_hp = 1000.0,
+        .size = 44.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var pool: ProjectilePool = .{};
+    _ = pool.spawn(
+        .{ .x = 100.0, .y = 100.0 },
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.plague_spreader),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        15.0,
+        false,
+    );
+
+    const tick = pool.updateWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        5,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(tick.hit_count > 0);
+    try std.testing.expect(creatures.entries[0].plague_infected);
 }
 
 test "projectile hit pass does not retarget newly spawned split children in new slots" {
@@ -1514,7 +1842,7 @@ test "ion linger damage stores rate product at native precision" {
     var bonuses: bonus_runtime.BonusPool = .{};
     _ = creatures.spawnInit(.{
         .origin_template_id = -1,
-        .pos = .{},
+        .pos = .{ .x = 0.0, .y = 0.0 },
         .heading = 0.0,
         .phase_seed = 0,
         .type_id = .alien,

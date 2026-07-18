@@ -42,6 +42,25 @@ path, which is additionally gated by the freeze timer. This condition ordering
 is semantically equivalent to checking the inactive arm first, but reproduces
 the native block layout without a source-level jump.
 
+Four weapon-specific primary-hit branches are now recovered in the Zig runtime.
+Splitter type `0x1d` branches at `0x00420ed4`, emits its burst at `0x00420ee1`,
+then calls `projectile_spawn` at `0x00420efa` and `0x00420f13` with the parent
+heading minus/plus `1.0471976`, the same projectile type, and the hit creature
+as owner before entering the shared hit presentation. Plasma Cannon type
+`0x1c` branches at `0x00421367`, computes `creature.size * 0.5 + 1`, raises the
+bonus-spawn guard, and loops 12 times over `i * 0.5235988`; each iteration calls
+`projectile_spawn` at `0x004213e3` for local-player-owned Plasma Rifle type 9,
+then the branch clears the guard.
+
+Shrinkifier type `0x18` starts at `0x0042144b`: after the impact effect it
+multiplies creature size by `0.65`, stores projectile lifetime `0.25`, and for
+size below `16` calls `creature_handle_death(hit_id, true)` at `0x00421482`.
+Plague Spreader type `0x29` branches at `0x004214cd` and sets the hit creature's
+infection byte at `0x004214d2` before shared damage resolution. Focused runtime
+tests cover all four branches, including Splitter ownership/headings, the
+12-projectile Plasma ring, Shrinkifier's keep-corpse death path, and infection
+ordering.
+
 Live callsite inspection also establishes that all six perk queries use the
 singleton `perk_count_get` helper, which returns
 `player_state_table[0].perk_counts[perk_id]`: Ion Gun Master at `0x00420bb5`,

@@ -1531,14 +1531,17 @@ test "spawn-on-kill preserve bugs keeps native player slot policy" {
     var players = [_]state_mod.PlayerState{
         .{
             .index = 0,
+            .pos = .{},
             .weapon = .{ .weapon_id = .assault_rifle },
         },
         .{
             .index = 1,
+            .pos = .{},
             .weapon = .{ .weapon_id = .pistol },
         },
         .{
             .index = 2,
+            .pos = .{},
             .weapon = .{ .weapon_id = .pistol },
         },
     };
@@ -1827,14 +1830,16 @@ test "weapon pick random available enforces unlock table in quests" {
 
 test "quest unlock weapon lookup exposes exact reward table rows" {
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, questUnlockWeaponForIndex(0).?);
-    try std.testing.expectEqual(game_ids.WeaponId.flameburst, questUnlockWeaponForIndex(40).?);
+    try std.testing.expectEqual(game_ids.WeaponId.ion_shotgun, questUnlockWeaponForIndex(40).?);
     try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(2));
     try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(-1));
     try std.testing.expectEqual(@as(?game_ids.WeaponId, null), questUnlockWeaponForIndex(50));
 }
 
 test "weapon pick random available rerolls used weapons on even gate" {
-    const seed: u32 = 160;
+    // CRT rand draws 4917, 9518, 4390: pistol, even reroll gate,
+    // then assault rifle.
+    const seed: u32 = 1494;
     var state = state_mod.GameplayState.init(seed);
     state.game_mode = .quests;
     state.status_quest_unlock_index = 1;

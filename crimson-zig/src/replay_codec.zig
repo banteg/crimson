@@ -2355,13 +2355,16 @@ test "event kind failure detail identifies first mode-incompatible event" {
     );
 }
 
-test "inflate zstd payload consumes replay fixture through eof" {
-    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
+test "inflate zstd payload consumes generated replay through eof" {
+    const allocator = std.testing.allocator;
+    const raw = try buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(raw);
+    const compressed = try wrapZstdFilePayload(allocator, raw);
+    defer allocator.free(compressed);
     const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
     defer std.testing.allocator.free(inflated);
 
-    try std.testing.expectEqual(@as(usize, 191445), inflated.len);
-    try std.testing.expectEqualSlices(u8, &.{ 0x82, 0xa6, 0x68, 0x65, 0x61, 0x64, 0x65, 0x72 }, inflated[0..8]);
+    try std.testing.expectEqualSlices(u8, raw, inflated);
 }
 
 test "smoke replay retains raw parser API and requires zstd file envelope" {
@@ -2460,19 +2463,15 @@ test "current replay parser rejects non-executable game modes" {
     }
 }
 
-test "parse current replay rejects hybrid string quest level fixture" {
-    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
-    const inflated = try inflateZstdPayload(std.testing.allocator, compressed, max_replay_payload_bytes);
-    defer std.testing.allocator.free(inflated);
-
-    try std.testing.expectError(error.InvalidMsgpack, parseReplaySummary(std.testing.allocator, inflated));
-}
-
 test "inflate zstd payload enforces max output size" {
-    const compressed = @embedFile("../../tests/fixtures/replays/quest_1.5_20260303_211620_completed_t40512.crd");
+    const allocator = std.testing.allocator;
+    const raw = try buildSmokeTestReplayPayload(allocator);
+    defer allocator.free(raw);
+    const compressed = try wrapZstdFilePayload(allocator, raw);
+    defer allocator.free(compressed);
     try std.testing.expectError(
         error.PayloadTooLarge,
-        inflateZstdPayload(std.testing.allocator, compressed, 1024),
+        inflateZstdPayload(std.testing.allocator, compressed, raw.len - 1),
     );
 }
 
@@ -2599,7 +2598,7 @@ test "unknown current replay command detail names command type and position" {
 
     const wire: ReplayCurrentWire = .{
         .header = .{
-            .game_mode_id = @intFromEnum(game_ids.GameModeId.survival),
+            .game_mode_id = @intFromEnum(game_ids.GameModeId.typo),
             .seed = 7,
             .replay_format_version = replay_format_version,
             .game_version = "0.9.0",

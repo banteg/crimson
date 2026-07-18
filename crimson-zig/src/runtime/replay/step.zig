@@ -297,7 +297,7 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .post_effects, &frame);
 
     callPhaseHook(options.hooks, context, .pre_core_simulation, &frame);
-    try context.creatures.update(
+    try context.creatures.updateWithTerrainFx(
         &context.state,
         players,
         frame.dt_sim,

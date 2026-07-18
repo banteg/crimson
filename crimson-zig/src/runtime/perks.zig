@@ -1124,7 +1124,7 @@ test "antiperk is excluded by availability rather than offer predicate" {
         .survival,
         1,
     ));
-    try std.testing.expect(!buildPerkAvailabilityForUnlockIndex(0).contains(.antiperk));
+    try std.testing.expect(!buildPerkAvailabilityForUnlockIndex(0).get(.antiperk));
 }
 
 test "hardcore quest 2-10 blocks poison perks" {
@@ -1946,7 +1946,7 @@ test "final revenge preserve mode uses player one source and strict lethal bound
         1024.0,
         5,
     );
-    try std.testing.expectEqual(@as(usize, 2), state.sfx_queue.items.len);
+    try std.testing.expectEqual(@as(usize, 2), state.sfx_queue.len);
 
     var exact_zero_state = state_mod.GameplayState.init(1);
     exact_zero_state.preserve_bugs = true;
@@ -1965,7 +1965,7 @@ test "final revenge preserve mode uses player one source and strict lethal bound
         1024.0,
         5,
     );
-    try std.testing.expectEqual(@as(usize, 0), exact_zero_state.sfx_queue.items.len);
+    try std.testing.expectEqual(@as(usize, 0), exact_zero_state.sfx_queue.len);
 
     var dead_player1_state = state_mod.GameplayState.init(1);
     dead_player1_state.preserve_bugs = true;
@@ -1984,5 +1984,5 @@ test "final revenge preserve mode uses player one source and strict lethal bound
         1024.0,
         5,
     );
-    try std.testing.expectEqual(@as(usize, 0), dead_player1_state.sfx_queue.items.len);
+    try std.testing.expectEqual(@as(usize, 0), dead_player1_state.sfx_queue.len);
 }
