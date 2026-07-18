@@ -107,7 +107,7 @@ test "build highscore record uses weapon stats and shots" {
     player.experience = 1234;
     player.weapon.weapon_id = .pistol;
 
-    state.weapon_shots_fired[0][2] = 10;
+    state.weapon_usage_time[2] = 10;
     state.shots_fired[0] = 20;
     state.shots_hit[0] = 15;
 

@@ -88,6 +88,7 @@ if TYPE_CHECKING:
 
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
+WEAPON_USAGE_TIME_SLOT_COUNT = 64
 
 
 class BonusTimers(msgspec.Struct):
@@ -163,6 +164,7 @@ class GameplayState(msgspec.Struct):
     weapon_shots_fired: list[list[int]] = msgspec.field(
         default_factory=lambda: [[0] * WEAPON_COUNT_SIZE for _ in range(4)],
     )
+    weapon_usage_time: list[int] = msgspec.field(default_factory=lambda: [0] * WEAPON_USAGE_TIME_SLOT_COUNT)
     debug_god_mode: bool = False
 
     def __post_init__(self) -> None:
@@ -369,6 +371,21 @@ def gameplay_enforce_weapon_guards(state: GameplayState, players: Sequence[Playe
                 _weapon_assign_player(player, WeaponId.PISTOL, state=state)
 
     survival_enforce_reward_weapon_guard(state, guarded_players)
+
+
+def gameplay_accumulate_weapon_usage_time(
+    state: GameplayState,
+    players: Sequence[PlayerState],
+    frame_dt_ms: int,
+) -> None:
+    """Accumulate native high-score weapon time for the fixed player-0 slot."""
+
+    if not players:
+        return
+    weapon_id = int(players[0].weapon.weapon_id)
+    if not 0 <= weapon_id < len(state.weapon_usage_time):
+        return
+    state.weapon_usage_time[weapon_id] = (int(state.weapon_usage_time[weapon_id]) + int(frame_dt_ms)) & 0xFFFFFFFF
 
 
 def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:

@@ -32,26 +32,29 @@ pub fn mostUsedWeaponIdForPlayer(
     player_index: usize,
     fallback_weapon_id: WeaponId,
 ) WeaponId {
-    if (player_index >= state.weapon_shots_fired.len) {
-        return fallback_weapon_id;
+    _ = player_index;
+    var best: usize = 1;
+    for (state.weapon_usage_time[2..], 2..) |time, weapon_id| {
+        const signed_time: i32 = @bitCast(time);
+        const signed_best: i32 = @bitCast(state.weapon_usage_time[best]);
+        if (signed_time > signed_best) best = weapon_id;
     }
 
-    const counts = state.weapon_shots_fired[player_index];
-    if (counts.len == 0) return fallback_weapon_id;
+    if (best >= state_mod.weapon_count_size) return fallback_weapon_id;
+    return @enumFromInt(@as(i32, @intCast(best)));
+}
 
-    const start: usize = if (counts.len > 1) 1 else 0;
-    var best = start;
-    var best_count = counts[start];
-
-    for (counts[start + 1 ..], start + 1..) |count, idx| {
-        if (count > best_count) {
-            best = idx;
-            best_count = count;
-        }
-    }
-
-    if (best_count > 0) return @enumFromInt(best);
-    return fallback_weapon_id;
+pub fn gameplayAccumulateWeaponUsageTime(
+    state: *GameplayState,
+    players: []const PlayerState,
+    frame_dt_ms: i32,
+) void {
+    if (players.len == 0) return;
+    const weapon_id_raw = @intFromEnum(players[0].weapon.weapon_id);
+    if (weapon_id_raw < 0) return;
+    const weapon_id: usize = @intCast(weapon_id_raw);
+    if (weapon_id >= state.weapon_usage_time.len) return;
+    state.weapon_usage_time[weapon_id] +%= @bitCast(frame_dt_ms);
 }
 
 pub fn timeScaleReflexBoostBonus(
@@ -219,6 +222,33 @@ pub fn gameplayEnforceWeaponGuards(
 
 fn expectFloatClose(expected: f32, actual: f32) !void {
     try std.testing.expectApproxEqAbs(expected, actual, 1e-6);
+}
+
+test "most used weapon uses native time ties and signed comparisons" {
+    var state = GameplayState.init(1);
+    try std.testing.expectEqual(WeaponId.pistol, mostUsedWeaponIdForPlayer(state, 0, .mean_minigun));
+
+    state.weapon_usage_time[@intFromEnum(WeaponId.pistol)] = 100;
+    state.weapon_usage_time[@intFromEnum(WeaponId.assault_rifle)] = 100;
+    try std.testing.expectEqual(WeaponId.pistol, mostUsedWeaponIdForPlayer(state, 1, .mean_minigun));
+
+    state.weapon_usage_time[@intFromEnum(WeaponId.pistol)] = std.math.maxInt(u32);
+    state.weapon_usage_time[@intFromEnum(WeaponId.assault_rifle)] = 0;
+    try std.testing.expectEqual(WeaponId.assault_rifle, mostUsedWeaponIdForPlayer(state, 0, .pistol));
+}
+
+test "weapon usage time accumulates fixed player zero with u32 wrapping" {
+    var state = GameplayState.init(1);
+    const players = [_]PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = .assault_rifle } },
+        .{ .index = 1, .pos = .{}, .weapon = .{ .weapon_id = .pistol } },
+    };
+    state.weapon_usage_time[@intFromEnum(WeaponId.assault_rifle)] = std.math.maxInt(u32) - 4;
+
+    gameplayAccumulateWeaponUsageTime(&state, players[0..], 16);
+
+    try std.testing.expectEqual(@as(u32, 11), state.weapon_usage_time[@intFromEnum(WeaponId.assault_rifle)]);
+    try std.testing.expectEqual(@as(u32, 0), state.weapon_usage_time[@intFromEnum(WeaponId.pistol)]);
 }
 
 test "survival level up advances one threshold per tick" {

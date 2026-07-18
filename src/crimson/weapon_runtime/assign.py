@@ -90,17 +90,25 @@ def most_used_weapon_id_for_player(
     player_index: int,
     fallback_weapon_id: WeaponId,
 ) -> WeaponId:
-    """Return a weapon id for the player's most-used weapon."""
+    """Return native's most-used weapon from the global equipped-time table."""
 
-    idx = int(player_index)
-    if 0 <= idx < len(state.weapon_shots_fired):
-        counts = state.weapon_shots_fired[idx]
-        if counts:
-            start = 1 if len(counts) > 1 else 0
-            best = max(range(start, len(counts)), key=lambda i: int(counts[i]))
-            if int(counts[best]) > 0:
-                return WeaponId(best)
-    return WeaponId(fallback_weapon_id)
+    _ = player_index
+    times = state.weapon_usage_time
+    if len(times) < 2:
+        return WeaponId(fallback_weapon_id)
+
+    def signed_time(weapon_id: int) -> int:
+        value = int(times[weapon_id]) & 0xFFFFFFFF
+        return value - 0x100000000 if value & 0x80000000 else value
+
+    best = 1
+    for weapon_id in range(2, min(len(times), 64)):
+        if signed_time(weapon_id) > signed_time(best):
+            best = weapon_id
+    try:
+        return WeaponId(best)
+    except ValueError:
+        return WeaponId(fallback_weapon_id)
 
 
 def player_swap_alt_weapon(player: PlayerState) -> bool:
@@ -126,8 +134,7 @@ def player_start_reload(
     perk_player = players[0] if state.preserve_bugs and players else player
 
     if player.weapon.reload_active and (
-        perk_active(perk_player, PerkId.AMMUNITION_WITHIN)
-        or perk_active(perk_player, PerkId.REGRESSION_BULLETS)
+        perk_active(perk_player, PerkId.AMMUNITION_WITHIN) or perk_active(perk_player, PerkId.REGRESSION_BULLETS)
     ):
         return
 

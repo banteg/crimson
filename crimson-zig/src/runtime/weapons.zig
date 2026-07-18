@@ -1289,6 +1289,8 @@ test "weapon usage tracks most used weapon" {
     }
     try std.testing.expectEqual(@as(i32, 3), state.weapon_shots_fired[0][2]);
 
+    state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.pistol)] = 16;
+    state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.assault_rifle)] = 48;
     const most_used = survival_progression.mostUsedWeaponIdForPlayer(state, 0, game_ids.WeaponId.pistol);
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, most_used);
 }

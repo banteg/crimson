@@ -13,6 +13,7 @@ pub const GameModeId = game_ids.GameModeId;
 
 pub const max_players: usize = 4;
 pub const weapon_count_size: usize = 54;
+pub const weapon_usage_time_slot_count: usize = 64;
 pub const perk_count_size: usize = @typeInfo(PerkId).@"enum".fields.len;
 const PerkCounts = std.EnumArray(PerkId, i32);
 pub const WeaponUsageCounts = std.EnumArray(WeaponId, u32);
@@ -304,6 +305,7 @@ pub const GameplayState = struct {
     shots_fired_total: i32 = 0,
     shots_hit: [max_players]i32 = [_]i32{0} ** max_players,
     weapon_shots_fired: [max_players][weapon_count_size]i32 = [_][weapon_count_size]i32{[_]i32{0} ** weapon_count_size} ** max_players,
+    weapon_usage_time: [weapon_usage_time_slot_count]u32 = [_]u32{0} ** weapon_usage_time_slot_count,
     bonus_spawn_guard: bool = false,
     camera_shake_pulses: i32 = 0,
     camera_shake_timer: f32 = 0.0,

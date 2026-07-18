@@ -15,9 +15,8 @@ from VC6's mask/negative-remainder sequence. The record fields are accessed
 through the established 72-byte `highscore_record_t`, so every relocation must
 prove the corresponding base-plus-field address.
 
-The Python high-score builder currently chooses a weapon from per-player shot
-counts and falls back to the current weapon when all counts are zero. Native
-instead accumulates equipped time in milliseconds, scans slots 1 through 63,
-and leaves weapon 1 as the zero/tie winner. This is a confirmed parity gap;
-fixing it requires adding the native timing accumulator to simulation state,
-not merely changing this selector.
+The Python and Zig high-score builders now use the native 64-slot equipped-time
+table. Both deterministic coordinators accumulate player 0's current weapon
+before world rendering and bonus pickup, wrap the `unsigned int` counters, scan
+slots 1 through 63 with signed strict-greater comparisons, and therefore leave
+weapon 1 as the zero/tie winner.

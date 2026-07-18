@@ -604,6 +604,7 @@ pub fn stepTick(
     }
     context.state.time_scale_active = context.state.bonuses.reflex_boost > 0.0;
     bonus_runtime.updatePrePickupTimers(&context.state, dt_after_player);
+    survival_progression.gameplayAccumulateWeaponUsageTime(&context.state, players, frame.dt_sim_ms_i32);
     survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
     try bonus_runtime.bonusUpdate(
         &context.bonuses,
@@ -1211,4 +1212,47 @@ test "weapon guard runs before same-frame locked splitter pickup" {
     );
 
     try std.testing.expectEqual(game_ids.WeaponId.pistol, players[0].weapon.weapon_id);
+}
+
+test "weapon usage time precedes same-frame weapon pickup" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    player_runtime.weaponAssignPlayer(&players[0], .pistol);
+    context.bonuses.entries[0] = .{
+        .bonus_id = .weapon,
+        .picked = false,
+        .time_left = 5.0,
+        .time_max = 5.0,
+        .pos = players[0].pos,
+        .amount = @intFromEnum(game_ids.WeaponId.assault_rifle),
+    };
+
+    const pickup_tick = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), pickup_tick.bonus_pickups.len);
+    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, players[0].weapon.weapon_id);
+    try std.testing.expectEqual(@as(u32, 16), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.pistol)]);
+    try std.testing.expectEqual(@as(u32, 0), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.assault_rifle)]);
+
+    _ = try stepTick(
+        &context,
+        1,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(u32, 16), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.pistol)]);
+    try std.testing.expectEqual(@as(u32, 16), context.state.weapon_usage_time[@intFromEnum(game_ids.WeaponId.assault_rifle)]);
 }

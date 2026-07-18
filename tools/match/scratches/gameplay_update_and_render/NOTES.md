@@ -21,4 +21,11 @@ weapon-time update, and direct compound assignments preserve its pause-help
 fade arithmetic. These are natural source shapes, not volatile, dead-code,
 register, or assembly constraints.
 
+The deterministic Python and Zig coordinators retain the adjacent core state
+mutation directly: after player and mode updates, player 0's current weapon
+receives `frame_dt_ms` in the native 64-slot `unsigned int` time table. This
+happens before `gameplay_render_world` and ordinary bonus pickup, so a newly
+collected weapon begins accumulating on the next frame. High-score finalization
+uses this table instead of the former per-weapon shot-count heuristic.
+
 MSVC 6.5 matches all 713 instructions and all 291 references exactly.

@@ -20,6 +20,7 @@ from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
+    gameplay_accumulate_weapon_usage_time,
     gameplay_enforce_weapon_guards,
     player_frame_dt_after_roundtrip,
     player_update,
@@ -43,6 +44,7 @@ from .presentation_step import (
     queue_projectile_decals_pre_hit,
 )
 from .state_types import BonusPickupEvent, GameplayState, PlayerState
+from .timing import ftol_ms_i32
 from .world_defs import CREATURE_ANIM
 
 
@@ -319,6 +321,7 @@ class WorldState(msgspec.Struct):
         fx_queue.violence_disabled = int(violence_disabled)
         if apply_world_dt_steps:
             dt = self.world_dt_after_perk_steps(dt)
+        frame_dt_ms = ftol_ms_i32(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         # Native Freeze pickup shatters corpses that existed at tick start;
         # same-tick kills are not included in that pass.
@@ -435,6 +438,7 @@ class WorldState(msgspec.Struct):
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
+        gameplay_accumulate_weapon_usage_time(self.state, self.players, frame_dt_ms)
         gameplay_enforce_weapon_guards(self.state, self.players)
         pickups = bonus_update(
             self.state,

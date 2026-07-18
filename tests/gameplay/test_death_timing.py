@@ -75,6 +75,59 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
     assert player.weapon.weapon_id == WeaponId.PISTOL
 
 
+def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    weapon_assign_player(player, WeaponId.PISTOL, state=world.state)
+    world.players.append(player)
+    entry = world.state.bonus_pool.spawn_at(
+        pos=player.pos,
+        bonus_id=BonusId.WEAPON,
+        duration_override=int(WeaponId.ASSAULT_RIFLE),
+        state=world.state,
+        emit_burst=False,
+    )
+    assert entry is not None
+
+    first = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert len(first.pickups) == 1
+    assert player.weapon.weapon_id == WeaponId.ASSAULT_RIFLE
+    assert world.state.weapon_usage_time[WeaponId.PISTOL] == 16
+    assert world.state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] == 0
+
+    world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert world.state.weapon_usage_time[WeaponId.PISTOL] == 16
+    assert world.state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] == 16
+
+
 def test_projectile_kill_awards_xp_same_step() -> None:
     world_size = 1024.0
     world = WorldState.build(
@@ -274,10 +327,13 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
     # Native detonation follow-up re-enters creature death handling for side effects,
     # but does not perform a second death-SFX random pick.
     assert len(events.deaths) == 2
-    assert sum(
-        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
-        for key in events.sfx
-    ) == 1
+    assert (
+        sum(
+            key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
+            for key in events.sfx
+        )
+        == 1
+    )
 
 
 def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> None:
@@ -391,8 +447,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
     assert record_death.call_count == 1
     assert any(
-        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
-        for key in events.sfx
+        key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04} for key in events.sfx
     )
 
 

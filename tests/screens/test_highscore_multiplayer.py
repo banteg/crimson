@@ -27,7 +27,7 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, ma
     mode.state.shots_fired[1] = 999
     mode.state.shots_hit[1] = 888
 
-    mode.state.weapon_shots_fired[0][1] = 5
+    mode.state.weapon_usage_time[1] = 5
     mode.state.weapon_shots_fired[1][2] = 999
 
     mode._enter_game_over()
