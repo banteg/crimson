@@ -956,7 +956,7 @@ def player_update(
         and bool(single_player_mode)
     )
     if manual_reload_allowed:
-        _player_start_reload(player, state)
+        _player_start_reload(player, state, players=players)
 
     _player_update_aim_by_scheme(
         player=player,

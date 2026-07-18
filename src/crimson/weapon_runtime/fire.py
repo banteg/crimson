@@ -499,5 +499,5 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         # reload restart eligibility after ammo drains below zero.
         reload_start_gate_open = True
     if player.weapon.ammo <= 0.0 and reload_start_gate_open:
-        player_start_reload(player, state)
+        player_start_reload(player, state, players=ctx.players)
     return WeaponFireResult(fired=True, shot_count=int(shot_count), ammo_cost=float(ammo_cost))

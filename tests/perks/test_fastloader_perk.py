@@ -46,3 +46,22 @@ def test_fastloader_spills_before_weapon_power_up_scaling() -> None:
     assert player.weapon.reload_timer == expected
     assert player.weapon.reload_timer_max == expected
     assert expected != f32(float(reload_time) * 0.7 * 0.6)
+
+
+def test_reload_uses_player_zero_perks_in_preserve_mode() -> None:
+    weapon_id = WeaponId.ASSAULT_RIFLE
+    reload_time = f32(WEAPON_BY_ID[weapon_id].reload_time)
+    player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))
+    player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))
+    player0.perk_counts[int(PerkId.FASTLOADER)] = 1
+    state = GameplayState(preserve_bugs=True)
+
+    player_start_reload(player1, state, players=[player0, player1])
+
+    assert player1.weapon.reload_timer == x87_pc24_mul(reload_time, f32(0.7))
+
+    player0.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
+    player1.weapon.reload_timer = 0.25
+    player_start_reload(player1, state, players=[player0, player1])
+
+    assert player1.weapon.reload_timer == 0.25

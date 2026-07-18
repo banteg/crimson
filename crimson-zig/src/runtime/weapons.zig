@@ -272,7 +272,7 @@ pub fn stepPlayerForTickWithEffects(
         input_flags.single_player_mode and
         player.weapon.reload_timer == 0.0;
     if (manual_reload_allowed) {
-        player_runtime.playerStartReload(player, state);
+        player_runtime.playerStartReloadWithPlayers(player, state, all_players);
     }
 
     if (perks.perkActive(player, PerkId.sharpshooter)) {
@@ -687,7 +687,7 @@ fn tryFireWeaponWithForce(
     player.muzzle_flash_alpha = @min(0.8, player.muzzle_flash_alpha);
 
     if (player.weapon.ammo <= 0.0 and (force_pre_swap_fire_gate or player.weapon.reload_timer <= 0.0)) {
-        player_runtime.playerStartReload(player, state);
+        player_runtime.playerStartReloadWithPlayers(player, state, all_players);
     }
 
     return true;

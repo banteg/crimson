@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import msgspec
 
@@ -112,11 +112,22 @@ def player_swap_alt_weapon(player: PlayerState) -> bool:
     return True
 
 
-def player_start_reload(player: PlayerState, state: GameplayState) -> None:
+def player_start_reload(
+    player: PlayerState,
+    state: GameplayState,
+    *,
+    players: Sequence[PlayerState] | None = None,
+) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
 
+    # Native queries the global perk table through `perk_count_get` (and reads
+    # Fastloader directly from slot zero) even while mutating another overlay
+    # player. Corrected mode keeps the intuitive per-player policy.
+    perk_player = players[0] if state.preserve_bugs and players else player
+
     if player.weapon.reload_active and (
-        perk_active(player, PerkId.AMMUNITION_WITHIN) or perk_active(player, PerkId.REGRESSION_BULLETS)
+        perk_active(perk_player, PerkId.AMMUNITION_WITHIN)
+        or perk_active(perk_player, PerkId.REGRESSION_BULLETS)
     ):
         return
 
@@ -127,7 +138,7 @@ def player_start_reload(player: PlayerState, state: GameplayState) -> None:
         player.weapon.reload_active = True
 
     player.weapon.reload_timer = reload_time
-    if perk_active(player, PerkId.FASTLOADER):
+    if perk_active(perk_player, PerkId.FASTLOADER):
         player.weapon.reload_timer = x87_pc24_mul(reload_time, f32(0.7))
     if state.bonuses.weapon_power_up > 0.0:
         player.weapon.reload_timer = x87_pc24_mul(player.weapon.reload_timer, f32(0.6))

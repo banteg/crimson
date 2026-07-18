@@ -99,14 +99,26 @@ pub fn initDefaultAltWeapon(player: *PlayerState) void {
 }
 
 pub fn playerStartReload(player: *PlayerState, state: *GameplayState) void {
+    playerStartReloadWithPlayers(player, state, null);
+}
+
+pub fn playerStartReloadWithPlayers(
+    player: *PlayerState,
+    state: *GameplayState,
+    all_players: ?[]const PlayerState,
+) void {
+    const perk_player: *const PlayerState = if (state.preserve_bugs and all_players != null and all_players.?.len > 0)
+        &all_players.?[0]
+    else
+        player;
     var reload_time = weapon_stats.get(player.weapon.weapon_id).reload_time;
-    if (player.weapon.reload_active and (playerPerkActive(player, .ammunition_within) or playerPerkActive(player, .regression_bullets))) {
+    if (player.weapon.reload_active and (playerPerkActive(perk_player, .ammunition_within) or playerPerkActive(perk_player, .regression_bullets))) {
         return;
     }
     if (!player.weapon.reload_active) {
         player.weapon.reload_active = true;
     }
-    if (playerPerkActive(player, .fastloader)) {
+    if (playerPerkActive(perk_player, .fastloader)) {
         reload_time = narrowF32(reload_time * 0.7);
     }
     if (state.bonuses.weapon_power_up > 0.0) {
@@ -226,6 +238,28 @@ test "fastloader scales reload timer" {
     try expectFloatClose(reload_time, base_player.weapon.reload_timer);
     try expectFloatClose(narrowF32(reload_time * 0.7), perk_player.weapon.reload_timer);
     try expectFloatClose(perk_player.weapon.reload_timer, perk_player.weapon.reload_timer_max);
+}
+
+test "native reload uses player zero perk source" {
+    const weapon_id = WeaponId.assault_rifle;
+    const reload_time = weapon_stats.get(weapon_id).reload_time;
+    var state = GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]PlayerState{
+        .{ .index = 0, .pos = .{}, .weapon = .{ .weapon_id = weapon_id } },
+        .{ .index = 1, .pos = .{}, .weapon = .{ .weapon_id = weapon_id } },
+    };
+    players[0].perk_counts.set(.fastloader, 1);
+
+    playerStartReloadWithPlayers(&players[1], &state, players[0..]);
+
+    try expectFloatClose(narrowF32(reload_time * 0.7), players[1].weapon.reload_timer);
+
+    players[0].perk_counts.set(.ammunition_within, 1);
+    players[1].weapon.reload_timer = 0.25;
+    playerStartReloadWithPlayers(&players[1], &state, players[0..]);
+
+    try expectFloatClose(0.25, players[1].weapon.reload_timer);
 }
 
 test "weapon assign with state resets latch, sets aux timer, and records usage" {
