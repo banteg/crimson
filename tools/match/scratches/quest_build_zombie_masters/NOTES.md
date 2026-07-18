@@ -9,7 +9,11 @@ Recovered Tier 3 Quest 10's complete four-entry spawn policy:
 - `(768, 256)`, zombie-boss spawner `0x00`, 14000 ms, player count
 - `(768, 768)`, zombie-boss spawner `0x00`, 18000 ms, one
 
-The candidate has the same 31 instructions and references `2/0/0`, scoring
-96.77%. The sole residual is VC6 scheduling the `768.0f` constant load one
-store earlier than the native function. It remains a WIP rather than masking
-that difference.
+The exact source shape uses the position setter plus the same two-field spawn
+metadata setter recovered independently in `quest_build_two_fronts`, followed
+by an explicit count write. That natural helper boundary reproduces VC6's
+otherwise surprising placement of the `768.0f` constant load between the
+second entry's trigger-time and count stores.
+
+The default VC6 profile matches all 31 instructions, the full 31-instruction
+prefix, both references, and the 128-byte function exactly.

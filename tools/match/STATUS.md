@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**660/2173** functions matched, **128152/676681** code bytes (**18.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**661/2173** functions matched, **128280/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 443/997 | 101465/386756 | 26.2% | 443/544 |
+| crimsonland.exe | 444/997 | 101593/386756 | 26.3% | 444/544 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**443/997** functions, **101465/386756** bytes (**26.2%**), **443/544** scratches verified.
+**444/997** functions, **101593/386756** bytes (**26.3%**), **444/544** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -389,7 +389,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | wip | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 135/135 | 91.85% | 2/135 | 7/0/0 |  | quest-minor-alien-breach-escalating-edges |
 | wip | quest_build_alien_squads | 0x00435ea0 | 507 | 108/108 | 89.81% | 10/108 | 0/0/0 |  | quest-alien-squads-fixed-corners |
-| wip | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 96.77% | 12/31 | 2/0/0 |  | quest-zombie-masters |
+| match | quest_build_zombie_masters | 0x004360a0 | 128 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
