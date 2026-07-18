@@ -811,44 +811,19 @@ pub fn applyFinalRevengeOnDeathTransitionWithEffects(
     world_size: f32,
     detail_preset: i32,
 ) void {
-    if (player_index >= players.len) return;
-    const player = &players[player_index];
-    const perk_player = if (state.preserve_bugs) &players[0] else player;
-    const was_alive = if (state.preserve_bugs) player1_health_before > 0.0 else health_before > 0.0;
-    const lethal = if (state.preserve_bugs) player.health < 0.0 else player.health <= 0.0;
-    if (!was_alive or !lethal) return;
-    if (!perkActive(perk_player, PerkId.final_revenge)) return;
-
-    effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
-    state.bonus_spawn_guard = true;
-
-    const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
-    for (creatures.entries, 0..) |creature, idx| {
-        if (!creature.active) continue;
-        const dx = native_math.pc24Sub(creature.pos.x, player.pos.x);
-        const dy = native_math.pc24Sub(creature.pos.y, player.pos.y);
-        if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
-        const distance = native_math.pc24Hypot(dx, dy);
-        const remaining = native_math.pc24Sub(512.0, distance);
-        if (!(remaining > 0.0)) continue;
-        const damage = native_math.pc24Mul(remaining, 5.0);
-        _ = creatures.applyExplosionDamage(
-            state,
-            players,
-            bonuses,
-            terrain_fx,
-            idx,
-            damage,
-            .{},
-            owner,
-            dt,
-            world_size,
-            null,
-        );
-    }
-    state.bonus_spawn_guard = false;
-    state.sfx_queue.append(.explosion_large);
-    state.sfx_queue.append(.shockwave);
+    creatures.applyFinalRevengeOnPlayerDamage(
+        state,
+        players,
+        player_index,
+        health_before,
+        player1_health_before,
+        bonuses,
+        effects,
+        terrain_fx,
+        dt,
+        world_size,
+        detail_preset,
+    );
 }
 
 pub fn creatureFindInRadius(

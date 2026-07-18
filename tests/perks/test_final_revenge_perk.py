@@ -95,6 +95,89 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     assert events.sfx.count(SfxId.SHOCKWAVE) == 1
 
 
+def test_final_revenge_runs_before_later_creature_slots_update() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.5)
+    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    world.players.append(player)
+
+    attacker = world.creatures.entries[0]
+    attacker.active = True
+    attacker.pos = Vec2(100.0, 100.0)
+    attacker.hp = 10000.0
+    attacker.max_hp = 10000.0
+    attacker.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    attacker.size = 48.0
+    attacker.move_speed = 0.0
+    attacker.contact_damage = 1.0
+
+    later = world.creatures.entries[1]
+    later.active = True
+    later.pos = Vec2(100.0, 100.0)
+    later.hp = 100.0
+    later.max_hp = 100.0
+    later.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    later.size = 48.0
+    later.move_speed = 0.0
+    later.attack_cooldown = 1.0
+
+    world.step(
+        0.2,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert player.health < 0.0
+    assert later.hp < 0.0
+    # The inline blast kills slot 1 before creature_update_all reaches it, so
+    # its live-path attack-cooldown decrement does not run this frame.
+    assert later.attack_cooldown == 1.0
+
+
+def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1)
+    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    world.players.append(player)
+
+    events = world.step(
+        0.05,
+        inputs=[PlayerInput()],
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert player.health < 0.0
+    assert SfxId.EXPLOSION_LARGE not in events.sfx
+    assert SfxId.SHOCKWAVE not in events.sfx
+
+
 def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))

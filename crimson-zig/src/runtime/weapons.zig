@@ -29,6 +29,17 @@ const PerkId = perks.PerkId;
 
 pub const WeaponRuntimeError = error{};
 
+pub const PlayerDamageRuntime = struct {
+    context: ?*anyopaque = null,
+    on_player_damage: *const fn (
+        context: ?*anyopaque,
+        player_index: i32,
+        health_before: f32,
+        player1_health_before: f32,
+        dt: f32,
+    ) void,
+};
+
 const movement_control_mouse_point_click: i32 = 4;
 
 const MuzzleSpriteSpec = struct {
@@ -249,6 +260,7 @@ pub fn stepPlayerForTick(
         particles,
         &effects,
         &sprite_effects,
+        null,
         5,
         input_flags,
         dt,
@@ -265,6 +277,7 @@ pub fn stepPlayerForTickWithEffects(
     particles: *particles_mod.ParticlePool,
     effects: *effects_mod.EffectPool,
     sprite_effects: *effects_mod.SpriteEffectPool,
+    player_damage_runtime: ?PlayerDamageRuntime,
     detail_preset: i32,
     input_flags: TickInputFlags,
     dt: f32,
@@ -422,7 +435,9 @@ pub fn stepPlayerForTickWithEffects(
             particles,
             effects,
             sprite_effects,
+            player_damage_runtime,
             detail_preset,
+            dt,
             force_pre_swap_fire_gate,
         );
     }
@@ -472,7 +487,9 @@ pub fn tryFireWeaponWithEffects(
         particles,
         effects,
         sprite_effects,
+        null,
         detail_preset,
+        0.0,
         false,
     );
 }
@@ -487,7 +504,9 @@ fn tryFireWeaponWithForce(
     particles: *particles_mod.ParticlePool,
     effects: *effects_mod.EffectPool,
     sprite_effects: *effects_mod.SpriteEffectPool,
+    player_damage_runtime: ?PlayerDamageRuntime,
     detail_preset: i32,
+    dt: f32,
     force_pre_swap_fire_gate: bool,
 ) WeaponRuntimeError!bool {
     const perk_player = playerUpdatePerkSource(state, player, all_players);
@@ -509,13 +528,27 @@ fn tryFireWeaponWithForce(
                 @as(f32, 0.15)
             else
                 @as(f32, 1.0);
+            const health_before = player.health;
+            const player1_health_before = if (all_players) |players|
+                if (players.len > 0) players[0].health else player.health
+            else
+                player.health;
             creatures_mod.applyPlayerContactDamageWithPlayers(
                 state,
                 player,
                 all_players,
                 health_cost,
-                0.0,
+                dt,
             );
+            if (player_damage_runtime) |runtime| {
+                runtime.on_player_damage(
+                    runtime.context,
+                    player.index,
+                    health_before,
+                    player1_health_before,
+                    dt,
+                );
+            }
         } else {
             return false;
         }
@@ -2383,6 +2416,7 @@ test "projectile spawn preserves global fire bullets override and shot credit" {
             &particles,
             &effects,
             &sprite_effects,
+            null,
             5,
             .{ .fire_down = true, .preprocessed_player_tick = true },
             1.0 / 60.0,

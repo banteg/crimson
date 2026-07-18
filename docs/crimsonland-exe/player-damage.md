@@ -28,6 +28,17 @@ Global side effects:
 
 - Sets `survival_reward_damage_seen = 1` (used by `survival_update` handout gating).
 
+## Native callsites
+
+Binary Ninja reports exactly two code xrefs to `player_take_damage`:
+
+- `player_update` at `0x00415a03`, for Ammunition Within while reloading.
+- `creature_update_all` at `0x00427346`, for creature contact damage.
+
+The death-only work in this function, including Final Revenge, runs inline at
+those callsites. Direct health writes in `projectile_update` and per-frame perk
+effects do not inherit it.
+
 ## Core gates (must-have)
 
 ### 1) Death Clock immunity
@@ -87,4 +98,3 @@ Contract (per creature; see `docs/creatures/struct.md`):
   - calls `player_take_damage(creature_target_player, creature_contact_damage)`.
 
 This yields an effective upper bound of ~2 contact-damage ticks per second per colliding creature.
-

@@ -144,7 +144,6 @@ class GameplayState(msgspec.Struct):
     bonus_hud: BonusHudState = msgspec.field(default_factory=BonusHudState)
     bonus_pool: BonusPool = msgspec.field(default_factory=BonusPool)
     deferred_freeze_corpse_fx: list[DeferredFreezeCorpseFx] = msgspec.field(default_factory=list)
-    player_death_hook_skip_indices: set[int] = msgspec.field(default_factory=set)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     survival_reward_weapon_guard_id: WeaponId = WeaponId.PISTOL

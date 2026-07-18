@@ -108,16 +108,11 @@ def player_take_damage(
             return max(0.0, health_before - float(player.health))
     else:
         if not was_alive:
-            if state.preserve_bugs:
-                # The generic post-damage hook must not resurrect Final Revenge
-                # after native returned because player 1 was already dead.
-                state.player_death_hook_skip_indices.add(int(player.index))
             return max(0.0, health_before - float(player.health))
         if not perk_active(perk_player, PerkId.FINAL_REVENGE):
             state.sfx_queue.append(_PLAYER_DEATH_SFX[state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX) & 1])
         elif death_runtime is not None:
             death_runtime.on_player_lethal(player, dt=0.0 if dt is None else float(dt))
-            state.player_death_hook_skip_indices.add(int(player.index))
 
     if not dodged:
         if not perk_active(perk_player, PerkId.UNSTOPPABLE):

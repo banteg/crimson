@@ -95,9 +95,13 @@ shared-count behavior.
 
 ### 5) Player death hooks
 
-- Entry: `src/crimson/sim/world_state.py:WorldState.step`
+- Entry: `src/crimson/player_damage.py:player_take_damage`, through the
+  synchronous `PlayerDeathRuntime.on_player_lethal` adapter supplied by the two
+  native callers (creature contact and Ammunition Within).
 - Source: `PLAYER_DEATH_HOOKS`
-- Runs for players transitioning alive -> dead during the current step.
+- Runs inside the damage call before its caller continues. There is no generic
+  end-of-phase death sweep: direct projectile and perk health writes bypass
+  Final Revenge in the executable.
 
 ## Ordering and RNG invariants
 

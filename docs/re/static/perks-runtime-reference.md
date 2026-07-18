@@ -260,7 +260,10 @@ Notes:
 ### Rewrite
 
 - Death hook implementation: `src/crimson/perks/impl/final_revenge.py`: `apply_final_revenge_on_player_death()`.
-- Hook wiring and death pipeline call-site: `src/crimson/sim/world_state.py`.
+- Hook wiring: `src/crimson/sim/world_state.py`; synchronous dispatch:
+  `src/crimson/player_damage.py`, reached only from creature contact and
+  Ammunition Within. Direct projectile/perk health writes intentionally bypass
+  the hook, matching the native function's two xrefs.
 - Offer gating: `src/crimson/perks/availability.py`: `perk_can_offer()`.
 
 ## 20. Telekinetic (`PerkId.TELEKINETIC`)

@@ -126,6 +126,42 @@ pub const StepOptions = struct {
     timing_trace_sink: ?TimingTraceSink = null,
 };
 
+const NativePlayerDamageContext = struct {
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    creatures: *creatures_mod.CreaturePool,
+    bonuses: *bonus_runtime.BonusPool,
+    effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    world_size: f32,
+    detail_preset: i32,
+};
+
+fn onNativePlayerDamage(
+    opaque_context: ?*anyopaque,
+    player_index_i32: i32,
+    health_before: f32,
+    player1_health_before: f32,
+    dt: f32,
+) void {
+    const context: *NativePlayerDamageContext = @ptrCast(@alignCast(opaque_context orelse return));
+    if (player_index_i32 < 0) return;
+    const player_index: usize = @intCast(player_index_i32);
+    context.creatures.applyFinalRevengeOnPlayerDamage(
+        context.state,
+        context.players,
+        player_index,
+        health_before,
+        player1_health_before,
+        context.bonuses,
+        context.effects,
+        context.terrain_fx,
+        dt,
+        context.world_size,
+        context.detail_preset,
+    );
+}
+
 pub const DiagnosticTraceSink = *const fn (trace: diagnostic_trace_mod.ReplayTickTrace) void;
 pub const TimingTraceSink = *const fn (ctx: ?*anyopaque, sample: diagnostic_trace_mod.ReplayTickTimingSample) void;
 
@@ -274,11 +310,6 @@ pub fn stepTick(
     for (context.creatures.entries, 0..) |creature, idx| {
         freeze_corpse_at_tick_start[idx] = creature.active and creature.hp <= 0.0;
     }
-    var health_before_creatures: [state_mod.max_players]f32 = undefined;
-    for (players, 0..) |player, player_idx| {
-        health_before_creatures[player_idx] = player.health;
-    }
-
     callPhaseHook(options.hooks, context, .pre_effects, &frame);
     context.effects.update(frame.dt, &context.terrain_fx.decals);
     perks.updateEvilEyesTargets(context.state.preserve_bugs, players, context.creatures.entries[0..]);
@@ -304,26 +335,10 @@ pub fn stepTick(
         context.world_size,
         &context.bonuses,
         &context.terrain_fx,
+        context.detail_preset,
     );
     bonus_runtime.applyPendingCreatureProjectiles(&context.state, &context.projectiles);
     frame.rng_after_creatures = context.state.rng.state;
-
-    for (players, 0..) |_, player_idx| {
-        perks.applyFinalRevengeOnDeathTransitionWithEffects(
-            &context.state,
-            players,
-            player_idx,
-            health_before_creatures[player_idx],
-            health_before_creatures[0],
-            &context.creatures,
-            &context.bonuses,
-            &context.effects,
-            &context.terrain_fx,
-            frame.dt_sim,
-            context.world_size,
-            context.detail_preset,
-        );
-    }
 
     frame.projectile_tick_stats = context.projectiles.updateWithEffects(
         &context.state,
@@ -400,8 +415,6 @@ pub fn stepTick(
         if (!player_preprocessed_alive[player_idx]) {
             continue;
         }
-        const health_before_player_step = player.health;
-        const player1_health_before_player_step = players[0].health;
         const input = if (context.game_mode == .typo and player_idx == 0)
             typo_runtime.transformPrimaryInput(&context.state, raw_input)
         else if (context.game_mode == .tutorial and player_idx == 0)
@@ -419,6 +432,16 @@ pub fn stepTick(
             &context.creatures,
             frame.dt_sim,
         );
+        var player_damage_context: NativePlayerDamageContext = .{
+            .state = &context.state,
+            .players = players,
+            .creatures = &context.creatures,
+            .bonuses = &context.bonuses,
+            .effects = &context.effects,
+            .terrain_fx = &context.terrain_fx,
+            .world_size = context.world_size,
+            .detail_preset = context.detail_preset,
+        };
         try weapons_runtime.stepPlayerForTickWithEffects(
             &context.state,
             player,
@@ -429,6 +452,10 @@ pub fn stepTick(
             &context.particles,
             &context.effects,
             &context.sprite_effects,
+            .{
+                .context = &player_damage_context,
+                .on_player_damage = onNativePlayerDamage,
+            },
             context.detail_preset,
             .{
                 .fire_down = flags.fire_down,
@@ -441,20 +468,6 @@ pub fn stepTick(
                 .preprocessed_player_tick = true,
             },
             frame.dt_sim,
-        );
-        perks.applyFinalRevengeOnDeathTransitionWithEffects(
-            &context.state,
-            players,
-            player_idx,
-            health_before_player_step,
-            player1_health_before_player_step,
-            &context.creatures,
-            &context.bonuses,
-            &context.effects,
-            &context.terrain_fx,
-            frame.dt_sim,
-            context.world_size,
-            context.detail_preset,
         );
         movement.finalizePlayerPostUpdate(player, context.world_size);
     }
@@ -1034,6 +1047,75 @@ test "step tick accepts preserve bugs and keeps player zero perk targeting" {
 
     try std.testing.expectApproxEqAbs(@as(f32, 90.4), players[0].health, 1e-5);
     try std.testing.expectApproxEqAbs(@as(f32, 80.0), players[1].health, 1e-6);
+}
+
+test "direct death clock drain does not trigger final revenge" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    players[0].health = 0.1;
+    players[0].perk_counts.set(perks.PerkId.death_clock, 1);
+    players[0].perk_counts.set(perks.PerkId.final_revenge, 1);
+
+    const result = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        0.05,
+        .{},
+    );
+
+    try std.testing.expect(players[0].health < 0.0);
+    for (result.sfx_events.constSlice()) |sfx_id| {
+        try std.testing.expect(sfx_id != .explosion_large);
+        try std.testing.expect(sfx_id != .shockwave);
+    }
+}
+
+test "ammunition within triggers final revenge inline with frame dt" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    players[0].health = 0.1;
+    players[0].death_timer = 16.0;
+    players[0].experience = 100;
+    players[0].weapon.reload_active = true;
+    players[0].weapon.reload_timer = 1.0;
+    players[0].weapon.reload_timer_max = 1.0;
+    players[0].perk_counts.set(perks.PerkId.ammunition_within, 1);
+    players[0].perk_counts.set(perks.PerkId.final_revenge, 1);
+
+    const result = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{
+            .aim_x = 700.0,
+            .aim_y = 512.0,
+            .flags = .{ .fire_down = true },
+        }},
+        &.{},
+        0.05,
+        .{},
+    );
+
+    try std.testing.expect(players[0].health < 0.0);
+    try std.testing.expectEqual(
+        native_math.pc24Sub(16.0, native_math.pc24Mul(0.05, 28.0)),
+        players[0].death_timer,
+    );
+    var saw_explosion = false;
+    var saw_shockwave = false;
+    for (result.sfx_events.constSlice()) |sfx_id| {
+        saw_explosion = saw_explosion or sfx_id == .explosion_large;
+        saw_shockwave = saw_shockwave or sfx_id == .shockwave;
+    }
+    try std.testing.expect(saw_explosion);
+    try std.testing.expect(saw_shockwave);
 }
 
 test "step tick applies freeze corpse effects when freeze is not last pickup" {

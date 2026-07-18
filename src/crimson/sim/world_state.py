@@ -317,11 +317,9 @@ class WorldState(msgspec.Struct):
     ) -> WorldEvents:
         dt = float(dt)
         fx_queue.violence_disabled = int(violence_disabled)
-        self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
             dt = self.world_dt_after_perk_steps(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
-        prev_health = [float(player.health) for player in self.players]
         # Native Freeze pickup shatters corpses that existed at tick start;
         # same-tick kills are not included in that pass.
         freeze_corpse_indices_at_tick_start = {
@@ -387,15 +385,6 @@ class WorldState(msgspec.Struct):
                 play_rocket_hit_audio=step_runtime.play_secondary_rocket_hit_audio,
             ),
         )
-        self._run_post_damage_player_death_hooks(
-            prev_health=prev_health,
-            dt=float(dt),
-            world_size=float(world_size),
-            detail_preset=int(detail_preset),
-            fx_queue=fx_queue,
-            deaths=step_runtime.deaths,
-        )
-
         # Native updates the sprite pool before the particle loop, so sprites
         # spawned by particles only advance on the next tick.
         self.state.sprite_effects.update(dt)
@@ -467,9 +456,6 @@ class WorldState(msgspec.Struct):
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
-        # Player-damage VO RNG work lives inside `player_take_damage` for native
-        # ordering parity (VO draw before heading-jitter draw).
-        self.state.player_death_hook_skip_indices.clear()
         return step_runtime.build_events(
             hits=hits,
             secondary_hit_count=int(secondary_hit_count),
@@ -491,36 +477,6 @@ class WorldState(msgspec.Struct):
                 state=self.state,
                 creatures=self.creatures,
                 players=self.players,
-                player=player,
-                dt=float(dt),
-                world_size=float(world_size),
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                deaths=deaths,
-            )
-
-    def _run_post_damage_player_death_hooks(
-        self,
-        *,
-        prev_health: list[float],
-        dt: float,
-        world_size: float,
-        detail_preset: int,
-        fx_queue: FxQueue,
-        deaths: list[CreatureDeath],
-    ) -> None:
-        for idx, player in enumerate(self.players):
-            if idx >= len(prev_health):
-                continue
-            if float(prev_health[idx]) < 0.0:
-                continue
-            if float(player.health) >= 0.0:
-                continue
-            player_idx = int(player.index)
-            if player_idx in self.state.player_death_hook_skip_indices:
-                self.state.player_death_hook_skip_indices.discard(player_idx)
-                continue
-            self._run_player_death_hooks(
                 player=player,
                 dt=float(dt),
                 world_size=float(world_size),

@@ -2095,6 +2095,7 @@ pub const CreaturePool = struct {
             world_size,
             bonus_pool,
             &terrain_fx,
+            5,
         );
     }
 
@@ -2106,6 +2107,7 @@ pub const CreaturePool = struct {
         world_size: f32,
         bonus_pool: *bonus_runtime.BonusPool,
         terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+        detail_preset: i32,
     ) CreatureRuntimeError!void {
         if (players.len == 0) return;
         if (!(dt > 0.0)) return;
@@ -2506,6 +2508,8 @@ pub const CreaturePool = struct {
                         creature.flags |= spawn_mod.CreatureFlags.self_damage_tick;
                     }
                 }
+                const contact_health_before = contact_player.health;
+                const player1_health_before = players[0].health;
                 applyPlayerContactDamageWithPlayers(
                     state,
                     contact_player,
@@ -2513,6 +2517,24 @@ pub const CreaturePool = struct {
                     creature.contact_damage,
                     dt_f32,
                 );
+                if (single_player_dormant_target == null) {
+                    // Native runs the Final Revenge scan inside
+                    // player_take_damage, before this creature's decal and
+                    // before the next creature slot is updated.
+                    self.applyFinalRevengeOnPlayerDamage(
+                        state,
+                        players,
+                        target_player_index,
+                        contact_health_before,
+                        player1_health_before,
+                        bonus_pool,
+                        effect_pool,
+                        terrain_fx,
+                        dt_f32,
+                        world_size,
+                        detail_preset,
+                    );
+                }
                 const push_delta = state_mod.Vec2.sub(contact_player.pos, creature.pos);
                 const push_len = push_delta.length();
                 if (push_len > 1e-6) {
@@ -2672,6 +2694,65 @@ pub const CreaturePool = struct {
             dt,
             world_size,
         );
+    }
+
+    /// Run Final Revenge at the native `player_take_damage` callsite.
+    ///
+    /// Direct projectile and perk health writes bypass this path in the exe;
+    /// only creature contact and Ammunition Within call `player_take_damage`.
+    pub fn applyFinalRevengeOnPlayerDamage(
+        self: *CreaturePool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        player_index: usize,
+        health_before: f32,
+        player1_health_before: f32,
+        bonuses: *bonus_runtime.BonusPool,
+        effects: *effects_mod.EffectPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+        dt: f32,
+        world_size: f32,
+        detail_preset: i32,
+    ) void {
+        if (player_index >= players.len) return;
+        const player = &players[player_index];
+        const perk_player = if (state.preserve_bugs) &players[0] else player;
+        const was_alive = if (state.preserve_bugs) player1_health_before > 0.0 else health_before > 0.0;
+        const lethal = if (state.preserve_bugs) player.health < 0.0 else player.health <= 0.0;
+        if (!was_alive or !lethal) return;
+        if (!perkActive(perk_player, PerkId.final_revenge)) return;
+
+        effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
+        state.bonus_spawn_guard = true;
+
+        const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+        for (self.entries, 0..) |creature, idx| {
+            if (!creature.active) continue;
+            const dx = native_math.pc24Sub(creature.pos.x, player.pos.x);
+            const dy = native_math.pc24Sub(creature.pos.y, player.pos.y);
+            if (@abs(dx) > 512.0 or @abs(dy) > 512.0) continue;
+            const distance = native_math.pc24Hypot(dx, dy);
+            const remaining = native_math.pc24Sub(512.0, distance);
+            if (!(remaining > 0.0)) continue;
+            const damage = native_math.pc24Mul(remaining, 5.0);
+            _ = self.applyExplosionDamage(
+                state,
+                players,
+                bonuses,
+                terrain_fx,
+                idx,
+                damage,
+                .{},
+                owner,
+                dt,
+                world_size,
+                null,
+            );
+        }
+        // Native stores a literal zero rather than restoring the incoming guard.
+        state.bonus_spawn_guard = false;
+        state.sfx_queue.append(.explosion_large);
+        state.sfx_queue.append(.shockwave);
     }
 
     pub fn applyExplosionDamage(
@@ -7041,6 +7122,53 @@ test "tough reloader halves damage while reloading" {
     );
 
     try expectFloatClose(95.0, player.health);
+}
+
+test "final revenge kills later creature before its live update" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 0.5 },
+    };
+    players[0].perk_counts.set(PerkId.final_revenge, 1);
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 48.0,
+        .move_speed = 0.0,
+        .health = 10000.0,
+        .max_health = 10000.0,
+        .reward_value = 10.0,
+        .contact_damage = 1.0,
+    });
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 48.0,
+        .move_speed = 0.0,
+        .health = 100.0,
+        .max_health = 100.0,
+        .reward_value = 10.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[1].attack_cooldown = 1.0;
+
+    try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
+
+    try std.testing.expect(players[0].health < 0.0);
+    try std.testing.expect(pool.entries[1].hp < 0.0);
+    try std.testing.expectEqual(@as(f32, 1.0), pool.entries[1].attack_cooldown);
+    try std.testing.expectEqual(@as(usize, 2), state.sfx_queue.len);
+    try std.testing.expectEqual(state_mod.SfxId.explosion_large, state.sfx_queue.constSlice()[0]);
+    try std.testing.expectEqual(state_mod.SfxId.shockwave, state.sfx_queue.constSlice()[1]);
 }
 
 test "preserve bugs uses player one damage perk source" {

@@ -226,7 +226,6 @@ def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
     assert player2.health == -5.0
     assert player2.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), 28.0))
     assert state.sfx_queue == []
-    assert state.player_death_hook_skip_indices == {1}
 
 
 @pytest.mark.parametrize(
