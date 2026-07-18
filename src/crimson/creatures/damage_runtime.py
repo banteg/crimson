@@ -34,12 +34,12 @@ class CreatureDamageRuntime(msgspec.Struct):
     def on_creature_lethal(
         self,
         creature_index: int,
-        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
     ) -> None:
-        # Native `creature_apply_damage` runs `creature_handle_death` first and only
-        # then draws the death-SFX / shock-burst rands; implementations must invoke
-        # `resolve_death_sfx` after death handling to keep the RNG stream aligned.
-        _ = creature_index, resolve_death_sfx
+        # Native `creature_apply_damage` runs `creature_handle_death` first, then
+        # applies the doubled lethal impulse and draws the death-SFX / shock-burst
+        # rands. Implementations must invoke this callback after death handling.
+        _ = creature_index, resolve_damage_followup
 
 
 class DirectCreatureDamageRuntime(CreatureDamageRuntime):

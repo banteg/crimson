@@ -2687,11 +2687,6 @@ pub const CreaturePool = struct {
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
-        creature.vel = .{
-            .x = creature.vel.x - impulse.x * 2.0,
-            .y = creature.vel.y - impulse.y * 2.0,
-        };
-
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
         emitDeathSideEffects(
@@ -2714,6 +2709,7 @@ pub const CreaturePool = struct {
                 creature.active = false;
             }
         }
+        applyCreatureDamagePostDeathImpulse(creature, impulse);
         emitCreatureApplyDamageFollowup(
             state,
             self.effects orelse unreachable,
@@ -3174,10 +3170,6 @@ pub const CreaturePool = struct {
             creature.size > 35.0;
         const death_size = creature.size;
         const death_reward_value = creature.reward_value;
-        creature.vel = .{
-            .x = creature.vel.x - impulse.x * 2.0,
-            .y = creature.vel.y - impulse.y * 2.0,
-        };
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
         emitDeathSideEffects(
@@ -3200,6 +3192,7 @@ pub const CreaturePool = struct {
                 creature.active = false;
             }
         }
+        applyCreatureDamagePostDeathImpulse(creature, impulse);
         emitCreatureApplyDamageFollowup(
             state,
             self.effects orelse unreachable,
@@ -4004,6 +3997,22 @@ fn emitCreatureApplyDamageFollowup(
     }
 }
 
+fn applyCreatureDamagePostDeathImpulse(
+    creature: *CreatureState,
+    impulse: state_mod.Vec2,
+) void {
+    creature.vel = .{
+        .x = native_math.pc24Sub(
+            creature.vel.x,
+            native_math.pc24Mul(impulse.x, 2.0),
+        ),
+        .y = native_math.pc24Sub(
+            creature.vel.y,
+            native_math.pc24Mul(impulse.y, 2.0),
+        ),
+    };
+}
+
 fn tickDead(
     creature: *CreatureState,
     dt: f32,
@@ -4656,9 +4665,12 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         .reward_value = 131.687241,
         .move_speed = 2.0,
         .contact_damage = 10.0,
+        .vel = .{ .x = 10.0, .y = 20.0 },
     };
 
     var state = state_mod.GameplayState.init(seed);
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
     var bonuses: bonus_runtime.BonusPool = .{};
     var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
     var players = [_]state_mod.PlayerState{
@@ -4676,13 +4688,20 @@ test "explosion xp uses pre-split reward when source slot is reused by split chi
         &terrain_fx,
         0,
         10.0,
-        .{},
+        .{ .x = 1.0, .y = 2.0 },
         owner_local_player,
         1.0 / 60.0,
         1024.0,
         null,
     );
     try std.testing.expectEqual(@as(i32, 171), gained);
+    // Both split children copy the velocity after the first impulse. Native
+    // applies the doubled lethal impulse only after creature_handle_death, so
+    // it reaches the child that reused the source index but not its sibling.
+    try expectFloatClose(7.0, pool.entries[0].vel.x);
+    try expectFloatClose(14.0, pool.entries[0].vel.y);
+    try expectFloatClose(9.0, pool.entries[1].vel.x);
+    try expectFloatClose(18.0, pool.entries[1].vel.y);
 }
 
 test "applyDamage skips death side effects when lifecycle is already below alive sentinel" {

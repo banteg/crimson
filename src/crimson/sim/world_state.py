@@ -121,7 +121,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
     def on_creature_lethal(
         self,
         creature_index: int,
-        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
     ) -> None:
         self.world._record_creature_death(
             creature_index=int(creature_index),
@@ -131,7 +131,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, CreatureDamageRuntime, PlayerDeath
             fx_queue=self.fx_queue,
             deaths=self.deaths,
             sfx=self.sfx,
-            resolve_death_sfx=resolve_death_sfx,
+            resolve_damage_followup=resolve_damage_followup,
         )
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
@@ -529,7 +529,7 @@ class WorldState(msgspec.Struct):
         deaths: list[CreatureDeath],
         keep_corpse: bool = True,
         sfx: list[SfxId],
-        resolve_death_sfx: Callable[[], tuple[SfxId, ...]] | None = None,
+        resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
     ) -> None:
         death = self.creatures.handle_death(
             int(creature_index),
@@ -544,8 +544,8 @@ class WorldState(msgspec.Struct):
             keep_corpse=bool(keep_corpse),
         )
         deaths.append(death)
-        if resolve_death_sfx is not None:
-            sfx.extend(resolve_death_sfx())
+        if resolve_damage_followup is not None:
+            sfx.extend(resolve_damage_followup())
 
     def _prepare_projectile_hit_presentation(
         self,

@@ -33,7 +33,7 @@ class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
     def on_creature_lethal(
         self,
         creature_index: int,
-        resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
     ) -> None:
         self.deaths.append(
             self.creatures.handle_death(
@@ -48,7 +48,7 @@ class _FinalRevengeCreatureDamageRuntime(CreatureDamageRuntime):
                 fx_queue=self.fx_queue,
             ),
         )
-        self.state.sfx_queue.extend(resolve_death_sfx())
+        self.state.sfx_queue.extend(resolve_damage_followup())
 
 
 def apply_final_revenge_on_player_death(

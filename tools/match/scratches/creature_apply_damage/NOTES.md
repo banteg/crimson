@@ -32,6 +32,11 @@ deaths instead consume the four exact caller-tagged draws five times and emit
 the native 36-unit, 0.7-second armored burst. Direct Energizer, plague, and
 no-corpse deaths no longer consume this damage-only follow-up.
 
+Both ports now preserve the native lethal impulse boundary: the first impulse
+is stored before `creature_handle_death`, while the doubled impulse is stored
+after it. Split children therefore inherit only the first impulse; if allocation
+reuses the source index, only that current record receives the post-handler store.
+
 The natural VC6 reconstruction reaches 89.87% with exactly 237/237 normalized
 instructions and 80/0/0 reference agreement. The remaining structural delta
 is one exact 12-instruction ion-gun perk block: native block layout places it

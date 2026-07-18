@@ -9,7 +9,7 @@ from crimson.creatures.damage import (
 )
 from crimson.creatures.damage_runtime import CreatureDamageRuntime
 from crimson.creatures.damage_types import CreatureDamageType
-from crimson.creatures.runtime import CreatureState
+from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
 from crimson.gameplay import GameplayState
@@ -244,6 +244,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         size=50.0,
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         pos=Vec2(10.0, 20.0),
+        vel=Vec2(10.0, 20.0),
     )
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
@@ -253,13 +254,15 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         def on_creature_lethal(
             self,
             creature_index: int,
-            resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
         ) -> None:
             # Native order: `creature_handle_death` draws happen here, before the
             # shock-burst / death-SFX rands.
             assert rng.calls - before_calls == 0
             order.append(f"handle_death:{creature_index}")
-            assert resolve_death_sfx() == ()
+            assert creature.vel == Vec2(9.0, 18.0)
+            assert resolve_damage_followup() == ()
+            assert creature.vel == Vec2(7.0, 14.0)
             order.append("death_followup")
 
     killed = creature_apply_damage_with_lethal_followup(
@@ -267,7 +270,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         creature_index=7,
         damage_amount=10.0,
         damage_type=3,
-        impulse=Vec2(),
+        impulse=Vec2(1.0, 2.0),
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
@@ -291,6 +294,62 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
     ] * 5
 
 
+def test_split_children_inherit_only_initial_damage_impulse() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 5.0
+    creature.max_hp = 400.0
+    creature.lifecycle_stage = 16.0
+    creature.size = 40.0
+    creature.flags = CreatureFlags.SPLIT_ON_DEATH
+    creature.vel = Vec2(10.0, 20.0)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+
+    class _Runtime(CreatureDamageRuntime):
+        def on_creature_lethal(
+            self,
+            creature_index: int,
+            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
+        ) -> None:
+            pool.handle_death(
+                creature_index,
+                state=state,
+                players=[],
+                rng=rng,
+                dt=0.016,
+                world_width=1024.0,
+                world_height=1024.0,
+                fx_queue=None,
+            )
+            assert creature.vel == Vec2(9.0, 18.0)
+            assert pool.entries[1].vel == Vec2(9.0, 18.0)
+            assert pool.entries[2].vel == Vec2(9.0, 18.0)
+
+            resolve_damage_followup()
+
+            assert creature.vel == Vec2(7.0, 14.0)
+            assert pool.entries[1].vel == Vec2(9.0, 18.0)
+            assert pool.entries[2].vel == Vec2(9.0, 18.0)
+
+    killed = creature_apply_damage_with_lethal_followup(
+        creature,
+        creature_index=0,
+        damage_amount=10.0,
+        damage_type=CreatureDamageType.EXPLOSION,
+        impulse=Vec2(1.0, 2.0),
+        owner=OwnerRef.from_player(0),
+        dt=0.016,
+        players=[],
+        rng=rng,
+        effects=state.effects,
+        creature_damage_runtime=_Runtime(),
+    )
+
+    assert killed
+
+
 def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
     state = GameplayState()
     creature = CreatureState(
@@ -310,11 +369,11 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
         def on_creature_lethal(
             self,
             creature_index: int,
-            resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
         ) -> None:
             assert rng.calls - before_calls == 0
             order.append("handle_death")
-            assert resolve_death_sfx() == (SfxId.TROOPER_DIE_02,)
+            assert resolve_damage_followup() == (SfxId.TROOPER_DIE_02,)
             order.append("death_followup")
 
     killed = creature_apply_damage_with_lethal_followup(

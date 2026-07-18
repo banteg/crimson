@@ -251,8 +251,8 @@ def creature_apply_damage(
     This is a partial port of `creature_apply_damage` (FUN_004207c0).
 
     Notes:
-    - Death side-effects (handle_death, then shock burst / death SFX) are handled
-      by the caller in native order.
+    - Death side-effects (handle_death, doubled lethal impulse, then shock burst /
+      death SFX) are handled by the caller in native order.
     - `damage_type` is a native integer category; call sites must supply it.
     """
 
@@ -301,10 +301,6 @@ def creature_apply_damage(
             creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, ctx.dt)
         else:
             creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
-        creature.vel = Vec2(
-            x87_pc24_sub(creature.vel.x, x87_pc24_mul(ctx.impulse.x, 2.0)),
-            x87_pc24_sub(creature.vel.y, x87_pc24_mul(ctx.impulse.y, 2.0)),
-        )
         return True
 
     return False
@@ -336,11 +332,12 @@ def creature_apply_damage_with_lethal_followup(
     # death was already handled with hp still positive (shrinkifier shrink-death,
     # energizer eat) re-enters the full lethal follow-up on a later killing hit.
     death_start_needed = float(creature.hp) > 0.0
+    native_impulse = Vec2(f32(impulse.x), f32(impulse.y))
     killed = creature_apply_damage(
         creature,
         damage_amount=float(damage_amount),
         damage_type=int(damage_type),
-        impulse=impulse,
+        impulse=native_impulse,
         owner=owner,
         dt=float(dt),
         players=players,
@@ -349,9 +346,14 @@ def creature_apply_damage_with_lethal_followup(
     )
     if killed and death_start_needed:
 
-        def _resolve_death_sfx() -> tuple[SfxId, ...]:
-            # Native lethal order: `creature_handle_death` runs first, then either the
+        def _resolve_damage_followup() -> tuple[SfxId, ...]:
+            # Native lethal order: `creature_handle_death` runs first, the current
+            # source-slot record receives a second 2x impulse, then either the
             # shock-burst rand loop (`flags & 0x10`) or the death-SFX rand draw.
+            creature.vel = Vec2(
+                x87_pc24_sub(creature.vel.x, x87_pc24_mul(native_impulse.x, 2.0)),
+                x87_pc24_sub(creature.vel.y, x87_pc24_mul(native_impulse.y, 2.0)),
+            )
             _damage_lethal_ranged_shock_burst(
                 creature=creature,
                 rng=rng,
@@ -360,6 +362,6 @@ def creature_apply_damage_with_lethal_followup(
             )
             return resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs)
 
-        creature_damage_runtime.on_creature_lethal(int(creature_index), _resolve_death_sfx)
+        creature_damage_runtime.on_creature_lethal(int(creature_index), _resolve_damage_followup)
         return True
     return False

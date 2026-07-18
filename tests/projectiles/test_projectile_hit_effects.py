@@ -338,12 +338,12 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
         def on_creature_lethal(
             self,
             creature_index: int,
-            resolve_death_sfx: Callable[[], tuple[SfxId, ...]],
+            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
         ) -> None:
             lethal_calls.append(int(creature_index))
             # Native shrink-death goes straight to creature_handle_death with
             # no death-SFX or shock-burst draws.
-            assert resolve_death_sfx() == ()
+            assert resolve_damage_followup() == ()
 
     pool.spawn(
         pos=Vec2(),
