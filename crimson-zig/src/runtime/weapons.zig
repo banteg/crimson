@@ -820,7 +820,7 @@ fn tickManBomb(
         return;
     }
 
-    player.man_bomb_timer += dt;
+    player.man_bomb_timer = native_math.pc24Add(player.man_bomb_timer, dt);
     if (player.man_bomb_timer <= state.perk_interval_man_bomb) return;
 
     const owner = if (!state.friendly_fire_enabled)
@@ -847,7 +847,10 @@ fn tickManBomb(
         );
     }
     state.sfx_queue.append(.explosion_small);
-    player.man_bomb_timer -= state.perk_interval_man_bomb;
+    player.man_bomb_timer = native_math.pc24Sub(
+        player.man_bomb_timer,
+        state.perk_interval_man_bomb,
+    );
     state.perk_interval_man_bomb = 4.0;
 }
 
@@ -857,7 +860,10 @@ fn tickLivingFortress(
     dt: f32,
 ) void {
     if (perks.perkActive(perk_player, PerkId.living_fortress)) {
-        player.living_fortress_timer = @min(30.0, player.living_fortress_timer + dt);
+        player.living_fortress_timer = @min(
+            @as(f32, 30.0),
+            native_math.pc24Add(player.living_fortress_timer, dt),
+        );
     } else {
         player.living_fortress_timer = 0.0;
     }
@@ -1521,6 +1527,31 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
     }
+}
+
+test "man bomb and living fortress timers keep native stored cadence" {
+    var state = state_mod.GameplayState.init(1);
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var player: state_mod.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    player.perk_counts.set(PerkId.man_bomb, 1);
+    player.perk_counts.set(PerkId.living_fortress, 1);
+
+    for (0..240) |_| {
+        applyPlayerPerkTicks(&state, &player, &projectiles, 1.0 / 60.0);
+    }
+
+    try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(f32, 3.9999969005584717), player.man_bomb_timer);
+    try std.testing.expectEqual(@as(f32, 3.9999969005584717), player.living_fortress_timer);
+
+    applyPlayerPerkTicks(&state, &player, &projectiles, 1.0 / 60.0);
+
+    try std.testing.expectEqual(@as(usize, 8), activeProjectileCount(&projectiles));
+    try std.testing.expectEqual(@as(f32, 0.016663551330566406), player.man_bomb_timer);
+    try std.testing.expectEqual(@as(f32, 4.016663551330566), player.living_fortress_timer);
 }
 
 test "hot tempered spawns alternating plasma projectiles when charged" {

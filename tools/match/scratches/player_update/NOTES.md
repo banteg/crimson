@@ -65,6 +65,13 @@ effect calls. Instructions `0x00413795..0x004137ed` evaluate
 calls. Both ports now preserve those PC=24 arithmetic boundaries; Zig had
 previously emitted the blood effects directly at the player center.
 
+Man Bomb stores its timer after the frame add at `0x004138d3` and after the
+interval subtraction at `0x0041399d`; Living Fortress stores its timer after
+the add at `0x004139d3` before comparing against 30. Both ports now preserve
+those PC=24 boundaries. In particular, repeated 60 Hz updates leave Man Bomb
+at `3.9999969` on frame 240 and fire its projectile ring on frame 241, rather
+than accumulating host-double residue and firing one frame early.
+
 This scratch is intentionally an honest partial reconstruction. It does not
 use volatile state, dead expressions, dummy references, inline assembly, or
 layout-only gotos.

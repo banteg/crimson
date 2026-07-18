@@ -621,6 +621,28 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     ]
 
 
+def test_player_update_perk_timers_keep_native_stored_cadence() -> None:
+    pool = ProjectilePool(size=32)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    player.perk_counts[int(PerkId.LIVING_FORTRESS)] = 1
+    input_state = PlayerInput(aim=Vec2(101.0, 100.0))
+
+    for _ in range(240):
+        player_update(player, input_state, 1.0 / 60.0, state)
+
+    assert pool.iter_active() == []
+    assert player.man_bomb_timer == 3.9999969005584717
+    assert player.living_fortress_timer == 3.9999969005584717
+
+    player_update(player, input_state, 1.0 / 60.0, state)
+
+    assert len(pool.iter_active()) == 8
+    assert player.man_bomb_timer == 0.016663551330566406
+    assert player.living_fortress_timer == 4.016663551330566
+
+
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
     pool = ProjectilePool(size=32)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)

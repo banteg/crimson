@@ -4,6 +4,7 @@ import math
 
 from grim.sfx_map import SfxId
 
+from ...math_parity import f32, x87_pc24_add, x87_pc24_sub
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
 from ..helpers import perk_active
@@ -17,7 +18,10 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
         ctx.player.man_bomb_timer = 0.0
         return
 
-    ctx.player.man_bomb_timer += ctx.dt
+    ctx.player.man_bomb_timer = x87_pc24_add(
+        float(ctx.player.man_bomb_timer),
+        float(ctx.dt),
+    )
     if ctx.player.man_bomb_timer > ctx.state.perk_intervals.man_bomb:
         owner = ctx.owner_ref_for_player_projectiles(ctx.state, ctx.player.index)
         for idx in range(8):
@@ -43,8 +47,11 @@ def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
             )
         ctx.state.sfx_queue.append(SfxId.EXPLOSION_SMALL)
 
-        ctx.player.man_bomb_timer -= ctx.state.perk_intervals.man_bomb
-        ctx.state.perk_intervals.man_bomb = 4.0
+        ctx.player.man_bomb_timer = x87_pc24_sub(
+            float(ctx.player.man_bomb_timer),
+            float(ctx.state.perk_intervals.man_bomb),
+        )
+        ctx.state.perk_intervals.man_bomb = f32(4.0)
 
 
 HOOKS = PerkHooks(
