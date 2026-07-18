@@ -232,14 +232,12 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     }
 
     creature = &creature_pool[root_slot_idx];
-    slot_18_i = root_slot_idx * sizeof(creature_t);
     origin_pos_ptr = pos;
     slot_10_i = 0;
     slot_14_i = 0;
 
     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
-    creature->pos_x = *pos;
-    creature->pos_y = pos[1];
+    *(creature_spawn_vec2_t *)&creature->pos_x = *(creature_spawn_vec2_t *)pos;
     creature->vel_x = 0.0f;
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;

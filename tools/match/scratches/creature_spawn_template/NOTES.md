@@ -26,9 +26,9 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=61.52% prefix=23/3159 target_insns=3159 candidate_insns=2950 refs=316/0/2
+match=61.70% prefix=23/3159 target_insns=3159 candidate_insns=2954 refs=313/0/2
 first_target=lea esi, dword [ebp+edx*2]
-first_candidate=mov dword [esp+0x14], edi
+first_candidate=mov dword [esp+0x18], edi
 ```
 
 Frame/prefix notes:
@@ -191,3 +191,13 @@ Frame/prefix notes:
   instructions, raise the score from `60.97%` to `61.52%`, and improve the
   reference audit to `316/0/2` without changing the exact `0x48` frame or
   23-instruction prefix.
+- The common prologue at `0x00430b59..0x00430b66` copies the two adjacent
+  position dwords from `[edi]` and `[edi+4]` before either velocity store,
+  which is the code shape of the game's two-float value assignment rather
+  than two independent scalar expressions. Recovering that aggregate copy
+  also lets VC6 use `esi` for the native root-slot address arithmetic.
+  Removing the now-dead explicit union write leaves only the compiler-required
+  root byte-offset spill used by the later chain link. Together these changes
+  raise the score from `61.52%` to `61.70%` with 2,954 candidate instructions,
+  preserve the exact `0x48` frame and 23-instruction prefix, and leave the
+  masked-reference audit at `313/0/2`.
