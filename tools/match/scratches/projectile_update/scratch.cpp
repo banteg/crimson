@@ -842,17 +842,29 @@ extern "C" void projectile_update(void)
                     }
 
                     if (bonus_freeze_timer <= 0.0f) {
-                        int count = 3;
-                        do {
-                            vec2f_t decal_pos = {
-                                (float)(crt_rand() % 20 - 10)
-                                    + creature_pool[hit_id].pos_x,
-                                (float)(crt_rand() % 20 - 10)
-                                    + creature_pool[hit_id].pos_y,
-                            };
-                            fx_queue_add_random(&decal_pos);
-                            --count;
-                        } while (count != 0);
+                        vec2f_t decal_pos_1 = {
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_x,
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_y,
+                        };
+                        fx_queue_add_random(&decal_pos_1);
+
+                        vec2f_t decal_pos_2 = {
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_x,
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_y,
+                        };
+                        fx_queue_add_random(&decal_pos_2);
+
+                        vec2f_t decal_pos_3 = {
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_x,
+                            (float)(crt_rand() % 20 - 10)
+                                + creature_pool[hit_id].pos_y,
+                        };
+                        fx_queue_add_random(&decal_pos_3);
                     } else {
                         int count = 4;
                         do {

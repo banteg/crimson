@@ -11,9 +11,9 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,101 instructions against 2,203 native instructions, scores
-44.05%, and aligns 301 candidate references. The candidate's natural local
-frame is `0x90`, while the native function uses `0xf4`.
+It produces 2,143 instructions against 2,203 native instructions, scores
+45.28%, and aligns 305 candidate references. The candidate's natural local
+frame is `0x98`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
@@ -96,6 +96,19 @@ position. The exploding-secondary kill branch also emits its two random decals
 even while Freeze is active, before calling the secondary death follow-up.
 Zig now preserves this ordering, source local, caller provenance, and position
 choice; focused trace tests guard the shared RNG stream.
+
+The non-Freeze direct-hit decal sequence is three separately materialized
+points rather than a source loop. Native disassembly calls `rand` at
+`0x00421ee6`, `0x00421f05`, `0x00421f42`, `0x00421f61`, `0x00421fa7`, and
+`0x00421fc6`, with queue calls at `0x00421f3d`, `0x00421fa2`, and
+`0x00422007`. It stores the points in three distinct stack regions around
+`[esp+0x74]`, `[esp+0x88]`, and `[esp+0x9c]`. Expressing those three values
+independently restores the native whole-function call totals of 42 `rand`
+calls and 16 `fx_queue_add_random` calls. The candidate grows from 2,101 to
+2,143 instructions, improves from 44.05% to 45.28%, and aligns 305 references
+instead of 301; its natural frame grows from `0x90` to `0x98`. The remaining
+reference-region differences are ordinary sequence-alignment fallout, not
+forced or unresolved references.
 
 The live particle tail confirms three deliberately duplicated jitter branches:
 style zero uses a `1.96` turn factor and speed `82`, style eight uses `1.1` and
