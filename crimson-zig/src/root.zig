@@ -69,4 +69,5 @@ test {
     _ = projectiles;
     _ = quest_level;
     _ = quest_spawn_logic_full;
+    _ = weapons;
 }

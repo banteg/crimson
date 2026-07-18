@@ -1943,7 +1943,7 @@ test "multi plasma fires five projectiles with fixed spread profile" {
     try std.testing.expectEqual(@as(usize, 5), activeProjectileCount(&projectiles));
     try std.testing.expectEqual(@as(i32, 5), state.weapon_shots_fired[0][10]);
 
-    const shot_angle = std.math.pi / 2.0;
+    const shot_angle = native_math.shotAngleFromJitterDraws(200.0, 0.0, 0.0, 0.0, 0.0, 0, 0);
     const spread_small: f32 = 0.31415927;
     const spread_large: f32 = 0.5235988;
     const expected = [_]struct {
@@ -2719,6 +2719,7 @@ test "mini rocket swarmers preserve bugged spread when requested" {
     bug_player.weapon.shot_cooldown = 0.0;
     bug_player.weapon.reload_timer = 0.0;
     bug_player.weapon.ammo = 6.0;
+    bug_player.spread_heat = 0.0;
 
     try std.testing.expect(try tryFireWeapon(
         &bug_state,
@@ -2729,15 +2730,15 @@ test "mini rocket swarmers preserve bugged spread when requested" {
         &bug_particles,
     ));
 
-    const shot_angle = std.math.pi / 2.0;
+    const shot_angle = native_math.shotAngleFromJitterDraws(200.0, 0.0, 0.0, 0.0, 0.0, 0, 0);
     const rocket_count: f32 = 6.0;
     const fixed_step = (native_pi * (2.0 / 3.0)) / (rocket_count - 1.0);
     const fixed_first_angle = shot_angle - native_pi * (1.0 / 3.0);
     try expectFloatClose(fixed_first_angle, fixed_secondary_projectiles.entries[0].angle);
     try expectFloatClose(fixed_first_angle + fixed_step, fixed_secondary_projectiles.entries[1].angle);
 
-    const bug_step = rocket_count * (native_pi / 3.0);
-    const bug_first_angle = (shot_angle - native_pi) - bug_step * rocket_count * 0.5;
+    const bug_step = narrowF32(rocket_count * (native_pi / 3.0));
+    const bug_first_angle = narrowF32((shot_angle - native_pi) - bug_step * rocket_count * 0.5);
     try expectFloatClose(bug_first_angle, bug_secondary_projectiles.entries[0].angle);
-    try expectFloatClose(bug_first_angle + bug_step, bug_secondary_projectiles.entries[1].angle);
+    try expectFloatClose(narrowF32(bug_first_angle + bug_step), bug_secondary_projectiles.entries[1].angle);
 }
