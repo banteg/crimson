@@ -251,9 +251,6 @@ pub fn stepTick(
     const players_for_inputs = @min(players.len, tick_inputs.len);
     for (tick_inputs[0..players_for_inputs]) |input| {
         const flags = input.flags;
-        if (flags.fire_down) {
-            context.state.survival_reward_fire_seen = true;
-        }
         if (flags.fire_pressed) {
             context.fire_pressed_count += 1;
         }

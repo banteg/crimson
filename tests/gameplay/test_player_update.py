@@ -1034,12 +1034,25 @@ def test_player_update_tracks_aim_point() -> None:
     assert player.aim == Vec2(123.0, 456.0)
 
 
-def test_player_update_sets_survival_fire_seen_when_fire_input_is_down() -> None:
+def test_player_update_keeps_survival_fire_unseen_while_shot_is_on_cooldown() -> None:
     state = GameplayState()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=1.0),
+    )
+
+    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
+
+    assert state.survival_reward_fire_seen is False
+
+
+def test_player_update_sets_survival_fire_seen_when_ready_shot_is_attempted() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(100.0, 100.0),
+        weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, ammo=12.0),
     )
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)

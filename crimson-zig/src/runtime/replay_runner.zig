@@ -1303,7 +1303,7 @@ test "survival run bootstrap player shot cooldown blocks first-tick fire" {
         fn runCase(
             allocator_inner: std.mem.Allocator,
             include_shot_cooldown: bool,
-        ) !struct { shots_fired: i32, ammo_bits: u32 } {
+        ) !struct { shots_fired: i32, ammo_bits: u32, fire_seen: bool } {
             var bootstrap: replay_codec.CaptureBootstrapEvent = .{
                 .tick_index = 0,
             };
@@ -1345,6 +1345,7 @@ test "survival run bootstrap player shot cooldown blocks first-tick fire" {
             return .{
                 .shots_fired = result.shots_fired,
                 .ammo_bits = f32Bits(trace.items[0].player_state.weapon.ammo),
+                .fire_seen = result.survival_reward_fire_seen,
             };
         }
     }.runCase;
@@ -1355,6 +1356,8 @@ test "survival run bootstrap player shot cooldown blocks first-tick fire" {
     try std.testing.expectEqual(@as(i32, 0), with_cooldown.shots_fired);
     try std.testing.expect(without_cooldown.ammo_bits < with_cooldown.ammo_bits);
     try std.testing.expectEqual(f32Bits(12.0), with_cooldown.ammo_bits);
+    try std.testing.expect(without_cooldown.fire_seen);
+    try std.testing.expect(!with_cooldown.fire_seen);
 }
 
 test "survival run bootstrap perk counts enable alternate weapon swap" {

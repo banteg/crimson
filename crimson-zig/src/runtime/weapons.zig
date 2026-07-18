@@ -292,10 +292,6 @@ pub fn stepPlayerForTickWithEffects(
 
     const perk_player = playerUpdatePerkSource(state, player, all_players);
 
-    if (input_flags.fire_down) {
-        state.survival_reward_fire_seen = true;
-    }
-
     const cooldown_scale: f32 = if (state.bonuses.weapon_power_up > 0.0) 1.5 else 1.0;
     const cooldown_decay = narrowF32(
         @as(f64, @floatCast(dt)) * @as(f64, @floatCast(cooldown_scale)),
@@ -512,10 +508,23 @@ fn tryFireWeaponWithForce(
     const perk_player = playerUpdatePerkSource(state, player, all_players);
     if (player.weapon.shot_cooldown > 0.0 and !force_pre_swap_fire_gate) return false;
     const weapon_id = player.weapon.weapon_id;
-    if (player.weapon.reload_timer > 0.0 and !force_pre_swap_fire_gate) {
+    const perk_fire_ready = player.weapon.reload_timer > 0.0 and !force_pre_swap_fire_gate;
+    var use_regression_bullets = false;
+    var use_ammunition_within = false;
+    if (perk_fire_ready) {
         if (player.experience <= 0) return false;
 
-        if (perks.perkActive(perk_player, PerkId.regression_bullets)) {
+        use_regression_bullets = perks.perkActive(perk_player, PerkId.regression_bullets);
+        use_ammunition_within = !use_regression_bullets and perks.perkActive(perk_player, PerkId.ammunition_within);
+        if (!use_regression_bullets and !use_ammunition_within) return false;
+    }
+
+    // Native writes this after the ready/input gates, but before charging the
+    // reload-bypass perk and dispatching the shot.
+    state.survival_reward_fire_seen = true;
+
+    if (perk_fire_ready) {
+        if (use_regression_bullets) {
             const reload_time = weapon_data.weapon_stats.get(weapon_id).reload_time;
             const factor: f32 = if (weaponUsesFireAmmoClass(weapon_id)) 4.0 else 200.0;
             const drained = narrowF32(reload_time * factor);
@@ -523,7 +532,7 @@ fn tryFireWeaponWithForce(
             var after: i32 = @intFromFloat(before - drained);
             if (after < 0) after = 0;
             player.experience = after;
-        } else if (perks.perkActive(perk_player, PerkId.ammunition_within)) {
+        } else if (use_ammunition_within) {
             const health_cost: f32 = if (weaponUsesFireAmmoClass(weapon_id))
                 @as(f32, 0.15)
             else
@@ -549,8 +558,6 @@ fn tryFireWeaponWithForce(
                     dt,
                 );
             }
-        } else {
-            return false;
         }
     }
 

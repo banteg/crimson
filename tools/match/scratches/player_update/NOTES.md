@@ -230,6 +230,16 @@ speed base of `1.4`, and the swarmer angular step of pi/3. The remaining
 whole-function alignment delta comes from incomplete local-slot coalescing and
 control paths. No register constraints or artificial padding are used.
 
+## Port parity: Survival fire latch
+
+Live instructions `0x0041590e..0x0041594f` first require either the normal or
+reload-perk fire-ready byte, then require the configured fire key or auto-fire,
+and only then write `1` to `survival_reward_fire_seen` at `0x00486fe4`. The
+write precedes the Regression Bullets / Ammunition Within charge and actual
+weapon dispatch. Both ports previously latched raw held fire during cooldown;
+the weapon gate now owns the write, and replay input preprocessing no longer
+manufactures it.
+
 ## Port parity: slot-zero perk ownership
 
 Live Binary Ninja identifies 16 calls from `player_update` to the exact

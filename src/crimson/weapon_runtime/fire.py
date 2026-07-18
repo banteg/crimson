@@ -211,10 +211,27 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
 
     ammo_cost = 1.0
     is_fire_bullets = float(player.fire_bullets_timer) > 0.0
-    if (not force_pre_swap_fire_gate) and player.weapon.reload_timer > 0.0:
+    perk_fire_ready = (not force_pre_swap_fire_gate) and player.weapon.reload_timer > 0.0
+    use_regression_bullets = False
+    use_ammunition_within = False
+    if perk_fire_ready:
         if player.experience <= 0:
             return WeaponFireResult(fired=False)
-        if perk_active(perk_player, PerkId.REGRESSION_BULLETS):
+
+        use_regression_bullets = perk_active(perk_player, PerkId.REGRESSION_BULLETS)
+        use_ammunition_within = (not use_regression_bullets) and perk_active(
+            perk_player,
+            PerkId.AMMUNITION_WITHIN,
+        )
+        if not (use_regression_bullets or use_ammunition_within):
+            return WeaponFireResult(fired=False)
+
+    # Native writes this after the ready/input gates, but before charging the
+    # reload-bypass perk and dispatching the shot.
+    state.survival_reward_fire_seen = True
+
+    if perk_fire_ready:
+        if use_regression_bullets:
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             reload_time = float(weapon.reload_time)
@@ -222,7 +239,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             player.experience = int(float(player.experience) - reload_time * factor)
             if player.experience < 0:
                 player.experience = 0
-        elif perk_active(perk_player, PerkId.AMMUNITION_WITHIN):
+        elif use_ammunition_within:
             ammo_class = int(weapon.ammo_class) if weapon.ammo_class is not None else 0
 
             from ..player_damage import player_take_damage
@@ -236,9 +253,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 players=players,
                 death_runtime=player_death_runtime,
             )
-        else:
-            return WeaponFireResult(fired=False)
-
     pellet_count = int(weapon.pellet_count)
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 

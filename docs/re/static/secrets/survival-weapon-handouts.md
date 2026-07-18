@@ -84,7 +84,9 @@ the secret string to `survival_update`.
 
 Related writes outside `survival_update`:
 
-- `player_update` sets `survival_reward_fire_seen = 1` when fire input is used.
+- `player_update` sets `survival_reward_fire_seen = 1` only after held fire or
+  auto-fire passes the normal or reload-perk shot-readiness gate. Holding fire
+  during cooldown does not set it.
 - `player_take_damage` sets `survival_reward_damage_seen = 1` on damage attempts
   (including shielded hits).
 - `creature_handle_death` records up to 3 death positions and increments

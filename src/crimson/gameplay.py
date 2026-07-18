@@ -1058,9 +1058,6 @@ def player_update(
     if force_pre_swap_fire_gate:
         player.weapon.shot_cooldown = 0.0
 
-    if input_state.fire_down:
-        state.survival_reward_fire_seen = True
-
     _fire_weapon(
         _WeaponFireCtx(
             player=player,
