@@ -1139,6 +1139,23 @@ test "creature target selection follows native two-player cadence" {
     );
 }
 
+test "creature target selection preserves native rounded-distance ties" {
+    var creature: cz.creatures.CreatureState = .{
+        .pos = .{ .x = 0.0, .y = 0.0 },
+        .target_player = 0,
+    };
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{ .x = @bitCast(@as(u32, 0x42C80001)), .y = 100.0 } },
+        .{ .index = 1, .pos = .{ .x = 100.0, .y = 100.0 } },
+    };
+
+    try std.testing.expectEqual(
+        @as(usize, 0),
+        cz.creatures.resolveNativeTargetPlayer(&creature, players[0..], 1),
+    );
+    try std.testing.expectEqual(@as(i32, 0), creature.target_player);
+}
+
 test "creature contact perk source follows bug mode" {
     const cases = [_]struct {
         preserve_bugs: bool,

@@ -21,6 +21,11 @@ final body culling.
   dead current target. The Python runtime already preserved this policy; the
   Zig runtime now carries the native update counter and uses the selected
   player for AI, ranged distance, and contact behavior instead of player zero.
+- Native computes both candidate distances with PC=24 `fsub`/`fmul`/`fadd`/
+  `fsqrt` and compares the rounded float results at
+  `0x0042641b..0x00426499`. Both ports now preserve the resulting strict tie:
+  two mathematically distinct distances can round equal, in which case the
+  current player remains selected.
 - This reevaluation completes before infection handling and the Evil Eyes
   comparison. Zig now preserves that ordering as well, so an Evil Eyes target
   still switches to a nearer live player before its remaining update is frozen.

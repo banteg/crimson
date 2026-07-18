@@ -688,9 +688,13 @@ class CreaturePool:
             if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                 other = 1 - target_player
                 if float(players[other].health) > 0.0:
-                    cur_dist_sq = Vec2.distance_sq(creature.pos, players[target_player].pos)
-                    other_dist_sq = Vec2.distance_sq(creature.pos, players[other].pos)
-                    if other_dist_sq < cur_dist_sq:
+                    cur_dx = x87_pc24_sub(players[target_player].pos.x, creature.pos.x)
+                    cur_dy = x87_pc24_sub(players[target_player].pos.y, creature.pos.y)
+                    cur_distance = x87_pc24_hypot(cur_dx, cur_dy)
+                    other_dx = x87_pc24_sub(players[other].pos.x, creature.pos.x)
+                    other_dy = x87_pc24_sub(players[other].pos.y, creature.pos.y)
+                    other_distance = x87_pc24_hypot(other_dx, other_dy)
+                    if other_distance < cur_distance:
                         target_player = other
             if float(players[target_player].health) <= 0.0:
                 target_player = 1 - target_player

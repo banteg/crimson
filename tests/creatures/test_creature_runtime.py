@@ -869,6 +869,29 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     assert_float_close(player1.health, 90.0)
 
 
+def test_creature_retarget_keeps_current_player_when_native_distances_round_equal() -> None:
+    pool = CreaturePool()
+    pool._update_tick = 1
+    creature = pool.entries[0]
+    creature.target_player = 0
+    creature.pos = Vec2(0.0, 0.0)
+
+    players = [
+        PlayerState(index=0, pos=Vec2(f32(100.00000762939453), 100.0), health=100.0),
+        PlayerState(index=1, pos=Vec2(100.0, 100.0), health=100.0),
+    ]
+
+    current_exact_sq = Vec2.distance_sq(creature.pos, players[0].pos)
+    alternate_exact_sq = Vec2.distance_sq(creature.pos, players[1].pos)
+    assert alternate_exact_sq < current_exact_sq
+    assert x87_pc24_hypot(players[0].pos.x, players[0].pos.y) == x87_pc24_hypot(
+        players[1].pos.x,
+        players[1].pos.y,
+    )
+    assert pool._resolve_target_player_index(creature, players) == 0
+    assert creature.target_player == 0
+
+
 def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     state = GameplayState()
     pool = CreaturePool()

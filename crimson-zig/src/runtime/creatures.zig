@@ -121,14 +121,12 @@ pub fn resolveNativeTargetPlayer(
         if (@mod(update_tick, target_reeval_period) != 0) {
             const alternate_index = 1 - target_index;
             if (players[alternate_index].health > 0.0) {
-                const current_distance = state_mod.Vec2.sub(
-                    players[target_index].pos,
-                    creature.pos,
-                ).length();
-                const alternate_distance = state_mod.Vec2.sub(
-                    players[alternate_index].pos,
-                    creature.pos,
-                ).length();
+                const current_dx = native_math.pc24Sub(players[target_index].pos.x, creature.pos.x);
+                const current_dy = native_math.pc24Sub(players[target_index].pos.y, creature.pos.y);
+                const current_distance = native_math.pc24Hypot(current_dx, current_dy);
+                const alternate_dx = native_math.pc24Sub(players[alternate_index].pos.x, creature.pos.x);
+                const alternate_dy = native_math.pc24Sub(players[alternate_index].pos.y, creature.pos.y);
+                const alternate_distance = native_math.pc24Hypot(alternate_dx, alternate_dy);
                 if (alternate_distance < current_distance) {
                     target_index = alternate_index;
                 }
