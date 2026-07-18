@@ -14,7 +14,14 @@ import msgspec
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..math_parity import NATIVE_PI, f32, f32_vec2, heading_from_delta_f32
+from ..math_parity import (
+    NATIVE_PI,
+    f32,
+    f32_vec2,
+    heading_from_delta_f32,
+    x87_pc24_add,
+    x87_pc24_mul,
+)
 from ..rng_caller_static import RngCallerStatic
 from .spawn import CreatureAiMode, CreatureFlags
 
@@ -221,11 +228,17 @@ def creature_ai_update_target(
         if link is None:
             creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
         else:
-            angle = float(creature.orbit_angle) + float(creature.heading)
-            orbit_radius = float(creature.orbit_radius)
+            angle = x87_pc24_add(float(creature.orbit_angle), float(creature.heading))
+            orbit_radius = f32(float(creature.orbit_radius))
             creature.target = Vec2(
-                f32(math.cos(angle) * orbit_radius + float(link.pos.x)),
-                f32(math.sin(angle) * orbit_radius + float(link.pos.y)),
+                x87_pc24_add(
+                    x87_pc24_mul(math.cos(angle), orbit_radius),
+                    float(link.pos.x),
+                ),
+                x87_pc24_add(
+                    x87_pc24_mul(math.sin(angle), orbit_radius),
+                    float(link.pos.y),
+                ),
             )
 
     dist_to_target = _distance_f32(creature.pos, creature.target)

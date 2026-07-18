@@ -3393,11 +3393,17 @@ fn creatureAiUpdateTarget(
         }
     } else if (ai_mode_after_primary == spawn_mod.CreatureAiMode.orbit_link) {
         if (resolveLiveLink(creatures, creature.link_index)) |link| {
-            const angle = narrowF32(creature.orbit_angle + creature.heading);
+            const angle = native_math.pc24Add(creature.orbit_angle, creature.heading);
             const orbit_radius = narrowF32(creature.orbit_radius);
             creature.target = .{
-                .x = narrowF32(math.cos(angle) * orbit_radius + link.pos.x),
-                .y = narrowF32(math.sin(angle) * orbit_radius + link.pos.y),
+                .x = native_math.pc24Add(
+                    native_math.pc24Mul(std.math.cos(@as(f64, angle)), orbit_radius),
+                    link.pos.x,
+                ),
+                .y = native_math.pc24Add(
+                    native_math.pc24Mul(std.math.sin(@as(f64, angle)), orbit_radius),
+                    link.pos.y,
+                ),
             };
         } else {
             creature.ai_mode = spawn_mod.CreatureAiMode.orbit_player;
@@ -3488,6 +3494,36 @@ test "creature orbit target rounds each x87 operation" {
     try std.testing.expectEqual(@as(f32, 288.5046691894531), distance);
     try std.testing.expectEqual(@as(f32, 573.6552124023438), target.x);
     try std.testing.expectEqual(@as(f32, 588.0155639648438), target.y);
+}
+
+test "creature orbit-link target keeps native x87 staging" {
+    const creatures = [_]CreatureState{
+        .{
+            .active = true,
+            .pos = .{ .x = 49.17198181152344, .y = -107.8695297241211 },
+            .hp = 10.0,
+        },
+    };
+    var creature: CreatureState = .{
+        .pos = .{},
+        .ai_mode = .orbit_link,
+        .link_index = 0,
+        .orbit_angle = -4.216711521148682,
+        .orbit_radius = 101.34416198730469,
+        .heading = -2.0916693210601807,
+    };
+
+    _ = creatureAiUpdateTarget(
+        &creature,
+        .{},
+        .{},
+        creatures[0..],
+        1.0 / 60.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), creature.force_target);
+    try std.testing.expectEqual(@as(f32, 150.48397827148438), creature.target.x);
+    try std.testing.expectEqual(@as(f32, -110.4227066040039), creature.target.y);
 }
 
 fn headingFromDeltaF32(dx: f32, dy: f32) f32 {

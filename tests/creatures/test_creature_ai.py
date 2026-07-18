@@ -104,6 +104,27 @@ def test_ai_mode_6_orbits_linked_creature() -> None:
     assert_float_close(c.target.y, 0.0)
 
 
+def test_ai_mode_6_keeps_native_orbit_link_x87_staging() -> None:
+    link = StubCreature(
+        pos=Vec2(49.17198181152344, -107.8695297241211),
+        hp=10.0,
+    )
+    c = StubCreature(
+        pos=Vec2(),
+        ai_mode=CreatureAiMode.ORBIT_LINK,
+        link_index=0,
+        orbit_angle=-4.216711521148682,
+        orbit_radius=101.34416198730469,
+        heading=-2.0916693210601807,
+    )
+
+    creature_ai_update_target(c, player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
+
+    assert c.force_target == 0
+    assert c.target.x == 150.48397827148438
+    assert c.target.y == -110.4227066040039
+
+
 def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:
     c = StubCreature(pos=Vec2(), ai_mode=CreatureAiMode.HOLD_TIMER, orbit_radius=1.5)
     ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[c], dt=0.5)

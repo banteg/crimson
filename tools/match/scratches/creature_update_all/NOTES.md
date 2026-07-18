@@ -34,6 +34,11 @@ final body culling.
   through fresh zero-vector temporaries.
 - The phase angle deliberately performs separate `3.7` and pi multiplies,
   matching the two native x87 constants instead of folding them.
+- The live-link orbit arm at `0x00426a8a..0x00426abf` keeps
+  `orbit_angle + heading` on x87, duplicates it for `fcos`/`fsin`, and rounds
+  only the multiply-by-radius and add-linked-position operations at PC=24.
+  Python had combined the expression in host double, while Zig rounded the
+  trig result before the multiply; both ports now preserve the native staging.
 - Bounded spawner creatures and expired corpses are the native fallthrough
   arms. Reversing those high-level conditions recovers the large middle and
   tail control-flow blocks without layout-only gotos.
