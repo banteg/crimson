@@ -88,9 +88,9 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=51.73% prefix=7/4206 target_insns=4206 candidate_insns=3936 refs=678/0/16
+match=51.77% prefix=7/4206 target_insns=4206 candidate_insns=3934 refs=679/0/16
 first_target=jne L3f7a
-first_candidate=jne L3c23
+first_candidate=jne L3c1b
 ```
 
 The native function keeps two related addresses live for essentially the
@@ -143,6 +143,14 @@ that field for the remaining stores. Expressing the Y clamps through the
 player record rather than the position alias recovers that source distinction
 and raises the combined score to `51.73%`. A short-lived Y pointer compiles
 identically; the direct field spelling remains the simplest plausible source.
+
+The low-health direction at `0x004137b5..0x004137df` applies the `-6.0f`
+scale to each wide `fcos`/`fsin` result before its first float store. Keeping
+each trig call and scale in one ordinary assignment removes two premature
+candidate stores, aligns one additional reference, and raises the current
+score from `51.73%` to `51.77%`. An inlined vector `operator+=` for the
+subsequent translation compiles identically, so the direct component adds are
+retained as the simpler equivalent source.
 
 Two stronger-looking alternatives were measured and rejected. Copying the
 entry position as one aggregate lowers the score to `51.41%` and loses two

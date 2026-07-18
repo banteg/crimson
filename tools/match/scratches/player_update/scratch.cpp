@@ -147,11 +147,9 @@ extern "C" void player_update(void)
         player->low_health_timer = player->low_health_timer - frame_dt;
         if (player->low_health_timer < 0.0f) {
             scratch_pos.x =
-                (float)cos(player->aim_heading + 1.5707964f - 0.5f);
+                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
             scratch_pos.y =
-                (float)sin(player->aim_heading + 1.5707964f - 0.5f);
-            scratch_pos.x *= -6.0f;
-            scratch_pos.y *= -6.0f;
+                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;
             scratch_pos.x += player_pos[0];
             scratch_pos.y += player_pos[1];
             float angle = player->aim_heading;
