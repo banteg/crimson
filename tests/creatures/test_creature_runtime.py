@@ -2343,6 +2343,31 @@ def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stag
     assert creature.target_player == 1
 
 
+def test_fading_corpse_redirects_from_dead_single_player() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    player = PlayerState(index=0, pos=Vec2(500.0, 100.0), health=0.0)
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = -1.0
+    creature.lifecycle_stage = 10.0
+    creature.target_player = 0
+    creature.pos = Vec2(100.0, 100.0)
+    creature.size = 45.0
+
+    pool.update(
+        0.1,
+        options=make_creature_update_options(
+            state=state,
+            players=[player],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert creature.target_player == 1
+
+
 def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     state.bonus_spawn_guard = True

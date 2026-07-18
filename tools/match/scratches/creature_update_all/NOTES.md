@@ -44,8 +44,9 @@ final body culling.
   still switches to a nearer live player before its remaining update is frozen.
 - The lifecycle live/dead split also follows reevaluation. Both ports now let a
   creature killed by its periodic self-damage update its multiplayer target
-  before corpse decay, and Zig does the same for entries already fading at the
-  start of the sweep.
+  before corpse decay. Entries already fading at the start of the sweep also
+  receive the unconditional dead-player redirect at `0x00426544..0x0042655b`;
+  both ports now preserve the dormant player-two target in solo game-over state.
 - Once the live arm is selected, native does not re-check lifecycle after the
   Plaguebearer timer or Mr Melee damage call. The current creature still
   completes contact, infection, and the size-30 self-kill tail; Mr Melee also

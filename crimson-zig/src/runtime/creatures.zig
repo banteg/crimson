@@ -6846,6 +6846,38 @@ test "dead creatures still reevaluate target player" {
     }
 }
 
+test "fading corpse redirects from dead single player" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 500.0, .y = 100.0 },
+        .health = 0.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 1.0,
+        .max_health = 1.0,
+        .reward_value = 60.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].hp = -1.0;
+    pool.entries[0].lifecycle_stage = 10.0;
+    pool.entries[0].target_player = 0;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
+}
+
 test "dead link cleanup finishes current live interaction tail" {
     var pool: CreaturePool = .{};
     var state = state_mod.GameplayState.init(1);

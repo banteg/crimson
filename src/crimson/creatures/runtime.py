@@ -1112,6 +1112,8 @@ class CreaturePool:
                             creature=creature,
                             native_candidate_distance=target_resolution.native_auto_target_distance,
                         )
+                    if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
+                        creature.target_player = 1
                 if dt > 0.0:
                     self._tick_dead(
                         creature,
