@@ -236,8 +236,6 @@ pub const BonusPool = struct {
     ) BonusRuntimeError!void {
         if (!(dt > 0.0)) return;
 
-        const pickup_sq = bonus_pickup_radius * bonus_pickup_radius;
-
         for (&self.entries) |*entry| {
             if (isEmpty(entry.*)) continue;
 
@@ -263,7 +261,7 @@ pub const BonusPool = struct {
             // pickup radius applies the bonus this tick.
             var picked_now = false;
             for (players) |*player| {
-                if (distanceSq(entry.pos, player.pos) >= pickup_sq) continue;
+                if (!withinNativeRadius(entry.pos, player.pos, bonus_pickup_radius)) continue;
 
                 try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
                 appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
@@ -1451,6 +1449,38 @@ test "bonus update pre-pickup decrements timers" {
     try std.testing.expect(state.bonuses.weapon_power_up < 2.0);
     try std.testing.expect(state.bonuses.energizer < 2.0);
     try std.testing.expect(state.bonuses.reflex_boost < 0.5);
+}
+
+test "bonus pickup uses native pc24 radius boundary" {
+    var state = state_mod.GameplayState.init(1);
+    var pool: BonusPool = .{};
+    pool.entries[0] = .{
+        .bonus_id = .shield,
+        .time_left = 1.0,
+        .time_max = 1.0,
+        .pos = .{},
+    };
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 25.999998092651367, .y = 0.009600000455975533 },
+        },
+    };
+    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
+    var pickup_count: usize = 0;
+
+    try pool.update(
+        &state,
+        players[0..],
+        0.01,
+        &pickup_bonus_ids,
+        &pickup_count,
+        null,
+    );
+
+    try std.testing.expectEqual(@as(usize, 0), pickup_count);
+    try std.testing.expect(!pool.entries[0].picked);
+    try std.testing.expectEqual(@as(f32, 0.0), players[0].shield_timer);
 }
 
 test "tutorial bonus seed overwrites its fixed slot with the native timer" {

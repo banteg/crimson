@@ -97,6 +97,33 @@ def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
     assert entry.time_left == 9.808000564575195
 
 
+def test_bonus_pickup_uses_native_pc24_radius_boundary() -> None:
+    state = GameplayState()
+    entry = state.bonus_pool.entries[0]
+    entry.bonus_id = BonusId.SHIELD
+    entry.time_left = 1.0
+    entry.time_max = 1.0
+    entry.pos = Vec2()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(25.999998092651367, 0.009600000455975533),
+    )
+
+    # Double squared distance falls just below 26^2, but native PC24 rounds
+    # the sum and hypotenuse to exactly 676 and 26, which fails strict `< 26`.
+    assert Vec2.distance_sq(entry.pos, player.pos) < 26.0 * 26.0
+    pickups = state.bonus_pool.update(
+        0.01,
+        state=state,
+        players=[player],
+        creatures=[],
+    )
+
+    assert pickups == []
+    assert entry.picked is False
+    assert player.shield_timer == 0.0
+
+
 def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
     state = GameplayState()
     entry = state.bonus_pool.spawn_at(

@@ -440,7 +440,7 @@ class BonusPool:
             # twice, both players gain shield, and both consume RNG).
             picked_now = False
             for player in players:
-                if Vec2.distance_sq(entry.pos, player.pos) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
+                if _within_native_radius(entry.pos, player.pos, BONUS_PICKUP_RADIUS):
                     bonus_apply(
                         state,
                         player,
