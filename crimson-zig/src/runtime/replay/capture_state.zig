@@ -387,6 +387,7 @@ pub fn applyCaptureStateReset(
     }
 
     creatures.reset();
+    creatures.applyGameplayResetTargetPlayers(@intCast(players.len));
     creatures.hardcore = hardcore;
     creatures.demo_mode_active = demo_mode_active;
     creatures.quest_fail_retry_count = quest_fail_retry_count;

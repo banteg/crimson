@@ -4915,6 +4915,7 @@ fn nextDemoUpsellMessageIndex(index: usize) usize {
 fn setupDemoAttractVariant(runner: *live_runner.LiveRunner, variant_index_raw: i32) !void {
     const variant_index = @mod(variant_index_raw, demo_attract_variant_count);
     runner.session.creatures.reset();
+    runner.session.creatures.applyGameplayResetTargetPlayers(@intCast(runner.session.players().len));
     runner.session.bonuses.reset();
     runner.session.state.bonuses.weapon_power_up = 0.0;
 

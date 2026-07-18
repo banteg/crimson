@@ -651,6 +651,13 @@ class CreaturePool:
         self._update_tick = 0
         self._single_player_dormant_target = None
 
+    def apply_gameplay_reset_target_players(self, player_count: int) -> None:
+        """Apply the native reset-time round-robin creature target assignment."""
+
+        count = int(player_count)
+        for index, creature in enumerate(self._entries):
+            creature.target_player = index % count if count > 0 else 0
+
     def iter_active(self) -> list[CreatureState]:
         return [entry for entry in self._entries if entry.active and entry.hp > 0.0]
 

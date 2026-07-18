@@ -69,6 +69,7 @@ def resolve_replay_quest_definition(
         raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={level.text!r}")
     return quest
 
+
 @contextmanager
 def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iterator[list[RngTraceDraw]]:
     draws: list[RngTraceDraw] = []
@@ -178,9 +179,7 @@ class PlaybackDriver:
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
 
         self.tick_limit = (
-            len(replay.ticks)
-            if self.max_ticks is None
-            else min(len(replay.ticks), max(0, int(self.max_ticks)))
+            len(replay.ticks) if self.max_ticks is None else min(len(replay.ticks), max(0, int(self.max_ticks)))
         )
 
     def _resolve_world_size(self) -> float:
@@ -197,6 +196,7 @@ class PlaybackDriver:
             preserve_bugs=bool(self.session_settings.preserve_bugs),
         )
         world.state.rng.srand(int(self.replay.header.seed))
+        world.creatures.apply_gameplay_reset_target_players(int(self.session_settings.player_count))
         if self.replay.header.initial_creature_pool is not None:
             apply_creature_pool_residue(
                 world.creatures.entries,
@@ -394,9 +394,7 @@ class PlaybackDriver:
             world=self.world,
             elapsed_ms=float(self.elapsed_ms),
             creature_count_override=(
-                int(tick_result.payload.creature_count_world_step)
-                if bool(use_world_step_creature_count)
-                else None
+                int(tick_result.payload.creature_count_world_step) if bool(use_world_step_creature_count) else None
             ),
             deaths=tick_result.payload.step.events.deaths,
             events=tick_result.payload.step.events,

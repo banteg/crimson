@@ -180,6 +180,7 @@ class SimWorldState(msgspec.Struct):
         default_factory=lambda: WorldEvents(hits=[], deaths=(), pickups=[], sfx=[]),
     )
     last_presentation: DeterministicPresentationPlan = msgspec.field(default_factory=DeterministicPresentationPlan)
+
     def __post_init__(self) -> None:
         self.reset(seed=0xBEEF, player_count=1)
 
@@ -217,6 +218,7 @@ class SimWorldState(msgspec.Struct):
             player_count=int(player_count),
             spawn_pos=spawn_pos,
         )
+        self.creatures.apply_gameplay_reset_target_players(len(self.players))
 
     def load_world_state(self, world_state: WorldState) -> None:
         self.world_state = world_state
@@ -226,7 +228,6 @@ class SimWorldState(msgspec.Struct):
         self.creatures = self.world_state.creatures
         self.last_events = WorldEvents(hits=[], deaths=(), pickups=[], sfx=[])
         self.last_presentation = DeterministicPresentationPlan()
-
 
     def apply_step_metadata(
         self,

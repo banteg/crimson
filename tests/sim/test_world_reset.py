@@ -4,7 +4,7 @@ from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
-from crimson.world.sim_world_state import reset_world_players
+from crimson.world.sim_world_state import SimWorldState, reset_world_players
 from grim.geom import Vec2
 
 
@@ -29,6 +29,14 @@ def test_reset_world_players_uses_native_alternating_layout() -> None:
     assert world.players[1].pos.y == 432.0
     assert world.players[0].spread_heat == 0.0
     assert world.players[1].spread_heat == 0.0
+
+
+def test_world_reset_round_robins_native_creature_targets() -> None:
+    world = SimWorldState()
+
+    world.reset(seed=0xBEEF, player_count=2)
+
+    assert [creature.target_player for creature in world.creatures.entries[:6]] == [0, 1, 0, 1, 0, 1]
 
 
 def test_reset_world_players_preserves_native_unwritten_residue() -> None:

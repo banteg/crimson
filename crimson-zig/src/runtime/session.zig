@@ -226,6 +226,7 @@ pub const DeterministicSession = struct {
         session.creatures.demo_mode_active = config.demo_mode_active;
         session.creatures.quest_fail_retry_count = config.quest_fail_retry_count;
 
+        session.creatures.applyGameplayResetTargetPlayers(config.player_count);
         creatures_mod.applyPoolResidue(&session.creatures, config.initial_creature_pool);
         player_runtime.initializePlayers(session.players());
         player_runtime.resetPlayers(session.players(), config.world_size, null);
@@ -376,4 +377,17 @@ test "deterministic session init advances survival terrain bootstrap rng" {
     session.rebindQuestSpawnEntries();
 
     try std.testing.expectEqual(@as(u32, 623756981), session.state.rng.state);
+}
+
+test "deterministic session init round robins native creature targets" {
+    var header = testHeader(.survival);
+    header.player_count = 2;
+
+    var session = try DeterministicSession.initFromReplayHeader(header, .{});
+    session.rebindQuestSpawnEntries();
+
+    try std.testing.expectEqual(@as(i32, 0), session.creatures.entries[0].target_player);
+    try std.testing.expectEqual(@as(i32, 1), session.creatures.entries[1].target_player);
+    try std.testing.expectEqual(@as(i32, 0), session.creatures.entries[2].target_player);
+    try std.testing.expectEqual(@as(i32, 1), session.creatures.entries[3].target_player);
 }

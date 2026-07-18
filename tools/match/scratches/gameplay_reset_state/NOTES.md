@@ -43,3 +43,13 @@ flags, and clear operations, plus reusable-temporary and scalar-clear variants,
 were checked; they either retain these swaps or diverge more broadly. The
 plausible source is retained instead of adding volatile state, dummy
 dependencies, hard-coded addresses, or artificial register constraints.
+
+## Port parity
+
+The reset loop assigns every creature slot's one-byte `target_player` to
+`creature_id % config_player_count` (or zero when the configured count is
+zero). `game_state_set` runs this helper immediately before
+`quest_start_selected`; the quest helper only clears `active` and linked
+spawn-slot owners, and allocation preserves `target_player`. Fresh Python and
+Zig sessions now seed the same round robin before applying optional captured
+pool residue. Captured residue remains authoritative for original replays.

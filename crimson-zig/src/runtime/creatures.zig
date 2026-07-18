@@ -244,6 +244,18 @@ pub const CreaturePool = struct {
         self.spawn_slot_count = 0;
     }
 
+    /// `gameplay_reset_state` assigns each static creature slot to a player
+    /// before any mode-specific setup. Spawn allocation preserves this field,
+    /// so the reset-time round robin determines initial multiplayer aggro.
+    pub fn applyGameplayResetTargetPlayers(self: *CreaturePool, player_count: i32) void {
+        for (self.entries[0..], 0..) |*creature, idx| {
+            creature.target_player = if (player_count > 0)
+                @intCast(idx % @as(usize, @intCast(player_count)))
+            else
+                0;
+        }
+    }
+
     pub fn activeCount(self: *const CreaturePool) usize {
         var count: usize = 0;
         for (self.entries) |creature| {
