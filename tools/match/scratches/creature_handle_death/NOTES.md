@@ -19,6 +19,15 @@ Binary Ninja and the MSVC candidate establish:
 - Freeze emits eight shards and one shatter, then performs the native
   freeze-only kill-count increment, deactivation, and random queued effect.
 
+The forced bonus call at `0x0041e930..0x0041e943` passes
+`&creature->pos_x`, not a position copy. Its sole callee clamps that storage
+before checking Rush mode and emits a dedicated 16-particle burst before the
+ordinary random-drop gate. The Python port already preserved the visible
+clamp and burst; its RNG tags are now the four native callsites. Zig now also
+mutates the corpse position, bypasses `bonus_spawn_at_pos` spacing policy,
+emits the forced burst, and feeds the clamped position to subsequent random
+drop and Freeze effects.
+
 The indexed child-record form and direct freeze-effect arguments recover the
 native copy/register and stack-argument shapes. The honest residual is confined
 to the opening register allocation and two recent-death-count reloads that this

@@ -366,6 +366,13 @@ pub const EffectPool = struct {
         .scale_step = rng_callers.bonus_try_spawn_on_kill_burst_scale_step,
     };
 
+    pub const bonus_spawn_at_burst_callers: BurstCallers = .{
+        .rotation = rng_callers.bonus_spawn_at_burst_rotation,
+        .vel_x = rng_callers.bonus_spawn_at_burst_vel_x,
+        .vel_y = rng_callers.bonus_spawn_at_burst_vel_y,
+        .scale_step = rng_callers.bonus_spawn_at_burst_scale_step,
+    };
+
     pub const bonus_pickup_burst_callers: BurstCallers = .{
         .rotation = rng_callers.bonus_apply_pickup_burst_rotation,
         .vel_x = rng_callers.bonus_apply_pickup_burst_vel_x,

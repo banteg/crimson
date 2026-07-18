@@ -148,22 +148,19 @@ class BonusPool:
         detail_preset: int = 5,
         emit_burst: bool = True,
     ) -> BonusEntry | None:
-        if state.game_mode == GameMode.RUSH:
-            return None
-        if bonus_id == BonusId.UNUSED:
-            return None
-        entry = self._alloc_slot()
-        if entry is None:
-            return None
-
-        entry.bonus_id = bonus_id
-        entry.picked = False
-        entry.pos = pos.clamp_rect(
+        clamped_pos = pos.clamp_rect(
             BONUS_SPAWN_MARGIN,
             BONUS_SPAWN_MARGIN,
             float(world_width) - BONUS_SPAWN_MARGIN,
             float(world_height) - BONUS_SPAWN_MARGIN,
         )
+        if state.game_mode == GameMode.RUSH:
+            return None
+        entry = self._alloc_slot_or_sentinel()
+
+        entry.bonus_id = bonus_id
+        entry.picked = False
+        entry.pos = clamped_pos
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
@@ -182,8 +179,12 @@ class BonusPool:
                 count=16,
                 rng=state.rng,
                 detail_preset=int(detail_preset),
+                rotation_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION,
+                vel_x_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X,
+                vel_y_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
+                scale_step_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
             )
-        return entry
+        return None if self._is_sentinel_entry(entry) else entry
 
     def spawn_at_pos(
         self,

@@ -2403,7 +2403,7 @@ pub const CreaturePool = struct {
                         terrain_fx,
                         creature.flags,
                         creature.link_index,
-                        creature.pos,
+                        &creature.pos,
                         @floatCast(world_size),
                         true,
                     );
@@ -2686,7 +2686,7 @@ pub const CreaturePool = struct {
             terrain_fx,
             creature.flags,
             creature.link_index,
-            creature.pos,
+            &creature.pos,
             world_size,
             true,
         );
@@ -2738,7 +2738,7 @@ pub const CreaturePool = struct {
             terrain_fx,
             creature.flags,
             creature.link_index,
-            creature.pos,
+            &creature.pos,
             world_size,
             false,
         );
@@ -2791,7 +2791,7 @@ pub const CreaturePool = struct {
             terrain_fx,
             creature.flags,
             creature.link_index,
-            creature.pos,
+            &creature.pos,
             world_size,
             true,
         );
@@ -3149,7 +3149,7 @@ pub const CreaturePool = struct {
             terrain_fx,
             creature.flags,
             creature.link_index,
-            creature.pos,
+            &creature.pos,
             world_size,
             true,
         );
@@ -3841,22 +3841,32 @@ fn emitDeathSideEffects(
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     creature_flags: u32,
     creature_link_index: i32,
-    death_pos: state_mod.Vec2,
+    death_pos: *state_mod.Vec2,
     world_size: f32,
     plan_death_sfx: bool,
 ) void {
     if ((creature_flags & spawn_mod.CreatureFlags.bonus_on_death) != 0) {
+        death_pos.* = bonus_runtime.clampSpawnPosition(death_pos.*, world_size);
         if (unpackBonusOnDeathArgs(creature_link_index)) |drop| {
             _ = bonus_pool.spawnAt(
-                .{
-                    .x = narrowF32(death_pos.x),
-                    .y = narrowF32(death_pos.y),
-                },
+                death_pos.*,
                 drop.bonus_id,
                 drop.amount_override,
                 state,
                 world_size,
             );
+            if (state.game_mode != .rush) {
+                effects.spawnBurstWithCallers(
+                    state,
+                    death_pos.*,
+                    16,
+                    5,
+                    0.5,
+                    null,
+                    .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+                    effects_mod.EffectPool.bonus_spawn_at_burst_callers,
+                );
+            }
         }
     }
     const spawned_bonus = bonus_pool.trySpawnOnKill(
@@ -3869,16 +3879,16 @@ fn emitDeathSideEffects(
         world_size,
     );
     if (spawned_bonus) |_| {
-        emitBonusOnKillBurst(state, effects, death_pos);
+        emitBonusOnKillBurst(state, effects, death_pos.*);
     }
     if (state.bonuses.freeze > 0.0) {
         for (0..8) |_| {
             const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
-            effects.spawnFreezeShard(state, death_pos, angle, 5);
+            effects.spawnFreezeShard(state, death_pos.*, angle, 5);
         }
         const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
-        effects.spawnFreezeShatter(state, death_pos, shatter_angle, 5);
-        _ = terrain_fx.decals.addRandom(state, death_pos);
+        effects.spawnFreezeShatter(state, death_pos.*, shatter_angle, 5);
+        _ = terrain_fx.decals.addRandom(state, death_pos.*);
     }
     if (plan_death_sfx) {
         // plan_death_sfx_keys chooses one death sample per death.
@@ -4157,6 +4167,80 @@ test "bonus-on-kill burst uses native effect template" {
         try expectFloatClose(1.0, entry.color.b);
         try expectFloatClose(0.5, entry.color.a);
     }
+}
+
+test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
+    const BurstTrace = struct {
+        const Self = @This();
+
+        draws: [4]spawn_mod.Crand.TraceDraw = undefined,
+        count: usize = 0,
+
+        fn onDraw(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            if (self.count < self.draws.len) self.draws[self.count] = draw;
+            self.count += 1;
+        }
+    };
+
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var death_pos: state_mod.Vec2 = .{ .x = 5.0, .y = 1010.0 };
+    var trace: BurstTrace = .{};
+    state.rng.setTraceSink(&trace, BurstTrace.onDraw, true);
+
+    emitDeathSideEffects(
+        &state,
+        &.{},
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        spawn_mod.CreatureFlags.bonus_on_death,
+        packBonusOnDeathArgs(.points, 5),
+        &death_pos,
+        1024.0,
+        false,
+    );
+
+    try expectFloatClose(32.0, death_pos.x);
+    try expectFloatClose(992.0, death_pos.y);
+    try std.testing.expectEqual(@as(usize, 1), bonuses.activeCount());
+    try expectFloatClose(32.0, bonuses.entries[0].pos.x);
+    try expectFloatClose(992.0, bonuses.entries[0].pos.y);
+    try std.testing.expectEqual(@as(i32, 5), bonuses.entries[0].amount);
+    try std.testing.expectEqual(effects_mod.effect_pool_size - 16, effects.free_len);
+    try std.testing.expectEqual(@as(usize, 64), trace.count);
+    try std.testing.expectEqual(rng_callers.bonus_spawn_at_burst_rotation, trace.draws[0].caller.?);
+    try std.testing.expectEqual(rng_callers.bonus_spawn_at_burst_vel_x, trace.draws[1].caller.?);
+    try std.testing.expectEqual(rng_callers.bonus_spawn_at_burst_vel_y, trace.draws[2].caller.?);
+    try std.testing.expectEqual(rng_callers.bonus_spawn_at_burst_scale_step, trace.draws[3].caller.?);
+    try std.testing.expect(!state.rng.consumeMissingTraceCaller());
+
+    var rush_state = state_mod.GameplayState.init(1);
+    rush_state.game_mode = .rush;
+    rush_state.bonus_spawn_guard = true;
+    var rush_bonuses: bonus_runtime.BonusPool = .{};
+    var rush_effects: effects_mod.EffectPool = .{};
+    var rush_pos: state_mod.Vec2 = .{ .x = 5.0, .y = 1010.0 };
+    emitDeathSideEffects(
+        &rush_state,
+        &.{},
+        &rush_bonuses,
+        &rush_effects,
+        &terrain_fx,
+        spawn_mod.CreatureFlags.bonus_on_death,
+        packBonusOnDeathArgs(.points, 5),
+        &rush_pos,
+        1024.0,
+        false,
+    );
+    try expectFloatClose(32.0, rush_pos.x);
+    try expectFloatClose(992.0, rush_pos.y);
+    try std.testing.expectEqual(@as(usize, 0), rush_bonuses.activeCount());
+    try std.testing.expectEqual(effects_mod.effect_pool_size, rush_effects.free_len);
 }
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {

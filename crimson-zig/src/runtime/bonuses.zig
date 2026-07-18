@@ -72,6 +72,15 @@ const AllocSlot = union(enum) {
     index: usize,
 };
 
+pub fn clampSpawnPosition(pos: state_mod.Vec2, world_size: f32) state_mod.Vec2 {
+    var clamped = pos;
+    if (clamped.x < bonus_spawn_margin) clamped.x = bonus_spawn_margin;
+    if (clamped.y < bonus_spawn_margin) clamped.y = bonus_spawn_margin;
+    if (world_size - bonus_spawn_margin < clamped.x) clamped.x = world_size - bonus_spawn_margin;
+    if (world_size - bonus_spawn_margin < clamped.y) clamped.y = world_size - bonus_spawn_margin;
+    return clamped;
+}
+
 pub const BonusPool = struct {
     entries: [bonus_pool_size]BonusEntry = [_]BonusEntry{.{}} ** bonus_pool_size,
     sentinel: BonusEntry = .{},
@@ -179,30 +188,18 @@ pub const BonusPool = struct {
         state: *state_mod.GameplayState,
         world_size: f32,
     ) ?*BonusEntry {
-        _ = state;
-        if (pos.x < bonus_spawn_margin or pos.y < bonus_spawn_margin or
-            pos.x > world_size - bonus_spawn_margin or pos.y > world_size - bonus_spawn_margin)
-        {
-            return null;
-        }
+        const clamped_pos = clampSpawnPosition(pos, world_size);
+        if (state.game_mode == .rush) return null;
 
-        var slot = allocSlotOrSentinel(self);
-        const min_dist_sq = bonus_spawn_min_distance * bonus_spawn_min_distance;
-        for (self.entries) |active| {
-            if (active.bonus_id == .unused) continue;
-            if (distanceSq(pos, active.pos) < min_dist_sq) {
-                slot = .sentinel;
-                break;
-            }
-        }
+        const slot = allocSlotOrSentinel(self);
 
         var entry = slotPtr(self, slot);
         entry.bonus_id = bonus_id;
         entry.picked = false;
-        entry.pos = pos;
+        entry.pos = clamped_pos;
         entry.time_left = narrowF32(bonus_time_max);
         entry.time_max = narrowF32(bonus_time_max);
-        entry.amount = if (duration_override >= 0) duration_override else defaultBonusAmount(bonus_id);
+        entry.amount = if (duration_override == -1) defaultBonusAmount(bonus_id) else duration_override;
 
         return if (slot == .sentinel) null else entry;
     }

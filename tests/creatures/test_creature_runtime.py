@@ -2126,6 +2126,13 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
 def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
     state = GameplayState()
     state.bonus_spawn_guard = True
+    draw_callers: list[int | None] = []
+    rng = Crand(1)
+    rng.set_trace_sink(
+        lambda _before, _after, _value, caller: draw_callers.append(caller),
+        require_caller=True,
+    )
+    state.rng = rng
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -2152,3 +2159,10 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
     assert len(state.effects.iter_active()) == 16
     entry = next(e for e in state.bonus_pool.entries if e.bonus_id == BonusId.POINTS)
     assert entry.pos == Vec2(32.0, 992.0)
+    assert len(draw_callers) == 64
+    assert draw_callers[:4] == [
+        RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION,
+        RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X,
+        RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
+        RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
+    ]
