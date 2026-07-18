@@ -547,7 +547,10 @@ Notes:
 
 ### Rewrite
 
-- `src/crimson/sim/world_state.py`: `WorldState.step()`.
+- `src/crimson/sim/sessions.py`: session timing applies the outer transform
+  before Reflex Boost bonus scaling so mode timers and entity updates share it.
+- `src/crimson/sim/world_state.py`: direct world stepping uses the same perk
+  transform.
 
 ## 45. Greater Regeneration (`PerkId.GREATER_REGENERATION`)
 

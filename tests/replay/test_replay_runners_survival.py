@@ -48,6 +48,27 @@ def test_survival_runner_uses_replay_dt_rows_for_elapsed_ms() -> None:
     assert result.elapsed_ms == 500
 
 
+def test_survival_runner_skips_outer_dt_transform_for_native_capture() -> None:
+    _header, rec = _blank_survival_replay(ticks=1, seed=0x1234)
+    port_replay = rec.finish()
+    capture_replay = msgspec.structs.replace(
+        port_replay,
+        header=msgspec.structs.replace(port_replay.header, initial_creature_pool=()),
+    )
+    port_driver = PlaybackDriver(port_replay)
+    capture_driver = PlaybackDriver(capture_replay)
+    port_driver.world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    capture_driver.world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+
+    port_timing = port_driver.session.timing_for_dt(0.1)
+    capture_timing = capture_driver.session.timing_for_dt(0.1)
+
+    assert port_driver.session.apply_world_dt_steps is True
+    assert capture_driver.session.apply_world_dt_steps is False
+    assert port_timing.dt_sim_ms_i32 == 89
+    assert capture_timing.dt_sim_ms_i32 == 100
+
+
 def test_survival_runner_game_frame_rng_advance_prelude_shifts_rng_state() -> None:
     _header, rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = rec.finish()

@@ -290,6 +290,12 @@ class WorldState(msgspec.Struct):
             creatures=creatures,
         )
 
+    def world_dt_after_perk_steps(self, dt: float) -> float:
+        world_dt = float(dt)
+        for step in _WORLD_DT_STEPS:
+            world_dt = float(step(dt=world_dt, players=self.players))
+        return float(world_dt)
+
     def step(
         self,
         dt: float,
@@ -313,8 +319,7 @@ class WorldState(msgspec.Struct):
         fx_queue.violence_disabled = int(violence_disabled)
         self.state.player_death_hook_skip_indices.clear()
         if apply_world_dt_steps:
-            for step in _WORLD_DT_STEPS:
-                dt = float(step(dt=dt, players=self.players))
+            dt = self.world_dt_after_perk_steps(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players)).as_list()
         prev_health = [float(player.health) for player in self.players]
         # Native Freeze pickup shatters corpses that existed at tick start;

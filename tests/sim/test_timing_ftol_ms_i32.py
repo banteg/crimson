@@ -31,6 +31,19 @@ def test_frame_timing_defaults_to_live_dt_when_zero_gate_disabled() -> None:
     assert timing.dt_sim > 0.0
 
 
+def test_frame_timing_applies_world_dt_before_reflex_bonus_scale() -> None:
+    timing = FrameTiming.compute(
+        0.1,
+        world_dt=0.09,
+        time_scale_active_entry=True,
+        time_scale_factor=0.3,
+        zero_gate_active=False,
+    )
+
+    assert timing.dt_ms_i32 == 100
+    assert timing.dt_sim_ms_i32 == 27
+
+
 def test_reflex_boost_fade_rounds_each_native_operation() -> None:
     factor = reflex_boost_time_scale_factor(
         reflex_boost_timer=0.8673485517501831,

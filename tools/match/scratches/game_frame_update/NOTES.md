@@ -16,6 +16,15 @@ audio-suspended path. Normal completion branches directly to the shared
 `return 1` epilogue, while full-version quit and update-wait paths return `0`.
 That also corrects the former `void` signature in the curated name map.
 
+The Reflex Boosted perk transform is an outer-loop operation, not a
+player-movement hook. Live instructions at `0x0040c4bd..0x0040c517` perform the
+perk lookup, store `frame_dt * 0.9f`, and rederive `frame_dt_ms` before the call
+to `gameplay_update_and_render` at `0x0040c887`. The Python session pipeline now
+applies this transform before Reflex Boost bonus scaling and shares the result
+with entity updates, mode timelines, and elapsed gameplay. Native-capture
+replays skip the transform because their gameplay-entry delta already includes
+it; port fixed-step replays retain the transform during playback.
+
 The native stack shape is two two-float arrays for analog input and cursor
 delta. Axis values come from the Grim2D config-float slot at vtable offset
 `0x84`; the cursor dead zone is `0.2f` and its analog scale is `540.0f`. The

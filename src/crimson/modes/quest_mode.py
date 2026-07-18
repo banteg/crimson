@@ -167,7 +167,7 @@ class QuestMode(BaseGameplayMode):
             violence_disabled=0,
             game_tune_started=bool(self.sim_world.game_tune_started),
             demo_mode_active=bool(self.demo_mode_active),
-            apply_world_dt_steps=False,
+            apply_world_dt_steps=True,
             finalize_post_render_lifecycle=True,
             spawn_entries=tuple(spawn_entries),
             quest_level=(None if quest_def is None else quest_def.level),

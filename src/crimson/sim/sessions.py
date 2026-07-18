@@ -316,10 +316,13 @@ class _SessionWorldMidStepRuntime(WorldMidStepRuntime):
 # ---------------------------------------------------------------------------
 
 
-def _session_timing(state: object, dt: float) -> FrameTiming:
+def _session_timing(world: WorldState, dt: float, *, apply_world_dt_steps: bool) -> FrameTiming:
     """Compute frame timing from world state. Used by all session types."""
+    state = world.state
+    world_dt = world.world_dt_after_perk_steps(dt) if bool(apply_world_dt_steps) else float(dt)
     return FrameTiming.compute(
         dt,
+        world_dt=world_dt,
         time_scale_active_entry=bool(state.time_scale_active),  # type: ignore[union-attr]
         time_scale_factor=reflex_boost_time_scale_factor(
             reflex_boost_timer=float(state.bonuses.reflex_boost),  # type: ignore[union-attr]
@@ -368,7 +371,11 @@ class DeterministicSession(msgspec.Struct):
         prepare_perk_availability(state)
 
     def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _session_timing(self.world.state, dt)
+        return _session_timing(
+            self.world,
+            dt,
+            apply_world_dt_steps=bool(self.apply_world_dt_steps),
+        )
 
     def apply_replay_prelude(
         self,
@@ -525,7 +532,9 @@ class DeterministicSession(msgspec.Struct):
 
         events = self.world.step(
             timing.dt_sim,
-            apply_world_dt_steps=self.apply_world_dt_steps,
+            # Session timing already applied the outer-loop perk transforms so
+            # mode hooks and the world share the same native frame delta.
+            apply_world_dt_steps=False,
             defer_camera_shake_update=self.defer_camera_shake_update,
             defer_freeze_corpse_fx=False,
             mid_step_runtime=mid_step_runtime,

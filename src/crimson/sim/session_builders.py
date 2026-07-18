@@ -30,7 +30,7 @@ def build_survival_session(
     violence_disabled: int,
     game_tune_started: bool,
     finalize_post_render_lifecycle: bool,
-    apply_world_dt_steps: bool = False,
+    apply_world_dt_steps: bool = True,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
     mode_runtime = SurvivalSessionRuntime()
     session = DeterministicSession(

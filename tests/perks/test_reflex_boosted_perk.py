@@ -43,6 +43,37 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
     assert_float_close(player.pos.x, 90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)
 
 
+def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
+    world = WorldState.build(
+        world_size=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    world.players.append(player)
+    session, spawn = build_survival_session(
+        world=world,
+        world_size=1024.0,
+        damage_scale_by_type={},
+        detail_preset=5,
+        violence_disabled=0,
+        game_tune_started=False,
+        finalize_post_render_lifecycle=False,
+    )
+    spawn.spawn_cooldown_ms = 1000.0
+
+    tick = session.step_tick(dt=0.1, inputs=[PlayerInput()])
+
+    assert tick.step.timing.dt_ms_i32 == 100
+    # 0.1f * 0.9f stores 0.089999996f, whose native x87 * 1000 +
+    # truncation path produces 89 ms.
+    assert tick.step.timing.dt_sim_ms_i32 == 89
+    assert tick.elapsed_ms == 89.0
+    assert spawn.spawn_cooldown_ms == 911.0
+
+
 def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> None:
     world = WorldState.build(
         world_size=1024.0,

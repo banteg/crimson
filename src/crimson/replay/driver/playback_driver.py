@@ -173,7 +173,7 @@ class PlaybackDriver:
         self.world = self._prepare_world()
 
         apply_world_dt_steps = should_apply_world_dt_steps_for_replay(
-            original_capture_replay=False,
+            original_capture_replay=self.replay.header.initial_creature_pool is not None,
         )
         self.session = self._build_session(apply_world_dt_steps=bool(apply_world_dt_steps))
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()

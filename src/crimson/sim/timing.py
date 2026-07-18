@@ -60,6 +60,7 @@ class FrameTiming(msgspec.Struct, frozen=True):
     def compute(
         dt: float,
         *,
+        world_dt: float | None = None,
         time_scale_active_entry: bool,
         time_scale_factor: float,
         zero_gate_active: bool,
@@ -67,15 +68,18 @@ class FrameTiming(msgspec.Struct, frozen=True):
         dt_f32 = float(f32(float(dt)))
         if not math.isfinite(dt_f32):
             raise ValueError(f"dt must be finite, got {dt!r}")
+        world_dt_f32 = dt_f32 if world_dt is None else float(f32(float(world_dt)))
+        if not math.isfinite(world_dt_f32):
+            raise ValueError(f"world_dt must be finite, got {world_dt!r}")
 
         active = bool(time_scale_active_entry)
         factor = float(f32(float(time_scale_factor)))
         if active and (not math.isfinite(factor) or float(factor) <= 0.0):
             raise ValueError(f"time_scale_factor must be finite and > 0 when active, got {time_scale_factor!r}")
 
-        dt_sim = float(dt_f32)
+        dt_sim = float(world_dt_f32)
         if active:
-            dt_sim = float(x87_pc24_mul(dt_f32, factor))
+            dt_sim = float(x87_pc24_mul(world_dt_f32, factor))
         if bool(zero_gate_active):
             dt_sim = 0.0
 
