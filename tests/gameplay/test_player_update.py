@@ -1640,6 +1640,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
+    state.bonus_spawn_guard = True
     pool.step(
         PrimaryStepCtx(
             dt=0.1,
@@ -1654,6 +1655,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
 
     assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj
+    assert not state.bonus_spawn_guard
     assert sum(1 for entry in pool.entries if entry.active) >= 2
     chained = pool.entries[int(state.shock_chain_projectile_id)]
     # Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927).

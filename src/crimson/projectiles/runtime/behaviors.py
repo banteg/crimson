@@ -237,7 +237,6 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             delta = target.pos - origin.pos
             angle = float(f32(math.atan2(float(delta.y), float(delta.x)) - NATIVE_HALF_PI - NATIVE_PI))
 
-            prev_guard = bool(runtime_state.bonus_spawn_guard)
             runtime_state.bonus_spawn_guard = True
             try:
                 proj_id = ctx.pool.spawn(
@@ -248,7 +247,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     travel_budget=hit.proj.travel_budget,
                 )
             finally:
-                runtime_state.bonus_spawn_guard = prev_guard
+                runtime_state.bonus_spawn_guard = False
             runtime_state.shock_chain_projectile_id = proj_id
     _post_hit_ion_common(ctx, hit)
 

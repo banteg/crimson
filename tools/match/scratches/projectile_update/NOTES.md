@@ -62,6 +62,12 @@ tests cover all four branches, including Splitter ownership/headings, the
 12-projectile Plasma ring, Shrinkifier's keep-corpse death path, and infection
 ordering.
 
+The chained Ion Rifle branch likewise writes the bonus-spawn guard to one at
+`0x004212b1`, spawns the next segment at `0x004212ff`, and writes zero at
+`0x00421304`. It does not restore the incoming guard. Both ports preserve that
+literal continuation transition, and their regressions start with the guard
+set so a save/restore implementation cannot pass accidentally.
+
 Live callsite inspection also establishes that all six perk queries use the
 singleton `perk_count_get` helper, which returns
 `player_state_table[0].perk_counts[perk_id]`: Ion Gun Master at `0x00420bb5`,

@@ -1125,9 +1125,8 @@ fn postHitIonRifleShockChain(
     const delta = state_mod.Vec2.sub(target.pos, origin_creature.pos);
     const angle: f32 = @floatCast(std.math.atan2(@as(f64, delta.y), @as(f64, delta.x)) - @as(f64, native_half_pi) - @as(f64, native_math.roundF32(native_math.native_pi)));
 
-    const prev_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_guard;
+    defer state.bonus_spawn_guard = false;
 
     const spawned_idx = pool.spawn(
         origin_pos,
@@ -1501,6 +1500,61 @@ test "plasma cannon hit spawns native twelve-projectile ring" {
         try std.testing.expectEqual(@as(i32, -100), child.owner.toLegacy());
     }
     try std.testing.expectEqual(@as(usize, 12), plasma_children);
+    try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "shock chain continuation clears native spawn guard" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    state.shock_chain_projectile_id = 0;
+    state.shock_chain_links_left = 32;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 500.0, .y = 500.0 } },
+    };
+    var effects: effects_mod.EffectPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.effects = &effects;
+    creatures.entries[0] = .{
+        .active = true,
+        .hp = 1000.0,
+        .max_hp = 1000.0,
+        .size = 44.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+    };
+    creatures.entries[1] = .{
+        .active = true,
+        .hp = 1000.0,
+        .max_hp = 1000.0,
+        .size = 44.0,
+        .pos = .{ .x = 250.0, .y = 100.0 },
+    };
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var pool: ProjectilePool = .{};
+    _ = pool.spawn(
+        creatures.entries[0].pos,
+        0.0,
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        owner_ref.OwnerRef.fromLocalPlayer(0),
+        10.0,
+        false,
+    );
+
+    const tick = pool.updateWithEffects(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &effects,
+        &terrain_fx,
+        5,
+        0.001,
+        1024.0,
+    );
+
+    try std.testing.expect(tick.hit_count > 0);
+    try std.testing.expectEqual(@as(i32, 31), state.shock_chain_links_left);
+    try std.testing.expectEqual(@as(i32, 1), state.shock_chain_projectile_id);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
