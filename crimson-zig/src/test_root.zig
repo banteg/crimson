@@ -1,6 +1,20 @@
 const std = @import("std");
 const cz = @import("crimson_zig");
 
+pub const NoInputSampler = struct {
+    pub fn codeIsDown(_: NoInputSampler, _: i32, _: i32) bool {
+        return false;
+    }
+
+    pub fn codeIsPressed(_: NoInputSampler, _: i32, _: i32) bool {
+        return false;
+    }
+
+    pub fn axisValue(_: NoInputSampler, _: i32, _: i32) f32 {
+        return 0.0;
+    }
+};
+
 test {
     _ = @import("app_runtime.zig");
     _ = cz.anim;
@@ -332,6 +346,114 @@ test "native movement uses player zero perk source" {
     );
 
     try std.testing.expectApproxEqAbs(cz.native_math.roundF32(2.2), players[1].move_speed, 1e-6);
+}
+
+test "native computer aim preserves configured movement" {
+    var interpreter: cz.local_input.LocalInputInterpreter = .{};
+    const player: cz.state.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 500.0, .y = 500.0 },
+        .aim = .{ .x = 560.0, .y = 500.0 },
+    };
+    var config = cz.formats.crimson_cfg.defaultConfig();
+    config.player_mode_flag_p1 = @intCast(cz.local_input.movement_control_dual_action_pad);
+    config.aim_scheme_p1 = @bitCast(@as(i32, cz.local_input.aim_scheme_computer));
+    const creatures = [_]struct { active: bool, hp: f32, pos: cz.state.Vec2 }{
+        .{ .active = true, .hp = 20.0, .pos = .{ .x = 560.0, .y = 500.0 } },
+    };
+    const sampler: NoInputSampler = .{};
+
+    const input = interpreter.buildPlayerInput(
+        sampler,
+        0,
+        1,
+        &player,
+        &config,
+        .{},
+        .{},
+        .{},
+        0.1,
+        creatures[0..],
+    );
+
+    try std.testing.expectEqual(@as(f32, 0.0), input.move_x);
+    try std.testing.expectEqual(@as(f32, 0.0), input.move_y);
+}
+
+test "native computer movement without a target orbits center" {
+    var interpreter: cz.local_input.LocalInputInterpreter = .{};
+    const player: cz.state.PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 612.0, .y = 512.0 },
+        .aim = .{ .x = 672.0, .y = 512.0 },
+    };
+    var config = cz.formats.crimson_cfg.defaultConfig();
+    config.player_mode_flag_p1 = @intCast(cz.local_input.movement_control_computer);
+    const no_creatures = [_]struct { active: bool, hp: f32, pos: cz.state.Vec2 }{
+        .{ .active = false, .hp = 0.0, .pos = .{} },
+    };
+    const sampler: NoInputSampler = .{};
+
+    const input = interpreter.buildPlayerInput(
+        sampler,
+        0,
+        1,
+        &player,
+        &config,
+        .{},
+        .{},
+        .{},
+        0.1,
+        no_creatures[0..],
+    );
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), input.move_x, 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), input.move_y, 1e-6);
+}
+
+test "native movement dispatcher ignores computer aim" {
+    var state = cz.state.GameplayState.init(1);
+    var player: cz.state.PlayerState = .{ .index = 0, .pos = .{} };
+    const input: cz.movement.GameInput = .{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 1.0,
+        .aim_y = 0.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .move_mode = cz.local_input.movement_control_relative,
+            .aim_scheme = cz.local_input.aim_scheme_computer,
+            .move_forward_pressed = true,
+        },
+    };
+
+    cz.movement.updatePlayerFromGameInput(&player, input, &state, null, 0.1);
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), player.move_speed, 1e-6);
+}
+
+test "native demo movement accepts sub-deadzone vectors" {
+    var state = cz.state.GameplayState.init(1);
+    state.demo_mode_active = true;
+    var player: cz.state.PlayerState = .{ .index = 0, .pos = .{} };
+    const input: cz.movement.GameInput = .{
+        .move_x = 0.05,
+        .move_y = 0.0,
+        .aim_x = 1.0,
+        .aim_y = 0.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .move_mode = cz.local_input.movement_control_dual_action_pad,
+        },
+    };
+
+    cz.movement.updatePlayerFromGameInput(&player, input, &state, null, 0.1);
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), player.move_speed, 1e-6);
 }
 
 test "native player update uses player zero perk source" {

@@ -102,6 +102,13 @@ computer aim to computer movement. Also, the no-live-target arm at
 interpreter now preserves the configured movement mode for computer aim and
 reproduces that no-target orbit for computer movement.
 
+The Zig rewrite had retained both defects independently in its local-input and
+movement-runtime layers. It now routes autoplay only for demo mode or movement
+mode `5`, preserves the configured movement vector when only aim scheme `5` is
+selected, uses the native no-target tangent, and applies the zero deadzone used
+by demo and point-click movement. Active port regressions cover each dispatcher
+edge rather than relying on dormant module-local tests.
+
 The firing dispatcher now follows the same native branch layout: an active Fire
 Bullets timer falls through to the replacement path at `0x00415d13`, while an
 inactive timer branches to the normal weapon cases at `0x00415eb8`. Man Bomb's

@@ -108,24 +108,28 @@ pub const LocalInputInterpreter = struct {
         var move_to_cursor_pressed = false;
         var computer_target_index: ?i32 = null;
 
-        const computer_move_active = move_mode_type == movement_control_computer or aim_scheme == aim_scheme_computer;
+        const computer_move_active = move_mode_type == movement_control_computer;
 
         if (computer_move_active) {
             computer_target_index = self.selectComputerTarget(idx, player, creatures);
             const center_delta = sub(computer_arena_center, player.pos);
             const center_dist = length(center_delta);
-            const target_pos = blk: {
+            const move_delta: state_mod.Vec2 = blk: {
                 if (computer_target_index) |target_idx| {
-                    if (center_dist <= computer_move_target_radius) {
-                        if (creatureAt(creatures, target_idx)) |target| {
-                            break :blk target.pos;
+                    if (creatureAt(creatures, target_idx)) |target| {
+                        if (center_dist <= computer_move_target_radius) {
+                            break :blk sub(target.pos, player.pos);
                         }
+                        break :blk center_delta;
                     }
                 }
-                break :blk computer_arena_center;
+
+                const away = sub(player.pos, computer_arena_center);
+                const orbit: state_mod.Vec2 = .{ .x = -away.y, .y = away.x };
+                if (lengthSq(orbit) > 1e-12) break :blk orbit;
+                break :blk state_mod.Vec2{ .x = 0.0, .y = 1.0 };
             };
 
-            const move_delta = sub(target_pos, player.pos);
             const move_dir = normalized(move_delta);
             if (lengthSq(move_delta) > 1e-12) {
                 move_vec = move_dir;

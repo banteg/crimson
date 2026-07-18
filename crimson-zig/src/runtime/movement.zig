@@ -27,9 +27,9 @@ const relative_move_turn_align_scale: f32 = 7.957746982574463;
 const movement_control_relative: i32 = 1;
 const movement_control_static: i32 = 2;
 const movement_control_dual_action_pad: i32 = 3;
+const movement_control_mouse_point_click: i32 = 4;
 const movement_control_computer: i32 = 5;
 const aim_scheme_mouse: i32 = 0;
-const aim_scheme_computer: i32 = 5;
 
 pub fn updatePlayerFromGameInput(
     player: *state_mod.PlayerState,
@@ -70,7 +70,6 @@ pub fn updatePlayerFromGameInputWithPlayers(
 
     const flags = input.flags;
     const move_mode = resolveMoveModeForUpdate(flags);
-    const aim_scheme = resolveAimSchemeForUpdate(flags);
 
     var raw_move: state_mod.Vec2 = .{
         .x = narrowF32(input.move_x),
@@ -87,9 +86,7 @@ pub fn updatePlayerFromGameInputWithPlayers(
     var speed: f32 = 0.0;
     var phase_sign: f32 = 1.0;
     var move_delta_override: ?state_mod.Vec2 = null;
-    const player_controlled_movement =
-        move_mode != movement_control_computer and
-        aim_scheme != aim_scheme_computer;
+    const player_controlled_movement = !state.demo_mode_active and move_mode != movement_control_computer;
 
     if (player_controlled_movement) {
         if (move_mode == movement_control_relative) {
@@ -189,7 +186,8 @@ pub fn updatePlayerFromGameInputWithPlayers(
                 move_delta_override = movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
             }
         } else {
-            const moving_input = raw_mag > 0.2;
+            const move_input_threshold: f32 = if (move_mode == movement_control_mouse_point_click) 0.0 else 0.2;
+            const moving_input = raw_mag > move_input_threshold;
             var turn_alignment_scale: f32 = 1.0;
             if (moving_input) {
                 raw_move = normalizeVec2SafeNative(raw_move);
@@ -211,7 +209,7 @@ pub fn updatePlayerFromGameInputWithPlayers(
             }
         }
     } else {
-        const move_input_threshold: f32 = 0.2;
+        const move_input_threshold: f32 = if (state.demo_mode_active) 0.0 else 0.2;
         const moving_input = raw_mag > move_input_threshold;
         var turn_alignment_scale: f32 = 1.0;
         if (moving_input) {
