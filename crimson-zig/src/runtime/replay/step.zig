@@ -645,9 +645,8 @@ pub fn stepTick(
         context.world_size,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
-    if (context.game_mode == .survival) {
-        survival_progression.survivalEnforceRewardWeaponGuard(context.state, players);
-    } else if (context.game_mode == .typo) {
+    survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
+    if (context.game_mode == .typo) {
         typo_runtime.postStep(&context.state);
     } else if (context.game_mode == .tutorial) {
         try tutorial_runtime.postStep(

@@ -20,9 +20,9 @@ from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
     build_gameplay_state,
+    gameplay_enforce_weapon_guards,
     player_frame_dt_after_roundtrip,
     player_update,
-    survival_enforce_reward_weapon_guard,
     survival_progression_update,
 )
 from ..owner_ref import OwnerRef
@@ -452,7 +452,7 @@ class WorldState(msgspec.Struct):
                 pickups=pickups,
                 detail_preset=int(detail_preset),
             )
-        survival_enforce_reward_weapon_guard(self.state, self.players)
+        gameplay_enforce_weapon_guards(self.state, self.players)
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()

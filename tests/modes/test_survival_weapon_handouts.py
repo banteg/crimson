@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import (
     GameplayState,
+    gameplay_enforce_weapon_guards,
     survival_enforce_reward_weapon_guard,
     survival_update_weapon_handouts,
 )
+from crimson.persistence.save_status import GameStatus
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
 from crimson.weapons import WeaponId
@@ -164,3 +168,39 @@ def test_survival_weapon_guard_reverts_mismatched_temporary_weapons() -> None:
 
     assert player0.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
     assert player1.weapon.weapon_id == WeaponId.PISTOL
+
+
+def test_gameplay_weapon_guard_revokes_locked_splitter_from_native_player_slots() -> None:
+    state = GameplayState(preserve_bugs=True)
+    players = [PlayerState(index=index, pos=Vec2()) for index in range(3)]
+    for player in players:
+        weapon_assign_player(player, WeaponId.SPLITTER_GUN, state=state)
+
+    gameplay_enforce_weapon_guards(state, players)
+
+    assert [player.weapon.weapon_id for player in players] == [
+        WeaponId.PISTOL,
+        WeaponId.PISTOL,
+        WeaponId.SPLITTER_GUN,
+    ]
+
+
+def test_gameplay_weapon_guard_extends_splitter_policy_in_corrected_mode() -> None:
+    state = GameplayState()
+    players = [PlayerState(index=index, pos=Vec2()) for index in range(3)]
+    for player in players:
+        weapon_assign_player(player, WeaponId.SPLITTER_GUN, state=state)
+
+    gameplay_enforce_weapon_guards(state, players)
+
+    assert all(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
+
+
+def test_gameplay_weapon_guard_keeps_unlocked_splitter() -> None:
+    state = GameplayState(status=GameStatus(path=Path("game.cfg"), quest_unlock_index_full=40))
+    player = PlayerState(index=0, pos=Vec2())
+    weapon_assign_player(player, WeaponId.SPLITTER_GUN, state=state)
+
+    gameplay_enforce_weapon_guards(state, [player])
+
+    assert player.weapon.weapon_id == WeaponId.SPLITTER_GUN

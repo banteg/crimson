@@ -185,18 +185,36 @@ pub fn survivalUpdateWeaponHandouts(
 }
 
 pub fn survivalEnforceRewardWeaponGuard(
-    state: GameplayState,
+    state: *GameplayState,
     players: []PlayerState,
 ) void {
     const guard_id = state.survival_reward_weapon_guard_id;
     for (players) |*player| {
         if (player.weapon.weapon_id == WeaponId.blade_gun and guard_id != WeaponId.blade_gun) {
-            weaponAssignPlayer(player, WeaponId.pistol);
+            weaponAssignPlayerWithState(player, WeaponId.pistol, state);
         }
         if (player.weapon.weapon_id == WeaponId.shrinkifier_5k and guard_id != WeaponId.shrinkifier_5k) {
-            weaponAssignPlayer(player, WeaponId.pistol);
+            weaponAssignPlayerWithState(player, WeaponId.pistol, state);
         }
     }
+}
+
+pub fn gameplayEnforceWeaponGuards(
+    state: *GameplayState,
+    players: []PlayerState,
+) void {
+    // Native gameplay_render_world checks exactly the two fixed player slots.
+    // Corrected mode extends the same entitlement policy to generalized co-op.
+    const guarded_players = if (state.preserve_bugs) players[0..@min(players.len, 2)] else players;
+    if (state.status_quest_unlock_index_full < 0x28) {
+        for (guarded_players) |*player| {
+            if (player.weapon.weapon_id == WeaponId.splitter_gun) {
+                weaponAssignPlayerWithState(player, WeaponId.pistol, state);
+            }
+        }
+    }
+
+    survivalEnforceRewardWeaponGuard(state, guarded_players);
 }
 
 fn expectFloatClose(expected: f32, actual: f32) !void {
@@ -335,10 +353,61 @@ test "survival reward guard reverts temporary weapons" {
     weaponAssignPlayer(&players[1], WeaponId.blade_gun);
     state.survival_reward_weapon_guard_id = WeaponId.shrinkifier_5k;
 
-    survivalEnforceRewardWeaponGuard(state, players[0..]);
+    survivalEnforceRewardWeaponGuard(&state, players[0..]);
 
     try std.testing.expectEqual(WeaponId.shrinkifier_5k, players[0].weapon.weapon_id);
     try std.testing.expectEqual(WeaponId.pistol, players[1].weapon.weapon_id);
+    try std.testing.expectEqual(@as(u32, 1), state.status_weapon_usage_counts.get(WeaponId.pistol));
+}
+
+test "gameplay weapon guard revokes locked splitter from native player slots" {
+    var state = GameplayState.init(1);
+    state.preserve_bugs = true;
+    var players = [_]PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+        .{ .index = 2, .pos = .{} },
+    };
+    for (&players) |*player| {
+        weaponAssignPlayer(player, WeaponId.splitter_gun);
+    }
+
+    gameplayEnforceWeaponGuards(&state, players[0..]);
+
+    try std.testing.expectEqual(WeaponId.pistol, players[0].weapon.weapon_id);
+    try std.testing.expectEqual(WeaponId.pistol, players[1].weapon.weapon_id);
+    try std.testing.expectEqual(WeaponId.splitter_gun, players[2].weapon.weapon_id);
+    try std.testing.expectEqual(@as(u32, 2), state.status_weapon_usage_counts.get(WeaponId.pistol));
+}
+
+test "gameplay weapon guard extends splitter policy in corrected mode" {
+    var state = GameplayState.init(1);
+    var players = [_]PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{} },
+        .{ .index = 2, .pos = .{} },
+    };
+    for (&players) |*player| {
+        weaponAssignPlayer(player, WeaponId.splitter_gun);
+    }
+
+    gameplayEnforceWeaponGuards(&state, players[0..]);
+
+    for (players) |player| {
+        try std.testing.expectEqual(WeaponId.pistol, player.weapon.weapon_id);
+    }
+}
+
+test "gameplay weapon guard keeps unlocked splitter" {
+    var state = GameplayState.init(1);
+    state.status_quest_unlock_index_full = 0x28;
+    var player: PlayerState = .{ .index = 0, .pos = .{} };
+    weaponAssignPlayer(&player, WeaponId.splitter_gun);
+    var players = [_]PlayerState{player};
+
+    gameplayEnforceWeaponGuards(&state, players[0..]);
+
+    try std.testing.expectEqual(WeaponId.splitter_gun, players[0].weapon.weapon_id);
 }
 
 test "time scale reflex boost bonus mirrors f32 latch" {
