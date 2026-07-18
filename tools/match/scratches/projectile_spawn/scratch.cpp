@@ -27,15 +27,15 @@ extern "C" int projectile_spawn(float *pos, float angle, int type_id, int owner_
 
     index = 0;
     projectile = projectile_pool;
-    while (projectile->active) {
-        ++projectile;
-        ++index;
-        if ((int)projectile >= (int)&projectile_pool[0x60]) {
-            result = 0x5f;
+    while ((int)projectile < (int)&projectile_pool[0x60]) {
+        if (!projectile->active) {
+            result = index;
             goto initialize;
         }
+        ++projectile;
+        ++index;
     }
-    result = index;
+    result = 0x5f;
 
 initialize:
     spawned = &projectile_pool[result];

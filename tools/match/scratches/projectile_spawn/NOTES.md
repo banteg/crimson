@@ -1,15 +1,17 @@
 # `projectile_spawn`
 
 The current MSVC 6.5 `/O2 /GB` candidate recovers the full projectile
-allocation and initialization semantics at `0x00420440`. It produces 119
-instructions against 126 native instructions, scores 69.39%, and resolves all
+allocation and initialization semantics at `0x00420440`. It produces 114
+instructions against 126 native instructions, scores 71.67%, and resolves all
 13 candidate references without a mismatch.
 
 Keeping the scan counter separate from the selected result is supported by the
-native control flow: the free-slot path copies the counter into the return
-register, while the exhausted path selects slot `0x5f`. This source shape also
-removes the prior first-slot special case and improves the candidate from
-67.21%.
+native control flow: the bounded cursor loop tests the current slot, advances
+by one `0x40`-byte projectile, branches back while the cursor remains below the
+96-slot pool end, and selects slot `0x5f` only after exhaustion. The free-slot
+path copies the counter into the return register. That source shape reproduces
+the native nine-instruction allocator core and improves the candidate from
+69.39%; the earlier first-slot special case scored 67.21%.
 
 ## Port-lineage evidence
 
