@@ -26,6 +26,12 @@ the forced-weapon Pistol test admits player 1 only when the configured slice
 has exactly two players. Corrected mode deliberately retains the generalized
 co-op policy.
 
+The Python native-mode path now preserves that final forced-weapon asymmetry as
+well. It had continued to admit a Pistol from any port-side player even under
+`preserve_bugs`, so a third player could consume the forced-drop RNG gate and
+materialize a Weapon drop that native never attempts. Focused two- and
+three-player regressions pin the exact `player_count == 2` boundary.
+
 The remaining six candidate instructions are a control-flow layout residual.
 The calibrated compiler tail-merges the forced-path and general-path
 clear-and-return blocks, while native retains a second copy after the general

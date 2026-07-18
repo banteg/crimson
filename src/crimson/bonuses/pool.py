@@ -82,11 +82,22 @@ def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
     return carried
 
 
+def _native_force_drop_has_pistol(players: Sequence[PlayerState]) -> bool:
+    if not players:
+        return False
+    if players[0].weapon.weapon_id == WeaponId.PISTOL:
+        return True
+    return len(players) == 2 and players[1].weapon.weapon_id == WeaponId.PISTOL
+
+
 def _within_native_radius(a: Vec2, b: Vec2, radius: float) -> bool:
-    return x87_pc24_hypot(
-        x87_pc24_sub(a.x, b.x),
-        x87_pc24_sub(a.y, b.y),
-    ) < radius
+    return (
+        x87_pc24_hypot(
+            x87_pc24_sub(a.x, b.x),
+            x87_pc24_sub(a.y, b.y),
+        )
+        < radius
+    )
 
 
 class BonusPool:
@@ -277,8 +288,12 @@ class BonusPool:
             return None
 
         rng = state.rng
-        # Native special-case: while any player has Pistol, 3/4 chance to force a Weapon drop.
-        if players and any(player.weapon.weapon_id == WeaponId.PISTOL for player in players):
+        force_drop_has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
+        if bool(state.preserve_bugs):
+            force_drop_has_pistol = _native_force_drop_has_pistol(players)
+
+        # Native checks player 0, plus player 1 only for an exact two-player game.
+        if force_drop_has_pistol:
             if (rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_FORCE_WEAPON) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,
@@ -300,9 +315,7 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == WeaponId.PISTOL or (
-                    players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)
-                ):
+                if entry.amount == WeaponId.PISTOL or (players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)):
                     self._clear_entry(entry)
                     return None
 
@@ -322,9 +335,7 @@ class BonusPool:
                     has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
                 if has_pistol:
                     allow_without_magnet = (
-                        rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET)
-                        % 5
-                        == 1
+                        rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET) % 5 == 1
                     )
 
             if not allow_without_magnet:
