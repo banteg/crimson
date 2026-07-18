@@ -168,4 +168,35 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     assert len(result.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the
     # live branch without an immediate `_tick_dead` pass.
-    assert creature.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE - float(f32(float(dt)))
+    assert creature.lifecycle_stage == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(float(dt)))
+
+
+def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
+    dt = f32(0.063)
+    state = GameplayState()
+    state.bonus_spawn_guard = True
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0)
+
+    pool = CreaturePool()
+    creature = pool.entries[0]
+    creature.active = True
+    creature.plague_infected = True
+    creature.collision_timer = 0.01
+    creature.pos = Vec2(100.0, 100.0)
+    creature.hp = 10.0
+    creature.max_hp = 10.0
+    creature.size = 20.0
+    creature.move_speed = 0.0
+    creature.contact_damage = 7.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+
+    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+
+    assert len(result.deaths) == 1
+    assert_float_close(player.health, 93.0)
+    assert creature.hp == 0.0
+    expected_lifecycle = x87_pc24_sub(
+        x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, dt),
+        dt,
+    )
+    assert_float_close(creature.lifecycle_stage, expected_lifecycle)

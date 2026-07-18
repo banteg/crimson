@@ -321,11 +321,9 @@ class _CreatureInteractionCtx(msgspec.Struct):
     dt: float
     rng: CrandLike
     detail_preset: int
-    violence_disabled: int
     world_width: float
     world_height: float
     fx_queue: FxQueue | None
-    fx_queue_rotated: FxQueueRotated | None
     deaths: list[CreatureDeath]
     sfx: list[SfxId]
     skip_creature: bool = False
@@ -362,7 +360,6 @@ class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
         resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
     ) -> None:
         ctx = self.ctx
-        creature = ctx.creature
         ctx.deaths.append(
             ctx.pool.handle_death(
                 int(creature_index),
@@ -377,17 +374,6 @@ class _CreatureInteractionCreatureDamageRuntime(CreatureDamageRuntime):
             ),
         )
         ctx.sfx.extend(resolve_damage_followup())
-        if creature.active:
-            ctx.pool._tick_dead(
-                creature,
-                dt=ctx.dt,
-                world_width=float(ctx.world_width),
-                world_height=float(ctx.world_height),
-                fx_queue_rotated=ctx.fx_queue_rotated,
-                rng=ctx.rng,
-                detail_preset=int(ctx.detail_preset),
-                violence_disabled=int(ctx.violence_disabled),
-            )
 
 
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
@@ -517,11 +503,10 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     # the surrounding contact path targets and damages the selected player.
     perk_player = ctx.players[0] if ctx.state.preserve_bugs and ctx.players else ctx.player
 
-    mr_melee_killed = False
     if perk_active(perk_player, PerkId.MR_MELEE):
         from .damage import creature_apply_damage_with_lethal_followup
 
-        mr_melee_killed = creature_apply_damage_with_lethal_followup(
+        creature_apply_damage_with_lethal_followup(
             creature,
             creature_index=int(ctx.creature_index),
             damage_amount=25.0,
@@ -561,9 +546,6 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
     creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
-    if mr_melee_killed:
-        ctx.skip_creature = True
-
 
 def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx) -> None:
     # Native nests this inside the contact gates: size > 16, distance < 30,
@@ -599,8 +581,6 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
     """
 
     creature = ctx.creature
-    if not creature_lifecycle_is_alive(creature.lifecycle_stage):
-        return
     if ctx.contact_distance >= 30.0:
         return
     if float(creature.size) > 30.0:
@@ -1416,11 +1396,9 @@ class CreaturePool:
                 dt=dt,
                 rng=rng,
                 detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
                 world_width=float(world_width),
                 world_height=float(world_height),
                 fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
                 deaths=deaths,
                 sfx=sfx,
                 contact_distance=float(target_dist),
@@ -1503,7 +1481,7 @@ class CreaturePool:
         if keep_corpse:
             # Native `creature_handle_death` always decrements lifecycle_stage by
             # frame_dt for corpse-keeping deaths, independent of current value.
-            creature.lifecycle_stage = float(creature.lifecycle_stage) - float(dt)
+            creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
         else:
             creature.active = False
 

@@ -2483,8 +2483,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
-                creature.size > 16.0 and
+            if (creature.size > 16.0 and
                 target_dist < 30.0 and
                 creature.attack_cooldown <= 0.0 and
                 contact_player.health > 0.0 and
@@ -2507,9 +2506,6 @@ pub const CreaturePool = struct {
                         dt_f32,
                         world_size,
                     );
-                    if (!(creature.hp > 0.0) and creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
-                    }
                 }
                 if (contact_player.shield_timer <= 0.0) {
                     if (perkActive(contact_perk_player, PerkId.toxic_avenger)) {
@@ -2564,8 +2560,7 @@ pub const CreaturePool = struct {
             {
                 creature.plague_infected = true;
             }
-            if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
-                target_dist < 30.0 and
+            if (target_dist < 30.0 and
                 creature.size <= 30.0)
             {
                 creature.hp = 0.0;
@@ -7090,6 +7085,7 @@ test "mr melee does not prevent player damage when attacker dies" {
             .index = 0,
             .pos = .{ .x = 100.0, .y = 100.0 },
             .health = 100.0,
+            .plaguebearer_active = true,
         },
     };
     players[0].perk_counts.set(PerkId.mr_melee, 1);
@@ -7111,6 +7107,8 @@ test "mr melee does not prevent player damage when attacker dies" {
 
     try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
     try expectFloatClose(90.0, players[0].health);
+    try std.testing.expect(pool.entries[0].plague_infected);
+    try std.testing.expect(pool.entries[0].lifecycle_stage > creature_lifecycle.alive - 1.0);
 }
 
 test "mr melee is inert when perk is not active" {
@@ -8431,6 +8429,49 @@ test "plaguebearer infection kill does not apply immediate dead decay" {
     const dt = 0.063;
     try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
     try expectFloatClose(creature_lifecycle.alive - dt, pool.entries[0].lifecycle_stage);
+}
+
+test "plaguebearer kill finishes contact and small creature tail" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .health = 100.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .flags = 0,
+        .size = 20.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 10.0,
+        .contact_damage = 7.0,
+    });
+    pool.entries[0].plague_infected = true;
+    pool.entries[0].collision_timer = 0.01;
+
+    const dt: f32 = 0.063;
+    try pool.update(&state, players[0..], dt, 1024.0, &bonuses);
+
+    try expectFloatClose(93.0, players[0].health);
+    try std.testing.expectEqual(@as(f32, 0.0), pool.entries[0].hp);
+    const expected_lifecycle = native_math.pc24Sub(
+        native_math.pc24Sub(creature_lifecycle.alive, dt),
+        dt,
+    );
+    try std.testing.expectEqual(
+        @as(u32, @bitCast(expected_lifecycle)),
+        @as(u32, @bitCast(pool.entries[0].lifecycle_stage)),
+    );
 }
 
 test "single-player dead player uses dead-target AI position" {

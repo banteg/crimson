@@ -28,6 +28,14 @@ final body culling.
   creature killed by its periodic self-damage update its multiplayer target
   before corpse decay, and Zig does the same for entries already fading at the
   start of the sweep.
+- Once the live arm is selected, native does not re-check lifecycle after the
+  Plaguebearer timer or Mr Melee damage call. The current creature still
+  completes contact, infection, and the size-30 self-kill tail; Mr Melee also
+  does not receive an immediate corpse-decay step. Both ports now preserve this
+  in-frame fallthrough.
+- The corpse-keeping death helper itself stores `lifecycle_stage - frame_dt`
+  through x87 at `0x0041eb23..0x0041eb2c`. Python now rounds that store at
+  PC=24 before later live-tail decrements, avoiding a one-ULP host-double drift.
 - Spawn-slot owners tick their linked slot only in the ping-pong movement arm,
   after the owner's clamp/movement and inside the global Freeze gate. The Zig
   runtime now preserves that ordering, so Freeze pauses both the countdown and
