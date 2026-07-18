@@ -1181,6 +1181,7 @@ fn applyPlayerProjectileSpawnRules(
         .player => |ref| ref,
         else => return,
     };
+    if (state.preserve_bugs and !owner.usesNativePlayerProjectilePath()) return;
     const inferred_player_index: ?usize = if (player_ref.local_host and player_ref.index == 0)
         if (players.len == 1) @as(?usize, 0) else null
     else if (player_ref.index < players.len)

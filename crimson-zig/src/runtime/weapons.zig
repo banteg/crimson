@@ -439,10 +439,8 @@ fn tryFireWeaponWithForce(
     var shot_cooldown = shot_cooldown_base;
 
     const is_fire_bullets = player.fire_bullets_timer > 0.0;
-    const projectile_spawn_override = !state.bonus_spawn_guard and
-        !is_fire_bullets and
-        projectileSpawnFireBulletsActive(state, player, all_players);
     var projectile_spawn_credit_multiplier: i32 = 1;
+    var uses_primary_projectile_spawn = false;
     var shot_count = computeShotCount(player.weapon.weapon_id);
     // Native increments the accuracy counter only inside projectile_spawn /
     // fx_spawn_secondary_projectile; particle weapons never count toward
@@ -465,6 +463,12 @@ fn tryFireWeaponWithForce(
         owner_ref.OwnerRef.fromPlayer(@intCast(player.index))
     else
         owner_ref.OwnerRef.fromLocalPlayer(0);
+    const uses_player_projectile_path = !state.preserve_bugs or
+        projectile_owner.usesNativePlayerProjectilePath();
+    const projectile_spawn_override = uses_player_projectile_path and
+        !state.bonus_spawn_guard and
+        !is_fire_bullets and
+        projectileSpawnFireBulletsActive(state, player, all_players);
     const projectile_hits_players = state.friendly_fire_enabled;
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
@@ -532,6 +536,7 @@ fn tryFireWeaponWithForce(
 
     switch (recipe.mode) {
         .primary_pellets => |mode| {
+            uses_primary_projectile_spawn = true;
             const type_id = projectileSpawnType(mode.type_id, projectile_spawn_override);
             if (type_id != mode.type_id) projectile_spawn_credit_multiplier = 2;
             const type_id_i32 = @intFromEnum(type_id);
@@ -588,6 +593,7 @@ fn tryFireWeaponWithForce(
             shot_count = 1;
         },
         .multi_plasma_fan => {
+            uses_primary_projectile_spawn = true;
             shot_count = 5;
             const spread_small: f32 = 0.31415927;
             const spread_large: f32 = 0.5235988;
@@ -642,7 +648,10 @@ fn tryFireWeaponWithForce(
     }
 
     const player_idx = player.index;
-    const projectile_spawn_shot_count = shot_count * projectile_spawn_credit_multiplier;
+    const projectile_spawn_shot_count = if (uses_primary_projectile_spawn and !uses_player_projectile_path)
+        0
+    else
+        shot_count * projectile_spawn_credit_multiplier;
     if (player_idx >= 0 and player_idx < state.shots_fired.len) {
         const idx: usize = @intCast(player_idx);
         if (counts_accuracy_shots) {
@@ -875,7 +884,8 @@ fn spawnPerkProjectile(
 ) void {
     var spawn_type_id = type_id;
     var shot_credit: i32 = 0;
-    const player_owned_spawn = owner.playerIndexInBounds(state.shots_fired.len) != null;
+    const player_owned_spawn = owner.playerIndexInBounds(state.shots_fired.len) != null and
+        (!state.preserve_bugs or owner.usesNativePlayerProjectilePath());
     if (!state.bonus_spawn_guard and player_owned_spawn) {
         shot_credit = 1;
         if (spawn_type_id != .fire_bullets and
@@ -2108,16 +2118,21 @@ test "fire bullets on shotgun spawns pellet count projectiles and keeps ammo" {
 test "projectile spawn preserves global fire bullets override and shot credit" {
     const cases = [_]struct {
         preserve_bugs: bool,
+        player_index: usize,
+        friendly_fire_enabled: bool,
         expected_type_id: ProjectileTypeId,
         expected_shots: i32,
     }{
-        .{ .preserve_bugs = true, .expected_type_id = .fire_bullets, .expected_shots = 2 },
-        .{ .preserve_bugs = false, .expected_type_id = .pistol, .expected_shots = 1 },
+        .{ .preserve_bugs = true, .player_index = 0, .friendly_fire_enabled = false, .expected_type_id = .fire_bullets, .expected_shots = 2 },
+        .{ .preserve_bugs = false, .player_index = 0, .friendly_fire_enabled = false, .expected_type_id = .pistol, .expected_shots = 1 },
+        .{ .preserve_bugs = true, .player_index = 3, .friendly_fire_enabled = true, .expected_type_id = .pistol, .expected_shots = 0 },
+        .{ .preserve_bugs = false, .player_index = 3, .friendly_fire_enabled = true, .expected_type_id = .pistol, .expected_shots = 1 },
     };
 
     for (cases) |case| {
         var state = state_mod.GameplayState.init(1);
         state.preserve_bugs = case.preserve_bugs;
+        state.friendly_fire_enabled = case.friendly_fire_enabled;
         var projectiles: projectiles_mod.ProjectilePool = .{};
         var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
         var creatures: creatures_mod.CreaturePool = .{};
@@ -2137,13 +2152,19 @@ test "projectile spawn preserves global fire bullets override and shot credit" {
                 .pos = .{ .x = 300.0, .y = 300.0 },
                 .fire_bullets_timer = 1.0,
             },
+            .{ .index = 2, .pos = .{ .x = 400.0, .y = 400.0 } },
+            .{ .index = 3, .pos = .{ .x = 500.0, .y = 500.0 } },
         };
-        player_runtime.weaponAssignPlayer(&players[0], .pistol);
-        const ammo_before = players[0].weapon.ammo;
+        const firing_idx = case.player_index;
+        players[firing_idx].aim = players[firing_idx].pos.add(.{ .x = 200.0, .y = 0.0 });
+        players[firing_idx].aim_dir = .{ .x = 1.0, .y = 0.0 };
+        players[firing_idx].spread_heat = 0.0;
+        player_runtime.weaponAssignPlayer(&players[firing_idx], .pistol);
+        const ammo_before = players[firing_idx].weapon.ammo;
 
         try stepPlayerForTickWithEffects(
             &state,
-            &players[0],
+            &players[firing_idx],
             players[0..],
             &projectiles,
             &secondary_projectiles,
@@ -2158,12 +2179,12 @@ test "projectile spawn preserves global fire bullets override and shot credit" {
 
         try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@intFromEnum(case.expected_type_id), projectiles.entries[0].type_id);
-        try expectFloatClose(ammo_before - 1.0, players[0].weapon.ammo);
-        try std.testing.expectEqual(case.expected_shots, state.shots_fired[0]);
+        try expectFloatClose(ammo_before - 1.0, players[firing_idx].weapon.ammo);
+        try std.testing.expectEqual(case.expected_shots, state.shots_fired[firing_idx]);
         try std.testing.expectEqual(case.expected_shots, state.shots_fired_total);
         try std.testing.expectEqual(
             @as(i32, 1),
-            state.weapon_shots_fired[0][@intFromEnum(WeaponId.pistol)],
+            state.weapon_shots_fired[firing_idx][@intFromEnum(WeaponId.pistol)],
         );
     }
 }

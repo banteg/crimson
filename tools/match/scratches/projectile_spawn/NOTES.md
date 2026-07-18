@@ -39,11 +39,10 @@ native stack slot.
 
 ## Port parity
 
-The native Fire Bullets override is global rather than owner-scoped: for a
-player-owned non-Fire-Bullets projectile it tests the first two player timer
-slots, changes only the projectile type, and traverses the counter loop twice.
-Python already preserved that behavior. Zig's production weapon, perk, and
-Nuke paths now receive or resolve the full player context and reproduce the
-global check plus double shot credit when `preserve_bugs` is enabled; corrected
-mode remains scoped to the projectile owner. This does not alter the scratch
-candidate or its score.
+The native Fire Bullets override is global rather than owner-scoped: for legacy
+owners `-100` and `-1..-3`, a non-Fire-Bullets projectile tests the first two
+player timer slots, changes only the projectile type, and traverses the counter
+loop twice. Both ports reproduce that exact owner window, global check, and
+double shot credit when `preserve_bugs` is enabled. Corrected mode remains
+owner-scoped and supports every generalized player slot. This does not alter
+the scratch candidate or its score.

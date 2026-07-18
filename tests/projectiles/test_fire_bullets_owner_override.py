@@ -82,6 +82,35 @@ def test_projectile_spawn_fire_bullets_preserve_bugs_keeps_global_gate() -> None
     assert player1_type == int(ProjectileTemplateId.FIRE_BULLETS)
 
 
+def test_projectile_spawn_preserve_bugs_keeps_native_owner_window() -> None:
+    players = [
+        PlayerState(index=0, pos=Vec2(), fire_bullets_timer=1.0),
+        PlayerState(index=1, pos=Vec2()),
+        PlayerState(index=2, pos=Vec2()),
+        PlayerState(index=3, pos=Vec2()),
+    ]
+
+    preserved_state = GameplayState(preserve_bugs=True)
+    preserved_type = _spawn_type(
+        preserved_state,
+        players=players,
+        owner=OwnerRef.from_player(3),
+    )
+    assert preserved_type == int(ProjectileTemplateId.PISTOL)
+    assert preserved_state.shots_fired[3] == 0
+    assert preserved_state.shots_fired_total == 0
+
+    corrected_state = GameplayState(preserve_bugs=False)
+    corrected_type = _spawn_type(
+        corrected_state,
+        players=players,
+        owner=OwnerRef.from_player(3),
+    )
+    assert corrected_type == int(ProjectileTemplateId.PISTOL)
+    assert corrected_state.shots_fired[3] == 1
+    assert corrected_state.shots_fired_total == 1
+
+
 def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner() -> None:
     state = GameplayState(preserve_bugs=False)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)

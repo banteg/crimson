@@ -25,6 +25,11 @@ def travel_budget_for_type_id(type_id: ProjectileTemplateId) -> float:
     return float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
 
 
+def _uses_native_player_projectile_path(owner: OwnerRef) -> bool:
+    legacy_owner = int(owner.to_legacy())
+    return legacy_owner == -100 or -3 <= legacy_owner <= -1
+
+
 def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
     target_index = int(player_index)
     if 0 <= target_index < len(players):
@@ -106,7 +111,10 @@ def projectile_spawn(
     hits_players: bool = False,
 ) -> int:
     # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
-    if (not state.bonus_spawn_guard) and owner.is_player():
+    uses_player_projectile_path = owner.is_player() and (
+        not bool(state.preserve_bugs) or _uses_native_player_projectile_path(owner)
+    )
+    if (not state.bonus_spawn_guard) and uses_player_projectile_path:
         while True:
             player_index = _shots_fired_player_index(
                 state=state,

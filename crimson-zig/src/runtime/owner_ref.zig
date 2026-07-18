@@ -54,6 +54,12 @@ pub const OwnerRef = union(enum) {
         };
     }
 
+    pub fn usesNativePlayerProjectilePath(owner: OwnerRef) bool {
+        const legacy_owner = toLegacy(owner);
+        return legacy_owner == local_player_owner_id or
+            (legacy_owner >= -3 and legacy_owner <= -1);
+    }
+
     pub fn playerIndex(owner: OwnerRef) ?usize {
         return switch (owner) {
             .player => |ref| ref.index,
