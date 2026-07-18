@@ -394,7 +394,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
 | wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
-| wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 138/138 | 94.93% | 74/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |
+| wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 138/138 | 97.10% | 10/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_gauntlet | 0x004369a0 | 614 | 182/182 | 80.22% | 31/182 | 25/0/0 |  | quest-gauntlet-rings-and-edges |
