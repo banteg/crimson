@@ -985,6 +985,34 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     assert player.auto_target == 1
 
 
+def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equal() -> None:
+    pool = CreaturePool()
+    player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, auto_target=0)
+
+    current = pool.entries[0]
+    current.pos = Vec2(f32(100.00000762939453), 100.0)
+    candidate = pool.entries[1]
+    candidate.pos = Vec2(100.0, 100.0)
+
+    current_exact_sq = Vec2.distance_sq(player.pos, current.pos)
+    candidate_exact_sq = Vec2.distance_sq(player.pos, candidate.pos)
+    assert candidate_exact_sq < current_exact_sq
+    assert x87_pc24_hypot(current.pos.x, current.pos.y) == x87_pc24_hypot(
+        candidate.pos.x,
+        candidate.pos.y,
+    )
+
+    pool._update_player_auto_target(
+        players=[player],
+        preserve_bugs=True,
+        player_index=0,
+        creature_index=1,
+        creature=candidate,
+    )
+
+    assert player.auto_target == 0
+
+
 def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> None:
     state = GameplayState()
     pool = CreaturePool()

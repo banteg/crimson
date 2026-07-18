@@ -743,14 +743,18 @@ class CreaturePool:
             return
 
         current = self._entries[int(auto_target)]
-        dist_new = Vec2.distance_sq(player.pos, creature.pos)
+        new_dx = x87_pc24_sub(player.pos.x, creature.pos.x)
+        new_dy = x87_pc24_sub(player.pos.y, creature.pos.y)
+        dist_new = x87_pc24_hypot(new_dx, new_dy)
         current_origin = player.pos
         if preserve_bugs and int(player_index) != 0 and players:
             # Native compares player 2 auto-target replacement against player 1's
             # coordinates here, which can block closer replacements for player 2.
             current_origin = players[0].pos
-        dist_current = Vec2.distance_sq(current_origin, current.pos)
-        if float(dist_new) < float(dist_current):
+        current_dx = x87_pc24_sub(current_origin.x, current.pos.x)
+        current_dy = x87_pc24_sub(current_origin.y, current.pos.y)
+        dist_current = x87_pc24_hypot(current_dx, current_dy)
+        if dist_new < dist_current:
             player.auto_target = int(creature_index)
 
     def spawn_init(

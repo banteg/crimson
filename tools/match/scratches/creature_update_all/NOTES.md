@@ -26,6 +26,9 @@ final body culling.
   `0x0042641b..0x00426499`. Both ports now preserve the resulting strict tie:
   two mathematically distinct distances can round equal, in which case the
   current player remains selected.
+- The adjacent auto-target replacement at `0x004264b0..0x00426532` uses the
+  same rounded-distance staging. Python now preserves its strict tie as well,
+  rather than replacing a slot based on host-double squared distances.
 - This reevaluation completes before infection handling and the Evil Eyes
   comparison. Zig now preserves that ordering as well, so an Evil Eyes target
   still switches to a nearer live player before its remaining update is frozen.
