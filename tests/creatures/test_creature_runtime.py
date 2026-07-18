@@ -2218,6 +2218,37 @@ def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stag
     assert creature.target_player == 1
 
 
+def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
+    state.bonus_spawn_guard = True
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0)
+    pool = CreaturePool()
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 10.0
+    creature.max_hp = 10.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
+    creature.link_index = 1
+    creature.target_player = 0
+    creature.pos = Vec2(100.0, 100.0)
+    creature.move_speed = 0.0
+    creature.size = 44.0
+    creature.contact_damage = 7.0
+
+    dead_link = pool.entries[1]
+    dead_link.active = False
+    dead_link.hp = 0.0
+
+    pool.update(0.1, options=make_creature_update_options(state=state, players=[player]))
+
+    assert creature.ai_mode == CreatureAiMode.ORBIT_PLAYER
+    assert_float_close(player.health, 93.0)
+    assert_float_close(creature.attack_cooldown, 1.0)
+    assert creature.lifecycle_stage > CREATURE_LIFECYCLE_ALIVE - 1.0
+
+
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))

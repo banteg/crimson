@@ -1189,7 +1189,7 @@ class CreaturePool:
                 # rand, hit flash, and the lethal death-SFX roll.
                 from .damage import creature_apply_damage_with_lethal_followup
 
-                killed = creature_apply_damage_with_lethal_followup(
+                creature_apply_damage_with_lethal_followup(
                     creature,
                     creature_index=int(idx),
                     damage_amount=float(ai.self_damage),
@@ -1204,19 +1204,6 @@ class CreaturePool:
                     detail_preset=int(detail_preset),
                     creature_damage_runtime=creature_damage_runtime,
                 )
-                if killed:
-                    if creature.active:
-                        self._tick_dead(
-                            creature,
-                            dt=dt,
-                            world_width=world_width,
-                            world_height=world_height,
-                            fx_queue_rotated=fx_queue_rotated,
-                            rng=rng,
-                            detail_preset=int(detail_preset),
-                            violence_disabled=int(violence_disabled),
-                        )
-                    continue
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
                 creature.target_heading = heading_add_pi_f32(float(creature.target_heading))

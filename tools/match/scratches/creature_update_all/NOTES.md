@@ -33,6 +33,10 @@ final body culling.
   completes contact, infection, and the size-30 self-kill tail; Mr Melee also
   does not receive an immediate corpse-decay step. Both ports now preserve this
   in-frame fallthrough.
+- The same applies to the 1,000-point dead-link cleanup in tethered and guard
+  AI modes: `creature_apply_damage` returns to the middle of the live arm, and
+  movement plus the interaction tail still run. Both ports now avoid an
+  invented immediate corpse step and loop `continue` there.
 - The corpse-keeping death helper itself stores `lifecycle_stage - frame_dt`
   through x87 at `0x0041eb23..0x0041eb2c`. Python now rounds that store at
   PC=24 before later live-tail decrements, avoiding a one-ULP host-double drift.

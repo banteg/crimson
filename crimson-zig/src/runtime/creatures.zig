@@ -2240,12 +2240,6 @@ pub const CreaturePool = struct {
                     dt_f32,
                     world_size,
                 );
-                if (!(creature.hp > 0.0)) {
-                    if (creature.active) {
-                        tickDead(creature, dt_f32, &self.kill_count, state, effect_pool, terrain_fx);
-                    }
-                    continue;
-                }
             }
             if ((state.bonuses.energizer > 0.0 and creature.max_hp < 500.0) or creature.plague_infected) {
                 creature.target_heading = narrowF32(creature.target_heading + native_pi);
@@ -6853,6 +6847,44 @@ test "dead creatures still reevaluate target player" {
         try std.testing.expect(!creature_lifecycle.isAlive(pool.entries[0].lifecycle_stage));
         try std.testing.expectEqual(@as(i32, 1), pool.entries[0].target_player);
     }
+}
+
+test "dead link cleanup finishes current live interaction tail" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{.{
+        .index = 0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .health = 100.0,
+    }};
+
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .ai_mode = spawn_mod.CreatureAiMode.follow_link_tethered,
+        .size = 44.0,
+        .move_speed = 0.0,
+        .health = 10.0,
+        .max_health = 10.0,
+        .reward_value = 60.0,
+        .contact_damage = 7.0,
+    });
+    pool.entries[0].link_index = 1;
+    pool.entries[0].target_player = 0;
+    pool.entries[1].active = false;
+    pool.entries[1].hp = 0.0;
+
+    try pool.update(&state, players[0..], 0.1, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(spawn_mod.CreatureAiMode.orbit_player, pool.entries[0].ai_mode);
+    try expectFloatClose(93.0, players[0].health);
+    try expectFloatClose(1.0, pool.entries[0].attack_cooldown);
+    try std.testing.expect(pool.entries[0].lifecycle_stage > creature_lifecycle.alive - 1.0);
 }
 
 test "toxic avenger skips strong self-damage flag when shielded" {
