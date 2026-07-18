@@ -984,10 +984,11 @@ fn postHitIonRifleShockChain(
     state.shock_chain_links_left = links_left - 1;
 
     const origin_pos = proj.pos;
-    const best_idx = creatureFindNearestShockChainTarget(
+    const best_idx = creatureFindNearestActive(
         creatures,
         origin_pos,
         hit_idx,
+        100.0,
         state.preserve_bugs,
     ) orelse return;
 
@@ -1013,10 +1014,11 @@ fn postHitIonRifleShockChain(
     state.shock_chain_projectile_id = @intCast(spawned_idx);
 }
 
-fn creatureFindNearestShockChainTarget(
+pub fn creatureFindNearestActive(
     creatures: *const creatures_mod.CreaturePool,
     origin: state_mod.Vec2,
     exclude_id: usize,
+    min_dist: f32,
     preserve_bugs: bool,
 ) ?usize {
     var best_idx: ?usize = if (preserve_bugs) 0 else null;
@@ -1026,42 +1028,13 @@ fn creatureFindNearestShockChainTarget(
         const dx = native_math.pc24Sub(origin.x, creature.pos.x);
         const dy = native_math.pc24Sub(origin.y, creature.pos.y);
         const distance = native_math.pc24Hypot(dx, dy);
-        if (distance <= 100.0) continue;
+        if (distance <= min_dist) continue;
         if (distance < best_distance) {
             best_distance = distance;
             best_idx = idx;
         }
     }
     return best_idx;
-}
-
-test "shock-chain retarget compares stored pc24 distances" {
-    var creatures: creatures_mod.CreaturePool = .{};
-    creatures.entries[0] = .{
-        .active = true,
-        .pos = .{ .x = -1727.156494140625, .y = -1351.4605712890625 },
-    };
-    creatures.entries[1] = .{
-        .active = true,
-        .pos = .{ .x = 1722.1292724609375, .y = -1357.8604736328125 },
-    };
-
-    try std.testing.expectEqual(
-        @as(?usize, 0),
-        creatureFindNearestShockChainTarget(&creatures, .{}, 2, false),
-    );
-}
-
-test "corrected shock-chain retarget has no fallback target" {
-    var creatures: creatures_mod.CreaturePool = .{};
-    try std.testing.expectEqual(
-        @as(?usize, null),
-        creatureFindNearestShockChainTarget(&creatures, .{}, 1, false),
-    );
-    try std.testing.expectEqual(
-        @as(?usize, 0),
-        creatureFindNearestShockChainTarget(&creatures, .{}, 1, true),
-    );
 }
 
 fn consumeIonHitEffectsRng(

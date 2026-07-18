@@ -684,6 +684,35 @@ test "projectile bloody mess source follows bug mode" {
     try std.testing.expectEqual(decal_counts[0] + 6, decal_counts[1]);
 }
 
+test "shock-chain retarget compares stored pc24 distances" {
+    var creatures: cz.creatures.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = -1727.156494140625, .y = -1351.4605712890625 },
+    };
+    creatures.entries[1] = .{
+        .active = true,
+        .pos = .{ .x = 1722.1292724609375, .y = -1357.8604736328125 },
+    };
+
+    try std.testing.expectEqual(
+        @as(?usize, 0),
+        cz.projectiles.creatureFindNearestActive(&creatures, .{}, 2, 100.0, false),
+    );
+}
+
+test "corrected shock-chain retarget has no fallback target" {
+    var creatures: cz.creatures.CreaturePool = .{};
+    try std.testing.expectEqual(
+        @as(?usize, null),
+        cz.projectiles.creatureFindNearestActive(&creatures, .{}, 1, 100.0, false),
+    );
+    try std.testing.expectEqual(
+        @as(?usize, 0),
+        cz.projectiles.creatureFindNearestActive(&creatures, .{}, 1, 100.0, true),
+    );
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};
