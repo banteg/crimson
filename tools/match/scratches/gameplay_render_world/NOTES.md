@@ -30,3 +30,6 @@ entitlement guard in the deterministic end-of-step path. Bug-compatible mode
 retains the two-slot scope, while corrected mode extends it to generalized
 co-op players. Zig's adjacent Blade Gun and Shrinkifier revocations now also
 use the state-aware assignment path, preserving native weapon-usage accounting.
+The guard precedes `bonus_render`'s Telekinetic pickup and the later ordinary
+`bonus_update`, so a newly collected locked weapon survives until the next
+frame; both deterministic pipelines retain that ordering directly.

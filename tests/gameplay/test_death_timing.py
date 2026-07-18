@@ -5,6 +5,7 @@ from typing import cast
 import pytest
 
 import crimson.sim.world_state as world_state_mod
+from crimson.bonuses import BonusId
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
@@ -17,9 +18,61 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
+
+
+def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
+    world_size = 1024.0
+    world = WorldState.build(
+        world_size=world_size,
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    weapon_assign_player(player, WeaponId.PISTOL, state=world.state)
+    world.players.append(player)
+    entry = world.state.bonus_pool.spawn_at(
+        pos=player.pos,
+        bonus_id=BonusId.WEAPON,
+        duration_override=int(WeaponId.SPLITTER_GUN),
+        state=world.state,
+        emit_burst=False,
+    )
+    assert entry is not None
+
+    first = world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert len(first.pickups) == 1
+    assert player.weapon.weapon_id == WeaponId.SPLITTER_GUN
+
+    world.step(
+        0.016,
+        inputs=None,
+        world_size=world_size,
+        damage_scale_by_type={},
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+    )
+
+    assert player.weapon.weapon_id == WeaponId.PISTOL
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:

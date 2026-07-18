@@ -435,6 +435,7 @@ class WorldState(msgspec.Struct):
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
+        gameplay_enforce_weapon_guards(self.state, self.players)
         pickups = bonus_update(
             self.state,
             self.players,
@@ -452,7 +453,6 @@ class WorldState(msgspec.Struct):
                 pickups=pickups,
                 detail_preset=int(detail_preset),
             )
-        gameplay_enforce_weapon_guards(self.state, self.players)
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()

@@ -604,6 +604,7 @@ pub fn stepTick(
     }
     context.state.time_scale_active = context.state.bonuses.reflex_boost > 0.0;
     bonus_runtime.updatePrePickupTimers(&context.state, dt_after_player);
+    survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
     try bonus_runtime.bonusUpdate(
         &context.bonuses,
         &context.state,
@@ -645,7 +646,6 @@ pub fn stepTick(
         context.world_size,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
-    survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
     if (context.game_mode == .typo) {
         typo_runtime.postStep(&context.state);
     } else if (context.game_mode == .tutorial) {
@@ -1170,4 +1170,45 @@ test "step tick applies freeze corpse effects when freeze is not last pickup" {
         }
     }
     try std.testing.expect(freeze_fx_count > 0);
+}
+
+test "weapon guard runs before same-frame locked splitter pickup" {
+    const header = testHeader();
+    var context = try session_mod.DeterministicSession.initFromReplayHeader(header, .{});
+    context.rebindQuestSpawnEntries();
+
+    const players = context.players();
+    player_runtime.weaponAssignPlayer(&players[0], .pistol);
+    context.state.status_quest_unlock_index_full = 0;
+    context.bonuses.entries[0] = .{
+        .bonus_id = .weapon,
+        .picked = false,
+        .time_left = 5.0,
+        .time_max = 5.0,
+        .pos = players[0].pos,
+        .amount = @intFromEnum(game_ids.WeaponId.splitter_gun),
+    };
+
+    const pickup_tick = try stepTick(
+        &context,
+        0,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(@as(usize, 1), pickup_tick.bonus_pickups.len);
+    try std.testing.expectEqual(game_ids.WeaponId.splitter_gun, players[0].weapon.weapon_id);
+
+    _ = try stepTick(
+        &context,
+        1,
+        &[_]player_runtime.GameInput{.{}},
+        &.{},
+        context.dt_nominal,
+        .{},
+    );
+
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, players[0].weapon.weapon_id);
 }
