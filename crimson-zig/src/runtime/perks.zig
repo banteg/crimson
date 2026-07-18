@@ -572,19 +572,19 @@ pub fn updatePerkEffects(
             if (player.shield_timer <= 0.0) {
                 player.shield_timer = 0.0;
             } else {
-                player.shield_timer -= dt;
+                player.shield_timer = native_math.pc24Sub(player.shield_timer, dt);
             }
 
             if (player.fire_bullets_timer <= 0.0) {
                 player.fire_bullets_timer = 0.0;
             } else {
-                player.fire_bullets_timer -= dt;
+                player.fire_bullets_timer = native_math.pc24Sub(player.fire_bullets_timer, dt);
             }
 
             if (player.speed_bonus_timer <= 0.0) {
                 player.speed_bonus_timer = 0.0;
             } else {
-                player.speed_bonus_timer -= dt;
+                player.speed_bonus_timer = native_math.pc24Sub(player.speed_bonus_timer, dt);
             }
         }
     }
@@ -619,7 +619,7 @@ pub fn updatePerkEffects(
         }
     }
 
-    state.lean_mean_exp_timer -= dt;
+    state.lean_mean_exp_timer = native_math.pc24Sub(state.lean_mean_exp_timer, dt);
     if (state.lean_mean_exp_timer < 0.0) {
         state.lean_mean_exp_timer = 0.25;
         const perk_count = perkCountGet(&players[0], PerkId.lean_mean_exp_machine);
@@ -1759,6 +1759,35 @@ test "lean mean exp machine tick awards player zero only in multiplayer" {
     updatePerkEffects(&state, players[0..], 0.1);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
     try std.testing.expectEqual(@as(i32, 0), players[1].experience);
+}
+
+test "perk effect timers keep native 36hz cadence" {
+    var state = state_mod.GameplayState.init(1);
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{ .x = 10.0, .y = 20.0 },
+            .shield_timer = 0.25,
+            .fire_bullets_timer = 0.25,
+            .speed_bonus_timer = 0.25,
+        },
+    };
+    players[0].perk_counts.set(PerkId.lean_mean_exp_machine, 1);
+
+    for (0..9) |_| {
+        updatePerkEffects(&state, players[0..], 1.0 / 36.0);
+    }
+
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), state.lean_mean_exp_timer);
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), players[0].shield_timer);
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), players[0].fire_bullets_timer);
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), players[0].speed_bonus_timer);
+    try std.testing.expectEqual(@as(i32, 0), players[0].experience);
+
+    updatePerkEffects(&state, players[0..], 1.0 / 36.0);
+
+    try std.testing.expectEqual(@as(f32, 0.25), state.lean_mean_exp_timer);
+    try std.testing.expectEqual(@as(i32, 10), players[0].experience);
 }
 
 test "lifeline 50-50 replay perk effect deactivates every other eligible creature slot" {

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...math_parity import f32, x87_pc24_sub
 from ..helpers import perk_count_get
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
@@ -7,9 +8,12 @@ from ..runtime.hook_types import PerkHooks
 
 
 def update_lean_mean_exp_machine(ctx: PerksUpdateEffectsCtx) -> None:
-    ctx.state.lean_mean_exp_timer -= ctx.dt
+    ctx.state.lean_mean_exp_timer = x87_pc24_sub(
+        f32(float(ctx.state.lean_mean_exp_timer)),
+        f32(float(ctx.dt)),
+    )
     if ctx.state.lean_mean_exp_timer < 0.0:
-        ctx.state.lean_mean_exp_timer = 0.25
+        ctx.state.lean_mean_exp_timer = f32(0.25)
         if not ctx.players:
             return
 

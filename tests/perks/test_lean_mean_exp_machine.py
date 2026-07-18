@@ -36,3 +36,29 @@ def test_lean_mean_exp_machine_tick_awards_only_player0_in_multiplayer() -> None
 
     assert player0.experience == 20
     assert player1.experience == 0
+
+
+def test_perk_effect_timers_keep_native_36hz_cadence() -> None:
+    state = GameplayState()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(10.0, 20.0),
+        shield_timer=0.25,
+        fire_bullets_timer=0.25,
+        speed_bonus_timer=0.25,
+    )
+    player.perk_counts[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 1
+
+    for _ in range(9):
+        perks_update_effects(state, [player], 1.0 / 36.0)
+
+    assert state.lean_mean_exp_timer == 1.1175870895385742e-08
+    assert player.shield_timer == 1.1175870895385742e-08
+    assert player.fire_bullets_timer == 1.1175870895385742e-08
+    assert player.speed_bonus_timer == 1.1175870895385742e-08
+    assert player.experience == 0
+
+    perks_update_effects(state, [player], 1.0 / 36.0)
+
+    assert state.lean_mean_exp_timer == 0.25
+    assert player.experience == 10

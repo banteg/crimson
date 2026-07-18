@@ -38,3 +38,11 @@ per-player loop, and places the false-path reload in the exact native cold
 block. Encoding the optimized countdown directly was semantically equivalent
 but produced the wrong block order; restoring the plausible pre-optimization
 source shape resolves the complete function without artificial control flow.
+
+The Lean Mean timer store at `0x00406bc6` and the shield, Fire Bullets, and
+speed-bonus stores at `0x00406c95`, `0x00406cc2`, and `0x00406cef` preserve
+PC=24 subtraction results. Both ports now state those boundaries explicitly.
+Python previously retained host-double remainders: at 36 Hz it awarded the
+quarter-second Lean Mean XP tick on frame 9 and expired all three combat
+bonuses, while native retains `1.1175871e-8` through that frame and crosses the
+boundary on frame 10.
