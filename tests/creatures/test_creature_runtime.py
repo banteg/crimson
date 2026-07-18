@@ -888,7 +888,8 @@ def test_creature_retarget_keeps_current_player_when_native_distances_round_equa
         players[1].pos.x,
         players[1].pos.y,
     )
-    assert pool._resolve_target_player_index(creature, players) == 0
+    resolution = pool._resolve_target_player(creature, players)
+    assert resolution.target_player == 0
     assert creature.target_player == 0
 
 
@@ -1176,6 +1177,79 @@ def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_b
     )
 
     assert player1.auto_target == 0
+
+
+def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_distance() -> None:
+    state = GameplayState(preserve_bugs=True)
+    pool = CreaturePool()
+    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, auto_target=0)
+    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0)
+
+    current = pool.entries[0]
+    current.active = True
+    current.hp = 50.0
+    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.move_speed = 0.0
+    current.size = 45.0
+    current.target_player = 0
+    current.pos = Vec2(50.0, 0.0)
+
+    candidate = pool.entries[1]
+    candidate.active = True
+    candidate.hp = 50.0
+    candidate.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    candidate.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    candidate.move_speed = 0.0
+    candidate.size = 45.0
+    candidate.target_player = 0
+    candidate.pos = Vec2(10.0, 0.0)
+
+    pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(
+            state=state,
+            players=[player0, player1],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    # The candidate is 10 units from player 1, but native reuses its 90-unit
+    # distance from player 2. It therefore does not replace the 50-unit slot.
+    assert player0.auto_target == 0
+
+
+def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect() -> None:
+    state = GameplayState(preserve_bugs=True)
+    pool = CreaturePool()
+    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=0.0, auto_target=0)
+    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0, auto_target=0)
+
+    stale_current = pool.entries[0]
+    stale_current.pos = Vec2(200.0, 0.0)
+
+    candidate = pool.entries[1]
+    candidate.active = True
+    candidate.hp = 50.0
+    candidate.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    candidate.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    candidate.move_speed = 0.0
+    candidate.size = 45.0
+    candidate.target_player = 0
+    candidate.pos = Vec2(10.0, 0.0)
+
+    pool.update(
+        1.0 / 60.0,
+        options=make_creature_update_options(
+            state=state,
+            players=[player0, player1],
+            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        ),
+    )
+
+    assert player0.auto_target == 1
+    assert player1.auto_target == 0
+    assert candidate.target_player == 1
 
 
 def test_small_creature_dies_on_contact() -> None:

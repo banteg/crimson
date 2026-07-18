@@ -29,6 +29,16 @@ final body culling.
 - The adjacent auto-target replacement at `0x004264b0..0x00426532` uses the
   same rounded-distance staging. Python now preserves its strict tie as well,
   rather than replacing a slot based on host-double squared distances.
+- In two-player mode the new-candidate side of that comparison is the
+  `alternate_distance` local computed for `1 - current_player`, even when the
+  alternate was farther and the creature did not retarget. The old-target side
+  always starts from player zero, and the indexed write occurs before the dead
+  current target is redirected at `0x00426544..0x0042655b`. Python bug mode now
+  preserves all three pieces of staging on the assigned path; corrected mode
+  measures both sides from the final live target. When the opposite player is
+  dead, native leaves `alternate_distance` unassigned and consumes stack
+  residue. Python explicitly uses a deterministic selected-player fallback for
+  that unknowable first-use case rather than inventing native stack contents.
 - This reevaluation completes before infection handling and the Evil Eyes
   comparison. Zig now preserves that ordering as well, so an Evil Eyes target
   still switches to a nearer live player before its remaining update is frozen.

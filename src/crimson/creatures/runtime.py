@@ -298,6 +298,12 @@ class CreatureUpdateResult(msgspec.Struct, frozen=True):
     sfx: tuple[SfxId, ...] = ()
 
 
+class _TargetPlayerResolution(msgspec.Struct, frozen=True):
+    target_player: int
+    auto_target_player: int
+    native_auto_target_distance: float | None = None
+
+
 class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     state: GameplayState
     players: list[PlayerState]
@@ -672,11 +678,24 @@ class CreaturePool:
     def _free_slot_count(self) -> int:
         return sum(1 for entry in self._entries if not entry.active)
 
-    def _resolve_target_player_index(self, creature: CreatureState, players: list[PlayerState]) -> int:
+    def _resolve_target_player(self, creature: CreatureState, players: list[PlayerState]) -> _TargetPlayerResolution:
         player_count = len(players)
-        if player_count <= 1:
+        if player_count == 0:
             creature.target_player = 0
-            return 0
+            return _TargetPlayerResolution(target_player=0, auto_target_player=0)
+
+        if player_count == 1:
+            creature.target_player = 0
+            native_auto_target_distance = None
+            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+                dx = x87_pc24_sub(players[0].pos.x, creature.pos.x)
+                dy = x87_pc24_sub(players[0].pos.y, creature.pos.y)
+                native_auto_target_distance = x87_pc24_hypot(dx, dy)
+            return _TargetPlayerResolution(
+                target_player=0,
+                auto_target_player=0,
+                native_auto_target_distance=native_auto_target_distance,
+            )
 
         target_player = int(creature.target_player)
         if not (0 <= target_player < player_count):
@@ -685,6 +704,7 @@ class CreaturePool:
         # Native 2-player behavior: periodically switch to P2 if alive and closer,
         # and always flip when the current target dies.
         if player_count == 2:
+            native_auto_target_distance = None
             if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                 other = 1 - target_player
                 if float(players[other].health) > 0.0:
@@ -694,12 +714,18 @@ class CreaturePool:
                     other_dx = x87_pc24_sub(players[other].pos.x, creature.pos.x)
                     other_dy = x87_pc24_sub(players[other].pos.y, creature.pos.y)
                     other_distance = x87_pc24_hypot(other_dx, other_dy)
+                    native_auto_target_distance = other_distance
                     if other_distance < cur_distance:
                         target_player = other
+            auto_target_player = target_player
             if float(players[target_player].health) <= 0.0:
                 target_player = 1 - target_player
             creature.target_player = int(target_player)
-            return int(target_player)
+            return _TargetPlayerResolution(
+                target_player=int(target_player),
+                auto_target_player=int(auto_target_player),
+                native_auto_target_distance=native_auto_target_distance,
+            )
 
         # 3/4-player extension: keep deterministic nearest-alive targeting with the
         # same periodic refresh/dead-target refresh policy as native 2-player mode.
@@ -718,7 +744,10 @@ class CreaturePool:
                 target_player = nearest_idx
 
         creature.target_player = int(target_player)
-        return int(target_player)
+        return _TargetPlayerResolution(
+            target_player=int(target_player),
+            auto_target_player=int(target_player),
+        )
 
     def _update_player_auto_target(
         self,
@@ -728,6 +757,7 @@ class CreaturePool:
         player_index: int,
         creature_index: int,
         creature: CreatureState,
+        native_candidate_distance: float | None = None,
     ) -> None:
         if not (0 <= int(player_index) < len(players)):
             return
@@ -743,13 +773,22 @@ class CreaturePool:
             return
 
         current = self._entries[int(auto_target)]
-        new_dx = x87_pc24_sub(player.pos.x, creature.pos.x)
-        new_dy = x87_pc24_sub(player.pos.y, creature.pos.y)
-        dist_new = x87_pc24_hypot(new_dx, new_dy)
+        if preserve_bugs and native_candidate_distance is not None:
+            # In native two-player mode this is the distance from the creature
+            # to the player opposite its target at the start of reevaluation.
+            dist_new = float(native_candidate_distance)
+        else:
+            # Native leaves the alternate-distance stack local untouched when
+            # the opposite player is dead. Its first value is unknowable, so
+            # bug mode uses this deterministic selected-player fallback rather
+            # than fabricating stack residue.
+            new_dx = x87_pc24_sub(player.pos.x, creature.pos.x)
+            new_dy = x87_pc24_sub(player.pos.y, creature.pos.y)
+            dist_new = x87_pc24_hypot(new_dx, new_dy)
         current_origin = player.pos
-        if preserve_bugs and int(player_index) != 0 and players:
-            # Native compares player 2 auto-target replacement against player 1's
-            # coordinates here, which can block closer replacements for player 2.
+        if preserve_bugs and players:
+            # Native always measures the previous auto-target from player 1's
+            # coordinates, even when it writes player 2's auto-target slot.
             current_origin = players[0].pos
         current_dx = x87_pc24_sub(current_origin.x, current.pos.x)
         current_dy = x87_pc24_sub(current_origin.y, current.pos.y)
@@ -1059,14 +1098,19 @@ class CreaturePool:
                 # fading corpses still switch their target player and feed the
                 # auto-target comparison.
                 if players:
-                    dead_target_player = self._resolve_target_player_index(creature, players)
+                    target_resolution = self._resolve_target_player(creature, players)
                     if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                         self._update_player_auto_target(
                             players=players,
                             preserve_bugs=bool(state.preserve_bugs),
-                            player_index=int(dead_target_player),
+                            player_index=int(
+                                target_resolution.auto_target_player
+                                if state.preserve_bugs
+                                else target_resolution.target_player,
+                            ),
                             creature_index=int(idx),
                             creature=creature,
+                            native_candidate_distance=target_resolution.native_auto_target_distance,
                         )
                 if dt > 0.0:
                     self._tick_dead(
@@ -1094,16 +1138,22 @@ class CreaturePool:
                 and float(players[0].health) <= 0.0
                 and int(creature.target_player) == 1
             )
-            target_player = 1 if uses_dormant_target else self._resolve_target_player_index(creature, players)
+            target_resolution = None if uses_dormant_target else self._resolve_target_player(creature, players)
+            target_player = 1 if target_resolution is None else int(target_resolution.target_player)
             # Native only updates player auto-target feedback inside the
             # `creature_update_tick % 0x46 != 0` retarget cadence block.
-            if not uses_dormant_target and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            if target_resolution is not None and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
                 self._update_player_auto_target(
                     players=players,
                     preserve_bugs=bool(state.preserve_bugs),
-                    player_index=int(target_player),
+                    player_index=int(
+                        target_resolution.auto_target_player
+                        if state.preserve_bugs
+                        else target_resolution.target_player,
+                    ),
                     creature_index=int(idx),
                     creature=creature,
+                    native_candidate_distance=target_resolution.native_auto_target_distance,
                 )
             if uses_dormant_target:
                 assert single_player_dormant_target is not None

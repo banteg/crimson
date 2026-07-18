@@ -429,29 +429,42 @@ Rewrite behavior:
 - With `--preserve-bugs`: keep native exact-zero behavior where Highlander kills
   fall through the pain branch.
 
-## 19) Co-op auto-target replacement compares against player 1 position
+## 19) Co-op auto-target replacement reuses mismatched player distances
 
 Native behavior:
 
 - In `creature_update_all` (`0x00426220`), once a creature picks its
   `target_player`, the auto-target replacement check compares the new creature’s
   distance against the current auto-target distance.
-- For player 2, the current auto-target distance is measured from
-  `player_state_table.pos_x/pos_y` (player 1) instead of player 2’s own
-  position, then written back to `player2.auto_target`.
+- In two-player mode, the new-creature side reuses the distance to the player
+  opposite the creature's target at the start of reevaluation. If that player
+  was farther and no retarget occurred, the comparison still uses that farther
+  distance rather than the selected player's distance.
+- The current auto-target side is always measured from
+  `player_state_table.pos_x/pos_y` (player 1), even when the result is written
+  back to `player2.auto_target`.
+- The auto-target write also precedes dead-target redirection, so a dead
+  player's slot can be updated immediately before the creature switches to the
+  other player.
+- If the opposite player is dead, native leaves the candidate-distance stack
+  local untouched and compares whatever residue is present. Its first-use value
+  is not recoverable from game state.
 
 Why it’s likely a bug:
 
-- The compare/write pair is otherwise indexed to the chosen target player.
-- In co-op this can leave player 2 stuck on a worse auto-target simply because
-  the previous target was closer to player 1.
+- The compare combines distances sourced from different players while the
+  write is indexed to the selected target player.
+- In co-op this can leave either player stuck on a worse auto-target, and it can
+  update the dead player's slot during redirection.
 
 Rewrite behavior:
 
 - Default: compare both the new creature and the current auto-target against the
-  targeted player’s own position.
-- With `--preserve-bugs`: keep native player-1-sourced distance bias for player
-  2 auto-target replacement.
+  final targeted player’s own position.
+- With `--preserve-bugs`: keep the native opposite-player candidate distance,
+  player-1-sourced current distance, and pre-redirection write order whenever
+  the candidate local has an evidenced value. The undefined first-use residue
+  case falls back deterministically to the selected player's distance.
 
 ## 20) No-target homing lookups silently fall back to creature slot 0
 
