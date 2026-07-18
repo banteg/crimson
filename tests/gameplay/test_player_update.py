@@ -1619,10 +1619,12 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
         _creature(pos=Vec2(100.0, far_y), hp=100.0),
     ]
 
+    state.bonus_spawn_guard = True
     bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player.pos, creatures=creatures, players=[player])
     assert state.shock_chain_links_left == 0x20
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
+    assert not state.bonus_spawn_guard
 
     pool.step(
         PrimaryStepCtx(

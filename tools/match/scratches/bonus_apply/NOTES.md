@@ -27,15 +27,22 @@ Recovered source shape:
   state. Shock Chain keeps natural `bonus_pos` and `target_pos` pointers, and
   both branches preserve native argument evaluation order with direct, inline
   angle expressions.
+- Shock Chain sets `bonus_spawn_guard` at `0x00409da4` and unconditionally
+  clears it at `0x00409e34`; Fireblast does the same at `0x00409e53` and
+  `0x00409eb3`. These are literal resets rather than restoration of an incoming
+  value.
 - Nuke emits its randomized projectile set, uses inclusive 256-unit axis
-  gates, applies radial damage, and passes a two-float zero impulse.
+  gates, applies radial damage, and passes a two-float zero impulse. Its native
+  guard stores are likewise `1` at `0x0040a0f6` and `0` at `0x0040a1df`.
 - Every pickup except Nuke emits twelve trailing effects. Their native rotation
   scale is `0.049087387f` (2 pi / 128), not `0.02f`.
 
 Port parity:
 
-- Python and Zig already clear the Reflex Boost reload timer and already use
-  the recovered `0.049087387f` burst rotation scale, so no port edit is needed.
+- Python and Zig clear the Reflex Boost reload timer and use the recovered
+  `0.049087387f` burst rotation scale. Both ports also preserve the native
+  literal guard resets for Shock Chain, Fireblast, and Nuke; parity tests enter
+  each path with the guard already set so restoring the incoming value fails.
 
 Discarded variants:
 

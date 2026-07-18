@@ -13,6 +13,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def test_nuke_damage_is_limited_to_radius() -> None:
     state = GameplayState()
+    state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
 
     pool = CreaturePool()
@@ -40,6 +41,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
 
     assert near.hp <= 0.0
     assert far.hp == 10.0
+    assert not state.bonus_spawn_guard
 
 
 def test_nuke_damage_rounds_each_native_radial_distance_operation() -> None:

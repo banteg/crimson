@@ -85,7 +85,6 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
     creatures = ctx.creatures
     if creatures:
         creature_damage_runtime = ctx.creature_damage_runtime
-        prev_guard = bool(ctx.state.bonus_spawn_guard)
         ctx.state.bonus_spawn_guard = True
         for idx, creature in enumerate(creatures):
             # Native applies explosion damage to any active creature, including
@@ -112,7 +111,7 @@ def apply_nuke(ctx: BonusApplyCtx) -> None:
                     )
                 else:
                     creature.hp = x87_pc24_sub(creature.hp, damage)
-        ctx.state.bonus_spawn_guard = prev_guard
+        ctx.state.bonus_spawn_guard = False
 
     ctx.state.sfx_queue.append(SfxId.EXPLOSION_LARGE)
     ctx.state.sfx_queue.append(SfxId.SHOCKWAVE)

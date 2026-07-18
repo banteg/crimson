@@ -549,9 +549,7 @@ fn applyFireblastBonus(
     origin: state_mod.Vec2,
 ) void {
     const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
-    const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_spawn_guard;
 
     const count: usize = 16;
     const step = std.math.tau / @as(f32, @floatFromInt(count));
@@ -561,6 +559,7 @@ fn applyFireblastBonus(
         const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
+    state.bonus_spawn_guard = false;
 }
 
 fn applyShockChainBonus(
@@ -595,13 +594,12 @@ fn applyShockChainBonus(
     const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
     const meta = projectileTravelBudgetFromRawId(type_id);
 
-    const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_spawn_guard;
 
     state.shock_chain_links_left = 0x20;
     const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     state.shock_chain_projectile_id = @intCast(proj_idx);
+    state.bonus_spawn_guard = false;
 }
 
 fn applyNukeBonus(
@@ -663,9 +661,7 @@ fn applyNukeBonus(
 
     effects.spawnExplosionBurst(state, origin, 1.0, 5);
 
-    const prev_spawn_guard = state.bonus_spawn_guard;
     state.bonus_spawn_guard = true;
-    defer state.bonus_spawn_guard = prev_spawn_guard;
 
     for (creatures.entries, 0..) |creature, idx| {
         if (!creature.active) continue;
@@ -695,6 +691,7 @@ fn applyNukeBonus(
         );
         if (xp > 0) nuke_kill_count += 1;
     }
+    state.bonus_spawn_guard = false;
 }
 
 fn bonusFindAimHoverEntry(
@@ -2077,6 +2074,7 @@ fn runQuestSuppressionCase(
 
 test "pending fireblast spawns sixteen plasma rifle projectiles" {
     var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
@@ -2107,10 +2105,52 @@ test "pending fireblast spawns sixteen plasma rifle projectiles" {
     }
     try std.testing.expectEqual(@as(i32, 16), active_count);
     try std.testing.expectEqual(@as(i32, 0), state.pending_fireblast_count);
+    try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "pending shock chain spawns ion rifle and clears native guard" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+    };
+    var projectiles: projectiles_mod.ProjectilePool = .{};
+    var creatures: creatures_mod.CreaturePool = .{};
+    var bonuses: BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+
+    creatures.entries[0].active = true;
+    creatures.entries[0].pos = .{ .x = 600.0, .y = 512.0 };
+    creatures.entries[0].hp = 100.0;
+    creatures.entries[0].max_hp = 100.0;
+    state.pending_shock_chain_origins[0] = players[0].pos;
+    state.pending_shock_chain_count = 1;
+
+    applyPendingBonusEffects(
+        &state,
+        players[0..],
+        &projectiles,
+        &creatures,
+        &bonuses,
+        &terrain_fx,
+        0.016,
+        1024.0,
+    );
+
+    const projectile_id: usize = @intCast(state.shock_chain_projectile_id);
+    try std.testing.expect(projectiles.entries[projectile_id].active);
+    try std.testing.expectEqual(
+        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
+        projectiles.entries[projectile_id].type_id,
+    );
+    try std.testing.expectEqual(@as(i32, 0x20), state.shock_chain_links_left);
+    try std.testing.expectEqual(@as(i32, 0), state.pending_shock_chain_count);
+    try std.testing.expect(!state.bonus_spawn_guard);
 }
 
 test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
     var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
@@ -2152,6 +2192,7 @@ test "pending nuke spawns pistol and gauss projectiles with native meta ranges" 
     try std.testing.expect(pistol_count >= 4);
     try std.testing.expect(pistol_count <= 7);
     try std.testing.expectEqual(@as(i32, 2), gauss_count);
+    try std.testing.expect(!state.bonus_spawn_guard);
 }
 
 test "pending creature projectile queue materializes hostile shots before projectile step" {

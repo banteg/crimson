@@ -26,9 +26,11 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     state = GameplayState(projectiles=pool)
 
     # Fireblast.
+    state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     bonus_apply(state, player, BonusId.FIREBLAST, origin=player.pos, creatures=[], players=[player])
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_RIFLE): 16})
+    assert not state.bonus_spawn_guard
 
     pool.reset()
 
