@@ -39,6 +39,11 @@ final body culling.
   only the multiply-by-radius and add-linked-position operations at PC=24.
   Python had combined the expression in host double, while Zig rounded the
   trig result before the multiply; both ports now preserve the native staging.
+- The target-player distance at `0x00426f65..0x00426f9c` is computed once with
+  PC=24 `fsub`/`fmul`/`fadd`/`fsqrt`, stored as a float local, and reused by the
+  Radioactive (`100`), ranged (`64`), eat (`20`), and contact (`30`) gates.
+  The ports now compare that stored scalar rather than substituting squared
+  distance checks, which differ at strict float32 radius boundaries.
 - Bounded spawner creatures and expired corpses are the native fallthrough
   arms. Reversing those high-level conditions recovers the large middle and
   tail control-flow blocks without layout-only gotos.

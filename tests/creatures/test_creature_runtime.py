@@ -25,7 +25,7 @@ from crimson.creatures.spawn import (
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32, x87_pc24_add, x87_pc24_sub
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
@@ -589,6 +589,67 @@ def test_contact_cooldown_addition_is_stored_at_native_precision() -> None:
 
     expected = x87_pc24_add(x87_pc24_sub(f32(0.077), dt), f32(1.0))
     assert creature.attack_cooldown == expected
+
+
+def test_creature_eat_gate_uses_stored_native_distance() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(),
+        health=100.0,
+        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
+    )
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
+    creature.orbit_radius = 1.0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 0.0
+    creature.pos = Vec2(19.999998092651367, 0.003907000180333853)
+    creature.vel = Vec2(1.0, 2.0)
+
+    assert Vec2.distance_sq(creature.pos, player.pos) < 20.0 * 20.0
+    assert x87_pc24_hypot(creature.pos.x, creature.pos.y) == 20.0
+
+    pool.update(0.01, options=make_creature_update_options(state=state, players=[player]))
+
+    assert creature.pos == Vec2(19.999998092651367, 0.003907000180333853)
+
+
+def test_creature_contact_gate_uses_stored_native_distance() -> None:
+    state = GameplayState()
+    pool = CreaturePool()
+    player = PlayerState(
+        index=0,
+        pos=Vec2(),
+        health=100.0,
+        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
+    )
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.ai_mode = CreatureAiMode.HOLD_TIMER
+    creature.orbit_radius = 1.0
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 10.0
+    creature.pos = Vec2(29.999998092651367, 0.009569000452756882)
+
+    assert Vec2.distance_sq(creature.pos, player.pos) < 30.0 * 30.0
+    assert x87_pc24_hypot(creature.pos.x, creature.pos.y) == 30.0
+
+    result = pool.update(0.01, options=make_creature_update_options(state=state, players=[player]))
+
+    assert player.health == 100.0
+    assert creature.attack_cooldown == 0.0
+    assert result.sfx == ()
 
 
 def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:

@@ -10,7 +10,6 @@ not to perfectly match every edge case in `creature_update_all`.
 See: `docs/creatures/update.md`.
 """
 
-import math
 from collections.abc import Callable, Sequence
 
 import msgspec
@@ -330,7 +329,7 @@ class _CreatureInteractionCtx(msgspec.Struct):
     deaths: list[CreatureDeath]
     sfx: list[SfxId]
     skip_creature: bool = False
-    contact_dist_sq: float = 0.0
+    contact_distance: float = 0.0
 
 
 class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
@@ -439,9 +438,9 @@ def _creature_interaction_plaguebearer_spread(ctx: _CreatureInteractionCtx) -> N
 
 def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     creature = ctx.creature
-    # Decompile parity (`creature_update_all`, 0x00426220): reuse the same
-    # creature->target-player distance scalar for eat/contact branches.
-    if ctx.contact_dist_sq >= 20.0 * 20.0:
+    # Decompile parity (`creature_update_all`, 0x00426f65..0x00426f9c): reuse
+    # the stored creature->target-player distance scalar for interaction gates.
+    if ctx.contact_distance >= 20.0:
         return
 
     # Native stores `vel` as per-tick delta (not per-second). It applies movement
@@ -501,7 +500,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
     if float(ctx.state.bonuses.energizer) > 0.0:
         return
 
-    if ctx.contact_dist_sq >= 30.0 * 30.0:
+    if ctx.contact_distance >= 30.0:
         return
     if float(ctx.player.health) <= 0.0:
         return
@@ -572,7 +571,7 @@ def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx
     creature = ctx.creature
     if float(creature.size) <= 16.0:
         return
-    if ctx.contact_dist_sq >= 30.0 * 30.0:
+    if ctx.contact_distance >= 30.0:
         return
     if float(ctx.player.health) <= 0.0:
         return
@@ -602,7 +601,7 @@ def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> No
     creature = ctx.creature
     if not creature_lifecycle_is_alive(creature.lifecycle_stage):
         return
-    if ctx.contact_dist_sq >= 30.0 * 30.0:
+    if ctx.contact_distance >= 30.0:
         return
     if float(creature.size) > 30.0:
         return
@@ -1313,6 +1312,13 @@ class CreaturePool:
             else:
                 creature.attack_cooldown = x87_pc24_sub(creature.attack_cooldown, dt)
 
+            # Native computes this once at 0x00426f65..0x00426f9c, stores the
+            # PC=24 fsqrt result as f32, and reuses that scalar for the 100,
+            # 64, 20, and 30-unit interaction gates below.
+            target_dx = x87_pc24_sub(float(creature.pos.x), float(player_pos.x))
+            target_dy = x87_pc24_sub(float(creature.pos.y), float(player_pos.y))
+            target_dist = x87_pc24_hypot(target_dx, target_dy)
+
             # Native radioactive contact pulse runs after movement/AI/cooldown
             # synthesis inside the live-creature branch. The distance is measured
             # to the creature's target player, the perk gate reads player slot
@@ -1324,12 +1330,11 @@ class CreaturePool:
                 else any(perk_active(p, PerkId.RADIOACTIVE) for p in players)
             )
             if radioactive_active:
-                dist = (creature.pos - player_pos).length()
-                if dist < 100.0:
+                if target_dist < 100.0:
                     creature.collision_timer -= float(dt) * 1.5
                     if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
                         creature.collision_timer = CONTACT_DAMAGE_PERIOD
-                        creature.hp -= (100.0 - dist) * 0.3
+                        creature.hp -= (100.0 - target_dist) * 0.3
                         if fx_queue is not None:
                             fx_queue.add_random(pos=creature.pos, rng=rng)
 
@@ -1341,12 +1346,6 @@ class CreaturePool:
                                     float(players[0].experience) + float(creature.reward_value),
                                 )
                                 creature.lifecycle_stage -= float(dt)
-
-            # Decompile parity (`creature_update_all`, 0x00426220): compute
-            # creature->target-player distance once, then reuse that value for
-            # ranged attacks and all contact/eat checks in this creature tick.
-            target_dist_sq = Vec2.distance_sq(creature.pos, player_pos)
-            target_dist = math.sqrt(float(target_dist_sq))
 
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
@@ -1404,7 +1403,7 @@ class CreaturePool:
                 fx_queue_rotated=fx_queue_rotated,
                 deaths=deaths,
                 sfx=sfx,
-                contact_dist_sq=float(target_dist_sq),
+                contact_distance=float(target_dist),
             )
             for step in _CREATURE_INTERACTION_STEPS:
                 step(interaction_ctx)

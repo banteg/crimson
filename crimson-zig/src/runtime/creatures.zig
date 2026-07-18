@@ -2353,13 +2353,17 @@ pub const CreaturePool = struct {
                 perkActive(&players[0], PerkId.radioactive)
             else
                 anyPlayerHasPerk(players, PerkId.radioactive);
+            // Native stores this PC=24 fsqrt result once and reuses it for the
+            // 100, 64, 20, and 30-unit gates below.
+            const target_dx = native_math.pc24Sub(creature.pos.x, target_player_pos.x);
+            const target_dy = native_math.pc24Sub(creature.pos.y, target_player_pos.y);
+            const target_dist = native_math.pc24Hypot(target_dx, target_dy);
             if (radioactive_active) {
-                const dist = state_mod.Vec2.sub(creature.pos, target_player_pos).length();
-                if (dist < 100.0) {
+                if (target_dist < 100.0) {
                     creature.collision_timer -= dt_f32 * 1.5;
                     if (creature.collision_timer < 0.0 and creature.hp > 0.0) {
                         creature.collision_timer = plague_collision_period;
-                        const pulse_damage = (100.0 - dist) * 0.3;
+                        const pulse_damage = (100.0 - target_dist) * 0.3;
                         creature.hp = narrowF32(creature.hp - pulse_damage);
                         _ = terrain_fx.decals.addRandom(state, creature.pos);
                         if (creature.hp < 0.0) {
@@ -2373,13 +2377,6 @@ pub const CreaturePool = struct {
                     }
                 }
             }
-
-            // Decompile parity (`creature_update_all`, 0x00426220): compute
-            // creature->target-player distance once and reuse it for ranged,
-            // eat, and contact checks inside this creature tick.
-            const to_player = state_mod.Vec2.sub(creature.pos, target_player_pos);
-            const target_dist_sq = to_player.lengthSq();
-            const target_dist = std.math.sqrt(target_dist_sq);
 
             if ((creature.flags & (spawn_mod.CreatureFlags.ranged_attack_shock | spawn_mod.CreatureFlags.ranged_attack_variant)) != 0) {
                 if (target_dist > 64.0 and creature.attack_cooldown <= 0.0) {
@@ -2417,7 +2414,7 @@ pub const CreaturePool = struct {
                 }
             }
 
-            if (target_dist_sq < 20.0 * 20.0) {
+            if (target_dist < 20.0) {
                 creature.pos = .{
                     .x = native_math.pc24Sub(creature.pos.x, creature.vel.x),
                     .y = native_math.pc24Sub(creature.pos.y, creature.vel.y),
@@ -2462,10 +2459,9 @@ pub const CreaturePool = struct {
                 }
             }
 
-            const contact_sq = target_dist_sq;
             if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
                 creature.size > 16.0 and
-                contact_sq < 30.0 * 30.0 and
+                target_dist < 30.0 and
                 creature.attack_cooldown <= 0.0 and
                 contact_player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
@@ -2520,12 +2516,12 @@ pub const CreaturePool = struct {
                 contact_player.plaguebearer_active and
                 creature.hp < 150.0 and
                 state.plaguebearer_infection_count < 0x32 and
-                contact_sq < 30.0 * 30.0)
+                target_dist < 30.0)
             {
                 creature.plague_infected = true;
             }
             if (creature_lifecycle.isAlive(creature.lifecycle_stage) and
-                contact_sq < 30.0 * 30.0 and
+                target_dist < 30.0 and
                 creature.size <= 30.0)
             {
                 creature.hp = 0.0;
@@ -6379,6 +6375,47 @@ test "creature update applies contact damage and movement" {
     try std.testing.expect(players[0].health < 100.0);
     try std.testing.expect(state.survival_reward_damage_seen);
     try expectFloatClose(1.0, pool.entries[0].attack_cooldown);
+}
+
+test "creature eat gate uses stored native distance" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+        },
+    };
+    _ = pool.spawnInit(.{
+        .origin_template_id = -1,
+        .pos = .{ .x = 19.999998092651367, .y = 0.003907000180333853 },
+        .heading = 0.0,
+        .phase_seed = 0,
+        .type_id = .alien,
+        .size = 45.0,
+        .move_speed = 0.0,
+        .health = 50.0,
+        .max_health = 50.0,
+        .reward_value = 0.0,
+        .contact_damage = 0.0,
+    });
+    pool.entries[0].ai_mode = .hold_timer;
+    pool.entries[0].orbit_radius = 1.0;
+    pool.entries[0].vel = .{ .x = 1.0, .y = 2.0 };
+
+    const target_dist_sq = state_mod.Vec2.sub(pool.entries[0].pos, players[0].pos).lengthSq();
+    try std.testing.expect(target_dist_sq < 20.0 * 20.0);
+    try std.testing.expectEqual(
+        @as(f32, 20.0),
+        native_math.pc24Hypot(pool.entries[0].pos.x, pool.entries[0].pos.y),
+    );
+
+    try pool.update(&state, players[0..], 0.01, 1024.0, &bonuses);
+
+    try std.testing.expectEqual(@as(f32, 19.999998092651367), pool.entries[0].pos.x);
+    try std.testing.expectEqual(@as(f32, 0.003907000180333853), pool.entries[0].pos.y);
 }
 
 test "creature attack cooldown stores native precision" {
