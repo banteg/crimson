@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const runtime_helpers = @import("helpers.zig");
 const native_math = @import("native_math.zig");
 
 const bonus_runtime = @import("bonuses.zig");
@@ -852,9 +853,7 @@ pub fn creatureFindInRadius(
         const creature = creatures[idx];
         if (!creature.active) continue;
         if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
-        const dist = narrowF32(state_mod.Vec2.sub(creature.pos, pos).length() - radius);
-        const threshold = narrowF32(creature.size * 0.14285715 + 3.0);
-        if (threshold < dist) continue;
+        if (!runtime_helpers.withinNativeFindRadius(pos, creature.pos, radius, creature.size)) continue;
         return @intCast(idx);
     }
     return -1;

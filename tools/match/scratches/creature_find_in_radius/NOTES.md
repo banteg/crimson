@@ -14,3 +14,7 @@ The shared inlined `vec2_distance` shape recovers the native x87 square, sum,
 `fsqrt`, and temporary-discard sequence. A `goto found` after all three tests
 places the exhausted-scan `-1` return before the successful index return,
 matching the native loop back-edge and block order exactly.
+
+The radius comparison is strict: `distance - radius < size * 0.14285715f +
+3.0f`. Python and Zig now route perk targeting through the shared PC=24
+predicate, including rejection when the two sides are exactly equal.

@@ -121,3 +121,20 @@ def test_perks_update_effects_evil_eyes_default_targets_each_alive_player() -> N
 
     assert player0.evil_eyes_target_creature == 0
     assert player1.evil_eyes_target_creature == 1
+
+
+def test_perks_update_effects_evil_eyes_rejects_native_radius_equality() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos=Vec2())
+    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    player.aim = Vec2()
+
+    creature = CreatureState()
+    creature.active = True
+    creature.pos = Vec2(21.0, 0.0)
+    creature.lifecycle_stage = 16.0
+    creature.size = 42.0
+
+    perks_update_effects(state, [player], 0.1, creatures=[creature])
+
+    assert player.evil_eyes_target_creature == -1

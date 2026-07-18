@@ -882,6 +882,25 @@ test "survival handout centroid keeps native pc24 radius boundary" {
     try std.testing.expect(!state.survival_reward_fire_seen);
 }
 
+test "perk target search rejects native radius equality" {
+    var players = [_]cz.state.PlayerState{
+        .{ .index = 0, .pos = .{}, .aim = .{} },
+    };
+    players[0].perk_counts.set(.evil_eyes, 1);
+    var creatures: cz.creatures.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 21.0, .y = 0.0 },
+        .lifecycle_stage = cz.lifecycle.CreatureLifecycle.alive,
+        .size = 42.0,
+        .hp = 100.0,
+    };
+
+    cz.perks.updateEvilEyesTargets(false, players[0..], creatures.entries[0..]);
+
+    try std.testing.expectEqual(@as(i32, -1), players[0].evil_eyes_target_creature);
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

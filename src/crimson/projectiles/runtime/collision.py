@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ...collision_math import native_find_size_margin
+from ...collision_math import native_find_size_margin, within_native_find_radius
 from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
@@ -30,12 +30,12 @@ def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, tar
       sqrt(dx*dx + dy*dy) - radius < size * 0.14285715 + 3.0
     """
 
-    dx = x87_pc24_sub(f32(target.x), f32(origin.x))
-    dy = x87_pc24_sub(f32(target.y), f32(origin.y))
-    distance = x87_pc24_hypot(dx, dy)
-    distance_outside_radius = x87_pc24_sub(distance, f32(radius))
-    size_margin = native_find_size_margin(float(target_size))
-    return distance_outside_radius < size_margin
+    return within_native_find_radius(
+        origin=origin,
+        target=target,
+        radius=radius,
+        target_size=target_size,
+    )
 
 
 def creature_find_nearest_alive(
