@@ -69,6 +69,12 @@ score from `39.10%` to `39.13%`. Both ports likewise key the preload only from
 the positive timer crossing, including when a stale reload-active byte is
 clear.
 
+Angry Reloader writes the bonus-spawn guard to one at `0x00415132`, emits its
+Plasma Minigun ring, and writes zero at `0x004151ce` before playing the impact
+sound. The second store is unconditional; it does not restore the incoming
+guard. Both ports now preserve that literal transition, with the Zig regression
+starting from a set guard so a restore cannot pass accidentally.
+
 The low-health pulse at `0x00413795..0x00413830` constructs its blood offset
 in explicit vector phases: evaluate the heading-relative cosine and sine,
 scale both components by `-6.0`, then translate them by the player's position.

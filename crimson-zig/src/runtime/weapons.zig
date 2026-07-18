@@ -248,9 +248,7 @@ pub fn stepPlayerForTickWithEffects(
             player.weapon.reload_timer = next_timer;
             if (next_timer <= half_reload) {
                 const count = 7 + @as(i32, @intFromFloat(player.weapon.reload_timer_max * 4.0));
-                const prev_spawn_guard = state.bonus_spawn_guard;
                 state.bonus_spawn_guard = true;
-                defer state.bonus_spawn_guard = prev_spawn_guard;
 
                 const owner = if (!state.friendly_fire_enabled)
                     owner_ref.OwnerRef.fromLocalPlayer(0)
@@ -265,6 +263,7 @@ pub fn stepPlayerForTickWithEffects(
                         _ = projectiles.spawn(player.pos, angle, type_id, owner, meta, false);
                     }
                 }
+                state.bonus_spawn_guard = false;
             }
         } else {
             player.weapon.reload_timer = narrowF32(player.weapon.reload_timer - narrowF32(reload_scale * dt));
@@ -1351,6 +1350,7 @@ test "anxious loader reduces reload timer on fire press" {
 
 test "angry reloader spawns plasma ring at half reload" {
     var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
     var projectiles: projectiles_mod.ProjectilePool = .{};
     var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
     var creatures: creatures_mod.CreaturePool = .{};
