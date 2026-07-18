@@ -6,7 +6,7 @@ from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -43,10 +43,16 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     )
 
     # Radioactive pulse evaluates after movement/clamp in the live-creature body.
-    dist_after_move = (creature.pos - player.pos).length()
-    expected_damage = (100.0 - dist_after_move) * 0.3
+    dist_after_move = x87_pc24_hypot(
+        x87_pc24_sub(creature.pos.x, player.pos.x),
+        x87_pc24_sub(creature.pos.y, player.pos.y),
+    )
+    expected_damage = x87_pc24_mul(
+        x87_pc24_sub(f32(100.0), dist_after_move),
+        f32(0.3),
+    )
     assert_float_close(creature.collision_timer, 0.5)
-    assert_float_close(creature.hp, 50.0 - expected_damage)
+    assert_float_close(creature.hp, x87_pc24_sub(f32(50.0), expected_damage))
     assert fx_queue.count == 1
 
 
@@ -83,7 +89,10 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     assert player.experience == 112
     assert not result.deaths
     assert creature.hp < 0.0
-    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - float(f32(float(dt))))
+    assert_float_close(
+        creature.lifecycle_stage,
+        x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, float(dt)),
+    )
     assert fx_queue.count == 1
 
 

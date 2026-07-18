@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.state_types import PlayerState
@@ -70,7 +70,10 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
     pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
 
-    expected_timer = 0.1 - float(f32(float(dt))) + 0.5
+    expected_timer = x87_pc24_add(
+        x87_pc24_sub(f32(0.1), float(dt)),
+        f32(0.5),
+    )
     assert_float_close(creature.collision_timer, expected_timer)
     assert_float_close(creature.hp, 85.0)
 
