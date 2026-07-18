@@ -357,7 +357,7 @@ pub const CreaturePool = struct {
         self: *CreaturePool,
         call: spawn_mod.SpawnTemplateCall,
         rng: *spawn_mod.Crand,
-        state: ?*const state_mod.GameplayState,
+        state: ?*state_mod.GameplayState,
         terrain_size: f32,
     ) CreatureRuntimeError!void {
         if (!isKnownTemplateId(call.template_id)) return error.InvalidSpawnTemplate;
@@ -2053,6 +2053,7 @@ pub const CreaturePool = struct {
                 &self.entries[tail_idx],
                 if (maybe_slot_idx) |slot_idx| &self.spawn_slots[slot_idx] else null,
                 call.template_id,
+                state,
             );
         }
     }
@@ -3129,10 +3130,11 @@ pub const CreaturePool = struct {
     }
 
     fn applySpawnDifficultyAdjustments(
-        self: *const CreaturePool,
+        self: *CreaturePool,
         creature: *CreatureState,
         spawn_slot: ?*spawn_mod.SpawnSlotInit,
         template_id: i32,
+        state: ?*state_mod.GameplayState,
     ) void {
         if (!self.hardcore) {
             if (spawn_slot) |slot| {
@@ -3184,6 +3186,12 @@ pub const CreaturePool = struct {
             return;
         }
 
+        // Native `creature_spawn_template` writes zero to the shared quest
+        // retry global at 0x004311a1 before applying the hardcore stat buffs.
+        self.quest_fail_retry_count = 0;
+        if (state) |runtime_state| {
+            runtime_state.quest_fail_retry_count = 0;
+        }
         if (template_id == @intFromEnum(spawn_mod.SpawnId.spider_sp1_ai7_timer_38)) {
             creature.move_speed = narrowF32(creature.move_speed * 0.7);
         }

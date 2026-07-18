@@ -57,6 +57,13 @@ Frame/prefix notes:
   `0x004340d3..0x004341b9` subsequently write current health (`+0x24`) but
   never max health (`+0x28`). Both ports now retain the unscaled base maximum;
   this matters to native health-ratio behavior rather than presentation.
+- Live disassembly at `0x004311a1` proves the hardcore path first stores zero
+  to the shared `quest_fail_retry_count` global, then applies the `1.05f`,
+  `1.4f`, and `1.2f` stat multipliers. The ports now clear their live retry
+  owner at the same spawn boundary. The Python front-end also forwards the
+  failed-screen counter into each persistent `QuestMode` run; previously real
+  Play Again runs always launched with zero and silently skipped the native
+  retry easing ladder.
 - The template-specific tail at `0x00431142..0x00431158` compares the spawn id
   with `0x38`, gates on hardcore, and multiplies move speed (`+0x5c`) by the
   `0.7f` stored at `0x0046f334`. This precedes the common hardcore `1.05f`

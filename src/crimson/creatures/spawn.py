@@ -675,7 +675,7 @@ def spawn_id_label(spawn_id: SpawnId) -> str:
     return entry.creature
 
 
-class SpawnEnv(msgspec.Struct, frozen=True, kw_only=True):
+class SpawnEnv(msgspec.Struct, kw_only=True):
     terrain_width: float
     terrain_height: float
     demo_mode_active: bool

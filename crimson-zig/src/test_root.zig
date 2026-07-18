@@ -1593,6 +1593,30 @@ test "spawn difficulty scales current health but preserves base max health" {
     try std.testing.expectEqual(@as(f32, 53.0), hardcore_pool.entries[0].max_hp);
 }
 
+test "hardcore template spawn clears shared quest retry state" {
+    var pool: cz.creatures.CreaturePool = .{};
+    pool.hardcore = true;
+    pool.quest_fail_retry_count = 4;
+    var state = cz.state.GameplayState.init(1);
+    state.demo_mode_active = true;
+    state.quest_fail_retry_count = 4;
+    var rng = cz.spawn.Crand.init(0xBEEF);
+
+    try pool.spawnTemplateCallWithRuntimeContext(
+        .{
+            .template_id = 0x21,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .heading = 0.0,
+        },
+        &rng,
+        &state,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(i32, 0), pool.quest_fail_retry_count);
+    try std.testing.expectEqual(@as(i32, 0), state.quest_fail_retry_count);
+}
+
 test "hardcore applies the template 0x38 speed penalty before its global buff" {
     var penalized_pool: cz.creatures.CreaturePool = .{};
     penalized_pool.hardcore = true;

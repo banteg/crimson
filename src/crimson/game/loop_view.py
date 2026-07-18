@@ -949,9 +949,19 @@ class GameLoopView:
         level = self.state.pending_quest_level
         if level is None:
             return
+        # The native retry counter is one shared global: the failed-quest
+        # screen increments it and creature spawning consumes the same value.
+        # QuestMode persists across front-view transitions, so refresh its
+        # launch setting from the game owner before every retry.
+        gameplay.quest_fail_retry_count = int(self.state.quest_fail_retry_count)
         gameplay.start_run(level, status=self.state.status)
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: str | None) -> str | None:
+        if isinstance(gameplay, QuestMode):
+            # Hardcore creature spawning clears the native global. Reflect the
+            # simulation-owned value back into the front-end owner before a
+            # failed-run panel (or any early exit) observes it.
+            self.state.quest_fail_retry_count = int(gameplay.sim_world.spawn_env.quest_fail_retry_count)
         if action == "open_high_scores":
             self.state.pending_high_scores = HighScoresRequest(game_mode_id=gameplay.default_game_mode_id)
             return action

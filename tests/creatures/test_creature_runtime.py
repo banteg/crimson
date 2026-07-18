@@ -177,6 +177,27 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     assert all(int(entry.effect_id) == 0 for entry in active)
 
 
+def test_hardcore_runtime_spawn_clears_shared_quest_retry_count() -> None:
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=True,
+        quest_fail_retry_count=4,
+    )
+    pool = CreaturePool(env=env)
+
+    pool.spawn_template(
+        SpawnId.ALIEN_CONST_PURPLE_GHOST_21,
+        Vec2(100.0, 200.0),
+        0.0,
+        Crand(0xBEEF),
+    )
+
+    assert env.quest_fail_retry_count == 0
+    assert pool.env is env
+
+
 def test_angle_approach_wraps_tau_boundary_like_native_capture() -> None:
     # Regression for Session 19 creature slot 32 drift at ticks 91->92.
     angle = -0.3199998736381531

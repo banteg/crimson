@@ -946,6 +946,12 @@ class CreaturePool:
         if spawn_env is None:
             raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
         plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
+        # `creature_spawn_template` stores zero to the shared retry counter at
+        # 0x004311a1 on every hardcore spawn, before applying the global stat
+        # buffs. Keep the pure plan builder side-effect free, but preserve that
+        # store at the runtime materialization boundary.
+        if spawn_env.hardcore:
+            spawn_env.quest_fail_retry_count = 0
         return self.spawn_plan(
             plan,
             rng=rng,
@@ -1319,16 +1325,12 @@ class CreaturePool:
                         if int(slot.owner_creature) == int(idx):
                             child_template_id = tick_spawn_slot(slot, dt)
                             if child_template_id is not None:
-                                plan = build_spawn_plan(
+                                mapping, _ = self.spawn_template(
                                     child_template_id,
                                     creature.pos,
                                     float(RANDOM_HEADING_SENTINEL),
                                     rng,
-                                    spawn_env,
-                                )
-                                mapping, _ = self.spawn_plan(
-                                    plan,
-                                    rng=rng,
+                                    env=spawn_env,
                                     detail_preset=int(detail_preset),
                                 )
                                 spawned.extend(mapping)

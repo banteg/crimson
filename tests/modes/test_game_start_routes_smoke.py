@@ -11,6 +11,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence import save_status
+from crimson.quests.level import QuestLevel
 from crimson.screens.high_scores_view import HighScoresView
 from crimson.screens.panels.network_session import NetworkSessionPanelView
 from grim.config import ensure_crimson_cfg
@@ -47,3 +48,24 @@ def test_start_actions_map_to_expected_views(tmp_path: Path) -> None:
     assert isinstance(views["start_quest"], QuestMode)
     assert isinstance(views["open_high_scores"], HighScoresView)
     assert isinstance(views["open_lan_session"], NetworkSessionPanelView)
+
+
+def test_quest_retry_counter_flows_through_persistent_mode(make_game_state, mocker) -> None:
+    state = make_game_state(quest_fail_retry_count=3)
+    state.pending_quest_level = QuestLevel(1, 1)
+    loop = GameLoopView(state)
+    mode = loop._front_views["start_quest"]
+    assert isinstance(mode, QuestMode)
+    start_run = mocker.patch.object(mode, "start_run")
+
+    loop._prepare_quest_run(mode)
+
+    assert mode.quest_fail_retry_count == 3
+    start_run.assert_called_once_with(QuestLevel(1, 1), status=state.status)
+
+    # A hardcore spawn clears the simulation's shared counter. The regular
+    # gameplay-action resolution pass must publish that value back to the
+    # failed-screen owner before it chooses the next view.
+    mode.sim_world.spawn_env.quest_fail_retry_count = 0
+    assert loop._resolve_gameplay_action(mode, None) is None
+    assert state.quest_fail_retry_count == 0
