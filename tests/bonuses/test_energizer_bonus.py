@@ -3,9 +3,10 @@ from __future__ import annotations
 import math
 
 from crimson.bonuses import BonusId
-from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -55,6 +56,7 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     creature.pos = player.pos
     creature.hp = 10.0
     creature.max_hp = 300.0
+    creature.size = 20.0
     creature.move_speed = 0.0
     creature.reward_value = 10.0
     creature.contact_damage = 999.0
@@ -73,3 +75,6 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     assert creature.pos == Vec2(-10.0, 0.0)
     assert result.deaths[0].owner == OwnerRef.from_creature(77)
     assert not state.bonus_spawn_guard
+    # Native returns from no-corpse death into the unconditional size-30 tail.
+    assert creature.hp == 0.0
+    assert creature.lifecycle_stage == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(0.016))

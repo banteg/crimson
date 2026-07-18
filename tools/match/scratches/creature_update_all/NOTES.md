@@ -103,6 +103,11 @@ final body culling.
   `0x004271e7`. The disassembly contains no intervening creature-owner store.
   Python and Zig preserve the off-world position, stale owner, and literal
   guard reset, with regression fixtures initialized to expose all three.
+- `creature_handle_death(creature_id, 0)` returns at `0x004271e4`; native clears
+  the guard and falls through rather than jumping to the loop tail. Contact is
+  suppressed while Energizer is active, but the unconditional size-30 cleanup
+  can still zero HP and decrement lifecycle on the now-inactive slot. Both ports
+  now preserve that stale-slot write.
 
 ## Remaining mismatch
 

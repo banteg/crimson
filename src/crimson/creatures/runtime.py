@@ -473,7 +473,6 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
         ),
     )
     ctx.state.bonus_spawn_guard = False
-    ctx.skip_creature = True
 
 
 def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:

@@ -2473,7 +2473,6 @@ pub const CreaturePool = struct {
                     state.bonus_spawn_guard = false;
                     _ = awardExperienceFromReward(state, player, creature.reward_value);
                     creature.active = false;
-                    continue;
                 }
             }
 
@@ -8263,6 +8262,7 @@ test "energizer eat preserves native position owner and guard stores" {
         .pos = players[0].pos,
         .hp = 10.0,
         .max_hp = 300.0,
+        .size = 20.0,
         .move_speed = 0.0,
         .reward_value = 10.0,
         .contact_damage = 999.0,
@@ -8277,6 +8277,11 @@ test "energizer eat preserves native position owner and guard stores" {
     try std.testing.expectEqual(@as(?usize, 77), pool.entries[0].last_hit_owner.creatureIndex());
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
     try std.testing.expect(!state.bonus_spawn_guard);
+    try std.testing.expectEqual(@as(f32, 0.0), pool.entries[0].hp);
+    try std.testing.expectEqual(
+        @as(u32, @bitCast(native_math.pc24Sub(creature_lifecycle.alive, @as(f32, 0.016)))),
+        @as(u32, @bitCast(pool.entries[0].lifecycle_stage)),
+    );
 }
 
 test "plaguebearer spreads between nearby creatures" {
