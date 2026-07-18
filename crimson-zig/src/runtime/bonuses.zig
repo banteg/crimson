@@ -110,15 +110,13 @@ pub const BonusPool = struct {
         if (state.bonus_spawn_guard) return null;
         if (players.len == 0) return null;
 
-        var has_pistol = false;
-        for (players) |player| {
-            if (player.weapon.weapon_id == game_ids.WeaponId.pistol) {
-                has_pistol = true;
-                break;
-            }
-        }
+        const has_pistol = anyPlayerHasPistol(players);
+        const force_drop_has_pistol = if (state.preserve_bugs)
+            nativeForceDropHasPistol(players)
+        else
+            has_pistol;
 
-        if (has_pistol and (state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_pistol_force_weapon) & 3) < 3) {
+        if (force_drop_has_pistol and (state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_pistol_force_weapon) & 3) < 3) {
             const slot = spawnAtPos(self, pos, state, players, world_size);
             var entry = slotPtr(self, slot);
             entry.bonus_id = .weapon;
@@ -135,7 +133,9 @@ pub const BonusPool = struct {
                 return null;
             }
 
-            if (entry.amount == weapon_data.weaponIdToInt(.pistol) or anyPerkActive(players, PerkId.my_favourite_weapon)) {
+            if (entry.amount == weapon_data.weaponIdToInt(.pistol) or
+                perkActiveByBugPolicy(players, PerkId.my_favourite_weapon, state.preserve_bugs))
+            {
                 clearEntry(self, entry);
                 return null;
             }
@@ -147,11 +147,15 @@ pub const BonusPool = struct {
         const base_roll = state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_base_gate);
         if ((base_roll % 9) != 1) {
             var allow_without_magnet = false;
-            if (has_pistol) {
+            const fallback_gate_has_pistol = if (state.preserve_bugs)
+                players[0].weapon.weapon_id == .pistol
+            else
+                has_pistol;
+            if (fallback_gate_has_pistol) {
                 allow_without_magnet = (state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_pistol_allow_without_magnet) % 5) == 1;
             }
             if (!allow_without_magnet) {
-                if (!anyPerkActive(players, PerkId.bonus_magnet)) {
+                if (!perkActiveByBugPolicy(players, PerkId.bonus_magnet, state.preserve_bugs)) {
                     return null;
                 }
                 if ((state.rng.randTagged(rng_callers.bonus_try_spawn_on_kill_bonus_magnet) % 10) != 2) return null;
@@ -853,6 +857,28 @@ fn anyPerkActive(players: []const state_mod.PlayerState, perk_id: PerkId) bool {
     return false;
 }
 
+fn anyPlayerHasPistol(players: []const state_mod.PlayerState) bool {
+    for (players) |player| {
+        if (player.weapon.weapon_id == .pistol) return true;
+    }
+    return false;
+}
+
+fn nativeForceDropHasPistol(players: []const state_mod.PlayerState) bool {
+    if (players.len == 0) return false;
+    if (players[0].weapon.weapon_id == .pistol) return true;
+    return players.len == 2 and players[1].weapon.weapon_id == .pistol;
+}
+
+fn perkActiveByBugPolicy(
+    players: []const state_mod.PlayerState,
+    perk_id: PerkId,
+    preserve_bugs: bool,
+) bool {
+    if (preserve_bugs) return primaryPlayerPerkActive(players, perk_id);
+    return anyPerkActive(players, perk_id);
+}
+
 fn carriedWeaponId(players: []const state_mod.PlayerState, weapon_id: game_ids.WeaponId) bool {
     for (players) |player| {
         if (player.weapon.weapon_id == weapon_id) return true;
@@ -1416,6 +1442,66 @@ test "bonus spawn-on-kill rng cadence matches observed pistol path" {
     try std.testing.expectEqual(@as(u32, 258_047_690), state.rng.state);
 }
 
+test "spawn-on-kill preserve bugs keeps native player slot policy" {
+    var players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .weapon = .{ .weapon_id = .assault_rifle },
+        },
+        .{
+            .index = 1,
+            .weapon = .{ .weapon_id = .pistol },
+        },
+        .{
+            .index = 2,
+            .weapon = .{ .weapon_id = .pistol },
+        },
+    };
+    players[1].perk_counts.set(PerkId.my_favourite_weapon, 1);
+    players[1].perk_counts.set(PerkId.bonus_magnet, 1);
+
+    try std.testing.expect(anyPlayerHasPistol(players[0..]));
+    try std.testing.expect(nativeForceDropHasPistol(players[0..2]));
+    try std.testing.expect(!nativeForceDropHasPistol(players[0..]));
+    try std.testing.expect(perkActiveByBugPolicy(players[0..], PerkId.my_favourite_weapon, false));
+    try std.testing.expect(!perkActiveByBugPolicy(players[0..], PerkId.my_favourite_weapon, true));
+    try std.testing.expect(perkActiveByBugPolicy(players[0..], PerkId.bonus_magnet, false));
+    try std.testing.expect(!perkActiveByBugPolicy(players[0..], PerkId.bonus_magnet, true));
+}
+
+test "native forced weapon drop ignores player two favourite weapon" {
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    state.rng.state = 3_857_056_479;
+    state.game_mode = .survival;
+    state.status_quest_unlock_index = 49;
+    state.status_quest_unlock_index_full = 50;
+    state.status_weapon_usage_counts.set(.splitter_gun, 10);
+
+    var pool: BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+        .{
+            .index = 1,
+            .pos = .{ .x = 512.0, .y = 512.0 },
+            .weapon = .{ .weapon_id = .assault_rifle },
+        },
+    };
+    player_runtime.weaponAssignPlayer(&players[0], .pistol);
+    players[1].perk_counts.set(PerkId.my_favourite_weapon, 1);
+
+    const spawned = pool.trySpawnOnKill(
+        .{ .x = 420.0, .y = 420.0 },
+        &state,
+        players[0..],
+        1024.0,
+    );
+
+    try std.testing.expect(spawned != null);
+    try std.testing.expectEqual(BonusId.weapon, spawned.?.bonus_id);
+    try std.testing.expectEqual(@as(i32, 11), spawned.?.amount);
+}
+
 test "bonus economist extends double experience timer" {
     var base_state = state_mod.GameplayState.init(1);
     var base_player: state_mod.PlayerState = .{
@@ -1517,6 +1603,32 @@ test "bonus magnet allows spawn on secondary roll" {
         1024.0,
     );
     try std.testing.expect(perk_spawned != null);
+
+    var native_state = state_mod.GameplayState.init(7);
+    native_state.game_mode = .survival;
+    native_state.preserve_bugs = true;
+    var native_pool: BonusPool = .{};
+    var native_players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .weapon = .{ .weapon_id = game_ids.WeaponId.assault_rifle },
+        },
+        .{
+            .index = 1,
+            .pos = .{},
+            .weapon = .{ .weapon_id = game_ids.WeaponId.assault_rifle },
+        },
+    };
+    native_players[1].perk_counts.set(PerkId.bonus_magnet, 1);
+
+    const native_spawned = native_pool.trySpawnOnKill(
+        .{ .x = 100.0, .y = 100.0 },
+        &native_state,
+        native_players[0..],
+        1024.0,
+    );
+    try std.testing.expect(native_spawned == null);
 }
 
 test "bonus pick random type quest suppression parity" {

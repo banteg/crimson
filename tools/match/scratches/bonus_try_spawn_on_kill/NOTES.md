@@ -19,6 +19,13 @@ issues: the 56-unit proximity test used non-native precision, Zig generalized
 the native player-slot check, and Zig emitted the accepted-drop burst with the
 wrong lifetime and color. The corresponding fixes have focused regressions.
 
+A follow-up native-mode audit now also carries the exact `perk_count_get`
+asymmetry through Zig's `preserve_bugs` path. My Favourite Weapon and Bonus
+Magnet read player 0 only, the fallback Pistol gate reads player 0 only, and
+the forced-weapon Pistol test admits player 1 only when the configured slice
+has exactly two players. Corrected mode deliberately retains the generalized
+co-op policy.
+
 The remaining six candidate instructions are a control-flow layout residual.
 The calibrated compiler tail-merges the forced-path and general-path
 clear-and-return blocks, while native retains a second copy after the general
