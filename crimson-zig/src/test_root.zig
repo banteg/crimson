@@ -938,6 +938,76 @@ test "particle hits reject native radius equality" {
     try std.testing.expectEqual(@as(i32, -1), particles.entries[0].target_id);
 }
 
+test "particle hits apply native tint fade and creature displacement" {
+    var state = cz.state.GameplayState.init(1);
+    var players = [_]cz.state.PlayerState{.{ .index = 0, .pos = .{} }};
+    var creatures: cz.creatures.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{},
+        .lifecycle_stage = cz.lifecycle.CreatureLifecycle.alive,
+        .size = 50.0,
+        .hp = 100.0,
+        .tint = .{ 0.9, 0.6, 0.2, 0.8 },
+    };
+    var particles: cz.particles.ParticlePool = .{};
+    particles.entries[0] = .{
+        .active = true,
+        .render_flag = true,
+        .intensity = 1.0,
+        .style_id = .flamethrower,
+    };
+    var bonuses: cz.bonuses.BonusPool = .{};
+    var sprite_effects: cz.effects.SpriteEffectPool = .{};
+    var terrain_fx: cz.terrain_fx.TerrainFxScratch = .{};
+    const dt: f32 = 0.016;
+
+    particles.update(
+        &state,
+        players[0..],
+        &creatures,
+        &bonuses,
+        &sprite_effects,
+        &terrain_fx,
+        dt,
+        1024.0,
+    );
+
+    const particle = particles.entries[0];
+    const creature = creatures.entries[0];
+    const tint_factor = cz.native_math.pc24Sub(
+        @as(f32, 1.0),
+        cz.native_math.pc24Mul(particle.intensity, @as(f32, 0.01)),
+    );
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.pc24Mul(tint_factor, @as(f32, 0.9)),
+        creature.tint[0],
+        1e-6,
+    );
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.pc24Mul(tint_factor, @as(f32, 0.6)),
+        creature.tint[1],
+        1e-6,
+    );
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.pc24Mul(tint_factor, @as(f32, 0.2)),
+        creature.tint[2],
+        1e-6,
+    );
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8), creature.tint[3], 1e-6);
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.pc24Mul(particle.vel.x, dt),
+        creature.pos.x,
+        1e-6,
+    );
+    try std.testing.expectApproxEqAbs(
+        cz.native_math.pc24Mul(particle.vel.y, dt),
+        creature.pos.y,
+        1e-6,
+    );
+    try std.testing.expect(@abs(creature.pos.x) > 0.0 or @abs(creature.pos.y) > 0.0);
+}
+
 test "bonus pickup uses native pc24 radius boundary" {
     var state = cz.state.GameplayState.init(1);
     var pool: cz.bonuses.BonusPool = .{};

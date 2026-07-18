@@ -67,6 +67,13 @@ by `(rand() % 10) * 0.1`, and applies `intensity * 10` damage. Creature tint is
 only darkened when the RGB sum exceeds `1.6`, using
 `1 - intensity * 0.01`, followed by per-channel clamping.
 
+The tint sum is evaluated in native PC=24 order as `(g + b) + r`; the fade
+scales RGB only, while the subsequent clamp covers all four channels. After
+the sprite/decal side effects, native also advances the hit creature by the
+reflected particle velocity times `frame_dt`. Python now preserves the exact
+PC=24 arithmetic without fading alpha, and Zig now models both the tint update
+and the gameplay displacement instead of stopping after damage.
+
 ## Remaining work
 
 The native behavior is substantially represented, but whole-function MSVC

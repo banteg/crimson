@@ -5,7 +5,7 @@ import math
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
@@ -315,6 +315,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     creature.pos = Vec2()
     creature.size = 50.0
     creature.lifecycle_stage = 16.0
+    creature.tint = RGBA(0.9, 0.6, 0.2, 0.8)
 
     dt = 0.016
     pool.update(dt, creatures=[creature], fx_queue=fx_queue, sprite_effects=sprite_effects)
@@ -347,8 +348,14 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     assert_float_close(float(particle.vel.y), expected_vel_y)
 
     dt_f32 = f32(dt)
-    assert_float_close(float(creature.pos.x), f32(float(expected_vel_x) * float(dt_f32)))
-    assert_float_close(float(creature.pos.y), f32(float(expected_vel_y) * float(dt_f32)))
+    assert_float_close(float(creature.pos.x), x87_pc24_add(0.0, x87_pc24_mul(expected_vel_x, dt_f32)))
+    assert_float_close(float(creature.pos.y), x87_pc24_add(0.0, x87_pc24_mul(expected_vel_y, dt_f32)))
+
+    tint_factor = x87_pc24_sub(1.0, x87_pc24_mul(particle.intensity, 0.01))
+    assert_float_close(creature.tint.r, x87_pc24_mul(tint_factor, 0.9))
+    assert_float_close(creature.tint.g, x87_pc24_mul(tint_factor, 0.6))
+    assert_float_close(creature.tint.b, x87_pc24_mul(tint_factor, 0.2))
+    assert_float_close(creature.tint.a, f32(0.8))
 
 
 def test_particle_pool_tags_style_specific_jitter_callers() -> None:

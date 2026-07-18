@@ -15,7 +15,16 @@ from grim.rand import CallerStatic, Crand, CrandLike
 from .creatures.damage_runtime import CreatureDamageRuntime, DirectCreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
-from .math_parity import NATIVE_TAU, f32, f32_vec2, x87_pc24_cos_mul, x87_pc24_mul, x87_pc24_sin_mul
+from .math_parity import (
+    NATIVE_TAU,
+    f32,
+    f32_vec2,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from .owner_ref import OwnerRef
 from .rng_caller_static import RngCallerStatic
 
@@ -67,6 +76,15 @@ def _native_particle_velocity(angle: float, speed: float) -> Vec2:
 
 def _native_particle_spin(draw: int) -> float:
     return x87_pc24_mul(float(draw % 0x274), _NATIVE_PARTICLE_SPIN_SCALE)
+
+
+def _native_clamp_unit(value: float) -> float:
+    value = f32(value)
+    if not value >= 0.0:
+        return 0.0
+    if value > 1.0:
+        return 1.0
+    return value
 
 
 class ParticleStyleId(IntEnum):
@@ -371,7 +389,7 @@ class ParticlePool:
                             f32(float(bounce_velocity.y) * float(speed_scale)),
                         )
 
-                        damage = max(0.0, float(entry.intensity) * 10.0)
+                        damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
                             if creature_damage_runtime is not None:
                                 creature_damage_runtime.apply_creature_damage(
@@ -385,10 +403,21 @@ class ParticlePool:
                                 creature.hp -= float(damage)
 
                         tint = creature.tint
-                        tint_sum = float(tint.r) + float(tint.g) + float(tint.b)
-                        if tint_sum > 1.6:
-                            factor = 1.0 - float(entry.intensity) * 0.01
-                            creature.tint = tint.scaled(factor).clamped()
+                        tint_sum = x87_pc24_add(x87_pc24_add(tint.g, tint.b), tint.r)
+                        tint_r = f32(tint.r)
+                        tint_g = f32(tint.g)
+                        tint_b = f32(tint.b)
+                        if tint_sum > f32(1.6):
+                            factor = x87_pc24_sub(1.0, x87_pc24_mul(entry.intensity, 0.01))
+                            tint_r = x87_pc24_mul(factor, tint_r)
+                            tint_g = x87_pc24_mul(factor, tint_g)
+                            tint_b = x87_pc24_mul(factor, tint_b)
+                        creature.tint = RGBA(
+                            _native_clamp_unit(tint_r),
+                            _native_clamp_unit(tint_g),
+                            _native_clamp_unit(tint_b),
+                            _native_clamp_unit(tint.a),
+                        )
 
                         if sprite_effects is not None and (idx % 3 == 0):
                             sprite_vel = Vec2(
@@ -413,8 +442,8 @@ class ParticlePool:
                             )
 
                         creature.pos = Vec2(
-                            f32(float(creature.pos.x) + float(entry.vel.x) * float(dt)),
-                            f32(float(creature.pos.y) + float(entry.vel.y) * float(dt)),
+                            x87_pc24_add(creature.pos.x, x87_pc24_mul(entry.vel.x, dt)),
+                            x87_pc24_add(creature.pos.y, x87_pc24_mul(entry.vel.y, dt)),
                         )
 
         return expired

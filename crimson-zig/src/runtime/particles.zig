@@ -296,6 +296,23 @@ pub const ParticlePool = struct {
                             );
                         }
 
+                        const tint_sum = native_math.pc24Add(
+                            native_math.pc24Add(creature.tint[1], creature.tint[2]),
+                            creature.tint[0],
+                        );
+                        if (tint_sum > @as(f32, 1.6)) {
+                            const tint_factor = native_math.pc24Sub(
+                                @as(f32, 1.0),
+                                native_math.pc24Mul(entry.intensity, @as(f32, 0.01)),
+                            );
+                            creature.tint[0] = native_math.pc24Mul(tint_factor, creature.tint[0]);
+                            creature.tint[1] = native_math.pc24Mul(tint_factor, creature.tint[1]);
+                            creature.tint[2] = native_math.pc24Mul(tint_factor, creature.tint[2]);
+                        }
+                        for (&creature.tint) |*channel| {
+                            channel.* = nativeClampUnit(channel.*);
+                        }
+
                         if ((particle_idx % 3) == 0) {
                             const sprite_vel: state_mod.Vec2 = .{
                                 .x = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.projectile_update_particle_sprite_vel_x) % 60)) - 30.0,
@@ -310,6 +327,16 @@ pub const ParticlePool = struct {
                             );
                         }
                         _ = terrain_fx.decals.addRandom(state, creature.pos);
+                        creature.pos = .{
+                            .x = native_math.pc24Add(
+                                creature.pos.x,
+                                native_math.pc24Mul(entry.vel.x, dt_f32),
+                            ),
+                            .y = native_math.pc24Add(
+                                creature.pos.y,
+                                native_math.pc24Mul(entry.vel.y, dt_f32),
+                            ),
+                        };
                     }
                 }
             }
@@ -323,6 +350,12 @@ pub const ParticlePool = struct {
         return state.rng.randTagged(alloc_caller) % self.entries.len;
     }
 };
+
+fn nativeClampUnit(value: f32) f32 {
+    if (!(value >= 0.0)) return 0.0;
+    if (value > 1.0) return 1.0;
+    return value;
+}
 
 fn creatureFindInRadius(
     creatures: *creatures_mod.CreaturePool,
