@@ -411,3 +411,33 @@ def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
     # A host-double squared-distance compare chooses slot 0; native narrows the
     # x87 fsqrt result and slot 1 is strictly closer at that precision.
     assert creature_find_nearest_alive(creatures=creatures, origin=Vec2()) == 1
+
+
+def test_shock_chain_retarget_compares_stored_x87_pc24_distances() -> None:
+    from crimson.projectiles.runtime.collision import creature_find_nearest_active
+
+    creatures = [
+        CreatureState(
+            active=True,
+            hp=10.0,
+            pos=Vec2(-1727.156494140625, -1351.4605712890625),
+        ),
+        CreatureState(
+            active=True,
+            hp=10.0,
+            pos=Vec2(1722.1292724609375, -1357.8604736328125),
+        ),
+    ]
+
+    # Host-double squared distances prefer slot 1. Native stores equal PC=24
+    # fsqrt results, so its strict comparison retains the earlier slot 0.
+    assert Vec2.distance_sq(Vec2(), creatures[0].pos) > Vec2.distance_sq(Vec2(), creatures[1].pos)
+    assert (
+        creature_find_nearest_active(
+            creatures=creatures,
+            origin=Vec2(),
+            exclude_id=2,
+            min_dist=100.0,
+        )
+        == 0
+    )

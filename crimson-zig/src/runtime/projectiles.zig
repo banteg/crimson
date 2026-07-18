@@ -984,19 +984,12 @@ fn postHitIonRifleShockChain(
     state.shock_chain_links_left = links_left - 1;
 
     const origin_pos = proj.pos;
-    const min_dist_sq = 100.0 * 100.0;
-    var best_idx: usize = 0;
-    var best_dist_sq: f32 = 1e12;
-    for (creatures.entries, 0..) |creature, idx| {
-        if (idx == hit_idx) continue;
-        if (!creature.active) continue;
-        const d_sq = runtime_helpers.distanceSq(origin_pos, creature.pos);
-        if (d_sq <= min_dist_sq) continue;
-        if (d_sq < best_dist_sq) {
-            best_dist_sq = d_sq;
-            best_idx = idx;
-        }
-    }
+    const best_idx = creatureFindNearestShockChainTarget(
+        creatures,
+        origin_pos,
+        hit_idx,
+        state.preserve_bugs,
+    ) orelse return;
 
     const origin_creature = creatures.entries[hit_idx];
     const target = creatures.entries[best_idx];
@@ -1018,6 +1011,57 @@ fn postHitIonRifleShockChain(
         false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
+}
+
+fn creatureFindNearestShockChainTarget(
+    creatures: *const creatures_mod.CreaturePool,
+    origin: state_mod.Vec2,
+    exclude_id: usize,
+    preserve_bugs: bool,
+) ?usize {
+    var best_idx: ?usize = if (preserve_bugs) 0 else null;
+    var best_distance: f32 = 1_000_000.0;
+    for (creatures.entries, 0..) |creature, idx| {
+        if (!creature.active or idx == exclude_id) continue;
+        const dx = native_math.pc24Sub(origin.x, creature.pos.x);
+        const dy = native_math.pc24Sub(origin.y, creature.pos.y);
+        const distance = native_math.pc24Hypot(dx, dy);
+        if (distance <= 100.0) continue;
+        if (distance < best_distance) {
+            best_distance = distance;
+            best_idx = idx;
+        }
+    }
+    return best_idx;
+}
+
+test "shock-chain retarget compares stored pc24 distances" {
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = -1727.156494140625, .y = -1351.4605712890625 },
+    };
+    creatures.entries[1] = .{
+        .active = true,
+        .pos = .{ .x = 1722.1292724609375, .y = -1357.8604736328125 },
+    };
+
+    try std.testing.expectEqual(
+        @as(?usize, 0),
+        creatureFindNearestShockChainTarget(&creatures, .{}, 2, false),
+    );
+}
+
+test "corrected shock-chain retarget has no fallback target" {
+    var creatures: creatures_mod.CreaturePool = .{};
+    try std.testing.expectEqual(
+        @as(?usize, null),
+        creatureFindNearestShockChainTarget(&creatures, .{}, 1, false),
+    );
+    try std.testing.expectEqual(
+        @as(?usize, 0),
+        creatureFindNearestShockChainTarget(&creatures, .{}, 1, true),
+    );
 }
 
 fn consumeIonHitEffectsRng(

@@ -64,6 +64,37 @@ def creature_find_nearest_alive(
     return best_idx
 
 
+def creature_find_nearest_active(
+    *,
+    creatures: Sequence[CreatureState],
+    origin: Vec2,
+    exclude_id: int,
+    min_dist: float,
+    preserve_bugs: bool = False,
+) -> int:
+    """Port of ``creature_find_nearest(origin, exclude_id, min_dist)``.
+
+    This native branch accepts every active creature, regardless of lifecycle,
+    and compares the stored PC=24 square-root distance against both bounds.
+    """
+
+    best_idx = 0 if preserve_bugs else -1
+    best_distance = f32(1_000_000.0)
+    minimum_distance = f32(min_dist)
+    max_index = min(len(creatures), 0x180)
+    for idx in range(max_index):
+        creature = creatures[idx]
+        if not creature.active or idx == int(exclude_id):
+            continue
+        dx = x87_pc24_sub(f32(origin.x), f32(creature.pos.x))
+        dy = x87_pc24_sub(f32(origin.y), f32(creature.pos.y))
+        distance = x87_pc24_hypot(dx, dy)
+        if distance > minimum_distance and distance < best_distance:
+            best_distance = distance
+            best_idx = idx
+    return best_idx
+
+
 def _apply_damage_to_creature(
     creatures: Sequence[CreatureState],
     creature_index: int,
@@ -92,6 +123,7 @@ __all__ = [
     "_apply_damage_to_creature",
     "_hit_radius_for",
     "_within_native_find_radius",
+    "creature_find_nearest_active",
     "creature_find_nearest_alive",
     "native_find_size_margin",
 ]

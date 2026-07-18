@@ -24,3 +24,11 @@ VC6 spills and reloads the result while clearing two temporaries; native moves
 the result down the x87 stack and saves it afterward. Return-value, output-
 parameter, aggregate, scope, and compiler-profile variants preserve or worsen
 these shapes. Do not manufacture x87 liveness to hide the residual.
+
+The second mode's stored square-root is behaviorally significant. Shock-chain
+retargeting passes the hit creature as `exclude_id` and `100.0f` as
+`min_dist`; native compares the PC=24 `fsqrt` result rather than squared host
+distances. Python and Zig now use that exact ranking, including strict bounds,
+the 384-slot limit, and the native slot-zero fallback only in bug-preserving
+mode. A two-target regression covers a case where host-double squared distance
+prefers slot 1 but native's equal stored distances retain slot 0.

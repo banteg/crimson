@@ -29,7 +29,11 @@ from ..types import (
     Projectile,
     ProjectileTemplateId,
 )
-from .collision import _apply_damage_to_creature, _within_native_find_radius
+from .collision import (
+    _apply_damage_to_creature,
+    _within_native_find_radius,
+    creature_find_nearest_active,
+)
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
@@ -214,21 +218,13 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
             runtime_state.shock_chain_links_left = links_left - 1
 
             origin_pos = hit.proj.pos
-            min_dist_sq = 100.0 * 100.0
-
-            best_idx = 0 if bool(runtime_state.preserve_bugs) else -1
-            best_dist_sq = 1e12
-            for creature_id, creature in enumerate(creatures):
-                if creature_id == hit_creature:
-                    continue
-                if not creature.active:
-                    continue
-                d_sq = Vec2.distance_sq(origin_pos, creature.pos)
-                if d_sq <= min_dist_sq:
-                    continue
-                if d_sq < best_dist_sq:
-                    best_dist_sq = d_sq
-                    best_idx = creature_id
+            best_idx = creature_find_nearest_active(
+                creatures=creatures,
+                origin=origin_pos,
+                exclude_id=hit_creature,
+                min_dist=100.0,
+                preserve_bugs=bool(runtime_state.preserve_bugs),
+            )
 
             if best_idx < 0:
                 _post_hit_ion_common(ctx, hit)
