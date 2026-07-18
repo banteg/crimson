@@ -26,6 +26,12 @@ Living Fortress scale, health subtraction, and impulse subtraction through the
 shared x87 PC=24 helpers. A focused Barrel Greaser plus Doctor boundary differs
 by 17 micro-units from host-double arithmetic and pins the native result.
 
+Zig now owns the post-`creature_handle_death` branch here as well: ordinary
+damage deaths consume the type-indexed death-sound draw, while shock-ranged
+deaths instead consume the four exact caller-tagged draws five times and emit
+the native 36-unit, 0.7-second armored burst. Direct Energizer, plague, and
+no-corpse deaths no longer consume this damage-only follow-up.
+
 The natural VC6 reconstruction reaches 89.87% with exactly 237/237 normalized
 instructions and 80/0/0 reference agreement. The remaining structural delta
 is one exact 12-instruction ion-gun perk block: native block layout places it

@@ -2413,7 +2413,6 @@ pub const CreaturePool = struct {
                         terrain_fx,
                         &creature.pos,
                         @floatCast(world_size),
-                        true,
                     );
                     state.bonus_spawn_guard = prev_spawn_guard;
                     _ = awardExperienceFromReward(state, player, creature.reward_value);
@@ -2703,7 +2702,6 @@ pub const CreaturePool = struct {
             terrain_fx,
             &creature.pos,
             world_size,
-            true,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
@@ -2716,6 +2714,12 @@ pub const CreaturePool = struct {
                 creature.active = false;
             }
         }
+        emitCreatureApplyDamageFollowup(
+            state,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.pos,
+        );
         return xp_gained;
     }
 
@@ -2762,7 +2766,6 @@ pub const CreaturePool = struct {
             terrain_fx,
             &creature.pos,
             world_size,
-            false,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
             creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
@@ -2821,7 +2824,6 @@ pub const CreaturePool = struct {
             terrain_fx,
             &creature.pos,
             world_size,
-            true,
         );
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
@@ -3186,7 +3188,6 @@ pub const CreaturePool = struct {
             terrain_fx,
             &creature.pos,
             world_size,
-            true,
         );
         if (dt > 0.0 and !slot_reused_by_child) {
             creature.lifecycle_stage -= dt;
@@ -3199,6 +3200,12 @@ pub const CreaturePool = struct {
                 creature.active = false;
             }
         }
+        emitCreatureApplyDamageFollowup(
+            state,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.pos,
+        );
         return xp_gained;
     }
 };
@@ -3923,7 +3930,6 @@ fn emitDeathSideEffects(
     terrain_fx: *terrain_fx_mod.TerrainFxScratch,
     death_pos: *state_mod.Vec2,
     world_size: f32,
-    plan_death_sfx: bool,
 ) void {
     const spawned_bonus = bonus_pool.trySpawnOnKill(
         .{
@@ -3946,9 +3952,55 @@ fn emitDeathSideEffects(
         effects.spawnFreezeShatter(state, death_pos.*, shatter_angle, 5);
         _ = terrain_fx.decals.addRandom(state, death_pos.*);
     }
-    if (plan_death_sfx) {
-        // plan_death_sfx_keys chooses one death sample per death.
+}
+
+fn emitCreatureApplyDamageFollowup(
+    state: *state_mod.GameplayState,
+    effects: *effects_mod.EffectPool,
+    creature_flags: u32,
+    death_pos: state_mod.Vec2,
+) void {
+    if ((creature_flags & spawn_mod.CreatureFlags.ranged_attack_shock) == 0) {
         _ = state.rng.randTagged(rng_callers.creature_apply_damage_death_sfx);
+        return;
+    }
+
+    for (0..5) |_| {
+        const rotation_draw = state.rng.randTagged(rng_callers.creature_apply_damage_shock_burst_rotation);
+        const vel_x_draw = state.rng.randTagged(rng_callers.creature_apply_damage_shock_burst_vel_x);
+        const vel_y_draw = state.rng.randTagged(rng_callers.creature_apply_damage_shock_burst_vel_y);
+        const scale_step_draw = state.rng.randTagged(rng_callers.creature_apply_damage_shock_burst_scale_step);
+        const rotation = native_math.pc24Mul(
+            @as(f32, @floatFromInt(rotation_draw & 0x7f)),
+            @as(f32, 0.049087387),
+        );
+        const velocity: state_mod.Vec2 = .{
+            .x = @floatFromInt(@as(i32, @intCast(vel_x_draw & 0x7f)) - 0x40),
+            .y = @floatFromInt(@as(i32, @intCast(vel_y_draw & 0x7f)) - 0x40),
+        };
+        const scale_step = native_math.pc24Add(
+            native_math.pc24Mul(
+                @as(f32, @floatFromInt(scale_step_draw % 140)),
+                @as(f32, 0.01),
+            ),
+            @as(f32, 0.3),
+        );
+        _ = effects.spawn(
+            @intFromEnum(effects_mod.EffectId.burst),
+            death_pos,
+            velocity,
+            rotation,
+            1.0,
+            36.0,
+            36.0,
+            0.0,
+            0.7,
+            0x1d,
+            .{ .r = 0.8, .g = 0.8, .b = 0.3, .a = 0.5 },
+            0.0,
+            scale_step,
+            5,
+        );
     }
 }
 
@@ -4265,7 +4317,6 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
         &terrain_fx,
         &death_pos,
         1024.0,
-        false,
     );
 
     try expectFloatClose(32.0, death_pos.x);
@@ -4308,7 +4359,6 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
         &terrain_fx,
         &rush_pos,
         1024.0,
-        false,
     );
     try expectFloatClose(32.0, rush_pos.x);
     try expectFloatClose(992.0, rush_pos.y);
@@ -4395,6 +4445,99 @@ test "kill no corpse preserves native active-corpse reentry" {
     try std.testing.expectEqual(@as(i32, 25), players[0].experience);
     try std.testing.expectEqual(@as(i32, 1), state.survival_recent_death_count);
     try std.testing.expect(!pool.entries[0].active);
+}
+
+test "creature damage shock followup emits native burst and tagged draws" {
+    const ShockTrace = struct {
+        const Self = @This();
+
+        draws: [4]spawn_mod.Crand.TraceDraw = undefined,
+        count: usize = 0,
+
+        fn onDraw(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            if (self.count < self.draws.len) self.draws[self.count] = draw;
+            self.count += 1;
+        }
+    };
+
+    var state = state_mod.GameplayState.init(1);
+    var effects: effects_mod.EffectPool = .{};
+    var trace: ShockTrace = .{};
+    state.rng.setTraceSink(&trace, ShockTrace.onDraw, true);
+
+    emitCreatureApplyDamageFollowup(
+        &state,
+        &effects,
+        spawn_mod.CreatureFlags.ranged_attack_shock,
+        .{ .x = 100.0, .y = 200.0 },
+    );
+
+    try std.testing.expectEqual(@as(usize, 20), trace.count);
+    try std.testing.expectEqual(rng_callers.creature_apply_damage_shock_burst_rotation, trace.draws[0].caller.?);
+    try std.testing.expectEqual(rng_callers.creature_apply_damage_shock_burst_vel_x, trace.draws[1].caller.?);
+    try std.testing.expectEqual(rng_callers.creature_apply_damage_shock_burst_vel_y, trace.draws[2].caller.?);
+    try std.testing.expectEqual(rng_callers.creature_apply_damage_shock_burst_scale_step, trace.draws[3].caller.?);
+    try std.testing.expect(!state.rng.consumeMissingTraceCaller());
+    try std.testing.expectEqual(effects_mod.effect_pool_size - 5, effects.free_len);
+    for (effects.entries[0..5]) |entry| {
+        try std.testing.expectEqual(@as(i32, @intFromEnum(effects_mod.EffectId.burst)), entry.effect_id);
+        try std.testing.expectEqual(@as(i32, 0x1d), entry.flags);
+        try expectFloatClose(36.0, entry.half_width);
+        try expectFloatClose(36.0, entry.half_height);
+        try expectFloatClose(0.7, entry.lifetime);
+        try expectFloatClose(0.8, entry.color.r);
+        try expectFloatClose(0.8, entry.color.g);
+        try expectFloatClose(0.3, entry.color.b);
+        try expectFloatClose(0.5, entry.color.a);
+    }
+}
+
+test "direct no-corpse death does not run creature damage followup" {
+    const DrawCounter = struct {
+        const Self = @This();
+
+        count: usize = 0,
+
+        fn onDraw(ctx: ?*anyopaque, _: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            self.count += 1;
+        }
+    };
+
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    pool.entries[0] = .{
+        .active = true,
+        .hp = 10.0,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .reward_value = 25.0,
+    };
+
+    var state = state_mod.GameplayState.init(1);
+    state.bonus_spawn_guard = true;
+    var trace: DrawCounter = .{};
+    state.rng.setTraceSink(&trace, DrawCounter.onDraw, true);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0 },
+    };
+
+    _ = pool.killNoCorpse(
+        &state,
+        players[0..],
+        &bonuses,
+        &terrain_fx,
+        0,
+        owner_local_player,
+        1.0 / 60.0,
+        1024.0,
+    );
+
+    try std.testing.expectEqual(@as(usize, 0), trace.count);
+    try std.testing.expect(!state.rng.consumeMissingTraceCaller());
 }
 
 test "bloody mess quick learner reward is still doubled by double experience bonus" {
