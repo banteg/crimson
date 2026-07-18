@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.sfx_map import SfxId
 
-from ...math_parity import f32
+from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import PlayerState
 from ..helpers import perk_active
@@ -17,7 +17,7 @@ def _award_experience_once_from_reward(*, player: PlayerState, reward_value: flo
         return 0
 
     before = int(player.experience)
-    total_f32 = f32(f32(float(before)) + float(reward_f32))
+    total_f32 = x87_pc24_add(f32(float(before)), reward_f32)
     after = int(float(total_f32))
     player.experience = int(after)
     return int(after - before)
@@ -42,8 +42,9 @@ def _select_jinxed_accident_target(ctx: PerksUpdateEffectsCtx) -> PlayerState:
 
 
 def update_jinxed_timer(ctx: PerksUpdateEffectsCtx) -> None:
-    if ctx.state.jinxed_timer >= 0.0:
-        ctx.state.jinxed_timer -= ctx.dt
+    timer = f32(float(ctx.state.jinxed_timer))
+    if timer >= 0.0:
+        ctx.state.jinxed_timer = x87_pc24_sub(timer, f32(float(ctx.dt)))
 
 
 def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
@@ -60,7 +61,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         == 3
     ):
         player = _select_jinxed_accident_target(ctx)
-        player.health = float(player.health) - 5.0
+        player.health = x87_pc24_sub(f32(float(player.health)), f32(5.0))
         if ctx.fx_queue is not None:
             ctx.fx_queue.add_random(
                 pos=player.pos,
@@ -71,14 +72,16 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
                 rng=ctx.state.rng,
             )
 
-    ctx.state.jinxed_timer = (
-        float(
-            ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET)
-            % 20,
-        )
-        * 0.1
-        + float(ctx.state.jinxed_timer)
-        + 2.0
+    timer_roll = float(
+        ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_TIMER_RESET)
+        % 20,
+    )
+    ctx.state.jinxed_timer = x87_pc24_add(
+        x87_pc24_add(
+            x87_pc24_mul(timer_roll, f32(0.1)),
+            f32(float(ctx.state.jinxed_timer)),
+        ),
+        f32(2.0),
     )
 
     if float(ctx.state.bonuses.freeze) <= 0.0 and ctx.creatures is not None:
@@ -103,7 +106,10 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
 
         creature = ctx.creatures[idx]
         creature.hp = -1.0
-        creature.lifecycle_stage = float(creature.lifecycle_stage) - ctx.dt * 20.0
+        creature.lifecycle_stage = x87_pc24_sub(
+            f32(float(creature.lifecycle_stage)),
+            x87_pc24_mul(f32(float(ctx.dt)), f32(20.0)),
+        )
         # Native awards the reward exactly once: the Jinxed kill branch has no
         # Double Experience handling, unlike creature_handle_death.
         _award_experience_once_from_reward(

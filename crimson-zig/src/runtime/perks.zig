@@ -678,7 +678,7 @@ pub fn applyPyrokineticEffects(
         if (target_idx == -1) continue;
 
         var creature = &creatures.entries[@intCast(target_idx)];
-        creature.collision_timer = narrowF32(creature.collision_timer - dt);
+        creature.collision_timer = native_math.pc24Sub(creature.collision_timer, dt);
         if (creature.collision_timer >= 0.0) continue;
 
         creature.collision_timer = 0.5;
@@ -690,7 +690,10 @@ pub fn applyPyrokineticEffects(
                 3 => rng_callers.perks_update_effects_pyrokinetic_angle_0p3,
                 else => rng_callers.perks_update_effects_pyrokinetic_angle_0p2,
             };
-            const angle = narrowF32(@as(f32, @floatFromInt(state.rng.randTagged(caller) % 0x274)) * 0.01);
+            const angle = native_math.pc24Mul(
+                @as(f32, @floatFromInt(state.rng.randTagged(caller) % 0x274)),
+                @as(f32, 0.01),
+            );
             _ = particles.spawnParticle(
                 state,
                 creature.pos,
@@ -711,7 +714,7 @@ pub fn applyJinxedEffects(
     dt: f32,
 ) void {
     if (state.jinxed_timer >= 0.0) {
-        state.jinxed_timer = narrowF32(state.jinxed_timer - dt);
+        state.jinxed_timer = native_math.pc24Sub(state.jinxed_timer, dt);
     }
     if (state.jinxed_timer >= 0.0) return;
     if (players.len == 0) return;
@@ -719,13 +722,19 @@ pub fn applyJinxedEffects(
 
     if ((state.rng.randTagged(rng_callers.perks_update_effects_jinxed_accident_gate) % 10) == 3) {
         const target_idx = selectJinxedAccidentTarget(state, players);
-        players[target_idx].health = narrowF32(players[target_idx].health - 5.0);
+        players[target_idx].health = native_math.pc24Sub(players[target_idx].health, @as(f32, 5.0));
         _ = terrain_fx.decals.addRandom(state, players[target_idx].pos);
         _ = terrain_fx.decals.addRandom(state, players[target_idx].pos);
     }
 
     const timer_roll = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.perks_update_effects_jinxed_timer_reset) % 0x14));
-    state.jinxed_timer = narrowF32(narrowF32(timer_roll * 0.1) + state.jinxed_timer + 2.0);
+    state.jinxed_timer = native_math.pc24Add(
+        native_math.pc24Add(
+            native_math.pc24Mul(timer_roll, @as(f32, 0.1)),
+            state.jinxed_timer,
+        ),
+        @as(f32, 2.0),
+    );
 
     if (state.bonuses.freeze > 0.0) return;
 
@@ -743,8 +752,9 @@ pub fn applyJinxedEffects(
     if (!creatures.entries[idx].active) return;
 
     creatures.entries[idx].hp = -1.0;
-    creatures.entries[idx].lifecycle_stage = narrowF32(
-        creatures.entries[idx].lifecycle_stage - dt * 20.0,
+    creatures.entries[idx].lifecycle_stage = native_math.pc24Sub(
+        creatures.entries[idx].lifecycle_stage,
+        native_math.pc24Mul(dt, @as(f32, 20.0)),
     );
     // Native awards the reward exactly once: the Jinxed kill branch has no
     // Double Experience handling, unlike creature_handle_death.
@@ -899,7 +909,7 @@ fn awardExperienceOnceFromReward(
 
     const before = player.experience;
     const before_f32 = narrowF32(@as(f32, @floatFromInt(before)));
-    const total_f32 = narrowF32(before_f32 + reward_value);
+    const total_f32 = native_math.pc24Add(before_f32, reward_value);
     const after: i32 = @intFromFloat(total_f32);
     player.experience = after;
     return after - before;
@@ -1276,6 +1286,63 @@ test "jinxed preserve bugs excludes the last native creature slot" {
         @as(usize, 16),
         jinxedCreaturePoolMod(true, 16),
     );
+}
+
+test "pyrokinetic and jinxed timers keep native 36hz proc frame" {
+    var pyro_state = state_mod.GameplayState.init(1);
+    var pyro_players = [_]state_mod.PlayerState{
+        .{
+            .index = 0,
+            .pos = .{},
+            .health = 100.0,
+            .aim = .{ .x = 100.0, .y = 200.0 },
+        },
+    };
+    pyro_players[0].perk_counts.set(PerkId.pyrokinetic, 1);
+    var creatures: creatures_mod.CreaturePool = .{};
+    creatures.entries[0] = .{
+        .active = true,
+        .pos = .{ .x = 100.0, .y = 200.0 },
+        .hp = 100.0,
+        .collision_timer = 0.25,
+    };
+    var particles: particles_mod.ParticlePool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+
+    for (0..9) |_| {
+        applyPyrokineticEffects(
+            &pyro_state,
+            pyro_players[0..],
+            &creatures,
+            &particles,
+            &terrain_fx,
+            1.0 / 36.0,
+        );
+    }
+
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), creatures.entries[0].collision_timer);
+
+    var jinxed_state = state_mod.GameplayState.init(1);
+    jinxed_state.jinxed_timer = 0.25;
+    jinxed_state.bonuses.freeze = 1.0;
+    var jinxed_players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 50.0 },
+    };
+    jinxed_players[0].perk_counts.set(PerkId.jinxed, 1);
+    var empty_creatures: creatures_mod.CreaturePool = .{};
+    var jinxed_terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+
+    for (0..9) |_| {
+        applyJinxedEffects(
+            &jinxed_state,
+            jinxed_players[0..],
+            &empty_creatures,
+            &jinxed_terrain_fx,
+            1.0 / 36.0,
+        );
+    }
+
+    try std.testing.expectEqual(@as(f32, 1.1175870895385742e-08), jinxed_state.jinxed_timer);
 }
 
 test "death clock apply and update mirror runtime hooks" {

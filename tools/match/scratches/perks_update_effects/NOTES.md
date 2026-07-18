@@ -53,3 +53,11 @@ arithmetic. Both ports now expose those operations directly. Python's former
 host-double Death Clock drain left `+0.000001` HP after 900 updates at 30 Hz;
 native is already at `-0.0008849055` on that frame and clamps the dead player
 to zero on the following update.
+
+Pyrokinetic's target-timer store at `0x00406db9`, Jinxed's proc-timer store at
+`0x00406f85`, and the Jinxed reseed chain at `0x00406ffb..0x00407011` also
+retain PC=24 results. At 36 Hz, both native timers remain at `1.1175871e-8`
+through frame 9 and proc on frame 10. Python previously crossed on frame 9,
+consuming Jinxed RNG or emitting the Pyrokinetic particle burst one update
+early. The two ports now also make Jinxed's stored five-health damage and
+`frame_dt * 20` creature lifecycle subtraction explicit.

@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.gameplay import GameplayState
+from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.perks.runtime.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
@@ -17,6 +18,13 @@ _FX_QUEUE_CALLERS = [
     RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
     RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
 ]
+_JINXED_ZERO_ROLL_AFTER_0P2 = x87_pc24_add(
+    x87_pc24_add(
+        x87_pc24_mul(0.0, f32(0.1)),
+        x87_pc24_sub(f32(0.0), f32(0.2)),
+    ),
+    f32(2.0),
+)
 
 
 def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> None:
@@ -42,9 +50,12 @@ def test_perks_update_effects_jinxed_kills_creature_and_awards_base_reward() -> 
 
     perks_update_effects(state, [player], dt, creatures=creatures)
 
-    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert creatures[2].hp == -1.0
-    assert_float_close(creatures[2].lifecycle_stage, 16.0 - dt * 20.0)
+    assert_float_close(
+        creatures[2].lifecycle_stage,
+        x87_pc24_sub(f32(16.0), x87_pc24_mul(f32(dt), f32(20.0))),
+    )
     assert player.experience == 112
     assert state.sfx_queue == [SfxId.TROOPER_INPAIN_01]
     assert [record.caller for record in state.rng.records_since()] == [
@@ -105,7 +116,7 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
 
     perks_update_effects(state, [player], dt, creatures=[], fx_queue=fx_queue)
 
-    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert_float_close(player.health, 45.0)
     assert fx_queue.count == 2
     assert state.sfx_queue == []
@@ -139,7 +150,7 @@ def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_player
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
-    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert_float_close(player0.health, 50.0)
     assert_float_close(player1.health, 65.0)
     assert fx_queue.count == 2
@@ -173,7 +184,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
-    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert_float_close(player0.health, 45.0)
     assert_float_close(player1.health, 70.0)
     assert fx_queue.count == 2
@@ -206,7 +217,7 @@ def test_perks_update_effects_jinxed_default_skips_dead_players_without_extra_pi
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
-    assert_float_close(state.jinxed_timer, 1.8)
+    assert_float_close(state.jinxed_timer, _JINXED_ZERO_ROLL_AFTER_0P2)
     assert_float_close(player0.health, 45.0)
     assert_float_close(player1.health, 0.0)
     assert fx_queue.count == 2
@@ -346,6 +357,26 @@ def test_perks_update_effects_jinxed_timer_uses_f32_underflow_threshold() -> Non
         expected_after_state=before_state,
     )
     assert rng.values_since(before_calls) == []
+
+
+def test_perks_update_effects_jinxed_keeps_native_36hz_proc_frame() -> None:
+    state = GameplayState()
+    state.jinxed_timer = 0.25
+    state.bonuses.freeze = 1.0
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
+    player.perk_counts[int(PerkId.JINXED)] = 1
+
+    for _ in range(9):
+        perks_update_effects(state, [player], 1.0 / 36.0, creatures=[])
+
+    assert state.jinxed_timer == 1.1175870895385742e-08
+    assert state.rng.calls == 0
+
+    perks_update_effects(state, [player], 1.0 / 36.0, creatures=[])
+
+    assert state.jinxed_timer == 1.9722222089767456
+    assert state.rng.calls == 2
 
 
 def test_perks_update_effects_jinxed_award_ignores_double_experience_bonus() -> None:
