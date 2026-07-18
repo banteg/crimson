@@ -36,3 +36,14 @@ MSVC 7.0 either preserve or worsen the residual. The calibrated compiler keeps
 the value as a constant or an x87 temporary instead. No address-taking,
 `volatile`, aliasing trick, or dummy operation is retained merely to force the
 native stack slot.
+
+## Port parity
+
+The native Fire Bullets override is global rather than owner-scoped: for a
+player-owned non-Fire-Bullets projectile it tests the first two player timer
+slots, changes only the projectile type, and traverses the counter loop twice.
+Python already preserved that behavior. Zig's production weapon, perk, and
+Nuke paths now receive or resolve the full player context and reproduce the
+global check plus double shot credit when `preserve_bugs` is enabled; corrected
+mode remains scoped to the projectile owner. This does not alter the scratch
+candidate or its score.

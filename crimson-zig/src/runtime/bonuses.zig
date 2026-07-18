@@ -635,7 +635,7 @@ fn applyNukeBonus(
             @as(f32, 0.01),
         );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
+        applyPlayerProjectileSpawnRules(state, players, projectile_owner, 0, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
         const speed_scale = native_math.pc24Add(
@@ -658,7 +658,7 @@ fn applyNukeBonus(
             @as(f32, 0.01),
         );
         var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner, &type_id);
+        applyPlayerProjectileSpawnRules(state, players, projectile_owner, 0, &type_id);
         const meta = projectileTravelBudgetFromRawId(type_id);
         _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
     }
@@ -1173,6 +1173,7 @@ fn applyPlayerProjectileSpawnRules(
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
     owner: owner_ref.OwnerRef,
+    owner_player_index: ?usize,
     type_id: *i32,
 ) void {
     if (state.bonus_spawn_guard) return;
@@ -1180,26 +1181,79 @@ fn applyPlayerProjectileSpawnRules(
         .player => |ref| ref,
         else => return,
     };
-    const player_index: ?usize = if (player_ref.local_host and player_ref.index == 0)
+    const inferred_player_index: ?usize = if (player_ref.local_host and player_ref.index == 0)
         if (players.len == 1) @as(?usize, 0) else null
     else if (player_ref.index < players.len)
         player_ref.index
     else
         null;
+    const player_index: ?usize = if (owner_player_index) |idx|
+        idx
+    else
+        inferred_player_index;
 
     var shot_credit: i32 = 1;
+    const fire_bullets_active = if (state.preserve_bugs) blk: {
+        for (players[0..@min(players.len, 2)]) |player| {
+            if (player.fire_bullets_timer > 0.0) break :blk true;
+        }
+        break :blk false;
+    } else if (player_index) |idx|
+        idx < players.len and players[idx].fire_bullets_timer > 0.0
+    else
+        false;
+    if (type_id.* != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
+        fire_bullets_active)
+    {
+        type_id.* = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
+        shot_credit = 2;
+    }
     if (player_index) |idx| {
-        if (type_id.* != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
-            players[idx].fire_bullets_timer > 0.0)
-        {
-            type_id.* = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
-            shot_credit = 2;
-        }
-        if (idx < state.shots_fired.len) {
-            state.shots_fired[idx] += shot_credit;
-        }
+        if (idx < state.shots_fired.len) state.shots_fired[idx] += shot_credit;
     }
     state.shots_fired_total += shot_credit;
+}
+
+test "player projectile spawn rules preserve global fire bullets timer" {
+    const players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{}, .fire_bullets_timer = 1.0 },
+    };
+    const owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+
+    var preserved_state = state_mod.GameplayState.init(1);
+    preserved_state.preserve_bugs = true;
+    var preserved_type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
+    applyPlayerProjectileSpawnRules(
+        &preserved_state,
+        players[0..],
+        owner,
+        0,
+        &preserved_type_id,
+    );
+    try std.testing.expectEqual(
+        @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
+        preserved_type_id,
+    );
+    try std.testing.expectEqual(@as(i32, 2), preserved_state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 2), preserved_state.shots_fired_total);
+
+    var corrected_state = state_mod.GameplayState.init(1);
+    corrected_state.preserve_bugs = false;
+    var corrected_type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
+    applyPlayerProjectileSpawnRules(
+        &corrected_state,
+        players[0..],
+        owner,
+        0,
+        &corrected_type_id,
+    );
+    try std.testing.expectEqual(
+        @intFromEnum(game_ids.ProjectileTypeId.pistol),
+        corrected_type_id,
+    );
+    try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired_total);
 }
 
 fn appendPickupBonusId(

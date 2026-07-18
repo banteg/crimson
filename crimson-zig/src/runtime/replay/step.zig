@@ -389,6 +389,7 @@ pub fn stepTick(
         weapons_runtime.applyPlayerPerkTicksWithEffects(
             &context.state,
             player,
+            players,
             &context.projectiles,
             &context.sprite_effects,
             frame.dt_sim,
@@ -418,6 +419,7 @@ pub fn stepTick(
         try weapons_runtime.stepPlayerForTickWithEffects(
             &context.state,
             player,
+            players,
             &context.projectiles,
             &context.secondary_projectiles,
             &context.creatures,
