@@ -11,8 +11,8 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,143 instructions against 2,203 native instructions, scores
-45.28%, and aligns 305 candidate references. The candidate's natural local
+It produces 2,136 instructions against 2,203 native instructions, scores
+45.40%, and aligns 307 candidate references. The candidate's natural local
 frame is `0x98`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
@@ -31,6 +31,16 @@ Native constants read directly from the image recover the lingering cases:
 - Ion Cannon: lifetime `frame_dt * 0.7`, damage `frame_dt * 300`, radius
   `ion_scale * 128`
 - Gauss Gun: lifetime `frame_dt * 0.1`
+
+The three ion damage cases are separately spelled source calls that VC6
+naturally tail-merges. Native compares types `0x15`, `0x16`, and `0x17` at
+`0x00420c16..0x00420c23`; each case stages its own damage and radius, then
+converges on the sole `creatures_apply_radius_damage` call at `0x00420cc9`.
+Writing one call after shared source locals leaves extra stores, while keeping
+Ion Rifle, Ion Minigun, and Ion Cannon calls in their respective branches
+reproduces the compare ladder, early argument pushes, and one-call result
+without a source-level jump. This raises the aggregate candidate from 45.28%
+to 45.40% and aligns 307 references.
 
 The native damage impulse deliberately writes both vector components from the
 same cosine term. The source retains that oddity because the disassembly and

@@ -66,20 +66,19 @@ extern "C" void projectile_update(void)
                     }
 
                     projectile->pos.tail.vy.life_timer -= frame_dt;
-                    float radius;
-                    float damage;
                     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
-                        damage = frame_dt * 100.0f;
-                        radius = ion_damage_scale * 88.0f;
+                        creatures_apply_radius_damage(
+                            &projectile->pos_x,
+                            ion_damage_scale * 88.0f,
+                            frame_dt * 100.0f,
+                            7);
                     } else {
-                        damage = frame_dt * 40.0f;
-                        radius = ion_damage_scale * 60.0f;
+                        creatures_apply_radius_damage(
+                            &projectile->pos_x,
+                            ion_damage_scale * 60.0f,
+                            frame_dt * 40.0f,
+                            7);
                     }
-                    creatures_apply_radius_damage(
-                        &projectile->pos_x,
-                        radius,
-                        damage,
-                        7);
                 } else if (type_id == PROJECTILE_TYPE_ION_CANNON) {
                     projectile->pos.tail.vy.life_timer -= frame_dt * 0.7f;
                     creatures_apply_radius_damage(
