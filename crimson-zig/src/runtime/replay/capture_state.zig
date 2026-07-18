@@ -434,7 +434,11 @@ test "capture state reset clears transient pools and restores header fx toggle" 
 
     var players_storage: [state_mod.max_players]state_mod.PlayerState = undefined;
     const players = players_storage[0..1];
+    player_runtime.initializePlayers(players);
     player_runtime.resetPlayers(players, 1024.0, null);
+    players[0].weapon.reload_active = true;
+    players[0].hot_tempered_timer = 1.25;
+    players[0].fire_bullets_timer = 7.25;
 
     var creatures: creatures_mod.CreaturePool = .{};
     creatures.entries[0].active = true;
@@ -497,6 +501,9 @@ test "capture state reset clears transient pools and restores header fx toggle" 
     try std.testing.expect(!secondary_projectiles.entries[0].active);
     try std.testing.expectEqual(game_ids.BonusId.unused, bonuses.entries[0].bonus_id);
     try std.testing.expect(creatures.capture_spawn_events_authoritative);
+    try std.testing.expect(players[0].weapon.reload_active);
+    try std.testing.expectEqual(@as(f32, 1.25), players[0].hot_tempered_timer);
+    try std.testing.expectEqual(@as(f32, 7.25), players[0].fire_bullets_timer);
 }
 
 test "capture creature spawn event backfills ai7 rollover rng draw for spawned rows" {

@@ -125,16 +125,23 @@ pub fn resetPlayerWeaponNative(player: *PlayerState) void {
     // Port of the weapon block in `player_reset_all` (0x41fc80): native
     // resets every run to a hardcoded 10-round pistol with a primed 1.0s
     // reload duration and a decaying 0.8s shot cooldown, without going
-    // through weapon assignment.
-    player.weapon = .{
-        .weapon_id = WeaponId.pistol,
-        .clip_size = 10,
-        .ammo = 10.0,
-        .reload_active = false,
-        .reload_timer = 0.0,
-        .reload_timer_max = 1.0,
-        .shot_cooldown = 0.8,
-    };
+    // through weapon assignment. The primary reload-active byte is not one
+    // of the fields written by native reset and intentionally stays stale.
+    player.weapon.weapon_id = WeaponId.pistol;
+    player.weapon.clip_size = 10;
+    player.weapon.ammo = 10.0;
+    player.weapon.reload_timer = 0.0;
+    player.weapon.reload_timer_max = 1.0;
+    player.weapon.shot_cooldown = 0.8;
+}
+
+pub fn initializePlayers(players: []PlayerState) void {
+    for (players, 0..) |*player, idx| {
+        player.* = .{
+            .index = @intCast(idx),
+            .pos = .{},
+        };
+    }
 }
 
 pub fn resetPlayers(
@@ -161,13 +168,30 @@ pub fn resetPlayers(
                 .x = narrowF32(base.x - offset),
                 .y = narrowF32(base.y - offset),
             };
-        player.* = .{
-            .index = @intCast(idx),
-            .pos = pos,
-            .spread_heat = 0.0,
-        };
+        // Native owns two static player records and mutates only this field
+        // set. Do not reconstruct the port state: unwritten player and weapon
+        // fields are observable residue across gameplay resets.
+        player.pos = pos;
+        player.health = 100.0;
+        player.size = 48.0;
+        player.speed_multiplier = 2.0;
+        player.move_speed = 0.0;
+        player.heading = 0.0;
+        player.death_timer = 16.0;
+        player.experience = 0;
+        player.level = 1;
+        player.spread_heat = 0.0;
+        player.perk_counts = std.EnumArray(PerkId, i32).initFill(0);
+        player.plaguebearer_active = false;
+        player.speed_bonus_timer = 0.0;
+        player.shield_timer = 0.0;
         resetPlayerWeaponNative(player);
         initDefaultAltWeapon(player);
+
+        // These two represented values are written by gameplay_reset_state
+        // immediately after its call to player_reset_all.
+        player.low_health_timer = 100.0;
+        player.aux_timer = 0.0;
     }
 }
 
@@ -250,4 +274,75 @@ test "reset players uses native alternating 80-unit layout" {
     try std.testing.expectEqual(@as(state_mod.Vec2, .{ .x = 432.0, .y = 432.0 }), players[1].pos);
     try std.testing.expectEqual(@as(f32, 0.0), players[0].spread_heat);
     try std.testing.expectEqual(@as(f32, 0.0), players[1].spread_heat);
+}
+
+test "reset players preserves native unwritten residue" {
+    var player: PlayerState = .{
+        .index = 0,
+        .pos = .{ .x = 20.0, .y = 30.0 },
+        .health = 7.0,
+        .move_phase = 4.5,
+        .turn_speed = 3.0,
+        .aim = .{ .x = 700.0, .y = 300.0 },
+        .aim_heading = 1.25,
+        .evil_eyes_target_creature = 17,
+        .weapon = .{
+            .weapon_id = .rocket_launcher,
+            .clip_size = 4,
+            .ammo = 2.0,
+            .reload_active = true,
+            .reload_timer = 3.0,
+            .reload_timer_max = 4.0,
+            .shot_cooldown = 5.0,
+        },
+        .weapon_reset_latch = 9,
+        .aux_timer = 2.0,
+        .muzzle_flash_alpha = 0.75,
+        .low_health_timer = 0.25,
+        .plaguebearer_active = true,
+        .hot_tempered_timer = 1.25,
+        .man_bomb_timer = 2.25,
+        .living_fortress_timer = 3.25,
+        .fire_cough_timer = 4.25,
+        .speed_bonus_timer = 5.25,
+        .shield_timer = 6.25,
+        .fire_bullets_timer = 7.25,
+    };
+    player.perk_counts.set(.long_distance_runner, 1);
+
+    var players = [_]PlayerState{player};
+    resetPlayers(players[0..], 1024.0, null);
+    player = players[0];
+
+    try std.testing.expectEqual(@as(Vec2, .{ .x = 512.0, .y = 512.0 }), player.pos);
+    try std.testing.expectEqual(@as(f32, 100.0), player.health);
+    try std.testing.expectEqual(@as(f32, 0.0), player.move_speed);
+    try std.testing.expectEqual(@as(f32, 0.0), player.heading);
+    try std.testing.expectEqual(@as(f32, 16.0), player.death_timer);
+    try std.testing.expectEqual(@as(i32, 0), player.perk_counts.get(.long_distance_runner));
+    try std.testing.expect(!player.plaguebearer_active);
+    try std.testing.expectEqual(@as(f32, 0.0), player.speed_bonus_timer);
+    try std.testing.expectEqual(@as(f32, 0.0), player.shield_timer);
+    try std.testing.expectEqual(@as(f32, 100.0), player.low_health_timer);
+    try std.testing.expectEqual(@as(f32, 0.0), player.aux_timer);
+    try std.testing.expectEqual(WeaponId.pistol, player.weapon.weapon_id);
+    try std.testing.expectEqual(@as(i32, 10), player.weapon.clip_size);
+    try std.testing.expectEqual(@as(f32, 10.0), player.weapon.ammo);
+    try std.testing.expect(player.weapon.reload_active);
+    try std.testing.expectEqual(@as(f32, 0.0), player.weapon.reload_timer);
+    try std.testing.expectEqual(@as(f32, 1.0), player.weapon.reload_timer_max);
+    try std.testing.expectEqual(@as(f32, 0.8), player.weapon.shot_cooldown);
+
+    try std.testing.expectEqual(@as(f32, 4.5), player.move_phase);
+    try std.testing.expectEqual(@as(f32, 3.0), player.turn_speed);
+    try std.testing.expectEqual(@as(Vec2, .{ .x = 700.0, .y = 300.0 }), player.aim);
+    try std.testing.expectEqual(@as(f32, 1.25), player.aim_heading);
+    try std.testing.expectEqual(@as(i32, 17), player.evil_eyes_target_creature);
+    try std.testing.expectEqual(@as(i32, 9), player.weapon_reset_latch);
+    try std.testing.expectEqual(@as(f32, 0.75), player.muzzle_flash_alpha);
+    try std.testing.expectEqual(@as(f32, 1.25), player.hot_tempered_timer);
+    try std.testing.expectEqual(@as(f32, 2.25), player.man_bomb_timer);
+    try std.testing.expectEqual(@as(f32, 3.25), player.living_fortress_timer);
+    try std.testing.expectEqual(@as(f32, 4.25), player.fire_cough_timer);
+    try std.testing.expectEqual(@as(f32, 7.25), player.fire_bullets_timer);
 }

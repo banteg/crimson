@@ -14,6 +14,15 @@ vector shape:
 - the non-demo mouse position and every creature collision flag are reset
   inside the player loop.
 
+The corresponding Python and Zig gameplay reset now mutate existing player
+records rather than replacing the whole object. This preserves native
+unwritten residue, including the primary `reload_active` byte, Fire Bullets and
+perk-effect timers, movement phase, aim state, and muzzle-flash state. The
+ports still apply the represented `gameplay_reset_state` follow-up writes
+(`low_health_timer`, Python `auto_target`, and the separate player auxiliary
+timer). Zig first-use storage is initialized explicitly before the partial
+reset, so the parity fix does not read undefined stack data.
+
 The native immediate-zero store and its placement among neighboring gameplay
 timers identify `player_reset_reserved_zero` as a write-only float, rather than
 the earlier provisional integer view.

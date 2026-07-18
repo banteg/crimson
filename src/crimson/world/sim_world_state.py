@@ -88,13 +88,13 @@ def _reset_player_weapon_native(player: PlayerState) -> None:
     Native resets every run to a hardcoded 10-round pistol with a primed
     1.0s reload duration and a decaying 0.8s shot cooldown; it does not go
     through `weapon_assign_player` (no table stats, no usage count, no
-    reload sfx). Quest setup assigns the start weapon on top of this."""
+    reload sfx), and it leaves the primary reload-active byte untouched.
+    Quest setup assigns the start weapon on top of this."""
 
     weapon = player.weapon
     weapon.weapon_id = WeaponId.PISTOL
     weapon.clip_size = 10
     weapon.ammo = 10.0
-    weapon.reload_active = False
     weapon.reload_timer = 0.0
     weapon.reload_timer_max = 1.0
     weapon.shot_cooldown = 0.8
@@ -108,6 +108,7 @@ def reset_world_players(
     player_count: int,
     spawn_pos: Vec2 | None = None,
 ) -> None:
+    previous_players = tuple(players)
     players.clear()
 
     if spawn_pos is None:
@@ -123,9 +124,38 @@ def reset_world_players(
             pos = Vec2(f32(base.x - offset), f32(base.y - offset))
         else:
             pos = Vec2(f32(base.x + offset), f32(base.y + offset))
-        player = PlayerState(index=idx, pos=pos, spread_heat=0.0)
+        if idx < len(previous_players):
+            player = previous_players[idx]
+            player.index = idx
+        else:
+            player = PlayerState(index=idx, pos=pos)
+
+        # `player_reset_all` mutates selected fields in the two static native
+        # records; it does not reconstruct the player object. Keep the same
+        # contract here so run-transition residue remains observable.
+        player.pos = pos
+        player.health = 100.0
+        player.size = 48.0
+        player.speed_multiplier = 2.0
+        player.move_speed = 0.0
+        player.heading = 0.0
+        player.death_timer = 16.0
+        player.experience = 0
+        player.level = 1
+        player.spread_heat = 0.0
+        player.perk_counts = [0] * len(player.perk_counts)
+        player.plaguebearer_active = False
+        player.speed_bonus_timer = 0.0
+        player.shield_timer = 0.0
         _reset_player_weapon_native(player)
         init_default_alt_weapon(player)
+
+        # `gameplay_reset_state` immediately follows `player_reset_all` with
+        # these represented per-player writes. The native move target is held
+        # by the input runtime rather than PlayerState in this port.
+        player.low_health_timer = 100.0
+        player.auto_target = 0
+        player.aux_timer = 0.0
         players.append(player)
 
 

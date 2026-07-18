@@ -227,6 +227,7 @@ pub const DeterministicSession = struct {
         session.creatures.quest_fail_retry_count = config.quest_fail_retry_count;
 
         creatures_mod.applyPoolResidue(&session.creatures, config.initial_creature_pool);
+        player_runtime.initializePlayers(session.players());
         player_runtime.resetPlayers(session.players(), config.world_size, null);
         session.creatures.capture_spawn_events_authoritative = options.capture_spawn_events_authoritative;
         session.creatures.effects = &session.effects;
