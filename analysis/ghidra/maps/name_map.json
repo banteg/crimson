@@ -4088,6 +4088,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0044fa30",
+    "name": "play_game_player_count_list_destroy",
+    "signature": "void play_game_player_count_list_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local player-count list in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa40",
+    "name": "play_game_tutorial_button_destroy",
+    "signature": "void play_game_tutorial_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local Tutorial button in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa50",
+    "name": "play_game_hardcore_checkbox_destroy",
+    "signature": "void play_game_hardcore_checkbox_destroy(void)",
+    "comment": "empty atexit destructor thunk for the residual function-local Hardcore checkbox in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa60",
+    "name": "play_game_typo_button_destroy",
+    "signature": "void play_game_typo_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local Typ-o-Shooter button in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa70",
+    "name": "play_game_survival_button_destroy",
+    "signature": "void play_game_survival_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local Survival button in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa80",
+    "name": "play_game_rush_button_destroy",
+    "signature": "void play_game_rush_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local Rush button in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fa90",
+    "name": "play_game_quests_button_destroy",
+    "signature": "void play_game_quests_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the function-local Quests button in play_game_menu_update"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0044faa0",
     "name": "ui_element_init_defaults",
     "signature": "void ui_element_init_defaults(ui_element_t *element)",

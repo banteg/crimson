@@ -9139,6 +9139,13 @@
       "type": "ui_list_widget_t"
     },
     {
+      "address": "0x004d7658",
+      "comment": "Unused Play-game menu Hardcore checkbox state retained as a function-local static by play_game_menu_update.",
+      "name": "play_game_menu_hardcore_checkbox",
+      "program": "crimsonland.exe",
+      "type": "ui_checkbox_t"
+    },
+    {
       "address": "0x004d7660",
       "comment": "Controls menu player-profile dropdown/list state (Player 1..4 selector).",
       "name": "controls_player_profile_list",

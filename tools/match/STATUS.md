@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**670/2173** functions matched, **128289/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**677/2173** functions matched, **128296/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 453/997 | 101602/386756 | 26.3% | 453/556 |
+| crimsonland.exe | 460/997 | 101609/386756 | 26.3% | 460/564 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**453/997** functions, **101602/386756** bytes (**26.3%**), **453/556** scratches verified.
+**460/997** functions, **101609/386756** bytes (**26.3%**), **460/564** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -557,6 +557,14 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
 | wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
+| wip | play_game_menu_update | 0x0044ed80 | 3238 | 776/777 | 87.44% | 120/777 | 275/0/28 |  | play-game-mode-buttons-player-count-and-routing |
+| match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |
+| match | play_game_tutorial_button_destroy | 0x0044fa40 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-tutorial-button-empty-destructor |
+| match | play_game_hardcore_checkbox_destroy | 0x0044fa50 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-hardcore-checkbox-empty-destructor |
+| match | play_game_typo_button_destroy | 0x0044fa60 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-typo-button-empty-destructor |
+| match | play_game_survival_button_destroy | 0x0044fa70 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-survival-button-empty-destructor |
+| match | play_game_rush_button_destroy | 0x0044fa80 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-rush-button-empty-destructor |
+| match | play_game_quests_button_destroy | 0x0044fa90 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-quests-button-empty-destructor |
 | match | ui_element_init_defaults | 0x0044faa0 | 173 | 40/40 | 100.00% | 40/40 | 3/0/0 |  | ui-element-default-state |
 | wip | ui_element_layout_calc | 0x0044fb50 | 288 | 86/86 | 95.35% | 16/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
