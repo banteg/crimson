@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
+import crimson.render.projectile_draw.primary_plasma as primary_plasma_mod
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
@@ -192,6 +193,51 @@ def test_draw_registry_returns_false_for_plasma_without_particles_texture() -> N
         alpha=1.0,
     )
     assert draw_projectile_from_registry(ctx) is False
+
+
+def test_draw_registry_renders_native_bullet_core_for_shrinkifier(mocker) -> None:
+    calls: list[tuple[int, float, float]] = []
+
+    def _draw_texture_pro(texture, _src, dst, _origin, rotation, _tint) -> None:
+        calls.append((int(texture.id), float(dst.width), float(rotation)))
+
+    mocker.patch.object(primary_plasma_mod.rl, "begin_blend_mode")
+    mocker.patch.object(primary_plasma_mod.rl, "end_blend_mode")
+    mocker.patch.object(primary_plasma_mod.rl, "draw_texture_pro", side_effect=_draw_texture_pro)
+
+    resources = _ResourcesStub(
+        particles=_TextureStub(id=1),
+        bullet=_TextureStub(id=2),
+    )
+    renderer = _BeamRendererStub(frame=_FrameStub(resources=resources))
+    angle = 0.5
+    proj = _projectile(
+        type_id=ProjectileTemplateId.SHRINKIFIER,
+        pos=Vec2(10.0, 0.0),
+        origin=Vec2(),
+        life_timer=0.4,
+        angle=angle,
+        speed_scale=1.0,
+    )
+    ctx = ProjectileDrawCtx(
+        renderer=_as_renderer(renderer),
+        proj=proj,
+        proj_index=0,
+        texture=None,
+        type_id=int(ProjectileTemplateId.SHRINKIFIER),
+        pos=proj.pos,
+        screen_pos=proj.pos,
+        life=0.4,
+        angle=angle,
+        scale=1.0,
+        alpha=1.0,
+    )
+
+    assert draw_projectile_from_registry(ctx) is True
+    texture_id, width, rotation = calls[-1]
+    assert texture_id == 2
+    assert width == 4.0
+    assert math.isclose(rotation, angle * 180.0 / math.pi, abs_tol=1e-9)
 
 
 def test_draw_registry_returns_true_for_beam_types_even_when_dist_is_zero() -> None:

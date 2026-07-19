@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.projectiles.types import ProjectileTemplateId
-from crimson.render.projectile_draw.primary_plasma import plasma_trail_segment_count
+from crimson.render.projectile_draw.primary_plasma import plasma_trail_segment_count, plasma_uses_bullet_core
 from crimson.render.projectile_render_registry import (
     beam_effect_scale,
     known_proj_rgb,
@@ -65,6 +65,14 @@ def test_plasma_trail_segment_count_clamps_and_rejects_zero_divisor() -> None:
         )
         == 0
     )
+
+
+def test_plasma_bullet_core_matches_native_late_pass_types() -> None:
+    assert plasma_uses_bullet_core(ProjectileTemplateId.SHRINKIFIER)
+    assert plasma_uses_bullet_core(ProjectileTemplateId.SPIDER_PLASMA)
+    assert plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_CANNON)
+    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_RIFLE)
+    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_MINIGUN)
 
 
 def test_beam_effect_scale_ion_types() -> None:

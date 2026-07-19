@@ -11,7 +11,20 @@ from grim.raylib_api import rl
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...sim.world_defs import PLASMA_PARTICLE_TYPES
 from ..projectile_render_registry import plasma_projectile_render_config
+from .common import RAD_TO_DEG
 from .types import ProjectileDrawCtx
+
+_PLASMA_BULLET_CORE_TYPES = frozenset(
+    {
+        0x18,  # Shrinkifier
+        0x1A,  # Spider Plasma
+        0x1C,  # Plasma Cannon
+    },
+)
+
+
+def plasma_uses_bullet_core(type_id: int) -> bool:
+    return int(type_id) in _PLASMA_BULLET_CORE_TYPES
 
 
 def plasma_trail_segment_count(
@@ -119,6 +132,22 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, aura_tint)
 
         rl.end_blend_mode()
+        if plasma_uses_bullet_core(type_id):
+            bullet_texture = resources.texture(TextureId.BULLET_I)
+            if bullet_texture is not None:
+                size = 4.0 * ctx.scale
+                bullet_src = rl.Rectangle(0.0, 0.0, float(bullet_texture.width), float(bullet_texture.height))
+                bullet_dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, size, size)
+                bullet_origin = rl.Vector2(size * 0.5, size * 0.5)
+                bullet_tint = RGBA(0.8, 0.8, 0.8, alpha * 0.9).to_rl()
+                rl.draw_texture_pro(
+                    bullet_texture,
+                    bullet_src,
+                    bullet_dst,
+                    bullet_origin,
+                    ctx.angle * RAD_TO_DEG,
+                    bullet_tint,
+                )
         return True
 
     fade = clamp(float(ctx.life) * 2.5, 0.0, 1.0)
@@ -135,4 +164,4 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     return True
 
 
-__all__ = ["draw_plasma_particles", "plasma_trail_segment_count"]
+__all__ = ["draw_plasma_particles", "plasma_trail_segment_count", "plasma_uses_bullet_core"]
