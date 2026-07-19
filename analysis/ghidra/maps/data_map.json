@@ -8449,6 +8449,16 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004cc8e0",
+      "aliases": [
+        "?back_button@?CE@??unlocked_weapons_database_update@@9@4Udatabase_button_t@@A"
+      ],
+      "comment": "Function-local Back button owned by the unlocked-weapons database screen.",
+      "name": "unlocked_weapons_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004cc910",
       "aliases": [
         "?$S1@?1??ui_menu_item_update@@9@4EA"
@@ -8500,6 +8510,26 @@
       "type": "char *[9]"
     },
     {
+      "address": "0x004ccb80",
+      "aliases": [
+        "?back_button@?CE@??unlocked_perks_database_update@@9@4Udatabase_button_t@@A"
+      ],
+      "comment": "Function-local Back button owned by the unlocked-perks database screen.",
+      "name": "unlocked_perks_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004ccb98",
+      "aliases": [
+        "?scrollbar@?BJ@??unlocked_perks_database_update@@9@4Udatabase_scrollbar_t@@A"
+      ],
+      "comment": "Function-local 56-byte scroll-list state owned by the unlocked-perks database screen.",
+      "name": "unlocked_perks_scrollbar",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[56]"
+    },
+    {
       "address": "0x004ccbd0",
       "comment": "UI focus candidate list used by ui_focus_update.",
       "name": "ui_focus_candidates",
@@ -8518,6 +8548,16 @@
       "name": "unlocked_weapons_database_init_flags",
       "program": "crimsonland.exe",
       "type": "char"
+    },
+    {
+      "address": "0x004ccc58",
+      "aliases": [
+        "?scrollbar@?BJ@??unlocked_weapons_database_update@@9@4Udatabase_scrollbar_t@@A"
+      ],
+      "comment": "Function-local 56-byte scroll-list state owned by the unlocked-weapons database screen.",
+      "name": "unlocked_weapons_scrollbar",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[56]"
     },
     {
       "address": "0x004ccc90",

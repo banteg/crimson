@@ -3734,10 +3734,38 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00440940",
+    "name": "unlocked_weapons_back_button_destroy",
+    "signature": "void unlocked_weapons_back_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the unlocked-weapons Back button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00440950",
+    "name": "unlocked_weapons_scrollbar_destroy",
+    "signature": "void unlocked_weapons_scrollbar_destroy(void)",
+    "comment": "empty atexit destructor thunk for the unlocked-weapons scroll-list state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00440960",
     "name": "unlocked_perks_database_update",
     "signature": "void unlocked_perks_database_update(void)",
     "comment": "state callback for GAME_STATE_PERK_DATABASE (Unlocked Perks Database)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00441180",
+    "name": "unlocked_perks_back_button_destroy",
+    "signature": "void unlocked_perks_back_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the unlocked-perks Back button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00441190",
+    "name": "unlocked_perks_scrollbar_destroy",
+    "signature": "void unlocked_perks_scrollbar_destroy(void)",
+    "comment": "empty atexit destructor thunk for the unlocked-perks scroll-list state"
   },
   {
     "program": "crimsonland.exe",
