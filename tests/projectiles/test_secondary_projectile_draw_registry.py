@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import crimson.render.projectile_draw.secondary_detonation as secondary_detonation_module
+import crimson.render.projectile_draw.secondary_dispatch as secondary_dispatch_module
 import crimson.render.projectile_draw.secondary_rocket as secondary_rocket_module
 from crimson.projectiles.types import SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.render.projectile_draw import SecondaryProjectileDrawCtx, draw_secondary_projectile_from_registry
@@ -147,3 +148,27 @@ def test_secondary_draw_registry_renders_detonation_lines_when_no_particles(monk
     assert draw_secondary_projectile_from_registry(ctx) is True
     # radius = det_scale * t * 80.0, then scaled.
     assert calls == [40.0]
+
+
+def test_secondary_draw_registry_keeps_shared_bloom_for_detonation(mocker) -> None:
+    renderer = _RendererStub()
+    proj = SecondaryProjectile(
+        type_id=SecondaryProjectileTypeId.DETONATION,
+        pos=Vec2(),
+        angle=0.0,
+        detonation_t=1.0,
+        detonation_scale=1.0,
+    )
+    bloom = mocker.patch.object(secondary_dispatch_module, "draw_secondary_projectile_bloom")
+    ctx = SecondaryProjectileDrawCtx(
+        renderer=_as_renderer(renderer),
+        proj=proj,
+        proj_type=SecondaryProjectileTypeId.DETONATION,
+        screen_pos=Vec2(10.0, 20.0),
+        angle=0.0,
+        scale=1.0,
+        alpha=0.75,
+    )
+
+    assert draw_secondary_projectile_from_registry(ctx) is True
+    bloom.assert_called_once_with(ctx)

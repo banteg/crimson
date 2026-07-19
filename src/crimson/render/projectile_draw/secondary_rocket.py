@@ -87,6 +87,49 @@ def draw_secondary_type4_fallback(ctx: SecondaryProjectileDrawCtx) -> bool:
     return True
 
 
+def draw_secondary_projectile_bloom(ctx: SecondaryProjectileDrawCtx) -> None:
+    """Render projectile_render's shared 140px secondary-projectile pass."""
+
+    renderer = ctx.renderer
+    render_frame = renderer.frame
+    fx_detail_1 = (
+        render_frame.config.display.fx_detail_enabled(level=1, default=True) if render_frame.config is not None else True
+    )
+    particles_texture = render_frame.resources.texture(TextureId.PARTICLES)
+    if not fx_detail_1 or particles_texture is None:
+        return
+
+    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.GLOW))
+    if atlas is None:
+        return
+    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
+    if not grid:
+        return
+
+    frame = int(atlas.frame)
+    col = frame % grid
+    row = frame // grid
+    particle_cell_w = particles_texture.width / grid
+    particle_cell_h = particles_texture.height / grid
+    src = rl.Rectangle(
+        particle_cell_w * col,
+        particle_cell_h * row,
+        max(0.0, particle_cell_w - 2.0),
+        max(0.0, particle_cell_h - 2.0),
+    )
+
+    direction = Vec2.from_heading(ctx.angle)
+    dst_size = 140.0 * ctx.scale
+    fx_pos = ctx.screen_pos - direction * (5.0 * ctx.scale)
+    dst = rl.Rectangle(fx_pos.x, fx_pos.y, dst_size, dst_size)
+    origin = rl.Vector2(dst_size * 0.5, dst_size * 0.5)
+    tint = RGBA(1.0, 1.0, 1.0, ctx.alpha * 0.48).to_rl()
+
+    rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+    rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
+    rl.end_blend_mode()
+
+
 def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: SecondaryRocketStyle) -> None:
     renderer = ctx.renderer
     render_frame = renderer.frame
@@ -137,9 +180,6 @@ def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: Secon
         rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    # Large bloom around the rocket (effect_id=0x0D).
-    draw_rocket_fx(size=140.0, offset=5.0, rgba=RGBA(1.0, 1.0, 1.0, alpha * 0.48))
-
     glow_r, glow_g, glow_b = style.glow_rgb
     draw_rocket_fx(
         size=style.glow_size,
@@ -149,4 +189,8 @@ def _draw_secondary_rocket_glow(ctx: SecondaryProjectileDrawCtx, *, style: Secon
     rl.end_blend_mode()
 
 
-__all__ = ["draw_secondary_rocket", "draw_secondary_type4_fallback"]
+__all__ = [
+    "draw_secondary_projectile_bloom",
+    "draw_secondary_rocket",
+    "draw_secondary_type4_fallback",
+]
