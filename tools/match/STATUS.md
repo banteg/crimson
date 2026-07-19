@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**683/2173** functions matched, **128302/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**693/2173** functions matched, **128312/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 466/997 | 101615/386756 | 26.3% | 466/574 |
+| crimsonland.exe | 476/997 | 101625/386756 | 26.3% | 476/585 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**466/997** functions, **101615/386756** bytes (**26.3%**), **466/574** scratches verified.
+**476/997** functions, **101625/386756** bytes (**26.3%**), **476/585** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -565,6 +565,17 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
+| wip | quest_select_menu_update | 0x00447d40 | 3436 | 782/803 | 71.17% | 0/803 | 222/0/14 |  | quest-stage-picker-hardcore-gating-and-start-routing |
+| match | quest_select_back_button_destroy | 0x00448ab0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-back-button-empty-destructor |
+| match | quest_select_hardcore_checkbox_destroy | 0x00448ac0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-hardcore-checkbox-empty-destructor |
+| match | quest_select_unused_orange_color_destroy | 0x00448ad0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-orange-color-empty-destructor |
+| match | quest_select_hovered_stage_color_destroy | 0x00448ae0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-hovered-stage-color-empty-destructor |
+| match | quest_select_selected_stage_color_destroy | 0x00448af0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-selected-stage-color-empty-destructor |
+| match | quest_select_title_color_destroy | 0x00448b00 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-title-color-empty-destructor |
+| match | quest_select_unused_blue_dim_color_destroy | 0x00448b10 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-blue-dim-color-empty-destructor |
+| match | quest_select_unused_blue_color_destroy | 0x00448b20 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-blue-color-empty-destructor |
+| match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
+| match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | wip | play_game_menu_update | 0x0044ed80 | 3238 | 776/777 | 87.44% | 120/777 | 275/0/28 |  | play-game-mode-buttons-player-count-and-routing |

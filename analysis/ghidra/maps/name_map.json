@@ -4100,6 +4100,76 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00448ab0",
+    "name": "quest_select_back_button_destroy",
+    "signature": "void quest_select_back_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select Back button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448ac0",
+    "name": "quest_select_hardcore_checkbox_destroy",
+    "signature": "void quest_select_hardcore_checkbox_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select Hardcore checkbox"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448ad0",
+    "name": "quest_select_unused_orange_color_destroy",
+    "signature": "void quest_select_unused_orange_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select unused orange color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448ae0",
+    "name": "quest_select_hovered_stage_color_destroy",
+    "signature": "void quest_select_hovered_stage_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select hovered-stage color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448af0",
+    "name": "quest_select_selected_stage_color_destroy",
+    "signature": "void quest_select_selected_stage_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select selected-stage color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448b00",
+    "name": "quest_select_title_color_destroy",
+    "signature": "void quest_select_title_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select title color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448b10",
+    "name": "quest_select_unused_blue_dim_color_destroy",
+    "signature": "void quest_select_unused_blue_dim_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select unused dim-blue color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448b20",
+    "name": "quest_select_unused_blue_color_destroy",
+    "signature": "void quest_select_unused_blue_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select unused blue color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448b30",
+    "name": "quest_select_row_hover_color_destroy",
+    "signature": "void quest_select_row_hover_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select row-hover color"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00448b40",
+    "name": "quest_select_row_idle_color_destroy",
+    "signature": "void quest_select_row_idle_color_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-select row-idle color"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00448b50",
     "name": "input_detect_active_analog_axis",
     "signature": "int input_detect_active_analog_axis(void)",

@@ -9125,11 +9125,54 @@
       "type": "ui_segmented_slider_t"
     },
     {
+      "address": "0x004d7628",
+      "aliases": [
+        "?row_idle_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select row-idle RGBA color; switches from translucent blue to translucent red in Hardcore mode.",
+      "name": "quest_select_row_idle_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
+      "address": "0x004d7690",
+      "aliases": [
+        "?unused_orange_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select orange RGBA color constructed for native lifetime parity but not consumed by the callback.",
+      "name": "quest_select_unused_orange_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x004d76a0",
+      "aliases": [
+        "?$S1@?1??quest_select_menu_update@@9@4EA"
+      ],
       "comment": "Quest-select menu one-shot init flags bitfield (guards static UI color/button setup blocks).",
       "name": "quest_select_menu_init_flags",
       "program": "crimsonland.exe",
       "type": "int"
+    },
+    {
+      "address": "0x004d76e0",
+      "aliases": [
+        "?hovered_stage_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select hovered-stage icon RGBA color (white at 0.8 alpha).",
+      "name": "quest_select_hovered_stage_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
+      "address": "0x004d76f0",
+      "aliases": [
+        "?row_hover_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select row-hover RGBA color; switches from opaque blue to opaque red in Hardcore mode.",
+      "name": "quest_select_row_hover_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x004d7638",
@@ -9189,10 +9232,43 @@
     },
     {
       "address": "0x004d7700",
+      "aliases": [
+        "?hardcore_checkbox@?BI@??quest_select_menu_update@@9@4Uquest_select_checkbox_t@@A"
+      ],
       "comment": "Quest-select Hardcore toggle checkbox state block.",
       "name": "quest_select_hardcore_checkbox",
       "program": "crimsonland.exe",
       "type": "ui_checkbox_t"
+    },
+    {
+      "address": "0x004d7720",
+      "aliases": [
+        "?title_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select title and unhovered-stage RGBA color (0.7 gray at 0.7 alpha).",
+      "name": "quest_select_title_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
+      "address": "0x004d7738",
+      "aliases": [
+        "?unused_blue_dim_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select dim-blue RGBA color constructed for native lifetime parity but not consumed by the callback.",
+      "name": "quest_select_unused_blue_dim_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
+      "address": "0x004d7748",
+      "aliases": [
+        "?back_button@?EG@??quest_select_menu_update@@9@4Uquest_select_button_t@@A"
+      ],
+      "comment": "Function-local Back button owned by the quest-select screen.",
+      "name": "quest_select_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004d7730",
@@ -9228,6 +9304,16 @@
       "name": "options_sfx_volume_slider",
       "program": "crimsonland.exe",
       "type": "ui_segmented_slider_t"
+    },
+    {
+      "address": "0x004d7888",
+      "aliases": [
+        "?unused_blue_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select blue RGBA color constructed for native lifetime parity but not consumed by the callback.",
+      "name": "quest_select_unused_blue_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
     },
     {
       "address": "0x004d7898",
@@ -9316,6 +9402,16 @@
       "type": "int"
     },
     {
+      "address": "0x004d79a8",
+      "aliases": [
+        "?selected_stage_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
+      ],
+      "comment": "Quest-select selected-stage icon RGBA color (opaque white).",
+      "name": "quest_select_selected_stage_color",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x004d79b8",
       "comment": "Play-game menu player-count dropdown/list state (1P/2P selector).",
       "name": "play_game_player_count_list",
@@ -9331,6 +9427,9 @@
     },
     {
       "address": "0x004d79d4",
+      "aliases": [
+        "?$S10@?BI@??quest_select_menu_update@@9@4EA"
+      ],
       "comment": "Quest-select screen runtime flags bitfield (guards Hardcore checkbox and Back button setup blocks).",
       "name": "quest_select_screen_flags",
       "program": "crimsonland.exe",
