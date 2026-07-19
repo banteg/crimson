@@ -1170,6 +1170,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412020",
+    "name": "quest_results_main_menu_button_destroy",
+    "signature": "void quest_results_main_menu_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results Main Menu button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412030",
+    "name": "quest_results_highscores_button_destroy",
+    "signature": "void quest_results_highscores_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results High scores button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412040",
+    "name": "quest_results_play_again_button_destroy",
+    "signature": "void quest_results_play_again_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results Play Again button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412050",
+    "name": "quest_results_play_next_button_destroy",
+    "signature": "void quest_results_play_next_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results Play Next button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412060",
+    "name": "quest_results_name_input_state_destroy",
+    "signature": "void quest_results_name_input_state_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results name-input state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412070",
+    "name": "quest_results_name_submit_button_destroy",
+    "signature": "void quest_results_name_submit_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the quest-results name-submit button"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004120b0",
     "name": "gameplay_run_state_init",
     "signature": "int gameplay_run_state_init(void)",

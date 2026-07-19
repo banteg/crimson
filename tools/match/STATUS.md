@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**677/2173** functions matched, **128296/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**683/2173** functions matched, **128302/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 460/997 | 101609/386756 | 26.3% | 460/567 |
+| crimsonland.exe | 466/997 | 101615/386756 | 26.3% | 466/574 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**460/997** functions, **101609/386756** bytes (**26.3%**), **460/567** scratches verified.
+**466/997** functions, **101615/386756** bytes (**26.3%**), **466/574** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -167,6 +167,13 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_over_name_input_state_destroy | 0x004107c0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-input-empty-destructor |
 | match | game_over_name_submit_button_destroy | 0x004107d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-submit-button-empty-destructor |
 | wip | quest_failed_screen_update | 0x004107e0 | 1261 | 288/292 | 87.93% | 1/292 | 146/0/1 |  | quest-failed-highscore-and-retry-actions |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 1164/1168 | 85.59% | 1/1168 | 424/0/9 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
+| match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
+| match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |
+| match | quest_results_play_next_button_destroy | 0x00412050 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-next-button-empty-destructor |
+| match | quest_results_name_input_state_destroy | 0x00412060 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-name-input-empty-destructor |
+| match | quest_results_name_submit_button_destroy | 0x00412070 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-name-submit-button-empty-destructor |
 | match | j_gameplay_run_state_init | 0x004120a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
