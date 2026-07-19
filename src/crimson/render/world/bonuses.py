@@ -47,6 +47,27 @@ def bonus_fade(time_left: float, time_max: float) -> float:
     return 1.0
 
 
+def bonus_bubble_fade(time_left: float, time_max: float) -> float:
+    """Native shell fade: blink during the final two seconds, then clamp."""
+    time_left = float(time_left)
+    time_max = float(time_max)
+
+    fade = 1.0
+    if time_left < 2.0:
+        blink = math.sin(time_left * 18.84955596923828)
+        fade = time_left * (0.25 if blink > 0.0 else 0.5)
+
+    age = time_max - time_left
+    if age < 0.5:
+        fade = age * 2.0
+    return clamp(fade, 0.0, 1.0)
+
+
+def bonus_icon_pulse(phase: float) -> float:
+    """Native inner-icon size pulse (`pow(sin(phase), 2.0)`)."""
+    return math.sin(float(phase)) ** 2 * 0.25 + 0.75
+
+
 def draw_bonus_pickups(
     render_ctx: WorldRenderCtx,
     *,
@@ -70,14 +91,16 @@ def draw_bonus_pickups(
         if bonus.bonus_id == BonusId.UNUSED:
             continue
 
-        fade = bonus_fade(float(bonus.time_left), float(bonus.time_max))
-        bubble_alpha = clamp(fade * 0.9, 0.0, 1.0) * alpha
+        time_left = float(bonus.time_left)
+        time_max = float(bonus.time_max)
+        fade = bonus_fade(time_left, time_max)
+        bubble_alpha = bonus_bubble_fade(time_left, time_max) * 0.9 * alpha
 
         screen = render_ctx._world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
         bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
         bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
-        tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, tint)
+        bubble_tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
+        rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, bubble_tint)
 
         bonus_id = bonus.bonus_id
         if bonus_id == BonusId.WEAPON:
@@ -88,8 +111,8 @@ def draw_bonus_pickups(
             if not (0 <= icon_index <= 31):
                 continue
 
-            pulse = math.sin(float(frame.bonus_anim_phase)) ** 4 * 0.25 + 0.75
-            icon_scale = fade * pulse
+            pulse = bonus_icon_pulse(float(frame.bonus_anim_phase))
+            icon_scale = fade * pulse * alpha
             if icon_scale <= 1e-3:
                 continue
 
@@ -98,7 +121,8 @@ def draw_bonus_pickups(
             h = 30.0 * icon_scale * scale
             dst = rl.Rectangle(screen.x, screen.y, w, h)
             origin = rl.Vector2(w * 0.5, h * 0.5)
-            rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, tint)
+            icon_tint = rl.Color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
+            rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
             continue
 
         meta = BONUS_BY_ID.get(bonus_id)
@@ -108,8 +132,8 @@ def draw_bonus_pickups(
         if bonus_id == BonusId.POINTS and int(bonus.amount) == 1000:
             icon_id += 1
 
-        pulse = math.sin(float(idx) + float(frame.bonus_anim_phase)) ** 4 * 0.25 + 0.75
-        icon_scale = fade * pulse
+        pulse = bonus_icon_pulse(float(idx) + float(frame.bonus_anim_phase))
+        icon_scale = fade * pulse * alpha
         if icon_scale <= 1e-3:
             continue
 
@@ -118,7 +142,15 @@ def draw_bonus_pickups(
         rotation_rad = math.sin(float(idx) - float(frame.elapsed_ms) * 0.003) * 0.2
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
+        icon_tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+        rl.draw_texture_pro(
+            bonuses_texture,
+            src,
+            dst,
+            origin,
+            float(rotation_rad * _RAD_TO_DEG),
+            icon_tint,
+        )
 
 
 def draw_bonus_hover_labels(
