@@ -1100,6 +1100,41 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00410790",
+    "name": "game_over_main_menu_button_destroy",
+    "signature": "void game_over_main_menu_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the game-over Main Menu button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004107a0",
+    "name": "game_over_highscores_button_destroy",
+    "signature": "void game_over_highscores_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the game-over High scores button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004107b0",
+    "name": "game_over_play_again_button_destroy",
+    "signature": "void game_over_play_again_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the game-over Play Again button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004107c0",
+    "name": "game_over_name_input_state_destroy",
+    "signature": "void game_over_name_input_state_destroy(void)",
+    "comment": "empty destructor thunk registered for the game-over name-input state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004107d0",
+    "name": "game_over_name_submit_button_destroy",
+    "signature": "void game_over_name_submit_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the game-over name-submit button"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004107e0",
     "name": "quest_failed_screen_update",
     "signature": "void quest_failed_screen_update(void)",

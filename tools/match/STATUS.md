@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**661/2173** functions matched, **128280/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**666/2173** functions matched, **128285/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 444/997 | 101593/386756 | 26.3% | 444/544 |
+| crimsonland.exe | 449/997 | 101598/386756 | 26.3% | 449/550 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**444/997** functions, **101593/386756** bytes (**26.3%**), **444/544** scratches verified.
+**449/997** functions, **101598/386756** bytes (**26.3%**), **449/550** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -160,6 +160,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
+| wip | game_over_screen_update | 0x0040ffc0 | 1999 | 475/471 | 76.96% | 27/471 | 177/0/4 |  | game-over-highscore-entry-and-navigation |
+| match | game_over_main_menu_button_destroy | 0x00410790 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-main-menu-button-empty-destructor |
+| match | game_over_highscores_button_destroy | 0x004107a0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-highscores-button-empty-destructor |
+| match | game_over_play_again_button_destroy | 0x004107b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-play-again-button-empty-destructor |
+| match | game_over_name_input_state_destroy | 0x004107c0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-input-empty-destructor |
+| match | game_over_name_submit_button_destroy | 0x004107d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-submit-button-empty-destructor |
 | wip | quest_failed_screen_update | 0x004107e0 | 1261 | 288/292 | 87.93% | 1/292 | 146/0/1 |  | quest-failed-highscore-and-retry-actions |
 | match | j_gameplay_run_state_init | 0x004120a0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-gameplay-run-state-init |
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
