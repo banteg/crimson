@@ -31,7 +31,9 @@ pool-offset references by address instead of accepting anonymous `ADDR`s.
 
 Native has no non-positive-`dt` early return and no lifetime epsilon. More
 importantly, every age and motion result is rounded through a 32-bit field
-store. The Python port currently accumulates these values as doubles; the
-plasma-ring fixture documented in `effect_spawn_plasma_hit_core/NOTES.md`
-therefore expires one update early. Zig already narrows the arithmetic but
-retains the two non-native guards.
+store. Both ports now preserve those rules: Python rounds age, movement,
+rotation, scale, and alpha at the native stores, while Zig performs the same
+`f32` updates without either guard. The focused lifetime regression keeps the
+plasma-style boundary active through age `0.9999997019767761` and expires it on
+the following update; zero-`dt` expiry and sub-epsilon lifetime cases cover the
+two removed guards in both runtimes.
