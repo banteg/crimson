@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**693/2173** functions matched, **128312/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**702/2173** functions matched, **128321/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 476/997 | 101625/386756 | 26.3% | 476/585 |
+| crimsonland.exe | 485/997 | 101634/386756 | 26.3% | 485/595 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**476/997** functions, **101625/386756** bytes (**26.3%**), **476/585** scratches verified.
+**485/997** functions, **101634/386756** bytes (**26.3%**), **485/595** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -534,6 +534,16 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | ui_update_notice_update | 0x00442150 | 614 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 1954/2004 | 75.85% | 41/2004 | 567/0/8 |  | highscore-list-filters-online-sync-and-state-routing |
+| match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
+| match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
+| match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |
+| match | highscore_online_scores_checkbox_destroy | 0x00444360 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-online-scores-checkbox-empty-destructor |
+| match | highscore_back_button_destroy | 0x00444370 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-back-button-empty-destructor |
+| match | highscore_play_button_destroy | 0x00444380 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-play-button-empty-destructor |
+| match | highscore_update_button_destroy | 0x00444390 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-update-button-empty-destructor |
+| match | highscore_score_scrollbar_destroy | 0x004443a0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-score-scrollbar-empty-destructor |
+| match | highscore_hardcore_checkbox_destroy | 0x004443b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-hardcore-checkbox-empty-destructor |
 | match | ui_profile_menu_update | 0x004443c0 | 1033 | 261/261 | 100.00% | 261/261 | 109/0/0 |  | profile-saved-name-list-editing |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
 | wip | player_fire_weapon | 0x00444980 | 1518 | 378/378 | 86.77% | 8/378 | 141/0/0 |  | typo-player-frame-and-shotgun-fire |

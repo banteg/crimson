@@ -3853,6 +3853,69 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00444330",
+    "name": "highscore_game_mode_list_destroy",
+    "signature": "void highscore_game_mode_list_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore game-mode list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444340",
+    "name": "highscore_player_count_list_destroy",
+    "signature": "void highscore_player_count_list_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore player-count list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444350",
+    "name": "highscore_date_filter_list_destroy",
+    "signature": "void highscore_date_filter_list_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore date-filter list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444360",
+    "name": "highscore_online_scores_checkbox_destroy",
+    "signature": "void highscore_online_scores_checkbox_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore online-scores checkbox"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444370",
+    "name": "highscore_back_button_destroy",
+    "signature": "void highscore_back_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore Back button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444380",
+    "name": "highscore_play_button_destroy",
+    "signature": "void highscore_play_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore Play a game button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444390",
+    "name": "highscore_update_button_destroy",
+    "signature": "void highscore_update_button_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore Update or Receive scores button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004443a0",
+    "name": "highscore_score_scrollbar_destroy",
+    "signature": "void highscore_score_scrollbar_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore score-list scrollbar"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004443b0",
+    "name": "highscore_hardcore_checkbox_destroy",
+    "signature": "void highscore_hardcore_checkbox_destroy(void)",
+    "comment": "empty destructor thunk registered for the highscore Hardcore checkbox"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004443c0",
     "name": "ui_profile_menu_update",
     "signature": "bool ui_profile_menu_update(float *xy, char enabled)",

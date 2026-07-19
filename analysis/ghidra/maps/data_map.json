@@ -1029,6 +1029,13 @@
       "type": "int"
     },
     {
+      "address": "0x00478678",
+      "comment": "Shared one-byte enabled flag passed to ui_profile_menu_update by the highscore screen and cleared while overlapping dropdowns are open.",
+      "name": "ui_profile_menu_enabled",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
       "address": "0x00478878",
       "comment": "Format string used by highscore_format_date_label (\"%d. %s %d\").",
       "name": "s_fmt_highscore_date_label",
@@ -8479,6 +8486,20 @@
       "type": "unsigned char"
     },
     {
+      "address": "0x004cc934",
+      "comment": "Highscore screen pointer table for the ten formatted score-list rows.",
+      "name": "highscore_screen_score_line_items",
+      "program": "crimsonland.exe",
+      "type": "char *[10]"
+    },
+    {
+      "address": "0x004ccac8",
+      "comment": "Function-local 56-byte score-list scrollbar state owned by the highscore screen.",
+      "name": "highscore_screen_score_scrollbar",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[56]"
+    },
+    {
       "address": "0x004ccb00",
       "aliases": [
         "?delete_button@?6??ui_profile_menu_update@@9@4Uprofile_button_t@@A"
@@ -8622,6 +8643,13 @@
       "type": "ui_list_widget_t"
     },
     {
+      "address": "0x004ccd68",
+      "comment": "Backing storage for the highscore screen's ten 164-byte formatted score rows.",
+      "name": "highscore_screen_score_line_buffers",
+      "program": "crimsonland.exe",
+      "type": "char[10][164]"
+    },
+    {
       "address": "0x004ccd40",
       "aliases": [
         "?idle_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A"
@@ -8672,6 +8700,13 @@
       "name": "highscore_hardcore_checkbox",
       "program": "crimsonland.exe",
       "type": "ui_checkbox_t"
+    },
+    {
+      "address": "0x004d0d94",
+      "comment": "Highscore batch-sync snapshot of the Hardcore flag for the current mode/stage iteration.",
+      "name": "highscore_batch_sync_hardcore",
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x004d0da0",
@@ -8751,6 +8786,34 @@
       "type": "int"
     },
     {
+      "address": "0x004d0f08",
+      "comment": "Function-local Play a game button state owned by the highscore screen.",
+      "name": "highscore_screen_play_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d0f58",
+      "comment": "One-shot local-static guard for the highscore screen game-mode list.",
+      "name": "highscore_game_mode_list_init_guard",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d0f78",
+      "comment": "Function-local Update or Receive scores button state owned by the highscore screen.",
+      "name": "highscore_screen_update_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d0f90",
+      "comment": "Function-local Back button state owned by the highscore screen.",
+      "name": "highscore_screen_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004d0f28",
       "aliases": [
         "?name_input@?1??ui_profile_menu_update@@9@4Uprofile_text_input_t@@A"
@@ -8790,6 +8853,13 @@
       "name": "highscore_player_count_list",
       "program": "crimsonland.exe",
       "type": "ui_list_widget_t"
+    },
+    {
+      "address": "0x004d0fc4",
+      "comment": "Highscore screen title-format buffer used for the current game-mode heading.",
+      "name": "highscore_screen_title_buffer",
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004d11e0",
