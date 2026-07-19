@@ -14,6 +14,22 @@ from ..projectile_render_registry import plasma_projectile_render_config
 from .types import ProjectileDrawCtx
 
 
+def plasma_trail_segment_count(
+    *,
+    distance: float,
+    speed_scale: float,
+    spacing: float,
+    limit: int,
+) -> int:
+    """Recover projectile_render's two integer conversions and signed divide."""
+
+    distance_i = int(float(distance))
+    divisor_i = int(float(speed_scale) * float(spacing))
+    if distance_i <= 0 or divisor_i <= 0:
+        return 0
+    return min(distance_i // divisor_i, int(limit))
+
+
 def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     renderer = ctx.renderer
     render_frame = renderer.frame
@@ -61,13 +77,15 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     aura_alpha_mul = plasma_cfg.aura_alpha_mul
 
     if float(ctx.life) >= 0.4:
-        # Reconstruct the tail length heuristic used by the native render path.
-        seg_count = int(float(ctx.proj.travel_budget))
-        if seg_count < 0:
-            seg_count = 0
-        seg_count //= 5
-        if seg_count > int(seg_limit):
-            seg_count = int(seg_limit)
+        # Native converts both operands to signed integers before dividing.
+        # The numerator is the rendered origin-to-position distance; it does
+        # not use the projectile's simulation travel budget.
+        seg_count = plasma_trail_segment_count(
+            distance=ctx.proj.origin.distance_to(ctx.pos),
+            speed_scale=speed_scale,
+            spacing=spacing,
+            limit=seg_limit,
+        )
 
         # The stored projectile angle is rotated by +pi/2 vs travel direction.
         direction = Vec2.from_heading(ctx.angle + math.pi) * speed_scale
@@ -117,4 +135,4 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
     return True
 
 
-__all__ = ["draw_plasma_particles"]
+__all__ = ["draw_plasma_particles", "plasma_trail_segment_count"]
