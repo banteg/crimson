@@ -143,7 +143,7 @@ class AlienZooKeeperView:
 
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
-        self._timer_ms = _TIMER_RESET_MS
+        self._timer_ms = 0
         self._anim_time_ms = 0
         self._score = 0
 
@@ -165,8 +165,9 @@ class AlienZooKeeperView:
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
 
-        self._anim_time_ms = 0
-        self._reset_state()
+        # Native puzzle state is process-lifetime storage. The initial board
+        # and timer are zeroed, and leaving/re-entering the screen does not
+        # reroll or restart it; only the Reset button calls _reset_state().
         self._is_open = True
 
     def close(self) -> None:
