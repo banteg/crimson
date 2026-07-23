@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/602 |
+| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/603 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**487/997** functions, **105139/386756** bytes (**27.2%**), **487/602** scratches verified.
+**487/997** functions, **105139/386756** bytes (**27.2%**), **487/603** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -527,6 +527,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_button_update | 0x0043e830 | 1215 | 347/347 | 100.00% | 347/347 | 61/0/0 |  | ui-button-focus-animation-render-and-activation |
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
+| wip | ui_list_widget_update | 0x0043efc0 | 1420 | 402/403 | 90.93% | 32/403 | 50/0/0 |  | ui-dropdown-focus-navigation-hover-and-row-selection |
 | wip | statistics_menu_update | 0x0043f550 | 2877 | 675/676 | 88.82% | 280/676 | 264/0/5 |  | statistics-playtime-network-status-and-navigation |
 | wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 522/523 | 82.87% | 9/523 | 140/0/2 |  | unlocked-weapon-list-and-detail-panel |
 | match | unlocked_weapons_back_button_destroy | 0x00440940 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-back-button-empty-destructor |
