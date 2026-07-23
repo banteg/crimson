@@ -3840,9 +3840,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x004413a0",
+    "comment": "High-score and game-result statistics card renderer; the historical ui_text_input_render name is stale.",
     "name": "ui_text_input_render",
-    "signature": "void ui_text_input_render(void *input_state, float y, float alpha)",
-    "comment": "renders a text input field (focus, text, and caret)"
+    "signature": "void ui_text_input_render(float *xy, highscore_record_t *record, float alpha, int rank)"
   },
   {
     "program": "crimsonland.exe",

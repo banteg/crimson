@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**703/2173** functions matched, **128322/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**704/2173** functions matched, **131826/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 486/997 | 101635/386756 | 26.3% | 486/600 |
+| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/601 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**486/997** functions, **101635/386756** bytes (**26.3%**), **486/600** scratches verified.
+**487/997** functions, **105139/386756** bytes (**27.2%**), **487/601** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -536,6 +536,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | highscore_card_draw_horizontal_divider | 0x004411c0 | 83 | 23/23 | 100.00% | 23/23 | 6/0/0 |  | highscore-card-divider |
 | match | highscore_card_draw_vertical_divider | 0x00441220 | 71 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | highscore-card-divider |
 | match | highscore_format_date_label | 0x00441270 | 256 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
+| match | ui_text_input_render | 0x004413a0 | 3504 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
 | wip | highscore_screen_update | 0x004423d0 | 8026 | 1954/2004 | 75.85% | 41/2004 | 567/0/8 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
