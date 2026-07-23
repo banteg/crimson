@@ -21,10 +21,20 @@ Shrinkifier, Spider Plasma, and Plasma Cannon; that omission is recovered too.
 
 The scratch deliberately retains strict `life_timer == 0.4f` branch tests,
 the separate detail-gated passes, the native integer conversions, and the
-Plague Spreader's asymmetric trigonometric offsets. The first complete build
-is 26.35% over 3,021 target and 2,042 candidate normalized instructions, with
-177 proven, zero unresolved, and 21 mismatched aligned references. Its first
-residual is the native 0x19c-byte local frame versus the candidate's 0x58-byte
-frame. Native code duplicates several large type-specific plasma, beam, and
-secondary-projectile arms that this plausible source still shares; those
-residuals are recorded honestly rather than padded or fakematched.
+Plague Spreader's asymmetric trigonometric offsets. Native control flow also
+proves that the five plasma styles independently spell out their distance,
+trail, head, and aura work. The recovered source now follows the observed
+Rifle, Minigun, Cannon, Spider Plasma, Shrinkifier branch order and preserves
+Plasma Cannon's asymmetric 3.5 count divisor versus 2.6 step spacing.
+
+The ion/fire family likewise has separate live and fading arms. In particular,
+the live arm sets atlas frame (2, 2) before recomputing frame (4, 2), while the
+fading arm applies rotation before drawing the trail. The bullet billboard,
+secondary sprite, and secondary glow passes use direct per-type draw arms
+rather than parameterized sizes and colors. Keeping those native quirks and
+duplications raises the honest build from 26.35% to 33.68% over 3,021 target
+and 2,692 candidate normalized instructions, with 266 proven, zero unresolved,
+and 25 mismatched aligned references. Its first residual remains the native
+0x19c-byte local frame versus the candidate's 0x70-byte frame; much of the
+remaining delta is the original callback's extensive geometry-temporary
+layout, which is recorded honestly rather than padded or fakematched.
