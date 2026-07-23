@@ -887,6 +887,13 @@
       "type": "int"
     },
     {
+      "address": "0x00473a60",
+      "comment": "One-shot startup frame latch initialized to 1 and cleared by game_startup_init before the staged texture/bootstrap gate.",
+      "name": "startup_first_frame_latch",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x00473a8c",
       "comment": "Secret-hint string: \"Brave little haxx0r aren't you?\"",
       "name": "secret_hint_haxx0r",

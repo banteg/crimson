@@ -2506,9 +2506,9 @@
     "program": "crimsonland.exe",
     "address": "0x0042b290",
     "name": "game_startup_init",
-    "signature": "void game_startup_init(void)",
+    "signature": "unsigned char game_startup_init(void)",
     "create": true,
-    "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, loads registry time; triggers intro music then switches to crimson_theme"
+    "comment": "startup frame callback: advances staged texture/audio loading, runs one-shot game bootstrap, renders loading and publisher logos with skip/fade policy, then installs game_frame_update; returns 0 for Ctrl+Alt or quit and 1 while the engine should continue"
   },
   {
     "program": "crimsonland.exe",

@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/606 |
+| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/607 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**487/997** functions, **105139/386756** bytes (**27.2%**), **487/606** scratches verified.
+**487/997** functions, **105139/386756** bytes (**27.2%**), **487/607** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -353,6 +353,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | load_textures_step | 0x0042abd0 | 1203 | 252/252 | 100.00% | 252/252 | 209/0/0 |  | startup-staged-texture-loading |
 | match | game_startup_init_prelude | 0x0042b090 | 435 | 113/113 | 100.00% | 113/113 | 45/0/0 |  | startup-core-prelude |
 | match | startup_audio_load_thread | 0x0042b250 | 63 | 14/14 | 100.00% | 14/14 | 11/0/0 |  | startup-audio-thread |
+| wip | game_startup_init | 0x0042b290 | 4303 | 1123/1126 | 93.73% | 1/1126 | 325/0/3 |  | startup-loading-intro-and-frame-callback |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 519/519 | 60.69% | 19/519 | 102/0/0 |  | online-highscore-submit-receive-worker |
