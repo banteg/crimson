@@ -21,18 +21,24 @@ database constructor and has no other writer in the executable. The branch is
 therefore preserved as recovered native source shape, but deliberately not
 given a speculative gameplay name or treated as a required modern-port feature.
 
-With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is a
-`82.65%` WIP (`1,134/1,148` instructions, prefix `9/1,148`). The target and
+With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is an
+`83.88%` WIP (`1,141/1,148` instructions, prefix `9/1,148`). The target and
 candidate prologues are identical through the `sub esp, 0x2c` local-frame
-allocation. Masked-reference auditing reports `318/0/1`: every symbol resolves,
-and the sole aligned mismatch compares native `player_weapon_id` with candidate
-`player_state_table+0x34` after the longer surrounding expression loses
-instruction alignment. Those are distinct real operands, so no alias is used
-to conceal the residual.
+allocation. Masked-reference auditing reports `326/0/0`: every aligned symbol
+resolves and agrees without a speculative alias.
+
+The muzzle-flash weapon-flag arms deliberately retain their identical
+`grim_draw_quad` calls. Native reloads the player size in each arm and pushes
+each arm's size and position arguments before tail-merging at the shared
+virtual call; expressing the call once after the branch instead produces a
+shorter, structurally different VC6 lowering. Recovering the branch-local
+calls raised the candidate from `83.00%` and `1,134` instructions to `83.88%`
+and `1,141` instructions.
 
 The scoped `camera_offset:camera_offset_x` alias only identifies the scratch's
 two-float vector declaration with the proven native x/y global pair. A tested
 `msvc6.5pp` override fell to `70.34%`; the default VC6 backend is retained.
 The remaining differences are honest x87 temporary placement, vector-expression
-lowering, and register scheduling across the long sprite pipeline rather than
-omitted render branches.
+lowering, register scheduling across the long sprite pipeline, and the
+target-trail loop's local-slot choices rather than omitted render branches or
+unresolved references.

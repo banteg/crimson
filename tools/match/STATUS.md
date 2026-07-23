@@ -333,7 +333,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_reset_all | 0x004281e0 | 46 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 1134/1148 | 82.65% | 9/1148 | 318/0/1 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 1141/1148 | 83.88% | 9/1148 | 326/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | wip | bonus_render | 0x004295f0 | 4088 | 1091/1088 | 85.64% | 14/1088 | 212/0/12 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
