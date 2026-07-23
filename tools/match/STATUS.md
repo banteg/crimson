@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/603 |
+| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/604 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**487/997** functions, **105139/386756** bytes (**27.2%**), **487/603** scratches verified.
+**487/997** functions, **105139/386756** bytes (**27.2%**), **487/604** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -159,6 +159,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_load_mod | 0x0040e860 | 219 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
+| wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 638/638 | 83.70% | 15/638 | 153/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | wip | game_over_screen_update | 0x0040ffc0 | 1999 | 475/471 | 76.96% | 27/471 | 177/0/4 |  | game-over-highscore-entry-and-navigation |
 | match | game_over_main_menu_button_destroy | 0x00410790 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-main-menu-button-empty-destructor |

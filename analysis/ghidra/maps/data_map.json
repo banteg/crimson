@@ -782,7 +782,8 @@
       "address": "0x00472ef0",
       "comment": "Credits secret match-3: selected board index for swap (-1 when none).",
       "name": "credits_secret_selected_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00473310",
@@ -2468,35 +2469,37 @@
       "address": "0x004819d0",
       "comment": "Credits secret UI button state for Reset (ui_button_update target).",
       "name": "credits_secret_reset_button",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004819ec",
       "comment": "Credits secret match-3 board (6x6 ints; values 0..4, -1 empty, -3 clearing). Render tints: 0 red/pink, 1 blue, 2 magenta, 3 cyan, 4 yellow.",
       "name": "credits_secret_board",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[36]"
     },
     {
       "address": "0x004819f0",
-      "comment": "Credits secret match mask array (horizontal set 0, per-cell -3 on match).",
+      "comment": "Alias of credits_secret_board[1], written to -3 as the second cell of a horizontal match.",
       "name": "credits_secret_match_mask_h0",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004819f4",
-      "comment": "Credits secret match mask array (horizontal set 1, per-cell -3 on match).",
+      "comment": "Alias of credits_secret_board[2], written to -3 as the third cell of a horizontal match.",
       "name": "credits_secret_match_mask_h1",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00481a04",
-      "comment": "Credits secret match mask array (vertical set 0, per-cell -3 on match).",
+      "comment": "Alias of credits_secret_board[6], written to -3 as the second cell of a vertical match.",
       "name": "credits_secret_match_mask_v0",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00481a1c",
-      "comment": "Credits secret match mask array (vertical set 1, per-cell -3 on match).",
+      "comment": "Alias of credits_secret_board[12], written to -3 as the third cell of a vertical match.",
       "name": "credits_secret_match_mask_v1",
       "program": "crimsonland.exe"
     },
@@ -2525,7 +2528,8 @@
       "address": "0x00481bc0",
       "comment": "Credits secret UI button state for Back (ui_button_update target).",
       "name": "credits_secret_back_button",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x00481bb8",
@@ -2538,7 +2542,8 @@
       "address": "0x00481c10",
       "comment": "Credits secret flags; bit0 initializes Reset button, bit1 initializes Back button.",
       "name": "credits_secret_flags",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x00481c88",
@@ -2593,19 +2598,22 @@
       "address": "0x004824e4",
       "comment": "Credits secret countdown timer in ms (adds 2000 on match, reset to 0x2580).",
       "name": "credits_secret_timer_ms",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004824e8",
       "comment": "Credits secret animation time accumulator in ms.",
       "name": "credits_secret_anim_time_ms",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004824ec",
       "comment": "Credits secret score counter displayed as \"score: %d\".",
       "name": "credits_secret_score",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004824f0",
