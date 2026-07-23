@@ -1641,6 +1641,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041ca80",
+    "name": "ui_hud_progress_color_destroy",
+    "signature": "void ui_hud_progress_color_destroy(void)",
+    "comment": "empty destructor registered for ui_render_hud's static quest-progress color"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041ca90",
     "name": "hud_update_and_render",
     "signature": "void hud_update_and_render(void)",

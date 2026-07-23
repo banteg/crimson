@@ -5399,6 +5399,13 @@
       "type": "float"
     },
     {
+      "address": "0x004902fc",
+      "comment": "Quest HUD reserved progress accumulator dword; ui_render_hud clears it before summing queued and spawned creatures.",
+      "name": "quest_progress_reserved_zero",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00490300",
       "comment": "Smoothed survival XP value used by HUD progress display.",
       "name": "survival_xp_smoothed",

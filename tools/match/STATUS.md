@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**702/2173** functions matched, **128321/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**703/2173** functions matched, **128322/676681** code bytes (**19.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 485/997 | 101634/386756 | 26.3% | 485/595 |
+| crimsonland.exe | 486/997 | 101635/386756 | 26.3% | 486/597 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**485/997** functions, **101634/386756** bytes (**26.3%**), **485/595** scratches verified.
+**486/997** functions, **101635/386756** bytes (**26.3%**), **486/597** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -233,6 +233,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | bonus_hud_slot_table_global_init | 0x0041a7d0 | 56 | 13/13 | 100.00% | 13/13 | 2/0/0 |  | bonus-hud-slot-table-global-constructor |
 | match | bonus_hud_slot_activate | 0x0041a810 | 159 | 54/54 | 100.00% | 54/54 | 8/0/0 |  | bonus-hud-slot-allocation |
 | wip | bonus_hud_slot_update_and_render | 0x0041a8b0 | 1566 | 407/405 | 77.83% | 5/405 | 69/0/0 |  | bonus-hud-slot-animation-and-rendering |
+| wip | ui_render_hud | 0x0041aed0 | 7081 | 1824/1824 | 84.59% | 42/1824 | 381/0/3 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
+| match | ui_hud_progress_color_destroy | 0x0041ca80 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-hud-static-progress-color-destructor |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
 | match | dx_get_version | 0x0041ccb0 | 251 | 106/106 | 100.00% | 106/106 | 7/0/0 |  | directx-version-query-and-format |
 | match | dx_get_version_from_dxdiag | 0x0041cdb0 | 556 | 190/190 | 100.00% | 190/190 | 12/0/0 |  | directx-dxdiag-com-version-probe |
