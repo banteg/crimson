@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**707/2173** functions matched, **131829/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**709/2173** functions matched, **131831/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 490/997 | 105142/386756 | 27.2% | 490/611 |
+| crimsonland.exe | 492/997 | 105144/386756 | 27.2% | 492/614 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**490/997** functions, **105142/386756** bytes (**27.2%**), **490/611** scratches verified.
+**492/997** functions, **105144/386756** bytes (**27.2%**), **492/614** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -111,6 +111,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | gameplay_update_and_render | 0x0040aab0 | 2840 | 713/713 | 100.00% | 713/713 | 291/0/0 |  | core-gameplay-frame-coordinator |
 | match | plugin_runtime_clear_pools | 0x0040b5d0 | 89 | 24/24 | 100.00% | 24/24 | 8/0/0 |  | plugin-runtime-pool-reset |
 | match | plugin_runtime_update_and_render | 0x0040b630 | 265 | 67/67 | 100.00% | 67/67 | 33/0/0 |  | plugin-runtime-frame-lifecycle |
+| wip | demo_purchase_screen_update | 0x0040b740 | 2642 | 697/691 | 88.18% | 1/691 | 187/0/0 |  | demo-purchase-screen-complete-flow |
+| match | demo_purchase_purchase_button_destroy | 0x0040c1a0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-purchase-button-empty-destructor |
+| match | demo_purchase_maybe_later_button_destroy | 0x0040c1b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-maybe-later-button-empty-destructor |
 | wip | game_frame_update | 0x0040c1c0 | 3588 | 902/905 | 86.77% | 263/905 | 299/0/0 |  | core-frame-timing-input-and-state-dispatch |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |

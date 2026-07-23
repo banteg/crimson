@@ -693,6 +693,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040c1a0",
+    "name": "demo_purchase_purchase_button_destroy",
+    "signature": "void demo_purchase_purchase_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the demo purchase screen Purchase button"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040c1b0",
+    "name": "demo_purchase_maybe_later_button_destroy",
+    "signature": "void demo_purchase_maybe_later_button_destroy(void)",
+    "comment": "empty atexit destructor thunk for the demo purchase screen Maybe later button"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040c1c0",
     "name": "game_frame_update",
     "signature": "unsigned char game_frame_update(void)",
