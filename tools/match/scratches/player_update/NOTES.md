@@ -88,10 +88,17 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=51.77% prefix=7/4206 target_insns=4206 candidate_insns=3934 refs=679/0/16
+match=51.77% prefix=7/4206 target_insns=4206 candidate_insns=3934 refs=681/0/14
 first_target=jne L3f7a
 first_candidate=jne L3c1b
 ```
+
+The auto-target aim approach at `0x004156ca..0x004156d4` multiplies the
+target distance by `6.0f` before applying `frame_dt`. Keeping that ordinary
+source grouping explicit as `(scalar * 6.0f) * frame_dt` preserves the native
+constant/reference order. It leaves the instruction count and whole-function
+score unchanged while improving reference agreement from `679/0/16` to
+`681/0/14`.
 
 The native function keeps two related addresses live for essentially the
 entire frame: `EDI` is the selected `player_state_t`, while `ESI` is the

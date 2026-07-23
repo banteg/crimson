@@ -988,7 +988,7 @@ extern "C" void player_update(void)
             + movement_input.x * movement_input.x);
         if (scalar >= 4.0f) {
             vec2_normalize_dispatch(&movement_input.x, &movement_input.x);
-            angle_step = scalar * 6.0f * frame_dt;
+            angle_step = (scalar * 6.0f) * frame_dt;
             move_delta.x = movement_input.x * angle_step;
             player->aim_x = player->aim_x + move_delta.x;
             player->aim_y = player->aim_y + movement_input.y * angle_step;
