@@ -78,7 +78,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | demo_trial_purchase_button_destroy | 0x00405140 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-purchase-button-empty-destructor |
 | match | demo_trial_maybe_later_button_destroy | 0x00405150 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-overlay-maybe-later-button-empty-destructor |
 | match | ui_render_keybind_help | 0x00405160 | 1142 | 324/324 | 100.00% | 324/324 | 80/0/0 |  | pause-keybind-help-panel |
-| wip | perk_apply | 0x004055e0 | 885 | 239/241 | 62.50% | 2/241 | 61/0/0 |  | perk-immediate-effect-dispatch |
+| wip | perk_apply | 0x004055e0 | 885 | 241/241 | 63.07% | 2/241 | 63/0/0 |  | perk-immediate-effect-dispatch |
 | match | gameplay_render_world | 0x00405960 | 625 | 184/184 | 100.00% | 184/184 | 56/0/0 |  | gameplay-world-render-coordinator |
 | wip | perk_selection_screen_update | 0x00405be0 | 1347 | 314/314 | 86.94% | 0/314 | 117/0/0 |  | perk-choice-menu-and-selection-flow |
 | match | perk_selection_select_button_destroy | 0x00406130 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | perk-selection-select-button-empty-destructor |

@@ -33,6 +33,7 @@ extern "C" void perk_apply(int perk_id)
 
     if (perk_id == perk_id_instant_winner) {
         player_state_table[0].experience += 2500;
+        player_count = config_player_count;
     } else if (perk_id == perk_id_fatal_lottery) {
         if ((crt_rand() & 1) == 0) {
             player_state_table[0].experience += 10000;
@@ -41,8 +42,8 @@ extern "C" void perk_apply(int perk_id)
         }
         player_count = config_player_count;
     } else if (perk_id == perk_id_lifeline_50_50) {
-        creature = creature_pool;
         i = 0;
+        creature = creature_pool;
         do {
             if ((i & 1) != 0
                 && creature->active != 0
@@ -91,21 +92,21 @@ extern "C" void perk_apply(int perk_id)
             cursor += sizeof(creature_t) / sizeof(*cursor);
         } while ((int)cursor < (int)&creature_pool[384].lifecycle_stage);
         bonus_spawn_guard = 0;
-    } else if (perk_id == perk_id_random_weapon) {
-        i = 0;
-        do {
-            weapon_id = weapon_pick_random_available();
-            ++i;
-            if (weapon_id != 1
-                && weapon_id != player_state_table[0].weapon_id) {
-                break;
-            }
-        } while (i < 100);
-        weapon_assign_player(0, weapon_id);
+    } else {
+        if (perk_id == perk_id_random_weapon) {
+            i = 0;
+            do {
+                weapon_id = weapon_pick_random_available();
+                ++i;
+                if (weapon_id != 1
+                    && weapon_id != player_state_table[0].weapon_id) {
+                    break;
+                }
+            } while (i < 100);
+            weapon_assign_player(0, weapon_id);
+        }
         player_count = config_player_count;
     }
-
-    player_count = config_player_count;
 
     if (perk_id == perk_id_infernal_contract) {
         player_state_table[0].level += 3;
@@ -119,10 +120,9 @@ extern "C" void perk_apply(int perk_id)
     }
 
     if (perk_id == perk_id_grim_deal) {
-        experience = player_experience
-            + (int)(player_experience * 0.18f);
+        experience = (int)(player_experience * 0.18f);
         player_health = -1.0f;
-        player_experience = experience;
+        player_experience += experience;
     }
 
     if (perk_id == perk_id_ammo_maniac && player_count > 0) {

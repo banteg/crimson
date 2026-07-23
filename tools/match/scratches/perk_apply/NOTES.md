@@ -11,6 +11,12 @@ The live x87 stores also pin the arithmetic boundaries: Thick Skinned rounds
 its multiply before subtracting health (`0x004056cd..0x004056e6`), Breathing
 Room stores each active creature lifecycle subtraction (`0x0040574a..0x00405752`),
 and Bandage stores the multiplied health before its clamp (`0x004058d5..0x004058e3`).
+The first dispatcher group assigns the cached configured-player count on every
+exit: Instant Winner and Fatal Lottery join the common load at `0x00405796`,
+Lifeline loads it after the creature walk, and the two health perks load it
+before their loops. Random Weapon is an inner conditional in the final `else`,
+followed by that same count assignment. This branch-complete source form
+recovers the native 241-instruction extent.
 Both ports now route these operations through the shared PC=24 helpers; the
 Python port also stores Infernal Contract's literal as the native f32 value.
 Infernal Contract addresses player slots zero and one explicitly at
@@ -25,12 +31,15 @@ ages each active creature; Bandage multiplies even dead-player health by a
 both regeneration counts before restoring positive player health, while Ammo
 Maniac reassigns every configured player's current weapon.
 
-VC6 produces 62.50% with 239/241 normalized instructions and exact 61/0/0
+VC6 produces 63.07% with 241/241 normalized instructions and exact 63/0/0
 reference agreement. The broad residual is register allocation: native keeps
 the perk id in `EDI`, the cached player count in `EBP`, and loop state in
 `ESI`; the natural reconstruction keeps the count in `ESI` and shrink-wraps an
 `EBP` save around later loops. The other two instructions are the equivalent
-Grim Deal XP update (`mov`/`add`/`mov` versus a memory `add`). C and C++ modes,
+Grim Deal XP update (`mov`/`add`/`mov` versus a memory `add`). Initializing the
+count before the dispatcher raises the superficial score but emits the load
+before the first comparison, contradicting the native per-exit loads, so that
+shape is intentionally rejected. C and C++ modes,
 the available VC6-family backends, `/GB` and `/G6`, standalone-global aliases,
 and natural variable-lifetime spellings were checked. None recovers the native
 allocation without artificial source, so the honest semantic WIP is retained.
