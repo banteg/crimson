@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 486/997 | 101635/386756 | 26.3% | 486/599 |
+| crimsonland.exe | 486/997 | 101635/386756 | 26.3% | 486/600 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**486/997** functions, **101635/386756** bytes (**26.3%**), **486/599** scratches verified.
+**486/997** functions, **101635/386756** bytes (**26.3%**), **486/600** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -577,6 +577,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_menu_pause_click_resume | 0x00447490 | 67 | 18/18 | 100.00% | 18/18 | 7/0/0 |  | ui-menu-resume |
 | match | ui_menu_pause_click_main_menu | 0x004474e0 | 160 | 40/40 | 100.00% | 40/40 | 22/0/0 |  | pause-menu-plugin-exit |
 | match | config_apply_detail_preset | 0x00447580 | 57 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
+| wip | options_menu_update | 0x004475d0 | 1621 | 372/377 | 69.96% | 8/377 | 138/0/8 |  | options-audio-detail-input-and-controls-navigation |
 | match | input_configure_for_label | 0x00447c90 | 58 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
 | wip | quest_select_menu_update | 0x00447d40 | 3436 | 782/803 | 71.17% | 0/803 | 222/0/14 |  | quest-stage-picker-hardcore-gating-and-start-routing |

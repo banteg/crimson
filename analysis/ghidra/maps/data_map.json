@@ -9472,6 +9472,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004d7988",
+      "comment": "Options menu button that opens the controls/rebinding screen.",
+      "name": "options_controls_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004d79a0",
       "comment": "Options menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "options_menu_init_flags",
