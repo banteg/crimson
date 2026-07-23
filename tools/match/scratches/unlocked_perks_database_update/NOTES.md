@@ -19,14 +19,20 @@ callback:
   prerequisite name, and wrapped description, including the narrow-screen
   horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 72.73% of 511 target
-instructions with 512 candidate instructions and `118/0/5` audited references.
+The natural `msvc6.5 /O2 /GB` reconstruction matches 85.18% of 511 target
+instructions with 508 candidate instructions and `135/0/2` audited references.
 All object, guard, function, string, and gameplay-data references resolve. The
-five residual reference mismatches are constant-pool alignments caused by the
+two residual reference mismatches are constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
 constants and source operations are present elsewhere in the aligned flow. The
-native frame is `0x218` bytes versus `0x224` for the current candidate.
-`msvc6.5pp` falls to 69.93%; `msvc6.6` produces the same result as `msvc6.5`.
+native frame is `0x218` bytes versus `0x21c` for the current candidate.
+
+The improved source shape keeps the title and panel-vector lifetimes distinct,
+preserves the native `20 + 8` and `16 + 4` vertical spacings, and uses the
+native compact-row post-increment test. Selected-perk rendering also performs
+the native direct metadata reads instead of decompiler-style cached name and
+prerequisite locals; that recovery accounts for most of the control-flow and
+register-allocation gain.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.

@@ -34,8 +34,7 @@ struct database_scrollbar_t {
 
     database_scrollbar_t()
     {
-        column_offsets[0] = 0.0f;
-        column_offsets[1] = 0.0f;
+        column_offsets[0] = column_offsets[1] = 0.0f;
     }
 
     ~database_scrollbar_t() {}
@@ -93,32 +92,38 @@ bool ui_button_update(float *xy, ui_button_t *button);
 extern "C" void unlocked_weapons_database_update(void)
 {
     int weapon_id = -1;
-    database_vec2_t panel_position =
-        *(database_vec2_t *)&ui_element_slot_09.pos_x
-        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-
-    database_vec2_t position = panel_position;
-    position.y += 10.0f;
-    position.x +=
-        ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 32.0f;
+    database_vec2_t position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_09.pos_x
+            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+        position.y += 10.0f;
+        position.x =
+            panel_position.x + ui_element_slot_09.render_offset_x
+            + 44.0f - 110.0f - 32.0f;
+    }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     int title_width = grim_interface_ptr->grim_measure_text_width(
         "Unlocked Weapons Database");
-    int title_half_width = title_width / 2;
     grim_interface_ptr->grim_draw_text_small(
-        position.x + 132.0f - (float)title_half_width,
+        position.x + 132.0f - (float)(title_width / 2),
         position.y,
         "Unlocked Weapons Database");
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-    database_vec2_t separator_position(
-        position.x + (float)(132 - title_half_width),
-        position.y + 13.0f);
-    grim_interface_ptr->grim_draw_rect_outline(
-        (float *)&separator_position, (float)title_width, 1.0f);
+    {
+        database_vec2_t separator_position;
+        separator_position.x =
+            position.x + (float)(132 - title_width / 2);
+        separator_position.y = position.y + 13.0f;
+        grim_interface_ptr->grim_draw_rect_outline(
+            (float *)&separator_position, (float)title_width, 1.0f);
+    }
 
+    position.y += 20.0f;
     int database_count = 0;
     int index = 1;
     do {
@@ -128,7 +133,7 @@ extern "C" void unlocked_weapons_database_update(void)
         ++index;
     } while (index < 64);
 
-    position.y += 30.0f;
+    position.y += 10.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
     grim_interface_ptr->grim_draw_text_small_fmt(
@@ -136,7 +141,8 @@ extern "C" void unlocked_weapons_database_update(void)
         position.y,
         "%d weapons in database",
         database_count);
-    position.y += 28.0f;
+    position.y += 20.0f;
+    position.y += 8.0f;
 
     if (grim_interface_ptr->grim_was_key_pressed(0xc8)) {
         ui_mouse_blocked = 1;
@@ -157,7 +163,8 @@ extern "C" void unlocked_weapons_database_update(void)
     position.x += 10.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
         position.x - 2.0f, position.y, "Weapon");
-    position.y += 20.0f;
+    position.y += 16.0f;
+    position.y += 4.0f;
 
     char *weapon_names[64];
     int weapon_count = 0;
@@ -183,21 +190,22 @@ extern "C" void unlocked_weapons_database_update(void)
         index = 1;
         do {
             if (weapon_table[index].unlocked != 0) {
-                if (available_index == scrollbar.hovered_index) {
+                if (available_index++ == scrollbar.hovered_index) {
                     weapon_id = index;
                     break;
                 }
-                ++available_index;
             }
             ++index;
         } while (index < 64);
     }
 
-    panel_position =
-        *(database_vec2_t *)&ui_element_slot_09.pos_x
-        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-    position = panel_position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_09.pos_x
+            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+    }
     position.y += 265.0f;
     position.x +=
         ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 10.0f;
@@ -212,11 +220,13 @@ extern "C" void unlocked_weapons_database_update(void)
     }
 
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-    panel_position =
-        *(database_vec2_t *)&ui_element_slot_33.pos_x
-        + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-    position = panel_position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_33.pos_x
+            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+    }
     position.y += 10.0f;
     position.x +=
         ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;
@@ -250,15 +260,15 @@ extern "C" void unlocked_weapons_database_update(void)
 
         position.y += 30.0f;
         position.x -= 16.0f;
-        if (weapon_ammo_class[weapon_id].ammo_class == 1) {
-            grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y, "Firerate:    n/a");
-        } else {
+        if (weapon_ammo_class[weapon_id].ammo_class != 1) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x,
                 position.y,
                 "Firerate:    %d rpm",
                 (int)(60.0f / weapon_table[weapon_id].shot_cooldown));
+        } else {
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, "Firerate:    n/a");
         }
         position.y += 18.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(

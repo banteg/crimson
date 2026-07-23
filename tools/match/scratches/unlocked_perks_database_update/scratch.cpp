@@ -34,8 +34,7 @@ struct database_scrollbar_t {
 
     database_scrollbar_t()
     {
-        column_offsets[0] = 0.0f;
-        column_offsets[1] = 0.0f;
+        column_offsets[0] = column_offsets[1] = 0.0f;
     }
 
     ~database_scrollbar_t() {}
@@ -86,32 +85,36 @@ bool ui_button_update(float *xy, ui_button_t *button);
 extern "C" void unlocked_perks_database_update(void)
 {
     int perk_id = -1;
-    database_vec2_t panel_position =
-        *(database_vec2_t *)&ui_element_slot_09.pos_x
-        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-
-    database_vec2_t position = panel_position;
-    position.y += 10.0f;
-    position.x +=
-        ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 32.0f;
+    database_vec2_t position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_09.pos_x
+            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+        position.y += 10.0f;
+        position.x =
+            panel_position.x + ui_element_slot_09.render_offset_x
+            + 44.0f - 110.0f - 32.0f;
+    }
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     int title_width = grim_interface_ptr->grim_measure_text_width(
         "Unlocked Perks Database");
-    int title_half_width = title_width / 2;
     grim_interface_ptr->grim_draw_text_small(
-        position.x + 132.0f - (float)title_half_width,
+        position.x + 132.0f - (float)(title_width / 2),
         position.y,
         "Unlocked Perks Database");
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-    database_vec2_t separator_position(
-        position.x + (float)(132 - title_half_width),
-        position.y + 13.0f);
+    database_vec2_t separator_position;
+    separator_position.x =
+        position.x + (float)(132 - title_width / 2);
+    separator_position.y = position.y + 13.0f;
     grim_interface_ptr->grim_draw_rect_outline(
         (float *)&separator_position, (float)title_width, 1.0f);
 
+    position.y += 20.0f;
     int database_count = 0;
     int index = 1;
     do {
@@ -121,7 +124,7 @@ extern "C" void unlocked_perks_database_update(void)
         ++index;
     } while (index < 128);
 
-    position.y += 28.0f;
+    position.y += 8.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
     grim_interface_ptr->grim_draw_text_small_fmt(
@@ -129,7 +132,8 @@ extern "C" void unlocked_perks_database_update(void)
         position.y,
         "%d perks in database",
         database_count);
-    position.y += 28.0f;
+    position.y += 20.0f;
+    position.y += 8.0f;
 
     if (grim_interface_ptr->grim_was_key_pressed(0xc8)) {
         ui_mouse_blocked = 1;
@@ -150,7 +154,8 @@ extern "C" void unlocked_perks_database_update(void)
     position.x += 10.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
         position.x - 2.0f, position.y, "Perks");
-    position.y += 20.0f;
+    position.y += 16.0f;
+    position.y += 4.0f;
 
     char *perk_names[128];
     int perk_count = 0;
@@ -176,21 +181,22 @@ extern "C" void unlocked_perks_database_update(void)
         index = 0;
         do {
             if ((char)perk_meta_table[index].available != 0) {
-                if (available_index == scrollbar.hovered_index) {
+                if (available_index++ == scrollbar.hovered_index) {
                     perk_id = index;
                     break;
                 }
-                ++available_index;
             }
             ++index;
         } while (index < 128);
     }
 
-    panel_position =
-        *(database_vec2_t *)&ui_element_slot_09.pos_x
-        + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-    position = panel_position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_09.pos_x
+            + *(database_vec2_t *)&ui_element_slot_09.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+    }
     position.y += 275.0f;
     position.x +=
         ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 10.0f;
@@ -203,11 +209,13 @@ extern "C" void unlocked_perks_database_update(void)
         game_state_pending = GAME_STATE_STATISTICS_MENU;
     }
 
-    panel_position =
-        *(database_vec2_t *)&ui_element_slot_33.pos_x
-        + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;
-    panel_position += database_vec2_t(300.0f, 40.0f);
-    position = panel_position;
+    {
+        database_vec2_t panel_position =
+            *(database_vec2_t *)&ui_element_slot_33.pos_x
+            + *(database_vec2_t *)&ui_element_slot_33.vertices[0].x;
+        panel_position += database_vec2_t(300.0f, 40.0f);
+        position = panel_position;
+    }
     position.y += 10.0f;
     position.x +=
         ui_element_slot_33.render_offset_x - 16.0f - 240.0f - 10.0f;
@@ -227,30 +235,28 @@ extern "C" void unlocked_perks_database_update(void)
         grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        char *name = perk_meta_table[perk_id].name;
-        int name_width = grim_interface_ptr->grim_measure_text_width(name);
-        int name_half_width = name_width / 2;
+        int name_width = grim_interface_ptr->grim_measure_text_width(
+            perk_meta_table[perk_id].name);
         grim_interface_ptr->grim_draw_text_small(
-            position.x + 128.0f - (float)name_half_width,
+            position.x + 128.0f - (float)(name_width / 2),
             position.y,
-            name);
+            perk_meta_table[perk_id].name);
 
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
         separator_position.x =
-            position.x + (float)(128 - name_half_width);
+            position.x + (float)(128 - name_width / 2);
         separator_position.y = position.y + 13.0f;
         grim_interface_ptr->grim_draw_rect_outline(
             (float *)&separator_position, (float)name_width, 1.0f);
         position.y += 22.0f;
 
-        int prerequisite = perk_meta_table[perk_id].prerequisite;
-        if (prerequisite != -1) {
+        if (perk_meta_table[perk_id].prerequisite != -1) {
             grim_interface_ptr->grim_set_color(1.0f, 0.8f, 0.8f, 0.8f);
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x + 16.0f,
                 position.y,
                 "Requires: %s",
-                perk_meta_table[prerequisite].name);
+                perk_meta_table[perk_meta_table[perk_id].prerequisite].name);
             position.y += 18.0f;
         }
 

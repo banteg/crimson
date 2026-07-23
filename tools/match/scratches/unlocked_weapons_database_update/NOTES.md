@@ -18,14 +18,20 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 78.59% of 523 target
-instructions with 528 candidate instructions and `132/0/5` audited references.
-All object, guard, function, string, and gameplay-data references resolve. The
-five residual reference mismatches are constant-pool alignments caused by the
+The natural `msvc6.5 /O2 /GB` reconstruction matches 85.74% of 523 target
+instructions with 522 candidate instructions, a nine-instruction exact prefix,
+the exact native `0x118`-byte frame, and `143/0/2` audited references. All
+object, guard, function, string, and gameplay-data references resolve. The two
+residual reference mismatches are constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
-constants and source operations are present elsewhere in the aligned flow. The
-native frame is `0x118` bytes versus `0x124` for the current candidate.
-`msvc6.5pp` falls to 74.43%; `msvc6.6` produces the same result as `msvc6.5`.
+constants and source operations are present elsewhere in the aligned flow.
+
+The frame and control-flow improvement comes from source-supported structure:
+the title separator and three panel anchors have their native disjoint
+lifetimes, the native `20 + 10`, `20 + 8`, and `16 + 4` vertical spacings remain
+separate operations, the compact-to-real-id mapping uses its native
+post-increment test, and the fire-rate branches place the RPM path before the
+ammo-class-1 `n/a` path.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.
