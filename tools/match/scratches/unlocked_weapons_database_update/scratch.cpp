@@ -28,7 +28,7 @@ struct database_scrollbar_t {
     int hovered_index;
     int selected_index;
     int visible_rows;
-    float column_offsets[8];
+    int column_offsets[8];
     char **items;
     int item_count;
 

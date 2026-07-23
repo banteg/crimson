@@ -8925,6 +8925,20 @@
       "type": "char"
     },
     {
+      "address": "0x004d11fa",
+      "comment": "Scrollbar drag latch owned exclusively by ui_scrollbar_update; set while the pointer is over the track and cleared after primary input is released.",
+      "name": "ui_scrollbar_drag_active",
+      "program": "crimsonland.exe",
+      "type": "char"
+    },
+    {
+      "address": "0x004d11fc",
+      "comment": "Scrollbar thumb grab offset owned exclusively by ui_scrollbar_update; zero for track jumps and pointer-relative for direct thumb drags.",
+      "name": "ui_scrollbar_drag_offset",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x004d1200",
       "comment": "Unlocked-weapons database keyboard focus index (0=Back button, 1=list area).",
       "name": "unlocked_weapons_nav_focus_index",

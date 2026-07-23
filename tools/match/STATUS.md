@@ -8,12 +8,12 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/601 |
+| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/602 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**487/997** functions, **105139/386756** bytes (**27.2%**), **487/601** scratches verified.
+**487/997** functions, **105139/386756** bytes (**27.2%**), **487/602** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -523,14 +523,15 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_focus_draw | 0x0043d940 | 104 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
+| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 472/479 | 54.05% | 0/479 | 59/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_button_update | 0x0043e830 | 1215 | 347/347 | 100.00% | 347/347 | 61/0/0 |  | ui-button-focus-animation-render-and-activation |
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
 | wip | statistics_menu_update | 0x0043f550 | 2877 | 675/676 | 88.82% | 280/676 | 264/0/5 |  | statistics-playtime-network-status-and-navigation |
-| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 522/523 | 85.74% | 9/523 | 143/0/2 |  | unlocked-weapon-list-and-detail-panel |
+| wip | unlocked_weapons_database_update | 0x00440110 | 2086 | 522/523 | 82.87% | 9/523 | 140/0/2 |  | unlocked-weapon-list-and-detail-panel |
 | match | unlocked_weapons_back_button_destroy | 0x00440940 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-back-button-empty-destructor |
 | match | unlocked_weapons_scrollbar_destroy | 0x00440950 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-weapons-scrollbar-empty-destructor |
-| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 508/511 | 85.18% | 0/511 | 135/0/2 |  | unlocked-perk-list-prerequisite-and-description-panel |
+| wip | unlocked_perks_database_update | 0x00440960 | 2065 | 508/511 | 85.38% | 0/511 | 135/0/2 |  | unlocked-perk-list-prerequisite-and-description-panel |
 | match | unlocked_perks_back_button_destroy | 0x00441180 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-back-button-empty-destructor |
 | match | unlocked_perks_scrollbar_destroy | 0x00441190 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | unlocked-perks-scrollbar-empty-destructor |
 | match | highscore_card_draw_horizontal_divider | 0x004411c0 | 83 | 23/23 | 100.00% | 23/23 | 6/0/0 |  | highscore-card-divider |
