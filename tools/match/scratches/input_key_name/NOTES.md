@@ -23,7 +23,13 @@ single-character alphabet labels.
 
 The DirectInput fallback compiles to a 237-byte case-id map followed by a jump
 table. `input_key_name_dik_dispatch_map` names the native byte map at
-`0x004044b0`; the scratch-local `$L43705` alias binds VC6's generated COFF
+`0x004044b0`; the scratch-local `$L43706` alias binds VC6's generated COFF
 symbol so the table reference is audited rather than ignored. Compatibility
 defines supply the DirectInput 8 scan-code constants missing from VC6's
 bundled older `dinput.h` without changing generated code.
+
+The implementation now lives in
+`tools/match/include/input_key_name_impl.h`. The standalone scratch includes
+it unchanged and remains exact; `controls_menu_update` defines
+`CONTROLS_INLINE_KEY_NAME` to reproduce the three native force-inlined copies
+without duplicating or diverging the recovered label policy.

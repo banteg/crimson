@@ -1249,6 +1249,13 @@
       "type": "int"
     },
     {
+      "address": "0x00478e60",
+      "comment": "Controls-menu one-frame selection refresh latch; reloads the active aim and movement dropdown indices from config.",
+      "name": "controls_menu_selection_refresh_latch",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
       "address": "0x00478e64",
       "comment": "Controls-menu keybind target slot index (-1 when no bind capture is active).",
       "name": "controls_rebind_slot_index",
@@ -9140,6 +9147,13 @@
       "type": "int"
     },
     {
+      "address": "0x004d75b8",
+      "comment": "Function-local Back button owned by the controls/rebinding screen.",
+      "name": "controls_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004d75d0",
       "comment": "Play-game menu Tutorial mode button state block (overlay alias in shared UI scratch memory).",
       "name": "play_game_menu_button_tutorial",
@@ -9289,7 +9303,7 @@
     },
     {
       "address": "0x004d7660",
-      "comment": "Controls menu player-profile dropdown/list state (Player 1..4 selector).",
+      "comment": "Controls menu player-profile dropdown/list state; four labels are built but native exposes two selectable player configurations.",
       "name": "controls_player_profile_list",
       "program": "crimsonland.exe",
       "type": "ui_list_widget_t"
@@ -9340,6 +9354,13 @@
       "type": "ui_checkbox_t"
     },
     {
+      "address": "0x004d7708",
+      "comment": "Function-local Redefine button owned by the controls/rebinding screen.",
+      "name": "controls_redefine_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004d7720",
       "aliases": [
         "?title_color@?1??quest_select_menu_update@@9@4Uquest_select_color_t@@A"
@@ -9388,7 +9409,7 @@
       "comment": "Controls menu one-shot init flags bitfield (guards static widget setup blocks).",
       "name": "controls_menu_init_flags",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "unsigned char"
     },
     {
       "address": "0x004d77f0",
