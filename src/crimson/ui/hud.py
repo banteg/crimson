@@ -53,6 +53,9 @@ HUD_SURV_XP_VALUE_POS = (26.0, 74.0)
 HUD_SURV_LVL_VALUE_POS = (85.0, 79.0)
 HUD_SURV_PROGRESS_POS = (26.0, 91.0)
 HUD_SURV_PROGRESS_WIDTH = 54.0
+# Native starts bonus/weapon-popup rows at 78 and advances by 43 only after
+# rendering the XP panel.
+HUD_BONUS_BASE_Y_NO_XP = 78.0
 HUD_BONUS_BASE_Y = 121.0
 HUD_BONUS_ICON_SIZE = 32.0
 HUD_BONUS_TEXT_OFFSET = (36.0, 6.0)
@@ -736,9 +739,10 @@ def draw_hud_overlay(
         max_y = max(max_y, ui(10.0 + line_h))
 
     # Bonus HUD slots (icon + timers), slide in/out from the left.
-    bonus_bottom_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
+    bonus_base_y = HUD_BONUS_BASE_Y if show_xp else HUD_BONUS_BASE_Y_NO_XP
+    bonus_bottom_y = float(bonus_base_y + hud_y_shift)
     if bonus_hud is not None:
-        bonus_y = float(HUD_BONUS_BASE_Y + hud_y_shift)
+        bonus_y = float(bonus_base_y + hud_y_shift)
         bonus_panel_alpha = alpha * 0.7
         bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
         bar_rgba = HUD_XP_BAR_RGBA.with_alpha(bonus_panel_alpha)
@@ -878,20 +882,19 @@ def draw_hud_overlay(
     aux_icon_base_pos = Vec2(105.0, float(bonus_bottom_y) - 5.0)
     aux_text_base_pos = Vec2(8.0, float(bonus_bottom_y) + 1.0)
     aux_step = Vec2(0.0, 32.0)
-    for idx, hud_player in enumerate(hud_players):
+    aux_row = 0
+    for hud_player in hud_players:
         aux_timer = float(hud_player.aux_timer)
         if aux_timer <= 0.0:
             continue
 
         fade = 2.0 - aux_timer if aux_timer > 1.0 else aux_timer
         fade = max(0.0, min(1.0, fade)) * alpha
-        if fade <= 1e-3:
-            continue
 
         panel_alpha = fade * 0.8
         text_alpha = fade
 
-        panel_pos = aux_panel_base_pos + aux_step * float(idx)
+        panel_pos = aux_panel_base_pos + aux_step * float(aux_row)
         panel_size = Vec2(182.0, 53.0)
 
         src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
@@ -909,7 +912,7 @@ def draw_hud_overlay(
         icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
         if icon_index is not None:
             src = _weapon_icon_src(wicons, icon_index)
-            icon_pos = aux_icon_base_pos + aux_step * float(idx)
+            icon_pos = aux_icon_base_pos + aux_step * float(aux_row)
             dst = rl.Rectangle(ui(icon_pos.x), ui(icon_pos.y), ui(60.0), ui(30.0))
             rl.draw_texture_pro(
                 wicons,
@@ -926,7 +929,7 @@ def draw_hud_overlay(
             preserve_bugs=bool(state.preserve_bugs),
         )
         weapon_color = _with_alpha(HUD_TEXT_COLOR, text_alpha)
-        text_pos = aux_text_base_pos + aux_step * float(idx)
+        text_pos = aux_text_base_pos + aux_step * float(aux_row)
         _draw_text(
             font,
             weapon_name,
@@ -934,5 +937,7 @@ def draw_hud_overlay(
             text_scale,
             weapon_color,
         )
+        # ui_render_hud advances these coordinates only for an active popup.
+        aux_row += 1
 
     return max_y

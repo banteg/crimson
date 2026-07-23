@@ -199,3 +199,106 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
     assert len(default_hearts) == 2
     assert len(preserve_hearts) == 2
     assert preserve_hearts[1][2] < default_hearts[1][2] - 1.0
+
+
+def test_draw_hud_overlay_uses_native_aux_origin_without_xp(mocker) -> None:
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
+
+    panel = _texture(182, 53)
+    resources = _resources(
+        {
+            TextureId.UI_GAME_TOP: _texture(512, 64),
+            TextureId.UI_LIFE_HEART: _texture(32, 32),
+            TextureId.UI_IND_LIFE: _texture(120, 9),
+            TextureId.UI_IND_PANEL: panel,
+            TextureId.UI_IND_BULLET: _texture(6, 16),
+            TextureId.UI_IND_FIRE: _texture(6, 16),
+            TextureId.UI_IND_ROCKET: _texture(6, 16),
+            TextureId.UI_IND_ELECTRIC: _texture(6, 16),
+            TextureId.UI_WICONS: _texture(256, 128),
+            TextureId.UI_CLOCK_TABLE: _texture(32, 32),
+            TextureId.UI_CLOCK_POINTER: _texture(32, 32),
+            TextureId.BONUSES: _texture(256, 256),
+        },
+    )
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, aux_timer=0.5)
+    player.weapon.weapon_id = WeaponId.PISTOL
+    draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+
+    draw_hud_overlay(
+        HudRenderContext(
+            resources=resources,
+            state=HudState(),
+            alpha=1.0,
+            show_health=False,
+            show_weapon=False,
+            show_xp=False,
+            show_time=False,
+        ),
+        player=player,
+        players=[player],
+        bonus_hud=None,
+    )
+
+    panel_draws = [
+        (float(call.args[2].x), float(call.args[2].y))
+        for call in draw_texture_pro.call_args_list
+        if call.args[0] is panel
+    ]
+    assert panel_draws == [(-12.0, 61.0)]
+
+
+def test_draw_hud_overlay_compacts_active_aux_rows(mocker) -> None:
+    mocker.patch.object(hud_module.rl, "get_screen_width", side_effect=lambda: 1024)
+    mocker.patch.object(hud_module.rl, "get_screen_height", side_effect=lambda: 768)
+    mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
+    mocker.patch.object(hud_module.rl, "draw_rectangle", side_effect=lambda *args, **kwargs: None)
+
+    panel = _texture(182, 53)
+    resources = _resources(
+        {
+            TextureId.UI_GAME_TOP: _texture(512, 64),
+            TextureId.UI_LIFE_HEART: _texture(32, 32),
+            TextureId.UI_IND_LIFE: _texture(120, 9),
+            TextureId.UI_IND_PANEL: panel,
+            TextureId.UI_IND_BULLET: _texture(6, 16),
+            TextureId.UI_IND_FIRE: _texture(6, 16),
+            TextureId.UI_IND_ROCKET: _texture(6, 16),
+            TextureId.UI_IND_ELECTRIC: _texture(6, 16),
+            TextureId.UI_WICONS: _texture(256, 128),
+            TextureId.UI_CLOCK_TABLE: _texture(32, 32),
+            TextureId.UI_CLOCK_POINTER: _texture(32, 32),
+            TextureId.BONUSES: _texture(256, 256),
+        },
+    )
+    player0 = PlayerState(index=0, pos=Vec2(), health=100.0, aux_timer=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0, aux_timer=0.5)
+    player0.weapon.weapon_id = WeaponId.PISTOL
+    player1.weapon.weapon_id = WeaponId.PISTOL
+    draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+
+    draw_hud_overlay(
+        HudRenderContext(
+            resources=resources,
+            state=HudState(),
+            alpha=1.0,
+            show_health=False,
+            show_weapon=False,
+            show_xp=True,
+            show_time=False,
+        ),
+        player=player0,
+        players=[player0, player1],
+        bonus_hud=None,
+        score=0,
+        frame_dt_ms=0.0,
+    )
+
+    popup_panels = [
+        (float(call.args[2].x), float(call.args[2].y))
+        for call in draw_texture_pro.call_args_list
+        if call.args[0] is panel and float(call.args[2].x) == -12.0
+    ]
+    assert popup_panels == [(-12.0, 104.0)]
