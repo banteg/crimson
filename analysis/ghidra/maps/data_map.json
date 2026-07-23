@@ -11637,6 +11637,62 @@
       "name": "vec2_normalize_impl",
       "program": "crimsonland.exe",
       "type": "float * (__stdcall *)(float *, float *)"
+    },
+    {
+      "address": "0x004cc918",
+      "comment": "Function-local High scores button state owned by statistics_menu_update.",
+      "name": "statistics_high_scores_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d0f40",
+      "comment": "Function-local Weapons button state owned by statistics_menu_update.",
+      "name": "statistics_weapons_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004cc8f8",
+      "comment": "Function-local Perks button state owned by statistics_menu_update.",
+      "name": "statistics_perks_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d0eb8",
+      "comment": "Function-local Credits button state owned by statistics_menu_update.",
+      "name": "statistics_credits_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d0f60",
+      "comment": "Function-local Typ-o-Shooter button state owned by statistics_menu_update.",
+      "name": "statistics_typo_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004ccd50",
+      "comment": "Function-local dormant Mods button state owned by statistics_menu_update.",
+      "name": "statistics_mods_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004d11c8",
+      "comment": "Function-local Check for updates button state owned by statistics_menu_update.",
+      "name": "statistics_update_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x004cccc0",
+      "comment": "Function-local Back button state owned by statistics_menu_update.",
+      "name": "statistics_back_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     }
   ],
   "notes": "Data label map for globals and tables. Keep names unique per program."
