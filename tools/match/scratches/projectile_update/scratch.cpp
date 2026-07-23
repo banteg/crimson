@@ -105,9 +105,9 @@ extern "C" void projectile_update(void)
                         (int)projectile->pos.tail.vy.travel_budget;
                     float heading = projectile->angle - 1.5707964f;
                     float step_x =
-                        (float)(cos(heading) * frame_dt * 20.0f);
+                        (float)cos(heading) * frame_dt * 20.0f;
                     float step_y =
-                        (float)(sin(heading) * frame_dt * 20.0f);
+                        (float)sin(heading) * frame_dt * 20.0f;
 
                     if (perk_count_get(perk_id_barrel_greaser) != 0
                         && projectile->pos.tail.vy.owner_id < 0) {
@@ -328,8 +328,12 @@ extern "C" void projectile_update(void)
 
                                     type_id =
                                         projectile->pos.tail.vy.type_id;
-                                    float damage_scale =
-                                        weapon_table[type_id].damage_scale;
+                                    float damage =
+                                        ((100.0f / damage_distance)
+                                                * weapon_table[type_id]
+                                                    .damage_scale
+                                                * 30.0f
+                                            + 10.0f);
 
                                     if (type_id
                                         == PROJECTILE_TYPE_ION_MINIGUN) {
@@ -449,11 +453,7 @@ extern "C" void projectile_update(void)
                                             1;
                                     }
 
-                                    float damage =
-                                        ((100.0f / damage_distance)
-                                                * damage_scale * 30.0f
-                                            + 10.0f)
-                                        * 0.95f;
+                                    damage *= 0.95f;
                                     if (damage > 0.0f
                                         && creature_pool[hit_id].health
                                             > 0.0f) {
@@ -537,11 +537,11 @@ extern "C" void projectile_update(void)
                                                 projectile->angle
                                                 - 1.5707964f;
                                             float offset_x =
-                                                (float)(cos(impact_heading)
-                                                    * speed * 20.0f);
+                                                (float)cos(impact_heading)
+                                                * speed * 20.0f;
                                             float offset_y =
-                                                (float)(sin(impact_heading)
-                                                    * speed * 20.0f);
+                                                (float)sin(impact_heading)
+                                                * speed * 20.0f;
                                             vec2f_t impulse_pos = {
                                                 creature_pool[hit_id].pos_x
                                                     + offset_x,
@@ -589,11 +589,11 @@ extern "C" void projectile_update(void)
                                                     crt_rand() % 20 - 10)
                                                     * 0.1f;
                                             float offset_x =
-                                                (float)(cos(impact_heading)
-                                                    * 20.0f);
+                                                (float)cos(impact_heading)
+                                                * 20.0f;
                                             float offset_y =
-                                                (float)(sin(impact_heading)
-                                                    * 20.0f);
+                                                (float)sin(impact_heading)
+                                                * 20.0f;
 
                                             vec2f_t *creature_pos =
                                                 (vec2f_t *)&creature_pool[hit_id]
@@ -778,12 +778,12 @@ extern "C" void projectile_update(void)
                         secondary->pos_x - target->pos_x);
                     secondary->angle = target_angle - 1.5707964f;
                     secondary->pos.vx.vel_x +=
-                        (float)(cos(
+                        (float)cos(
                             (target_angle - 1.5707964f) - 1.5707964f)
-                            * frame_dt * 800.0f);
+                        * frame_dt * 800.0f;
                     secondary->pos.vx.vy.vel_y +=
-                        (float)(sin(secondary->angle - 1.5707964f)
-                            * frame_dt * 800.0f);
+                        (float)sin(secondary->angle - 1.5707964f)
+                        * frame_dt * 800.0f;
 
                     float speed = (float)sqrt(
                         secondary->pos.vx.vel_x
@@ -792,13 +792,13 @@ extern "C" void projectile_update(void)
                                 * secondary->pos.vx.vy.vel_y);
                     if (speed > 350.0f) {
                         secondary->pos.vx.vel_x -=
-                            (float)(cos(
+                            (float)cos(
                                 secondary->angle - 1.5707964f)
-                                * frame_dt * 800.0f);
+                            * frame_dt * 800.0f;
                         secondary->pos.vx.vy.vel_y -=
-                            (float)(sin(
+                            (float)sin(
                                 secondary->angle - 1.5707964f)
-                                * frame_dt * 800.0f);
+                            * frame_dt * 800.0f;
                     }
                     secondary->life_timer -= frame_dt * 0.5f;
                 }
@@ -812,16 +812,15 @@ extern "C" void projectile_update(void)
                         (float)cos(secondary->angle + 1.5707964f);
                     vec2f_t trail_velocity = {
                         trail_cos * 90.0f,
-                        (float)(cos(secondary->angle + 1.5707964f)
-                            * 90.0f),
+                        trail_cos * 90.0f,
                     };
                     float trail_heading =
                         secondary->angle - 1.5707964f;
                     vec2f_t trail_pos = {
                         secondary->pos_x
-                            - (float)(cos(trail_heading) * 9.0f),
+                            - (float)cos(trail_heading) * 9.0f,
                         secondary->pos.pos_y
-                            - (float)(sin(trail_heading) * 9.0f),
+                            - (float)sin(trail_heading) * 9.0f,
                     };
                     int effect_id = fx_spawn_sprite(
                         &trail_pos.x,
@@ -1117,25 +1116,25 @@ extern "C" void projectile_update(void)
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.96f;
                         particle->vel_x =
-                            (float)(cos(particle->angle) * 82.0f);
+                            (float)cos(particle->angle) * 82.0f;
                         particle->vel_y =
-                            (float)(sin(particle->angle) * 82.0f);
+                            (float)sin(particle->angle) * 82.0f;
                     } else if (style_id == 8) {
                         int turn = crt_rand() % 100 - 50;
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.1f;
                         particle->vel_x =
-                            (float)(cos(particle->angle) * 62.0f);
+                            (float)cos(particle->angle) * 62.0f;
                         particle->vel_y =
-                            (float)(sin(particle->angle) * 62.0f);
+                            (float)sin(particle->angle) * 62.0f;
                     } else {
                         int turn = crt_rand() % 100 - 50;
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.1f;
                         particle->vel_x =
-                            (float)(cos(particle->angle) * 82.0f);
+                            (float)cos(particle->angle) * 82.0f;
                         particle->vel_y =
-                            (float)(sin(particle->angle) * 82.0f);
+                            (float)sin(particle->angle) * 82.0f;
                     }
                 }
                 if (particle->intensity <= 1.0f) {
@@ -1168,7 +1167,7 @@ extern "C" void projectile_update(void)
                                 particle->angle += 6.2831855f;
                             }
 
-                            double hit_angle = atan2(
+                            float hit_angle = (float)atan2(
                                 particle->pos_y
                                     - frame_dt * particle->vel_y
                                     - creature_pool[hit_id].pos_y,
@@ -1182,15 +1181,15 @@ extern "C" void projectile_update(void)
                                 hit_angle += 6.2831855f;
                             }
 
-                            if ((double)particle->angle <= hit_angle) {
+                            if (particle->angle <= hit_angle) {
                                 particle->angle += 1.2566371f;
                             } else {
                                 particle->angle -= 1.2566371f;
                             }
                             particle->vel_x =
-                                (float)(cos(particle->angle) * 82.0f);
+                                (float)cos(particle->angle) * 82.0f;
                             particle->vel_y =
-                                (float)(sin(particle->angle) * 82.0f);
+                                (float)sin(particle->angle) * 82.0f;
                             int speed_scale = crt_rand() % 10;
                             particle->vel_x *= (float)speed_scale * 0.1f;
                             particle->vel_y *= (float)speed_scale * 0.1f;

@@ -11,8 +11,8 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,136 instructions against 2,203 native instructions, scores
-45.40%, and aligns 307 candidate references. The candidate's natural local
+It produces 2,131 instructions against 2,203 native instructions, scores
+46.75%, and aligns 333 candidate references. The candidate's natural local
 frame is `0x98`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
@@ -45,6 +45,25 @@ to 45.40% and aligns 307 references.
 The native damage impulse deliberately writes both vector components from the
 same cosine term. The source retains that oddity because the disassembly and
 the existing runtime parity implementation independently agree on it.
+
+The primary penetration damage calculation is split across the weapon-specific
+impact switch. Native keeps the clamped travel distance on x87, calculates and
+stores `(100 / distance) * weapon.damage_scale * 30 + 10` immediately before
+the switch, then multiplies that stored value by `0.95` immediately after the
+switch. The recovered source now preserves that lifetime and reads the weapon
+table directly instead of introducing a `damage_scale` local.
+
+Native trig products consistently become single-precision at the trig result:
+the projectile microstep uses float `cos`/`sin` values with `frame_dt` and
+`20`, the primary impact vectors use float trig values with their randomized
+speed, seeker acceleration uses float trig values with `frame_dt` and `800`,
+and particle steering uses float trig values with `82` or `62`. Placing the
+cast around each complete expression had promoted those constants to doubles.
+The native smoke trail also calculates one cosine and deliberately uses it for
+both velocity axes. Restoring these forms, plus the native float `hit_angle`
+used by particle reflection, raises the aggregate candidate from 45.40% to
+46.75%, reduces it from 2,136 to 2,131 instructions, and aligns 333 references
+instead of 307 without changing the natural `0x98` frame.
 
 The primary impact blood branch keeps the perk-active eight-splatter path as
 the native fallthrough. The perk-inactive arm branches to the two-splatter
