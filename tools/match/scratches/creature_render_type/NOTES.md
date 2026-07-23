@@ -27,7 +27,11 @@ four quad submissions are accounted for.
 
 The current honest VC6.5 result is 78.45% with the exact native 0x3c-byte stack
 frame, 757 candidate instructions versus 765 target instructions, a
-25-instruction exact prefix, and references `128/8/5`. Repeating the natural
+25-instruction exact prefix, and references `136/0/5`. The adjacent camera
+coordinates are the two fields of the native aggregate `camera_offset`;
+recording that proven object-level alias resolves the eight formerly
+unresolved aligned references without masking any address disagreement.
+Repeating the natural
 `size * 0.5` expression in both vector-constructor arguments is significant:
 VC6 performs the same common-subexpression lowering as native and restores the
 0x3c-byte frame; a named half-size local changes both scheduling and layout.

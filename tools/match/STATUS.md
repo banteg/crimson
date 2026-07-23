@@ -228,7 +228,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | terrain_generate | 0x00417b80 | 1569 | 408/408 | 100.00% | 408/408 | 88/0/0 |  | terrain-render-target-scatter-generation |
 | match | terrain_generate_random | 0x004181b0 | 1764 | 465/465 | 100.00% | 465/465 | 110/0/0 |  | random-terrain-selector-and-scatter-generation |
 | match | terrain_render | 0x004188a0 | 693 | 200/200 | 100.00% | 200/200 | 32/0/0 |  | terrain-backbuffer-render |
-| wip | creature_render_type | 0x00418b60 | 2834 | 757/765 | 78.45% | 25/765 | 128/8/5 |  | creature-atlas-animation-tint-and-lifecycle-rendering |
+| wip | creature_render_type | 0x00418b60 | 2834 | 757/765 | 78.45% | 25/765 | 136/0/5 |  | creature-atlas-animation-tint-and-lifecycle-rendering |
 | match | creature_render_all | 0x00419680 | 1302 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
 | wip | ui_element_set_rect | 0x00419ba0 | 348 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
@@ -329,7 +329,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | player_find_in_radius | 0x00420730 | 133 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
 | wip | projectile_update | 0x00420b90 | 8409 | 2136/2203 | 45.40% | 0/2203 | 307/0/33 |  | core-projectile-simulation |
-| wip | projectile_render | 0x00422c70 | 12551 | 2692/3021 | 33.68% | 0/3021 | 266/0/25 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
+| wip | projectile_render | 0x00422c70 | 12551 | 2792/3021 | 39.77% | 0/3021 | 301/0/30 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
 | wip | creature_update_all | 0x00426220 | 5330 | 1290/1338 | 49.09% | 0/1338 | 207/0/4 |  | creature-ai-movement-attacks-and-corpse-lifecycle |

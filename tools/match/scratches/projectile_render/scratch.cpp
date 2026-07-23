@@ -9,8 +9,6 @@ extern int bullet_trail_texture;
 extern int particles_texture;
 extern int projectile_texture;
 extern int projectile_bullet_texture;
-extern float camera_offset_x;
-extern float camera_offset_y;
 extern int perk_id_sharpshooter;
 extern int perk_id_ion_gun_master;
 extern int quest_spawn_timeline;
@@ -21,6 +19,55 @@ vec2f_t *__stdcall vec2_normalize_dispatch(
     vec2f_t *dst,
     const vec2f_t *src);
 }
+
+struct projectile_render_vec2_t {
+    float x;
+    float y;
+
+    projectile_render_vec2_t() {}
+
+    projectile_render_vec2_t(float x_value, float y_value)
+        : x(x_value), y(y_value) {}
+
+    projectile_render_vec2_t operator+(
+        const projectile_render_vec2_t &other) const
+    {
+        return projectile_render_vec2_t(x + other.x, y + other.y);
+    }
+
+    projectile_render_vec2_t operator-(
+        const projectile_render_vec2_t &other) const
+    {
+        return projectile_render_vec2_t(x - other.x, y - other.y);
+    }
+
+    projectile_render_vec2_t operator*(float scale) const
+    {
+        return projectile_render_vec2_t(x * scale, y * scale);
+    }
+
+    projectile_render_vec2_t &operator+=(
+        const projectile_render_vec2_t &other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    projectile_render_vec2_t &operator-=(
+        const projectile_render_vec2_t &other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+};
+
+extern "C" projectile_render_vec2_t camera_offset;
+
+#define camera_offset_x camera_offset.x
+#define camera_offset_y camera_offset.y
 
 static __inline float projectile_render_clamp(float value)
 {
@@ -66,28 +113,45 @@ extern "C" void projectile_render(float transition_alpha)
         player_state_t *player = &player_state_table[player_index];
         if (player->health > 0.0f) {
             float heading = player->aim_heading - 1.5707964f;
-            float end_x = player->pos_x + (float)cos(heading) * 512.0f;
-            float end_y = player->pos_y + (float)sin(heading) * 512.0f;
+            projectile_render_vec2_t player_pos =
+                *(projectile_render_vec2_t *)&player->pos_x;
+            projectile_render_vec2_t end_pos =
+                player_pos
+                + projectile_render_vec2_t(
+                      (float)cos(heading), (float)sin(heading))
+                    * 512.0f;
             float start_heading = heading - 0.150915f;
-            float start_x =
-                player->pos_x + (float)cos(start_heading) * 15.0f;
-            float start_y =
-                player->pos_y + (float)sin(start_heading) * 15.0f;
-            float half_x = (float)cos(player->aim_heading) * 1.1f;
-            float half_y = (float)sin(player->aim_heading) * 1.1f;
+            projectile_render_vec2_t start_pos =
+                player_pos
+                + projectile_render_vec2_t(
+                      (float)cos(start_heading), (float)sin(start_heading))
+                    * 15.0f;
+            projectile_render_vec2_t half_width =
+                projectile_render_vec2_t(
+                    (float)cos(player->aim_heading),
+                    (float)sin(player->aim_heading))
+                * 1.1f;
+            projectile_render_vec2_t start_screen =
+                camera_offset + start_pos;
+            projectile_render_vec2_t end_screen =
+                camera_offset + end_pos;
+            projectile_render_vec2_t point0 = start_screen - half_width;
+            projectile_render_vec2_t point1 = start_screen + half_width;
+            projectile_render_vec2_t point2 = end_screen + half_width;
+            projectile_render_vec2_t point3 = end_screen - half_width;
 
             if (player->perk_counts[perk_id_sharpshooter] > 0) {
                 grim_interface_ptr->grim_set_config_var(0x14, 2u);
                 grim_interface_ptr->grim_begin_batch();
                 grim_interface_ptr->grim_draw_quad_points(
-                    camera_offset_x + start_x - half_x,
-                    camera_offset_y + start_y - half_y,
-                    camera_offset_x + start_x + half_x,
-                    camera_offset_y + start_y + half_y,
-                    camera_offset_x + end_x + half_x,
-                    camera_offset_y + end_y + half_y,
-                    camera_offset_x + end_x - half_x,
-                    camera_offset_y + end_y - half_y);
+                    point0.x,
+                    point0.y,
+                    point1.x,
+                    point1.y,
+                    point2.x,
+                    point2.y,
+                    point3.x,
+                    point3.y);
                 grim_interface_ptr->grim_end_batch();
                 grim_interface_ptr->grim_set_config_var(0x14, 6u);
             }
@@ -122,79 +186,79 @@ extern "C" void projectile_render(float transition_alpha)
         grim_interface_ptr->grim_set_color_slot(
             3, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);
 
-        float x0;
-        float y0;
-        float x1;
-        float y1;
-        float x2;
-        float y2;
-        float x3;
-        float y3;
+        projectile_render_vec2_t point0;
+        projectile_render_vec2_t point1;
+        projectile_render_vec2_t point2;
+        projectile_render_vec2_t point3;
         if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {
-            float current_x = camera_offset_x + projectile->pos_x;
-            float current_y = camera_offset_y + projectile->pos.pos_y;
-            float origin_x = camera_offset_x + projectile->pos.origin_x;
-            float origin_y = camera_offset_y + projectile->pos.tail.origin_y;
-            x0 = current_x - projectile->pos.tail.vel_x;
-            y0 = current_y - projectile->pos.tail.vy.vel_y;
-            x1 = current_x + projectile->pos.tail.vel_x;
-            y1 = current_y + projectile->pos.tail.vy.vel_y;
-            x2 = origin_x + projectile->pos.tail.vel_x;
-            y2 = origin_y + projectile->pos.tail.vy.vel_y;
-            x3 = origin_x - projectile->pos.tail.vel_x;
-            y3 = origin_y - projectile->pos.tail.vy.vel_y;
+            projectile_render_vec2_t current =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
+            projectile_render_vec2_t origin =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+            projectile_render_vec2_t half_width =
+                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x;
+            point0 = current - half_width;
+            point1 = current + half_width;
+            point2 = origin + half_width;
+            point3 = origin - half_width;
         } else if (type_id == PROJECTILE_TYPE_PISTOL) {
-            float half_x = projectile->pos.tail.vel_x * 1.2f;
-            float half_y = projectile->pos.tail.vy.vel_y * 1.2f;
-            float current_x = camera_offset_x + projectile->pos_x;
-            float current_y = camera_offset_y + projectile->pos.pos_y;
-            float origin_x = camera_offset_x + projectile->pos.origin_x;
-            float origin_y = camera_offset_y + projectile->pos.tail.origin_y;
-            x0 = current_x - half_x;
-            y0 = current_y - half_y;
-            x1 = current_x + half_x;
-            y1 = current_y + half_y;
-            x2 = origin_x + half_x;
-            y2 = origin_y + half_y;
-            x3 = origin_x - half_x;
-            y3 = origin_y - half_y;
+            projectile_render_vec2_t half_width =
+                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                * 1.2f;
+            projectile_render_vec2_t current =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
+            projectile_render_vec2_t origin =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+            point0 = current - half_width;
+            point1 = current + half_width;
+            point2 = origin + half_width;
+            point3 = origin - half_width;
         } else if (type_id == PROJECTILE_TYPE_GAUSS_GUN) {
             grim_interface_ptr->grim_set_color_slot(
                 2, 0.2f, 0.5f, 1.0f, alpha);
             grim_interface_ptr->grim_set_color_slot(
                 3, 0.2f, 0.5f, 1.0f, alpha);
-            float half_x = projectile->pos.tail.vel_x * 1.1f;
-            float half_y = projectile->pos.tail.vy.vel_y * 1.1f;
-            float current_x = camera_offset_x + projectile->pos_x;
-            float current_y = camera_offset_y + projectile->pos.pos_y;
-            float origin_x = camera_offset_x + projectile->pos.origin_x;
-            float origin_y = camera_offset_y + projectile->pos.tail.origin_y;
-            x0 = current_x - half_x;
-            y0 = current_y - half_y;
-            x1 = current_x + half_x;
-            y1 = current_y + half_y;
-            x2 = origin_x + half_x;
-            y2 = origin_y + half_y;
-            x3 = origin_x - half_x;
-            y3 = origin_y - half_y;
+            projectile_render_vec2_t half_width =
+                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                * 1.1f;
+            projectile_render_vec2_t current =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
+            projectile_render_vec2_t origin =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+            point0 = current - half_width;
+            point1 = current + half_width;
+            point2 = origin + half_width;
+            point3 = origin - half_width;
         } else {
-            float half_x = projectile->pos.tail.vel_x * 0.7f;
-            float half_y = projectile->pos.tail.vy.vel_y * 0.7f;
-            float current_x = camera_offset_x + projectile->pos_x;
-            float current_y = camera_offset_y + projectile->pos.pos_y;
-            float origin_x = camera_offset_x + projectile->pos.origin_x;
-            float origin_y = camera_offset_y + projectile->pos.tail.origin_y;
-            x0 = current_x - half_x;
-            y0 = current_y - half_y;
-            x1 = current_x + half_x;
-            y1 = current_y + half_y;
-            x2 = origin_x + half_x;
-            y2 = origin_y + half_y;
-            x3 = origin_x - half_x;
-            y3 = origin_y - half_y;
+            projectile_render_vec2_t half_width =
+                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                * 0.7f;
+            projectile_render_vec2_t current =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
+            projectile_render_vec2_t origin =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+            point0 = current - half_width;
+            point1 = current + half_width;
+            point2 = origin + half_width;
+            point3 = origin - half_width;
         }
         grim_interface_ptr->grim_draw_quad_points(
-            x0, y0, x1, y1, x2, y2, x3, y3);
+            point0.x,
+            point0.y,
+            point1.x,
+            point1.y,
+            point2.x,
+            point2.y,
+            point3.x,
+            point3.y);
     }
     grim_interface_ptr->grim_end_batch();
 
@@ -756,44 +820,58 @@ extern "C" void projectile_render(float transition_alpha)
                     grim_interface_ptr->grim_set_uv_point(2, 0.6f, 0.25f);
                     grim_interface_ptr->grim_set_uv_point(3, 0.6f, 0.0f);
 
-                    vec2f_t arc;
-                    arc.x = creature_pool[creature_index].pos_x
-                        - projectile->pos_x;
-                    arc.y = creature_pool[creature_index].pos_y
-                        - projectile->pos.pos_y;
-                    vec2_normalize_dispatch(&arc, &arc);
-                    float side_x = -arc.y * effect_scale;
-                    float side_y = arc.x * effect_scale;
-                    float start_x = camera_offset_x + projectile->pos_x;
-                    float start_y = camera_offset_y
-                        + projectile->pos.pos_y;
-                    float end_x = camera_offset_x
-                        + creature_pool[creature_index].pos_x;
-                    float end_y = camera_offset_y
-                        + creature_pool[creature_index].pos_y;
+                    projectile_render_vec2_t arc =
+                        *(projectile_render_vec2_t *)
+                             &creature_pool[creature_index].pos_x
+                        - *(projectile_render_vec2_t *)&projectile->pos_x;
+                    vec2_normalize_dispatch(
+                        (vec2f_t *)&arc, (const vec2f_t *)&arc);
+                    projectile_render_vec2_t side(-arc.y, arc.x);
+                    side = side * effect_scale;
+                    projectile_render_vec2_t start =
+                        camera_offset
+                        + *(projectile_render_vec2_t *)&projectile->pos_x;
+                    projectile_render_vec2_t end =
+                        camera_offset
+                        + *(projectile_render_vec2_t *)
+                             &creature_pool[creature_index].pos_x;
+                    projectile_render_vec2_t strip0 =
+                        start - side * 10.0f;
+                    projectile_render_vec2_t strip1 =
+                        start + side * 10.0f;
+                    projectile_render_vec2_t strip2 =
+                        end + side * 10.0f;
+                    projectile_render_vec2_t strip3 =
+                        end - side * 10.0f;
 
                     grim_interface_ptr->grim_draw_quad_points(
-                        start_x - side_x * 10.0f,
-                        start_y - side_y * 10.0f,
-                        start_x + side_x * 10.0f,
-                        start_y + side_y * 10.0f,
-                        end_x + side_x * 10.0f,
-                        end_y + side_y * 10.0f,
-                        end_x - side_x * 10.0f,
-                        end_y - side_y * 10.0f);
+                        strip0.x,
+                        strip0.y,
+                        strip1.x,
+                        strip1.y,
+                        strip2.x,
+                        strip2.y,
+                        strip3.x,
+                        strip3.y);
+                    projectile_render_vec2_t widen = side * 4.0f;
+                    strip0 -= widen;
+                    strip1 += widen;
+                    strip2 += widen;
+                    strip3 -= widen;
                     grim_interface_ptr->grim_draw_quad_points(
-                        start_x - side_x * 14.0f,
-                        start_y - side_y * 14.0f,
-                        start_x + side_x * 14.0f,
-                        start_y + side_y * 14.0f,
-                        end_x + side_x * 14.0f,
-                        end_y + side_y * 14.0f,
-                        end_x - side_x * 14.0f,
-                        end_y - side_y * 14.0f);
+                        strip0.x,
+                        strip0.y,
+                        strip1.x,
+                        strip1.y,
+                        strip2.x,
+                        strip2.y,
+                        strip3.x,
+                        strip3.y);
                     grim_interface_ptr->grim_set_atlas_frame(4, 2);
+                    float half_size = effect_scale * 16.0f;
                     grim_interface_ptr->grim_draw_quad(
-                        end_x - effect_scale * 16.0f,
-                        end_y - effect_scale * 16.0f,
+                        end.x - half_size,
+                        end.y - half_size,
                         size,
                         size);
                     creature_index = creature_find_in_radius(
