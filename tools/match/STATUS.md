@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**704/2173** functions matched, **131826/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**707/2173** functions matched, **131829/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 487/997 | 105139/386756 | 27.2% | 487/607 |
+| crimsonland.exe | 490/997 | 105142/386756 | 27.2% | 490/611 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**487/997** functions, **105139/386756** bytes (**27.2%**), **487/607** scratches verified.
+**490/997** functions, **105142/386756** bytes (**27.2%**), **490/611** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -158,6 +158,10 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mod_load_info | 0x0040e700 | 332 | 91/91 | 100.00% | 91/91 | 36/0/0 |  | mod-metadata-dll-loader |
 | match | mod_load_mod | 0x0040e860 | 219 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
+| wip | mods_menu_update | 0x0040e9a0 | 2607 | 645/648 | 83.06% | 0/648 | 166/0/1 |  | mods-browser-metadata-and-plugin-launch |
+| match | mods_menu_launch_button_destroy | 0x0040f3d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-launch-button-empty-destructor |
+| match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
+| match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
 | wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
 | wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 638/638 | 83.70% | 15/638 | 153/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |

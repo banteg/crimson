@@ -779,6 +779,20 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00472ee8",
+      "comment": "Mods-menu DLL enumeration refresh latch, initialized to 1, cleared after a scan, and rearmed when returning to the main menu.",
+      "name": "mods_menu_refresh_pending",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x00472eec",
+      "comment": "Previously selected mods-menu row, initialized to -1 and used to reload metadata only when the scrollbar selection changes.",
+      "name": "mods_menu_previous_selected_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00472ef0",
       "comment": "Credits secret match-3: selected board index for swap (-1 when none).",
       "name": "credits_secret_selected_index",
@@ -2480,6 +2494,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004811c8",
+      "comment": "Mods-menu table of up to 32 discovered DLL filenames, each stored in a 64-byte slot.",
+      "name": "mods_menu_filenames",
+      "program": "crimsonland.exe",
+      "type": "char[32][64]"
+    },
+    {
       "address": "0x004819d0",
       "comment": "Credits secret UI button state for Reset (ui_button_update target).",
       "name": "credits_secret_reset_button",
@@ -2532,6 +2553,27 @@
       "type": "int"
     },
     {
+      "address": "0x00481af0",
+      "comment": "Function-local Main menu button state in mods_menu_update.",
+      "name": "mods_menu_main_menu_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x00481b08",
+      "comment": "Mods-menu scrollbar item-pointer table referencing the display-name slots.",
+      "name": "mods_menu_item_labels",
+      "program": "crimsonland.exe",
+      "type": "char *[32]"
+    },
+    {
+      "address": "0x00481b88",
+      "comment": "Function-local Launch button state in mods_menu_update.",
+      "name": "mods_menu_launch_button",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
       "address": "0x004819c8",
       "comment": "Function-local static initialization guard for mod_load_info's cached mod_info_t object.",
       "name": "mod_info_static_guard",
@@ -2550,7 +2592,21 @@
       "comment": "Mods menu one-shot init flags bitfield (guards list widget + action button setup blocks).",
       "name": "mods_menu_init_flags",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x00481bd8",
+      "comment": "Function-local 56-byte scrollbar state used by the mods-menu DLL list.",
+      "name": "mods_menu_scrollbar",
+      "program": "crimsonland.exe",
+      "type": "unsigned char[56]"
+    },
+    {
+      "address": "0x00481cd0",
+      "comment": "Mods-menu table of up to 32 display names copied from each plugin's mod_info_t, with 64 bytes per slot.",
+      "name": "mods_menu_display_names",
+      "program": "crimsonland.exe",
+      "type": "char[32][64]"
     },
     {
       "address": "0x00481c10",
