@@ -21,3 +21,10 @@ representation tricks.
 This function also independently confirms that creature tint is runtime state,
 not merely spawn-planning metadata: native copies all four caller-provided
 components into the creature record before returning.
+
+The recovered legacy declaration
+`SpawnCreatureEx(vec2_t spot, color_t col, int type)` also identifies both
+formerly raw pointer parameters as aggregates. The exact scratch and saved
+Binary Ninja prototype now use read-only `vec2f_t` and `effect_color_t`
+boundaries, exposing `pos->x`/`pos->y` and `color->r/g/b/a` without changing
+the 92/92 instruction or 34/0/0 reference match.

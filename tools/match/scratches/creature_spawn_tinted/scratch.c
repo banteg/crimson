@@ -1,4 +1,6 @@
+#define creature_spawn_tinted creature_spawn_tinted_pointer_abi
 #include "crimsonland_gameplay.h"
+#undef creature_spawn_tinted
 
 typedef union creature_spawn_tinted_locals_t {
     int i[2];
@@ -12,13 +14,16 @@ typedef struct creature_spawn_tinted_color_t {
     float a;
 } creature_spawn_tinted_color_t;
 
-int creature_spawn_tinted(float *pos, float *rgba, int type_id)
+int creature_spawn_tinted(
+    const vec2f_t *pos,
+    const effect_color_t *color,
+    int type_id)
 {
     int slot_id = creature_alloc_slot();
     creature_spawn_tinted_locals_t locals = {{0, 0}};
 
-    creature_pool[slot_id].pos_x = pos[0];
-    creature_pool[slot_id].pos_y = pos[1];
+    creature_pool[slot_id].pos_x = pos->x;
+    creature_pool[slot_id].pos_y = pos->y;
     creature_pool[slot_id].active = 1;
     creature_pool[slot_id].state_flag = 1;
     creature_pool[slot_id].vel_x = locals.f[0];
@@ -38,7 +43,7 @@ int creature_spawn_tinted(float *pos, float *rgba, int type_id)
         creature_pool[slot_id].heading = (float)(heading_roll % 314) * 0.01f;
     }
     *(creature_spawn_tinted_color_t *)&creature_pool[slot_id].tint_r =
-        *(creature_spawn_tinted_color_t *)rgba;
+        *(const creature_spawn_tinted_color_t *)color;
     {
         int size_roll = crt_rand();
         int size_offset = size_roll % 20;

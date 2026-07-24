@@ -104,7 +104,9 @@ extern float effect_uv_step_16;
             -effect_template.half_width, effect_template.half_height);      \
     } while (0)
 
-extern "C" effect_entry_t *effect_spawn(int effect_id, float *pos)
+extern "C" effect_entry_t *effect_spawn(
+    int effect_id,
+    const effect_vec2_cpp_t *pos)
 {
     if (config_detail_preset <= 2) {
         if ((effect_spawn_detail_skip_counter++ & 1) != 0) {
@@ -122,8 +124,8 @@ extern "C" effect_entry_t *effect_spawn(int effect_id, float *pos)
     }
 
     *(effect_template_t *)&entry->vel_x = effect_template;
-    entry->pos_x = pos[0];
-    entry->pos_y = pos[1];
+    entry->pos_x = pos->x;
+    entry->pos_y = pos->y;
     entry->effect_id = (unsigned char)effect_id;
 
     if (size_code == 0x10) {

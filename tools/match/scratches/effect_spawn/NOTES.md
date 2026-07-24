@@ -14,3 +14,12 @@ the `(step, step)` case also accounts for the target's third stack temporary.
 
 Verified with MSVC 6.5 `/O2 /GB`: 350/350 instructions, 1507 bytes, and all
 90 masked references audited.
+
+The recovered original `Crimson.h` names this lineage as
+`PART_Spawn(int ptype, vec2_t pos)`, proving that the two input floats form one
+position vector. The exact scratch and saved Binary Ninja prototype now expose
+that lowered argument as a read-only vector pointer and render `pos->x` and
+`pos->y`, while remaining exact. Compiling the available reconstructed vector
+class directly by value changes VC6 alias analysis, loses one instruction, and
+falls to 61.23%; that probe is rejected rather than presented as the original
+class semantics.
