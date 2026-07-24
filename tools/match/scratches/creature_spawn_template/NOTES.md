@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=72.69% prefix=26/3159 target_insns=3159 candidate_insns=2933 refs=341/0/1
+match=73.74% prefix=26/3159 target_insns=3159 candidate_insns=2954 refs=341/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -276,3 +276,16 @@ Frame/prefix notes:
   audit from `316/0/1` to `341/0/1`, while preserving the exact `0x48` frame
   and 26-instruction prefix. Repository fuzzy-weighted coverage gains 1,150
   bytes in both the all-image and Crimsonland-only totals.
+- The late special-template bodies expose a consistent field order in live
+  disassembly. Templates `0x00`, `0x38`, `0x37`, `0x39`, and `0x3a` store
+  their creature type and control metadata before health, speed, reward, tint,
+  size, and contact damage. In particular, the three timer/ranged templates
+  write flags and link state before constructing their RGBA value, and `0x3a`
+  writes its orbit/projectile metadata before the stat body. Templates `0x3f`
+  and `0x43` also construct tint in `[esp+0x48..0x54]` and copy the complete
+  value. Recovering those natural per-template sequences raises the score from
+  `72.69%` to `73.74%`, adds 21 native-shaped candidate instructions, preserves
+  the exact frame, prefix, and `341/0/1` reference audit, and gains another
+  149 repository fuzzy-weighted bytes. Whole-value conversions for `0x3e` and
+  the ordinary macro ordering for `0x00` were retested in this aligned ladder
+  and rejected because they reduced both normalized and fuzzy coverage.
