@@ -6,6 +6,23 @@ extern IGrim2D_cpp *grim_interface_ptr;
 struct quest_failed_vec2_t {
     float x;
     float y;
+
+    quest_failed_vec2_t() {}
+
+    quest_failed_vec2_t(float x_value, float y_value)
+        : x(x_value), y(y_value) {}
+
+    quest_failed_vec2_t operator+(const quest_failed_vec2_t &other) const
+    {
+        return quest_failed_vec2_t(x + other.x, other.y + y);
+    }
+
+    quest_failed_vec2_t &operator+=(const quest_failed_vec2_t &other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 };
 
 struct quest_failed_button_t {
@@ -78,16 +95,12 @@ extern "C" void quest_failed_screen_update(void)
     perk_prompt_update_and_render();
 
     do {
-        quest_failed_vec2_t panel_xy;
-        panel_xy.x =
-            ui_element_slot_35.pos_x + ui_element_slot_35.vertices[0].x;
-        panel_xy.y =
-            ui_element_slot_35.vertices[0].y + ui_element_slot_35.pos_y;
-        panel_xy.x += 180.0f;
+        quest_failed_vec2_t panel_xy =
+            *(quest_failed_vec2_t *)&ui_element_slot_35.pos_x
+            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].x
+            + quest_failed_vec2_t(180.0f, 40.0f);
 
-        quest_failed_vec2_t xy;
-        xy.x = panel_xy.x;
-        xy.y = panel_xy.y + 40.0f;
+        quest_failed_vec2_t xy = panel_xy;
         xy.x =
             ui_element_slot_35.render_offset_x + xy.x + 44.0f - 10.0f;
 
@@ -163,7 +176,7 @@ extern "C" void quest_failed_screen_update(void)
             1.0f,
             quest_failed_highscore_rank_index + 1);
 
-        xy.y = panel_xy.y + 98.0f;
+        xy.y += 98.0f;
         xy.x += 16.0f;
 
         static quest_failed_button_t play_again_button;

@@ -8,12 +8,15 @@ work in progress rather than an exact match.
 
 - clears the reflex-boost timer and conditionally starts Shortie Monk on entry;
 - renders the gameplay world, UI elements, perk prompt, and reaper banner;
-- preserves the native operand order for panel position (`pos_x + vertex.x`,
-  `vertex.y + pos_y`), as proven by the four corresponding data references;
+- recovers the native chained-vector anchor
+  `position + vertex + (180, 40)`, including VC6's hidden first-addition
+  temporary;
 - loads the high-score table on phase `-1`, snapshots the rank, copies the game
   mode into the active record, and flushes stale input;
 - selects all six retry messages, including the native `rewared` typo;
 - renders high-score text input with the active record and one-based rank;
+- advances the evolved layout cursor by 98 pixels for the button stack instead
+  of incorrectly resetting it from the initial panel origin;
 - lazily constructs the Play Again, Play Another, and Main Menu buttons;
 - implements all three native transition/audio action paths; and
 - always renders the cursor after the phase-gated body.
@@ -34,10 +37,14 @@ to those proven native identities.
 
 ## Remaining mismatch
 
-The native function has a 24-byte local frame and keeps the banner coordinates
-in `esi`/`edi`; this natural reconstruction has a 32-byte frame because VC6
-assigns separate slots to the panel, mutable text/button position, preserved
-banner position, and text-input position. Scalar, copied-vector, scoped-lifetime,
-and reuse variants either retained that delta or made register allocation and
-instruction order worse. The residual is recorded here instead of using unions,
-fake references, register hints, or other byte-shaping constructs.
+The recovered cumulative `xy.y += 98.0f` update makes the panel slot naturally
+available for the text-input vector, collapsing the candidate from a 32-byte
+frame to the native 24-byte frame. Together with the chained-vector expression,
+the function now has the native 292 instructions and all 151 references, at
+99.32%.
+
+Only two instructions differ: VC6 stores and reloads the hidden first-addition
+Y temporary at `[esp+0x20]` in the target and `[esp+0x10]` in the candidate.
+Equivalent declaration and initialization forms retained that stack-coloring
+choice or worsened scheduling. The residual is recorded instead of forcing a
+register or stack slot.

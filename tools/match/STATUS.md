@@ -174,7 +174,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_over_play_again_button_destroy | 0x004107b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-play-again-button-empty-destructor |
 | match | game_over_name_input_state_destroy | 0x004107c0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-input-empty-destructor |
 | match | game_over_name_submit_button_destroy | 0x004107d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-submit-button-empty-destructor |
-| wip | quest_failed_screen_update | 0x004107e0 | 1261 | 288/292 | 87.93% | 1/292 | 146/0/1 |  | quest-failed-highscore-and-retry-actions |
+| wip | quest_failed_screen_update | 0x004107e0 | 1261 | 292/292 | 99.32% | 30/292 | 151/0/0 |  | quest-failed-highscore-and-retry-actions |
 | wip | quest_results_screen_update | 0x00410d20 | 4857 | 1164/1168 | 85.59% | 1/1168 | 424/0/9 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
