@@ -28,6 +28,14 @@ candidate prologues are identical through the `sub esp, 0x2c` local-frame
 allocation. Masked-reference auditing reports `326/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
 
+The target-trail direction is a two-component value passed in place as both
+the destination and immutable source of `vec2_normalize_dispatch`. Its live
+prototype is now the proven stdcall
+`vec2f_t *(vec2f_t *, const vec2f_t *)`, replacing Binary Ninja's former cdecl
+`float *(float *, float *)` guess. Propagating that contract through this
+custom vector value is matcher-neutral and leaves the `83.88%` score and
+`326/0/0` reference audit unchanged.
+
 The muzzle-flash weapon-flag arms deliberately retain their identical
 `grim_draw_quad` calls. Native reloads the player size in each arm and pushes
 each arm's size and position arguments before tail-merging at the shared

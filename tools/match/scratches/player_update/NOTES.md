@@ -183,6 +183,15 @@ agreement from `594/0/32` to `667/0/16` without changing behavior or the exact
 `0x48` frame. The remaining first mismatch is local scheduling around the
 previous-position copy, not a missing simulation path.
 
+That same address now has a `vec2f_t *player_position` view for field access,
+while the raw pointer remains only for legacy helper arguments whose
+declarations have not yet been widened. This replaces 174
+`player_pos[0]`/`player_pos[1]` aliases across movement, targeting, weapon
+spawns, and bounds handling with named `x`/`y` fields. A whole-function shadow
+probe is exactly neutral at 4,019 candidate instructions, `54.81%`, a
+7-instruction prefix, and references `736/0/11`, confirming that the stronger
+type is source recovery rather than a codegen trick.
+
 The native weapon dispatch retains 33 direct `projectile_spawn` callsites and
 four `fx_spawn_secondary_projectile` callsites. The earlier candidate emitted
 only 26 and three: reusing one function-wide position temporary let VC6 merge

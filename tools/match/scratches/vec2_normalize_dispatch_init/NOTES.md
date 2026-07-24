@@ -15,3 +15,7 @@ normalizer owns its arguments. Under the independently established VC6
 Processor Pack `/O1 /Oi /G6` vector profile, natural C++ tail-call
 optimization emits the complete native body: `push 1`, the selector call, and
 `jmp [slot]`.
+
+The live database now records the same shared `vec2f_t *` destination and
+`const vec2f_t *` source types as the exact dispatcher scratch rather than raw
+float pointers.
