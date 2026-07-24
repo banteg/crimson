@@ -178,3 +178,14 @@ the latter is now a direct `signed char *` to the named field. This source-shape
 cleanup is matcher-neutral at 49.09%, 1,290/1,338 instructions, and `207/0/4`
 references. The adjacent reset loop remains 99.02%, 307/307 instructions, and
 `213/0/0` references.
+
+## Creature aggregate recovery
+
+The canonical `0x98`-byte creature now exposes the native aggregates used
+throughout game code: position at `+0x14`, velocity at `+0x1c`, RGBA tint at
+`+0x3c`, navigation target at `+0x50`, and linked-target offset at `+0x7c`.
+Anonymous scalar aliases preserve all arithmetic-heavy access. Position,
+velocity, tint, targeting, damage, spawn, death, perk, and render consumers can
+now pass or copy named aggregates without first-float pointer casts. The live
+Binary Ninja layout carries the same five types, and the full match/status pass
+is required to keep every affected exact or WIP consumer honest.

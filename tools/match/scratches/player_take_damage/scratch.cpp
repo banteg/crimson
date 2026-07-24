@@ -85,7 +85,7 @@ post_damage:
                         );
                         if (abs_delta <= 512.0f) {
                             float blast = 512.0f - vec2_distance(
-                                (vec2f_t *)&creature_pool[creature_index].pos_x,
+                                &creature_pool[creature_index].position,
                                 player_pos
                             );
                             if (blast > 0.0f) {

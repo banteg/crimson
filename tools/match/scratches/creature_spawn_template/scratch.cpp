@@ -99,7 +99,7 @@ typedef union creature_spawn_template_locals_t {
         creature->ai_mode = (root_ai_mode);                                                                 \
         child_tint.set((red), (green), (blue), 1.0f);                                                       \
         creature->health = (health_value);                                                                  \
-        *(creature_tint_t *)&creature->tint_r = child_tint;                                                \
+        *(creature_tint_t *)&creature->color = child_tint;                                                 \
         creature->move_speed = (speed_value);                                                               \
         creature->reward_value = 600.0f;                                                                    \
         creature->size = (size_value);                                                                      \
@@ -120,10 +120,10 @@ typedef union creature_spawn_template_locals_t {
         creature->link_index = root_slot_idx;                                                                              \
         creature->target_offset_x = (float)slot_10_i;                                                                      \
         chain_position.set(pos->x + creature->target_offset_x, creature->target_offset_y + pos->y);                       \
-        *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;                                                       \
-        *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;                                                        \
+        *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \
+        *(creature_spawn_vec2_t *)&creature->velocity = zero_velocity;                                                     \
         creature->health = (child_health);                                                                                 \
-        *(creature_tint_t *)&creature->tint_r = child_tint;                                                                \
+        *(creature_tint_t *)&creature->color = child_tint;                                                                 \
         creature->max_health = (child_health);                                                                             \
         grid_vertical_offset = grid_vertical_offset + 0x40;                                                                \
         creature->collision_flag = 0;                                                                                      \
@@ -175,7 +175,7 @@ typedef union creature_spawn_template_locals_t {
         creature->move_speed = (speed_value);                                                                                  \
         creature->reward_value = (reward);                                                                                     \
         child_tint.set((red), (green), (blue), (alpha));                                                                       \
-        *(creature_tint_t *)&creature->tint_r = child_tint;                                                                    \
+        *(creature_tint_t *)&creature->color = child_tint;                                                                     \
         creature->size = (size_value);                                                                                         \
         creature->contact_damage = (damage);                                                                                   \
     } while (0)
@@ -248,8 +248,8 @@ extern "C" creature_t *creature_spawn_template(
     creature = &creature_pool[root_slot_idx];
 
     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
-    *(creature_spawn_vec2_t *)&creature->pos_x = *(creature_spawn_vec2_t *)pos;
-    *(creature_spawn_root_vec2_t *)&creature->vel_x =
+    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;
+    *(creature_spawn_root_vec2_t *)&creature->velocity =
         creature_spawn_root_vec2_t(0.0f, 0.0f);
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
@@ -266,7 +266,7 @@ extern "C" creature_t *creature_spawn_template(
         tint.g = 0.85f;
         tint.b = 0.97f;
         tint.a = 1.0f;
-        *(creature_tint_t *)&creature->tint_r = tint;
+        *(creature_tint_t *)&creature->color = tint;
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->health = 200.0f;
         creature->move_speed = 2.2f;
@@ -292,10 +292,10 @@ extern "C" creature_t *creature_spawn_template(
             creature->target_offset_y = (float)sin(angle) * 100.0f;
             creature->pos_x = pos->x;
             creature->pos_y = pos->y;
-            *(creature_spawn_vec2_t *)&creature->vel_x = child_velocity;
+            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;
             creature->collision_flag = 0;
             creature->health = 40.0f;
-            *(creature_tint_t *)&creature->tint_r = tint;
+            *(creature_tint_t *)&creature->color = tint;
             creature->max_health = 40.0f;
             ring_member_idx = ring_member_idx + 1;
             creature->collision_timer = 0.0f;
@@ -374,7 +374,7 @@ extern "C" creature_t *creature_spawn_template(
             creature->health = 1500.0f;
             creature->move_speed = 2.1f;
             creature->reward_value = 1000.0f;
-            *(creature_tint_t *)&creature->tint_r = tint;
+            *(creature_tint_t *)&creature->color = tint;
             creature->size = 69.0f;
             creature->contact_damage = 150.0f;
             creature->max_health = 1500.0f;
@@ -398,10 +398,10 @@ extern "C" creature_t *creature_spawn_template(
                 orbit_direction.y = orbit_direction.y * 256.0f;
                 lizard_chain_position.x = orbit_direction.x + pos->x;
                 lizard_chain_position.y = orbit_direction.y + pos->y;
-                *(creature_spawn_vec2_t *)&creature->pos_x = lizard_chain_position;
-                *(creature_spawn_vec2_t *)&creature->vel_x = lizard_chain_zero_velocity;
+                *(creature_spawn_vec2_t *)&creature->position = lizard_chain_position;
+                *(creature_spawn_vec2_t *)&creature->velocity = lizard_chain_zero_velocity;
                 creature->health = 60.0f;
-                *(creature_tint_t *)&creature->tint_r = child_tint;
+                *(creature_tint_t *)&creature->color = child_tint;
                 creature->reward_value = 60.0f;
                 creature->max_health = 60.0f;
                 chain_target_offset = chain_target_offset + 0x40;
@@ -427,12 +427,12 @@ extern "C" creature_t *creature_spawn_template(
                 alien_chain_cursor = terrain_texture_height / 2;
                 creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
                 chain_position.set(-10.0f, (float)alien_chain_cursor);
-                *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
+                *(creature_spawn_vec2_t *)&creature->position = chain_position;
                 creature->health = 200.0f;
                 creature->move_speed = 2.0f;
                 creature->reward_value = 600.0f;
                 child_tint.set(0.6f, 0.8f, 0.91f, 1.0f);
-                *(creature_tint_t *)&creature->tint_r = child_tint;
+                *(creature_tint_t *)&creature->color = child_tint;
                 creature->size = 40.0f;
                 creature->contact_damage = 20.0f;
                 zero_velocity.set(0.0f, 0.0f);
@@ -444,7 +444,7 @@ extern "C" creature_t *creature_spawn_template(
                 orbit_direction.y = orbit_direction.y * 256.0f;
                 chain_position.x = orbit_direction.x + pos->x;
                 chain_position.y = orbit_direction.y + pos->y;
-                *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
+                *(creature_spawn_vec2_t *)&creature->position = chain_position;
                 creature->max_health = 200.0f;
                 creature->ai_mode = CREATURE_AI_ORBIT_LINK;
                 chain_link_idx = root_slot_idx;
@@ -462,10 +462,10 @@ extern "C" creature_t *creature_spawn_template(
                     orbit_direction.y = orbit_direction.y * 256.0f;
                     chain_position.x = scaled_orbit_x + pos->x;
                     chain_position.y = orbit_direction.y + pos->y;
-                    *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
-                    *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
+                    *(creature_spawn_vec2_t *)&creature->position = chain_position;
+                    *(creature_spawn_vec2_t *)&creature->velocity = zero_velocity;
                     creature->health = 60.0f;
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->reward_value = 60.0f;
                     creature->max_health = 60.0f;
                     alien_chain_cursor = alien_chain_cursor + 2;
@@ -897,7 +897,7 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 1.3f;
                     creature->reward_value = 6600.0f;
                     child_tint.set(0.6f, 0.6f, 1.0f, 0.8f);
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = 64.0f;
                     creature->contact_damage = 50.0f;
                     child_slot_idx = creature_spawn_slot_alloc();
@@ -916,7 +916,7 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 4.8f;
                     creature->reward_value = 433.0f;
                     child_tint.set(1.0f, 0.75f, 0.1f, 1.0f);
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = (float)(crt_rand() % 4 + 0x29);
                     creature->contact_damage = 10.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP2_RANGED_VARIANT_37) {
@@ -927,7 +927,7 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 3.2f;
                     creature->reward_value = 433.0f;
                     child_tint.set(1.0f, 0.75f, 0.1f, 1.0f);
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = (float)(crt_rand() % 4 + 0x29);
                     creature->contact_damage = 10.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_WEAK_39) {
@@ -938,7 +938,7 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 4.8f;
                     creature->reward_value = 50.0f;
                     child_tint.set(0.8f, 0.65f, 0.1f, 1.0f);
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = (float)(crt_rand() % 4 + 0x1a);
                     creature->contact_damage = 10.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A) {
@@ -950,7 +950,7 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 2.0f;
                     creature->reward_value = 4500.0f;
                     child_tint.set(1.0f, 1.0f, 1.0f, 1.0f);
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = 64.0f;
                     creature->contact_damage = 50.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_BROWN_SMALL_3F) {
@@ -975,7 +975,7 @@ extern "C" creature_t *creature_spawn_template(
         && creature->pos_y > 0.0f
         && (float)terrain_texture_height > creature->pos_y) {
         effect_spawn_burst(
-            (const vec2f_t *)&creature->pos_x,
+            &creature->position,
             8);
     }
 

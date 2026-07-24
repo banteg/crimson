@@ -70,7 +70,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             int flags = creature->flags;
             creature_render_color_t *tint =
-                (creature_render_color_t *)&creature->tint_r;
+                (creature_render_color_t *)&creature->color;
             color = *tint;
             color.a *= 0.4f;
 
@@ -123,7 +123,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             draw_pos =
                 camera_offset
-                + *(creature_render_vec2_t *)&creature->pos_x
+                + *(creature_render_vec2_t *)&creature->position
                 - creature_render_vec2_t(
                     creature->size * 0.5f + 0.7f,
                     creature->size * 0.5f + 0.7f);
@@ -162,7 +162,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                     + energizer_alpha;
             } else {
                 creature_render_color_t *tint =
-                    (creature_render_color_t *)&creature->tint_r;
+                    (creature_render_color_t *)&creature->color;
                 color = *tint;
             }
 
@@ -216,7 +216,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             draw_pos =
                 camera_offset
-                + *(creature_render_vec2_t *)&creature->pos_x
+                + *(creature_render_vec2_t *)&creature->position
                 - creature_render_vec2_t(
                     creature->size * 0.5f,
                     creature->size * 0.5f);
@@ -241,7 +241,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             int flags = creature->flags;
             creature_render_color_t *tint =
-                (creature_render_color_t *)&creature->tint_r;
+                (creature_render_color_t *)&creature->color;
             color = *tint;
 
             int frame;
@@ -293,7 +293,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             draw_pos =
                 camera_offset
-                + *(creature_render_vec2_t *)&creature->pos_x
+                + *(creature_render_vec2_t *)&creature->position
                 - creature_render_vec2_t(
                     creature->size * 0.5f,
                     creature->size * 0.5f);
@@ -366,7 +366,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             draw_pos =
                 camera_offset
-                + *(creature_render_vec2_t *)&creature->pos_x
+                + *(creature_render_vec2_t *)&creature->position
                 - creature_render_vec2_t(
                     creature->size * 0.5f,
                     creature->size * 0.5f);

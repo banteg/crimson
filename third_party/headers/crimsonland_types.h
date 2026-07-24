@@ -361,6 +361,13 @@ typedef union creature_orbit_radius_t {
     unsigned int raw_u32;
 } creature_orbit_radius_t;
 
+typedef struct effect_color_t {
+    float r;
+    float g;
+    float b;
+    float a;
+} effect_color_t;
+
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
@@ -370,24 +377,44 @@ typedef struct creature_t {
     unsigned char _pad1[2];
     float collision_timer;
     float lifecycle_stage;
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
     float health;
     float max_health;
     float heading;
     float target_heading;
     float size;
     float hit_flash_timer;
-    float tint_r;
-    float tint_g;
-    float tint_b;
-    float tint_a;
+    union {
+        struct {
+            float tint_r;
+            float tint_g;
+            float tint_b;
+            float tint_a;
+        };
+        effect_color_t color;
+    };
     unsigned char force_target;
     unsigned char _pad_force_target[3];
-    float target_x;
-    float target_y;
+    union {
+        struct {
+            float target_x;
+            float target_y;
+        };
+        vec2f_t target_position;
+    };
     float contact_damage;
     float move_speed;
     float attack_cooldown;
@@ -398,8 +425,13 @@ typedef struct creature_t {
     unsigned char _pad_target_player[3];
     int entity_reserved_74;
     int link_index;
-    float target_offset_x;
-    float target_offset_y;
+    union {
+        struct {
+            float target_offset_x;
+            float target_offset_y;
+        };
+        vec2f_t target_offset;
+    };
     float orbit_angle;
     creature_orbit_radius_t orbit_radius;
     int flags;
@@ -517,13 +549,6 @@ typedef struct secondary_projectile_t {
 } secondary_projectile_t;
 
 typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
-
-typedef struct effect_color_t {
-    float r;
-    float g;
-    float b;
-    float a;
-} effect_color_t;
 
 typedef struct fx_queue_entry_t {
     int effect_id;

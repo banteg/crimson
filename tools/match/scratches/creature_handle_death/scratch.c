@@ -20,7 +20,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         creature_bonus_args_t *bonus_args =
             (creature_bonus_args_t *)&creature->link_index;
         bonus_spawn_at(
-            (vec2f_t *)&creature->pos_x,
+            &creature->position,
             (bonus_id_t)bonus_args->bonus_id,
             bonus_args->duration_override
         );
@@ -75,7 +75,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         creature_pool[child_id].contact_damage *= 0.7f;
 
         effect_spawn_burst(
-            (const vec2f_t *)&creature->pos_x,
+            &creature->position,
             8);
     }
 
@@ -109,11 +109,11 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
     }
 
     if (!bonus_spawn_guard) {
-        bonus_try_spawn_on_kill((const vec2f_t *)&creature->pos_x);
+        bonus_try_spawn_on_kill(&creature->position);
     }
 
     if (bonus_freeze_timer > 0.0f) {
-        vec2f_t *pos = (vec2f_t *)&creature->pos_x;
+        vec2f_t *pos = &creature->position;
         int count = 8;
         do {
             effect_spawn_freeze_shard(

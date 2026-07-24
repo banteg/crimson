@@ -620,8 +620,7 @@ extern "C" void projectile_update(void)
                                                 * 20.0f;
 
                                             vec2f_t *creature_pos =
-                                                (vec2f_t *)&creature_pool[hit_id]
-                                                    .pos_x;
+                                                &creature_pool[hit_id].position;
                                             fx_queue_add_random(creature_pos);
 
                                             vec2f_t decal_pos = {
@@ -744,9 +743,9 @@ extern "C" void projectile_update(void)
                                 &impulse.x);
                             if (creature->health <= 0.0f) {
                                 fx_queue_add_random(
-                                    (vec2f_t *)&creature->pos_x);
+                                    &creature->position);
                                 fx_queue_add_random(
-                                    (vec2f_t *)&creature->pos_x);
+                                    &creature->position);
                                 creature_handle_death(creature_id, 1);
                             }
                         }
@@ -1285,13 +1284,13 @@ extern "C" void projectile_update(void)
                                     (float)(crt_rand() % 60 - 30),
                                 };
                                 int effect_id = fx_spawn_sprite(
-                                    (const vec2f_t *)&hit_creature->pos_x,
+                                    &hit_creature->position,
                                     &velocity,
                                     13.0f);
                                 sprite_effect_pool[effect_id].color_a = 0.7f;
                             }
                             fx_queue_add_random(
-                                (vec2f_t *)&hit_creature->pos_x);
+                                &hit_creature->position);
                             hit_creature->pos_x +=
                                 frame_dt * particle->vel_x;
                             hit_creature->pos_y +=

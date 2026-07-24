@@ -101,7 +101,7 @@ extern "C" void typo_gameplay_update_and_render(void)
         if (creature_id != -1) {
             fire_requested = true;
             *(vec2f_t *)&target_world =
-                *(vec2f_t *)&creature_pool[creature_id].pos_x;
+                creature_pool[creature_id].position;
             ++typo_match_count;
         } else if (strcmp(s_typo_command_reload, typo_input_buffer) == 0) {
             reload_requested = true;

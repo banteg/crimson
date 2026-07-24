@@ -24,7 +24,7 @@ extern "C" void creatures_apply_radius_damage(
     do {
         if (creature_pool[creature_id].active
             && vec2_distance(
-                   (vec2f_t *)&creature_pool[creature_id].pos_x,
+                   &creature_pool[creature_id].position,
                    &spot)
                     - radius
                 < creature_pool[creature_id].size * 0.14285715f + 3.0f

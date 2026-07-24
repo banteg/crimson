@@ -18,8 +18,8 @@ extern "C" int plaguebearer_spread_infection(int creature_id)
     while ((int)creature < (int)&creature_pool[0x180]) {
         if (creature->active) {
             if (vec2_distance(
-                    (vec2f_t *)&creature->pos_x,
-                    (vec2f_t *)&creature_pool[creature_id].pos_x
+                    &creature->position,
+                    &creature_pool[creature_id].position
                 ) < 45.0f) {
                 goto found;
             }

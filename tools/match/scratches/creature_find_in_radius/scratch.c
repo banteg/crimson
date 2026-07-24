@@ -20,7 +20,7 @@ int creature_find_in_radius(
     while (index < 0x180) {
         if (creature_pool[index].active
             && vec2_distance(
-                   (vec2f_t *)&creature_pool[index].pos_x,
+                   &creature_pool[index].position,
                    pos)
                     - radius
                 < creature_pool[index].size * 0.14285715f + 3.0f

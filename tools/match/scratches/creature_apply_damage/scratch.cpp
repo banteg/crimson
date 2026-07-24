@@ -123,7 +123,7 @@ extern "C" int creature_apply_damage(
                         (float)(crt_rand() % 140) * 0.01f + 0.3f;
                     effect_spawn(
                         0,
-                        (const vec2f_t *)&creature_pool[creature_id].pos_x);
+                        &creature_pool[creature_id].position);
                     --count;
                 } while (count != 0);
             } else {
@@ -131,7 +131,7 @@ extern "C" int creature_apply_damage(
                     creature_type_table[
                         creature_pool[creature_id].type_id
                     ].sfx_bank_a[crt_rand() % 4],
-                    (const vec2f_t *)&creature_pool[creature_id].pos_x,
+                    &creature_pool[creature_id].position,
                     1.0f);
             }
         }

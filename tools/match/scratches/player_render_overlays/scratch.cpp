@@ -486,7 +486,7 @@ extern "C" void player_render_overlays(void)
                         *(player_render_vec2_t *)&line_player->pos_x,
                         *(player_render_vec2_t *)&creature_pool
                             [line_player->auto_target]
-                                .pos_x)
+                                .position)
                     <= 80.0f) {
                     direction = player_render_vec2_t(
                         creature_pool[line_player->auto_target].pos_x

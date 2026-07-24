@@ -102,11 +102,11 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             if (creature_pool[creature_iter].active && creature_pool[creature_iter].health <= 0.0f) {
                 for (int shard_iter = 0; shard_iter < 8; ++shard_iter) {
                     effect_spawn_freeze_shard(
-                        (const vec2f_t *)&creature_pool[creature_iter].pos_x,
+                        &creature_pool[creature_iter].position,
                         (float)(crt_rand() % 612) * 0.01f);
                 }
                 effect_spawn_freeze_shatter(
-                    (const vec2f_t *)&creature_pool[creature_iter].pos_x,
+                    &creature_pool[creature_iter].position,
                     (float)(crt_rand() % 612) * 0.01f);
                 creature_pool[creature_iter].active = 0;
             }
@@ -157,7 +157,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             -1,
             0.0f);
         const vec2f_t *target_pos =
-            (const vec2f_t *)&creature_pool[creature_index].pos_x;
+            &creature_pool[creature_index].position;
         float dx = target_pos->x - bonus_pos->x;
         float dy = target_pos->y - bonus_pos->y;
         shock_chain_projectile_id = projectile_spawn(
@@ -256,7 +256,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
                     abs_delta = abs_bits(creature_pool[creature_iter].pos_y - bonus_entry->time.pos_y);
                     if (abs_delta <= 256.0f) {
                         float damage = 256.0f - vec2_distance(
-                            (vec2f_t *)&creature_pool[creature_iter].pos_x,
+                            &creature_pool[creature_iter].position,
                             bonus_pos);
                         if (damage > 0.0f) {
                             vec2f_t impulse;

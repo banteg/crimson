@@ -121,7 +121,7 @@ extern "C" void perks_update_effects(void)
                 if (creature_pool[creature_id].collision_timer < 0.0f) {
                     creature_pool[creature_id].collision_timer = 0.5f;
                     vec2f_t *pos =
-                        (vec2f_t *)&creature_pool[creature_id].pos_x;
+                        &creature_pool[creature_id].position;
                     fx_spawn_particle(
                         pos,
                         (float)(crt_rand() % 0x274) * 0.01f,
@@ -204,6 +204,6 @@ extern "C" void perks_update_effects(void)
             + creature_pool[creature_id].reward_value);
     sfx_play_panned(
         sfx_trooper_inpain_01_alias_1,
-        (const vec2f_t *)&creature_pool[creature_id].pos_x,
+        &creature_pool[creature_id].position,
         1.0f);
 }

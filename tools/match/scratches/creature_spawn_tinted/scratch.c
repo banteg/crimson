@@ -42,7 +42,7 @@ int creature_spawn_tinted(
         creature_pool[slot_id].attack_cooldown = 0.0f;
         creature_pool[slot_id].heading = (float)(heading_roll % 314) * 0.01f;
     }
-    *(creature_spawn_tinted_color_t *)&creature_pool[slot_id].tint_r =
+    *(creature_spawn_tinted_color_t *)&creature_pool[slot_id].color =
         *(const creature_spawn_tinted_color_t *)color;
     {
         int size_roll = crt_rand();

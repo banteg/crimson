@@ -143,7 +143,7 @@ extern "C" void creature_update_all(void)
                         creature_pool[creature_index].target_player;
                     int current_player_index = (int)current_player;
                     vec2f_t *position =
-                        (vec2f_t *)&creature_pool[creature_index].pos_x;
+                        &creature_pool[creature_index].position;
                     float dx = player_state_table[current_player_index].pos_x - position->x;
                     float dy = player_state_table[current_player_index].pos_y - position->y;
                     distance = (float)sqrt(dx * dx + dy * dy);
@@ -440,8 +440,7 @@ extern "C" void creature_update_all(void)
                                 vec2_add_inplace(
                                     creature_index,
                                     position,
-                                    (const vec2f_t *)
-                                        &creature_pool[creature_index].vel_x);
+                                    &creature_pool[creature_index].velocity);
                             }
 
                             slot_index = creature_pool[creature_index].link_index;
@@ -479,8 +478,7 @@ extern "C" void creature_update_all(void)
                             vec2_add_inplace(
                                 creature_index,
                                 position,
-                                (const vec2f_t *)
-                                    &creature_pool[creature_index].vel_x);
+                                &creature_pool[creature_index].velocity);
                         }
 
                         if (perk_count_get(perk_id_plaguebearer) != 0
@@ -690,7 +688,7 @@ extern "C" void creature_update_all(void)
                                                 - creature_pool[creature_index].size * 0.5f,
                                             position->y
                                                 - creature_pool[creature_index].size * 0.5f),
-                                        (effect_color_t *)&creature_pool[creature_index].tint_r,
+                                        &creature_pool[creature_index].color,
                                         creature_pool[creature_index].heading,
                                         creature_pool[creature_index].size,
                                         creature_pool[creature_index].type_id);
@@ -701,7 +699,7 @@ extern "C" void creature_update_all(void)
                                                 - creature_pool[creature_index].size * 0.5f,
                                             position->y
                                                 - creature_pool[creature_index].size * 0.5f),
-                                        (effect_color_t *)&creature_pool[creature_index].tint_r,
+                                        &creature_pool[creature_index].color,
                                         creature_pool[creature_index].heading,
                                         creature_pool[creature_index].size,
                                         7);

@@ -52,7 +52,7 @@ extern "C" void perk_apply(int perk_id)
                 && (creature->flags & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
                 creature->active = 0;
                 effect_spawn_burst(
-                    (const vec2f_t *)&creature->pos_x,
+                    &creature->position,
                     4);
             }
             ++creature;
