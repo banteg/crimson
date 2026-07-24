@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stddef.h>
 
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
@@ -105,11 +106,11 @@ static __inline float bonus_render_bubble_fade(const bonus_entry_t *entry)
 }
 
 static __inline float bonus_render_distance(
-    const float *lhs,
-    const float *rhs)
+    const vec2f_t *lhs,
+    const vec2f_t *rhs)
 {
-    float dx = lhs[0] - rhs[0];
-    float dy = lhs[1] - rhs[1];
+    float dx = lhs->x - rhs->x;
+    float dy = lhs->y - rhs->y;
     return (float)sqrt(dy * dy + dx * dx);
 }
 
@@ -249,18 +250,20 @@ extern "C" void bonus_render(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 
     int *hover_timer = telekinetic_bonus_hover_timer_ms;
-    float *player_aim = player_aim_x;
+    vec2f_t *player_aim = (vec2f_t *)player_aim_x;
     int nearby_bonus_index;
     if (config_player_count > 0) {
         while (1) {
-            if (player_aim[-11] > 0.0f) {
+            player_state_t *player = (player_state_t *)(
+                (char *)player_aim - offsetof(player_state_t, aim_x));
+            if (player->health > 0.0f) {
                 nearby_bonus_index = 0;
                 bonus_entry_t *nearby_bonus = bonus_pool;
                 while (1) {
                     if (nearby_bonus->bonus_id != BONUS_ID_NONE
                         && bonus_render_distance(
                                player_aim,
-                               &nearby_bonus->time.pos_x)
+                               (vec2f_t *)&nearby_bonus->time.pos_x)
                             < 24.0f) {
                         break;
                     }
@@ -281,9 +284,9 @@ extern "C" void bonus_render(void)
                     char *label = bonus_label_for_entry(
                         &bonus_pool[nearby_bonus_index]);
                     float label_x =
-                        camera_offset_x + player_aim[0] + 16.0f;
+                        camera_offset_x + player_aim->x + 16.0f;
                     float label_y =
-                        camera_offset_y + player_aim[1] - 7.0f;
+                        camera_offset_y + player_aim->y - 7.0f;
                     float label_width =
                         (float)grim_interface_ptr
                             ->grim_measure_text_width(label);
@@ -305,7 +308,7 @@ telekinetic_threshold:
             }
 
             ++player_index;
-            player_aim = (float *)(
+            player_aim = (vec2f_t *)(
                 (char *)player_aim + sizeof(player_state_t));
             ++hover_timer;
             if (player_index >= config_player_count) {

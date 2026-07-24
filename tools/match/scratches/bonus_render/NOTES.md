@@ -27,3 +27,10 @@ ordinary bounded index loops strength-reduces them to the native 0x38, 0x2c,
 and 0x2c field-pointer strides. Removing cached secondary-projectile phase and
 scale temporaries likewise recovers the native repeated field loads. The glow
 pass uses the exact native 0.065 alpha constant and signed `% 2` parity test.
+
+The Telekinetic walk retains its native aim-field induction pointer but now
+types it as `vec2f_t`. An `offsetof(player_state_t, aim_x)` container recovery
+provides the named player `health` field instead of the former `aim[-11]`
+alias, while aim and bonus positions use named vector components. A shadow
+probe verified byte-for-byte identical candidate output and unchanged
+reference agreement.
