@@ -17,6 +17,13 @@ def _parse_hex(value: str | None) -> int | None:
     return int(value, 0)
 
 
+def _parse_csv(value: str | None) -> set[str] | None:
+    if value is None:
+        return None
+    parsed = {item.strip() for item in value.split(",") if item.strip()}
+    return parsed or None
+
+
 def _echo_result(result: matchlib.MatchResult) -> None:
     typer.echo(
         f"match={result.ratio:.2%} "
@@ -210,14 +217,111 @@ def cmd_match_status(
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
     write: Path | None = typer.Option(None, "--write", help="write markdown status to this path"),
     check: bool = typer.Option(False, "--check", help="fail if any scratch cannot be evaluated"),
+    image: str | None = typer.Option(None, "--image", help="show rows for one image"),
+    state: str | None = typer.Option(None, "--state", help="comma-separated row states"),
+    min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum target bytes"),
+    sort_by: Literal["address", "fuzzy-gap", "size", "match"] = typer.Option(
+        "address",
+        "--sort",
+        help="row ordering",
+    ),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
+    summary_only: bool = typer.Option(False, "--summary-only", help="print totals without scratch rows"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
 ) -> None:
     """Compile all scratches and print their current match scores."""
     statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs)
     totals = matchlib.collect_image_totals(statuses)
-    typer.echo(matchlib.render_status_table(statuses, totals))
+    selected_totals = [total for total in totals if image is None or total.image == image]
+    selected_statuses = [
+        status
+        for status in statuses
+        if (image is None or status.config.image == image) and status.target_size >= min_bytes
+    ]
+    states = _parse_csv(state)
+    if states is not None:
+        unknown_states = states - {"match", "audit", "wip", "error"}
+        if unknown_states:
+            raise typer.BadParameter(f"unknown states: {', '.join(sorted(unknown_states))}", param_hint="--state")
+        selected_statuses = [status for status in selected_statuses if status.state in states]
+    selected_statuses = matchlib.sort_scratch_statuses(selected_statuses, sort_by=sort_by)
+    if limit is not None:
+        selected_statuses = selected_statuses[:limit]
+
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "totals": [matchlib.image_totals_payload(total) for total in selected_totals],
+                    "statuses": (
+                        []
+                        if summary_only
+                        else [matchlib.scratch_status_payload(status) for status in selected_statuses]
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+    elif summary_only:
+        typer.echo(matchlib.render_status_summary(selected_totals))
+    else:
+        typer.echo(matchlib.render_status_table(selected_statuses, selected_totals, sort_by=sort_by))
     if write is not None:
         write.parent.mkdir(parents=True, exist_ok=True)
         write.write_text(matchlib.render_status_markdown(statuses, totals), encoding="utf-8")
+    if check and any(status.state == "error" for status in statuses):
+        raise typer.Exit(code=1)
+
+
+@match_app.command("triage")
+def cmd_match_triage(
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: str | None = typer.Option(None, "--compiler", help="override scratch compiler"),
+    cflags: str | None = typer.Option(None, "--cflags", help="override scratch compiler flags"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
+    image: str | None = typer.Option(None, "--image", help="restrict to one tracked image"),
+    state: str | None = typer.Option(None, "--state", help="comma-separated manifest states"),
+    min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
+    sort_by: Literal["address", "fuzzy-gap", "size", "fuzzy"] = typer.Option(
+        "fuzzy-gap",
+        "--sort",
+        help="row ordering",
+    ),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
+    summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate coverage only"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail if any scratch cannot be evaluated"),
+) -> None:
+    """Rank every native function by address-keyed recovery opportunity."""
+    statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs)
+    rows = matchlib.collect_triage_rows(statuses, images=(image,) if image is not None else None)
+    states = _parse_csv(state)
+    if states is not None:
+        unknown_states = states - {"match", "audit", "wip", "error", "missing"}
+        if unknown_states:
+            raise typer.BadParameter(f"unknown states: {', '.join(sorted(unknown_states))}", param_hint="--state")
+        rows = [row for row in rows if row.state in states]
+    rows = [row for row in rows if row.target_size >= min_bytes]
+    rows = matchlib.sort_triage_rows(rows, sort_by=sort_by)
+    if limit is not None:
+        rows = rows[:limit]
+
+    if as_json:
+        typer.echo(
+            json.dumps(
+                {
+                    "summary": matchlib.triage_summary_payload(rows),
+                    "rows": [] if summary_only else [matchlib.triage_row_payload(row) for row in rows],
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+    elif summary_only:
+        typer.echo(matchlib.render_triage_summary(rows))
+    else:
+        typer.echo(matchlib.render_triage_table(rows, sort_by=sort_by))
     if check and any(status.state == "error" for status in statuses):
         raise typer.Exit(code=1)
 

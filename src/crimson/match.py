@@ -1507,6 +1507,14 @@ class ScratchStatus:
             return "audit"
         return "match"
 
+    @property
+    def fuzzy_weighted_bytes(self) -> float:
+        return self.target_size * self.ratio if self.ratio is not None else 0.0
+
+    @property
+    def fuzzy_gap_bytes(self) -> float:
+        return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
+
 
 @dataclass(frozen=True, slots=True)
 class ImageTotals:
@@ -1532,6 +1540,24 @@ class ImageTotals:
     @property
     def candidate_byte_percentage(self) -> float:
         return self.candidate_bytes / self.byte_total if self.byte_total else 0.0
+
+
+@dataclass(frozen=True, slots=True)
+class TriageRow:
+    image: str
+    function: str
+    address: int
+    target_size: int
+    state: str
+    exact_bytes: int
+    fuzzy_weighted_bytes: float
+    candidate_bytes: int
+    scratch_count: int
+    best_status: ScratchStatus | None = None
+
+    @property
+    def fuzzy_gap_bytes(self) -> float:
+        return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
 
 
 def load_scratch_config(directory: Path) -> ScratchConfig:
@@ -2116,7 +2142,21 @@ def collect_scratch_statuses(
     return [statuses_by_directory[config.directory] for config in configs]
 
 
-STATUS_HEADER = ("state", "image", "function", "address", "bytes", "insns", "match", "prefix", "refs", "build", "note")
+STATUS_HEADER = (
+    "state",
+    "image",
+    "function",
+    "address",
+    "bytes",
+    "fuzzy",
+    "gap",
+    "insns",
+    "match",
+    "prefix",
+    "refs",
+    "build",
+    "note",
+)
 IMAGE_TOTALS_HEADER = (
     "image",
     "exact functions",
@@ -2128,6 +2168,22 @@ IMAGE_TOTALS_HEADER = (
     "candidate bytes",
     "candidate code",
     "scratches",
+)
+TRIAGE_HEADER = (
+    "state",
+    "image",
+    "function",
+    "address",
+    "bytes",
+    "exact",
+    "fuzzy",
+    "candidate",
+    "gap",
+    "match",
+    "prefix",
+    "refs",
+    "scratch",
+    "note",
 )
 
 
@@ -2151,7 +2207,7 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
             if status.ratio is not None:
                 fuzzy_bytes_by_function[status.address] = max(
                     fuzzy_bytes_by_function.get(status.address, 0.0),
-                    status.target_size * status.ratio,
+                    status.fuzzy_weighted_bytes,
                 )
                 candidate_by_function[status.address] = max(
                     candidate_by_function.get(status.address, 0),
@@ -2179,13 +2235,179 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
     return totals
 
 
-def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
+def _status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
+    state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}[status.state]
+    return (
+        state_rank,
+        status.ratio if status.ratio is not None else -1.0,
+        -(status.masked_unresolved + status.masked_mismatches),
+        status.prefix_instructions,
+        -abs(status.candidate_instructions - status.target_instructions),
+    )
+
+
+def collect_triage_rows(
+    statuses: list[ScratchStatus],
+    *,
+    images: tuple[str, ...] | None = None,
+) -> list[TriageRow]:
+    """Join scratch coverage to native functions by image and address."""
+
+    selected_images = images or tuple(sorted({*TRACKED_IMAGE_NAMES, *(status.config.image for status in statuses)}))
+    statuses_by_address: dict[tuple[str, int], list[ScratchStatus]] = {}
+    for status in statuses:
+        if status.address:
+            statuses_by_address.setdefault((status.config.image, status.address), []).append(status)
+
+    rows: list[TriageRow] = []
+    for image_name in selected_images:
+        image_path, functions_path, metadata_path = _paths_for_image(image_name)
+        manifest = load_function_manifest(
+            functions_path,
+            metadata_path=metadata_path,
+            image_name=image_name,
+        )
+        image = load_image(image_path, manifest.image_base)
+        for function in manifest.functions:
+            target_size = len(image.function_bytes(function.address, function.end))
+            function_statuses = statuses_by_address.get((image_name, function.address), [])
+            usable = [status for status in function_statuses if status.ratio is not None]
+            best_status = max(function_statuses, key=_status_rank) if function_statuses else None
+            exact_bytes = max(
+                (status.target_size for status in function_statuses if status.state == "match"),
+                default=0,
+            )
+            fuzzy_weighted_bytes = max(
+                (status.fuzzy_weighted_bytes for status in usable),
+                default=0.0,
+            )
+            candidate_bytes = max((status.target_size for status in usable), default=0)
+            states = {status.state for status in function_statuses}
+            if "match" in states:
+                state = "match"
+            elif "audit" in states:
+                state = "audit"
+            elif usable:
+                state = "wip"
+            elif function_statuses:
+                state = "error"
+            else:
+                state = "missing"
+            rows.append(
+                TriageRow(
+                    image=image_name,
+                    function=function.name,
+                    address=function.address,
+                    target_size=target_size,
+                    state=state,
+                    exact_bytes=exact_bytes,
+                    fuzzy_weighted_bytes=fuzzy_weighted_bytes,
+                    candidate_bytes=candidate_bytes,
+                    scratch_count=len(function_statuses),
+                    best_status=best_status,
+                ),
+            )
+    return rows
+
+
+def sort_scratch_statuses(statuses: list[ScratchStatus], *, sort_by: str = "address") -> list[ScratchStatus]:
+    if sort_by not in {"address", "fuzzy-gap", "size", "match"}:
+        raise ValueError(f"unknown status sort {sort_by!r}")
+
+    def key(status: ScratchStatus) -> tuple[Any, ...]:
+        if sort_by == "address":
+            return (status.config.image, status.address, status.config.function)
+        if sort_by == "fuzzy-gap":
+            return (
+                status.fuzzy_gap_bytes,
+                status.target_size,
+                status.ratio if status.ratio is not None else -1.0,
+            )
+        if sort_by == "size":
+            return (status.target_size, status.fuzzy_gap_bytes)
+        return (
+            status.ratio if status.ratio is not None else -1.0,
+            -status.fuzzy_gap_bytes,
+        )
+
+    return sorted(statuses, key=key, reverse=sort_by != "address")
+
+
+def sort_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> list[TriageRow]:
+    if sort_by not in {"address", "fuzzy-gap", "size", "fuzzy"}:
+        raise ValueError(f"unknown triage sort {sort_by!r}")
+
+    def key(row: TriageRow) -> tuple[Any, ...]:
+        if sort_by == "address":
+            return (row.image, row.address, row.function)
+        if sort_by == "fuzzy-gap":
+            return (row.fuzzy_gap_bytes, row.target_size, -row.fuzzy_weighted_bytes)
+        if sort_by == "size":
+            return (row.target_size, row.fuzzy_gap_bytes)
+        return (row.fuzzy_weighted_bytes, row.target_size)
+
+    return sorted(rows, key=key, reverse=sort_by != "address")
+
+
+def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
+    return {
+        "state": status.state,
+        "image": status.config.image,
+        "function": status.config.function,
+        "address": status.address,
+        "target_bytes": status.target_size,
+        "fuzzy_weighted_bytes": status.fuzzy_weighted_bytes,
+        "fuzzy_gap_bytes": status.fuzzy_gap_bytes,
+        "target_instructions": status.target_instructions,
+        "candidate_instructions": status.candidate_instructions,
+        "match_ratio": status.ratio,
+        "prefix_instructions": status.prefix_instructions,
+        "references": {
+            "ok": status.masked_ok,
+            "unresolved": status.masked_unresolved,
+            "mismatch": status.masked_mismatches,
+        },
+        "compiler": status.config.compiler,
+        "cflags": status.config.cflags,
+        "scratch": str(status.config.directory),
+        "note": status.config.note,
+        "error": status.error,
+    }
+
+
+def triage_row_payload(row: TriageRow) -> dict[str, Any]:
+    return {
+        "state": row.state,
+        "image": row.image,
+        "function": row.function,
+        "address": row.address,
+        "target_bytes": row.target_size,
+        "exact_bytes": row.exact_bytes,
+        "fuzzy_weighted_bytes": row.fuzzy_weighted_bytes,
+        "fuzzy_gap_bytes": row.fuzzy_gap_bytes,
+        "candidate_bytes": row.candidate_bytes,
+        "scratch_count": row.scratch_count,
+        "best_scratch": scratch_status_payload(row.best_status) if row.best_status is not None else None,
+    }
+
+
+def render_status_rows(
+    statuses: list[ScratchStatus],
+    *,
+    sort_by: str = "address",
+) -> list[tuple[str, ...]]:
     rows = []
     default_build = f"{DEFAULT_SCRATCH_COMPILER} {DEFAULT_SCRATCH_CFLAGS}"
-    for status in sorted(statuses, key=lambda item: (item.config.image, item.address, item.config.function)):
+    for status in sort_scratch_statuses(statuses, sort_by=sort_by):
         ratio = f"{status.ratio:.2%}" if status.ratio is not None else "-"
         insns = f"{status.candidate_instructions}/{status.target_instructions}" if status.ratio is not None else "-"
         prefix = f"{status.prefix_instructions}/{status.target_instructions}" if status.ratio is not None else "-"
+        fuzzy = (
+            f"{status.fuzzy_weighted_bytes:.0f}/{status.target_size}"
+            if status.ratio is not None
+            else "-"
+        )
+        gap = f"{status.fuzzy_gap_bytes:.0f}" if status.ratio is not None else "-"
         refs = (
             f"{status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches}"
             if status.ratio is not None
@@ -2199,6 +2421,8 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
                 status.config.function,
                 f"0x{status.address:08x}" if status.address else "-",
                 str(status.target_size) if status.target_size else "-",
+                fuzzy,
+                gap,
                 insns,
                 ratio,
                 prefix,
@@ -2208,6 +2432,81 @@ def render_status_rows(statuses: list[ScratchStatus]) -> list[tuple[str, ...]]:
             ),
         )
     return rows
+
+
+def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> list[tuple[str, ...]]:
+    rendered: list[tuple[str, ...]] = []
+    for row in sort_triage_rows(rows, sort_by=sort_by):
+        best = row.best_status
+        rendered.append(
+            (
+                row.state,
+                row.image,
+                row.function,
+                f"0x{row.address:08x}",
+                str(row.target_size),
+                f"{row.exact_bytes}/{row.target_size}",
+                f"{row.fuzzy_weighted_bytes:.0f}/{row.target_size}",
+                f"{row.candidate_bytes}/{row.target_size}",
+                f"{row.fuzzy_gap_bytes:.0f}",
+                f"{best.ratio:.2%}" if best is not None and best.ratio is not None else "-",
+                (
+                    f"{best.prefix_instructions}/{best.target_instructions}"
+                    if best is not None and best.ratio is not None
+                    else "-"
+                ),
+                (
+                    f"{best.masked_ok}/{best.masked_unresolved}/{best.masked_mismatches}"
+                    if best is not None and best.ratio is not None
+                    else "-"
+                ),
+                best.config.directory.name if best is not None else "-",
+                (best.error or best.config.note) if best is not None else "",
+            ),
+        )
+    return rendered
+
+
+def render_triage_table(rows: list[TriageRow], *, sort_by: str = "address") -> str:
+    rendered = [TRIAGE_HEADER, *render_triage_rows(rows, sort_by=sort_by)]
+    widths = [max(len(row[column]) for row in rendered) for column in range(len(TRIAGE_HEADER))]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines.append(render_triage_summary(rows))
+    return "\n".join(lines)
+
+
+def render_triage_summary(rows: list[TriageRow]) -> str:
+    summary = triage_summary_payload(rows)
+    target_bytes = summary["target_bytes"]
+    exact_bytes = summary["exact_bytes"]
+    fuzzy_bytes = summary["fuzzy_weighted_bytes"]
+    candidate_bytes = summary["candidate_bytes"]
+    states = summary["states"]
+
+    def percentage(value: float) -> float:
+        return value / target_bytes if target_bytes else 0.0
+
+    return (
+        f"\nrows={summary['row_count']} states="
+        + "/".join(f"{state}:{count}" for state, count in states.items())
+        + f"; exact={exact_bytes}/{target_bytes} ({percentage(exact_bytes):.1%}); "
+        f"fuzzy={fuzzy_bytes:.0f}/{target_bytes} ({percentage(fuzzy_bytes):.1%}); "
+        f"candidate={candidate_bytes}/{target_bytes} ({percentage(candidate_bytes):.1%})"
+    )
+
+
+def triage_summary_payload(rows: list[TriageRow]) -> dict[str, Any]:
+    return {
+        "row_count": len(rows),
+        "target_bytes": sum(row.target_size for row in rows),
+        "exact_bytes": sum(row.exact_bytes for row in rows),
+        "fuzzy_weighted_bytes": sum(row.fuzzy_weighted_bytes for row in rows),
+        "candidate_bytes": sum(row.candidate_bytes for row in rows),
+        "states": {
+            state: sum(row.state == state for row in rows)
+            for state in ("match", "audit", "wip", "error", "missing")
+        },
+    }
 
 
 def render_image_total_rows(totals: list[ImageTotals]) -> list[tuple[str, ...]]:
@@ -2226,6 +2525,21 @@ def render_image_total_rows(totals: list[ImageTotals]) -> list[tuple[str, ...]]:
         )
         for total in totals
     ]
+
+
+def image_totals_payload(total: ImageTotals) -> dict[str, Any]:
+    return {
+        "image": total.image,
+        "function_count": total.function_count,
+        "byte_total": total.byte_total,
+        "exact_functions": total.matched_functions,
+        "exact_bytes": total.matched_bytes,
+        "fuzzy_weighted_bytes": total.fuzzy_weighted_bytes,
+        "candidate_functions": total.candidate_functions,
+        "candidate_bytes": total.candidate_bytes,
+        "scratch_count": total.scratch_count,
+        "exact_scratches": total.matched_scratches,
+    }
 
 
 def _overall_totals(totals: list[ImageTotals]) -> ImageTotals:
@@ -2257,13 +2571,10 @@ def _image_summary(total: ImageTotals) -> str:
     )
 
 
-def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]) -> str:
-    rows = [STATUS_HEADER, *render_status_rows(statuses)]
-    widths = [max(len(row[column]) for row in rows) for column in range(len(STATUS_HEADER))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
+def render_status_summary(totals: list[ImageTotals]) -> str:
     overall = _overall_totals(totals)
-    lines.append(
-        f"\nall images: {overall.matched_functions}/{overall.function_count} functions, "
+    lines = [
+        f"all images: {overall.matched_functions}/{overall.function_count} functions, "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
         f"{overall.fuzzy_weighted_bytes:.0f}/{overall.byte_total} fuzzy-weighted bytes "
@@ -2272,9 +2583,22 @@ def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]
         f"{overall.candidate_bytes}/{overall.byte_total} bytes "
         f"({overall.candidate_byte_percentage:.1%}); "
         f"{overall.matched_scratches}/{overall.scratch_count} scratches verified",
-    )
-    lines.append("by image:")
-    lines.extend(_image_summary(total) for total in totals)
+        "by image:",
+        *(_image_summary(total) for total in totals),
+    ]
+    return "\n".join(lines)
+
+
+def render_status_table(
+    statuses: list[ScratchStatus],
+    totals: list[ImageTotals],
+    *,
+    sort_by: str = "address",
+) -> str:
+    rows = [STATUS_HEADER, *render_status_rows(statuses, sort_by=sort_by)]
+    widths = [max(len(row[column]) for row in rows) for column in range(len(STATUS_HEADER))]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
+    lines.append(f"\n{render_status_summary(totals)}")
     return "\n".join(lines)
 
 
@@ -2323,13 +2647,13 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
                 f"(**{total.candidate_byte_percentage:.1%}**), "
                 f"**{total.matched_scratches}/{total.scratch_count}** scratches verified.",
                 "",
-                "| state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |",
-                "|---|---|---|---:|---:|---:|---:|---:|---|---|",
+                "| state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |",
+                "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",
             ],
         )
         for row in render_status_rows(image_statuses):
             lines.append("| " + " | ".join((row[0], *row[2:])) + " |")
         if not image_statuses:
-            lines.append("| - | - | - | - | - | - | - | - | - | no scratches |")
+            lines.append("| - | - | - | - | - | - | - | - | - | - | - | no scratches |")
     lines.append("")
     return "\n".join(lines)

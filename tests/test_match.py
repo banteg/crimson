@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import struct
 import subprocess
 from dataclasses import replace
@@ -30,12 +31,14 @@ from crimson.match import (
     ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
+    TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
     _scratch_build_key,
     _ScratchIncludeResolver,
     collect_image_totals,
     collect_scratch_statuses,
+    collect_triage_rows,
     common_prefix_length,
     compile_scratch,
     diff_regions,
@@ -49,8 +52,12 @@ from crimson.match import (
     render_image_total_rows,
     render_status_markdown,
     render_status_rows,
+    render_status_summary,
     render_status_table,
+    render_triage_rows,
     resolve_function,
+    sort_triage_rows,
+    triage_row_payload,
     validate_scratch_source,
 )
 
@@ -860,9 +867,12 @@ def test_render_status_rows_includes_prefix() -> None:
         candidate_instructions=5,
         error=None,
     )
-    assert render_status_rows([status])[0][7] == "2/4"
-    assert render_status_rows([status])[0][8] == "0/0/0"
-    assert render_status_rows([status])[0][10] == "branch"
+    status_row = render_status_rows([status])[0]
+    assert status_row[5] == "5/10"
+    assert status_row[6] == "5"
+    assert status_row[9] == "2/4"
+    assert status_row[10] == "0/0/0"
+    assert status_row[12] == "branch"
     totals = [
         ImageTotals(
             image="crimsonland.exe",
@@ -907,6 +917,9 @@ def test_render_status_rows_includes_prefix() -> None:
         "1/30 source candidates covering 10/3000 bytes (0.3%); "
         "0/1 scratches verified"
     ) in render_status_table([status], totals)
+    assert render_status_summary(totals).startswith(
+        "all images: 0/30 functions, 0/3000 bytes (0.0%) matched",
+    )
     markdown = render_status_markdown([status], totals)
     assert (
         "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 5/1000 | 0.5% | "
@@ -916,7 +929,113 @@ def test_render_status_rows_includes_prefix() -> None:
     assert "Candidate coverage includes exact matches and WIPs" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
-    assert "| wip | foo | 0x00401000 | 10 | 5/4 | 50.00% | 2/4 | 0/0/0 |  | branch |" in markdown
+    assert (
+        "| wip | foo | 0x00401000 | 10 | 5/10 | 5 | 5/4 | 50.00% | "
+        "2/4 | 0/0/0 |  | branch |"
+    ) in markdown
+
+
+def test_collect_triage_rows_joins_scratches_by_address(monkeypatch: pytest.MonkeyPatch) -> None:
+    manifest = FunctionManifest(
+        image_name="crimsonland.exe",
+        image_base=0x401000,
+        functions=(
+            FunctionSymbol(name="recovered_foo", address=0x401000, end=0x401003, size=3),
+            FunctionSymbol(name="bar", address=0x401010, end=0x401013, size=3),
+        ),
+    )
+    config = ScratchConfig(
+        directory=Path("scratches/address_probe"),
+        function="0x00401000",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2 /GB /W3 /GR-",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="address identity",
+    )
+    statuses = [
+        ScratchStatus(
+            config=config,
+            address=0x401000,
+            target_size=3,
+            ratio=0.5,
+            prefix_instructions=1,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+        ScratchStatus(
+            config=replace(config, directory=Path("scratches/stale_name"), function="old_foo"),
+            address=0x401000,
+            target_size=3,
+            ratio=0.8,
+            prefix_instructions=1,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        ),
+    ]
+
+    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr(
+        "crimson.match.load_image",
+        lambda *args, **kwargs: LoadedImage(mapped=b"\xc3" * 0x20, image_base=0x401000, size_of_image=0x20),
+    )
+
+    rows = collect_triage_rows(statuses, images=("crimsonland.exe",))
+
+    assert [(row.function, row.state) for row in rows] == [
+        ("recovered_foo", "wip"),
+        ("bar", "missing"),
+    ]
+    assert rows[0].scratch_count == 2
+    assert rows[0].best_status is statuses[1]
+    assert rows[0].fuzzy_weighted_bytes == pytest.approx(2.4)
+    assert rows[0].fuzzy_gap_bytes == pytest.approx(0.6)
+    assert triage_row_payload(rows[0])["best_scratch"]["function"] == "old_foo"
+    assert render_triage_rows(rows)[0][2] == "recovered_foo"
+    assert sort_triage_rows(rows, sort_by="fuzzy-gap")[0].function == "bar"
+
+
+def test_triage_command_filters_and_emits_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [
+        TriageRow(
+            image="crimsonland.exe",
+            function="large_missing",
+            address=0x401000,
+            target_size=100,
+            state="missing",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=0.0,
+            candidate_bytes=0,
+            scratch_count=0,
+        ),
+        TriageRow(
+            image="crimsonland.exe",
+            function="small_missing",
+            address=0x401100,
+            target_size=5,
+            state="missing",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=0.0,
+            candidate_bytes=0,
+            scratch_count=0,
+        ),
+    ]
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["triage", "--state", "missing", "--min-bytes", "10", "--limit", "1", "--json"],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    assert payload["summary"]["row_count"] == 1
+    assert payload["rows"][0]["function"] == "large_missing"
 
 
 def test_exact_score_with_reference_debt_requires_audit() -> None:

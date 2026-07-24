@@ -127,6 +127,29 @@ Regenerate the dashboard:
 uv run crimson match status --check -j 8 --write tools/match/STATUS.md
 ```
 
+Each status row includes fuzzy-weighted bytes and its remaining fuzzy gap in
+addition to exact-match state. Keep the canonical Markdown board complete, but
+filter the terminal report when investigating a narrower slice:
+
+```sh
+uv run crimson match status --image crimsonland.exe --state wip \
+  --min-bytes 64 --sort fuzzy-gap --limit 20
+uv run crimson match status --summary-only
+uv run crimson match status --image crimsonland.exe --json
+```
+
+Use address-keyed triage to rank both scratch-backed and still-uncovered native
+functions. Triage resolves scratch `FUNCTION` values through the manifest and
+joins by `(image, address)`, so a raw-address scratch or stale recovered name
+cannot create a false missing-function report.
+
+```sh
+uv run crimson match triage --image crimsonland.exe \
+  --state missing,wip --min-bytes 32 --sort fuzzy-gap --limit 30
+uv run crimson match triage --image crimsonland.exe --summary-only
+uv run crimson match triage --image crimsonland.exe --state missing --json
+```
+
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. A cache entry is invalidated by the scratch source/config, compiler
 arguments and binary, `cl.sh`, the transitive local-header graph, the target
