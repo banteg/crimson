@@ -26,6 +26,15 @@ except Exception:  # pragma: no cover - only runs inside Binary Ninja
 _SEEDED_TYPES = False
 _SEEDED_REPO_HEADERS = False
 
+_AUTHORITATIVE_REPO_TYPES = frozenset(
+    {
+        # This layout is shared by three ui_element_t rendering layers. Keep
+        # the recovered z/rhw/color/u/v members in sync with the canonical
+        # header instead of preserving older field_0xNN database members.
+        "ui_menu_item_subtemplate_slot_t",
+    },
+)
+
 _TYPE_REPLACEMENTS = {
     "IGrim2D": "void",
     "LPDIRECT3D8": "void *",
@@ -272,6 +281,13 @@ def _should_replace_incomplete_type(existing, replacement) -> bool:
     )
 
 
+def _should_replace_repo_type(name: str, existing, replacement) -> bool:
+    return name in _AUTHORITATIVE_REPO_TYPES or _should_replace_incomplete_type(
+        existing,
+        replacement,
+    )
+
+
 def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
     existing = _get_type_by_name(bv, name)
     if existing is not None:
@@ -392,7 +408,7 @@ def _seed_repo_headers(bv) -> None:
                 raise RuntimeError(f"type header produced unnamed type in {header_path}")
             existing = _get_type_by_name(bv, name_str)
             if existing is not None:
-                if not _should_replace_incomplete_type(existing, type_obj):
+                if not _should_replace_repo_type(name_str, existing, type_obj):
                     continue
             if not _define_or_replace_user_type(bv, name, type_obj):
                 raise RuntimeError(f"failed to define type {name_str} from {header_path}")

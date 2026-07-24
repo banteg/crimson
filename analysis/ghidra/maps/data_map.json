@@ -9710,9 +9710,9 @@
     },
     {
       "address": "0x004d7a2c",
-      "comment": "Weapon table base (stride 0x7c bytes)",
+      "comment": "64-row weapon table base (stride 0x7c bytes)",
       "name": "weapon_table",
-      "type": "weapon_stats_t",
+      "type": "weapon_stats_t[64]",
       "program": "crimsonland.exe"
     },
     {

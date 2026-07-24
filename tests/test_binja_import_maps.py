@@ -109,3 +109,23 @@ def test_resolve_rejects_explicit_non_padding_interior_function(monkeypatch):
             {"name": "unsafe_split", "create": True},
             0x4003,
         )
+
+
+def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
+    importer = _load_importer()
+    monkeypatch.setattr(
+        importer,
+        "_should_replace_incomplete_type",
+        lambda _existing, _replacement: False,
+    )
+
+    assert importer._should_replace_repo_type(
+        "ui_menu_item_subtemplate_slot_t",
+        object(),
+        object(),
+    )
+    assert not importer._should_replace_repo_type(
+        "unrelated_complete_type",
+        object(),
+        object(),
+    )

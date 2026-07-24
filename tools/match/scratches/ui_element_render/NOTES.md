@@ -31,6 +31,12 @@ following texture handles, and the main-menu UV writes all independently
 establish the layout. This type recovery preserves the current instruction,
 fuzzy-byte, and reference results.
 
+The shared `ui_menu_item_subtemplate_slot_t` layer view now also carries the
+same recovered `z`, `rhw`, `color`, `u`, and `v` fields into Binary Ninja.
+The map importer deliberately refreshes this authoritative record instead of
+preserving an older complete-but-anonymous database definition, so the two
+alpha cursors begin at named `color` fields rather than `field_0x10`.
+
 The small residual is code-generation shape: VC6 keeps a temporary for the
 seven-pixel Y coordinate in each offset-shadow submission and schedules
 otherwise equivalent vertex-call arguments differently. Introducing an

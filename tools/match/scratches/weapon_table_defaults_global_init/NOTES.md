@@ -12,6 +12,11 @@ The local construction view includes the hidden ammo-class word immediately
 before the public weapon table row and records the native 0x7c-byte stride.
 Fields not written here are already zeroed by the PE BSS.
 
+The mapped public table is now a 64-element `weapon_stats_t` array rather than
+a single record. The constructor's 64-iteration countdown and 0x7c induction
+stride establish that bound; the hidden ammo-class word remains the separate
+address immediately before the first public row.
+
 Defining the rows as a real C++ global array reproduces the compiler-generated
 initializer exactly, including VC6's induction pointer at `damage_scale` and
 the inlined `strcpy` schedule. This is stronger source-shape evidence than a

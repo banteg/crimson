@@ -165,7 +165,7 @@ extern quest_meta_t *quest_meta_cursor;
 extern char registry_key_status_root_path[];
 extern unsigned int game_sequence_id;
 
-extern weapon_stats_t weapon_table[];
+extern weapon_stats_t weapon_table[64];
 extern weapon_usage_time_t weapon_usage_time;
 extern perk_meta_t perk_meta_table[];
 extern weapon_usage_counts_t weapon_usage_counts;
