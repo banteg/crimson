@@ -9,6 +9,20 @@ typedef unsigned int undefined4;
 
 typedef unsigned int uint;
 
+// MSVC 6 x86 CRT stream record. Game-owned high-score and resource-pack code
+// reads _flag directly through feof(), and the bundled CRT uses the remaining
+// fields at these standard 0x20-byte offsets.
+typedef struct _iobuf {
+    char *_ptr;
+    int _cnt;
+    char *_base;
+    int _flag;
+    int _file;
+    int _charbuf;
+    int _bufsiz;
+    char *_tmpfname;
+} FILE;
+
 typedef unsigned char Byte;
 typedef Byte *Bytef;
 typedef unsigned int uInt;

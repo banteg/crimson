@@ -124,6 +124,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
         object(),
     )
+    assert importer._should_replace_repo_type(
+        "FILE",
+        object(),
+        object(),
+    )
     assert not importer._should_replace_repo_type(
         "unrelated_complete_type",
         object(),

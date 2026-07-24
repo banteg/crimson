@@ -28,6 +28,9 @@ _SEEDED_REPO_HEADERS = False
 
 _AUTHORITATIVE_REPO_TYPES = frozenset(
     {
+        # The importer previously synthesized FILE as a one-byte opaque
+        # structure before the bundled CRT layout was recovered.
+        "FILE",
         # This layout is shared by three ui_element_t rendering layers. Keep
         # the recovered z/rhw/color/u/v members in sync with the canonical
         # header instead of preserving older field_0xNN database members.
