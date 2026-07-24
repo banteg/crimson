@@ -234,22 +234,27 @@ extern "C" void highscore_screen_update(void)
         grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
         position.y += 6.0f;
 
-        int unlock_index;
         if (config_blob.hardcore) {
-            unlock_index = quest_unlock_index_full;
+            int quest_index =
+                quest_stage_minor + quest_stage_major * 10 - 11;
+            if (quest_index > quest_unlock_index_full) {
+                quest_stage_major = quest_unlock_index_full / 10 + 1;
+                quest_stage_minor = quest_unlock_index_full % 10 + 1;
+                j_highscore_load_table();
+            }
         } else {
-            unlock_index = quest_unlock_index;
-        }
-        int quest_index =
-            quest_stage_minor + quest_stage_major * 10 - 11;
-        if (quest_index > unlock_index) {
-            quest_stage_major = unlock_index / 10 + 1;
-            quest_stage_minor = unlock_index % 10 + 1;
-            j_highscore_load_table();
+            int quest_index =
+                quest_stage_minor + quest_stage_major * 10 - 11;
+            if (quest_index > quest_unlock_index) {
+                quest_stage_major = quest_unlock_index / 10 + 1;
+                quest_stage_minor = quest_unlock_index % 10 + 1;
+                j_highscore_load_table();
+            }
         }
 
         grim_interface_ptr->grim_set_color_ptr((float *)&quest_color);
-        quest_index = quest_stage_minor + quest_stage_major * 10 - 11;
+        int quest_index =
+            quest_stage_minor + quest_stage_major * 10 - 11;
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x + 42.0f,
             position.y + 1.0f,
@@ -319,9 +324,7 @@ extern "C" void highscore_screen_update(void)
     if (config_blob.game_mode == GAME_MODE_QUEST) {
         static highscore_checkbox_t hardcore_checkbox;
         hardcore_checkbox.label = "Hardcore";
-        if (quest_unlock_index < 40) {
-            config_blob.hardcore = 0;
-        } else {
+        if (quest_unlock_index >= 40) {
             highscore_vec2_t checkbox_position(
                 position.x + 162.0f, position.y - 2.0f);
             hardcore_checkbox.checked = config_blob.hardcore;
@@ -332,6 +335,8 @@ extern "C" void highscore_screen_update(void)
                 config_blob.hardcore = hardcore_checkbox.checked;
                 j_highscore_load_table();
             }
+        } else {
+            config_blob.hardcore = 0;
         }
         if (!game_is_full_version()) {
             config_blob.hardcore = 0;

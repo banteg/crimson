@@ -21,12 +21,21 @@ screen callback:
 - proves all nine local-static destructor thunks at `0x00444330` through
   `0x004443b0` as exact one-instruction returns.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 76.92% of 2,004 target
-instructions with 1,956 candidate instructions. The candidate has the native
+The natural `msvc6.5 /O2 /GB` reconstruction matches 77.21% of 2,004 target
+instructions with 1,962 candidate instructions. The candidate has the native
 `0x84`-byte frame, a 41-instruction matching prefix, and audited references of
-`577/0/8` (ok/unresolved/mismatch). The eight residual reference mismatches are
+`581/0/8` (ok/unresolved/mismatch). The eight residual reference mismatches are
 instruction-alignment or x87 temporary-order differences; every corresponding
 field, constant, string, and gameplay object is present in the recovered flow.
+
+The Quest filter performs its unlock-bound check independently in the normal
+and Hardcore arms. Native computes the selected quest index in each arm, loads
+the corresponding unlock counter, and tail-merges only the identical clamp and
+table-reload body. Recovering that shape adds six candidate instructions and
+four aligned references. The adjacent Hardcore checkbox gate keeps its enabled
+arm as the fallthrough (`quest_unlock_index >= 40`), matching the native branch
+layout. Together these changes raise the score from 76.92% to 77.21% and add
+23 fuzzy-weighted bytes without changing behavior or the exact frame.
 
 The Shift batch synchronizer at `0x00443b23..0x00443c2a` is a chained
 stage machine rather than a switch lowered around shared case tails. Stages
