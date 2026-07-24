@@ -84,16 +84,6 @@ extern float bonus_freeze_timer;
 extern float perk_jinxed_proc_timer_s;
 extern float bonus_update_phase_accumulator;
 extern int perk_prompt_timer;
-typedef struct player_reset_tail_t {
-    float low_health_timer;
-    float speed_bonus_timer;
-    float shield_timer;
-    float fire_bullets_timer;
-    int auto_target;
-    reset_vec2_t move_target;
-    unsigned char _pad[sizeof(player_state_t) - 0x1c];
-} player_reset_tail_t;
-extern player_reset_tail_t player_low_health_timer[];
 extern bonus_pool_t bonus_pool;
 extern projectile_pool_t projectile_pool;
 extern sprite_effect_t sprite_effect_pool[];
@@ -278,13 +268,13 @@ void gameplay_reset_state(void)
     player_reset_all();
     memset(player_aux_timer, 0, sizeof(player_aux_timer));
 
-    player_reset_tail_t *player_timer = &player_low_health_timer[0];
-    do {
-        player_timer->move_target = reset_vec2_t(-1.0f, -1.0f);
-        player_timer->low_health_timer = 100.0f;
-        player_timer->fire_bullets_timer = 0.0f;
-        ++player_timer;
-    } while ((int)player_timer < (int)&player_low_health_timer[2]);
+    for (int player_index = 0; player_index < 2; ++player_index) {
+        player_state_t *player = &player_state_table[player_index];
+        *(reset_vec2_t *)&player->move_target_x =
+            reset_vec2_t(-1.0f, -1.0f);
+        player->low_health_timer = 100.0f;
+        player->fire_bullets_timer = 0.0f;
+    }
 
     bonus_entry_t *bonus = &bonus_pool[0];
     do {
