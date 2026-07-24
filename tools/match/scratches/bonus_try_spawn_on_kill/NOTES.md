@@ -3,7 +3,7 @@
 Current best local score:
 
 ```txt
-match=88.24% prefix=6/207 target_insns=207 candidate_insns=201 refs=47/0/0
+match=91.43% prefix=6/207 target_insns=207 candidate_insns=213 refs=47/0/0
 ```
 
 The recovered source matches the mode and demo gates, two-player Pistol force
@@ -32,9 +32,11 @@ well. It had continued to admit a Pistol from any port-side player even under
 materialize a Weapon drop that native never attempts. Focused two- and
 three-player regressions pin the exact `player_count == 2` boundary.
 
-The remaining six candidate instructions are a control-flow layout residual.
-The calibrated compiler tail-merges the forced-path and general-path
-clear-and-return blocks, while native retains a second copy after the general
-duplicate/amount checks. The surrounding instructions align. Do not add a
-layout-only `goto` just to defeat tail merging without stronger source or
-neighboring-object evidence.
+The two general-path suppressions are expressed as independent guards. This
+plausible spelling prevents VC6 from folding both into the forced-path cleanup
+and raises the fuzzy match from 88.24% to 91.43% without volatile data, dead
+expressions, or register forcing. It is still not an exact CFG: native shares
+one cleanup between the duplicate and current-weapon checks, while VC6 emits
+one cleanup for each, leaving six extra candidate instructions. Combining the
+conditions tail-merges all three cleanups and regresses the score; a layout-only
+`goto` remains intentionally rejected.
