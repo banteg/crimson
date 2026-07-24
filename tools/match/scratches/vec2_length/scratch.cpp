@@ -1,6 +1,10 @@
 #include <math.h>
 
-extern "C" float vec2_length(float *v)
+typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
+
+#include "crimsonland_types.h"
+
+extern "C" float vec2_length(const vec2f_t *v)
 {
-    return (float)sqrt(v[0] * v[0] + v[1] * v[1]);
+    return (float)sqrt(v->x * v->x + v->y * v->y);
 }

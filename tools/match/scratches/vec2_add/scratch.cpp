@@ -1,6 +1,10 @@
-int vec2_add(float *dst, float *delta)
+typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
+
+#include "crimsonland_types.h"
+
+int vec2_add(vec2f_t *dst, const vec2f_t *delta)
 {
-    dst[0] = dst[0] + delta[0];
-    dst[1] = delta[1] + dst[1];
+    dst->x = dst->x + delta->x;
+    dst->y = delta->y + dst->y;
     return 0;
 }
