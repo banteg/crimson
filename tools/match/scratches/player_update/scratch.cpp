@@ -461,8 +461,8 @@ extern "C" void player_update(void)
 
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
-                player_pos,
-                &movement_input.x);
+                player_position,
+                &movement_input);
             player->move_phase =
                 frame_dt * player->move_speed * 19.0f + player->move_phase;
         } else if (move_mode == 3) {
@@ -524,8 +524,8 @@ extern "C" void player_update(void)
 
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
-                player_pos,
-                &move_delta.x);
+                player_position,
+                &move_delta);
             player->move_phase =
                 frame_dt * player->move_speed * 19.0f + player->move_phase;
         } else if (move_mode == 1) {
@@ -622,8 +622,8 @@ extern "C" void player_update(void)
 
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
-                player_pos,
-                &move_delta.x);
+                player_position,
+                &move_delta);
             player->move_phase = movement_heading * player->move_speed * frame_dt
                 * 19.0f + player->move_phase;
         } else if (move_mode == 2) {
@@ -717,8 +717,8 @@ extern "C" void player_update(void)
             move_delta.y = frame_dt * player->move_dy;
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
-                player_pos,
-                &move_delta.x);
+                player_position,
+                &move_delta);
             player->move_phase = frame_dt * player->move_speed * 19.0f
                 + player->move_phase;
         }
@@ -778,8 +778,8 @@ extern "C" void player_update(void)
         move_delta.y = frame_dt * player->move_dy;
         player_apply_move_with_spawn_avoidance(
             render_overlay_player_index,
-            player_pos,
-            &move_delta.x);
+            player_position,
+            &move_delta);
         player->move_phase =
             frame_dt * player->move_speed * 19.0f + player->move_phase;
     }

@@ -18,6 +18,14 @@ The match establishes these source-shape details:
   the reduced combined radius, the full move is restored; otherwise the code
   retries X alone and then Y alone with strict native boundary directions.
 
+Both mutable two-float inputs are now recovered as `vec2f_t *` in the shared
+declaration, exact scratch, five `player_update` callsites, and saved Binary
+Ninja prototype. Retyping the native register copy of `pos` was also necessary:
+without it, HLIL invented a secondary `float *` cursor and kept 28
+`pos[0]`/`pos[1]`-style accesses. The live body now consistently renders
+`pos->x/y` and `delta->x/y`; the helper remains exact at 131/131 instructions
+with 8/0/0 references, and `player_update` remains score-neutral.
+
 Recovering the fixed slot scan also exposed a port bug: the Python runtime had
 an unbounded append-only list, while Zig had a 384-entry monotonic pool. Both
 ports now use the native 32-slot first-free allocator, overwrite the final slot

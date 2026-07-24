@@ -328,7 +328,10 @@ int projectile_spawn(
     float angle,
     int type_id,
     int owner_id);
-int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta);
+int player_apply_move_with_spawn_avoidance(
+    int player_index,
+    vec2f_t *pos,
+    vec2f_t *delta);
 int creature_alloc_slot(void);
 int creature_spawn_tinted(float *pos, float *rgba, int type_id);
 int creature_spawn_slot_alloc(void);

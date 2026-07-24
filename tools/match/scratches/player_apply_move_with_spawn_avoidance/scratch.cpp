@@ -1,7 +1,10 @@
 #include <math.h>
 #include "crimsonland_gameplay.h"
 
-extern "C" int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)
+extern "C" int player_apply_move_with_spawn_avoidance(
+    int player_index,
+    vec2f_t *pos,
+    vec2f_t *delta)
 {
     vec2f_t probe;
     creature_t *owner;
@@ -12,38 +15,38 @@ extern "C" int player_apply_move_with_spawn_avoidance(int player_index, float *p
 
     alternate_weapon_count = perk_count_get(perk_id_alternate_weapon);
     if (alternate_weapon_count != 0) {
-        delta[0] = delta[0] * 0.8f;
-        delta[1] = delta[1] * 0.8f;
+        delta->x = delta->x * 0.8f;
+        delta->y = delta->y * 0.8f;
     }
 
-    pos[0] = pos[0] + delta[0];
-    pos[1] = pos[1] + delta[1];
+    pos->x = pos->x + delta->x;
+    pos->y = pos->y + delta->y;
     slot = creature_spawn_slot_table;
     do {
         owner = slot->owner;
         if (owner != 0
             && (collision_radius = (owner->size + player->size) * 0.33333334f,
-                probe.x = owner->pos_x - pos[0],
-                probe.y = owner->pos_y - pos[1],
+                probe.x = owner->pos_x - pos->x,
+                probe.y = owner->pos_y - pos->y,
                 (float)sqrt(probe.x * probe.x + probe.y * probe.y) <= collision_radius)) {
-            pos[0] = pos[0] - delta[0];
-            pos[1] = pos[1] - delta[1];
-            probe.x = owner->pos_x - pos[0];
-            probe.y = owner->pos_y - pos[1];
+            pos->x = pos->x - delta->x;
+            pos->y = pos->y - delta->y;
+            probe.x = owner->pos_x - pos->x;
+            probe.y = owner->pos_y - pos->y;
             if ((float)sqrt(probe.x * probe.x + probe.y * probe.y) <= collision_radius) {
-                pos[0] = pos[0] + delta[0];
-                pos[1] = delta[1] + pos[1];
+                pos->x = pos->x + delta->x;
+                pos->y = delta->y + pos->y;
             } else {
-                pos[0] = pos[0] + delta[0];
-                probe.x = owner->pos_x - pos[0];
-                probe.y = owner->pos_y - pos[1];
+                pos->x = pos->x + delta->x;
+                probe.x = owner->pos_x - pos->x;
+                probe.y = owner->pos_y - pos->y;
                 if ((float)sqrt(probe.x * probe.x + probe.y * probe.y) <= collision_radius) {
-                    pos[0] = pos[0] - delta[0];
-                    pos[1] = delta[1] + pos[1];
-                    probe.x = owner->pos_x - pos[0];
-                    probe.y = owner->pos_y - pos[1];
+                    pos->x = pos->x - delta->x;
+                    pos->y = delta->y + pos->y;
+                    probe.x = owner->pos_x - pos->x;
+                    probe.y = owner->pos_y - pos->y;
                     if ((float)sqrt(probe.x * probe.x + probe.y * probe.y) <= collision_radius) {
-                        pos[1] = pos[1] - delta[1];
+                        pos->y = pos->y - delta->y;
                     }
                 }
             }
