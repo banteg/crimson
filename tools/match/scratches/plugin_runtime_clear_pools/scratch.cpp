@@ -1,11 +1,5 @@
 #include "crimsonland_gameplay.h"
-
-struct plugin_player_t {
-    unsigned char active;
-    unsigned char _pad0[0x23];
-    float health;
-    unsigned char _pad1[0x338];
-};
+#include <stddef.h>
 
 extern "C" void plugin_runtime_clear_pools(void)
 {
@@ -21,11 +15,14 @@ extern "C" void plugin_runtime_clear_pools(void)
         projectile_pool[index].active = 0;
     }
 
-    float *player_health = &((plugin_player_t *)player_state_table)[0].health;
+    float *player_health = &player_state_table[0].health;
     do {
-        *((unsigned char *)player_health - 0x24) = 0;
+        player_state_t *player = (player_state_t *)(
+            (char *)player_health - offsetof(player_state_t, health));
+        player->entity_active = 0;
         *player_health = -1.0f;
-        player_health = (float *)((unsigned char *)player_health + sizeof(plugin_player_t));
+        player_health = (float *)(
+            (unsigned char *)player_health + sizeof(player_state_t));
     } while ((int)player_health
-             < (int)((unsigned char *)((plugin_player_t *)player_state_table + 2) + 0x24));
+             < (int)&player_state_table[2].health);
 }

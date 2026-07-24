@@ -13,6 +13,11 @@ normalized instructions, full prefix, and masked references `8/0/0`.
 - Both player records clear the active byte and set health to `-1.0f`. The
   native loop carries a cursor to the health field, which exposes the original
   `0x360`-byte player record stride and the active byte at offset zero.
+- The health cursor is converted back to its containing `player_state_t` with
+  `offsetof(player_state_t, health)`, so the active-byte write and loop bound
+  now use the canonical `entity_active` and `player_state_table[2].health`
+  fields. This also removes the scratch-local duplicate player layout. A
+  shadow probe preserved the exact 24/24 instructions and all eight references.
 - Signed loop indices naturally reproduce the native address-sentinel loops;
   no address constants are forced in the source.
 
