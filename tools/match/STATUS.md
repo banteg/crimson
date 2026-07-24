@@ -328,7 +328,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | creature_find_in_radius | 0x004206a0 | 133 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 2131/2203 | 46.75% | 0/2203 | 333/0/30 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 2137/2203 | 46.91% | 0/2203 | 336/0/29 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 2839/3021 | 43.04% | 0/3021 | 325/0/28 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |

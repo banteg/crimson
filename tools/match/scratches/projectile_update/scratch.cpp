@@ -840,26 +840,38 @@ extern "C" void projectile_update(void)
                     }
 
                     if (bonus_freeze_timer <= 0.0f) {
+                        vec2f_t decal_offset_1 = {
+                            (float)(crt_rand() % 20 - 10),
+                            (float)(crt_rand() % 20 - 10),
+                        };
                         vec2f_t decal_pos_1 = {
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_1.x
                                 + creature_pool[hit_id].pos_x,
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_1.y
                                 + creature_pool[hit_id].pos_y,
                         };
                         fx_queue_add_random(&decal_pos_1);
 
+                        vec2f_t decal_offset_2 = {
+                            (float)(crt_rand() % 20 - 10),
+                            (float)(crt_rand() % 20 - 10),
+                        };
                         vec2f_t decal_pos_2 = {
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_2.x
                                 + creature_pool[hit_id].pos_x,
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_2.y
                                 + creature_pool[hit_id].pos_y,
                         };
                         fx_queue_add_random(&decal_pos_2);
 
+                        vec2f_t decal_offset_3 = {
+                            (float)(crt_rand() % 20 - 10),
+                            (float)(crt_rand() % 20 - 10),
+                        };
                         vec2f_t decal_pos_3 = {
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_3.x
                                 + creature_pool[hit_id].pos_x,
-                            (float)(crt_rand() % 20 - 10)
+                            decal_offset_3.y
                                 + creature_pool[hit_id].pos_y,
                         };
                         fx_queue_add_random(&decal_pos_3);

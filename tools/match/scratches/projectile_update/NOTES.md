@@ -11,9 +11,9 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,131 instructions against 2,203 native instructions, scores
-46.75%, and aligns 333 candidate references. The candidate's natural local
-frame is `0x98`, while the native function uses `0xf4`.
+It produces 2,137 instructions against 2,203 native instructions, scores
+46.91%, and aligns 336 candidate references. The candidate's natural local
+frame is `0xa4`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
@@ -139,6 +139,16 @@ instead of 301; its natural frame grows from `0x90` to `0x98`. The remaining
 reference-region differences are ordinary sequence-alignment fallout, not
 forced or unresolved references.
 
+Each direct-hit point also has two native source lifetimes. At
+`0x00421ef6..0x00422007`, VC6 first converts both random offsets, then adds the
+hit creature position into a distinct destination vector before each queue
+call. Preserving those offset and destination objects for all three points
+grows the candidate from 2,131 to 2,137 instructions and its frame from `0x98`
+to `0xa4`, raises the score from 46.75% to 46.91%, and improves the reference
+audit from `333/0/30` to `336/0/29`. Applying the same split to the later polar
+decal loops or the three scaled primary-impact points made the measured match
+worse, so those source expressions remain unsplit.
+
 The live particle tail confirms three deliberately duplicated jitter branches:
 style zero uses a `1.96` turn factor and speed `82`, style eight uses `1.1` and
 speed `62`, and the remaining styles use `1.1` and speed `82`. A particle hit
@@ -168,7 +178,7 @@ an HP guard that suppressed native active-corpse death re-entry.
 The native behavior is substantially represented, but whole-function MSVC
 scheduling still differs. In particular, the native `0xf4` frame reuses many
 long-lived vector temporaries across projectile and particle branches, whereas
-the recovered structured source naturally compiles to `0x90`. Further work
+the recovered structured source naturally compiles to `0xa4`. Further work
 should improve original declaration/lifetime shape only when supported by
 control-flow evidence. No dummy locals, volatile expressions, forced
 references, inline assembly, or layout-only gotos are used to imitate the
