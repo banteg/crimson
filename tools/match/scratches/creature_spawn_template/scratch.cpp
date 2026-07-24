@@ -73,6 +73,8 @@ typedef union creature_spawn_template_locals_t {
 #define child_tint_a_bits (*(int *)&child_tint.a)
 #define zero_velocity locals.named.zero_velocity
 #define chain_position locals.named.chain_position
+#define lizard_chain_position zero_velocity
+#define lizard_chain_zero_velocity chain_position
 #define scaled_orbit_x locals.named.scaled_orbit_x
 #define orbit_direction locals.named.tint_scratch.orbit_direction
 
@@ -365,20 +367,20 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->pos_x = *pos;
             creature->pos_y = pos[1];
             creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
-            creature->tint_r = 0.99f;
-            creature->tint_g = 0.99f;
+            tint.set(0.99f, 0.99f, 0.21f, 1.0f);
             creature->health = 1500.0f;
             creature->move_speed = 2.1f;
-            creature->tint_b = 0.21f;
             creature->reward_value = 1000.0f;
+            *(creature_tint_t *)&creature->tint_r = tint;
             creature->size = 69.0f;
-            creature->tint_a = 1.0f;
             creature->contact_damage = 150.0f;
             creature->max_health = 1500.0f;
 
             slot_10_i = 2;
             chain_target_offset = -0x100;
             chain_link_idx = root_slot_idx;
+            lizard_chain_zero_velocity.set(0.0f, 0.0f);
+            child_tint.set(0.6f, 0.6f, 0.31f, 1.0f);
             do {
                 child_slot_idx = creature_alloc_slot();
                 creature = &creature_pool[child_slot_idx];
@@ -387,17 +389,18 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 creature->link_index = chain_link_idx;
                 creature->target_offset_y = -256.0f;
                 float angle = (float)slot_10_i * 0.39269909f;
-                creature->pos_x = (float)cos(angle) * 256.0f + *pos;
-                creature->vel_x = 0.0f;
-                creature->tint_r = 0.6f;
-                creature->pos_y = (float)sin(angle) * 256.0f + pos[1];
-                creature->tint_g = 0.6f;
-                creature->vel_y = 0.0f;
-                creature->tint_b = 0.31f;
+                scaled_orbit_x = (float)cos(angle);
+                orbit_direction.y = (float)sin(angle);
+                orbit_direction.x = scaled_orbit_x * 256.0f;
+                orbit_direction.y = orbit_direction.y * 256.0f;
+                lizard_chain_position.x = orbit_direction.x + *pos;
+                lizard_chain_position.y = orbit_direction.y + pos[1];
+                *(creature_spawn_vec2_t *)&creature->pos_x = lizard_chain_position;
+                *(creature_spawn_vec2_t *)&creature->vel_x = lizard_chain_zero_velocity;
                 creature->health = 60.0f;
+                *(creature_tint_t *)&creature->tint_r = child_tint;
                 creature->reward_value = 60.0f;
                 creature->max_health = 60.0f;
-                creature->tint_a = 1.0f;
                 chain_target_offset = chain_target_offset + 0x40;
                 slot_10_i = slot_10_i + 2;
                 creature->collision_flag = 0;

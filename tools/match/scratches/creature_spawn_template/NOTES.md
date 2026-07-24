@@ -331,3 +331,13 @@ Frame/prefix notes:
   frame, prefix, and `349/0/1` reference audit. Three plausible placements of
   the collision flag compiled identically, so the retained form follows the
   native store sequence without introducing an artificial dependency.
+- Template `0x11` constructs separate root and child tint values plus reusable
+  child-position and zero-velocity pairs. Its chain loop also keeps unscaled
+  cosine at `[esp+0x30]` and scaled X at `[esp+0x38]`, the opposite lifetime
+  assignment from template `0x13`. Recovering those values reproduces native's
+  x87 sequence and stack map through the loop, adds 28 candidate instructions,
+  improves the reference audit to `350/0/1`, and raises the score from `80.81%`
+  to `80.89%` while gaining 12 fuzzy-weighted bytes. The coherent root shape
+  was retained with the stronger child recovery because live disassembly
+  proves all eight constructor stores; scalar and reversed-temporary variants
+  were measured and rejected.
