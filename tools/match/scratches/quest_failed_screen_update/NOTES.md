@@ -48,3 +48,6 @@ Y temporary at `[esp+0x20]` in the target and `[esp+0x10]` in the candidate.
 Equivalent declaration and initialization forms retained that stack-coloring
 choice or worsened scheduling. The residual is recorded instead of forcing a
 register or stack slot.
+
+The panel expression now uses the recovered UI element and vertex position
+aggregates. It remains a 292-instruction, 151-reference build at 99.32%.

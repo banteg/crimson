@@ -693,8 +693,13 @@ typedef effect_entry_t effect_pool_t[0x200];
 typedef void (*ui_element_callback_t)(void);
 
 typedef struct ui_element_vertex_t {
-    float x;
-    float y;
+    union {
+        struct {
+            float x;
+            float y;
+        };
+        vec2f_t position;
+    };
     float z;
     float rhw;
     unsigned int color;

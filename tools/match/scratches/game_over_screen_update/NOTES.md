@@ -31,3 +31,7 @@ The natural VC6 `msvc6.5 /O2 /GB` reconstruction has the native 24-byte local
 frame and matches all 471 target instructions exactly, with all 215 audited
 references aligned. No compiler override, register hint, fake alias, or dead
 expression is required.
+
+The banner expression now names the recovered UI element and vertex position
+aggregates and remains exact at 471/471 instructions with 215 resolved
+references.

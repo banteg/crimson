@@ -76,8 +76,8 @@ extern "C" void game_update_victory_screen(void)
     ui_elements_update_and_render();
 
     victory_vec2_t panel_position =
-        *(victory_vec2_t *)&ui_element_slot_35.pos_x
-        + *(victory_vec2_t *)&ui_element_slot_35.vertices[0].x
+        *(victory_vec2_t *)&ui_element_slot_35.pos
+        + *(victory_vec2_t *)&ui_element_slot_35.vertices[0].position
         + victory_vec2_t(180.0f, 40.0f);
 
     victory_vec2_t text_position = panel_position;
@@ -176,8 +176,8 @@ extern "C" void game_update_victory_screen(void)
         "Good luck with your battles, trooper!");
 
     victory_vec2_t button_panel_position =
-        *(victory_vec2_t *)&ui_element_slot_35.pos_x
-        + *(victory_vec2_t *)&ui_element_slot_35.vertices[0].x
+        *(victory_vec2_t *)&ui_element_slot_35.pos
+        + *(victory_vec2_t *)&ui_element_slot_35.vertices[0].position
         + victory_vec2_t(180.0f, 40.0f);
     text_position = button_panel_position;
     text_position.x += ui_element_slot_35.render_offset_x;

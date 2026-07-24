@@ -123,9 +123,11 @@ extern "C" void quest_select_menu_update(void)
 {
     quest_select_vec2_t panel_position;
     panel_position.x =
-        ui_element_slot_37.vertices[0].x + ui_element_slot_37.pos_x;
+        ui_element_slot_37.vertices[0].position.x
+        + ui_element_slot_37.pos.x;
     panel_position.y =
-        ui_element_slot_37.pos_y + ui_element_slot_37.vertices[0].y;
+        ui_element_slot_37.pos.y
+        + ui_element_slot_37.vertices[0].position.y;
     panel_position.x += 300.0f;
 
     bool row_hovered = false;

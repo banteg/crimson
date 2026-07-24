@@ -55,3 +55,7 @@ setup. Expressing that early exit instead of an inverted condition with an
 `else` restores the native basic-block order, aligns five additional
 references, and raises the score from 85.59% without changing the frame or
 instruction count.
+
+The panel geometry now uses the recovered UI element and vertex position
+aggregates. This type-only cleanup preserves the 1,164/1,168 instruction
+build, 86.45% score, and 429/0/9 reference audit.

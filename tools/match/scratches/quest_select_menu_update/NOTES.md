@@ -49,3 +49,7 @@ unlocked quest metadata block after its alternate unlock-table branch. Attempts
 to collapse the named panel/position objects or force the decompiler-shaped
 row labels reduced the match substantially, so those code-generation residuals
 are recorded rather than hidden with match-only shaping.
+
+The panel geometry now uses the recovered UI element and vertex position
+aggregates. This keeps the evidenced 782/803 instruction build, 71.17% score,
+and 222/0/14 reference audit unchanged.

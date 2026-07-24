@@ -41,3 +41,7 @@ explicit vector copies, named field-value copies, and constructor variants
 either retained that four-byte delta or worsened instruction order. No union,
 volatile state, fake reference, or artificial register constraint is used to
 force the native allocation.
+
+The panel anchor now consumes the recovered `ui_element_t::pos` and
+`ui_element_vertex_t::position` aggregates. This type-only cleanup preserves
+the same 314 instructions, 86.94% score, and 117 resolved references.

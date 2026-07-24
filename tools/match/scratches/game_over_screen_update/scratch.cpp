@@ -157,8 +157,8 @@ extern "C" void game_over_screen_update(void)
     perk_prompt_update_and_render();
 
     game_over_vec2_t panel_xy =
-        *(game_over_vec2_t *)&ui_element_slot_30.pos_x
-        + *(game_over_vec2_t *)&ui_element_slot_30.vertices[0].x
+        *(game_over_vec2_t *)&ui_element_slot_30.pos
+        + *(game_over_vec2_t *)&ui_element_slot_30.vertices[0].position
         + game_over_vec2_t(180.0f, 40.0f);
 
     game_over_vec2_t xy = panel_xy;

@@ -96,8 +96,8 @@ extern "C" void quest_failed_screen_update(void)
 
     do {
         quest_failed_vec2_t panel_xy =
-            *(quest_failed_vec2_t *)&ui_element_slot_35.pos_x
-            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].x
+            *(quest_failed_vec2_t *)&ui_element_slot_35.pos
+            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position
             + quest_failed_vec2_t(180.0f, 40.0f);
 
         quest_failed_vec2_t xy = panel_xy;

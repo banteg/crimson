@@ -30,3 +30,7 @@ thunks. The candidate matches all 447 instructions and all 189 references.
 The function-local statics deliberately use ordinary C++ construction and
 destruction so VC6 emits the native guard-byte and `atexit` lifecycle. No
 volatile state, fake references, or register-shaping constructs are used.
+
+Both chained panel expressions now name the recovered UI element and vertex
+position aggregates; the function remains exact at 447/447 instructions and
+189 resolved references.

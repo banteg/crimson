@@ -141,9 +141,11 @@ extern "C" void quest_results_screen_update(void)
 
     quest_results_vec2_t panel_xy;
     panel_xy.x =
-        ui_element_slot_35.vertices[0].x + ui_element_slot_35.pos_x;
+        ui_element_slot_35.vertices[0].position.x
+        + ui_element_slot_35.pos.x;
     panel_xy.y =
-        ui_element_slot_35.pos_y + ui_element_slot_35.vertices[0].y;
+        ui_element_slot_35.pos.y
+        + ui_element_slot_35.vertices[0].position.y;
     panel_xy.x += 180.0f;
 
     quest_results_vec2_t xy = panel_xy;

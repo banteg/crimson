@@ -118,8 +118,8 @@ extern "C" void perk_selection_screen_update(void)
     ui_elements_update_and_render();
 
     perk_selection_vec2_t panel_position =
-        *(perk_selection_vec2_t *)&ui_element_slot_27.pos_x
-        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].x;
+        *(perk_selection_vec2_t *)&ui_element_slot_27.pos
+        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;
 
     float line_height = 19.0f;
     bool any_hovered = false;
