@@ -1242,15 +1242,17 @@ struct mod_interface_vtbl_t {
     unsigned char (*Frame)(mod_interface_t *self, int frame_dt_ms);
 };
 
+typedef struct mod_parms_fields_t {
+    unsigned char drawMouseCursor;
+    unsigned char onPause;
+    unsigned char reserved0[0x1a];
+    unsigned char request_exit;
+    unsigned char reserved1[0x3e3];
+} mod_parms_fields_t;
+
 typedef union mod_parms_t {
+    mod_parms_fields_t fields;
     int reserved[256];
-    struct {
-        unsigned char drawMouseCursor;
-        unsigned char onPause;
-        unsigned char reserved0[0x1a];
-        unsigned char request_exit;
-        unsigned char reserved1[0x3e3];
-    } fields;
 } mod_parms_t;
 
 struct mod_interface_t {

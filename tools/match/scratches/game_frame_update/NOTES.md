@@ -49,6 +49,13 @@ branch owners fixes observable stale-latch and aim-update behavior, extends the
 exact prefix from `263` to `363` instructions, and improves reference agreement
 from `299/0/0` to `314/0/0`.
 
+The shared `mod_parms_t` union now uses a named `mod_parms_fields_t` view, so
+offset `1` is authoritatively identified as `onPause` in the type graph and
+source. Binary Ninja still prints `fields.__offset(0x1)` in this nested-union
+case even after a field-reference override and reanalysis; that is a
+decompiler presentation limitation, not an unresolved layout. The union
+layout and generated code are unchanged.
+
 Current honest MSVC result: `93.92%`, exact prefix `363/905`, candidate
 `903/905` instructions, and masked references `314/0/0`. Remaining differences
 are local load/store scheduling in the two-player aim copy, old-VC6 byte-load
