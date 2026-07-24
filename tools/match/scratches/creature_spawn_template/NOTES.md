@@ -46,7 +46,9 @@ Frame/prefix notes:
   after allocation. The ring-child loop at `0x00430c47..0x00430d13` allocates
   and initializes children without touching that byte. Both ports therefore
   clear the template root while retaining native recycled-slot residue in
-  formation children.
+  formation children. The field is now consistently typed as one byte in the
+  shared header and live Binary Ninja structure, so the root write no longer
+  needs a local byte reinterpretation.
 - The exact `creature_alloc_slot` body at `0x00428193..0x004281c7` clears only
   flags, the four-byte field at `+0x74`, and animation phase while seeding the
   phase word. In particular it preserves `orbit_angle` (`+0x84`) and the

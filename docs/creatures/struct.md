@@ -41,7 +41,8 @@ typedef struct creature_t {
     float tint_g;
     float tint_b;
     float tint_a;
-    int force_target;
+    unsigned char force_target;
+    unsigned char _pad_force_target[3];
     float target_x;
     float target_y;
     float contact_damage;
@@ -50,8 +51,9 @@ typedef struct creature_t {
     float reward_value;
     unsigned char _pad2[4];
     int type_id;
-    int target_player;
-    unsigned char _pad3[4];
+    unsigned char target_player;
+    unsigned char _pad_target_player[3];
+    int entity_reserved_74;
     int link_index;
     float target_offset_x;
     float target_offset_y;
@@ -103,6 +105,7 @@ Field map (medium confidence):
 | `0x64` | reward value | `creature_reward_value` | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |
 | `0x6c` | type id | `creature_type_id` | written from spawn param; indexes behavior tables. |
 | `0x70` | target player index | `creature_target_player` | toggled based on distance; indexes player arrays. |
+| `0x74` | reserved entity dword | `entity_reserved_74` | Cleared by both the pool constructor and slot allocator; the same offset is a constructor-touched dword in `player_state_t`. |
 | `0x78` | link index / state timer | `creature_link_index` | used as linked creature index in AI modes; also used as a timer when the `0x80` flag is set. |
 | `0x7c` | target offset x | `creature_target_offset_x` | used when AI mode links to another creature. |
 | `0x80` | target offset y | `creature_target_offset_y` | used when AI mode links to another creature. |

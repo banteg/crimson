@@ -6,8 +6,10 @@ confirms the source shape:
 - `0x00428148..0x00428158` scans the 384-entry creature pool in order and tests
   only the active byte.
 - The successful path clears flags, draws `crt_rand() & 0x17f` for the phase
-  seed, clears the auxiliary word and animation phase, increments the spawned
-  count, and returns the free index.
+  seed, clears `entity_reserved_74` and the animation phase, increments the
+  spawned count, and returns the free index. The named dword replaces a
+  padding cast and matches the constructor-touched field at the same offset in
+  `player_state_t`.
 - The exhausted path may print `No free creatures to spawn!` when verbose, then
   returns the one-past-the-pool sentinel `0x180` at `0x00428182..0x00428188`.
   It does not draw RNG and never selects or replaces a live creature.

@@ -251,7 +251,7 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->active = 1;
-    *(unsigned char *)&creature->force_target = 0;
+    creature->force_target = 0;
     creature->state_flag = 1;
     creature->lifecycle_stage = 16.0f;
     random_heading_roll = crt_rand();
