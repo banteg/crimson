@@ -27,6 +27,10 @@ Recovered source shape:
   state. Shock Chain keeps natural `bonus_pos` and `target_pos` pointers, and
   both branches preserve native argument evaluation order with direct, inline
   angle expressions.
+- The Shock Chain and Nuke position aliases are recovered as read-only
+  `vec2f_t` pointers, and the Nuke force temporary is a `vec2f_t` value. Named
+  `x`/`y` fields replace the last seven raw component indexes without changing
+  the exact 668/668 code or any of the 216 aligned references.
 - Shock Chain sets `bonus_spawn_guard` at `0x00409da4` and unconditionally
   clears it at `0x00409e34`; Fireblast does the same at `0x00409e53` and
   `0x00409eb3`. These are literal resets rather than restoration of an incoming
@@ -53,3 +57,8 @@ Discarded variants:
 - Artificial slot unions, volatile temporaries, and container/pointer tricks
   were useful probes but are not retained; natural scoped C++ expresses the
   matching stack and register lifetime.
+- Binary Ninja still displays interior-pointer indexing in two compiler-chosen
+  scans: Reflex Boost advances from `player_state_t::ammo`, and Freeze advances
+  from `creature_t::pos_x`. Retyping either interior address as its enclosing
+  struct would shift every field and be false, so those offsets remain
+  explicitly identified rather than hidden behind an invalid type.

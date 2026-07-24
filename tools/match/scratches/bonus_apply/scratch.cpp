@@ -147,22 +147,24 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         }
         shock_chain_links_left = 32;
 
-        float *bonus_pos = &bonus_entry->time.pos_x;
+        const vec2f_t *bonus_pos =
+            (const vec2f_t *)&bonus_entry->time.pos_x;
         int creature_index = creature_find_nearest(
-            (const vec2f_t *)bonus_pos,
+            bonus_pos,
             -1,
             0.0f);
-        float *target_pos = &creature_pool[creature_index].pos_x;
-        float dx = target_pos[0] - bonus_pos[0];
-        float dy = target_pos[1] - bonus_pos[1];
+        const vec2f_t *target_pos =
+            (const vec2f_t *)&creature_pool[creature_index].pos_x;
+        float dx = target_pos->x - bonus_pos->x;
+        float dy = target_pos->y - bonus_pos->y;
         shock_chain_projectile_id = projectile_spawn(
-            (const vec2f_t *)bonus_pos,
+            bonus_pos,
             (float)atan2(dy, dx) - 1.5707964f - 3.1415927f,
             PROJECTILE_TYPE_ION_RIFLE,
             owner);
 
         bonus_spawn_guard = 0;
-        sfx_play_panned(sfx_shock_hit_01, bonus_pos, 1.0f);
+        sfx_play_panned(sfx_shock_hit_01, (float *)bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_FIREBLAST) {
         int owner;
         bonus_spawn_guard = 1;
@@ -222,18 +224,19 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             }
         }
 
-        float *bonus_pos = &bonus_entry->time.pos_x;
+        const vec2f_t *bonus_pos =
+            (const vec2f_t *)&bonus_entry->time.pos_x;
         projectile_spawn(
-            (const vec2f_t *)bonus_pos,
+            bonus_pos,
             (float)(crt_rand() % 628) * 0.01f,
             PROJECTILE_TYPE_GAUSS_GUN,
             -100);
         projectile_spawn(
-            (const vec2f_t *)bonus_pos,
+            bonus_pos,
             (float)(crt_rand() % 628) * 0.01f,
             PROJECTILE_TYPE_GAUSS_GUN,
             -100);
-        effect_spawn_explosion_burst(bonus_pos, 1.0f);
+        effect_spawn_explosion_burst((float *)bonus_pos, 1.0f);
         camera_shake_pulses = 20;
         camera_shake_timer = 0.2f;
 
@@ -241,18 +244,23 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         int creature_iter = 0;
         do {
             if (creature_pool[creature_iter].active) {
-                abs_delta = abs_bits(creature_pool[creature_iter].pos_x - bonus_pos[0]);
+                abs_delta = abs_bits(
+                    creature_pool[creature_iter].pos_x - bonus_pos->x);
                 if (abs_delta <= 256.0f) {
                     abs_delta = abs_bits(creature_pool[creature_iter].pos_y - bonus_entry->time.pos_y);
                     if (abs_delta <= 256.0f) {
                         float damage = 256.0f - vec2_distance(
                             (vec2f_t *)&creature_pool[creature_iter].pos_x,
-                            (vec2f_t *)bonus_pos);
+                            bonus_pos);
                         if (damage > 0.0f) {
-                            float impulse[2];
-                            impulse[0] = 0.0f;
-                            impulse[1] = 0.0f;
-                            creature_apply_damage(creature_iter, damage * 5.0f, 3, impulse);
+                            vec2f_t impulse;
+                            impulse.x = 0.0f;
+                            impulse.y = 0.0f;
+                            creature_apply_damage(
+                                creature_iter,
+                                damage * 5.0f,
+                                3,
+                                (float *)&impulse);
                         }
                     }
                 }
@@ -260,8 +268,8 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             ++creature_iter;
         } while (creature_iter < 0x180);
         bonus_spawn_guard = 0;
-        sfx_play_panned(sfx_explosion_large, bonus_pos, 1.0f);
-        sfx_play_panned(sfx_shockwave, bonus_pos, 1.0f);
+        sfx_play_panned(sfx_explosion_large, (float *)bonus_pos, 1.0f);
+        sfx_play_panned(sfx_shockwave, (float *)bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_POINTS) {
         player_state_table[0].experience += bonus_entry->time.amount;
     }
