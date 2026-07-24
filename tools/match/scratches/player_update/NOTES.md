@@ -88,10 +88,25 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=51.77% prefix=7/4206 target_insns=4206 candidate_insns=3934 refs=681/0/14
+match=51.99% prefix=7/4206 target_insns=4206 candidate_insns=3980 refs=685/0/13
 first_target=jne L3f7a
-first_candidate=jne L3c1b
+first_candidate=jne L3cdd
 ```
+
+The muzzle-effect direction lifetimes are now pinned across the normal weapon
+dispatcher. Shrinkifier, Pistol, Assault Rifle, and SMG store each wide cosine
+or sine result into the retained direction component and immediately multiply
+that same x87 value by `25.0f` at `0x00415f54..0x004160a3`,
+`0x00416138..0x0041616b`, and `0x0041676b..0x0041679a`. Interleaving those
+ordinary component assignments recovers the native stores and prevents VC6
+from collapsing the adjacent Shrinkifier/Pistol projectile and first-sprite
+calls. Jackhammer at `0x004163df..0x00416406` and Rocket Minigun at
+`0x00417141..0x00417168` do not retain a direction vector at all; writing
+their single-use scaled trig results directly removes four unsupported local
+stores. Together these changes add the missing direct projectile callsite,
+recover the native first-sprite duplication, preserve the exact `0x48` frame,
+improve reference agreement from `681/0/14` to `685/0/13`, and raise the
+whole-function score from `51.77%` to `51.99%`.
 
 The auto-target aim approach at `0x004156ca..0x004156d4` multiplies the
 target distance by `6.0f` before applying `frame_dt`. Keeping that ordinary

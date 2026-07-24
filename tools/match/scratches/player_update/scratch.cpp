@@ -1232,8 +1232,8 @@ extern "C" void player_update(void)
                     PROJECTILE_TYPE_SHRINKIFIER,
                     owner_id);
                 random_offset.x = (float)cos(movement_heading);
-                random_offset.y = (float)sin(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
+                random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
@@ -1267,8 +1267,8 @@ extern "C" void player_update(void)
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);
                 random_offset.x = (float)cos(movement_heading);
-                random_offset.y = (float)sin(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
+                random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
@@ -1294,8 +1294,8 @@ extern "C" void player_update(void)
                 sprite_effect_pool[effect_index].color_a = 0.213f;
             } else if (player->weapon_id == WEAPON_ID_ASSAULT_RIFLE) {
                 random_offset.x = (float)cos(movement_heading);
-                random_offset.y = (float)sin(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
+                random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
@@ -1371,10 +1371,8 @@ extern "C" void player_update(void)
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_JACKHAMMER) {
-                random_offset.x = (float)cos(movement_heading);
-                random_offset.y = (float)sin(movement_heading);
-                move_delta.x = random_offset.x * 15.0f;
-                move_delta.y = random_offset.y * 15.0f;
+                move_delta.x = (float)cos(movement_heading) * 15.0f;
+                move_delta.y = (float)sin(movement_heading) * 15.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
                 int effect_index = fx_spawn_sprite(
@@ -1479,8 +1477,8 @@ extern "C" void player_update(void)
                 scalar = 0.05f;
             } else if (player->weapon_id == WEAPON_ID_SUBMACHINE_GUN) {
                 random_offset.x = (float)cos(movement_heading);
-                random_offset.y = (float)sin(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
+                random_offset.y = (float)sin(movement_heading);
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
@@ -1803,10 +1801,8 @@ extern "C" void player_update(void)
                 }
                 scalar = player->ammo;
             } else if (player->weapon_id == WEAPON_ID_ROCKET_MINIGUN) {
-                random_offset.x = (float)cos(movement_heading);
-                move_delta.x = random_offset.x * 25.0f;
-                random_offset.y = (float)sin(movement_heading);
-                move_delta.y = random_offset.y * 25.0f;
+                move_delta.x = (float)cos(movement_heading) * 25.0f;
+                move_delta.y = (float)sin(movement_heading) * 25.0f;
                 scratch_pos.x = movement_input.x + player_pos[0];
                 scratch_pos.y = movement_input.y + player_pos[1];
                 int effect_index = fx_spawn_sprite(
