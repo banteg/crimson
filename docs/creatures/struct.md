@@ -106,7 +106,7 @@ Field map (medium confidence):
 | `0x6c` | type id | `creature_type_id` | written from spawn param; indexes behavior tables. |
 | `0x70` | target player index | `creature_target_player` | toggled based on distance; indexes player arrays. |
 | `0x74` | reserved entity dword | `entity_reserved_74` | Cleared by both the pool constructor and slot allocator; the same offset is a constructor-touched dword in `player_state_t`. |
-| `0x78` | link index / state timer | `creature_link_index` | used as linked creature index in AI modes; also used as a timer when the `0x80` flag is set. |
+| `0x78` | link index / state timer / bonus args | `creature_link_index` | Used as linked creature index in AI modes and as a timer when the `0x80` flag is set. Under `BONUS_ON_DEATH`, `creature_bonus_args_t` overlays this dword with signed `bonus_id` and `duration_override` halfwords. |
 | `0x7c` | target offset x | `creature_target_offset_x` | used when AI mode links to another creature. |
 | `0x80` | target offset y | `creature_target_offset_y` | used when AI mode links to another creature. |
 | `0x84` | orbit angle | `creature_orbit_angle` | combined with heading for orbiting AI modes. |

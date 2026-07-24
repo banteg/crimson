@@ -1,4 +1,5 @@
 #include "crimsonland_gameplay.h"
+#include <stddef.h>
 
 struct damage_vec2_t {
     float x;
@@ -45,7 +46,10 @@ extern "C" int creature_apply_damage(
                 float *living_fortress_timer =
                     &player_state_table[0].living_fortress_timer;
                 do {
-                    if (living_fortress_timer[-0x20] > 0.0f) {
+                    player_state_t *player = (player_state_t *)(
+                        (char *)living_fortress_timer
+                        - offsetof(player_state_t, living_fortress_timer));
+                    if (player->health > 0.0f) {
                         damage *= *living_fortress_timer * 0.05f + 1.0f;
                     }
                     living_fortress_timer += 0xd8;

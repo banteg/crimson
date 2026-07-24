@@ -285,6 +285,11 @@ typedef struct player_state_t {
     player_input_t input;
 } player_state_t;
 
+typedef struct creature_bonus_args_t {
+    short bonus_id;
+    short duration_override;
+} creature_bonus_args_t;
+
 typedef struct creature_type_t {
     int texture_handle;
     int sfx_bank_a[4];

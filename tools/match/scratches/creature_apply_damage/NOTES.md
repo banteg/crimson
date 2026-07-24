@@ -9,7 +9,10 @@ burst template, and type-indexed death sound. The function returns whether
 health is non-positive; the prior shared header's `void` prototype was wrong.
 
 The decrementing living-fortress timer pointer is required to reproduce the
-native induction register. A small value-type multiply for the lethal impulse
+native induction register. Its former `[-0x20]` access is the current player's
+health field: recovering the containing `player_state_t` through
+`offsetof(living_fortress_timer)` names that gate without changing any of the
+237 generated instructions. A small value-type multiply for the lethal impulse
 reproduces the otherwise unexplained x87 temporary and pop sequence. The shock
 burst only overwrites flags, color, lifetime, half-size, and each particle's
 rotation, velocity, and scale step; it deliberately leaves the remaining

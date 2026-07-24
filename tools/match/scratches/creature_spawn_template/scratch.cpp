@@ -225,7 +225,10 @@ typedef union creature_spawn_template_locals_t {
         }                           \
     } while (0)
 
-extern "C" void *creature_spawn_template(int template_id, float *pos, float heading)
+extern "C" creature_t *creature_spawn_template(
+    int template_id,
+    float *pos,
+    float heading)
 {
     creature_spawn_template_locals_t locals;
     int root_slot_idx;
@@ -825,8 +828,10 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.1f, 125.0f,
                                              1.0f, 0.8f, 0.1f, 1.0f, 45.0f, 10.0f);
                     creature->flags = CREATURE_FLAG_BONUS_ON_DEATH;
-                    *(unsigned short *)&creature->link_index = 3;
-                    *(unsigned short *)((char *)&creature->link_index + 2) = 5;
+                    creature_bonus_args_t *bonus_args =
+                        (creature_bonus_args_t *)&creature->link_index;
+                    bonus_args->bonus_id = 3;
+                    bonus_args->duration_override = 5;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 53.0f, 1.7f, 120.0f,
                                              0.7f, 0.1f, 0.51f, 0.5f, 55.0f, 8.0f);

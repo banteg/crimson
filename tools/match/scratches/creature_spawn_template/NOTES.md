@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=80.36% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
+match=80.89% prefix=26/3159 target_insns=3159 candidate_insns=3106 refs=350/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -37,6 +37,14 @@ first_candidate=mov dword [esp+0x10], esi
 Frame/prefix notes:
 
 - The source now reproduces the native `0x48`-byte stack frame.
+- The function returns the current `creature_t *`, not an opaque pointer.
+  Retyping both the return and its live `result` cursor in Binary Ninja turns
+  the large dispatch from thousands of `result + offset` expressions into
+  named `creature_t` fields without changing the generated body.
+- Template `0x27` sets `BONUS_ON_DEATH` and treats `link_index` as the packed
+  `creature_bonus_args_t`: signed low/high halfwords hold bonus id `3` and
+  duration override `5`. The spawn and death scratches now share that recovered
+  overlay instead of spelling the high half as `link_index + 2`.
 - Native allocates the root slot before resolving a `-100.0f` input heading,
   so the random-heading draw occurs after the allocation phase-seed draw and
   before the transient base-heading draw. The Zig runtime now preserves that
