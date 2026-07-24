@@ -30,6 +30,9 @@ match=100.00% prefix=136/136 target_insns=136 candidate_insns=136 refs=51/0/0
 The two position vectors, 16-byte tint aggregate, and integer tint time account
 for the native 0x24-byte local stack. Reversing the commutative cooldown
 operands recovers the native global-load order without changing semantics.
+The two exact spawn calls now pass `&right`/`&left` and `&tint` through the
+recovered aggregate prototype instead of addresses of their first scalar
+members. This preserves the exact 136/136 code and all 51 references.
 
 ## Port parity
 

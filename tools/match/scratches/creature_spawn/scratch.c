@@ -5,22 +5,18 @@ typedef union creature_spawn_locals_t {
     float f[2];
 } creature_spawn_locals_t;
 
-typedef struct creature_spawn_tint_t {
-    float r;
-    float g;
-    float b;
-    float a;
-} creature_spawn_tint_t;
-
 #define CREATURE_SPAWN_ELAPSED_SCALE 0.000010000001f
 
-int creature_spawn(float *pos, float *tint_rgba, int type_id)
+int creature_spawn(
+    const vec2f_t *pos,
+    const effect_color_t *tint,
+    int type_id)
 {
     int slot_id = creature_alloc_slot();
     creature_spawn_locals_t locals = {{0, 0}};
 
-    creature_pool[slot_id].pos_x = pos[0];
-    creature_pool[slot_id].pos_y = pos[1];
+    creature_pool[slot_id].pos_x = pos->x;
+    creature_pool[slot_id].pos_y = pos->y;
     creature_pool[slot_id].type_id = type_id;
     creature_pool[slot_id].ai_mode = 0;
     creature_pool[slot_id].collision_flag = 0;
@@ -39,7 +35,7 @@ int creature_spawn(float *pos, float *tint_rgba, int type_id)
         creature_pool[slot_id].attack_cooldown = 0.0f;
         creature_pool[slot_id].reward_value = (float)(reward_roll % 30 + 140);
     }
-    *(creature_spawn_tint_t *)&creature_pool[slot_id].tint_r = *(creature_spawn_tint_t *)tint_rgba;
+    *(effect_color_t *)&creature_pool[slot_id].tint_r = *tint;
     creature_pool[slot_id].contact_damage = 4.0f;
     creature_pool[slot_id].max_health = creature_pool[slot_id].health;
     creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;

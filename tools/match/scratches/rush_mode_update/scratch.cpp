@@ -9,7 +9,10 @@ extern "C" int survival_spawn_cooldown;
 extern "C" int quest_spawn_timeline;
 extern "C" int demo_time_limit_ms;
 
-extern "C" int creature_spawn(float *pos, float *color, int type_id);
+extern "C" int creature_spawn(
+    const vec2f_t *pos,
+    const effect_color_t *color,
+    int type_id);
 extern "C" void demo_mode_start(void);
 
 extern "C" void rush_mode_update(void)
@@ -57,8 +60,8 @@ extern "C" void rush_mode_update(void)
             * 256.0f
             + (float)terrain_texture_height * 0.5f;
         int creature_id = creature_spawn(
-            &right.x,
-            &tint.r,
+            &right,
+            &tint,
             CREATURE_TYPE_ALIEN
         );
         creature_pool[creature_id].ai_mode = CREATURE_AI_ORBIT_PLAYER_WIDE;
@@ -69,8 +72,8 @@ extern "C" void rush_mode_update(void)
             * 256.0f
             + (float)terrain_texture_height * 0.5f;
         creature_id = creature_spawn(
-            &left.x,
-            &tint.r,
+            &left,
+            &tint,
             CREATURE_TYPE_SPIDER_SP1
         );
         creature_pool[creature_id].ai_mode = CREATURE_AI_ORBIT_PLAYER_WIDE;
