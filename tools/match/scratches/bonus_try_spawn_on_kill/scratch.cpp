@@ -2,7 +2,7 @@
 
 #include "crimsonland_gameplay.h"
 
-extern "C" void bonus_try_spawn_on_kill(float *pos)
+extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
 {
     bonus_entry_t *entry;
 
@@ -58,8 +58,8 @@ extern "C" void bonus_try_spawn_on_kill(float *pos)
 
         entry = bonus_spawn_at_pos(pos);
         if (entry->bonus_id == BONUS_ID_WEAPON) {
-            float dx = pos[0] - player_state_table[0].pos_x;
-            float dy = pos[1] - player_state_table[0].pos_y;
+            float dx = pos->x - player_state_table[0].pos_x;
+            float dy = pos->y - player_state_table[0].pos_y;
             float distance_sq = dx * dx;
             distance_sq += dy * dy;
             if ((float)sqrt(distance_sq) < 56.0f) {
@@ -103,7 +103,7 @@ extern "C" void bonus_try_spawn_on_kill(float *pos)
             effect_template_vel_x = (float)(crt_rand() % 128 - 64);
             effect_template_vel_y = (float)(crt_rand() % 128 - 64);
             effect_template_scale_step = (float)(crt_rand() % 100) * 0.01f + 0.1f;
-            effect_spawn(0, pos);
+            effect_spawn(0, (float *)pos);
             --count;
         } while (count != 0);
     }

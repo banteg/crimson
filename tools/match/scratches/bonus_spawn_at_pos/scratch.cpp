@@ -2,12 +2,12 @@
 
 #include "crimsonland_gameplay.h"
 
-extern "C" bonus_entry_t *bonus_spawn_at_pos(float *pos)
+extern "C" bonus_entry_t *bonus_spawn_at_pos(const vec2f_t *pos)
 {
-    if (pos[0] < 32.0f
-        || (float)(terrain_texture_width - 32) < pos[0]
-        || pos[1] < 32.0f
-        || (float)(terrain_texture_height - 32) < pos[1]
+    if (pos->x < 32.0f
+        || (float)(terrain_texture_width - 32) < pos->x
+        || pos->y < 32.0f
+        || (float)(terrain_texture_height - 32) < pos->y
         || config_blob.game_mode == GAME_MODE_RUSH) {
         return &bonus_pool_sentinel;
     }
@@ -16,8 +16,8 @@ extern "C" bonus_entry_t *bonus_spawn_at_pos(float *pos)
         bonus_entry_t *scan = &bonus_pool[0];
         while ((int)scan < (int)&bonus_pool[16]) {
             if (scan->bonus_id != BONUS_ID_NONE) {
-                float dx = pos[0] - scan->time.pos_x;
-                float dy = pos[1] - scan->time.pos_y;
+                float dx = pos->x - scan->time.pos_x;
+                float dy = pos->y - scan->time.pos_y;
                 float distance_sq = dx * dx;
                 distance_sq += dy * dy;
                 if ((float)sqrt(distance_sq) < 32.0f) {
@@ -29,8 +29,8 @@ extern "C" bonus_entry_t *bonus_spawn_at_pos(float *pos)
         }
 
         entry->state = 0;
-        entry->time.pos_x = pos[0];
-        entry->time.pos_y = pos[1];
+        entry->time.pos_x = pos->x;
+        entry->time.pos_y = pos->y;
         entry->time.time_left = 10.0f;
         entry->time.time_max = 10.0f;
         entry->bonus_id = bonus_pick_random_type();

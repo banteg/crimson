@@ -18,6 +18,13 @@ PC=24 arithmetic rounds one reachable boundary hypotenuse to exactly 32, while
 the old double-precision squared-distance predicate treated it as below 32 and
 rejected the spawn. Both ports now use the explicit native PC=24 hypotenuse.
 
+The position input is now a read-only `vec2f_t`, so the recovered guard,
+spacing scan, and entry initialization use named `x`/`y` fields instead of raw
+float offsets. The saved Binary Ninja prototype and a recovered
+`bonus_entry_t *scan` induction cursor expose both the position and bonus-pool
+fields in HLIL. This type-only change preserves the score and all 14
+references.
+
 The remaining mismatch is register-save placement. Native saves `EDI` at entry
 and shrink-wraps the `ESI` save until after the early guard; the calibrated VC6
 compiler saves both registers in the prologue for this clean source. The body

@@ -1,24 +1,24 @@
 #include "crimsonland_gameplay.h"
 
 extern "C" bonus_entry_t *bonus_spawn_at(
-    float *pos,
+    vec2f_t *pos,
     bonus_id_t bonus_id,
     int duration_override)
 {
     bonus_entry_t *entry;
     int count;
 
-    if (pos[0] < 32.0f) {
-        pos[0] = 32.0f;
+    if (pos->x < 32.0f) {
+        pos->x = 32.0f;
     }
-    if (pos[1] < 32.0f) {
-        pos[1] = 32.0f;
+    if (pos->y < 32.0f) {
+        pos->y = 32.0f;
     }
-    if ((float)(terrain_texture_width - 32) < pos[0]) {
-        pos[0] = (float)(terrain_texture_width - 32);
+    if ((float)(terrain_texture_width - 32) < pos->x) {
+        pos->x = (float)(terrain_texture_width - 32);
     }
-    if ((float)(terrain_texture_height - 32) < pos[1]) {
-        pos[1] = (float)(terrain_texture_height - 32);
+    if ((float)(terrain_texture_height - 32) < pos->y) {
+        pos->y = (float)(terrain_texture_height - 32);
     }
     if (config_game_mode == GAME_MODE_RUSH) {
         return &bonus_pool_sentinel;
@@ -26,8 +26,8 @@ extern "C" bonus_entry_t *bonus_spawn_at(
 
     entry = bonus_alloc_slot();
     entry->state = 0;
-    entry->time.pos_x = pos[0];
-    entry->time.pos_y = pos[1];
+    entry->time.pos_x = pos->x;
+    entry->time.pos_y = pos->y;
     entry->time.time_left = 10.0f;
     entry->time.time_max = 10.0f;
     entry->bonus_id = bonus_id;
@@ -52,7 +52,7 @@ extern "C" bonus_entry_t *bonus_spawn_at(
         effect_template_vel_x = (float)(crt_rand() % 128 - 64);
         effect_template_vel_y = (float)(crt_rand() % 128 - 64);
         effect_template_scale_step = (float)(crt_rand() % 100) * 0.01f + 0.1f;
-        effect_spawn(0, pos);
+        effect_spawn(0, (float *)pos);
         --count;
     } while (count != 0);
 

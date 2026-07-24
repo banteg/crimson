@@ -275,8 +275,11 @@ void sfx_release_all(void);
 void music_release_all(void);
 void dsound_shutdown(void);
 bonus_entry_t *bonus_alloc_slot(void);
-bonus_entry_t *bonus_spawn_at(float *pos, bonus_id_t bonus_id, int duration_override);
-bonus_entry_t *bonus_spawn_at_pos(float *pos);
+bonus_entry_t *bonus_spawn_at(
+    vec2f_t *pos,
+    bonus_id_t bonus_id,
+    int duration_override);
+bonus_entry_t *bonus_spawn_at_pos(const vec2f_t *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
 void console_printf(char *queue, char *fmt, ...);

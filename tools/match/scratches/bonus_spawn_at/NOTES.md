@@ -12,6 +12,13 @@ The recovered source is an exact 128/128-instruction match with all 28 native
 references aligned. Keeping the color aggregate in a nested block after entry
 initialization reproduces MSVC's native constant-materialization schedule.
 
+The original `Crimson.h` declaration takes `vec2_t &spot`; the lowered matching
+boundary therefore uses a mutable `vec2f_t *` and names both components as
+`x`/`y`. This is semantically important because the four bounds checks mutate
+the caller-owned position. The aggregate recovery leaves the exact score and
+all references unchanged. The same prototype is saved in Binary Ninja, whose
+HLIL now renders every clamp and initialization through `pos->x`/`pos->y`.
+
 The live xref set contains only `creature_handle_death` at `0x0041e93e`, which
 passes the address of the creature's embedded position. Disassembly confirms
 that all four bounds clamps at `0x0041f5b8..0x0041f625` precede the Rush-mode
