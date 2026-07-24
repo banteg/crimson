@@ -20,7 +20,7 @@ void effects_update(void)
                     }
                     fx_queue_add(
                         entry->effect_id,
-                        &entry->pos_x,
+                        &entry->position,
                         entry->half_width + entry->half_width,
                         entry->half_height + entry->half_height,
                         entry->rotation,

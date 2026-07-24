@@ -263,7 +263,7 @@ extern "C" void bonus_render(void)
                     if (nearby_bonus->bonus_id != BONUS_ID_NONE
                         && bonus_render_distance(
                                player_aim,
-                               (vec2f_t *)&nearby_bonus->time.pos_x)
+                               &nearby_bonus->time.position)
                             < 24.0f) {
                         break;
                     }

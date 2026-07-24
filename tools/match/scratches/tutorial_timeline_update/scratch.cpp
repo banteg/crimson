@@ -243,9 +243,9 @@ extern "C" void tutorial_timeline_update(void)
         bonus_pool[0].time.time_max = 100.0f;
         bonus_pool[0].state = 0;
         bonus_pool[0].time.amount = 500;
-        *(tutorial_vec2_t *)&bonus_pool[0].time.pos_x = bonus_pos0;
+        *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;
         effect_spawn_burst(
-            (const vec2f_t *)&bonus_pool[0].time.pos_x,
+            &bonus_pool[0].time.position,
             12);
 
         bonus_pos1.set(600.0f, 400.0f);
@@ -254,9 +254,9 @@ extern "C" void tutorial_timeline_update(void)
         bonus_pool[1].time.time_max = bonus_pool[0].time.time_left;
         bonus_pool[1].state = 0;
         bonus_pool[1].time.amount = 1000;
-        *(tutorial_vec2_t *)&bonus_pool[1].time.pos_x = bonus_pos1;
+        *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;
         effect_spawn_burst(
-            (const vec2f_t *)&bonus_pool[1].time.pos_x,
+            &bonus_pool[1].time.position,
             12);
 
         bonus_pos2.set(300.0f, 400.0f);
@@ -265,9 +265,9 @@ extern "C" void tutorial_timeline_update(void)
         bonus_pool[2].time.time_max = bonus_pool[0].time.time_left;
         bonus_pool[2].state = 0;
         bonus_pool[2].time.amount = 500;
-        *(tutorial_vec2_t *)&bonus_pool[2].time.pos_x = bonus_pos2;
+        *(tutorial_vec2_t *)&bonus_pool[2].time.position = bonus_pos2;
         effect_spawn_burst(
-            (const vec2f_t *)&bonus_pool[2].time.pos_x,
+            &bonus_pool[2].time.position,
             12);
         return;
     }

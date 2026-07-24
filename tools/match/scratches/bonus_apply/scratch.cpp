@@ -65,7 +65,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
         effect_template_scale_step = 50.0f;
-        effect_spawn(1, (const vec2f_t *)&bonus_entry->time.pos_x);
+        effect_spawn(1, &bonus_entry->time.position);
         effect_template_rotation = 0.0f;
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
@@ -123,10 +123,10 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
         effect_template_scale_step = 50.0f;
-        effect_spawn(1, (const vec2f_t *)&bonus_entry->time.pos_x);
+        effect_spawn(1, &bonus_entry->time.position);
         sfx_play_panned(
             sfx_shockwave,
-            (const vec2f_t *)&bonus_entry->time.pos_x,
+            &bonus_entry->time.position,
             1.0f);
         effect_template_rotation = 0.0f;
         effect_template_vel_x = 0.0f;
@@ -151,7 +151,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         shock_chain_links_left = 32;
 
         const vec2f_t *bonus_pos =
-            (const vec2f_t *)&bonus_entry->time.pos_x;
+            &bonus_entry->time.position;
         int creature_index = creature_find_nearest(
             bonus_pos,
             -1,
@@ -178,7 +178,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         }
         for (int ring_iter = 0; ring_iter < 16; ++ring_iter) {
             projectile_spawn(
-                (const vec2f_t *)&bonus_entry->time.pos_x,
+                &bonus_entry->time.position,
                 (float)ring_iter * 0.39269909f,
                 PROJECTILE_TYPE_PLASMA_RIFLE,
                 owner);
@@ -186,7 +186,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         bonus_spawn_guard = 0;
         sfx_play_panned(
             sfx_explosion_medium,
-            (const vec2f_t *)&bonus_entry->time.pos_x,
+            &bonus_entry->time.position,
             1.0f);
     } else if (bonus_id == BONUS_ID_FIRE_BULLETS) {
         if (player_state_table[0].fire_bullets_timer <= 0.0f
@@ -220,7 +220,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         int bullet_count = (crt_rand() & 3) + 4;
         for (int bullet_iter = 0; bullet_iter < bullet_count; ++bullet_iter) {
             int projectile_index = projectile_spawn(
-                (const vec2f_t *)&bonus_entry->time.pos_x,
+                &bonus_entry->time.position,
                 (float)(crt_rand() % 628) * 0.01f,
                 PROJECTILE_TYPE_PISTOL,
                 -100);
@@ -231,7 +231,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         }
 
         const vec2f_t *bonus_pos =
-            (const vec2f_t *)&bonus_entry->time.pos_x;
+            &bonus_entry->time.position;
         projectile_spawn(
             bonus_pos,
             (float)(crt_rand() % 628) * 0.01f,
@@ -293,7 +293,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             effect_template_vel_x = (float)(crt_rand() % 128 - 64);
             effect_template_vel_y = (float)(crt_rand() % 128 - 64);
             effect_template_scale_step = 0.1f;
-            effect_spawn(0, (const vec2f_t *)&bonus_entry->time.pos_x);
+            effect_spawn(0, &bonus_entry->time.position);
         }
     }
 }

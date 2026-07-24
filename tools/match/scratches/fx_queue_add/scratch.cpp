@@ -13,8 +13,7 @@ extern "C" unsigned char fx_queue_add(
     ++count;
     fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);
 
-    entry->pos_x = pos->x;
-    entry->pos_y = pos->y;
+    entry->position = *pos;
     entry->color = *color;
     entry->width = width;
     entry->height = height;

@@ -27,6 +27,15 @@ Binary Ninja confirms calls to `fx_queue_add` at `0x0042e77e` and
 The canonical `effect_pool` data-map alias lets the matcher prove both native
 pool-offset references by address instead of accepting anonymous `ADDR`s.
 
+The canonical source and Binary Ninja layouts now expose effect position,
+velocity, and half-extent as `vec2f_t` aggregates. The shared template carries
+matching velocity and half-extent fields; queue entries carry position, extent,
+and RGBA color. This removes first-float call boundaries while preserving the
+exact 85/85 update, exact 39/39 queue insertion, and exact 59/59 template
+reset. Bonus entries likewise expose the pickup position inside their
+mixed-type time block; exact bonus update and apply remain 115/115 and 668/668,
+and the large bonus render/tutorial WIPs retain their prior scores.
+
 ## Port implications
 
 Native has no non-positive-`dt` early return and no lifetime epsilon. More

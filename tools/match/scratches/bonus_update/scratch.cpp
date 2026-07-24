@@ -50,7 +50,7 @@ extern "C" void bonus_update(void)
                         player_index = render_overlay_player_index;
                         player_count = config_player_count;
                         if (vec2_distance(
-                                (vec2f_t *)&bonus->time.pos_x,
+                                &bonus->time.position,
                                 (vec2f_t *)&player_state_table[player_index].pos_x)
                             < pickup_radius) {
                             bonus_apply(player_index, bonus);

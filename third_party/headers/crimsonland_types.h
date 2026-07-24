@@ -588,10 +588,20 @@ typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
 typedef struct fx_queue_entry_t {
     int effect_id;
     float rotation;
-    float pos_x;
-    float pos_y;
-    float height;
-    float width;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float height;
+            float width;
+        };
+        vec2f_t extent;
+    };
     effect_color_t color;
 } fx_queue_entry_t;
 
@@ -643,16 +653,31 @@ typedef struct effect_vertex_t {
 } effect_vertex_t;
 
 typedef struct effect_entry_t {
-    float pos_x;
-    float pos_y;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
     unsigned char effect_id;
     unsigned char _pad0[3];
-    float vel_x;
-    float vel_y;
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
     float rotation;
     float scale;
-    float half_width;
-    float half_height;
+    union {
+        struct {
+            float half_width;
+            float half_height;
+        };
+        vec2f_t half_extent;
+    };
     float age;
     float lifetime;
     int flags;
@@ -1061,8 +1086,13 @@ typedef struct bonus_entry_t {
     struct bonus_entry_time_block_t {
         float time_left;
         float time_max;
-        float pos_x;
-        float pos_y;
+        union {
+            struct {
+                float pos_x;
+                float pos_y;
+            };
+            vec2f_t position;
+        };
         int amount;
     } time;
 } bonus_entry_t;
@@ -1070,12 +1100,22 @@ typedef struct bonus_entry_t {
 typedef bonus_entry_t bonus_pool_t[0x10];
 
 typedef struct effect_template_t {
-    float vel_x;
-    float vel_y;
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
     float rotation;
     float scale;
-    float half_width;
-    float half_height;
+    union {
+        struct {
+            float half_width;
+            float half_height;
+        };
+        vec2f_t half_extent;
+    };
     float age;
     float lifetime;
     int flags;
