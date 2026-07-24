@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**711/2173** functions matched, **134060/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**718/2173** functions matched, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 494/997 | 107373/386756 | 27.8% | 494/614 |
+| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 501/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**494/997** functions, **107373/386756** bytes (**27.8%**), **494/614** scratches verified.
+**501/997** functions, **107380/386756** bytes (**27.8%**), **501/621** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -121,6 +121,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | credits_line_clear_flag | 0x0040d040 | 66 | 20/20 | 100.00% | 20/20 | 5/0/0 |  | credits-secret-penalty |
 | match | credits_build_lines | 0x0040d090 | 1897 | 544/544 | 100.00% | 544/544 | 261/0/0 |  | credits-line-table-population |
 | wip | credits_screen_update | 0x0040d800 | 1857 | 454/454 | 98.90% | 48/454 | 175/0/0 |  | credits-scroll-and-secret-puzzle |
+| match | credits_secret_button_destroy | 0x0040df50 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-secret-button-empty-destructor |
+| match | credits_back_button_destroy | 0x0040df60 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | credits-back-button-empty-destructor |
 | match | j_mod_api_init | 0x0040df90 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-mod-api-init |
 | match | mod_api_init | 0x0040dfa0 | 21 | 3/3 | 100.00% | 3/3 | 2/0/0 |  | mod-api-global-constructor |
 | match | mod_api_core_printf | 0x0040dfc0 | 52 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | mod-api-core-console-output |
@@ -175,6 +177,9 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | game_over_name_input_state_destroy | 0x004107c0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-input-empty-destructor |
 | match | game_over_name_submit_button_destroy | 0x004107d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-name-submit-button-empty-destructor |
 | wip | quest_failed_screen_update | 0x004107e0 | 1261 | 292/292 | 99.32% | 30/292 | 151/0/0 |  | quest-failed-highscore-and-retry-actions |
+| match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
+| match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
+| match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
 | wip | quest_results_screen_update | 0x00410d20 | 4857 | 1164/1168 | 85.59% | 1/1168 | 424/0/9 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
@@ -534,6 +539,8 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
 | wip | ui_scrollbar_update | 0x0043def0 | 1767 | 472/479 | 54.05% | 0/479 | 59/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
+| match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
+| match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |
 | match | ui_button_update | 0x0043e830 | 1215 | 347/347 | 100.00% | 347/347 | 61/0/0 |  | ui-button-focus-animation-render-and-activation |
 | match | ui_text_input_update | 0x0043ecf0 | 716 | 203/203 | 100.00% | 203/203 | 36/0/0 |  | ui-text-input-widget |
 | wip | ui_list_widget_update | 0x0043efc0 | 1420 | 402/403 | 90.93% | 32/403 | 50/0/0 |  | ui-dropdown-focus-navigation-hover-and-row-selection |
