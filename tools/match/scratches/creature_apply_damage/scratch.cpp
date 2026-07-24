@@ -1,4 +1,6 @@
+#define creature_apply_damage creature_apply_damage_pointer_abi
 #include "crimsonland_gameplay.h"
+#undef creature_apply_damage
 #include <stddef.h>
 
 struct damage_vec2_t {
@@ -31,7 +33,7 @@ extern "C" int creature_apply_damage(
     int creature_id,
     float damage,
     int damage_type,
-    float *impulse)
+    const vec2f_t *impulse)
 {
     creature_pool[creature_id].hit_flash_timer = 0.2f;
 
@@ -88,15 +90,15 @@ extern "C" int creature_apply_damage(
         }
 
         creature_pool[creature_id].health -= damage;
-        creature_pool[creature_id].vel_x -= impulse[0];
-        creature_pool[creature_id].vel_y -= impulse[1];
+        creature_pool[creature_id].vel_x -= impulse->x;
+        creature_pool[creature_id].vel_y -= impulse->y;
 
         if (creature_pool[creature_id].health <= 0.0f) {
             creature_pool[creature_id].lifecycle_stage -= frame_dt;
             creature_handle_death(creature_id, 1);
 
             damage_vec2_t doubled_impulse =
-                *(damage_vec2_t *)impulse * 2.0f;
+                *(const damage_vec2_t *)impulse * 2.0f;
             creature_pool[creature_id].vel_x -= doubled_impulse.x;
             creature_pool[creature_id].vel_y -= doubled_impulse.y;
 

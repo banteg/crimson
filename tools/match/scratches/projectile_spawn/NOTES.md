@@ -35,6 +35,13 @@ callers, and live Binary Ninja prototype therefore use `const vec2f_t *`; this
 is ABI-neutral and leaves all six affected caller/callee match scores
 unchanged.
 
+The recovered legacy `oldtypes.h` independently spells the source lineage as
+`ShootBullet(vec2_t from, ...)`. A direct by-value reconstruction with the
+available vector class changes VC6 alias analysis and regresses this target to
+66.67%, so the scratch keeps the evidence-backed lowered pointer boundary
+rather than pretending the available class definition reproduces the original
+compiler semantics.
+
 ## Remaining compiler delta
 
 The native function allocates one four-byte stack local, stores `1.0f` into it

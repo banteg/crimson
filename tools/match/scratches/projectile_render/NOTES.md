@@ -9,6 +9,12 @@ muzzle flash, five plasma-family trail styles, primary projectile sprites and
 ion/fire beams, Plague Spreader clouds, Fire Bullets overlays, small projectile
 billboards, and three secondary-projectile passes.
 
+The sole native caller pushes `ui_transition_alpha`, calls this function, and
+then removes one four-byte argument. The live Binary Ninja database formerly
+typed the callback as `void()` and therefore hid that argument in both caller
+and callee IL; its saved prototype is now `void(float transition_alpha)`, in
+agreement with the recovered source and native stack cleanup.
+
 Live Binary Ninja evidence establishes that plasma trail length converts the
 origin-to-position distance and `speed_scale * spacing` to signed integers
 before dividing and applying the per-type cap. It does not use the simulation
