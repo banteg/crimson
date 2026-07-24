@@ -33,16 +33,6 @@ struct scrollbar_color_t {
     }
 };
 
-struct scrollbar_state_t {
-    float scroll_offset;
-    int hovered_index;
-    int selected_index;
-    int visible_rows;
-    int column_offsets[8];
-    char **items;
-    int item_count;
-};
-
 extern "C" {
 extern unsigned char ui_scrollbar_drag_active;
 extern float ui_scrollbar_drag_offset;
@@ -54,7 +44,7 @@ unsigned char input_primary_is_down(void);
 }
 
 extern "C" void ui_scrollbar_update(
-    scrollbar_vec2_t *xy, scrollbar_state_t *state)
+    vec2f_t *xy, ui_scrollbar_t *state)
 {
     xy->x = (float)(int)xy->x;
     xy->y = (float)(int)xy->y;
@@ -200,7 +190,7 @@ extern "C" void ui_scrollbar_update(
         }
     }
 
-    scrollbar_vec2_t row_position = *xy;
+    scrollbar_vec2_t row_position(xy->x, xy->y);
     row_position.x -= 2.0f;
     int row = 0;
     if (visible_rows <= 0) {

@@ -40,6 +40,15 @@ screen stores raw immediates `10`, `30`, and `44` at `+0x10`, `+0x14`, and
 The byte at `0x004d11fa` is the private drag latch. The float at `0x004d11fc`
 is the private thumb grab offset. Both have xrefs only inside this function.
 
+The proven layout now lives in the shared `ui_scrollbar_t` type rather than
+four caller-local replicas plus an untyped `float *` callee parameter. The
+curated map also applies that type to the mods, highscore, and both unlock
+screen static scrollbars. In the live Binary Ninja database this replaces
+`id[0xd]`, `id[3]`, and `id[0xc]` with `item_count`, `visible_rows`, and
+`items`, respectively. Recovering the input origin as `vec2f_t` and preserving
+its two-field construction raises the honest MSVC score from `54.05%` to
+`55.01%` with the same `59/0/0` reference agreement.
+
 ## Remaining mismatch
 
 MSVC allocates a `0x54`-byte frame for the recovered typed source versus the

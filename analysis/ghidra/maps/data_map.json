@@ -2599,7 +2599,7 @@
       "comment": "Function-local 56-byte scrollbar state used by the mods-menu DLL list.",
       "name": "mods_menu_scrollbar",
       "program": "crimsonland.exe",
-      "type": "unsigned char[56]"
+      "type": "ui_scrollbar_t"
     },
     {
       "address": "0x00481cd0",
@@ -8582,7 +8582,7 @@
       "comment": "Function-local 56-byte score-list scrollbar state owned by the highscore screen.",
       "name": "highscore_screen_score_scrollbar",
       "program": "crimsonland.exe",
-      "type": "unsigned char[56]"
+      "type": "ui_scrollbar_t"
     },
     {
       "address": "0x004ccb00",
@@ -8633,7 +8633,7 @@
       "comment": "Function-local 56-byte scroll-list state owned by the unlocked-perks database screen.",
       "name": "unlocked_perks_scrollbar",
       "program": "crimsonland.exe",
-      "type": "unsigned char[56]"
+      "type": "ui_scrollbar_t"
     },
     {
       "address": "0x004ccbd0",
@@ -8663,7 +8663,7 @@
       "comment": "Function-local 56-byte scroll-list state owned by the unlocked-weapons database screen.",
       "name": "unlocked_weapons_scrollbar",
       "program": "crimsonland.exe",
-      "type": "unsigned char[56]"
+      "type": "ui_scrollbar_t"
     },
     {
       "address": "0x004ccc90",

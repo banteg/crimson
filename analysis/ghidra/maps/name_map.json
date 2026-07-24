@@ -3757,7 +3757,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043def0",
     "name": "ui_scrollbar_update",
-    "signature": "void ui_scrollbar_update(float *xy, float *state)",
+    "signature": "void ui_scrollbar_update(vec2f_t *xy, ui_scrollbar_t *state)",
     "comment": "updates and renders a scroll bar (wheel, drag, key input)"
   },
   {

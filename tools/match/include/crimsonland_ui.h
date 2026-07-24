@@ -1,6 +1,8 @@
 #ifndef CRIMSONLAND_UI_H
 #define CRIMSONLAND_UI_H
 
+#include "crimsonland_types.h"
+
 typedef struct ui_element_t ui_element_t;
 typedef struct ui_menu_item_subtemplate_block_t ui_menu_item_subtemplate_block_t;
 

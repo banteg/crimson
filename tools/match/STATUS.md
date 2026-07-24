@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **718/2173** functions matched exactly, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289320/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289337/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 259744/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 501/621 |
+| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 259761/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 501/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**501/997** functions, **107380/386756** bytes (**27.8%**), **259744/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
+**501/997** functions, **107380/386756** bytes (**27.8%**), **259761/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -541,7 +541,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 714/714 | 0 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 622/622 | 0 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
-| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 955/1767 | 812 | 472/479 | 54.05% | 0/479 | 59/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
+| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 972/1767 | 795 | 470/479 | 55.01% | 0/479 | 59/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 548/548 | 0 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
 | match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |

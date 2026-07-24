@@ -2,6 +2,8 @@
 #ifndef CRIMSONLAND_TYPES_H
 #define CRIMSONLAND_TYPES_H
 
+typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
+
 typedef struct vec2f_t {
     float x;
     float y;
@@ -852,6 +854,17 @@ typedef struct ui_list_widget_t {
     unsigned char _pad1[3];
     int active_index;
 } ui_list_widget_t;
+
+// 0x38-byte shared list/scrollbar state consumed by ui_scrollbar_update.
+typedef struct ui_scrollbar_t {
+    float scroll_offset;
+    int hovered_index;
+    int selected_index;
+    int visible_rows;
+    int column_offsets[8];
+    char **items;
+    int item_count;
+} ui_scrollbar_t;
 
 // 0x14-byte text-input state consumed by ui_text_input_update.
 typedef struct ui_text_input_state_t {

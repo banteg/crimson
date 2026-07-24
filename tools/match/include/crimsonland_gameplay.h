@@ -1,8 +1,6 @@
 #ifndef CRIMSONLAND_GAMEPLAY_H
 #define CRIMSONLAND_GAMEPLAY_H
 
-typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
-
 #include "crimsonland_types.h"
 
 typedef enum creature_type_id_t {
