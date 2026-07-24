@@ -161,6 +161,16 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
         object(),
     )
+    assert importer._should_replace_repo_type(
+        "quest_spawn_entry_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "quest_spawn_entries_binja_t",
+        object(),
+        object(),
+    )
     assert not importer._should_replace_repo_type(
         "unrelated_complete_type",
         object(),
@@ -183,3 +193,19 @@ def test_define_or_replace_removes_silent_duplicate_first(monkeypatch):
         ("undefine", "projectile_t"),
         ("define", "projectile_t", "flat"),
     ]
+
+
+def test_quest_builder_signature_uses_array_presentation_view():
+    importer = _load_importer()
+
+    assert importer._presentation_signature(
+        "quest_build_fallback",
+        "void quest_build_fallback(quest_spawn_entry_t *entries, int *count)",
+    ) == (
+        "void quest_build_fallback("
+        "quest_spawn_entries_binja_t *table, int *count)"
+    )
+    assert importer._presentation_signature(
+        "quest_start_selected",
+        "void quest_start_selected(int major, int minor)",
+    ) == "void quest_start_selected(int major, int minor)"

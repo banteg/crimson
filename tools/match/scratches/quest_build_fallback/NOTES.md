@@ -17,6 +17,14 @@ quest has no builder. It logs the fallback, then creates two template `0x40`
 waves at x = -50 and vertical terrain center. They trigger at 500 and 5000 ms
 with counts 10 and 20, respectively, and publish a two-entry table.
 
+The importer now gives every `quest_build_*` first parameter a
+layout-equivalent `quest_spawn_entries_binja_t` presentation view. Binary Ninja
+therefore renders this function as `table->entries[0]` and
+`table->entries[1]`, including named position, template, trigger, and count
+fields, instead of losing the second record behind raw `__offset(0x18)` through
+`__offset(0x2c)` stores. The canonical compiler-facing pointer remains
+`quest_spawn_entry_t *`, so this decompiler-only view is byte-neutral.
+
 The native intentionally does not initialize either entry's heading. The
 reusable eight-byte stack temporary and raw pair copies reveal that the
 original entry held a C++ two-float vector, rather than two unrelated scalar

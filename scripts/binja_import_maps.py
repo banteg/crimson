@@ -39,6 +39,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # Use the equivalent flat parameters view so onPause and request_exit
         # survive anonymous-union lowering as named fields.
         "mod_interface_t",
+        # Quest builders write an array through their first-element pointer.
+        # Keep both the element and table presentation layouts authoritative.
+        "quest_spawn_entry_t",
+        "quest_spawn_entries_binja_t",
         # This layout is shared by three ui_element_t rendering layers. Keep
         # the recovered z/rhw/color/u/v members in sync with the canonical
         # header instead of preserving older field_0xNN database members.
@@ -577,6 +581,21 @@ def _sanitize_signature(signature: str, bv=None) -> str:
     return _rewrite_type_tokens(signature, bv)
 
 
+def _presentation_signature(name: str, signature: str) -> str:
+    """Use layout-equivalent types that produce clearer Binary Ninja IL."""
+    if not name.startswith("quest_build_"):
+        return signature
+
+    import re
+
+    return re.sub(
+        r"\bquest_spawn_entry_t\s*\*\s*entries\b",
+        "quest_spawn_entries_binja_t *table",
+        signature,
+        count=1,
+    )
+
+
 def _split_params(param_text: str) -> list[str]:
     parts: list[str] = []
     depth = 0
@@ -815,7 +834,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
             except Exception as exc:
                 raise RuntimeError(f"rename failed for {_entry_label(row, addr)}") from exc
 
-        signature = row.get("signature") or ""
+        signature = _presentation_signature(name, row.get("signature") or "")
         if signature:
             try:
                 _apply_function_signature(bv, func, signature)

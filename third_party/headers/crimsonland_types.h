@@ -1056,6 +1056,13 @@ typedef struct quest_spawn_entry_t {
     int count;
 } quest_spawn_entry_t;
 
+// Binary Ninja presentation view for quest builder parameters. Native builders
+// receive the first element as `quest_spawn_entry_t *`, but direct displacements
+// beyond the first record otherwise degrade to raw `__offset(...)` accesses.
+typedef struct quest_spawn_entries_binja_t {
+    quest_spawn_entry_t entries[256];
+} quest_spawn_entries_binja_t;
+
 typedef void (*quest_builder_fn_t)(quest_spawn_entry_t *entries, int *count);
 
 typedef struct quest_meta_t {
