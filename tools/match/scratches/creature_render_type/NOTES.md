@@ -37,6 +37,12 @@ VC6 performs the same common-subexpression lowering as native and restores the
 0x3c-byte frame; a named half-size local changes both scheduling and layout.
 The native-backed `creature_max_health` field cursor and guarded `do` loop also
 keep Energizer initialization on its own branch and improve the best result.
+That induction cursor is now converted back to its containing `creature_t`
+with `offsetof(creature_t, max_health)`. This preserves the exact VC6 output
+while replacing every Energizer-path byte offset and float-index alias with
+the recovered `active`, `type_id`, tint, animation, position, size, lifecycle,
+flags, and spawn-link fields. A shadow probe verified no change to the score,
+instruction counts, exact prefix, or reference agreement.
 
 The remaining mismatch is allocator residue rather than missing behavior.
 Native anchors its four walks at lifecycle stage, max health, animation phase,

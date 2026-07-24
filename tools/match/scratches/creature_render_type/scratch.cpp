@@ -1,5 +1,6 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
+#include <stddef.h>
 
 extern IGrim2D_cpp *grim_interface_ptr;
 
@@ -141,8 +142,9 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
     if (bonus_energizer_timer > 0.0f) {
         float *max_health = creature_max_health;
         do {
-            if (*((unsigned char *)max_health - 0x28)
-                && *((int *)max_health + 17) == type_id) {
+            creature_t *creature = (creature_t *)(
+                (char *)max_health - offsetof(creature_t, max_health));
+            if (creature->active && creature->type_id == type_id) {
 
             if (*max_health < 500.0f) {
                 float energizer_alpha = bonus_energizer_timer < 1.0f
@@ -150,52 +152,52 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                     : 1.0f;
                 float original_alpha = 1.0f - energizer_alpha;
                 float half_energizer_alpha = energizer_alpha * 0.5f;
-                color.r = original_alpha * max_health[5]
+                color.r = original_alpha * creature->tint_r
                     + half_energizer_alpha;
-                color.g = original_alpha * max_health[6]
+                color.g = original_alpha * creature->tint_g
                     + half_energizer_alpha;
-                color.b = original_alpha * max_health[7]
+                color.b = original_alpha * creature->tint_b
                     + energizer_alpha;
-                color.a = original_alpha * max_health[8]
+                color.a = original_alpha * creature->tint_a
                     + energizer_alpha;
             } else {
                 creature_render_color_t *tint =
-                    (creature_render_color_t *)(max_health + 5);
+                    (creature_render_color_t *)&creature->tint_r;
                 color = *tint;
             }
 
-            int flags = *((int *)max_health + 25);
+            int flags = creature->flags;
             int frame;
             if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
                 && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
-                frame = (int)(max_health[27] + 0.5f) % 16;
+                frame = (int)(creature->anim_phase + 0.5f) % 16;
                 if (frame > 7) {
                     frame = 15 - frame;
                 }
                 frame += creature_type_table[type_id].base_frame + 16;
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
 
-                if (max_health[-6] < 0.0f) {
-                    color.a += max_health[-6] * 0.1f;
+                if (creature->lifecycle_stage < 0.0f) {
+                    color.a += creature->lifecycle_stage * 0.1f;
                     if (color.a < 0.0f) {
                         color.a = 0.0f;
                     }
                 }
             } else {
-                if (max_health[-6] < 16.0f) {
-                    if (max_health[-6] < 0.0f) {
+                if (creature->lifecycle_stage < 16.0f) {
+                    if (creature->lifecycle_stage < 0.0f) {
                         frame = creature_type_table[type_id].base_frame + 15;
-                        color.a += max_health[-6] * 0.1f;
+                        color.a += creature->lifecycle_stage * 0.1f;
                         if (color.a < 0.0f) {
                             color.a = 0.0f;
                         }
                     } else {
                         frame = (int)((float)(
                             creature_type_table[type_id].base_frame + 15)
-                            - max_health[-6]);
+                            - creature->lifecycle_stage);
                     }
                 } else {
-                    frame = (int)(max_health[27] + 0.5f);
+                    frame = (int)(creature->anim_phase + 0.5f);
                     if ((creature_type_table[type_id].anim_flags & 1) != 0
                         && frame > 15) {
                         frame = 31 - frame;
@@ -210,22 +212,21 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
             color.a *= transition_alpha;
             grim_interface_ptr->grim_set_color_ptr((float *)&color);
             grim_interface_ptr->grim_set_rotation(
-                max_health[1] - 1.57079637f);
+                creature->heading - 1.57079637f);
 
             draw_pos =
                 camera_offset
-                + *(creature_render_vec2_t *)(max_health - 5)
+                + *(creature_render_vec2_t *)&creature->pos_x
                 - creature_render_vec2_t(
-                    max_health[3] * 0.5f,
-                    max_health[3] * 0.5f);
+                    creature->size * 0.5f,
+                    creature->size * 0.5f);
             grim_interface_ptr->grim_draw_quad(
-                draw_pos.x, draw_pos.y, max_health[3], max_health[3]);
+                draw_pos.x, draw_pos.y, creature->size, creature->size);
 
-            if (max_health[-6] < -10.0f) {
-                *((unsigned char *)max_health - 0x28) = 0;
-                if ((*((int *)max_health + 25)
-                     & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-                    creature_spawn_slot_table[*((int *)max_health + 20)].owner = 0;
+            if (creature->lifecycle_stage < -10.0f) {
+                creature->active = 0;
+                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                    creature_spawn_slot_table[creature->link_index].owner = 0;
                 }
             }
             }
