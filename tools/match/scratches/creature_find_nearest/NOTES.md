@@ -17,6 +17,13 @@ inlined `vec2_distance` form recovers the native staged square-and-accumulate
 kernel; the `min_dist` mode retains the distinct direct `dx * dx + dy * dy`
 shape visible in native x87 code.
 
+The query position is a read-only `vec2f_t` in the recovered interface. That
+type propagates through the live Binary Ninja database and exposes `pos->x`
+and `pos->y` in both native loops instead of untyped float indexing. Existing
+callers retain their native code generation by casting only at the boundary
+from their embedded position storage. This is a source-shape and decompiler
+improvement; it does not change the score or masked-reference audit.
+
 The remaining differences are float-spill scheduling. In the first mode VC6
 saves the square root before discarding the helper temporary, while native does
 those two independent instructions in the opposite order. In the second mode

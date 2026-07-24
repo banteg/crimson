@@ -42,7 +42,11 @@ found:
 
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
         projectile->pos.vx.vy.target_id =
-            creature_find_nearest(&player_state_table[render_overlay_player_index].aim_x, -1, 0.0f);
+            creature_find_nearest(
+                (const vec2f_t *)&player_state_table[render_overlay_player_index]
+                    .aim_x,
+                -1,
+                0.0f);
         projectile->pos.vx.vel_x = vel_x * 190.0f;
         projectile->pos.vx.vy.vel_y = vel_y * 190.0f;
     }

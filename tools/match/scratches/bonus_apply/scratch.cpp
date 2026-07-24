@@ -148,7 +148,10 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         shock_chain_links_left = 32;
 
         float *bonus_pos = &bonus_entry->time.pos_x;
-        int creature_index = creature_find_nearest(bonus_pos, -1, 0.0f);
+        int creature_index = creature_find_nearest(
+            (const vec2f_t *)bonus_pos,
+            -1,
+            0.0f);
         float *target_pos = &creature_pool[creature_index].pos_x;
         float dx = target_pos[0] - bonus_pos[0];
         float dy = target_pos[1] - bonus_pos[1];

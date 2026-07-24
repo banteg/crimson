@@ -328,7 +328,10 @@ int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *
 int creature_alloc_slot(void);
 int creature_spawn_tinted(float *pos, float *rgba, int type_id);
 int creature_spawn_slot_alloc(void);
-int creature_find_nearest(float *pos, int exclude_id, float radius);
+int creature_find_nearest(
+    const vec2f_t *pos,
+    int exclude_id,
+    float radius);
 int creature_apply_damage(
     int creature_index,
     float damage,

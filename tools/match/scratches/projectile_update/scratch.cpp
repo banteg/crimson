@@ -349,7 +349,7 @@ extern "C" void projectile_update(void)
                                                 == shock_chain_projectile_id) {
                                             --shock_chain_links_left;
                                             int next_id = creature_find_nearest(
-                                                pos,
+                                                (const vec2f_t *)pos,
                                                 hit_id,
                                                 100.0f);
                                             bonus_spawn_guard = 1;
@@ -766,7 +766,7 @@ extern "C" void projectile_update(void)
                             .active) {
                         secondary->pos.vx.vy.target_id =
                             creature_find_nearest(
-                                &secondary->pos_x,
+                                (const vec2f_t *)&secondary->pos_x,
                                 -1,
                                 0.0f);
                     }
