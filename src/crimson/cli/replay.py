@@ -14,12 +14,12 @@ from tqdm import tqdm
 from ..game_modes import GameMode
 from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
-from ..replay.driver.replay_render import ReplayRenderProgress
 from ..weapons import WeaponId
 
 if TYPE_CHECKING:
     from ..dbg.checkpoint_diff import ReplayDiffResult
     from ..replay import Replay
+    from ..replay.driver.progress import ReplayRenderPhase, ReplayRenderProgress
     from ..replay.driver.replay_benchmark import (
         BenchmarkAggregate,
         BenchmarkSample,
@@ -29,7 +29,6 @@ if TYPE_CHECKING:
         ReplayRenderTelemetryTopTick,
     )
     from ..replay.driver.replay_info import ReplayInfoResult, ReplayInfoTimelineEvent
-    from ..replay.driver.replay_render import ReplayRenderPhase
     from ..replay.driver.setup import RunResult
     from ..replay.types import ReplayClaimedStatsSnapshot
 
@@ -75,7 +74,7 @@ def _default_replay_render_output_path(replay_path: Path) -> Path:
     return Path(replay_path).with_suffix(".render.mp4")
 
 
-class _ReplayRenderProgressBars(ReplayRenderProgress):
+class _ReplayRenderProgressBars(msgspec.Struct):
     total_ticks: int
     render_audio: bool
     tqdm_factory: Callable[..., _ProgressBarLike]
@@ -145,15 +144,18 @@ def _replay_render_progress_runtime(
 ) -> ReplayRenderProgress | None:
     if int(total_ticks) <= 0:
         return None
-    return _ReplayRenderProgressBars(
-        total_ticks=int(total_ticks),
-        render_audio=bool(render_audio),
-        tqdm_factory=tqdm_factory,
-        video_bar=tqdm_factory(
-            total=int(total_ticks),
-            unit="tick",
-            desc="replay video",
-            leave=True,
+    return cast(
+        "ReplayRenderProgress",
+        _ReplayRenderProgressBars(
+            total_ticks=int(total_ticks),
+            render_audio=bool(render_audio),
+            tqdm_factory=tqdm_factory,
+            video_bar=tqdm_factory(
+                total=int(total_ticks),
+                unit="tick",
+                desc="replay video",
+                leave=True,
+            ),
         ),
     )
 

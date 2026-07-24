@@ -150,6 +150,10 @@ uv run crimson match triage --image crimsonland.exe --summary-only
 uv run crimson match triage --image crimsonland.exe --state missing --json
 ```
 
+All matcher `--json` modes keep the rendering stack lazy and write only the
+JSON document to stdout, so their output can be piped directly to tools such as
+`jq`.
+
 Probe a source-shape experiment without editing the tracked scratch. The
 baseline and shadow build use the same selected compiler profile, and the
 report shows deltas for fuzzy bytes, instruction count, prefix, and references.

@@ -5,7 +5,9 @@ import io
 import json
 import os
 import re
+from functools import cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import msgspec
 import typer
@@ -17,14 +19,18 @@ from grim.rand import Crand
 
 from ..creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan, spawn_id_label
 from ..paths import default_runtime_dir
-from ..quests import all_quests
-from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 app = typer.Typer(add_completion=False)
 
-_QUEST_DEFS: dict[str, QuestDefinition] = {quest.level.text: quest for quest in all_quests()}
-_QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
-_QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
+if TYPE_CHECKING:
+    from ..quests.types import QuestDefinition, SpawnEntry
+
+
+@cache
+def _quest_defs() -> dict[str, QuestDefinition]:
+    from ..quests import all_quests
+
+    return {quest.level.text: quest for quest in all_quests()}
 
 _SEP_RE = re.compile(r"[\\/]+")
 
@@ -129,9 +135,12 @@ def cmd_quests(
     show_plan: bool = typer.Option(False, help="include spawn-plan allocation summary"),
 ) -> None:
     """Print quest spawn scripts for a given level."""
-    quest = _QUEST_DEFS.get(level)
+    from ..quests.types import QuestContext
+
+    quest_defs = _quest_defs()
+    quest = quest_defs.get(level)
     if quest is None:
-        available = ", ".join(sorted(_QUEST_BUILDERS))
+        available = ", ".join(sorted(quest_defs))
         typer.echo(f"unknown level {level!r}. Available: {available}", err=True)
         raise typer.Exit(code=1)
     builder = quest.builder

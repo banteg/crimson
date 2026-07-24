@@ -14,6 +14,8 @@ from ...render.pipeline import RaylibDrawScope, RenderPipeline
 from ...render.sink import VideoSink, VideoTransport
 from ...replay import Replay
 from .playback_driver import build_verify_playback_driver
+from .progress import ReplayRenderPhase as ReplayRenderPhase
+from .progress import ReplayRenderProgress
 from .setup import RunResult
 
 X264Preset = Literal[
@@ -27,9 +29,6 @@ X264Preset = Literal[
     "slower",
     "veryslow",
 ]
-ReplayRenderPhase = Literal["video", "audio"]
-
-
 class ReplayRenderError(ValueError):
     pass
 
@@ -49,21 +48,6 @@ class ReplayRenderResult(msgspec.Struct, frozen=True):
     width: int
     height: int
     run_result: RunResult
-
-
-class ReplayRenderProgress(msgspec.Struct):
-    def update(
-        self,
-        *,
-        phase: ReplayRenderPhase,
-        frame_count: int,
-        tick_index: int,
-        total_ticks: int,
-    ) -> None:
-        _ = phase, frame_count, tick_index, total_ticks
-
-    def close(self) -> None:
-        return None
 
 
 class _FfmpegVideoTransport(VideoTransport):

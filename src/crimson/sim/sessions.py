@@ -323,10 +323,10 @@ def _session_timing(world: WorldState, dt: float, *, apply_world_dt_steps: bool)
     return FrameTiming.compute(
         dt,
         world_dt=world_dt,
-        time_scale_active_entry=bool(state.time_scale_active),  # type: ignore[union-attr]
+        time_scale_active_entry=bool(state.time_scale_active),
         time_scale_factor=reflex_boost_time_scale_factor(
-            reflex_boost_timer=float(state.bonuses.reflex_boost),  # type: ignore[union-attr]
-            time_scale_active=bool(state.time_scale_active),  # type: ignore[union-attr]
+            reflex_boost_timer=float(state.bonuses.reflex_boost),
+            time_scale_active=bool(state.time_scale_active),
         ),
         zero_gate_active=False,
     )
