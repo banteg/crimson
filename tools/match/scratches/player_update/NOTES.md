@@ -410,3 +410,12 @@ carry the existing stack aggregates as complete vectors instead of repeatedly
 taking their first float members. Particle movement is also recovered as a
 read-only vector parameter. These source-only type improvements preserve the
 same honest WIP score and reference audit.
+
+The canonical `player_state_t` layout now exposes its four proven adjacent
+float pairs as `vec2f_t` aggregates: world position at `+0x14`, movement at
+`+0x1c`, aim at `+0x50`, and the click-to-move target at `+0x324`. Anonymous
+scalar aliases preserve every existing field access and the `0x360` ABI.
+`player_update` can consequently pass position and movement without interior
+pointer casts, while the exact global constructor and near-exact gameplay
+reset retain their native constructor lowering. The 4,206-instruction update
+remains at `54.81%` with `736/0/11` references.

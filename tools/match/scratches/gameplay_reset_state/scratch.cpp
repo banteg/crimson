@@ -270,7 +270,7 @@ void gameplay_reset_state(void)
 
     for (int player_index = 0; player_index < 2; ++player_index) {
         player_state_t *player = &player_state_table[player_index];
-        *(reset_vec2_t *)&player->move_target_x =
+        *(reset_vec2_t *)&player->move_target =
             reset_vec2_t(-1.0f, -1.0f);
         player->low_health_timer = 100.0f;
         player->fire_bullets_timer = 0.0f;

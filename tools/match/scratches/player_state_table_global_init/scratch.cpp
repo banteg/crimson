@@ -41,7 +41,7 @@ extern "C" void player_state_table_global_init(void)
         entry->man_bomb_timer = 0.0f;
         entry->living_fortress_timer = 0.0f;
         entry->fire_cough_timer = 0.0f;
-        *(player_vec2_t *)&entry->move_target_x =
+        *(player_vec2_t *)&entry->move_target =
             player_vec2_t(-1.0f, -1.0f);
         entry->evil_eyes_target_creature = -1;
         entry->auto_target = 0;

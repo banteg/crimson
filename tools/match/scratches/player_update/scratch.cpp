@@ -138,7 +138,7 @@ extern "C" void player_update(void)
         *(player_update_vec2_t *)&ui_mouse_x;
 
     player_state_t *player = &player_state_table[player_index];
-    vec2f_t *player_position = (vec2f_t *)&player->pos_x;
+    vec2f_t *player_position = &player->position;
     float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
     previous_pos.x = player_position->x;
     previous_pos.y = player_position->y;
@@ -1418,7 +1418,7 @@ extern "C" void player_update(void)
                 fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
-                    (const vec2f_t *)&player->move_dx,
+                    &player->movement,
                     1.0f);
                 scalar = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_HR_FLAMER) {
@@ -1427,7 +1427,7 @@ extern "C" void player_update(void)
                 owner_id = fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
-                    (const vec2f_t *)&player->move_dx,
+                    &player->movement,
                     1.0f);
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 2;
@@ -1439,7 +1439,7 @@ extern "C" void player_update(void)
                 owner_id = fx_spawn_particle(
                     &scratch_pos,
                     movement_heading - 1.5707964f,
-                    (const vec2f_t *)&player->move_dx,
+                    &player->movement,
                     1.0f);
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 1;

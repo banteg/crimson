@@ -218,10 +218,20 @@ typedef struct player_state_t {
     unsigned char _pad_entity_flags[2];
     float entity_collision_timer;
     float death_timer;
-    float pos_x;
-    float pos_y;
-    float move_dx;
-    float move_dy;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float move_dx;
+            float move_dy;
+        };
+        vec2f_t movement;
+    };
     float health;
     float max_health;
     float heading;
@@ -229,8 +239,13 @@ typedef struct player_state_t {
     float size;
     float entity_hit_flash_timer;
     unsigned char _pad0[0x14];
-    float aim_x;
-    float aim_y;
+    union {
+        struct {
+            float aim_x;
+            float aim_y;
+        };
+        vec2f_t aim;
+    };
     unsigned char _pad1[4];
     float speed_multiplier;
     int weapon_reset_latch;
@@ -280,8 +295,13 @@ typedef struct player_state_t {
     float shield_timer;
     float fire_bullets_timer;
     int auto_target;
-    float move_target_x;
-    float move_target_y;
+    union {
+        struct {
+            float move_target_x;
+            float move_target_y;
+        };
+        vec2f_t move_target;
+    };
     player_input_t input;
 } player_state_t;
 
