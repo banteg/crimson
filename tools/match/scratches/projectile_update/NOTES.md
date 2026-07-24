@@ -17,6 +17,17 @@ frame is `0xa4`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
+The primary 96-entry loop advances a register cursor at the native
+`sizeof(projectile_t) == 0x34` stride. Binary Ninja had inferred that cursor as
+`char *`, leaving every access as a raw byte offset even though the global
+pool already had the recovered type. Assigning the local
+`projectile_t *projectile` type recovers `active`, position, velocity/lifetime,
+type, owner, radius, and damage fields throughout that phase without changing
+the source or matcher result. The later secondary and particle cursors are
+intentionally anchored at `vel_y`, not at their containing records, so their
+negative indices remain honest field-cursor artifacts rather than being
+mis-typed as base pointers.
+
 Live disassembly confirms that the initial movement budget is
 `(int)travel_budget`, doubled through an x87 integer-to-float round trip when
 Barrel Greaser is active for a player-owned projectile. Each microstep adds

@@ -319,10 +319,9 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
         grim_interface_ptr->grim_begin_batch();
         for (int creature_index = 0; creature_index < 384; creature_index++) {
             creature_t *creature = &creature_pool[creature_index];
-            float *lifecycle_stage = &creature->lifecycle_stage;
             if (!creature->active
                 || creature->type_id != type_id
-                || lifecycle_stage[10] <= 0.0f) {
+                || creature->hit_flash_timer <= 0.0f) {
                 continue;
             }
 

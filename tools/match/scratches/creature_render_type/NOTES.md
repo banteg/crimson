@@ -44,6 +44,14 @@ the recovered `active`, `type_id`, tint, animation, position, size, lifecycle,
 flags, and spawn-link fields. A shadow probe verified no change to the score,
 instruction counts, exact prefix, or reference agreement.
 
+The five native callsites each push a creature type followed by the same
+transition-alpha value. Recovering the missing second parameter in Binary
+Ninja changes all four internal stack reads from `arg_8` to
+`transition_alpha`. In the violence pass, the remaining
+`lifecycle_stage[10]` alias lands at creature offset `0x38`, exactly the
+recovered `hit_flash_timer` field. Replacing it with that field and dropping
+the obsolete cursor is also byte-identical under the matcher.
+
 The remaining mismatch is allocator residue rather than missing behavior.
 Native anchors its four walks at lifecycle stage, max health, animation phase,
 and lifecycle stage respectively. VC6 rebases the middle walks to type id and
