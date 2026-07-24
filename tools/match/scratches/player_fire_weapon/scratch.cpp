@@ -136,7 +136,8 @@ extern "C" void player_fire_weapon(
                 weapon_table[player_state_table[render_overlay_player_index]
                                  .weapon_id]
                     .shot_sfx_base_id,
-                &player_state_table[render_overlay_player_index].pos_x,
+                (const vec2f_t *)
+                    &player_state_table[render_overlay_player_index].pos_x,
                 1.0f);
 
             if (player_state_table[render_overlay_player_index].weapon_id

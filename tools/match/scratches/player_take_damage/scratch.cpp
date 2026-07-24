@@ -107,20 +107,22 @@ post_damage:
             bonus_spawn_guard = 0;
             sfx_play_panned(
                 sfx_explosion_large,
-                (float *)player_pos,
+                player_pos,
                 1.0f);
             sfx_play_panned(
                 sfx_shockwave,
-                (float *)player_pos,
+                player_pos,
                 1.0f);
         } else {
             sfx_play_panned(crt_rand() % 2 + sfx_trooper_die_01,
-                            &player_state_table[player_index].pos_x,
+                            (const vec2f_t *)
+                                &player_state_table[player_index].pos_x,
                             1.0f);
         }
     } else {
         sfx_play_panned(crt_rand() % 3 + sfx_trooper_inpain_01,
-                        &player_state_table[player_index].pos_x,
+                        (const vec2f_t *)
+                            &player_state_table[player_index].pos_x,
                         1.0f);
         if (was_dead) {
             return;

@@ -129,7 +129,7 @@ extern "C" int creature_apply_damage(
                     creature_type_table[
                         creature_pool[creature_id].type_id
                     ].sfx_bank_a[crt_rand() % 4],
-                    &creature_pool[creature_id].pos_x,
+                    (const vec2f_t *)&creature_pool[creature_id].pos_x,
                     1.0f);
             }
         }

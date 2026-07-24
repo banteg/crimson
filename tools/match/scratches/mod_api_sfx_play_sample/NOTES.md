@@ -6,3 +6,7 @@ The one-dimensional SDK pan value becomes a native two-float position:
 `{pan * 512.0f, 0.0f}`. The wrapper forwards that position and the requested
 volume to `sfx_play_panned`. Natural source matches all 14 instructions and
 both references exactly.
+
+The two-float stack object is now expressed directly as `vec2f_t` rather than
+an anonymous float array, matching the typed panned-audio boundary without
+changing code generation.

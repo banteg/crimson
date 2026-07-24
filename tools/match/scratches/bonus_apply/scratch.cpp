@@ -124,7 +124,10 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         effect_template_vel_y = 0.0f;
         effect_template_scale_step = 50.0f;
         effect_spawn(1, &bonus_entry->time.pos_x);
-        sfx_play_panned(sfx_shockwave, &bonus_entry->time.pos_x, 1.0f);
+        sfx_play_panned(
+            sfx_shockwave,
+            (const vec2f_t *)&bonus_entry->time.pos_x,
+            1.0f);
         effect_template_rotation = 0.0f;
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
@@ -164,7 +167,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             owner);
 
         bonus_spawn_guard = 0;
-        sfx_play_panned(sfx_shock_hit_01, (float *)bonus_pos, 1.0f);
+        sfx_play_panned(sfx_shock_hit_01, bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_FIREBLAST) {
         int owner;
         bonus_spawn_guard = 1;
@@ -181,7 +184,10 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
                 owner);
         }
         bonus_spawn_guard = 0;
-        sfx_play_panned(sfx_explosion_medium, &bonus_entry->time.pos_x, 1.0f);
+        sfx_play_panned(
+            sfx_explosion_medium,
+            (const vec2f_t *)&bonus_entry->time.pos_x,
+            1.0f);
     } else if (bonus_id == BONUS_ID_FIRE_BULLETS) {
         if (player_state_table[0].fire_bullets_timer <= 0.0f
             && player_state_table[1].fire_bullets_timer <= 0.0f) {
@@ -268,8 +274,8 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             ++creature_iter;
         } while (creature_iter < 0x180);
         bonus_spawn_guard = 0;
-        sfx_play_panned(sfx_explosion_large, (float *)bonus_pos, 1.0f);
-        sfx_play_panned(sfx_shockwave, (float *)bonus_pos, 1.0f);
+        sfx_play_panned(sfx_explosion_large, bonus_pos, 1.0f);
+        sfx_play_panned(sfx_shockwave, bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_POINTS) {
         player_state_table[0].experience += bonus_entry->time.amount;
     }

@@ -23,9 +23,12 @@ extern int perk_doctor_target_creature_id;
 extern float perk_jinxed_proc_timer_s;
 extern int sfx_trooper_inpain_01_alias_1;
 
-int creature_find_in_radius(float *pos, float radius, int start_index);
+int creature_find_in_radius(
+    const vec2f_t *pos,
+    float radius,
+    int start_index);
 int fx_spawn_particle(
-    float *pos,
+    const vec2f_t *pos,
     float angle,
     const perk_effect_vec2_t &velocity,
     float intensity);
@@ -105,7 +108,7 @@ extern "C" void perks_update_effects(void)
         || player_state_table[0].perk_counts[perk_id_evil_eyes] > 0) {
         player_state_table[0].evil_eyes_target_creature = -1;
         int creature_id = creature_find_in_radius(
-            &player_state_table[0].aim_x,
+            (const vec2f_t *)&player_state_table[0].aim_x,
             12.0f,
             0);
         if (creature_id != -1) {
@@ -117,7 +120,8 @@ extern "C" void perks_update_effects(void)
                 creature_pool[creature_id].collision_timer -= frame_dt;
                 if (creature_pool[creature_id].collision_timer < 0.0f) {
                     creature_pool[creature_id].collision_timer = 0.5f;
-                    float *pos = &creature_pool[creature_id].pos_x;
+                    vec2f_t *pos =
+                        (vec2f_t *)&creature_pool[creature_id].pos_x;
                     fx_spawn_particle(
                         pos,
                         (float)(crt_rand() % 0x274) * 0.01f,
@@ -143,7 +147,7 @@ extern "C" void perks_update_effects(void)
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.2f);
-                    fx_queue_add_random((vec2f_t *)pos);
+                    fx_queue_add_random(pos);
                 }
             }
 
@@ -200,6 +204,6 @@ extern "C" void perks_update_effects(void)
             + creature_pool[creature_id].reward_value);
     sfx_play_panned(
         sfx_trooper_inpain_01_alias_1,
-        &creature_pool[creature_id].pos_x,
+        (const vec2f_t *)&creature_pool[creature_id].pos_x,
         1.0f);
 }

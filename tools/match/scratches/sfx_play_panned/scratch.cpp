@@ -1,6 +1,9 @@
 #include "crimsonland_audio.h"
 
-extern "C" int sfx_play_panned(int sfx_id, float *pos, float volume)
+extern "C" int sfx_play_panned(
+    int sfx_id,
+    const vec2f_t *pos,
+    float volume)
 {
     int pan;
     int voice;
@@ -37,7 +40,7 @@ extern "C" int sfx_play_panned(int sfx_id, float *pos, float volume)
         sfx_cooldown_table[sfx_id] = 0.05f;
     }
 
-    pan = (int)(((camera_offset_x + pos[0]) / (float)config_blob.screen_width -
+    pan = (int)(((camera_offset_x + pos->x) / (float)config_blob.screen_width -
                     0.5f) *
         1700.0f);
     if (pan < -10000) {

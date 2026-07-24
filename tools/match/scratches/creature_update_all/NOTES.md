@@ -158,3 +158,11 @@ remaining audit entries are sequence-alignment artifacts over otherwise
 evidenced player coordinates, constants, and perk calls; there are no
 unresolved references. No volatile state, dead expression, inline assembly,
 register constraint, fake alias, or artificial stack padding is used.
+
+## Position type recovery
+
+The active creature position is now represented by one `vec2f_t *` cursor
+through particle, projectile, effect, and panned-audio calls. This removes the
+parallel raw-float alias and makes the aggregate boundary explicit without
+changing the honest 49.09% WIP score, 1,290/1,338 instructions, or `207/0/4`
+reference audit.

@@ -128,8 +128,7 @@ extern "C" void player_update(void)
         *(player_update_vec2_t *)&ui_mouse_x;
 
     player_state_t *player = &player_state_table[player_index];
-    float *player_pos = &player->pos_x;
-    vec2f_t *player_position = (vec2f_t *)player_pos;
+    vec2f_t *player_position = (vec2f_t *)&player->pos_x;
     float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
     previous_pos.x = player_position->x;
     previous_pos.y = player_position->y;
@@ -158,7 +157,7 @@ extern "C" void player_update(void)
             effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
             sfx_play_panned(
                 (crt_rand() & 1) + sfx_bloodspill_01,
-                player_pos,
+                player_position,
                 1.0f);
             player->low_health_timer = 1.0f;
         }
@@ -210,7 +209,7 @@ extern "C" void player_update(void)
                 ++projectile_index;
             } while (projectile_index < 8);
 
-            sfx_play_panned(sfx_explosion_small, player_pos, 1.0f);
+            sfx_play_panned(sfx_explosion_small, player_position, 1.0f);
             player->man_bomb_timer =
                 player->man_bomb_timer - perk_man_bomb_trigger_interval_s;
             perk_man_bomb_trigger_interval_s = 4.0f;
@@ -241,11 +240,11 @@ extern "C" void player_update(void)
 
             sfx_play_panned(
                 fire_bullets_primary_shot_sfx_id,
-                player_pos,
+                player_position,
                 1.0f);
             sfx_play_panned(
                 fire_bullets_secondary_shot_sfx_id,
-                player_pos,
+                player_position,
                 1.0f);
 
             float aim_heading = player->aim_heading;
@@ -267,7 +266,7 @@ extern "C" void player_update(void)
             random_offset.y = (float)sin(spread_angle) * spread_radius
                 + random_offset.y;
 
-            ((vec2_t *)player_pos)->vec2_sub(
+            ((vec2_t *)player_position)->vec2_sub(
                 &scratch_pos.x,
                 &random_offset.x);
             float shot_heading =
@@ -322,7 +321,7 @@ extern "C" void player_update(void)
                 ++projectile_index;
             } while (projectile_index < 8);
 
-            sfx_play_panned(sfx_explosion_small, player_pos, 1.0f);
+            sfx_play_panned(sfx_explosion_small, player_position, 1.0f);
             player->hot_tempered_timer =
                 player->hot_tempered_timer - perk_hot_tempered_trigger_interval_s;
             perk_hot_tempered_trigger_interval_s =
@@ -855,7 +854,7 @@ extern "C" void player_update(void)
                 } while (projectile_index < projectile_count);
             }
             bonus_spawn_guard = 0;
-            sfx_play_panned(sfx_explosion_small, player_pos, 1.0f);
+            sfx_play_panned(sfx_explosion_small, player_position, 1.0f);
         }
     }
 
@@ -1056,7 +1055,7 @@ extern "C" void player_update(void)
 
             sfx_play_panned(
                 weapon_table[player->weapon_id].reload_sfx_id,
-                player_pos,
+                player_position,
                 1.0f);
             player->shot_cooldown = player->shot_cooldown + 0.1f;
             player_alt_weapon_swap_cooldown_ms = 200;
@@ -1160,11 +1159,11 @@ extern "C" void player_update(void)
         if (player->fire_bullets_timer > 0.0f) {
             sfx_play_panned(
                 fire_bullets_primary_shot_sfx_id,
-                player_pos,
+                player_position,
                 1.0f);
             sfx_play_panned(
                 fire_bullets_secondary_shot_sfx_id,
-                player_pos,
+                player_position,
                 1.0f);
 
             if (weapon_table[player->weapon_id].pellet_count == 1) {
@@ -1219,7 +1218,7 @@ extern "C" void player_update(void)
                 crt_rand()
                         % weapon_table[player->weapon_id].shot_sfx_variant_count
                     + weapon_table[player->weapon_id].shot_sfx_base_id,
-                player_pos,
+                player_position,
                 1.0f);
 
             if (player->weapon_id == WEAPON_ID_SHRINKIFIER_5K) {

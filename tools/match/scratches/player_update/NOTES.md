@@ -397,3 +397,10 @@ Both ports now select player 0 as the perk source for these phases when
 player's movement, timers, health, weapon, and projectile ownership. Corrected
 mode retains intuitive per-player perk ownership. Focused co-op regressions
 cover movement, a timed perk, and firing cooldown policy in both runtimes.
+
+## Position type recovery
+
+The player cursor is now carried as a `vec2f_t *` through every panned-audio
+call instead of being shadowed by a raw `float *` alias. This exposes the
+embedded position aggregate while preserving the honest 54.81% WIP score,
+4,019/4,206 candidate/native instructions, and `736/0/11` reference audit.

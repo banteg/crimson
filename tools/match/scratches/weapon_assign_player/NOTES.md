@@ -26,3 +26,7 @@ player 0 authoritative and synchronize the remaining perk arrays before later
 weapon assignments. This is therefore a state invariant, not a reason to add
 global-player coupling to the ports' low-level assignment APIs solely for
 manually constructed inconsistent state.
+
+The panned reload sound now receives a `const vec2f_t *` cursor into the
+player's embedded position instead of an untyped float pointer. This source
+shape remains exact at 61/61 instructions with all 26 references.

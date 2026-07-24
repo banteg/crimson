@@ -388,7 +388,7 @@ extern "C" void projectile_update(void)
                                         effect_spawn_ion_hit_sparks(pos, 2.2f);
                                         sfx_play_panned(
                                             sfx_shockwave,
-                                            pos,
+                                            position,
                                             1.0f);
                                     } else if (type_id
                                         == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -420,11 +420,11 @@ extern "C" void projectile_update(void)
                                         bonus_spawn_guard = 0;
                                         sfx_play_panned(
                                             sfx_explosion_medium,
-                                            pos,
+                                            position,
                                             1.0f);
                                         sfx_play_panned(
                                             sfx_shockwave,
-                                            pos,
+                                            position,
                                             1.0f);
                                         effect_spawn_plasma_hit_core(
                                             pos,
@@ -651,7 +651,10 @@ extern "C" void projectile_update(void)
                                             hit_sfx = crt_rand() % 6
                                                 + sfx_bullet_hit_01;
                                         }
-                                        sfx_play_panned(hit_sfx, pos, 1.0f);
+                                        sfx_play_panned(
+                                            hit_sfx,
+                                            position,
+                                            1.0f);
                                     }
 
                                     if (projectile->pos.tail.vy.damage_pool
@@ -914,7 +917,7 @@ extern "C" void projectile_update(void)
                     } else {
                         sfx_play_panned(
                             sfx_explosion_medium,
-                            &secondary->pos_x,
+                            (const vec2f_t *)&secondary->pos_x,
                             1.0f);
                     }
 
@@ -1127,7 +1130,8 @@ extern "C" void projectile_update(void)
                             .sfx_bank_a[crt_rand() % 3];
                         sfx_play_panned(
                             sfx_id,
-                            &creature_pool[target_id].pos_x,
+                            (const vec2f_t *)
+                                &creature_pool[target_id].pos_x,
                             1.0f);
                     }
                     creature_handle_death(target_id, 0);

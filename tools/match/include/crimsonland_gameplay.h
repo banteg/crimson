@@ -298,7 +298,10 @@ void perk_prompt_update_and_render(void);
 void ui_cursor_render(void);
 char *weapon_table_entry(int weapon_id);
 void sfx_play(int sfx_id, float volume);
-void sfx_play_panned(int sfx_id, float *pos, float volume);
+int sfx_play_panned(
+    int sfx_id,
+    const vec2f_t *pos,
+    float volume);
 void bonus_hud_slot_activate(char *label, int icon_id, float *timer, float *alt_timer);
 void weapon_assign_player(int player_index, int weapon_id);
 void effect_init_entry(effect_entry_t *entry);

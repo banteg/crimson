@@ -55,7 +55,10 @@ int vec2_add_inplace(
     const vec2f_t *delta);
 int plaguebearer_spread_infection(int creature_id);
 void player_take_damage(int player_index, float damage);
-void effect_spawn_blood_splatter(float *pos, float angle, float age);
+void effect_spawn_blood_splatter(
+    const vec2f_t *pos,
+    float angle,
+    float age);
 vec2f_t *__stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src);
 }
 
@@ -139,8 +142,8 @@ extern "C" void creature_update_all(void)
                     char current_player =
                         (char)creature_pool[creature_index].target_player;
                     int current_player_index = (int)current_player;
-                    float *pos = &creature_pool[creature_index].pos_x;
-                    vec2f_t *position = (vec2f_t *)pos;
+                    vec2f_t *position =
+                        (vec2f_t *)&creature_pool[creature_index].pos_x;
                     float dx = player_state_table[current_player_index].pos_x - position->x;
                     float dy = player_state_table[current_player_index].pos_y - position->y;
                     distance = (float)sqrt(dx * dx + dy * dy);
@@ -201,10 +204,10 @@ extern "C" void creature_update_all(void)
                                         creature_type_table[
                                             creature_pool[creature_index].type_id
                                         ].sfx_bank_b[crt_rand() % 2],
-                                        pos,
+                                        position,
                                         1.0f);
                                 }
-                                fx_queue_add_random((vec2f_t *)pos);
+                                fx_queue_add_random(position);
                             }
                         }
 
@@ -551,7 +554,7 @@ extern "C" void creature_update_all(void)
                                         *lifecycle_stage -= frame_dt;
                                     }
                                 }
-                                fx_queue_add_random((vec2f_t *)pos);
+                                fx_queue_add_random(position);
                             }
                         }
 
@@ -565,7 +568,10 @@ extern "C" void creature_update_all(void)
                                     PROJECTILE_TYPE_PLASMA_RIFLE,
                                     creature_index);
                                 *attack_cooldown += 1.0f;
-                                sfx_play_panned(sfx_shock_fire, pos, 1.0f);
+                                sfx_play_panned(
+                                    sfx_shock_fire,
+                                    position,
+                                    1.0f);
                             }
                             if ((creature_pool[creature_index].flags
                                     & CREATURE_FLAG_RANGED_ATTACK_VARIANT) != 0
@@ -579,7 +585,9 @@ extern "C" void creature_update_all(void)
                                 *attack_cooldown += random_cooldown * 0.1f
                                     + creature_pool[creature_index].orbit_angle;
                                 sfx_play_panned(
-                                    sfx_plasmaminigun_fire, pos, 0.8f);
+                                    sfx_plasmaminigun_fire,
+                                    position,
+                                    0.8f);
                             }
                         }
 
@@ -592,9 +600,12 @@ extern "C" void creature_update_all(void)
                                     (float)player_state_table[0].experience
                                     + creature_pool[creature_index].reward_value);
                                 effect_spawn_burst(
-                                    (const vec2f_t *)pos,
+                                    position,
                                     6);
-                                sfx_play_panned(sfx_ui_bonus, pos, 0.8f);
+                                sfx_play_panned(
+                                    sfx_ui_bonus,
+                                    position,
+                                    0.8f);
                                 bonus_spawn_guard = 1;
                                 creature_handle_death(creature_index, 0);
                                 bonus_spawn_guard = 0;
@@ -613,7 +624,7 @@ extern "C" void creature_update_all(void)
                                         creature_type_table[
                                             creature_pool[creature_index].type_id
                                         ].sfx_bank_b[crt_rand() % 2],
-                                        pos,
+                                        position,
                                         1.0f);
                                     if (perk_count_get(perk_id_mr_melee) != 0) {
                                         creature_apply_damage(
@@ -708,21 +719,21 @@ extern "C" void creature_update_all(void)
                                 int count = 8;
                                 do {
                                     effect_spawn_blood_splatter(
-                                        pos,
+                                        position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         0.0f);
                                 } while (--count != 0);
                                 count = 6;
                                 do {
                                     effect_spawn_blood_splatter(
-                                        pos,
+                                        position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         -0.07f);
                                 } while (--count != 0);
                                 count = 5;
                                 do {
                                     effect_spawn_blood_splatter(
-                                        pos,
+                                        position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         -0.12f);
                                 } while (--count != 0);

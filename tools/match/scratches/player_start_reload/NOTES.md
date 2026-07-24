@@ -17,3 +17,8 @@ Both ports now preserve this slot-zero source when `preserve_bugs` is enabled
 and a player slice is available. Corrected mode retains per-player perk
 ownership. Focused co-op regressions cover both the Fastloader scaling and the
 active-reload early-return gate.
+
+The helper's local position cursor is now a `const vec2f_t *` pointing at the
+player aggregate before the panned reload call. This removes the raw member
+offset boundary without changing the exact 67/67 instruction, 28-reference
+match.

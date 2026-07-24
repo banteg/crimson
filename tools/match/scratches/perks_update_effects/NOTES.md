@@ -61,3 +61,8 @@ through frame 9 and proc on frame 10. Python previously crossed on frame 9,
 consuming Jinxed RNG or emitting the Pyrokinetic particle burst one update
 early. The two ports now also make Jinxed's stored five-health damage and
 `frame_dt * 20` creature lifecycle subtraction explicit.
+
+The recovered effect boundaries now carry position aggregates end to end:
+Pyrokinetic's aim is a `vec2f_t`, the Jinxed creature cursor is a
+`const vec2f_t *`, and the panned sound takes that same typed position. These
+changes preserve the exact 352/352 instruction match and all 136 references.
