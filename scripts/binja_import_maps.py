@@ -362,6 +362,8 @@ def _seed_repo_headers(bv) -> None:
                 [
                     repo_root / "third_party" / "headers" / "crimsonland_ida_types.h",
                     repo_root / "third_party" / "headers" / "crimsonland_types.h",
+                    repo_root / "tools" / "match" / "include" / "crimsonland_console.h",
+                    repo_root / "tools" / "match" / "include" / "crimsonland_metadata.h",
                 ],
             )
 
@@ -369,6 +371,7 @@ def _seed_repo_headers(bv) -> None:
     repo_root = _find_repo_root(bv)
     if repo_root is not None:
         include_dirs.append(str(repo_root / "third_party" / "headers"))
+        include_dirs.append(str(repo_root / "tools" / "match" / "include"))
 
     seeded_total = 0
     for header_path in header_paths:
@@ -407,6 +410,16 @@ def _seed_common_types(bv) -> None:
         return
 
     _seed_repo_headers(bv)
+
+    # C++ matching views that have the same object layout as their canonical
+    # C records. Keep the class-facing names available to curated signatures
+    # without parsing the dependency-heavy compiler harness headers.
+    for alias, target in (("sfx_entry_cpp_t", "sfx_entry_t"),):
+        target_type = _get_type_by_name(bv, target)
+        if target_type is None:
+            raise RuntimeError(f"missing canonical type {target} for alias {alias}")
+        if not _define_alias_type(bv, alias, target_type):
+            raise RuntimeError(f"failed to define layout alias type {alias}")
 
     # Numeric typedefs that commonly appear in Ghidra-derived signatures.
     for name, type_obj in (
@@ -660,22 +673,46 @@ def _is_direct_jump_wrapper(bv, func, addr: int) -> bool:
     return any(block.start == addr for block in func.basic_blocks)
 
 
+def _has_only_padding_before(bv, func, addr: int) -> bool:
+    if func.start >= addr:
+        return False
+    prefix = bv.read(func.start, addr - func.start)
+    return bool(prefix) and all(byte in (0x90, 0xCC) for byte in prefix)
+
+
 def _resolve_function_for_name_row(bv, row: dict, addr: int):
     func = bv.get_function_at(addr)
-    if func is not None or not row.get("create"):
+    if func is not None:
         return func, False
 
     containing = list(bv.get_functions_containing(addr))
+    if len(containing) == 1 and _is_direct_jump_wrapper(bv, containing[0], addr):
+        bv.create_user_function(addr)
+        created = bv.get_function_at(addr)
+        if created is None:
+            raise RuntimeError(f"failed to create direct-jump target for {_entry_label(row, addr)}")
+        return created, True
+
+    if not row.get("create"):
+        return None, False
+
     if not containing:
         bv.create_user_function(addr)
-        return bv.get_function_at(addr), True
+        created = bv.get_function_at(addr)
+        if created is None:
+            raise RuntimeError(f"failed to create {_entry_label(row, addr)}")
+        return created, True
 
     if len(containing) != 1:
         raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside multiple existing functions")
 
-    func = containing[0]
-    if _is_direct_jump_wrapper(bv, func, addr):
-        return func, False
+    if _has_only_padding_before(bv, containing[0], addr):
+        bv.remove_function(containing[0])
+        bv.create_user_function(addr)
+        created = bv.get_function_at(addr)
+        if created is None:
+            raise RuntimeError(f"failed to split padding-prefixed function for {_entry_label(row, addr)}")
+        return created, True
 
     raise RuntimeError(f"refusing to create {_entry_label(row, addr)} inside an existing function")
 

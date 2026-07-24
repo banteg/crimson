@@ -770,6 +770,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040df90",
+    "name": "j_mod_api_init",
+    "signature": "void j_mod_api_init(void)",
+    "comment": "tail-call thunk for mod_api_init"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040dfa0",
     "name": "mod_api_init",
     "signature": "void mod_api_init(void)",
@@ -1180,7 +1187,8 @@
     "address": "0x00410cf0",
     "name": "quest_failed_main_menu_button_destroy",
     "signature": "void quest_failed_main_menu_button_destroy(void)",
-    "comment": "empty destructor thunk registered for the quest-failed Main Menu button"
+    "comment": "empty destructor thunk registered for the quest-failed Main Menu button",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
@@ -2587,7 +2595,8 @@
     "address": "0x0042de00",
     "name": "effect_pool_vertices_global_init_thunk",
     "signature": "void effect_pool_vertices_global_init_thunk(void)",
-    "comment": "tail-call thunk for the effect-pool vertex initializer"
+    "comment": "tail-call thunk for the effect-pool vertex initializer",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
