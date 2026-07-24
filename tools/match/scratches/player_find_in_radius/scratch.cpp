@@ -10,7 +10,10 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
     return (float)sqrt(distance_sq);
 }
 
-extern "C" int player_find_in_radius(int owner_id, float *pos, float radius)
+extern "C" int player_find_in_radius(
+    int owner_id,
+    const vec2f_t *pos,
+    float radius)
 {
     int skip_index = -1 - owner_id;
     int player_index = 0;
@@ -18,7 +21,9 @@ extern "C" int player_find_in_radius(int owner_id, float *pos, float radius)
     while (player_index < config_blob.player_count) {
         if (player_index != skip_index
             && player_state_table[player_index].health > 0.0f
-            && vec2_distance((vec2f_t *)&player_state_table[player_index].pos_x, (vec2f_t *)pos)
+            && vec2_distance(
+                    (vec2f_t *)&player_state_table[player_index].pos_x,
+                    pos)
                     - radius
                 < player_state_table[player_index].size * 0.14285715f + 3.0f) {
             goto found;
