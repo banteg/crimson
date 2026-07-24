@@ -10,8 +10,9 @@ Initial scope:
   `0x31..0x36`, `0x3d`, `0x41`
 - fixed-stat/special ids `0x00`, `0x01`, `0x0f`, `0x21..0x2d`,
   `0x2f`, `0x30`, `0x37..0x3c`, `0x3e..0x40`, `0x42`, `0x43`
-- unhandled-template fallback for both ring formations, both chain formations,
-  and grid formations `0x14..0x17`
+- shared unhandled-template fallback reached by both ring formations, both
+  chain formations, grid formations `0x14..0x17`, template `0x0f`, and unknown
+  template ids
 - shared post-dispatch tail modifiers
 
 Known missing work:
@@ -28,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=63.91% prefix=26/3159 target_insns=3159 candidate_insns=2950 refs=315/0/1
+match=72.69% prefix=26/3159 target_insns=3159 candidate_insns=2933 refs=341/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -263,3 +264,15 @@ Frame/prefix notes:
   26-instruction prefix, and honest `316/0/1` reference audit. Direct scaled
   expressions and scalarized child-vector writes were tested and rejected
   because they reduced both alignment and candidate coverage.
+- Binary Ninja's outgoing edges show that the `0x12`, `0x19`, `0x11`, `0x13`,
+  grid-family, and `0x0f` handlers are independent pre-dispatch tests. Their
+  completed bodies all jump to the same diagnostic/default block at
+  `0x00431094`, while the ordinary template ladder begins separately at
+  `0x00431a7d`; an unknown id reaches that same default block from
+  `0x0043403d`. Recovering those independent handlers and one shared final
+  `else` removes duplicated source-level fallback bodies and reproduces the
+  native block topology. The function rises from `64.53%` to `72.69%`, drops
+  from 2,950 to 2,933 candidate instructions, and improves the masked-reference
+  audit from `316/0/1` to `341/0/1`, while preserving the exact `0x48` frame
+  and 26-instruction prefix. Repository fuzzy-weighted coverage gains 1,150
+  bytes in both the all-image and Crimsonland-only totals.

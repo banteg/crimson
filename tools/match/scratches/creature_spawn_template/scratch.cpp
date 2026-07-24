@@ -307,8 +307,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->size = 50.0f;
             creature->contact_damage = 4.0f;
         } while (ring_member_idx < 8);
-        APPLY_UNHANDLED_TEMPLATE_FALLBACK();
-    } else if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_5_19) {
+    }
+
+    if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_5_19) {
         STORE_FLOAT_BITS(creature->tint_r, tint_r_bits, 0x3f733333);
         STORE_FLOAT_BITS(creature->tint_g, tint_g_bits, 0x3f0ccccd);
         STORE_FLOAT_BITS(creature->tint_b, tint_b_bits, 0x3ebd70a4);
@@ -359,9 +360,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
         } while (ring_member_idx < 5);
-        APPLY_UNHANDLED_TEMPLATE_FALLBACK();
-    } else {
-        if (template_id == SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11) {
+    }
+
+    if (template_id == SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11) {
             int chain_target_offset;
             creature->type_id = CREATURE_TYPE_LIZARD;
             creature->pos_x = *pos;
@@ -415,9 +416,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 chain_link_idx = child_slot_idx;
             } while (chain_target_offset < 0);
             creature_pool[root_slot_idx].link_index = child_slot_idx;
-            APPLY_UNHANDLED_TEMPLATE_FALLBACK();
-        } else {
-            if (template_id == SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13) {
+    }
+
+    if (template_id == SPAWN_ID_FORMATION_CHAIN_ALIEN_10_13) {
                 int alien_chain_cursor;
                 creature->type_id = CREATURE_TYPE_ALIEN;
                 alien_chain_cursor = terrain_texture_height / 2;
@@ -478,9 +479,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     chain_link_idx = child_slot_idx;
                 } while (alien_chain_cursor < 0x16);
                 creature_pool[root_slot_idx].link_index = child_slot_idx;
-                APPLY_UNHANDLED_TEMPLATE_FALLBACK();
-            } else {
-                if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_GREEN_14) {
+    }
+
+    if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_GREEN_14) {
                     creature = &creature_pool[root_slot_idx];
                     INIT_GRID_ROOT(CREATURE_TYPE_ALIEN, CREATURE_AI_CHASE_PLAYER,
                                    0.7f, 0.8f, 0.31f, 1500.0f, 2.0f, 50.0f);
@@ -518,8 +519,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                                    0.66499996f, 0.385f, 0.259f, 0.56f, 50.0f, 35.0f);
                     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
                     creature->max_health = 20.0f;
-                    APPLY_UNHANDLED_TEMPLATE_FALLBACK();
-                } else if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
+    }
+
+    if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
                     SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP2, 400.0f, 2.0f, 1000.0f,
                                    0.8f, 0.7f, 0.4f, 1.0f, 80.0f, 17.0f);
                     creature->flags = CREATURE_FLAG_SPLIT_ON_DEATH;
@@ -928,10 +930,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43) {
                     SET_ROOT_STATS(CREATURE_TYPE_ZOMBIE, 2000.0f, 2.1f, 460.0f,
                                    0.2f, 0.6f, 0.1f, 1.0f, 70.0f, 15.0f);
-            }
-        }
-    }
-    }
+                } else {
+                    APPLY_UNHANDLED_TEMPLATE_FALLBACK();
+                }
 
     if (!demo_mode_active
         && creature->pos_x > 0.0f
