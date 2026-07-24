@@ -97,8 +97,17 @@ struct frame_vec2_t {
     float x;
     float y;
 
+    frame_vec2_t() {}
+
     frame_vec2_t(float x_value, float y_value)
         : x(x_value), y(y_value) {}
+
+    frame_vec2_t &operator+=(const frame_vec2_t &other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 
     void set(float x_value, float y_value)
     {
@@ -275,57 +284,58 @@ extern "C" unsigned char game_frame_update(void)
     input_mouse_delta_nonzero =
         grim_interface_ptr->grim_get_mouse_dx() != 0.0f
         && grim_interface_ptr->grim_get_mouse_dy() != 0.0f;
-    ui_mouse_blocked = 0;
-    ui_analog_cursor_active = 0;
+    if (input_mouse_delta_nonzero) {
+        ui_mouse_blocked = 0;
+        ui_analog_cursor_active = 0;
+    }
 
-    float analog_input[2];
-    float cursor_delta[2] = {0.0f, 0.0f};
-    analog_input[0] = grim_interface_ptr->grim_get_config_float(
+    frame_vec2_t analog_input;
+    frame_vec2_t cursor_delta(0.0f, 0.0f);
+    analog_input.x = grim_interface_ptr->grim_get_config_float(
         player_state_table[0].input.axis_aim_x);
-    analog_input[1] = grim_interface_ptr->grim_get_config_float(
+    analog_input.y = grim_interface_ptr->grim_get_config_float(
         player_state_table[0].input.axis_aim_y);
     if ((float)sqrt(
-            analog_input[0] * analog_input[0]
-            + analog_input[1] * analog_input[1]) > 0.2f) {
-        cursor_delta[0] = analog_input[0];
-        cursor_delta[1] = analog_input[1];
+            analog_input.x * analog_input.x
+            + analog_input.y * analog_input.y) > 0.2f) {
+        cursor_delta.x = analog_input.x;
+        cursor_delta.y = analog_input.y;
     }
 
-    analog_input[0] = grim_interface_ptr->grim_get_config_float(
+    analog_input.x = grim_interface_ptr->grim_get_config_float(
         player_state_table[0].input.axis_move_x);
-    analog_input[1] = grim_interface_ptr->grim_get_config_float(
+    analog_input.y = grim_interface_ptr->grim_get_config_float(
         player_state_table[0].input.axis_move_y);
     if ((float)sqrt(
-            analog_input[0] * analog_input[0]
-            + analog_input[1] * analog_input[1]) > 0.2f) {
-        cursor_delta[0] += analog_input[0];
-        cursor_delta[1] += analog_input[1];
+            analog_input.x * analog_input.x
+            + analog_input.y * analog_input.y) > 0.2f) {
+        cursor_delta += analog_input;
     }
     if ((float)sqrt(
-            cursor_delta[0] * cursor_delta[0]
-            + cursor_delta[1] * cursor_delta[1]) > 0.2f) {
+            cursor_delta.x * cursor_delta.x
+            + cursor_delta.y * cursor_delta.y) > 0.2f) {
         ui_analog_cursor_active = 1;
     }
 
-    if (game_state_id == GAME_STATE_GAMEPLAY
-        || ui_analog_cursor_active != 1) {
-        if (game_state_id == GAME_STATE_GAMEPLAY) {
-            ui_analog_cursor_active = 0;
-        }
+    if (game_state_id == GAME_STATE_GAMEPLAY) {
+        ui_analog_cursor_active = 0;
+    }
+    if (game_state_id != GAME_STATE_GAMEPLAY
+        && ui_analog_cursor_active == 1) {
+        float cursor_scale = config_blob.mouse_sensitivity * frame_dt;
+        ui_mouse_x += cursor_scale * cursor_delta.x * 540.0f;
+        ui_mouse_y += cursor_scale * cursor_delta.y * 540.0f;
+    } else {
         ui_mouse_x += grim_interface_ptr->grim_get_mouse_dx()
             * config_blob.mouse_sensitivity * 2.0f;
         ui_mouse_y += grim_interface_ptr->grim_get_mouse_dy()
             * config_blob.mouse_sensitivity * 2.0f;
-    } else {
-        float cursor_scale = config_blob.mouse_sensitivity * frame_dt;
-        ui_mouse_x += cursor_scale * cursor_delta[0] * 540.0f;
-        ui_mouse_y += cursor_scale * cursor_delta[1] * 540.0f;
-    }
 
-    for (int aim_index = 0; aim_index < 4; aim_index += 2) {
-        float *aim = &player_aim_screen_x[aim_index];
-        aim[0] = ui_mouse_x;
-        aim[1] = ui_mouse_y;
+        for (int aim_index = 0; aim_index < 4; aim_index += 2) {
+            float *aim = &player_aim_screen_x[aim_index];
+            aim[0] = ui_mouse_x;
+            aim[1] = ui_mouse_y;
+        }
     }
 
     if (ui_mouse_x < 0.0f) {

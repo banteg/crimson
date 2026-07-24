@@ -114,7 +114,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | demo_purchase_screen_update | 0x0040b740 | 2642 | 697/691 | 88.18% | 1/691 | 187/0/0 |  | demo-purchase-screen-complete-flow |
 | match | demo_purchase_purchase_button_destroy | 0x0040c1a0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-purchase-button-empty-destructor |
 | match | demo_purchase_maybe_later_button_destroy | 0x0040c1b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-maybe-later-button-empty-destructor |
-| wip | game_frame_update | 0x0040c1c0 | 3588 | 902/905 | 86.77% | 263/905 | 299/0/0 |  | core-frame-timing-input-and-state-dispatch |
+| wip | game_frame_update | 0x0040c1c0 | 3588 | 903/905 | 93.92% | 363/905 | 314/0/0 |  | core-frame-timing-input-and-state-dispatch |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |

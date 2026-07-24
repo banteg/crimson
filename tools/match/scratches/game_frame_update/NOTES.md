@@ -25,15 +25,33 @@ with entity updates, mode timelines, and elapsed gameplay. Native-capture
 replays skip the transform because their gameplay-entry delta already includes
 it; port fixed-step replays retain the transform during playback.
 
-The native stack shape is two two-float arrays for analog input and cursor
+The native stack shape is two two-float values for analog input and cursor
 delta. Axis values come from the Grim2D config-float slot at vtable offset
-`0x84`; the cursor dead zone is `0.2f` and its analog scale is `540.0f`. The
-same screen-space aim pair is propagated through a signed indexed loop to both
-players. The shareware bar uses `game_sequence_id / demo_trial_time_limit_ms()`
-clamped at `1.0f`, including its native color curve and geometry.
+`0x84`; the cursor dead zone is `0.2f` and its analog scale is `540.0f`.
+Component-wise assignment handles the first active stick, while the second
+uses the game's ordinary vector `operator+=` shape. The shareware bar uses
+`game_sequence_id / demo_trial_time_limit_ms()` clamped at `1.0f`, including
+its native color curve and geometry.
 
-Current honest MSVC result: `86.77%`, exact prefix `263/905`, candidate
-`902/905` instructions, and masked references `299/0/0`. Remaining differences
-are compiler block placement around the zero-mouse-delta and analog-cursor paths,
-plus local x87 scheduling; no known native behavior is omitted. The candidate
-uses no volatile, dead-code, register, assembly, or layout constraints.
+The mouse-delta latch at `0x0040c5ce..0x0040c632` owns two side effects that
+the earlier reconstruction had placed unconditionally. Native stores the
+boolean result first, then clears `ui_mouse_blocked` and
+`ui_analog_cursor_active` only when both mouse axes are nonzero. Leaving either
+axis at zero preserves those two existing latches.
+
+Native cursor routing is likewise two decisions rather than one combined
+condition. Gameplay first clears `ui_analog_cursor_active`; a separate
+`state != Gameplay && analog_active == 1` test chooses analog menu movement.
+Only the physical-mouse arm propagates the screen-space mouse pair through the
+signed indexed loop to both player aim slots. The analog arm jumps directly to
+the common bounds clamps and does not rewrite player aim. Recovering these
+branch owners fixes observable stale-latch and aim-update behavior, extends the
+exact prefix from `263` to `363` instructions, and improves reference agreement
+from `299/0/0` to `314/0/0`.
+
+Current honest MSVC result: `93.92%`, exact prefix `363/905`, candidate
+`903/905` instructions, and masked references `314/0/0`. Remaining differences
+are local load/store scheduling in the two-player aim copy, old-VC6 byte-load
+selection in the pause gate, and equivalent x87 division/block layouts. No
+known native behavior is omitted. The candidate uses no volatile, dead-code,
+register, assembly, or layout constraints.
