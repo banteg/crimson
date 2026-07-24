@@ -10,13 +10,19 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
     return (float)sqrt(distance_sq);
 }
 
-int creature_find_in_radius(float *pos, float radius, int start_index)
+int creature_find_in_radius(
+    const vec2f_t *pos,
+    float radius,
+    int start_index)
 {
     int index = start_index;
 
     while (index < 0x180) {
         if (creature_pool[index].active
-            && vec2_distance((vec2f_t *)&creature_pool[index].pos_x, (vec2f_t *)pos) - radius
+            && vec2_distance(
+                   (vec2f_t *)&creature_pool[index].pos_x,
+                   pos)
+                    - radius
                 < creature_pool[index].size * 0.14285715f + 3.0f
             && creature_pool[index].lifecycle_stage > 5.0f) {
             goto found;

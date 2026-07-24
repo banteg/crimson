@@ -20,3 +20,12 @@ The radius comparison is strict: `distance - radius < size * 0.14285715f +
 predicate, including rejection when the two sides are exactly equal. Zig's
 damaging-particle collision path now reuses the same predicate instead of its
 former equality-accepting duplicate.
+
+The recovered input is a read-only `vec2f_t`, matching its two-component use
+and removing the last raw `pos[0]`/`pos[1]` interpretation at this boundary.
+The live Binary Ninja prototype is
+`int32_t creature_find_in_radius(const vec2f_t *pos, float radius,
+int32_t start_index)`. Retyping the native induction cursor from `char *` to
+`creature_t *` also exposes `active`, `pos_x`, `pos_y`, `size`, and
+`lifecycle_stage` directly in HLIL instead of byte offsets. These annotations
+do not change the exact 47/47-instruction match.
