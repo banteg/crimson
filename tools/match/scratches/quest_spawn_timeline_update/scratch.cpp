@@ -88,7 +88,7 @@ spawn_entries:
                 quest_timeline_vec2_t pos = offset + entry->pos;
                 creature_spawn_template(
                     *template_id,
-                    &pos.x,
+                    (const vec2f_t *)&pos,
                     entry->heading);
 
                 ++spawn_index;

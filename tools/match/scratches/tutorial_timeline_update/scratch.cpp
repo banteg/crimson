@@ -43,7 +43,10 @@ static __inline void tutorial_spawn_creature(
     float y)
 {
     pos->set(x, y);
-    creature_spawn_template(template_id, &pos->x, 3.14159274f);
+    creature_spawn_template(
+        template_id,
+        (const vec2f_t *)pos,
+        3.14159274f);
 }
 
 static __inline creature_t *tutorial_spawn_bonus_carrier(
@@ -54,7 +57,7 @@ static __inline creature_t *tutorial_spawn_bonus_carrier(
     pos->set(x, y);
     return creature_spawn_template(
         SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27,
-        &pos->x,
+        (const vec2f_t *)pos,
         3.14159274f);
 }
 
@@ -398,7 +401,7 @@ extern "C" void tutorial_timeline_update(void)
             }
             creature_spawn_template(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2.x,
+                (const vec2f_t *)&stage3_pos2,
                 3.14159274f);
             if (tutorial_repeat_spawn_count == 4) {
                 tutorial_spawn_creature(

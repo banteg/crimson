@@ -94,8 +94,8 @@ typedef union creature_spawn_template_locals_t {
 #define INIT_GRID_ROOT(creature_type, root_ai_mode, red, green, blue, health_value, speed_value, size_value) \
     do {                                                                                                    \
         creature->type_id = (creature_type);                                                                \
-        creature->pos_x = *pos;                                                                             \
-        creature->pos_y = pos[1];                                                                           \
+        creature->pos_x = pos->x;                                                                           \
+        creature->pos_y = pos->y;                                                                           \
         creature->ai_mode = (root_ai_mode);                                                                 \
         child_tint.set((red), (green), (blue), 1.0f);                                                       \
         creature->health = (health_value);                                                                  \
@@ -104,8 +104,8 @@ typedef union creature_spawn_template_locals_t {
         creature->reward_value = 600.0f;                                                                    \
         creature->size = (size_value);                                                                      \
         creature->contact_damage = 40.0f;                                                                   \
-        creature->pos_x = *pos;                                                                             \
-        creature->pos_y = pos[1];                                                                           \
+        creature->pos_x = pos->x;                                                                           \
+        creature->pos_y = pos->y;                                                                           \
         creature->max_health = (health_value);                                                              \
     } while (0)
 
@@ -119,7 +119,7 @@ typedef union creature_spawn_template_locals_t {
         creature->anim_phase = 0.0f;                                                                                       \
         creature->link_index = root_slot_idx;                                                                              \
         creature->target_offset_x = (float)slot_10_i;                                                                      \
-        chain_position.set(*pos + creature->target_offset_x, creature->target_offset_y + pos[1]);                          \
+        chain_position.set(pos->x + creature->target_offset_x, creature->target_offset_y + pos->y);                       \
         *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;                                                       \
         *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;                                                        \
         creature->health = (child_health);                                                                                 \
@@ -227,7 +227,7 @@ typedef union creature_spawn_template_locals_t {
 
 extern "C" creature_t *creature_spawn_template(
     int template_id,
-    float *pos,
+    const vec2f_t *pos,
     float heading)
 {
     creature_spawn_template_locals_t locals;
@@ -290,8 +290,8 @@ extern "C" creature_t *creature_spawn_template(
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 100.0f;
             creature->target_offset_y = (float)sin(angle) * 100.0f;
-            creature->pos_x = *pos;
-            creature->pos_y = pos[1];
+            creature->pos_x = pos->x;
+            creature->pos_y = pos->y;
             *(creature_spawn_vec2_t *)&creature->vel_x = child_velocity;
             creature->collision_flag = 0;
             creature->health = 40.0f;
@@ -339,9 +339,9 @@ extern "C" creature_t *creature_spawn_template(
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 110.0f;
             creature->target_offset_y = (float)sin(angle) * 110.0f;
-            creature->pos_x = creature->target_offset_x + *pos;
+            creature->pos_x = creature->target_offset_x + pos->x;
             creature->vel_x = 0.0f;
-            creature->pos_y = creature->target_offset_y + pos[1];
+            creature->pos_y = creature->target_offset_y + pos->y;
             creature->vel_y = 0.0f;
             creature->health = 220.0f;
             creature->max_health = 220.0f;
@@ -367,8 +367,8 @@ extern "C" creature_t *creature_spawn_template(
     if (template_id == SPAWN_ID_FORMATION_CHAIN_LIZARD_4_11) {
             int chain_target_offset;
             creature->type_id = CREATURE_TYPE_LIZARD;
-            creature->pos_x = *pos;
-            creature->pos_y = pos[1];
+            creature->pos_x = pos->x;
+            creature->pos_y = pos->y;
             creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
             tint.set(0.99f, 0.99f, 0.21f, 1.0f);
             creature->health = 1500.0f;
@@ -396,8 +396,8 @@ extern "C" creature_t *creature_spawn_template(
                 orbit_direction.y = (float)sin(angle);
                 orbit_direction.x = scaled_orbit_x * 256.0f;
                 orbit_direction.y = orbit_direction.y * 256.0f;
-                lizard_chain_position.x = orbit_direction.x + *pos;
-                lizard_chain_position.y = orbit_direction.y + pos[1];
+                lizard_chain_position.x = orbit_direction.x + pos->x;
+                lizard_chain_position.y = orbit_direction.y + pos->y;
                 *(creature_spawn_vec2_t *)&creature->pos_x = lizard_chain_position;
                 *(creature_spawn_vec2_t *)&creature->vel_x = lizard_chain_zero_velocity;
                 creature->health = 60.0f;
@@ -442,8 +442,8 @@ extern "C" creature_t *creature_spawn_template(
                 orbit_direction.y = (float)sin(0.0f);
                 orbit_direction.x = orbit_direction.x * 256.0f;
                 orbit_direction.y = orbit_direction.y * 256.0f;
-                chain_position.x = orbit_direction.x + *pos;
-                chain_position.y = orbit_direction.y + pos[1];
+                chain_position.x = orbit_direction.x + pos->x;
+                chain_position.y = orbit_direction.y + pos->y;
                 *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                 creature->max_health = 200.0f;
                 creature->ai_mode = CREATURE_AI_ORBIT_LINK;
@@ -460,8 +460,8 @@ extern "C" creature_t *creature_spawn_template(
                     orbit_direction.y = (float)sin(angle);
                     scaled_orbit_x = orbit_direction.x * 256.0f;
                     orbit_direction.y = orbit_direction.y * 256.0f;
-                    chain_position.x = scaled_orbit_x + *pos;
-                    chain_position.y = orbit_direction.y + pos[1];
+                    chain_position.x = scaled_orbit_x + pos->x;
+                    chain_position.y = orbit_direction.y + pos->y;
                     *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                     *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
                     creature->health = 60.0f;
@@ -516,8 +516,8 @@ extern "C" creature_t *creature_spawn_template(
                                0.7125f, 0.41250002f, 0.2775f, 3.8f, 0.6f, 50.0f, 35.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_BROWN_TRANSPARENT_0F) {
                     creature->type_id = CREATURE_TYPE_ALIEN;
-                    creature->pos_x = *pos;
-                    creature->pos_y = pos[1];
+                    creature->pos_x = pos->x;
+                    creature->pos_y = pos->y;
                     SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 20.0f, 2.9f, 60.0f,
                                    0.66499996f, 0.385f, 0.259f, 0.56f, 50.0f, 35.0f);
                     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
@@ -551,8 +551,8 @@ extern "C" creature_t *creature_spawn_template(
                         creature->link_index = root_slot_idx;
                         creature->target_offset_x = (float)cos(angle) * 100.0f;
                         creature->target_offset_y = (float)sin(angle) * 100.0f;
-                        creature->pos_x = *pos;
-                        creature->pos_y = pos[1];
+                        creature->pos_x = pos->x;
+                        creature->pos_y = pos->y;
                         creature->vel_x = 0.0f;
                         creature->vel_y = 0.0f;
                         creature->collision_flag = 0;

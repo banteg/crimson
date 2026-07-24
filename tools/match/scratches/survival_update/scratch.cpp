@@ -90,14 +90,14 @@ extern "C" void survival_update(void)
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            &pos.x,
+            (const vec2f_t *)&pos,
             3.14159274f
         );
         pos.x = 1188.0f;
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            &pos.x,
+            (const vec2f_t *)&pos,
             3.14159274f
         );
         }
@@ -111,7 +111,7 @@ extern "C" void survival_update(void)
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_ALIEN_CONST_RED_BOSS_2C,
-            &pos.x,
+            (const vec2f_t *)&pos,
             3.14159274f
         );
         }
@@ -128,7 +128,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i0 * 42.6666679f + 256.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP2_RANDOM_35,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -145,7 +145,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i1 * 64.0f + 384.0f;
             creature_spawn_template(
                 SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -162,7 +162,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i2 * 64.0f + 384.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -171,7 +171,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i3 * 64.0f + 384.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -187,7 +187,7 @@ extern "C" void survival_update(void)
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
-            &pos.x,
+            &pos,
             3.14159274f
         );
     }
@@ -202,7 +202,7 @@ extern "C" void survival_update(void)
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos.x,
+            &pos,
             3.14159274f
         );
     }
@@ -217,14 +217,14 @@ extern "C" void survival_update(void)
         pos.y = 256.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos.x,
+            &pos,
             3.14159274f
         );
         pos.x = 640.0f;
         pos.y = 768.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP2_SPLITTER_01,
-            &pos.x,
+            &pos,
             3.14159274f
         );
     }
@@ -238,7 +238,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i4 * 64.0f + 384.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -247,7 +247,7 @@ extern "C" void survival_update(void)
             pos.y = (float)i5 * 64.0f + 384.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -261,14 +261,14 @@ extern "C" void survival_update(void)
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
-            &pos.x,
+            &pos,
             3.14159274f
         );
         pos.x = -64.0f;
         pos.y = 512.0f;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
-            &pos.x,
+            &pos,
             3.14159274f
         );
         for (int i6 = 0; i6 < 4; ++i6) {
@@ -276,7 +276,7 @@ extern "C" void survival_update(void)
             pos.y = -64.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }
@@ -285,7 +285,7 @@ extern "C" void survival_update(void)
             pos.y = 1088.0f;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
-                &pos.x,
+                &pos,
                 3.14159274f
             );
         }

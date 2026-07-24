@@ -17,12 +17,12 @@ extern "C" void demo_setup_variant_0(void)
         vec2f_t left_pos;
         left_pos.x = (float)((side + 2) * 64);
         left_pos.y = row_y = (float)y;
-        creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, &left_pos.x, -100.0f);
+        creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, &left_pos, -100.0f);
 
         vec2f_t right_pos;
         right_pos.x = (float)(side * 64 + 798);
         right_pos.y = row_y;
-        creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, &right_pos.x, -100.0f);
+        creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, &right_pos, -100.0f);
     }
 
     vec2f_t player_0_pos;

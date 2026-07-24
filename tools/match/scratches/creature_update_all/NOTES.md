@@ -122,6 +122,13 @@ final body culling.
   named `plaguebearer_active` field. Refreshing the table data type is required
   for Binary Ninja to propagate the edited named structure into this existing
   function.
+- The creature position cursor is the adjacent `pos_x`/`pos_y` pair and is
+  reused through targeting, bounds clamping, movement, spawning, contact, and
+  corpse handling. A `vec2f_t` view replaces 40 scalar `pos[0]`/`pos[1]`
+  aliases with `x`/`y`; the alternate player position and the two-component
+  add helper receive the same type. Binary Ninja now renders the native `edi`
+  cursor as `vec2f_t *pos`. The full source rewrite is matcher-neutral at
+  1,290 instructions, `49.09%`, and references `207/0/4`.
 - The Energizer eat path reverts the just-applied movement with direct position
   subtracts at `0x00427161..0x00427176`; there is no bounds clamp. After its
   direct player-zero XP award and burst/SFX, native pushes `(creature_id, 0)`,

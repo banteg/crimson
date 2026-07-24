@@ -1,6 +1,13 @@
-int vec2_add_inplace(int entity_index, float *pos, float *delta)
+typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
+
+#include "crimsonland_types.h"
+
+int vec2_add_inplace(
+    int entity_index,
+    vec2f_t *pos,
+    const vec2f_t *delta)
 {
-    pos[0] = pos[0] + delta[0];
-    pos[1] = delta[1] + pos[1];
+    pos->x = pos->x + delta->x;
+    pos->y = delta->y + pos->y;
     return 0;
 }

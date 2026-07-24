@@ -28,6 +28,13 @@ intentionally anchored at `vel_y`, not at their containing records, so their
 negative indices remain honest field-cursor artifacts rather than being
 mis-typed as base pointers.
 
+The small movement helper at `0x0041e400` reads and writes two adjacent floats,
+then clears `eax`. Its recovered contract is therefore
+`int vec2_add_inplace(int, vec2f_t *, const vec2f_t *)`, not the previous three
+raw `float *` values and not Binary Ninja's former `void` return. The projectile
+impact call now passes its named `impulse_pos` and zero vectors directly; this
+preserves the exact helper and the whole projectile candidate.
+
 Live disassembly confirms that the initial movement budget is
 `(int)travel_budget`, doubled through an x87 integer-to-float round trip when
 Barrel Greaser is active for a player-owned projectile. Each microstep adds

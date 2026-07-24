@@ -330,7 +330,7 @@ int creature_spawn_tinted(float *pos, float *rgba, int type_id);
 int creature_spawn_slot_alloc(void);
 creature_t *creature_spawn_template(
     int template_id,
-    float *pos,
+    const vec2f_t *pos,
     float heading);
 int creature_find_nearest(
     const vec2f_t *pos,

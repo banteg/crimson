@@ -49,7 +49,10 @@ unsigned char fx_queue_add_rotated(
     int effect_id);
 void creature_handle_death(int creature_id, unsigned char keep_corpse);
 void fx_queue_add_random(vec2f_t *pos);
-int vec2_add_inplace(int entity_index, float *pos, float *delta);
+int vec2_add_inplace(
+    int entity_index,
+    vec2f_t *pos,
+    const vec2f_t *delta);
 int plaguebearer_spread_infection(int creature_id);
 void player_take_damage(int player_index, float damage);
 void effect_spawn_blood_splatter(float *pos, float angle, float age);
@@ -137,17 +140,18 @@ extern "C" void creature_update_all(void)
                         (char)creature_pool[creature_index].target_player;
                     int current_player_index = (int)current_player;
                     float *pos = &creature_pool[creature_index].pos_x;
-                    float dx = player_state_table[current_player_index].pos_x - pos[0];
-                    float dy = player_state_table[current_player_index].pos_y - pos[1];
+                    vec2f_t *position = (vec2f_t *)pos;
+                    float dx = player_state_table[current_player_index].pos_x - position->x;
+                    float dy = player_state_table[current_player_index].pos_y - position->y;
                     distance = (float)sqrt(dx * dx + dy * dy);
 
                     if (creature_update_tick % 70 != 0) {
                         if (config_player_count == 2) {
                             if (player_state_table[1 - current_player].health > 0.0f) {
-                                float *alternate_pos =
+                                vec2f_t *alternate_pos = (vec2f_t *)
                                     &player_state_table[1 - current_player].pos_x;
-                                dx = alternate_pos[0] - pos[0];
-                                dy = alternate_pos[1] - pos[1];
+                                dx = alternate_pos->x - position->x;
+                                dy = alternate_pos->y - position->y;
                                 alternate_distance = (float)sqrt(dx * dx + dy * dy);
                                 if (alternate_distance < distance) {
                                     creature_pool[creature_index].target_player =
@@ -156,8 +160,8 @@ extern "C" void creature_update_all(void)
                                 }
                             }
                         } else {
-                            dx = player_state_table[0].pos_x - pos[0];
-                            dy = player_state_table[0].pos_y - pos[1];
+                            dx = player_state_table[0].pos_x - position->x;
+                            dy = player_state_table[0].pos_y - position->y;
                             alternate_distance = (float)sqrt(dx * dx + dy * dy);
                         }
 
@@ -279,9 +283,9 @@ extern "C" void creature_update_all(void)
                                 creature_pool[creature_index].target_y =
                                     creature_pool[linked_index].pos_y
                                     + creature_pool[creature_index].target_offset_y;
-                                dx = creature_pool[creature_index].target_x - pos[0];
+                                dx = creature_pool[creature_index].target_x - position->x;
                                 target_delta_y =
-                                    creature_pool[creature_index].target_y - pos[1];
+                                    creature_pool[creature_index].target_y - position->y;
                                 float target_distance =
                                     (float)sqrt(
                                         dx * dx + target_delta_y * target_delta_y);
@@ -338,12 +342,12 @@ extern "C" void creature_update_all(void)
                                         CREATURE_AI_ORBIT_PLAYER;
                                 } else {
                                     creature_pool[creature_index].orbit_radius.radius -= frame_dt;
-                                    creature_pool[creature_index].target_x = pos[0];
-                                    creature_pool[creature_index].target_y = pos[1];
+                                    creature_pool[creature_index].target_x = position->x;
+                                    creature_pool[creature_index].target_y = position->y;
                                 }
                             } else {
-                                creature_pool[creature_index].target_x = pos[0];
-                                creature_pool[creature_index].target_y = pos[1];
+                                creature_pool[creature_index].target_x = position->x;
+                                creature_pool[creature_index].target_y = position->y;
                             }
                         } else if (ai_mode == CREATURE_AI_ORBIT_LINK) {
                             linked_index = creature_pool[creature_index].link_index;
@@ -365,13 +369,13 @@ extern "C" void creature_update_all(void)
                             }
                         }
 
-                        dx = creature_pool[creature_index].target_x - pos[0];
-                        dy = creature_pool[creature_index].target_y - pos[1];
+                        dx = creature_pool[creature_index].target_x - position->x;
+                        dy = creature_pool[creature_index].target_y - position->y;
                         if ((float)sqrt(dx * dx + dy * dy) < 40.0f) {
                             creature_pool[creature_index].force_target = 1;
                         }
-                        dx = creature_pool[creature_index].target_x - pos[0];
-                        dy = creature_pool[creature_index].target_y - pos[1];
+                        dx = creature_pool[creature_index].target_x - position->x;
+                        dy = creature_pool[creature_index].target_y - position->y;
                         if ((float)sqrt(dx * dx + dy * dy) > 400.0f) {
                             creature_pool[creature_index].force_target = 1;
                         }
@@ -387,8 +391,8 @@ extern "C" void creature_update_all(void)
                         }
 
                         float desired_heading = (float)atan2(
-                            creature_pool[creature_index].target_y - pos[1],
-                            creature_pool[creature_index].target_x - pos[0]);
+                            creature_pool[creature_index].target_y - position->y,
+                            creature_pool[creature_index].target_x - position->x);
                         creature_pool[creature_index].target_heading =
                             (float)(desired_heading + 1.5707964f);
                         if ((bonus_energizer_timer > 0.0f
@@ -399,18 +403,18 @@ extern "C" void creature_update_all(void)
 
                         flags = creature_pool[creature_index].flags;
                         if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
-                            if (pos[0] < creature_pool[creature_index].size) {
-                                pos[0] = creature_pool[creature_index].size;
+                            if (position->x < creature_pool[creature_index].size) {
+                                position->x = creature_pool[creature_index].size;
                             }
-                            if (pos[1] < creature_pool[creature_index].size) {
-                                pos[1] = creature_pool[creature_index].size;
+                            if (position->y < creature_pool[creature_index].size) {
+                                position->y = creature_pool[creature_index].size;
                             }
                             float max_pos = 1024.0f - creature_pool[creature_index].size;
-                            if (pos[0] > max_pos) {
-                                pos[0] = max_pos;
+                            if (position->x > max_pos) {
+                                position->x = max_pos;
                             }
-                            if (pos[1] > max_pos) {
-                                pos[1] = max_pos;
+                            if (position->y > max_pos) {
+                                position->y = max_pos;
                             }
 
                             if ((flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
@@ -432,8 +436,9 @@ extern "C" void creature_update_all(void)
                                     * creature_pool[creature_index].move_speed * 30.0f;
                                 vec2_add_inplace(
                                     creature_index,
-                                    pos,
-                                    &creature_pool[creature_index].vel_x);
+                                    position,
+                                    (const vec2f_t *)
+                                        &creature_pool[creature_index].vel_x);
                             }
 
                             slot_index = creature_pool[creature_index].link_index;
@@ -449,7 +454,7 @@ extern "C" void creature_update_all(void)
                                         spawn_count + 1;
                                     creature_spawn_template(
                                         creature_spawn_slot_table[slot_index].template_id,
-                                        pos,
+                                        position,
                                         -100.0f);
                                 }
                             }
@@ -470,8 +475,9 @@ extern "C" void creature_update_all(void)
                                 * creature_pool[creature_index].move_speed * 30.0f;
                             vec2_add_inplace(
                                 creature_index,
-                                pos,
-                                &creature_pool[creature_index].vel_x);
+                                position,
+                                (const vec2f_t *)
+                                    &creature_pool[creature_index].vel_x);
                         }
 
                         if (perk_count_get(perk_id_plaguebearer) != 0
@@ -521,8 +527,8 @@ extern "C" void creature_update_all(void)
                         char *target_player =
                             (char *)&creature_pool[creature_index].target_player;
                         current_player_index = (int)*target_player;
-                        dx = pos[0] - player_state_table[current_player_index].pos_x;
-                        dy = pos[1] - player_state_table[current_player_index].pos_y;
+                        dx = position->x - player_state_table[current_player_index].pos_x;
+                        dy = position->y - player_state_table[current_player_index].pos_y;
                         distance = (float)sqrt(dx * dx + dy * dy);
 
                         if (distance < 100.0f
@@ -578,8 +584,8 @@ extern "C" void creature_update_all(void)
                         }
 
                         if (distance < 20.0f) {
-                            pos[0] -= creature_pool[creature_index].vel_x;
-                            pos[1] -= creature_pool[creature_index].vel_y;
+                            position->x -= creature_pool[creature_index].vel_x;
+                            position->y -= creature_pool[creature_index].vel_y;
                             if (creature_pool[creature_index].max_health < 380.0f
                                 && bonus_energizer_timer > 0.0f) {
                                 player_state_table[0].experience = (int)(
@@ -628,8 +634,8 @@ extern "C" void creature_update_all(void)
                                         current_player_index,
                                         creature_pool[creature_index].contact_damage);
                                     creature_vec2_t contact_delta(
-                                        player_state_table[current_player_index].pos_x - pos[0],
-                                        player_state_table[current_player_index].pos_y - pos[1]);
+                                        player_state_table[current_player_index].pos_x - position->x,
+                                        player_state_table[current_player_index].pos_y - position->y);
                                     vec2_normalize_dispatch(
                                         (vec2f_t *)&contact_delta,
                                         (vec2f_t *)&contact_delta);
@@ -667,9 +673,9 @@ extern "C" void creature_update_all(void)
                                         & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
                                     corpse_queued = fx_queue_add_rotated(
                                         creature_vec2_t(
-                                            pos[0]
+                                            position->x
                                                 - creature_pool[creature_index].size * 0.5f,
-                                            pos[1]
+                                            position->y
                                                 - creature_pool[creature_index].size * 0.5f),
                                         (effect_color_t *)&creature_pool[creature_index].tint_r,
                                         creature_pool[creature_index].heading,
@@ -678,9 +684,9 @@ extern "C" void creature_update_all(void)
                                 } else {
                                     corpse_queued = fx_queue_add_rotated(
                                         creature_vec2_t(
-                                            pos[0]
+                                            position->x
                                                 - creature_pool[creature_index].size * 0.5f,
-                                            pos[1]
+                                            position->y
                                                 - creature_pool[creature_index].size * 0.5f),
                                         (effect_color_t *)&creature_pool[creature_index].tint_r,
                                         creature_pool[creature_index].heading,
@@ -736,8 +742,8 @@ extern "C" void creature_update_all(void)
                                 creature_pool[creature_index].vel_y =
                                     (float)sin(corpse_heading) * *lifecycle_stage
                                     * frame_dt * 9.0f;
-                                pos[0] -= creature_pool[creature_index].vel_x;
-                                pos[1] -= creature_pool[creature_index].vel_y;
+                                position->x -= creature_pool[creature_index].vel_x;
+                                position->y -= creature_pool[creature_index].vel_y;
                             } else {
                                 creature_pool[creature_index].vel_x = 0.0f;
                                 creature_pool[creature_index].vel_y = 0.0f;

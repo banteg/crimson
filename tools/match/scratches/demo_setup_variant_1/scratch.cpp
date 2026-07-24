@@ -20,14 +20,20 @@ extern "C" void demo_setup_variant_1(void)
         large_y = (float)(crt_rand() % 899 + 64);
         large_pos[0] = large_x;
         large_pos[1] = large_y;
-        creature_spawn_template(SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34, large_pos, -100.0f);
+        creature_spawn_template(
+            SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34,
+            (const vec2f_t *)large_pos,
+            -100.0f);
 
         if (index % 3 != 0) {
             small_x = (float)(crt_rand() % 30 + 32);
             small_y = (float)(crt_rand() % 899 + 64);
             small_pos[0] = small_x;
             small_pos[1] = small_y;
-            creature_spawn_template(SPAWN_ID_SPIDER_SP2_RANDOM_35, small_pos, -100.0f);
+            creature_spawn_template(
+                SPAWN_ID_SPIDER_SP2_RANDOM_35,
+                (const vec2f_t *)small_pos,
+                -100.0f);
         }
     }
 

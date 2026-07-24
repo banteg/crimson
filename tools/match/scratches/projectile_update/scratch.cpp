@@ -23,7 +23,10 @@ void creatures_apply_radius_damage(
 int creature_find_in_radius(float *pos, float radius, int start_index);
 int player_find_in_radius(int owner_id, float *pos, float radius);
 int vec2_add(float *dst, float *delta);
-int vec2_add_inplace(int entity_index, float *pos, float *delta);
+int vec2_add_inplace(
+    int entity_index,
+    vec2f_t *pos,
+    const vec2f_t *delta);
 void effect_spawn_blood_splatter(float *pos, float angle, float age);
 void effect_spawn_splitter_hit_burst(float *pos, float radius, int count);
 void effect_spawn_ion_hit_sparks(float *pos, float scale);
@@ -551,8 +554,8 @@ extern "C" void projectile_update(void)
                                             vec2f_t zero = {0.0f, 0.0f};
                                             vec2_add_inplace(
                                                 hit_id,
-                                                &impulse_pos.x,
-                                                &zero.x);
+                                                &impulse_pos,
+                                                &zero);
                                             crt_rand();
 
                                             if (bonus_freeze_timer > 0.0f) {

@@ -353,3 +353,10 @@ Frame/prefix notes:
   was retained with the stronger child recovery because live disassembly
   proves all eight constructor stores; scalar and reversed-temporary variants
   were measured and rejected.
+- Every native caller passes the address of an adjacent X/Y pair, and the
+  callee only reads offsets zero and four from that parameter. Recovering it as
+  `const vec2f_t *` replaces all `*pos`/`pos[1]` aliases with named `x`/`y`
+  fields in both source and Binary Ninja. A whole-function shadow probe is
+  exactly neutral: 3,106 instructions, `80.89%`, a 26-instruction prefix, and
+  references `350/0/1`. The shared declaration and all recovered callers now
+  carry that immutable vector contract without changing their machine code.
