@@ -3,45 +3,16 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
 
-struct ui_layout_vec2_t {
-    float x;
-    float y;
+struct ui_layout_vec2_t : vec2f_t {
 
     ui_layout_vec2_t(float x_value, float y_value)
-        : x(x_value), y(y_value)
     {
+        x = x_value;
+        y = y_value;
     }
 };
 
-struct ui_layout_element_t {
-    unsigned char active;
-    unsigned char enabled;
-    unsigned char focus_disabled;
-    unsigned char reserved_03;
-    int use_offset_render;
-    float render_offset_x;
-    float render_offset_y;
-    int timeline_end_ms;
-    int timeline_start_ms;
-    ui_layout_vec2_t pos;
-    ui_layout_vec2_t hover_min;
-    ui_layout_vec2_t hover_max;
-    int label_id;
-    ui_element_callback_t on_activate;
-    ui_element_callback_t on_update;
-    ui_menu_item_subtemplate_block_t layers[3];
-    unsigned char hover_enter_played;
-    unsigned char reserved_2f5[3];
-    int hover_amount;
-    int time_since_ready;
-    float render_scale;
-    float rot_m00;
-    float rot_m01;
-    float rot_m10;
-    float rot_m11;
-    unsigned char direction_flag;
-    unsigned char reserved_315[3];
-};
+typedef ui_element_t ui_layout_element_t;
 
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -301,8 +272,7 @@ extern "C" void ui_menu_layout_init(void)
     ui_layout_scale_y = (float)config_screen_height * 0.0020833334f;
 
     memset(ui_element_table, 0, 41 * sizeof(ui_element_t *));
-    ui_layout_element_t **table =
-        (ui_layout_element_t **)ui_element_table;
+    ui_layout_element_t **table = ui_element_table;
 
     ui_element_table_end = &ui_sign_crimson;
     ui_element_table_slot_01_main_menu_aux =
@@ -362,10 +332,9 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_table_slot_39 = &ui_element_slot_39;
     ui_element_table_start = &ui_element_slot_40;
 
-    ui_layout_element_t **table_cursor =
-        (ui_layout_element_t **)ui_element_table;
+    ui_layout_element_t **table_cursor = ui_element_table;
     do {
-        ui_element_init_defaults((ui_element_t *)*table_cursor);
+        ui_element_init_defaults(*table_cursor);
         ++table_cursor;
     } while ((int)table_cursor
         < (int)&ui_perk_prompt_element);
@@ -788,7 +757,7 @@ extern "C" void ui_menu_layout_init(void)
         transform_layers(&ui_menu_layout_b, 0.9f, 0.0f, 3.0f);
     }
 
-    ui_element_init_defaults((ui_element_t *)&ui_perk_prompt_element);
+    ui_element_init_defaults(&ui_perk_prompt_element);
     ui_perk_prompt_on_activate = ui_callback_noop;
     copy_layer(ui_perk_prompt_element, ui_menu_item_element);
     ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;
@@ -848,9 +817,9 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_slot_40.use_offset_render = 1;
     ui_menu_layout_init_latch = 1;
 
-    table = (ui_layout_element_t **)ui_element_table;
+    table = ui_element_table;
     do {
-        ui_element_layout_calc((ui_element_t *)*table);
+        ui_element_layout_calc(*table);
         ++table;
     } while ((int)table < (int)&ui_perk_prompt_element);
 }

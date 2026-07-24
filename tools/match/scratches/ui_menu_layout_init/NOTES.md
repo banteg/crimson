@@ -36,3 +36,13 @@ register choices. The recovered element graph, callbacks, assets, coordinates,
 atlas rows, responsive branches, and final layout pass are complete. No
 volatile qualifiers, fake dependencies, dead expressions, padding, or inline
 assembly are used to coerce the match.
+
+The shared `ui_element_t` now exposes the three position/hover pairs as
+`vec2f_t` unions and the complete render payload as three typed
+`ui_menu_item_subtemplate_block_t` layers. Its former four-byte hole at
+`+0x30` is the menu `label_id`, and the previously missing direction byte
+extends the canonical object to the evidenced `0x318` bytes. The layout
+constructor therefore no longer carries a second private structure, casts the
+global element table, or casts elements back to the canonical type at helper
+boundaries. This type-only recovery is matcher-neutral at the score and audit
+above.

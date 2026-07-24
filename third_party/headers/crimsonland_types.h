@@ -582,47 +582,6 @@ typedef struct ui_element_vertex_t {
     float v;
 } ui_element_vertex_t;
 
-typedef struct ui_element_t {
-    unsigned char active;
-    unsigned char enabled;
-    unsigned char focus_disabled;
-    unsigned char _pad0;
-    int use_offset_render;
-    float render_offset_x;
-    float render_offset_y;
-    int timeline_end_ms;
-    int timeline_start_ms;
-    float pos_x;
-    float pos_y;
-    float hover_min_x;
-    float hover_min_y;
-    float hover_max_x;
-    float hover_max_y;
-    unsigned char _pad1[4];
-    ui_element_callback_t on_activate;
-    ui_element_callback_t on_update;
-    ui_element_vertex_t vertices[8];
-    int texture_handle;
-    int vertex_count;
-    ui_element_vertex_t overlay_vertices[8];
-    int overlay_texture_handle;
-    unsigned char _pad5_head[4];
-    ui_element_vertex_t enabled_overlay_vertices[8];
-    int secondary_overlay_texture_handle;
-    unsigned char _pad5_end[4];
-    unsigned char hover_enter_played;
-    unsigned char _pad_hover_enter_played[3];
-    int hover_amount;
-    int time_since_ready;
-    float render_scale;
-    float rot_m00;
-    float rot_m01;
-    float rot_m10;
-    float rot_m11;
-    unsigned char direction_flag;
-    unsigned char _pad6_tail[3];
-} ui_element_t;
-
 // 0x1c-stride record copied/transformed in ui_menu_assets_init when building
 // ui_menu_item_subtemplate_block_01..06.
 typedef struct ui_menu_item_subtemplate_slot_t {
@@ -649,6 +608,67 @@ typedef struct ui_menu_item_subtemplate_block_t {
     int texture_handle;
     int quad_mode;
 } ui_menu_item_subtemplate_block_t;
+
+typedef struct ui_element_t {
+    unsigned char active;
+    unsigned char enabled;
+    unsigned char focus_disabled;
+    unsigned char _pad0;
+    int use_offset_render;
+    float render_offset_x;
+    float render_offset_y;
+    int timeline_end_ms;
+    int timeline_start_ms;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t pos;
+    };
+    union {
+        struct {
+            float hover_min_x;
+            float hover_min_y;
+        };
+        vec2f_t hover_min;
+    };
+    union {
+        struct {
+            float hover_max_x;
+            float hover_max_y;
+        };
+        vec2f_t hover_max;
+    };
+    int label_id;
+    ui_element_callback_t on_activate;
+    ui_element_callback_t on_update;
+    union {
+        struct {
+            ui_element_vertex_t vertices[8];
+            int texture_handle;
+            int vertex_count;
+            ui_element_vertex_t overlay_vertices[8];
+            int overlay_texture_handle;
+            unsigned char _pad5_head[4];
+            ui_element_vertex_t enabled_overlay_vertices[8];
+            int secondary_overlay_texture_handle;
+            unsigned char _pad5_end[4];
+        };
+        ui_menu_item_subtemplate_block_t layers[3];
+    };
+    unsigned char hover_enter_played;
+    unsigned char _pad_hover_enter_played[3];
+    int hover_amount;
+    int time_since_ready;
+    float render_scale;
+    float rot_m00;
+    float rot_m01;
+    float rot_m10;
+    float rot_m11;
+    unsigned char direction_flag;
+    unsigned char _pad6_tail[3];
+} ui_element_t;
 
 // Parent template containing three 0xe8-byte subtemplate payloads at +0x3c.
 typedef struct ui_menu_template_triplet_t {

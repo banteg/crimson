@@ -30,7 +30,7 @@ extern "C" void ui_element_init_defaults(ui_element_t *element)
     *(ui_vec2_t *)&element->hover_max_x = ui_vec2_t(431.0f, 68.0f);
     element->render_scale = 0.0f;
     element->active = 0;
-    *(int *)element->_pad1 = 57;
+    element->label_id = 57;
     element->hover_enter_played = 0;
     element->timeline_end_ms = 300;
     element->timeline_start_ms = 0;

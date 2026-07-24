@@ -92,21 +92,16 @@ extern "C" ui_vec2_value_t camera_shake_offset;
 static __forceinline void construct_ui_element_inline(ui_element_t *element)
 {
     invoke_callback_n(
-        (ui_vec2_cpp_t *)&element->hover_min_x,
+        (ui_vec2_cpp_t *)&element->hover_min,
         sizeof(ui_vec2_cpp_t),
         2,
         &ui_vec2_cpp_t::construct);
-    ui_template_block_set_mode4(
-        (ui_menu_item_subtemplate_block_t *)((char *)element + 0x3c));
-    ui_template_block_set_mode4(
-        (ui_menu_item_subtemplate_block_t *)((char *)element + 0x124));
-    ui_template_block_set_mode4(
-        (ui_menu_item_subtemplate_block_t *)((char *)element + 0x20c));
+    ui_template_block_set_mode4(&element->layers[0]);
+    ui_template_block_set_mode4(&element->layers[1]);
+    ui_template_block_set_mode4(&element->layers[2]);
 
-    ui_menu_template_triplet_t *triplet =
-        (ui_menu_template_triplet_t *)element;
-    triplet->tail_state_2f8 = 0;
-    triplet->tail_active_314 = 0;
+    element->hover_amount = 0;
+    element->direction_flag = 0;
     element->on_update = 0;
     element->on_activate = 0;
     element->active = 0;
