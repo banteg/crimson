@@ -57,7 +57,7 @@ extern unsigned char config_direction_arrow_flags[4];
 extern int config_p1_move_forward[64];
 extern int config_key_pick_perk;
 extern int config_key_reload;
-extern unsigned char *cv_enableMousePointAndClickMovement;
+extern cvar_float_t *cv_enableMousePointAndClickMovement;
 
 extern ui_element_t ui_element_slot_14;
 extern ui_element_t ui_element_slot_40;
@@ -257,7 +257,7 @@ extern "C" void controls_menu_update(void)
     move_items[5] = input_scheme_label(6);
     controls_move_method_list.items = move_items;
     controls_move_method_list.item_count = 3;
-    if (*(float *)(cv_enableMousePointAndClickMovement + 0xc) != 0.0f) {
+    if (cv_enableMousePointAndClickMovement->value != 0.0f) {
         controls_move_method_list.item_count = 4;
     }
 

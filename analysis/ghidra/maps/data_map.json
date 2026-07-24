@@ -2228,21 +2228,21 @@
       "comment": "Core cvar handle for cv_silentloads (registered by register_core_cvars).",
       "name": "cv_silentloads",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480858",
       "comment": "Core cvar handle for cv_terrainFilter (registered by register_core_cvars). Used by terrain_render to optionally force point filtering when value==2.0.",
       "name": "cv_terrainFilter",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x0048085c",
       "comment": "Core cvar handle for cv_bodiesFade (registered by register_core_cvars).",
       "name": "cv_bodiesFade",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480860",
@@ -2256,63 +2256,63 @@
       "comment": "Core cvar handle for cv_verbose (registered by register_core_cvars).",
       "name": "cv_verbose",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480868",
       "comment": "Core cvar handle for cv_showFPS (registered by register_core_cvars).",
       "name": "cv_showFPS",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x0048086c",
       "comment": "Core cvar handle for cv_friendlyFire (registered by register_core_cvars).",
       "name": "cv_friendlyFire",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480870",
       "comment": "Core cvar handle for cv_uiTransparency (registered by register_core_cvars).",
       "name": "cv_uiTransparency",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480874",
       "comment": "Core cvar handle for cv_enableMousePointAndClickMovement (registered by register_core_cvars).",
       "name": "cv_enableMousePointAndClickMovement",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480878",
       "comment": "Core cvar handle for cv_uiSmallIndicators (registered by register_core_cvars).",
       "name": "cv_uiSmallIndicators",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x0048087c",
       "comment": "Core cvar handle for cv_aimEnhancementFade (registered by register_core_cvars).",
       "name": "cv_aimEnhancementFade",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480880",
       "comment": "Core cvar handle for cv_padAimDistMul (registered by register_core_cvars).",
       "name": "cv_padAimDistMul",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x0048088c",
       "comment": "Core cvar handle for cv_uiPointFilterPanels (registered by register_core_cvars).",
       "name": "cv_uiPointFilterPanels",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "cvar_float_t *"
     },
     {
       "address": "0x00480890",

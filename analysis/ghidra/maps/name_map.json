@@ -1522,7 +1522,7 @@
       "?construct@ui_vec2_cpp_t@@QAEXXZ",
       "?construct@ui_template_slot_cpp_t@@QAEXXZ"
     ],
-    "signature": "void * ui_template_slot_ctor_noop(void *slot)",
+    "signature": "ui_menu_item_subtemplate_slot_t * __fastcall ui_template_slot_ctor_noop(ui_menu_item_subtemplate_slot_t *slot)",
     "comment": "identity/no-op slot constructor callback used while building ui menu template pools"
   },
   {
@@ -1533,8 +1533,8 @@
       "??0ui_template_block_cpp_t@@QAE@XZ",
       "@ui_template_block_set_mode4@4"
     ],
-    "signature": "void * ui_template_block_set_mode4(void *block)",
-    "comment": "sets template block mode sentinel at offset +0xe4 to 4"
+    "signature": "ui_menu_item_subtemplate_block_t * __fastcall ui_template_block_set_mode4(ui_menu_item_subtemplate_block_t *block)",
+    "comment": "sets the template sub-block quad_mode field to 4"
   },
   {
     "program": "crimsonland.exe",
@@ -1544,8 +1544,8 @@
       "??0ui_element_cpp_t@@QAE@XZ",
       "@ui_template_triplet_reset_and_seed_modes@4"
     ],
-    "signature": "void * ui_template_triplet_reset_and_seed_modes(void *block)",
-    "comment": "resets head flags and seeds three template sub-block mode sentinels (+0x120/+0x208/+0x2f0) to 4"
+    "signature": "ui_menu_template_triplet_t * __fastcall ui_template_triplet_reset_and_seed_modes(ui_menu_template_triplet_t *block)",
+    "comment": "resets triplet state and seeds all three template sub-block quad_mode fields to 4"
   },
   {
     "program": "crimsonland.exe",
@@ -2224,8 +2224,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041fc80",
     "name": "player_reset_all",
-    "signature": "void * player_reset_all(void)",
-    "comment": "[binja] void* sub_41fc80()"
+    "signature": "void player_reset_all(void)",
+    "comment": "resets both native player records and every creature collision flag"
   },
   {
     "program": "crimsonland.exe",

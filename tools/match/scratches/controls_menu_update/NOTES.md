@@ -16,6 +16,11 @@ selects action rows from the active aim and movement schemes: keyboard torso
 aim, dual-axis aim, relative/static/digital movement, point-and-click
 movement, fire, and Player 1's level-up/reload bindings.
 
+The point-and-click movement gate now uses the shared `cvar_float_t::value`
+field. The matching map and live Binary Ninja database carry the same cvar
+pointer type, replacing the former provisional byte-pointer-plus-`0x0c`
+access without changing code generation.
+
 Key rebinding waits for all input to be released, accepts keyboard, mouse,
 joystick, and raw-input codes, and uses a separate analog-axis capture path
 for the four axis rows. That path records absolute peaks for Grim IDs
