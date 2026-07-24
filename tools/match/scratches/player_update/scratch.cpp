@@ -75,18 +75,18 @@ int fx_spawn_secondary_projectile(
 
 static __inline void player_accelerate_move_speed(player_state_t *player)
 {
-    if (player_state_table[0].perk_counts[perk_id_long_distance_runner] < 1) {
-        player->move_speed = player->move_speed + frame_dt * 5.0f;
-        if (player->move_speed > 2.0f) {
-            player->move_speed = 2.0f;
-        }
-    } else {
+    if (player_state_table[0].perk_counts[perk_id_long_distance_runner] > 0) {
         if (player->move_speed < 2.0f) {
             player->move_speed = player->move_speed + frame_dt * 4.0f;
         }
         player->move_speed = player->move_speed + frame_dt;
         if (player->move_speed > 2.8f) {
             player->move_speed = 2.8f;
+        }
+    } else {
+        player->move_speed = player->move_speed + frame_dt * 5.0f;
+        if (player->move_speed > 2.0f) {
+            player->move_speed = 2.0f;
         }
     }
 }

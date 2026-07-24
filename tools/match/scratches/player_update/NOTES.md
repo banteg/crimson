@@ -88,10 +88,23 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=52.22% prefix=7/4206 target_insns=4206 candidate_insns=3983 refs=691/0/11
+match=52.96% prefix=7/4206 target_insns=4206 candidate_insns=3928 refs=709/0/9
 first_target=jne L3f7a
-first_candidate=jne L3cea
+first_candidate=jne L3c0d
 ```
+
+The inlined Long Distance Runner acceleration predicate now follows the native
+positive arm. At the movement sites, including `0x0041467b..0x004146cf` and
+the autoplay site at `0x00414d8c..0x00414de4`, native tests the perk count
+against zero, leaves the extended-speed arm as the fallthrough, and branches a
+non-positive count to the ordinary-speed arm. Expressing that as `count > 0`
+before the fallback removes the unsupported function-wide `EBX == 1`
+lifetime. In particular, VC6 can no longer merge mode 2's movement call with
+the autoplay tail: the candidate now retains all three native
+`player_apply_move_with_spawn_avoidance` callsites. The positive branch order
+also raises reference agreement from `691/0/11` to `709/0/9` and the
+whole-function score from `52.22%` to `52.96%`, while preserving the exact
+`0x48` frame.
 
 The perk-funded shot charge at `0x0041595c..0x00415a08` tests Regression
 Bullets positively and lays out its experience-spend arm before the
@@ -146,20 +159,12 @@ otherwise distinct one-shot weapon tails. Native repeatedly materializes the
 same two-float physical stack slot in those branches while still retaining
 their separate calls, which is evidence for short-lived source values whose
 storage was coalesced after their lifetimes ended. Giving every simple direct
-or secondary weapon arm its own scoped `spawn_pos` recovers that value shape
-without growing the exact `0x48` frame. It raises the candidate to 32 direct
-and all four secondary callsites, adds 45 native-shaped instructions, improves
-reference agreement from `667/0/16` to `677/0/16`, and raises the score from
-`49.05%` to `51.54%`.
-
-The sole remaining direct-projectile collapse is the adjacent Shrinkifier and
-Pistol pair. Native duplicates their projectile and first-sprite prefixes but
-shares only the second-sprite tail at `0x0041600e`; the calibrated compiler
-still merges the complete identical pair. The candidate therefore retains 24
-sprite calls against 25 native, as well as two movement-avoidance calls against
-three. Natural scoped movement values grow the frame to `0x4c`, while alternate
-existing temporaries regress the proven body. Those residuals are left honest
-rather than adding layout-only control flow or artificial dependencies.
+or secondary weapon arm its own scoped `spawn_pos`, then recovering the
+Shrinkifier/Pistol muzzle-direction lifetimes, now retains all 33 direct calls
+and all four secondary calls without growing the exact `0x48` frame. The
+candidate currently has 26 direct `fx_spawn_sprite` relocations against 25
+native callsites; that residual is left honest rather than forcing another
+tail merge with layout-only control flow or artificial dependencies.
 
 The muzzle-flash decay at `0x00413842..0x0041384e` takes the address of
 `player+0x2fc`, spills it to `[esp+0x24]`, and updates through that pointer.
