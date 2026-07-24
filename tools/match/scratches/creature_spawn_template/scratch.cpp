@@ -459,9 +459,9 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                     *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
                     creature->health = 60.0f;
+                    *(creature_tint_t *)&creature->tint_r = child_tint;
                     creature->reward_value = 60.0f;
                     creature->max_health = 60.0f;
-                    *(creature_tint_t *)&creature->tint_r = child_tint;
                     alien_chain_cursor = alien_chain_cursor + 2;
                     creature->collision_flag = 0;
                     creature->collision_timer = 0.0f;

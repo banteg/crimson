@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=77.09% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
+match=77.38% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -309,3 +309,10 @@ Frame/prefix notes:
   `341/0/1` to `349/0/1`, and gains 328 fuzzy-weighted bytes. A pointer for
   the later template `0x00` scheduler was independently tested but perturbs
   VC6 allocation across the aligned ladder and was rejected.
+- In the `0x13` chain child, the tint value assignment precedes reward and
+  max-health in source even though VC6 schedules the copy after those stores.
+  Recovering that source order aligns the native health/position/velocity/tint
+  sequence at `0x004313c2..0x00431403`, raises the score from `77.09%` to
+  `77.38%`, and gains 41 fuzzy-weighted bytes without changing instruction
+  count, frame, prefix, or references. Moving the root tint earlier and three
+  alternative stat orders were measured separately and rejected.
