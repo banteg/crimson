@@ -289,8 +289,8 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
             creature->pos_y = pos[1];
             *(creature_spawn_vec2_t *)&creature->vel_x = child_velocity;
             creature->collision_flag = 0;
-            *(creature_tint_t *)&creature->tint_r = tint;
             creature->health = 40.0f;
+            *(creature_tint_t *)&creature->tint_r = tint;
             creature->max_health = 40.0f;
             ring_member_idx = ring_member_idx + 1;
             creature->collision_timer = 0.0f;

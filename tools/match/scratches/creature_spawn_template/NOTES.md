@@ -324,3 +324,10 @@ Frame/prefix notes:
   3,078 candidate instructions, exact frame, prefix, and `349/0/1` reference
   audit. Root reward/speed permutations and tint-before-health child order
   were independently probed and rejected.
+- The `0x12` ring child likewise assigns health before copying its tint value.
+  That source order reproduces native's interleaved collision, health, tint,
+  and max-health stores, raises the score from `80.36%` to `80.81%`, and gains
+  63 fuzzy-weighted bytes with the same 3,078 candidate instructions, exact
+  frame, prefix, and `349/0/1` reference audit. Three plausible placements of
+  the collision flag compiled identically, so the retained form follows the
+  native store sequence without introducing an artificial dependency.
