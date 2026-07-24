@@ -48,8 +48,8 @@ static inline void effect_render_entry(effect_entry_t *entry)
 
     effect_pack_color(&entry->color, &color);
 
-    offset.x = camera_offset_x + entry->pos_x;
-    offset.y = camera_offset_y + entry->pos_y;
+    offset.x = camera_offset_x + entry->position.x;
+    offset.y = camera_offset_y + entry->position.y;
     grim_interface_ptr->grim_submit_vertices_transform_color(
         &entry->vertices[0].pos.x,
         4,

@@ -24,6 +24,10 @@ callers retain their native code generation by casting only at the boundary
 from their embedded position storage. This is a source-shape and decompiler
 improvement; it does not change the score or masked-reference audit.
 
+Both scans now also address the canonical `creature_t.position` aggregate
+directly. The remaining component reads are ordinary `position.x`/`.y`
+accesses rather than provisional top-level `pos_x`/`pos_y` aliases.
+
 The remaining differences are float-spill scheduling. In the first mode VC6
 saves the square root before discarding the helper temporary, while native does
 those two independent instructions in the opposite order. In the second mode

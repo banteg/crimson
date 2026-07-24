@@ -28,10 +28,8 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
 
     if (survival_recent_death_count < 6) {
         if (survival_recent_death_count < 3) {
-            survival_recent_death_pos[survival_recent_death_count].x =
-                creature->pos_x;
-            survival_recent_death_pos[survival_recent_death_count].y =
-                creature->pos_y;
+            survival_recent_death_pos[survival_recent_death_count] =
+                creature->position;
         }
         ++survival_recent_death_count;
         if (survival_recent_death_count == 3) {

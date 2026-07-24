@@ -17,7 +17,7 @@ masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
   with flag `0x40`; the second accepts the complementary active entries.
 - Each entry builds the native 2x2 `{ cos, -sin, sin, cos }` rotation matrix,
   multiplies all four elements by the entry scale, and adds the camera offset
-  to its position.
+  to its canonical `effect_entry_t.position` aggregate.
 - A four-byte union reproduces the native alpha/red/green/blue conversion
   order and the four `__ftol` calls. The packed value is passed by address to
   `grim_submit_vertices_transform_color` with the entry's four vertices.

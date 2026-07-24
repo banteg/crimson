@@ -43,8 +43,8 @@ extern "C" int creature_find_nearest(
 
     do {
         if (creature->active && index != exclude_id) {
-            float dx = pos->x - creature->pos_x;
-            float dy = pos->y - creature->pos_y;
+            float dx = pos->x - creature->position.x;
+            float dy = pos->y - creature->position.y;
             float distance = (float)sqrt(dx * dx + dy * dy);
             if (distance > min_dist && distance < best_distance) {
                 best_index = index;

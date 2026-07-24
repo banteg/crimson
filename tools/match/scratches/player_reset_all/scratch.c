@@ -47,13 +47,13 @@ void player_reset_all(void)
                 (float)(render_overlay_player_index * 0x50),
                 (float)(render_overlay_player_index * 0x50));
             *(reset_vec2_t *)&player_state_table[render_overlay_player_index]
-                .pos_x += offset;
+                .position += offset;
         } else {
             reset_vec2_t offset(
                 (float)(render_overlay_player_index * 0x50),
                 (float)(render_overlay_player_index * 0x50));
             *(reset_vec2_t *)&player_state_table[render_overlay_player_index]
-                .pos_x -= offset;
+                .position -= offset;
         }
 
         {

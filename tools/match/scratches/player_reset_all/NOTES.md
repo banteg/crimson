@@ -31,7 +31,7 @@ The scratch now uses the canonical recovered `player_state_t` directly for
 `plaguebearer_active`, position, health, `state_aux`, and the two bonus timers.
 This removes the former 0x360-byte local padding mirror; the only cast left at
 the position boundary is the native two-float vector operation over the
-canonical `pos_x`/`pos_y` pair. Binary Ninja independently resolves the same
+canonical `position` aggregate. Binary Ninja independently resolves the same
 stores to those named `player_state_t` fields. This type-only cleanup preserves
 the result below byte-for-byte.
 

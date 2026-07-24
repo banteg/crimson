@@ -44,6 +44,10 @@ typed array candidate coalesces; their absence shifts later branch labels.
 MSVC 6.5pp, MSVC 7.0, `/G6`, and volatility experiments diverged elsewhere and
 were rejected rather than retained as matching aids.
 
+The recent-death write now assigns the complete canonical `vec2f_t` position
+aggregate. This is byte-neutral, but removes the last provisional split
+`x`/`y` source stores from the recovered death prelude.
+
 The XP path is also unambiguously player-zero-owned. This function receives no
 owner argument, and both Bloody Mess / Quick Learner tests plus both ordinary
 and Double Experience stores address `player_state_table[0]` directly at
