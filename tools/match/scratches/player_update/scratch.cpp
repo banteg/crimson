@@ -1072,20 +1072,20 @@ extern "C" void player_update(void)
         survival_reward_fire_seen = 1;
 
         if (!normal_fire_ready) {
-            if (perk_count_get(perk_id_regression_bullets) == 0) {
-                if (perk_count_get(perk_id_ammunition_within) != 0) {
-                    player_take_damage(
-                        render_overlay_player_index,
-                        weapon_ammo_class[player->weapon_id * 31] == 1
-                            ? 0.15f
-                            : 1.0f);
+            if (perk_count_get(perk_id_regression_bullets) != 0) {
+                if (weapon_ammo_class[player->weapon_id * 31] == 1) {
+                    player->experience = player->experience
+                        - weapon_table[player->weapon_id].reload_time * 4.0f;
+                } else {
+                    player->experience = player->experience
+                        - weapon_table[player->weapon_id].reload_time * 200.0f;
                 }
-            } else if (weapon_ammo_class[player->weapon_id * 31] == 1) {
-                player->experience = (int)((float)player->experience
-                    - weapon_table[player->weapon_id].reload_time * 4.0f);
-            } else {
-                player->experience = (int)((float)player->experience
-                    - weapon_table[player->weapon_id].reload_time * 200.0f);
+            } else if (perk_count_get(perk_id_ammunition_within) != 0) {
+                player_take_damage(
+                    render_overlay_player_index,
+                    weapon_ammo_class[player->weapon_id * 31] == 1
+                        ? 0.15f
+                        : 1.0f);
             }
             if (player->experience < 0) {
                 player->experience = 0;

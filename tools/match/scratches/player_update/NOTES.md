@@ -88,10 +88,21 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=51.99% prefix=7/4206 target_insns=4206 candidate_insns=3980 refs=685/0/13
+match=52.22% prefix=7/4206 target_insns=4206 candidate_insns=3983 refs=691/0/11
 first_target=jne L3f7a
-first_candidate=jne L3cdd
+first_candidate=jne L3cea
 ```
+
+The perk-funded shot charge at `0x0041595c..0x00415a08` tests Regression
+Bullets positively and lays out its experience-spend arm before the
+Ammunition Within damage fallback. The earlier equivalent reconstruction
+inverted that outer test, so VC6 emitted the fallback first and tail-merged
+the two branch-local float-to-int conversions. Restoring the native
+positive-condition nesting recovers both `__ftol` calls, both experience
+stores, and the native call order without artificial control flow. It adds
+three candidate instructions, improves reference agreement from `685/0/13`
+to `691/0/11`, and raises the whole-function score from `51.99%` to `52.22%`
+while preserving the exact `0x48` frame.
 
 The muzzle-effect direction lifetimes are now pinned across the normal weapon
 dispatcher. Shrinkifier, Pistol, Assault Rifle, and SMG store each wide cosine
@@ -146,10 +157,9 @@ Pistol pair. Native duplicates their projectile and first-sprite prefixes but
 shares only the second-sprite tail at `0x0041600e`; the calibrated compiler
 still merges the complete identical pair. The candidate therefore retains 24
 sprite calls against 25 native, as well as two movement-avoidance calls against
-three and two `__ftol` sites against three. Natural scoped movement values grow
-the frame to `0x4c`, while alternate existing temporaries regress the proven
-body. Those residuals are left honest rather than adding layout-only control
-flow or artificial dependencies.
+three. Natural scoped movement values grow the frame to `0x4c`, while alternate
+existing temporaries regress the proven body. Those residuals are left honest
+rather than adding layout-only control flow or artificial dependencies.
 
 The muzzle-flash decay at `0x00413842..0x0041384e` takes the address of
 `player+0x2fc`, spills it to `[esp+0x24]`, and updates through that pointer.
