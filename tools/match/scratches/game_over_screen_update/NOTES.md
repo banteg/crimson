@@ -18,21 +18,16 @@ score summary rendering, and Play Again / High scores / Main Menu transitions.
 - copies the active record name into a 20-character editor for top-100 scores,
   rejects empty and all-space submissions, saves accepted names, and reloads
   the high-score table;
-- preserves the native operand order for the panel X and Y pairs, as proven by
-  all four corresponding data references;
+- recovers the chained banner-position expression and the two inlined
+  `Vector2::set` calls used to position the editable high-score rows;
+- keeps the name-buffer pointer live across the complete entry phase and uses
+  the native shared cursor-rendering tail for ranked and unranked scores;
 - routes Play Again to ordinary or Typo gameplay, snapshots the complete return
   context for High scores, and restores Main Menu audio/focus state; and
 - identifies the shared five-bit static guard, all five widget objects, and all
   five `atexit` destructor thunks with scoped object-symbol aliases.
 
 The natural VC6 `msvc6.5 /O2 /GB` reconstruction has the native 24-byte local
-frame and currently matches 76.96% of the 471 target instructions with
-`177/0/4` audited references. The four residual reference mismatches are in the
-aligned audio-action tail where equivalent source calls receive different live
-registers; the source operands themselves name the proven native tracks.
-`msvc6.5pp` falls to 71.00%, so there is no compiler override.
-
-The remaining instruction delta is dominated by vector-temporary scheduling,
-name-buffer register allocation, and phase-branch layout. It is recorded as an
-honest work in progress rather than forced with register hints, fake aliases,
-or dead expressions.
+frame and matches all 471 target instructions exactly, with all 215 audited
+references aligned. No compiler override, register hint, fake alias, or dead
+expression is required.

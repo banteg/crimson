@@ -8,6 +8,29 @@ extern IGrim2D_cpp *grim_interface_ptr;
 struct game_over_vec2_t {
     float x;
     float y;
+
+    game_over_vec2_t() {}
+
+    game_over_vec2_t(float x_value, float y_value)
+        : x(x_value), y(y_value) {}
+
+    void set(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+
+    game_over_vec2_t operator+(const game_over_vec2_t &other) const
+    {
+        return game_over_vec2_t(x + other.x, other.y + y);
+    }
+
+    game_over_vec2_t &operator+=(const game_over_vec2_t &other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 };
 
 struct game_over_text_input_t {
@@ -89,14 +112,14 @@ void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 bool ui_text_input_update(float *xy, ui_text_input_state_t *input_state);
 void ui_text_input_render(
-    float *xy,
+    game_over_vec2_t &xy,
     highscore_record_t *record,
     float alpha,
     int rank);
 bool ui_button_update(float *xy, ui_button_t *button);
 }
 
-static __inline bool game_over_name_is_valid(char *name)
+static __inline unsigned char game_over_name_is_valid(char *name)
 {
     int length = strlen(name);
     if (length < 1) {
@@ -107,14 +130,15 @@ static __inline bool game_over_name_is_valid(char *name)
     while (first_non_space < length && name[first_non_space] == ' ') {
         ++first_non_space;
     }
-    return name[first_non_space] != 0;
+    return name[first_non_space];
 }
 
 extern "C" void game_over_screen_update(void)
 {
     static game_over_button_t name_submit_button;
+    char *name_buffer = game_over_name_input_buffer;
     static game_over_text_input_t name_input(
-        game_over_name_input_buffer, 0x18, 0x60);
+        name_buffer, 0x18, 0x60);
 
     bonus_reflex_boost_timer = 0.0f;
     if (ui_transition_direction != 0 && highscore_return_latch != 0) {
@@ -132,16 +156,12 @@ extern "C" void game_over_screen_update(void)
     ui_elements_update_and_render();
     perk_prompt_update_and_render();
 
-    game_over_vec2_t panel_xy;
-    panel_xy.x =
-        ui_element_slot_30.pos_x + ui_element_slot_30.vertices[0].x;
-    panel_xy.y =
-        ui_element_slot_30.vertices[0].y + ui_element_slot_30.pos_y;
-    panel_xy.x += 180.0f;
+    game_over_vec2_t panel_xy =
+        *(game_over_vec2_t *)&ui_element_slot_30.pos_x
+        + *(game_over_vec2_t *)&ui_element_slot_30.vertices[0].x
+        + game_over_vec2_t(180.0f, 40.0f);
 
-    game_over_vec2_t xy;
-    xy.x = panel_xy.x;
-    xy.y = panel_xy.y + 40.0f;
+    game_over_vec2_t xy = panel_xy;
     xy.x =
         ui_element_slot_30.render_offset_x + xy.x + 44.0f - 10.0f;
 
@@ -161,21 +181,20 @@ extern "C" void game_over_screen_update(void)
         grim_interface_ptr->grim_flush_input();
         console_input_poll();
         grim_interface_ptr->grim_was_key_pressed(0x1c);
-        if (game_over_highscore_rank_index < 100) {
+        if (game_over_highscore_rank_index >= 100) {
+            ui_screen_phase = 1;
+        } else {
             ui_screen_phase = 0;
             name_input.max_chars = 0x14;
-            name_input.text = game_over_name_input_buffer;
+            name_input.text = name_buffer;
             strcpy(
-                game_over_name_input_buffer,
+                name_buffer,
                 highscore_active_record.player_name);
             name_input.cursor = strlen(highscore_active_record.player_name);
-        } else {
-            ui_screen_phase = 1;
         }
     }
 
     if (ui_screen_phase == 0) {
-        xy = banner_xy;
         xy.x += 8.0f;
         xy.y += 84.0f;
         render_tint_color_a = 1.0f;
@@ -198,14 +217,14 @@ extern "C" void game_over_screen_update(void)
                 (float *)&xy,
                 (ui_text_input_state_t *)&name_input)
             || name_submit_button.activated) {
-            if (game_over_name_is_valid(game_over_name_input_buffer)) {
+            if (game_over_name_is_valid(name_buffer)) {
                 ui_screen_phase = 1;
                 sfx_play(sfx_ui_typeenter, 1.0f);
                 memset(&highscore_active_record, 0, 0x1c);
-                name_input.text = game_over_name_input_buffer;
+                name_input.text = name_buffer;
                 strcpy(
                     highscore_active_record.player_name,
-                    game_over_name_input_buffer);
+                    name_buffer);
                 player_name_length = name_input.cursor;
                 highscore_active_record.player_name[name_input.cursor] = 0;
                 highscore_save_active();
@@ -219,27 +238,24 @@ extern "C" void game_over_screen_update(void)
         xy.y += 60.0f;
         grim_interface_ptr->grim_set_color_ptr(&render_tint_color_r);
         if (game_over_highscore_rank_index < 100) {
-            panel_xy.x = xy.x + 16.0f;
-            panel_xy.y = xy.y + 16.0f;
+            panel_xy.set(xy.x + 16.0f, xy.y + 16.0f);
             ui_text_input_render(
-                (float *)&panel_xy,
+                panel_xy,
                 &highscore_active_record,
                 1.0f,
                 game_over_highscore_rank_index + 1);
-            ui_cursor_render();
-            return;
         }
+        ui_cursor_render();
+        return;
     } else if (ui_screen_phase != 1) {
         ui_cursor_render();
         return;
     }
 
     xy = banner_xy;
-    name_input.text = game_over_name_input_buffer;
+    name_input.text = name_buffer;
     xy.x += 30.0f;
-    if (game_over_highscore_rank_index < 100) {
-        xy.y += 64.0f;
-    } else {
+    if (game_over_highscore_rank_index >= 100) {
         xy.y += 62.0f;
         grim_interface_ptr->grim_draw_text_small_fmt(
             xy.x + 8.0f,
@@ -247,12 +263,13 @@ extern "C" void game_over_screen_update(void)
             "Score too low for top%d.",
             100);
         xy.y += 6.0f;
+    } else {
+        xy.y += 64.0f;
     }
 
-    panel_xy.x = xy.x;
-    panel_xy.y = xy.y + 16.0f;
+    panel_xy.set(xy.x, xy.y + 16.0f);
     ui_text_input_render(
-        (float *)&panel_xy,
+        panel_xy,
         &highscore_active_record,
         1.0f,
         game_over_highscore_rank_index + 1);

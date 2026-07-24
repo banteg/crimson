@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**710/2173** functions matched, **132061/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**711/2173** functions matched, **134060/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 493/997 | 105374/386756 | 27.2% | 493/614 |
+| crimsonland.exe | 494/997 | 107373/386756 | 27.8% | 494/614 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**493/997** functions, **105374/386756** bytes (**27.2%**), **493/614** scratches verified.
+**494/997** functions, **107373/386756** bytes (**27.8%**), **494/614** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -168,7 +168,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | credits_secret_match3_find | 0x0040f400 | 230 | 96/96 | 100.00% | 96/96 | 0/0/0 |  | credits-secret-match3-scan |
 | wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 638/638 | 83.70% | 15/638 | 153/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
-| wip | game_over_screen_update | 0x0040ffc0 | 1999 | 475/471 | 76.96% | 27/471 | 177/0/4 |  | game-over-highscore-entry-and-navigation |
+| match | game_over_screen_update | 0x0040ffc0 | 1999 | 471/471 | 100.00% | 471/471 | 215/0/0 |  | game-over-highscore-entry-and-navigation |
 | match | game_over_main_menu_button_destroy | 0x00410790 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-main-menu-button-empty-destructor |
 | match | game_over_highscores_button_destroy | 0x004107a0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-highscores-button-empty-destructor |
 | match | game_over_play_again_button_destroy | 0x004107b0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | game-over-play-again-button-empty-destructor |
