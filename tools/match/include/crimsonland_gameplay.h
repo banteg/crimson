@@ -233,7 +233,7 @@ extern game_state_id_t game_state_id;
 extern int creature_active_count;
 extern int time_played_ms;
 extern int quest_transition_timer_ms;
-extern quest_spawn_entry_t quest_spawn_table[];
+extern quest_spawn_entry_t quest_spawn_table[256];
 extern int quest_spawn_count;
 
 extern int sfx_ui_bonus;

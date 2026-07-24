@@ -3477,10 +3477,10 @@
     },
     {
       "address": "0x004857a8",
-      "comment": "Quest spawn table base (entries used by quest_spawn_timeline_update).",
+      "comment": "Quest spawn table (256 entries, 24-byte stride; occupies 0x1800 bytes through the next global at 0x00486fa8).",
       "name": "quest_spawn_table",
       "program": "crimsonland.exe",
-      "type": "quest_spawn_entry_t"
+      "type": "quest_spawn_entry_t[256]"
     },
     {
       "address": "0x00486fa8",
