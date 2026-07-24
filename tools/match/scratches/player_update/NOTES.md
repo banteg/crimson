@@ -88,10 +88,30 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=52.96% prefix=7/4206 target_insns=4206 candidate_insns=3928 refs=709/0/9
+match=54.81% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=736/0/11
 first_target=jne L3f7a
-first_candidate=jne L3c0d
+first_candidate=jne L3d5a
 ```
+
+The point-control movement arm at `0x00414035..0x004141ad` retains its own
+two-float displacement value through acceleration, deceleration, and the
+shared spawn-avoidance call. The adjacent dual-axis arm uses a different
+source value even though both paths ultimately occupy the native
+`[esp+0x48..0x4c]` slot. Reusing the generic movement vector only in
+point-control mode preserves the evidenced non-overlapping temporary lifetime,
+prevents VC6 from tail-merging the two mode bodies, and keeps the exact native
+`0x48` frame. It grows candidate coverage from 3,928 to 4,019 instructions,
+improves reference agreement from `710/0/9` to `736/0/11`, and raises the
+whole-function score from `53.01%` to `54.81%`. A separate scoped vector
+revealed the same missing code but grew the frame to `0x4c`; scalar aim copies
+and declaration-order changes were also measured and rejected.
+
+The weapon-power-up cooldown at `0x0041385f..0x00413892` tests the active
+positive timer as its fallthrough arm, subtracting `frame_dt * 1.5f`, and
+branches the expired timer to the ordinary `frame_dt` subtraction. Restoring
+that natural positive condition raises the score from `52.96%` to `53.01%`
+and aligns one additional reference without changing the frame or instruction
+count.
 
 The inlined Long Distance Runner acceleration predicate now follows the native
 positive arm. At the movement sites, including `0x0041467b..0x004146cf` and

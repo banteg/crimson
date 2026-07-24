@@ -169,10 +169,10 @@ extern "C" void player_update(void)
         *muzzle_flash_alpha = 0.0f;
     }
 
-    if (bonus_weapon_power_up_timer <= 0.0f) {
-        player->shot_cooldown = player->shot_cooldown - frame_dt;
-    } else {
+    if (bonus_weapon_power_up_timer > 0.0f) {
         player->shot_cooldown = player->shot_cooldown - frame_dt * 1.5f;
+    } else {
+        player->shot_cooldown = player->shot_cooldown - frame_dt;
     }
     if (player->shot_cooldown < 0.0f) {
         player->shot_cooldown = 0.0f;
@@ -440,8 +440,8 @@ extern "C" void player_update(void)
                             (float)sin(player->heading - 1.5707964f)
                             * player->move_speed * movement_heading
                             * scalar * 7.957747f;
-                        move_delta.x = frame_dt * player->move_dx;
-                        move_delta.y = frame_dt * player->move_dy;
+                        movement_input.x = frame_dt * player->move_dx;
+                        movement_input.y = frame_dt * player->move_dy;
                         moving_to_target = true;
                     }
                 }
@@ -455,14 +455,14 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
-                move_delta.x = frame_dt * player->move_dx;
-                move_delta.y = frame_dt * player->move_dy;
+                movement_input.x = frame_dt * player->move_dx;
+                movement_input.y = frame_dt * player->move_dy;
             }
 
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
                 player_pos,
-                &move_delta.x);
+                &movement_input.x);
             player->move_phase =
                 frame_dt * player->move_speed * 19.0f + player->move_phase;
         } else if (move_mode == 3) {

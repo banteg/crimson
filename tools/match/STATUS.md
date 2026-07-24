@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **718/2173** functions matched exactly, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **286538/676681** code bytes (**42.3%**).
+Fuzzy-weighted alignment is **286838/676681** code bytes (**42.4%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 256962/386756 | 66.4% | 621/997 | 319177/386756 | 82.5% | 501/621 |
+| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 257262/386756 | 66.5% | 621/997 | 319177/386756 | 82.5% | 501/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**501/997** functions, **107380/386756** bytes (**27.8%**), **256962/386756** fuzzy-weighted bytes (**66.4%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
+**501/997** functions, **107380/386756** bytes (**27.8%**), **257262/386756** fuzzy-weighted bytes (**66.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -223,7 +223,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 3928/4206 | 52.96% | 7/4206 | 709/0/9 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 4019/4206 | 54.81% | 7/4206 | 736/0/11 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
