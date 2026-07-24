@@ -76,8 +76,7 @@ extern "C" void quest_start_selected(int tier, int index)
         return;
     }
 
-    int *count_cursor =
-        &quest_spawn_table[0].pos_y_block.heading_block.count;
+    int *count_cursor = &quest_spawn_table[0].count;
     int entries_left = entry_count;
     do {
         int template_id;

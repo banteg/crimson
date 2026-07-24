@@ -18,6 +18,13 @@ bounds, seed and trigger recurrences, signed division, x87 conversions,
 24-byte entry layout, template/count metadata, and exact `0x1c` local frame.
 It compiles to 106 instructions versus the native 104 and scores 49.52%.
 
+The shared 24-byte `quest_spawn_entry_t` is now a flat semantic record:
+`pos_x`, `pos_y`, `heading`, `template_id`, `trigger_time_ms`, and `count`.
+Binary Ninja consequently renders those fields directly throughout the quest
+builder cluster instead of routing ordinary accesses through nested
+`pos_y_block.heading_block` paths. The separate trigger/count cursor types
+remain available for the two loops that genuinely walk interior fields.
+
 The residual is VC6 allocation and scheduling. Native keeps the output count
 in EBP and inner seed in EBX, computes both coordinates before storing spawn
 metadata, and restores the count through EBP. The candidate spills the count,

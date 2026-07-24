@@ -30,6 +30,10 @@ match=91.23% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
   the quest builders. Adding the alternating offset through its inlined vector
   operator reproduces the native x87 construction and right-to-left call-
   argument schedule for the temporary passed to `creature_spawn_template`.
+- The canonical entry itself now exposes flat semantic fields. This scratch
+  still starts from `trigger_time_ms` because the native loop is an evidenced
+  six-int interior cursor, but ordinary builder decompilation no longer pays
+  for that cursor-specific presentation.
 
 The first 51 instructions, complete scan/fail-safe policy, 28-byte frame, x87
 spread loop, group-consumption tail, and all 13 masked references agree.

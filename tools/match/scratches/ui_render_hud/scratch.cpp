@@ -428,9 +428,7 @@ extern "C" void ui_render_hud(float transition_alpha)
         quest_progress_reserved_zero = 0;
         int spawn_count = quest_spawn_count;
         if (spawn_count > 0) {
-            int *count =
-                &quest_spawn_table[0]
-                     .pos_y_block.heading_block.count;
+            int *count = &quest_spawn_table[0].count;
             do {
                 queued_creatures += *count;
                 count += 6;

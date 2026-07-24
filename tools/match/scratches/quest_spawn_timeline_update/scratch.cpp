@@ -41,8 +41,7 @@ extern "C" void quest_spawn_timeline_update(void)
     }
 
     int timeline = quest_spawn_timeline;
-    int *trigger_cursor =
-        &quest_spawn_table[0].pos_y_block.heading_block.trigger_time_ms;
+    int *trigger_cursor = &quest_spawn_table[0].trigger_time_ms;
     while (entry_index < entry_count) {
         if (trigger_cursor[1] > 0) {
             if (trigger_cursor[0] < timeline) {
