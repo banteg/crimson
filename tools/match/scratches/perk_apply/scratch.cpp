@@ -1,4 +1,5 @@
 #include "crimsonland_gameplay.h"
+#include <stddef.h>
 
 extern "C" {
 extern int perk_id_fatal_lottery;
@@ -86,7 +87,10 @@ extern "C" void perk_apply(int perk_id)
 
         cursor = &creature_pool[0].lifecycle_stage;
         do {
-            if (*((unsigned char *)cursor - 0x10) != 0) {
+            creature_t *cursor_creature = (creature_t *)(
+                (char *)cursor
+                - offsetof(creature_t, lifecycle_stage));
+            if (cursor_creature->active != 0) {
                 *cursor -= frame_dt;
             }
             cursor += sizeof(creature_t) / sizeof(*cursor);
@@ -162,7 +166,9 @@ extern "C" void perk_apply(int perk_id)
             if (value > 100.0f) {
                 *cursor = 100.0f;
             }
-            effect_spawn_burst(cursor - 4, 8);
+            player_state_t *player = (player_state_t *)(
+                (char *)cursor - offsetof(player_state_t, health));
+            effect_spawn_burst(&player->pos_x, 8);
             player_count = config_player_count;
             ++i;
             cursor += sizeof(player_state_t) / sizeof(*cursor);

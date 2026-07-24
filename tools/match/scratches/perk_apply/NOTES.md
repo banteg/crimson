@@ -31,6 +31,12 @@ ages each active creature; Bandage multiplies even dead-player health by a
 both regeneration counts before restoring positive player health, while Ammo
 Maniac reassigns every configured player's current weapon.
 
+Breathing Room and Bandage retain their native lifecycle- and health-field
+induction cursors, but each now recovers the containing record with `offsetof`.
+That exposes the named creature `active` field and the player's `pos_x` burst
+origin instead of byte and float offsets. A combined shadow probe produced
+identical VC6 output, including the 241 instructions and all 63 references.
+
 VC6 produces 63.07% with 241/241 normalized instructions and exact 63/0/0
 reference agreement. The broad residual is register allocation: native keeps
 the perk id in `EDI`, the cached player count in `EBP`, and loop state in
