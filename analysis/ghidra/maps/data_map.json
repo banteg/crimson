@@ -3124,9 +3124,9 @@
     },
     {
       "address": "0x00482b10",
-      "comment": "High score table entries (0x48-byte records).",
+      "comment": "High score table (100 entries, 0x48-byte records).",
       "name": "highscore_table",
-      "type": "highscore_record_t",
+      "type": "highscore_record_t[100]",
       "program": "crimsonland.exe"
     },
     {
@@ -3134,7 +3134,7 @@
       "comment": "Quest metadata table base (0x2c-byte entries, 0x32 total).",
       "name": "quest_selected_meta",
       "program": "crimsonland.exe",
-      "type": "quest_meta_t"
+      "type": "quest_meta_t[50]"
     },
     {
       "address": "0x00484734",
@@ -3234,7 +3234,7 @@
       "comment": "Creature spawn slot table (0x20 entries, stride 0x18 bytes; indexed by creature_link_index).",
       "name": "creature_spawn_slot_table",
       "program": "crimsonland.exe",
-      "type": "creature_spawn_slot_t"
+      "type": "creature_spawn_slot_t[32]"
     },
     {
       "address": "0x00484fd4",
@@ -3278,7 +3278,7 @@
       "comment": "Bonus metadata table (0x0f entries, stride 0x14 bytes).",
       "name": "bonus_meta_table",
       "program": "crimsonland.exe",
-      "type": "bonus_meta_t"
+      "type": "bonus_meta_t[15]"
     },
     {
       "address": "0x004853d4",
@@ -3611,7 +3611,7 @@
       "comment": "Survival reward tracking: recent creature death positions (3 entries, stride 0x08 bytes).",
       "name": "survival_recent_death_pos",
       "program": "crimsonland.exe",
-      "type": "vec2f_t"
+      "type": "vec2f_t[3]"
     },
     {
       "address": "0x00486fec",
@@ -6608,9 +6608,9 @@
     },
     {
       "address": "0x00496820",
-      "comment": "Sprite effect pool base (stride 0x2c)",
+      "comment": "Sprite effect pool base (384 entries, stride 0x2c).",
       "name": "sprite_effect_pool",
-      "type": "sprite_effect_t",
+      "type": "sprite_effect_t[384]",
       "program": "crimsonland.exe"
     },
     {
@@ -7792,10 +7792,10 @@
     },
     {
       "address": "0x004c2c40",
-      "comment": "Perk metadata table (stride 0x14 bytes per perk).",
+      "comment": "Perk metadata storage table (128 entries, stride 0x14 bytes; gameplay initializes ids 0 through 57).",
       "name": "perk_meta_table",
       "program": "crimsonland.exe",
-      "type": "perk_meta_t"
+      "type": "perk_meta_t[128]"
     },
     {
       "address": "0x004c2c44",
@@ -8474,9 +8474,9 @@
     },
     {
       "address": "0x004c4250",
-      "comment": "Music entry table (track slots, stride 0x84).",
+      "comment": "Music entry table (128 track slots, stride 0x84).",
       "name": "music_entry_table",
-      "type": "music_entry_t",
+      "type": "music_entry_t[128]",
       "program": "crimsonland.exe"
     },
     {
@@ -8488,9 +8488,9 @@
     },
     {
       "address": "0x004c84d0",
-      "comment": "SFX entry table base (iterated by sfx_release_all).",
+      "comment": "SFX entry table base (128 entries, stride 0x84; iterated by sfx_release_all).",
       "name": "sfx_entry_table",
-      "type": "sfx_entry_t",
+      "type": "sfx_entry_t[128]",
       "program": "crimsonland.exe"
     },
     {

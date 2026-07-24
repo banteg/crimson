@@ -242,3 +242,15 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["effect_uv16"] == "uv2f_t[256]"
     assert types_by_name["fx_queue"] == "fx_queue_entry_t[128]"
     assert types_by_name["particle_pool"] == "particle_t[128]"
+    assert types_by_name["highscore_table"] == "highscore_record_t[100]"
+    assert types_by_name["quest_selected_meta"] == "quest_meta_t[50]"
+    assert (
+        types_by_name["creature_spawn_slot_table"]
+        == "creature_spawn_slot_t[32]"
+    )
+    assert types_by_name["bonus_meta_table"] == "bonus_meta_t[15]"
+    assert types_by_name["survival_recent_death_pos"] == "vec2f_t[3]"
+    assert types_by_name["sprite_effect_pool"] == "sprite_effect_t[384]"
+    assert types_by_name["perk_meta_table"] == "perk_meta_t[128]"
+    assert types_by_name["music_entry_table"] == "music_entry_t[128]"
+    assert types_by_name["sfx_entry_table"] == "sfx_entry_t[128]"

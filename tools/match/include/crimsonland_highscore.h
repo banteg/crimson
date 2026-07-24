@@ -7,7 +7,7 @@ typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
 #include "crimsonland_types.h"
 
 extern highscore_record_t highscore_active_record;
-extern highscore_record_t highscore_table[];
+extern highscore_record_t highscore_table[100];
 extern int highscore_table_count;
 extern game_mode_id_t config_game_mode;
 extern int survival_elapsed_ms;

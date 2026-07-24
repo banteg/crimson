@@ -18,8 +18,8 @@ struct dsbufferdesc8_t {
 };
 
 extern LPDIRECTSOUND dsound_iface;
-extern sfx_entry_t sfx_entry_table[];
-extern music_entry_t music_entry_table[];
+extern sfx_entry_t sfx_entry_table[128];
+extern music_entry_t music_entry_table[128];
 extern sfx_voice_table_t sfx_voice_table;
 
 #ifdef __cplusplus
