@@ -2,18 +2,18 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**709/2173** functions matched, **131831/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**710/2173** functions matched, **132061/676681** code bytes (**19.5%**). Byte totals are manifest function extents with terminal padding trimmed.
 
 ## Images
 
 | image | functions | bytes | code | scratches |
 |---|---:|---:|---:|---:|
-| crimsonland.exe | 492/997 | 105144/386756 | 27.2% | 492/614 |
+| crimsonland.exe | 493/997 | 105374/386756 | 27.2% | 493/614 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
 
 ## crimsonland.exe
 
-**492/997** functions, **105144/386756** bytes (**27.2%**), **492/614** scratches verified.
+**493/997** functions, **105374/386756** bytes (**27.2%**), **493/614** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -165,7 +165,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | match | mods_menu_launch_button_destroy | 0x0040f3d0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-launch-button-empty-destructor |
 | match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
-| wip | credits_secret_match3_find | 0x0040f400 | 230 | 97/96 | 89.12% | 24/96 | 0/0/0 |  | credits-secret-match3-scan |
+| match | credits_secret_match3_find | 0x0040f400 | 230 | 96/96 | 100.00% | 96/96 | 0/0/0 |  | credits-secret-match3-scan |
 | wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 638/638 | 83.70% | 15/638 | 153/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
 | wip | game_over_screen_update | 0x0040ffc0 | 1999 | 475/471 | 76.96% | 27/471 | 177/0/4 |  | game-over-highscore-entry-and-navigation |
@@ -420,7 +420,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 | wip | quest_build_8_legged_terror | 0x00436120 | 213 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
-| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 80.65% | 17/31 | 1/0/0 |  | quest-spider-wave-syndrome |
+| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 31/31 | 83.87% | 12/31 | 2/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 138/138 | 97.10% | 10/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |

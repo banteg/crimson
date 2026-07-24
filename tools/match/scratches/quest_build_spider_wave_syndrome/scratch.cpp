@@ -17,10 +17,9 @@ struct quest_entry_original_t {
     int trigger_time_ms;
     int count;
 
-    void set_spawn(int spawn_template_id, int time_ms, int spawn_count) {
+    void set_spawn(int spawn_template_id, int time_ms) {
         template_id = spawn_template_id;
         trigger_time_ms = time_ms;
-        count = spawn_count;
     }
 
 };
@@ -48,8 +47,8 @@ extern "C" void quest_build_spider_wave_syndrome(
         ++builder.count;
         spawn->set_spawn(
             SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
-            trigger_time_ms,
-            config_blob.player_count * 2 + 6);
+            trigger_time_ms);
+        spawn->count = config_blob.player_count * 2 + 6;
     }
     *count = builder.count;
 }

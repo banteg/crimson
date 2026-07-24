@@ -22,14 +22,16 @@ extern "C" unsigned char credits_secret_match3_find(
     }
 
     for (int column = 0; column < 6; ++column) {
-        for (int row = 0; row < 4; ++row) {
-            int value = board[row][column];
+        int row = 0;
+        int *cell = &board[0][column];
+        for (; row < 4; ++row, cell += 6) {
+            int value = *cell;
             if (value >= 0) {
                 int length = 1;
-                if (board[row + 1][column] == value) {
+                if (cell[6] == value) {
                     length = 2;
                 }
-                if (board[row + 2][column] == value) {
+                if (cell[12] == value) {
                     ++length;
                 }
                 if (length == 3) {

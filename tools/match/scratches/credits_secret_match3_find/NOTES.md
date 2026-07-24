@@ -8,9 +8,13 @@ per row; vertical runs then search six columns and four starts per column.
 Negative cells are empty. On success the helper writes the leftmost/topmost
 row-major index and direction byte (`1` horizontal, `0` vertical).
 
-The natural two-dimensional-array source scores 89.12%, with a 24-instruction
-exact prefix. The candidate has one extra instruction because VC6 pre-biases
-the vertical cursor by 12 cells and uses negative offsets, while the native
-keeps the current cell and positive `+6`/`+12` offsets. The recovered logic,
-loop bounds, scan order, outputs, and byte return agree; this remains a WIP
-rather than introducing a synthetic pointer dependency to force the schedule.
+The vertical pass keeps a current-cell pointer and reads the next two rows at
+positive `+6` and `+12` element offsets. Its row counter is initialized before
+that cursor, and the loop increments the row before advancing the cursor by one
+six-cell stride. This is the ordinary source shape behind the native positive
+offsets; re-indexing the two-dimensional array instead made VC6 pre-bias the
+cursor by twelve cells and emit one extra instruction.
+
+The recovered row-stride cursor and increment expression produce an exact
+MSVC 6.5 `/O2 /GB` match: 96/96 instructions, 100.00%, with the full function
+as the exact prefix.
