@@ -30,3 +30,8 @@ flag's zero initialization later than the native. Separate scoped vectors grow
 the frame, while scalar locals lose the required adjacent-vector semantics, so
 this scratch intentionally does not use a layout-only array or other artificial
 constraint to improve the score.
+
+The two muzzle-sprite calls now expose their position and velocity arguments as
+read-only vector aggregates at the shared `fx_spawn_sprite` boundary. This
+keeps the same honest 86.7725% score, exact 378-instruction count, and all 141
+references.

@@ -4,7 +4,7 @@ extern "C" double cos(double angle);
 extern "C" double sin(double angle);
 
 extern "C" int fx_spawn_secondary_projectile(
-    vec2f_t *pos,
+    const vec2f_t *pos,
     float angle,
     secondary_projectile_type_id_t type_id
 )

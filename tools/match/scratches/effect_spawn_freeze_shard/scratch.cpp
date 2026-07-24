@@ -31,5 +31,5 @@ extern "C" void effect_spawn_freeze_shard(
     effect_template.scale_step =
         (float)-(crt_rand() & 15) * 0.1f;
 
-    effect_spawn(crt_rand() % 3 + 8, (float *)pos);
+    effect_spawn(crt_rand() % 3 + 8, pos);
 }

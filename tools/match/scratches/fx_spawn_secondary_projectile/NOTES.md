@@ -26,3 +26,8 @@ independent field stores ahead of the x87 multiplies. It can reuse the dead
 local for the sine. This produces native's leading `push ecx`, both saved
 direction components, and the exact store order without volatile storage,
 unused expressions, or other register constraints.
+
+The input is now recovered as a read-only `vec2f_t *` in both source and the
+saved Binary Ninja prototype at `0x00420360`; the helper reads `x` and `y` but
+never mutates the caller's position. The type correction preserves the exact
+65/65 instruction match and all 13 references.

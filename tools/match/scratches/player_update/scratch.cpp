@@ -52,9 +52,15 @@ extern int fire_bullets_secondary_shot_sfx_id;
 extern float fire_bullets_fallback_shot_cooldown;
 extern float fire_bullets_fallback_spread_heat;
 
-void effect_spawn_blood_splatter(float *pos, float angle, float age);
-float vec2_length(float *v);
-int fx_spawn_sprite(float *pos, float *vel, float scale);
+void effect_spawn_blood_splatter(
+    const vec2f_t *pos,
+    float angle,
+    float age);
+float vec2_length(const vec2f_t *v);
+int fx_spawn_sprite(
+    const vec2f_t *pos,
+    const vec2f_t *vel,
+    float scale);
 bool input_primary_just_pressed(void);
 bool input_aim_pov_left_active(void);
 bool input_aim_pov_right_active(void);
@@ -64,10 +70,14 @@ vec2f_t *__stdcall vec2_normalize_dispatch(
     const vec2f_t *src);
 void player_start_reload(void);
 void player_take_damage(int player_index, float damage);
-int fx_spawn_particle(float *pos, float angle, void *move, float intensity);
-int fx_spawn_particle_slow(float *pos, float angle);
+int fx_spawn_particle(
+    const vec2f_t *pos,
+    float angle,
+    const vec2f_t *move,
+    float intensity);
+int fx_spawn_particle_slow(const vec2f_t *pos, float angle);
 int fx_spawn_secondary_projectile(
-    float *pos,
+    const vec2f_t *pos,
     float angle,
     secondary_projectile_type_id_t type_id);
 }
@@ -152,9 +162,9 @@ extern "C" void player_update(void)
             scratch_pos.x += player_position->x;
             scratch_pos.y += player_position->y;
             float angle = player->aim_heading;
-            effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
-            effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
-            effect_spawn_blood_splatter(&scratch_pos.x, angle, 0.0f);
+            effect_spawn_blood_splatter(&scratch_pos, angle, 0.0f);
+            effect_spawn_blood_splatter(&scratch_pos, angle, 0.0f);
+            effect_spawn_blood_splatter(&scratch_pos, angle, 0.0f);
             sfx_play_panned(
                 (crt_rand() & 1) + sfx_bloodspill_01,
                 player_position,
@@ -256,7 +266,7 @@ extern "C" void player_update(void)
             random_offset.y = player->aim_y;
             move_delta.x = random_offset.x - player_position->x;
             move_delta.y = random_offset.y - player_position->y;
-            float spread_radius = vec2_length(&move_delta.x) * 0.5f;
+            float spread_radius = vec2_length(&move_delta) * 0.5f;
             float spread_angle =
                 (float)(crt_rand() & 0x1ff) * 0.012271847f;
             spread_radius = spread_radius * player->spread_heat
@@ -281,10 +291,7 @@ extern "C" void player_update(void)
 
             move_delta.x = (float)cos(aim_heading) * 25.0f;
             move_delta.y = (float)sin(aim_heading) * 25.0f;
-            int effect_index = fx_spawn_sprite(
-                &movement_input.x,
-                &move_delta.x,
-                1.0f);
+            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);
             sprite_effect_pool[effect_index].color_r = 0.5f;
             sprite_effect_pool[effect_index].color_g = 0.5f;
             sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1123,7 +1130,7 @@ extern "C" void player_update(void)
                 ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 14.0f;
             scratch_pos.x = movement_input.x + player_position->x;
             scratch_pos.y = movement_input.y + player_position->y;
-            effect_spawn(0x12, &scratch_pos.x);
+            effect_spawn(0x12, &scratch_pos);
         }
 
         if (player->spread_heat > 1.0f) {
@@ -1141,7 +1148,7 @@ extern "C" void player_update(void)
         random_offset.y = player->aim_y;
         move_delta.x = random_offset.x - player_position->x;
         move_delta.y = random_offset.y - player_position->y;
-        angle_step = vec2_length(&move_delta.x) * 0.5f;
+        angle_step = vec2_length(&move_delta) * 0.5f;
         scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;
         angle_step = angle_step * player->spread_heat
             * (float)(crt_rand() & 0x1ff) * 0.001953125f;
@@ -1196,10 +1203,7 @@ extern "C" void player_update(void)
             move_delta.y = (float)sin(movement_heading) * 25.0f;
             scratch_pos.x = movement_input.x + player_position->x;
             scratch_pos.y = movement_input.y + player_position->y;
-            int effect_index = fx_spawn_sprite(
-                &scratch_pos.x,
-                &move_delta.x,
-                1.0f);
+            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
             sprite_effect_pool[effect_index].color_r = 0.5f;
             sprite_effect_pool[effect_index].color_g = 0.5f;
             sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1236,10 +1240,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1248,10 +1249,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1271,10 +1269,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1283,10 +1278,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1298,10 +1290,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1310,10 +1299,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1333,10 +1319,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1345,10 +1328,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1374,10 +1354,7 @@ extern "C" void player_update(void)
                 move_delta.y = (float)sin(movement_heading) * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1405,10 +1382,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1417,10 +1391,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1445,18 +1416,18 @@ extern "C" void player_update(void)
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 fx_spawn_particle(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     movement_heading - 1.5707964f,
-                    &player->move_dx,
+                    (const vec2f_t *)&player->move_dx,
                     1.0f);
                 scalar = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_HR_FLAMER) {
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 owner_id = fx_spawn_particle(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     movement_heading - 1.5707964f,
-                    &player->move_dx,
+                    (const vec2f_t *)&player->move_dx,
                     1.0f);
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 2;
@@ -1466,9 +1437,9 @@ extern "C" void player_update(void)
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 owner_id = fx_spawn_particle(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     movement_heading - 1.5707964f,
-                    &player->move_dx,
+                    (const vec2f_t *)&player->move_dx,
                     1.0f);
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 1;
@@ -1481,10 +1452,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1493,10 +1461,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1649,10 +1614,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1661,10 +1623,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1692,10 +1651,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1704,10 +1660,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1727,10 +1680,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1739,10 +1689,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1750,10 +1697,7 @@ extern "C" void player_update(void)
                 player_update_vec2_t spawn_pos;
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
-                fx_spawn_secondary_projectile(
-                    &spawn_pos.x,
-                    angle_step,
-                    SECONDARY_PROJECTILE_TYPE_ROCKET);
+                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MINI_ROCKET_SWARMERS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
@@ -1761,10 +1705,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1773,10 +1714,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1790,10 +1728,7 @@ extern "C" void player_update(void)
                     do {
                         scratch_pos.x = movement_input.x + player_position->x;
                         scratch_pos.y = movement_input.y + player_position->y;
-                        fx_spawn_secondary_projectile(
-                            &scratch_pos.x,
-                            rocket_heading,
-                            SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
+                        fx_spawn_secondary_projectile(&scratch_pos, rocket_heading, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
                         rocket_heading = rocket_heading + movement_heading;
                         ++rocket_count;
                     } while ((float)rocket_count < player->ammo);
@@ -1804,10 +1739,7 @@ extern "C" void player_update(void)
                 move_delta.y = (float)sin(movement_heading) * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1815,10 +1747,7 @@ extern "C" void player_update(void)
                 player_update_vec2_t spawn_pos;
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
-                fx_spawn_secondary_projectile(
-                    &spawn_pos.x,
-                    angle_step,
-                    SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
+                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN);
             } else if (player->weapon_id == WEAPON_ID_SEEKER_ROCKETS) {
                 random_offset.x = (float)cos(movement_heading);
                 move_delta.x = random_offset.x * 25.0f;
@@ -1826,10 +1755,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 25.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                int effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    1.0f);
+                int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1838,10 +1764,7 @@ extern "C" void player_update(void)
                 move_delta.y = random_offset.y * 15.0f;
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                effect_index = fx_spawn_sprite(
-                    &scratch_pos.x,
-                    &move_delta.x,
-                    2.0f);
+                effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
                 sprite_effect_pool[effect_index].color_b = 0.5f;
@@ -1849,10 +1772,7 @@ extern "C" void player_update(void)
                 player_update_vec2_t spawn_pos;
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
-                fx_spawn_secondary_projectile(
-                    &spawn_pos.x,
-                    angle_step,
-                    SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
+                fx_spawn_secondary_projectile(&spawn_pos, angle_step, SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET);
             } else if (player->weapon_id == WEAPON_ID_MEAN_MINIGUN) {
                 player_update_vec2_t spawn_pos;
                 spawn_pos.x = movement_input.x + player_position->x;
@@ -1899,9 +1819,7 @@ extern "C" void player_update(void)
             } else if (player->weapon_id == WEAPON_ID_BUBBLEGUN) {
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
-                fx_spawn_particle_slow(
-                    &scratch_pos.x,
-                    angle_step - 1.5707964f);
+                fx_spawn_particle_slow(&scratch_pos, angle_step - 1.5707964f);
                 scalar = 0.15f;
             }
 

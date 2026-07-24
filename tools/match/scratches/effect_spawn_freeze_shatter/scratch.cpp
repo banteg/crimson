@@ -24,7 +24,7 @@ extern "C" void effect_spawn_freeze_shatter(
         effect_template.half_height = half_extent;
         effect_template.rotation_step =
             ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 1.9f;
-        effect_spawn(14, (float *)pos);
+        effect_spawn(14, pos);
     }
 
     int remaining = 4;

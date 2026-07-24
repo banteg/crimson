@@ -33,7 +33,7 @@ void effect_spawn_splitter_hit_burst(
             spawn_pos.y = (float)(sin(angle) * distance + pos->y);
             effect_template.age = (float)-(crt_rand() & 0xff) * 0.0012f;
             effect_template.lifetime = 0.1f - effect_template.age;
-            effect_spawn(0, (float *)&spawn_pos);
+            effect_spawn(0, &spawn_pos);
         } while (--remaining != 0);
     }
 }

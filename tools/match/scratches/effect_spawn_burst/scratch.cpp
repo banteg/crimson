@@ -19,7 +19,7 @@ extern "C" void effect_spawn_burst(const vec2f_t *pos, int count)
             effect_template.vel_y = (float)((crt_rand() & 0x7f) - 64);
             effect_template.scale_step =
                 (float)(crt_rand() % 100) * 0.01f + 0.1f;
-            effect_spawn(0, (float *)pos);
+            effect_spawn(0, pos);
         } while (--count != 0);
     }
 }

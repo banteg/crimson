@@ -404,3 +404,9 @@ The player cursor is now carried as a `vec2f_t *` through every panned-audio
 call instead of being shadowed by a raw `float *` alias. This exposes the
 embedded position aggregate while preserving the honest 54.81% WIP score,
 4,019/4,206 candidate/native instructions, and `736/0/11` reference audit.
+
+Blood, vector-length, sprite, particle, and secondary-projectile calls now
+carry the existing stack aggregates as complete vectors instead of repeatedly
+taking their first float members. Particle movement is also recovered as a
+read-only vector parameter. These source-only type improvements preserve the
+same honest WIP score and reference audit.

@@ -34,7 +34,10 @@ extern int terrain_texture_height;
 
 __declspec(noreturn) void crt_exit(int code);
 void player_start_reload(void);
-int fx_spawn_sprite(float *pos, float *vel, float scale);
+int fx_spawn_sprite(
+    const vec2f_t *pos,
+    const vec2f_t *vel,
+    float scale);
 }
 
 extern "C" void player_fire_weapon(
@@ -156,8 +159,8 @@ extern "C" void player_fire_weapon(
                     + local_offset.y;
 
                 int effect_index = fx_spawn_sprite(
-                    (float *)&effect_position,
-                    (float *)&effect_velocity,
+                    (const vec2f_t *)&effect_position,
+                    (const vec2f_t *)&effect_velocity,
                     1.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;
@@ -175,8 +178,8 @@ extern "C" void player_fire_weapon(
                 effect_position.y =
                     player_position->y + local_offset.y;
                 effect_index = fx_spawn_sprite(
-                    (float *)&effect_position,
-                    (float *)&effect_velocity,
+                    (const vec2f_t *)&effect_position,
+                    (const vec2f_t *)&effect_velocity,
                     2.0f);
                 sprite_effect_pool[effect_index].color_r = 0.5f;
                 sprite_effect_pool[effect_index].color_g = 0.5f;

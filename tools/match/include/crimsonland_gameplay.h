@@ -308,7 +308,7 @@ void effect_init_entry(effect_entry_t *entry);
 void effect_defaults_reset(void);
 void effect_free(effect_entry_t *entry);
 void effects_update(void);
-effect_entry_t *effect_spawn(int effect_id, float *pos);
+effect_entry_t *effect_spawn(int effect_id, const vec2f_t *pos);
 unsigned char fx_queue_add(
     int effect_id,
     vec2f_t *pos,
@@ -324,8 +324,33 @@ unsigned char fx_queue_add_rotated(
     float scale,
     int effect_id
 );
-void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
-void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
+void effect_spawn_ion_hit_core(
+    const vec2f_t *pos,
+    float scale_step,
+    float lifetime);
+void effect_spawn_plasma_hit_core(
+    const vec2f_t *pos,
+    float scale_step,
+    float lifetime);
+void effect_spawn_blood_splatter(
+    const vec2f_t *pos,
+    float angle,
+    float age);
+void effect_spawn_splitter_hit_burst(
+    const vec2f_t *pos,
+    float radius,
+    int count);
+void effect_spawn_ion_hit_sparks(const vec2f_t *pos, float scale);
+void effect_spawn_shrinkifier_hit(const vec2f_t *pos);
+float vec2_length(const vec2f_t *v);
+int fx_spawn_sprite(
+    const vec2f_t *pos,
+    const vec2f_t *vel,
+    float scale);
+int fx_spawn_secondary_projectile(
+    const vec2f_t *pos,
+    float angle,
+    secondary_projectile_type_id_t type_id);
 void effect_spawn_freeze_shard(const vec2f_t *pos, float angle);
 void effect_spawn_freeze_shatter(const vec2f_t *pos, float angle);
 void effect_spawn_explosion_burst(const vec2f_t *pos, float scale);
@@ -345,6 +370,7 @@ creature_t *creature_spawn_template(
     int template_id,
     const vec2f_t *pos,
     float heading);
+void survival_spawn_creature(const vec2f_t *pos);
 int creature_find_nearest(
     const vec2f_t *pos,
     int exclude_id,

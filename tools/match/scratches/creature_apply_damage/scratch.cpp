@@ -121,7 +121,9 @@ extern "C" int creature_apply_damage(
                         (float)((crt_rand() & 0x7f) - 0x40);
                     effect_template.scale_step =
                         (float)(crt_rand() % 140) * 0.01f + 0.3f;
-                    effect_spawn(0, &creature_pool[creature_id].pos_x);
+                    effect_spawn(
+                        0,
+                        (const vec2f_t *)&creature_pool[creature_id].pos_x);
                     --count;
                 } while (count != 0);
             } else {

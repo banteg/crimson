@@ -26,7 +26,6 @@ extern "C" int quest_spawn_timeline;
 extern "C" int demo_time_limit_ms;
 extern "C" survival_vec2_t survival_recent_death_pos[3];
 
-extern "C" void survival_spawn_creature(float *pos);
 extern "C" void demo_mode_start(void);
 
 extern "C" void survival_update(void)
@@ -307,7 +306,7 @@ update_wave_spawns:
                         int roll = crt_rand();
                         top.x = (float)(roll % width);
                         top.y = -40.0f;
-                        survival_spawn_creature(&top.x);
+                        survival_spawn_creature(&top);
                         break;
                     }
                     case 1: {
@@ -316,7 +315,7 @@ update_wave_spawns:
                         int roll = crt_rand();
                         bottom.x = (float)(roll % width);
                         bottom.y = (float)terrain_texture_height + 40.0f;
-                        survival_spawn_creature(&bottom.x);
+                        survival_spawn_creature(&bottom);
                         break;
                     }
                     case 2: {
@@ -325,7 +324,7 @@ update_wave_spawns:
                         int roll = crt_rand();
                         left.x = -40.0f;
                         left.y = (float)(roll % height);
-                        survival_spawn_creature(&left.x);
+                        survival_spawn_creature(&left);
                         break;
                     }
                     case 3: {
@@ -335,7 +334,7 @@ update_wave_spawns:
                         float y = (float)(roll % height);
                         right.x = (float)terrain_texture_width + 40.0f;
                         right.y = y;
-                        survival_spawn_creature(&right.x);
+                        survival_spawn_creature(&right);
                         break;
                     }
                 }
@@ -355,7 +354,7 @@ update_wave_spawns:
                 int roll = crt_rand();
                 top.x = (float)(roll % width);
                 top.y = -40.0f;
-                survival_spawn_creature(&top.x);
+                survival_spawn_creature(&top);
                 break;
             }
             case 1: {
@@ -364,7 +363,7 @@ update_wave_spawns:
                 int roll = crt_rand();
                 bottom.x = (float)(roll % width);
                 bottom.y = (float)terrain_texture_height + 40.0f;
-                survival_spawn_creature(&bottom.x);
+                survival_spawn_creature(&bottom);
                 break;
             }
             case 2: {
@@ -373,7 +372,7 @@ update_wave_spawns:
                 int roll = crt_rand();
                 left.x = -40.0f;
                 left.y = (float)(roll % height);
-                survival_spawn_creature(&left.x);
+                survival_spawn_creature(&left);
                 break;
             }
             case 3: {
@@ -383,7 +382,7 @@ update_wave_spawns:
                 float y = (float)(roll % height);
                 right.x = (float)terrain_texture_width + 40.0f;
                 right.y = y;
-                survival_spawn_creature(&right.x);
+                survival_spawn_creature(&right);
                 break;
             }
         }

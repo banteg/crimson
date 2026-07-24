@@ -16,25 +16,40 @@ extern int config_detail_preset;
 extern creature_type_table_t creature_type_table;
 
 void creatures_apply_radius_damage(
-    float *pos,
+    const vec2f_t *pos,
     float radius,
     float damage,
     int damage_type);
-int creature_find_in_radius(float *pos, float radius, int start_index);
-int player_find_in_radius(int owner_id, float *pos, float radius);
+int creature_find_in_radius(
+    const vec2f_t *pos,
+    float radius,
+    int start_index);
+int player_find_in_radius(
+    int owner_id,
+    const vec2f_t *pos,
+    float radius);
 int vec2_add(vec2f_t *dst, const vec2f_t *delta);
 int vec2_add_inplace(
     int entity_index,
     vec2f_t *pos,
     const vec2f_t *delta);
-void effect_spawn_blood_splatter(float *pos, float angle, float age);
-void effect_spawn_splitter_hit_burst(float *pos, float radius, int count);
-void effect_spawn_ion_hit_sparks(float *pos, float scale);
-void effect_spawn_shrinkifier_hit(float *pos);
+void effect_spawn_blood_splatter(
+    const vec2f_t *pos,
+    float angle,
+    float age);
+void effect_spawn_splitter_hit_burst(
+    const vec2f_t *pos,
+    float radius,
+    int count);
+void effect_spawn_ion_hit_sparks(const vec2f_t *pos, float scale);
+void effect_spawn_shrinkifier_hit(const vec2f_t *pos);
 void fx_queue_add_random(vec2f_t *pos);
 void creature_handle_death(int creature_id, unsigned char keep_corpse);
 void sfx_play_exclusive(int sfx_id);
-int fx_spawn_sprite(float *pos, float *vel, float scale);
+int fx_spawn_sprite(
+    const vec2f_t *pos,
+    const vec2f_t *vel,
+    float scale);
 vec2f_t *__stdcall vec2_normalize_dispatch(
     vec2f_t *dst,
     const vec2f_t *src);
@@ -71,13 +86,13 @@ extern "C" void projectile_update(void)
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
                         creatures_apply_radius_damage(
-                            &projectile->pos_x,
+                            (const vec2f_t *)&projectile->pos_x,
                             ion_damage_scale * 88.0f,
                             frame_dt * 100.0f,
                             7);
                     } else {
                         creatures_apply_radius_damage(
-                            &projectile->pos_x,
+                            (const vec2f_t *)&projectile->pos_x,
                             ion_damage_scale * 60.0f,
                             frame_dt * 40.0f,
                             7);
@@ -85,7 +100,7 @@ extern "C" void projectile_update(void)
                 } else if (type_id == PROJECTILE_TYPE_ION_CANNON) {
                     projectile->pos.tail.vy.life_timer -= frame_dt * 0.7f;
                     creatures_apply_radius_damage(
-                        &projectile->pos_x,
+                        (const vec2f_t *)&projectile->pos_x,
                         ion_damage_scale * 128.0f,
                         frame_dt * 300.0f,
                         7);
@@ -95,8 +110,7 @@ extern "C" void projectile_update(void)
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                 }
             } else {
-                float *pos = &projectile->pos_x;
-                vec2f_t *position = (vec2f_t *)pos;
+                vec2f_t *position = (vec2f_t *)&projectile->pos_x;
                 if (projectile->pos_x < -64.0f
                     || projectile->pos.pos_y < -64.0f
                     || (float)(terrain_texture_width + 64)
@@ -134,7 +148,7 @@ extern "C" void projectile_update(void)
                                 || step + 3 >= step_count) {
                                 vec2_add(position, &delta);
                                 int hit_id = creature_find_in_radius(
-                                    pos,
+                                    position,
                                     projectile->pos.tail.vy.hit_radius,
                                     0);
 
@@ -148,7 +162,7 @@ extern "C" void projectile_update(void)
                                         if (owner_id != -100) {
                                             hit_id = player_find_in_radius(
                                                 owner_id,
-                                                pos,
+                                                position,
                                                 projectile->pos.tail.vy.hit_radius);
                                         }
                                         if (hit_id != -1) {
@@ -178,7 +192,7 @@ extern "C" void projectile_update(void)
                                         int count = 8;
                                         do {
                                             effect_spawn_blood_splatter(
-                                                pos,
+                                                position,
                                                 (float)(crt_rand() & 0xff)
                                                     * 0.024543693f,
                                                 0.0f);
@@ -187,7 +201,7 @@ extern "C" void projectile_update(void)
                                     } else if (type_id
                                         == PROJECTILE_TYPE_SPLITTER_GUN) {
                                         effect_spawn_splitter_hit_burst(
-                                            pos,
+                                            position,
                                             26.0f,
                                             3);
                                         projectile_spawn(
@@ -222,7 +236,7 @@ extern "C" void projectile_update(void)
                                             int count = 8;
                                             do {
                                                 effect_spawn_blood_splatter(
-                                                    pos,
+                                                    position,
                                                     projectile->angle
                                                         - 1.5707964f
                                                         + (float)(
@@ -233,7 +247,7 @@ extern "C" void projectile_update(void)
                                                 --count;
                                             } while (count != 0);
                                             effect_spawn_blood_splatter(
-                                                pos,
+                                                position,
                                                 projectile->angle
                                                     - 1.5707964f
                                                     + 3.1415927f,
@@ -242,13 +256,13 @@ extern "C" void projectile_update(void)
                                             int count = 2;
                                             do {
                                                 effect_spawn_blood_splatter(
-                                                    pos,
+                                                    position,
                                                     projectile->angle
                                                         - 1.5707964f,
                                                     0.0f);
                                                 if ((crt_rand() & 7) == 2) {
                                                     effect_spawn_blood_splatter(
-                                                        pos,
+                                                        position,
                                                         projectile->angle
                                                             - 1.5707964f
                                                             + 3.1415927f,
@@ -342,10 +356,12 @@ extern "C" void projectile_update(void)
                                     if (type_id
                                         == PROJECTILE_TYPE_ION_MINIGUN) {
                                         effect_spawn_ion_hit_core(
-                                            pos,
+                                            position,
                                             1.5f,
                                             0.1f);
-                                        effect_spawn_ion_hit_sparks(pos, 0.8f);
+                                        effect_spawn_ion_hit_sparks(
+                                            position,
+                                            0.8f);
                                     } else if (type_id
                                         == PROJECTILE_TYPE_ION_RIFLE) {
                                         if (shock_chain_links_left > 0
@@ -353,7 +369,7 @@ extern "C" void projectile_update(void)
                                                 == shock_chain_projectile_id) {
                                             --shock_chain_links_left;
                                             int next_id = creature_find_nearest(
-                                                (const vec2f_t *)pos,
+                                                position,
                                                 hit_id,
                                                 100.0f);
                                             bonus_spawn_guard = 1;
@@ -375,17 +391,21 @@ extern "C" void projectile_update(void)
                                             bonus_spawn_guard = 0;
                                         }
                                         effect_spawn_ion_hit_core(
-                                            pos,
+                                            position,
                                             1.2f,
                                             0.4f);
-                                        effect_spawn_ion_hit_sparks(pos, 1.2f);
+                                        effect_spawn_ion_hit_sparks(
+                                            position,
+                                            1.2f);
                                     } else if (type_id
                                         == PROJECTILE_TYPE_ION_CANNON) {
                                         effect_spawn_ion_hit_core(
-                                            pos,
+                                            position,
                                             1.0f,
                                             1.0f);
-                                        effect_spawn_ion_hit_sparks(pos, 2.2f);
+                                        effect_spawn_ion_hit_sparks(
+                                            position,
+                                            2.2f);
                                         sfx_play_panned(
                                             sfx_shockwave,
                                             position,
@@ -427,16 +447,16 @@ extern "C" void projectile_update(void)
                                             position,
                                             1.0f);
                                         effect_spawn_plasma_hit_core(
-                                            pos,
+                                            position,
                                             1.5f,
                                             1.0f);
                                         effect_spawn_plasma_hit_core(
-                                            pos,
+                                            position,
                                             1.0f,
                                             1.0f);
                                     } else if (type_id
                                         == PROJECTILE_TYPE_SHRINKIFIER) {
-                                        effect_spawn_shrinkifier_hit(pos);
+                                        effect_spawn_shrinkifier_hit(position);
                                         float size =
                                             creature_pool[hit_id].size * 0.65f;
                                         projectile->pos.tail.vy.life_timer =
@@ -631,7 +651,7 @@ extern "C" void projectile_update(void)
                                         } while (count != 0);
                                     } else {
                                         effect_spawn_freeze_shard(
-                                            (const vec2f_t *)pos,
+                                            position,
                                             projectile->angle
                                                 - 1.5707964f
                                                 + (float)(crt_rand() % 100)
@@ -831,16 +851,13 @@ extern "C" void projectile_update(void)
                         secondary->pos.pos_y
                             - (float)sin(trail_heading) * 9.0f,
                     };
-                    int effect_id = fx_spawn_sprite(
-                        &trail_pos.x,
-                        &trail_velocity.x,
-                        14.0f);
+                    int effect_id = fx_spawn_sprite(&trail_pos, &trail_velocity, 14.0f);
                     secondary->pos.vx.vy.trail_timer = 0.06f;
                     sprite_effect_pool[effect_id].color_a = 0.25f;
                 }
 
                 int hit_id = creature_find_in_radius(
-                    &secondary->pos_x,
+                    (const vec2f_t *)&secondary->pos_x,
                     8.0f,
                     0);
                 if (hit_id != -1) {
@@ -1037,8 +1054,8 @@ extern "C" void projectile_update(void)
                             (float)(sin(angle) * magnitude),
                         };
                         int effect_id = fx_spawn_sprite(
-                            &secondary->pos_x,
-                            &velocity.x,
+                            (const vec2f_t *)&secondary->pos_x,
+                            &velocity,
                             14.0f);
                         sprite_effect_pool[effect_id].color_a = 0.37f;
                         ++burst_index;
@@ -1174,7 +1191,7 @@ extern "C" void projectile_update(void)
 
                 if (particle->render_flag) {
                     int hit_id = creature_find_in_radius(
-                        &particle->pos_x,
+                        (const vec2f_t *)&particle->pos_x,
                         particle->intensity * 8.0f,
                         0);
                     if (hit_id != -1) {
@@ -1268,8 +1285,8 @@ extern "C" void projectile_update(void)
                                     (float)(crt_rand() % 60 - 30),
                                 };
                                 int effect_id = fx_spawn_sprite(
-                                    &hit_creature->pos_x,
-                                    &velocity.x,
+                                    (const vec2f_t *)&hit_creature->pos_x,
+                                    &velocity,
                                     13.0f);
                                 sprite_effect_pool[effect_id].color_a = 0.7f;
                             }

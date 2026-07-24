@@ -208,3 +208,11 @@ should improve original declaration/lifetime shape only when supported by
 control-flow evidence. No dummy locals, volatile expressions, forced
 references, inline assembly, or layout-only gotos are used to imitate the
 native frame.
+
+The primary projectile cursor is now one `vec2f_t *` from movement through
+radius queries, hit effects, child spawns, and panned audio; the parallel raw
+`float *pos` alias is gone. Sprite and radius-query boundaries also receive
+typed stack or embedded positions. Binary Ninja independently renders the
+corresponding calls as `&projectile->pos_x` vectors, and the saved creature
+cursor is now a `vec2f_t *`. The change preserves 46.9124%, 2,137/2,203
+instructions, and the `336/0/29` audit.

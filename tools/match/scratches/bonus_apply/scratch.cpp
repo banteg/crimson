@@ -65,7 +65,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
         effect_template_scale_step = 50.0f;
-        effect_spawn(1, &bonus_entry->time.pos_x);
+        effect_spawn(1, (const vec2f_t *)&bonus_entry->time.pos_x);
         effect_template_rotation = 0.0f;
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
@@ -123,7 +123,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         effect_template_vel_x = 0.0f;
         effect_template_vel_y = 0.0f;
         effect_template_scale_step = 50.0f;
-        effect_spawn(1, &bonus_entry->time.pos_x);
+        effect_spawn(1, (const vec2f_t *)&bonus_entry->time.pos_x);
         sfx_play_panned(
             sfx_shockwave,
             (const vec2f_t *)&bonus_entry->time.pos_x,
@@ -293,7 +293,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             effect_template_vel_x = (float)(crt_rand() % 128 - 64);
             effect_template_vel_y = (float)(crt_rand() % 128 - 64);
             effect_template_scale_step = 0.1f;
-            effect_spawn(0, &bonus_entry->time.pos_x);
+            effect_spawn(0, (const vec2f_t *)&bonus_entry->time.pos_x);
         }
     }
 }

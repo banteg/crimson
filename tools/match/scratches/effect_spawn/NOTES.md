@@ -23,3 +23,8 @@ that lowered argument as a read-only vector pointer and render `pos->x` and
 class directly by value changes VC6 alias analysis, loses one instruction, and
 falls to 61.23%; that probe is rejected rather than presented as the original
 class semantics.
+
+The standalone exact reconstruction now names that two-float class `vec2f_t`
+through the effect vertices, UV tables, constructor expressions, and spawn
+parameter. This removes the effect-only vector alias while preserving the
+350/350 instruction match and all 90 references.

@@ -17,5 +17,5 @@ void effect_spawn_ion_hit_core(
     effect_template.rotation = 0.0f;
     effect_template.vel_x = 0.0f;
     effect_template.vel_y = 0.0f;
-    effect_spawn(1, (float *)pos);
+    effect_spawn(1, pos);
 }

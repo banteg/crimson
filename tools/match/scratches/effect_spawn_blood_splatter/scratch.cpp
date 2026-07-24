@@ -39,6 +39,6 @@ extern "C" void effect_spawn_blood_splatter(
         effect_template.rotation_step = 0.0f;
         effect_template.scale_step =
             (float)(crt_rand() & 127) * 0.03f + 0.1f;
-        effect_spawn(7, (float *)pos);
+        effect_spawn(7, pos);
     } while (--remaining != 0);
 }

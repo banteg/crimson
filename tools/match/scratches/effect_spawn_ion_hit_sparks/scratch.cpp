@@ -42,6 +42,6 @@ extern "C" void effect_spawn_ion_hit_sparks(
             (float)((crt_rand() & 127) - 64) * scale * 1.4f;
         effect_template.scale_step =
             ((float)(crt_rand() % 100) * 0.01f + 0.1f) * scale;
-        effect_spawn(0, (float *)pos);
+        effect_spawn(0, pos);
     } while (--remaining != 0);
 }

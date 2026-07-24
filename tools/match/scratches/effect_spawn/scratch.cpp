@@ -1,15 +1,15 @@
-struct effect_vec2_cpp_t {
+struct vec2f_t {
     float x;
     float y;
 
-    effect_vec2_cpp_t(float x_value, float y_value)
+    vec2f_t(float x_value, float y_value)
         : x(x_value), y(y_value)
     {
     }
 
-    effect_vec2_cpp_t operator+(const effect_vec2_cpp_t &other) const
+    vec2f_t operator+(const vec2f_t &other) const
     {
-        return effect_vec2_cpp_t(x + other.x, y + other.y);
+        return vec2f_t(x + other.x, y + other.y);
     }
 };
 
@@ -26,10 +26,10 @@ struct effect_id_entry_t {
 };
 
 struct effect_vertex_t {
-    effect_vec2_cpp_t pos;
-    effect_vec2_cpp_t zrhw;
+    vec2f_t pos;
+    vec2f_t zrhw;
     unsigned int color;
-    effect_vec2_cpp_t tex;
+    vec2f_t tex;
 };
 
 struct effect_entry_t {
@@ -75,10 +75,10 @@ extern effect_entry_t effect_discard_entry;
 extern effect_entry_t *effect_free_list_head;
 extern effect_id_entry_t effect_id_table[];
 extern effect_template_t effect_template;
-extern effect_vec2_cpp_t effect_uv2[];
-extern effect_vec2_cpp_t effect_uv4[];
-extern effect_vec2_cpp_t effect_uv8[];
-extern effect_vec2_cpp_t effect_uv16[];
+extern vec2f_t effect_uv2[];
+extern vec2f_t effect_uv4[];
+extern vec2f_t effect_uv8[];
+extern vec2f_t effect_uv16[];
 extern float effect_uv_step_2;
 extern float effect_uv_step_4;
 extern float effect_uv_step_8;
@@ -88,25 +88,25 @@ extern float effect_uv_step_16;
 #define EFFECT_BUILD_QUAD(uv_table, uv_step)                                \
     do {                                                                    \
         entry->vertices[0].tex = (uv_table)[frame];                         \
-        entry->vertices[0].pos = effect_vec2_cpp_t(                         \
+        entry->vertices[0].pos = vec2f_t(                                  \
             -effect_template.half_width, -effect_template.half_height);     \
         entry->vertices[1].tex = (uv_table)[frame]                          \
-                + effect_vec2_cpp_t((uv_step), 0.0f);                       \
-        entry->vertices[1].pos = effect_vec2_cpp_t(                         \
+                + vec2f_t((uv_step), 0.0f);                                \
+        entry->vertices[1].pos = vec2f_t(                                  \
             effect_template.half_width, -effect_template.half_height);      \
         entry->vertices[2].tex = (uv_table)[frame]                          \
-                + effect_vec2_cpp_t((uv_step), (uv_step));                  \
-        entry->vertices[2].pos = effect_vec2_cpp_t(                         \
+                + vec2f_t((uv_step), (uv_step));                           \
+        entry->vertices[2].pos = vec2f_t(                                  \
             effect_template.half_width, effect_template.half_height);       \
         entry->vertices[3].tex = (uv_table)[frame]                          \
-                + effect_vec2_cpp_t(0.0f, (uv_step));                       \
-        entry->vertices[3].pos = effect_vec2_cpp_t(                         \
+                + vec2f_t(0.0f, (uv_step));                                \
+        entry->vertices[3].pos = vec2f_t(                                  \
             -effect_template.half_width, effect_template.half_height);      \
     } while (0)
 
 extern "C" effect_entry_t *effect_spawn(
     int effect_id,
-    const effect_vec2_cpp_t *pos)
+    const vec2f_t *pos)
 {
     if (config_detail_preset <= 2) {
         if ((effect_spawn_detail_skip_counter++ & 1) != 0) {

@@ -52,7 +52,7 @@ extern "C" bonus_entry_t *bonus_spawn_at(
         effect_template_vel_x = (float)(crt_rand() % 128 - 64);
         effect_template_vel_y = (float)(crt_rand() % 128 - 64);
         effect_template_scale_step = (float)(crt_rand() % 100) * 0.01f + 0.1f;
-        effect_spawn(0, (float *)pos);
+        effect_spawn(0, pos);
         --count;
     } while (count != 0);
 

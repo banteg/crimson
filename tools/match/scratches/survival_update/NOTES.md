@@ -34,3 +34,10 @@ independent scalars, and alternate lexical scopes all produce less plausible
 or materially worse code. The residual is recorded rather than hidden with a
 union, volatile state, alias tricks, dummy expressions, or artificial
 dependencies.
+
+The random edge-spawn phase now passes each stack position as a complete
+`const vec2f_t *` to the shared `survival_spawn_creature` contract rather than
+taking the address of its first float member. Binary Ninja confirms that
+prototype at `0x00407510` and identifies the stack locals as vector aggregates.
+The change preserves the honest 98.21% score, exact 504-instruction count, and
+all 139 references.

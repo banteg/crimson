@@ -13,7 +13,7 @@ typedef struct particle_scale_t {
 extern "C" int fx_spawn_particle(
     const vec2f_t *pos,
     float angle,
-    void *,
+    const vec2f_t *,
     float intensity)
 {
     particle_scale_t scale;
