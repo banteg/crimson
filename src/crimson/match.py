@@ -1515,12 +1515,18 @@ class ImageTotals:
     byte_total: int
     matched_functions: int
     matched_bytes: int
+    candidate_functions: int
+    candidate_bytes: int
     scratch_count: int
     matched_scratches: int
 
     @property
     def byte_percentage(self) -> float:
         return self.matched_bytes / self.byte_total if self.byte_total else 0.0
+
+    @property
+    def candidate_byte_percentage(self) -> float:
+        return self.candidate_bytes / self.byte_total if self.byte_total else 0.0
 
 
 def load_scratch_config(directory: Path) -> ScratchConfig:
@@ -2106,7 +2112,16 @@ def collect_scratch_statuses(
 
 
 STATUS_HEADER = ("state", "image", "function", "address", "bytes", "insns", "match", "prefix", "refs", "build", "note")
-IMAGE_TOTALS_HEADER = ("image", "functions", "bytes", "code", "scratches")
+IMAGE_TOTALS_HEADER = (
+    "image",
+    "exact functions",
+    "exact bytes",
+    "exact code",
+    "candidate functions",
+    "candidate bytes",
+    "candidate code",
+    "scratches",
+)
 
 
 def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
@@ -2123,7 +2138,13 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
         byte_total = sum(len(image.function_bytes(function.address, function.end)) for function in manifest.functions)
         image_statuses = [status for status in statuses if status.config.image == image_name]
         matched_by_function: dict[int, int] = {}
+        candidate_by_function: dict[int, int] = {}
         for status in image_statuses:
+            if status.ratio is not None:
+                candidate_by_function[status.address] = max(
+                    candidate_by_function.get(status.address, 0),
+                    status.target_size,
+                )
             if status.state == "match":
                 matched_by_function[status.address] = max(
                     matched_by_function.get(status.address, 0),
@@ -2136,6 +2157,8 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
                 byte_total=byte_total,
                 matched_functions=len(matched_by_function),
                 matched_bytes=sum(matched_by_function.values()),
+                candidate_functions=len(candidate_by_function),
+                candidate_bytes=sum(candidate_by_function.values()),
                 scratch_count=len(image_statuses),
                 matched_scratches=sum(1 for status in image_statuses if status.state == "match"),
             ),
@@ -2181,6 +2204,9 @@ def render_image_total_rows(totals: list[ImageTotals]) -> list[tuple[str, ...]]:
             f"{total.matched_functions}/{total.function_count}",
             f"{total.matched_bytes}/{total.byte_total}",
             f"{total.byte_percentage:.1%}",
+            f"{total.candidate_functions}/{total.function_count}",
+            f"{total.candidate_bytes}/{total.byte_total}",
+            f"{total.candidate_byte_percentage:.1%}",
             f"{total.matched_scratches}/{total.scratch_count}",
         )
         for total in totals
@@ -2194,6 +2220,8 @@ def _overall_totals(totals: list[ImageTotals]) -> ImageTotals:
         byte_total=sum(total.byte_total for total in totals),
         matched_functions=sum(total.matched_functions for total in totals),
         matched_bytes=sum(total.matched_bytes for total in totals),
+        candidate_functions=sum(total.candidate_functions for total in totals),
+        candidate_bytes=sum(total.candidate_bytes for total in totals),
         scratch_count=sum(total.scratch_count for total in totals),
         matched_scratches=sum(total.matched_scratches for total in totals),
     )
@@ -2204,6 +2232,9 @@ def _image_summary(total: ImageTotals) -> str:
         f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
         f"{total.matched_bytes}/{total.byte_total} bytes "
         f"({total.byte_percentage:.1%}) matched; "
+        f"{total.candidate_functions}/{total.function_count} source candidates covering "
+        f"{total.candidate_bytes}/{total.byte_total} bytes "
+        f"({total.candidate_byte_percentage:.1%}); "
         f"{total.matched_scratches}/{total.scratch_count} scratches verified"
     )
 
@@ -2217,6 +2248,9 @@ def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]
         f"\nall images: {overall.matched_functions}/{overall.function_count} functions, "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
+        f"{overall.candidate_functions}/{overall.function_count} source candidates covering "
+        f"{overall.candidate_bytes}/{overall.byte_total} bytes "
+        f"({overall.candidate_byte_percentage:.1%}); "
         f"{overall.matched_scratches}/{overall.scratch_count} scratches verified",
     )
     lines.append("by image:")
@@ -2231,15 +2265,20 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
         "",
         "Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.",
         "",
-        f"**{overall.matched_functions}/{overall.function_count}** functions matched, "
+        f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly, "
         f"**{overall.matched_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.byte_percentage:.1%}**). Byte totals are manifest function "
         "extents with terminal padding trimmed.",
         "",
+        f"Compilable source candidates cover **{overall.candidate_functions}/{overall.function_count}** "
+        f"functions and **{overall.candidate_bytes}/{overall.byte_total}** code bytes "
+        f"(**{overall.candidate_byte_percentage:.1%}**). Candidate coverage includes exact "
+        "matches and WIPs; it does not claim byte identity.",
+        "",
         "## Images",
         "",
         "| " + " | ".join(IMAGE_TOTALS_HEADER) + " |",
-        "|---|---:|---:|---:|---:|",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in render_image_total_rows(totals):
         lines.append("| " + " | ".join(row) + " |")
@@ -2253,6 +2292,9 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
                 f"**{total.matched_functions}/{total.function_count}** functions, "
                 f"**{total.matched_bytes}/{total.byte_total}** bytes "
                 f"(**{total.byte_percentage:.1%}**), "
+                f"**{total.candidate_functions}/{total.function_count}** source candidates covering "
+                f"**{total.candidate_bytes}/{total.byte_total}** bytes "
+                f"(**{total.candidate_byte_percentage:.1%}**), "
                 f"**{total.matched_scratches}/{total.scratch_count}** scratches verified.",
                 "",
                 "| state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |",

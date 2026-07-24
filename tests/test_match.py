@@ -870,6 +870,8 @@ def test_render_status_rows_includes_prefix() -> None:
             byte_total=1000,
             matched_functions=0,
             matched_bytes=0,
+            candidate_functions=1,
+            candidate_bytes=10,
             scratch_count=1,
             matched_scratches=0,
         ),
@@ -879,16 +881,30 @@ def test_render_status_rows_includes_prefix() -> None:
             byte_total=2000,
             matched_functions=0,
             matched_bytes=0,
+            candidate_functions=0,
+            candidate_bytes=0,
             scratch_count=0,
             matched_scratches=0,
         ),
     ]
-    assert render_image_total_rows(totals)[0] == ("crimsonland.exe", "0/10", "0/1000", "0.0%", "0/1")
-    assert "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; 0/1 scratches verified" in (
-        render_status_table([status], totals)
+    assert render_image_total_rows(totals)[0] == (
+        "crimsonland.exe",
+        "0/10",
+        "0/1000",
+        "0.0%",
+        "1/10",
+        "10/1000",
+        "1.0%",
+        "0/1",
     )
+    assert (
+        "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; "
+        "1/30 source candidates covering 10/3000 bytes (0.3%); "
+        "0/1 scratches verified"
+    ) in render_status_table([status], totals)
     markdown = render_status_markdown([status], totals)
-    assert "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 0/1 |" in markdown
+    assert "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 1/10 | 10/1000 | 1.0% | 0/1 |" in markdown
+    assert "Candidate coverage includes exact matches and WIPs" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
     assert "| wip | foo | 0x00401000 | 10 | 5/4 | 50.00% | 2/4 | 0/0/0 |  | branch |" in markdown
@@ -1085,6 +1101,8 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             byte_total=6,
             matched_functions=1,
             matched_bytes=3,
+            candidate_functions=2,
+            candidate_bytes=6,
             scratch_count=3,
             matched_scratches=2,
         ),
@@ -1094,6 +1112,8 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             byte_total=2,
             matched_functions=0,
             matched_bytes=0,
+            candidate_functions=0,
+            candidate_bytes=0,
             scratch_count=0,
             matched_scratches=0,
         ),

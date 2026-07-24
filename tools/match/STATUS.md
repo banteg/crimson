@@ -2,18 +2,20 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**718/2173** functions matched, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**718/2173** functions matched exactly, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+
+Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Images
 
-| image | functions | bytes | code | scratches |
-|---|---:|---:|---:|---:|
-| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 501/621 |
-| grim.dll | 217/1176 | 26687/289925 | 9.2% | 217/225 |
+| image | exact functions | exact bytes | exact code | candidate functions | candidate bytes | candidate code | scratches |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 621/997 | 319177/386756 | 82.5% | 501/621 |
+| grim.dll | 217/1176 | 26687/289925 | 9.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**501/997** functions, **107380/386756** bytes (**27.8%**), **501/621** scratches verified.
+**501/997** functions, **107380/386756** bytes (**27.8%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -641,7 +643,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 ## grim.dll
 
-**217/1176** functions, **26687/289925** bytes (**9.2%**), **217/225** scratches verified.
+**217/1176** functions, **26687/289925** bytes (**9.2%**), **225/1176** source candidates covering **30370/289925** bytes (**10.5%**), **217/225** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
