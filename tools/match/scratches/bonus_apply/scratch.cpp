@@ -156,7 +156,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         float dx = target_pos[0] - bonus_pos[0];
         float dy = target_pos[1] - bonus_pos[1];
         shock_chain_projectile_id = projectile_spawn(
-            bonus_pos,
+            (const vec2f_t *)bonus_pos,
             (float)atan2(dy, dx) - 1.5707964f - 3.1415927f,
             PROJECTILE_TYPE_ION_RIFLE,
             owner);
@@ -173,7 +173,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         }
         for (int ring_iter = 0; ring_iter < 16; ++ring_iter) {
             projectile_spawn(
-                &bonus_entry->time.pos_x,
+                (const vec2f_t *)&bonus_entry->time.pos_x,
                 (float)ring_iter * 0.39269909f,
                 PROJECTILE_TYPE_PLASMA_RIFLE,
                 owner);
@@ -212,7 +212,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         int bullet_count = (crt_rand() & 3) + 4;
         for (int bullet_iter = 0; bullet_iter < bullet_count; ++bullet_iter) {
             int projectile_index = projectile_spawn(
-                &bonus_entry->time.pos_x,
+                (const vec2f_t *)&bonus_entry->time.pos_x,
                 (float)(crt_rand() % 628) * 0.01f,
                 PROJECTILE_TYPE_PISTOL,
                 -100);
@@ -224,12 +224,12 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
 
         float *bonus_pos = &bonus_entry->time.pos_x;
         projectile_spawn(
-            bonus_pos,
+            (const vec2f_t *)bonus_pos,
             (float)(crt_rand() % 628) * 0.01f,
             PROJECTILE_TYPE_GAUSS_GUN,
             -100);
         projectile_spawn(
-            bonus_pos,
+            (const vec2f_t *)bonus_pos,
             (float)(crt_rand() % 628) * 0.01f,
             PROJECTILE_TYPE_GAUSS_GUN,
             -100);

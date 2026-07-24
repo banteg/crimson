@@ -560,7 +560,7 @@ extern "C" void creature_update_all(void)
                                     & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0
                                 && *attack_cooldown <= 0.0f) {
                                 projectile_spawn(
-                                    pos,
+                                    position,
                                     creature_pool[creature_index].heading,
                                     PROJECTILE_TYPE_PLASMA_RIFLE,
                                     creature_index);
@@ -571,7 +571,7 @@ extern "C" void creature_update_all(void)
                                     & CREATURE_FLAG_RANGED_ATTACK_VARIANT) != 0
                                 && *attack_cooldown <= 0.0f) {
                                 projectile_spawn(
-                                    pos,
+                                    position,
                                     creature_pool[creature_index].heading,
                                     creature_pool[creature_index].orbit_radius.projectile_type,
                                     creature_index);

@@ -192,7 +192,7 @@ extern "C" void player_update(void)
             do {
                 if ((projectile_index & 1) != 0) {
                     projectile_spawn(
-                        player_pos,
+                        player_position,
                         (float)projectile_index * 0.7853982f
                             + (float)(crt_rand() % 0x32) * 0.01f
                             - 0.25f,
@@ -200,7 +200,7 @@ extern "C" void player_update(void)
                         owner_id);
                 } else {
                     projectile_spawn(
-                        player_pos,
+                        player_position,
                         (float)projectile_index * 0.7853982f
                             + (float)(crt_rand() % 0x32) * 0.01f
                             - 0.25f,
@@ -275,7 +275,7 @@ extern "C" void player_update(void)
             movement_input.x = movement_input.x + player_position->x;
             movement_input.y = movement_input.y + player_position->y;
             projectile_spawn(
-                &movement_input.x,
+                &movement_input,
                 shot_heading,
                 PROJECTILE_TYPE_FIRE_BULLETS,
                 owner_id);
@@ -313,7 +313,7 @@ extern "C" void player_update(void)
             int projectile_index = 0;
             do {
                 projectile_spawn(
-                    player_pos,
+                    player_position,
                     (float)projectile_index * 0.7853982f,
                     (projectile_index & 1) != 0
                         ? PROJECTILE_TYPE_PLASMA_RIFLE
@@ -847,7 +847,7 @@ extern "C" void player_update(void)
                 angle_step = 6.2831855f / (float)projectile_count;
                 do {
                     projectile_spawn(
-                        player_pos,
+                        player_position,
                         (float)projectile_index * angle_step + 0.1f,
                         PROJECTILE_TYPE_PLASMA_MINIGUN,
                         owner_id);
@@ -1187,7 +1187,7 @@ extern "C" void player_update(void)
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     scalar,
                     PROJECTILE_TYPE_FIRE_BULLETS,
                     owner_id);
@@ -1227,7 +1227,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_SHRINKIFIER,
                     owner_id);
@@ -1262,7 +1262,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);
@@ -1323,7 +1323,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ASSAULT_RIFLE,
                     owner_id);
@@ -1360,7 +1360,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
@@ -1389,7 +1389,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
@@ -1432,7 +1432,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.004f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
@@ -1506,7 +1506,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_SUBMACHINE_GUN,
                     owner_id);
@@ -1515,7 +1515,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
@@ -1523,35 +1523,35 @@ extern "C" void player_update(void)
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     angle_step - 0.31415927f,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     angle_step - 0.5235988f,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     angle_step + 0.5235988f,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
                 scratch_pos.x = movement_input.x + player_position->x;
                 scratch_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &scratch_pos.x,
+                    &scratch_pos,
                     angle_step + 0.31415927f,
                     PROJECTILE_TYPE_PLASMA_RIFLE,
                     owner_id);
@@ -1560,7 +1560,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PULSE_GUN,
                     owner_id);
@@ -1569,7 +1569,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_BLADE_GUN,
                     owner_id);
@@ -1578,7 +1578,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_SPLITTER_GUN,
                     owner_id);
@@ -1587,7 +1587,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_RIFLE,
                     owner_id);
@@ -1596,7 +1596,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_MINIGUN,
                     owner_id);
@@ -1605,7 +1605,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_ION_CANNON,
                     owner_id);
@@ -1614,7 +1614,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_CANNON,
                     owner_id);
@@ -1624,7 +1624,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.0026f
                             + angle_step,
                         PROJECTILE_TYPE_ION_MINIGUN,
@@ -1639,7 +1639,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLASMA_MINIGUN,
                     owner_id);
@@ -1676,7 +1676,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)(crt_rand() % 200 - 100) * 0.002f
                             + angle_step,
                         PROJECTILE_TYPE_GAUSS_GUN,
@@ -1717,7 +1717,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_GAUSS_GUN,
                     owner_id);
@@ -1859,7 +1859,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PISTOL,
                     owner_id);
@@ -1869,7 +1869,7 @@ extern "C" void player_update(void)
                     scratch_pos.x = movement_input.x + player_position->x;
                     scratch_pos.y = movement_input.y + player_position->y;
                     int projectile_index = projectile_spawn(
-                        &scratch_pos.x,
+                        &scratch_pos,
                         (float)((crt_rand() & 0xff) - 0x80) * 0.002f
                             + angle_step,
                         PROJECTILE_TYPE_PLASMA_MINIGUN,
@@ -1884,7 +1884,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_PLAGUE_SPREADER,
                     owner_id);
@@ -1893,7 +1893,7 @@ extern "C" void player_update(void)
                 spawn_pos.x = movement_input.x + player_position->x;
                 spawn_pos.y = movement_input.y + player_position->y;
                 projectile_spawn(
-                    &spawn_pos.x,
+                    &spawn_pos,
                     angle_step,
                     PROJECTILE_TYPE_RAINBOW_GUN,
                     owner_id);

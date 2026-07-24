@@ -96,6 +96,7 @@ extern "C" void projectile_update(void)
                 }
             } else {
                 float *pos = &projectile->pos_x;
+                vec2f_t *position = (vec2f_t *)pos;
                 if (projectile->pos_x < -64.0f
                     || projectile->pos.pos_y < -64.0f
                     || (float)(terrain_texture_width + 64)
@@ -190,12 +191,12 @@ extern "C" void projectile_update(void)
                                             26.0f,
                                             3);
                                         projectile_spawn(
-                                            pos,
+                                            position,
                                             projectile->angle - 1.0471976f,
                                             PROJECTILE_TYPE_SPLITTER_GUN,
                                             hit_id);
                                         projectile_spawn(
-                                            pos,
+                                            position,
                                             projectile->angle + 1.0471976f,
                                             PROJECTILE_TYPE_SPLITTER_GUN,
                                             hit_id);
@@ -365,7 +366,7 @@ extern "C" void projectile_update(void)
                                                         .pos_x);
                                             shock_chain_projectile_id =
                                                 projectile_spawn(
-                                                    pos,
+                                                    position,
                                                     chain_angle
                                                         - 1.5707964f
                                                         - 3.1415927f,
@@ -410,7 +411,7 @@ extern "C" void projectile_update(void)
                                                     * child_radius)
                                                 + projectile->pos.pos_y;
                                             projectile_spawn(
-                                                &child_pos.x,
+                                                &child_pos,
                                                 child_angle,
                                                 PROJECTILE_TYPE_PLASMA_RIFLE,
                                                 -100);

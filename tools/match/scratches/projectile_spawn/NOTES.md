@@ -27,6 +27,14 @@ type rules, so it is naming and source-lineage evidence rather than a byte-match
 oracle. It strongly suggests `ShootBullet` as the historical source-level name
 for this family.
 
+The same symbol also recovers the first parameter as a two-component vector,
+not an unstructured `float *`. The Windows body independently confirms that
+shape by reading exactly the two adjacent floats and copying them to both the
+projectile position and origin. The shared declaration, source, recovered
+callers, and live Binary Ninja prototype therefore use `const vec2f_t *`; this
+is ABI-neutral and leaves all six affected caller/callee match scores
+unchanged.
+
 ## Remaining compiler delta
 
 The native function allocates one four-byte stack local, stores `1.0f` into it

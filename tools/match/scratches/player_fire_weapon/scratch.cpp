@@ -193,7 +193,7 @@ extern "C" void player_fire_weapon(
                     effect_position.y =
                         player_position->y + local_offset.y;
                     int projectile_index = projectile_spawn(
-                        (float *)&effect_position,
+                        (const vec2f_t *)&effect_position,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + shot_heading,
                         PROJECTILE_TYPE_SHOTGUN,

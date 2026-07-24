@@ -323,7 +323,11 @@ void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_freeze_shard(float *pos, float angle);
 void effect_spawn_freeze_shatter(float *pos, float angle);
 void effect_spawn_explosion_burst(float *pos, float scale);
-int projectile_spawn(float *pos, float angle, int type_id, int owner_id);
+int projectile_spawn(
+    const vec2f_t *pos,
+    float angle,
+    int type_id,
+    int owner_id);
 int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta);
 int creature_alloc_slot(void);
 int creature_spawn_tinted(float *pos, float *rgba, int type_id);
