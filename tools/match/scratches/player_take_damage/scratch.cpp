@@ -70,7 +70,7 @@ post_damage:
 
         if (perk_count_get(perk_id_final_revenge) != 0) {
             const vec2f_t *player_pos =
-                (const vec2f_t *)&player_state_table[player_index].pos_x;
+                &player_state_table[player_index].position;
             effect_spawn_explosion_burst(player_pos, 1.8f);
             bonus_spawn_guard = 1;
 

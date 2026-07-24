@@ -171,8 +171,8 @@ extern "C" void perks_update_effects(void)
 
     if (crt_rand() % 10 == 3) {
         player_state_table[0].health -= 5.0f;
-        fx_queue_add_random((vec2f_t *)&player_state_table[0].pos_x);
-        fx_queue_add_random((vec2f_t *)&player_state_table[0].pos_x);
+        fx_queue_add_random(&player_state_table[0].position);
+        fx_queue_add_random(&player_state_table[0].position);
     }
 
     perk_jinxed_proc_timer_s =

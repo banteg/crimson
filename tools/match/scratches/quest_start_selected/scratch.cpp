@@ -44,7 +44,7 @@ extern "C" void quest_start_selected(int tier, int index)
 
     player_pos.x = (float)terrain_texture_width * 0.5f;
     player_pos.y = (float)terrain_texture_height * 0.5f;
-    *(vec2f_t *)&player_state_table[0].pos_x = player_pos;
+    player_state_table[0].position = player_pos;
 
     int quest_index = tier * 10 + index - 11;
     quest_meta_t *quest = &quest_selected_meta[quest_index];

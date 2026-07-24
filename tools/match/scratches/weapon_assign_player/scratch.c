@@ -24,7 +24,7 @@ void weapon_assign_player(int player_index, int weapon_id)
 
     {
         const vec2f_t *player_pos =
-            (const vec2f_t *)&player_state_table[player_index].pos_x;
+            &player_state_table[player_index].position;
         int reload_sfx_id = weapon_table[original_weapon_id].reload_sfx_id;
         player_state_table[player_index].ammo = player_state_table[player_index].clip_size;
         player_state_table[player_index].weapon_reset_latch = 0;

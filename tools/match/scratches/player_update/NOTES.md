@@ -419,3 +419,12 @@ scalar aliases preserve every existing field access and the `0x360` ABI.
 pointer casts, while the exact global constructor and near-exact gameplay
 reset retain their native constructor lowering. The 4,206-instruction update
 remains at `54.81%` with `736/0/11` references.
+
+The position aggregate is now propagated through all remaining scratch
+consumers: radius queries, demo/quest setup, perk and bonus effects, player
+damage, overlays, projectile rendering, weapon assignment, and player reset.
+Eight exact consumers retain byte identity; the larger render/perk/reset WIPs
+retain their previous instruction counts, scores, and reference audits. Custom
+C++ vector wrappers still reinterpret the named `position` object where their
+operator lowering is required, but no consumer reconstructs it from
+`&pos_x`.

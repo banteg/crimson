@@ -483,7 +483,7 @@ extern "C" void player_render_overlays(void)
             ++player_index, ++line_player) {
             if (line_player->player_reserved_98 > 0.25f) {
                 if (player_render_distance(
-                        *(player_render_vec2_t *)&line_player->pos_x,
+                        *(player_render_vec2_t *)&line_player->position,
                         *(player_render_vec2_t *)&creature_pool
                             [line_player->auto_target]
                                 .position)

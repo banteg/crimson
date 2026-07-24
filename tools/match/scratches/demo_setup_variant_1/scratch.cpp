@@ -40,12 +40,12 @@ extern "C" void demo_setup_variant_1(void)
     vec2f_t player_0_pos;
     player_0_pos.x = 490.0f;
     player_0_pos.y = 448.0f;
-    *(vec2f_t *)&player_state_table[0].pos_x = player_0_pos;
+    player_state_table[0].position = player_0_pos;
 
     vec2f_t player_1_pos;
     player_1_pos.x = 480.0f;
     player_1_pos.y = 576.0f;
-    *(vec2f_t *)&player_state_table[1].pos_x = player_1_pos;
+    player_state_table[1].position = player_1_pos;
 
     weapon_assign_player(0, 5);
     weapon_assign_player(1, 5);

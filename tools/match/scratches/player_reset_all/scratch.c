@@ -38,7 +38,7 @@ void player_reset_all(void)
         player_state_table[render_overlay_player_index].shield_timer = 0.0f;
         player_state_table[render_overlay_player_index].state_aux = 0;
         player_state_table[render_overlay_player_index].plaguebearer_active = 0;
-        *(reset_vec2_t *)&player_state_table[render_overlay_player_index].pos_x =
+        *(reset_vec2_t *)&player_state_table[render_overlay_player_index].position =
             center;
         player_state_table[render_overlay_player_index].health = 100.0f;
 

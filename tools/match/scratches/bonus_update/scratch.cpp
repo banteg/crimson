@@ -51,7 +51,7 @@ extern "C" void bonus_update(void)
                         player_count = config_player_count;
                         if (vec2_distance(
                                 &bonus->time.position,
-                                (vec2f_t *)&player_state_table[player_index].pos_x)
+                                &player_state_table[player_index].position)
                             < pickup_radius) {
                             bonus_apply(player_index, bonus);
                             player_count = config_player_count;

@@ -22,7 +22,7 @@ extern "C" int player_find_in_radius(
         if (player_index != skip_index
             && player_state_table[player_index].health > 0.0f
             && vec2_distance(
-                    (vec2f_t *)&player_state_table[player_index].pos_x,
+                    &player_state_table[player_index].position,
                     pos)
                     - radius
                 < player_state_table[player_index].size * 0.14285715f + 3.0f) {

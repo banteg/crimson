@@ -126,7 +126,7 @@ extern "C" void projectile_render(float transition_alpha)
         if (player->health > 0.0f) {
             float heading = player->aim_heading - 1.5707964f;
             projectile_render_vec2_t player_pos =
-                *(projectile_render_vec2_t *)&player->pos_x;
+                *(projectile_render_vec2_t *)&player->position;
             projectile_render_vec2_t end_pos =
                 player_pos
                 + projectile_render_vec2_t(

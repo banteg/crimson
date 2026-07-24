@@ -171,7 +171,7 @@ extern "C" void perk_apply(int perk_id)
             player_state_t *player = (player_state_t *)(
                 (char *)cursor - offsetof(player_state_t, health));
             effect_spawn_burst(
-                (const vec2f_t *)&player->pos_x,
+                &player->position,
                 8);
             player_count = config_player_count;
             ++i;
