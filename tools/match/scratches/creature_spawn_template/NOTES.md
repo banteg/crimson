@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=77.38% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
+match=80.36% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -316,3 +316,11 @@ Frame/prefix notes:
   `77.38%`, and gains 41 fuzzy-weighted bytes without changing instruction
   count, frame, prefix, or references. Moving the root tint earlier and three
   alternative stat orders were measured separately and rejected.
+- The five grid roots assign health after constructing their tint value but
+  before copying it, while each grid child assigns max-health after its tint
+  copy. VC6 interleaves those ordinary statements into the native repeated
+  root and child schedules. Recovering both shared orders raises the score
+  from `77.38%` to `80.36%` and gains 420 fuzzy-weighted bytes with the same
+  3,078 candidate instructions, exact frame, prefix, and `349/0/1` reference
+  audit. Root reward/speed permutations and tint-before-health child order
+  were independently probed and rejected.

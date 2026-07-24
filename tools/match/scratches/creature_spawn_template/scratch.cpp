@@ -96,8 +96,8 @@ typedef union creature_spawn_template_locals_t {
         creature->pos_y = pos[1];                                                                           \
         creature->ai_mode = (root_ai_mode);                                                                 \
         child_tint.set((red), (green), (blue), 1.0f);                                                       \
-        *(creature_tint_t *)&creature->tint_r = child_tint;                                                \
         creature->health = (health_value);                                                                  \
+        *(creature_tint_t *)&creature->tint_r = child_tint;                                                \
         creature->move_speed = (speed_value);                                                               \
         creature->reward_value = 600.0f;                                                                    \
         creature->size = (size_value);                                                                      \
@@ -121,8 +121,8 @@ typedef union creature_spawn_template_locals_t {
         *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;                                                       \
         *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;                                                        \
         creature->health = (child_health);                                                                                 \
-        creature->max_health = (child_health);                                                                             \
         *(creature_tint_t *)&creature->tint_r = child_tint;                                                                \
+        creature->max_health = (child_health);                                                                             \
         grid_vertical_offset = grid_vertical_offset + 0x40;                                                                \
         creature->collision_flag = 0;                                                                                      \
         creature->collision_timer = 0.0f;                                                                                  \
