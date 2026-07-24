@@ -1,9 +1,9 @@
-# bonus_try_spawn_on_kill WIP
+# bonus_try_spawn_on_kill
 
-Current best local score:
+Current verified match:
 
 ```txt
-match=91.43% prefix=6/207 target_insns=207 candidate_insns=213 refs=47/0/0
+match=100.00% prefix=207/207 target_insns=207 candidate_insns=207 refs=47/0/0
 ```
 
 The recovered source matches the mode and demo gates, two-player Pistol force
@@ -39,11 +39,11 @@ well. It had continued to admit a Pistol from any port-side player even under
 materialize a Weapon drop that native never attempts. Focused two- and
 three-player regressions pin the exact `player_count == 2` boundary.
 
-The two general-path suppressions are expressed as independent guards. This
-plausible spelling prevents VC6 from folding both into the forced-path cleanup
-and raises the fuzzy match from 88.24% to 91.43% without volatile data, dead
-expressions, or register forcing. It is still not an exact CFG: native shares
-one cleanup between the duplicate and current-weapon checks, while VC6 emits
-one cleanup for each, leaving six extra candidate instructions. Combining the
-conditions tail-merges all three cleanups and regresses the score; a layout-only
-`goto` remains intentionally rejected.
+The two general-path suppressions assign a local rejection flag before one
+shared cleanup. This natural control-flow shape reproduces the native branch
+layout exactly: the duplicate-count and current-weapon checks converge without
+also merging the distinct forced-path cleanup. It replaces six extra
+instructions from the independent-guard spelling and raises the match from
+91.43% to exact. Combining the conditions instead tail-merges all three cleanup
+paths and regresses the score; no `goto`, volatile data, dead expression, or
+register forcing is retained.

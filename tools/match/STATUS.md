@@ -2,9 +2,9 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**719/2173** functions matched exactly, **134444/676681** code bytes (**19.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289489/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289552/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 502/997 | 107757/386756 | 27.9% | 259913/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 502/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 259976/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**502/997** functions, **107757/386756** bytes (**27.9%**), **259913/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **502/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **259976/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -322,7 +322,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 46/46 | 0 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
 | match | bonus_spawn_at | 0x0041f5b0 | 479 | 479/479 | 0 | 128/128 | 100.00% | 128/128 | 28/0/0 |  | gameplay-bonus-spawn |
 | wip | bonus_spawn_at_pos | 0x0041f790 | 309 | 273/309 | 36 | 100/99 | 88.44% | 0/99 | 14/0/0 |  | gameplay-bonus-spawn |
-| wip | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 667/730 | 63 | 213/207 | 91.43% | 6/207 | 47/0/0 |  | gameplay-bonus-drop |
+| match | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 730/730 | 0 | 207/207 | 100.00% | 207/207 | 47/0/0 |  | gameplay-bonus-drop |
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 175/175 | 0 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
 | match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 536/584 | 48 | 130/127 | 91.83% | 94/127 | 57/0/1 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |

@@ -78,10 +78,14 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
                 ++scan;
             } while ((int)scan < (int)&bonus_pool[16]);
         }
+        bool reject = false;
         if (duplicate_count >= 2) {
-            entry->bonus_id = BONUS_ID_NONE;
-            return;
-        } else if (entry->time.amount == player_state_table[0].weapon_id) {
+            reject = true;
+        } else if (
+            entry->time.amount == player_state_table[0].weapon_id) {
+            reject = true;
+        }
+        if (reject) {
             entry->bonus_id = BONUS_ID_NONE;
             return;
         }
