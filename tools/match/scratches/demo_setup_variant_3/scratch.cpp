@@ -2,7 +2,6 @@
 
 extern "C" int demo_time_limit_ms;
 extern "C" void terrain_generate(quest_meta_t *quest);
-extern "C" void *creature_spawn_template(int template_id, float *pos, float heading);
 
 extern "C" void demo_setup_variant_3(void)
 {

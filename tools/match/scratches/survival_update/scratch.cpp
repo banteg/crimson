@@ -26,11 +26,6 @@ extern "C" int quest_spawn_timeline;
 extern "C" int demo_time_limit_ms;
 extern "C" survival_vec2_t survival_recent_death_pos[3];
 
-extern "C" void *creature_spawn_template(
-    int template_id,
-    float *pos,
-    float heading
-);
 extern "C" void survival_spawn_creature(float *pos);
 extern "C" void demo_mode_start(void);
 

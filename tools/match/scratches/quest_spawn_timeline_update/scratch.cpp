@@ -24,7 +24,6 @@ struct quest_timeline_entry_t {
 extern "C" int frame_dt_ms;
 extern "C" int quest_spawn_timeline;
 extern "C" int quest_spawn_stall_timer_ms;
-extern "C" void *creature_spawn_template(int template_id, float *pos, float heading);
 
 extern "C" void quest_spawn_timeline_update(void)
 {

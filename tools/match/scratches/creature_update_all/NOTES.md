@@ -114,6 +114,14 @@ final body culling.
   and damage ownership still use the selected player. Both ports now preserve
   that split in bug-compatible mode; corrected mode retains per-target contact
   perks and an any-player Radioactive gate. Plaguebearer was already slot-zero.
+- The player table shares the entity prefix already recovered in the source
+  header: active byte, phase seed, state and Plaguebearer bytes, collision
+  timer, hit-flash timer, reserved/link fields, and AI mode. Applying those
+  fields to the live `player_state_t` replaces the remaining
+  `_reserved_prefix[9 + player * 0x360]` expression at `0x004273d9` with the
+  named `plaguebearer_active` field. Refreshing the table data type is required
+  for Binary Ninja to propagate the edited named structure into this existing
+  function.
 - The Energizer eat path reverts the just-applied movement with direct position
   subtracts at `0x00427161..0x00427176`; there is no bounds clamp. After its
   direct player-zero XP award and burst/SFX, native pushes `(creature_id, 0)`,

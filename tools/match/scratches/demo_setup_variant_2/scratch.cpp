@@ -1,7 +1,6 @@
 #include "crimsonland_gameplay.h"
 
 extern "C" int demo_time_limit_ms;
-extern "C" void *creature_spawn_template(int template_id, float *pos, float heading);
 
 extern "C" void demo_setup_variant_2(void)
 {

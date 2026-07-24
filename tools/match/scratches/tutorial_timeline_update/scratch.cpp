@@ -33,7 +33,6 @@ extern int sfx_ui_levelup;
 extern char tutorial_empty_string[];
 
 void tutorial_prompt_dialog(char *text, float alpha, char tutorial_complete);
-creature_t *creature_spawn_template(int template_id, float *pos, float heading);
 unsigned char creatures_none_active(void);
 }
 

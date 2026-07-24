@@ -40,7 +40,9 @@ Frame/prefix notes:
 - The function returns the current `creature_t *`, not an opaque pointer.
   Retyping both the return and its live `result` cursor in Binary Ninja turns
   the large dispatch from thousands of `result + offset` expressions into
-  named `creature_t` fields without changing the generated body.
+  named `creature_t` fields without changing the generated body. The shared
+  gameplay declaration now carries that return type to every recovered caller
+  instead of repeating stale `void *` prototypes in individual scratches.
 - Template `0x27` sets `BONUS_ON_DEATH` and treats `link_index` as the packed
   `creature_bonus_args_t`: signed low/high halfwords hold bonus id `3` and
   duration override `5`. The spawn and death scratches now share that recovered

@@ -53,7 +53,6 @@ int vec2_add_inplace(int entity_index, float *pos, float *delta);
 int plaguebearer_spread_infection(int creature_id);
 void player_take_damage(int player_index, float damage);
 void effect_spawn_blood_splatter(float *pos, float angle, float age);
-void *creature_spawn_template(int template_id, float *pos, float heading);
 vec2f_t *__stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src);
 }
 
