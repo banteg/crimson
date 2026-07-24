@@ -604,11 +604,14 @@ typedef struct ui_element_t {
     ui_element_vertex_t vertices[8];
     int texture_handle;
     int vertex_count;
-    unsigned char _pad4[0xe0];
+    ui_element_vertex_t overlay_vertices[8];
     int overlay_texture_handle;
-    unsigned char _pad5[0xec];
+    unsigned char _pad5_head[4];
+    ui_element_vertex_t enabled_overlay_vertices[8];
+    int secondary_overlay_texture_handle;
+    unsigned char _pad5_end[4];
     unsigned char hover_enter_played;
-    unsigned char _pad5_tail[3];
+    unsigned char _pad_hover_enter_played[3];
     int hover_amount;
     int time_since_ready;
     float render_scale;

@@ -38,7 +38,7 @@ static __inline float *ui_element_quad(
 
 static __inline float *ui_element_counter_quad(ui_element_t *element)
 {
-    return (float *)element->_pad4;
+    return &element->overlay_vertices[0].x;
 }
 
 extern "C" void ui_element_render(ui_element_t *element)
@@ -74,13 +74,15 @@ extern "C" void ui_element_render(ui_element_t *element)
             element->hover_amount = ui_focus_timer_ms;
         }
         if (!element->on_activate) {
-            unsigned char *color_alpha = &element->_pad4[19];
+            unsigned char *color_alpha =
+                (unsigned char *)&element->overlay_vertices[0].color + 3;
             for (int vertex = 0; vertex < 4; ++vertex) {
                 *color_alpha = 200;
                 color_alpha += sizeof(ui_element_vertex_t);
             }
         } else {
-            unsigned char *color_alpha = &element->_pad4[19];
+            unsigned char *color_alpha =
+                (unsigned char *)&element->overlay_vertices[0].color + 3;
             int remaining_vertices = 4;
             do {
                 color_alpha += sizeof(ui_element_vertex_t);
@@ -247,7 +249,8 @@ extern "C" void ui_element_render(ui_element_t *element)
 
     if (element->time_since_ready >= 0
         && element->time_since_ready <= 0xff) {
-        unsigned char *enabled_alpha = &element->_pad5[23];
+        unsigned char *enabled_alpha =
+            (unsigned char *)&element->enabled_overlay_vertices[0].color + 3;
         int remaining_vertices = 4;
         do {
             enabled_alpha += sizeof(ui_element_vertex_t);

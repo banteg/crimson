@@ -11,27 +11,6 @@ struct game_state_vec2_t {
     }
 };
 
-struct game_state_uv_vertex_t {
-    game_state_vec2_t uv;
-    unsigned char remaining[0x14];
-};
-
-struct game_state_ui_element_t {
-    unsigned char active;
-    unsigned char enabled;
-    unsigned char focus_disabled;
-    unsigned char reserved_03;
-    unsigned char reserved_04[0x14];
-    game_state_vec2_t pos;
-    unsigned char reserved_20[0x14];
-    ui_element_callback_t on_activate;
-    ui_element_callback_t on_update;
-    unsigned char reserved_3c[0xfc];
-    game_state_uv_vertex_t atlas_quad[4];
-    unsigned char reserved_1a8[0x5c];
-    int counter_id;
-};
-
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
 extern game_state_id_t game_state_prev;
@@ -50,33 +29,33 @@ extern int ui_screen_phase;
 extern int game_state_reserved_zero;
 extern int ui_item_texts_texture;
 
-extern game_state_ui_element_t *ui_element_table_end;
-extern game_state_ui_element_t ui_sign_crimson;
-extern game_state_ui_element_t ui_element_slot_02_main_menu_primary;
-extern game_state_ui_element_t ui_element_slot_03_main_menu_play_game;
-extern game_state_ui_element_t ui_element_slot_04_main_menu_options;
-extern game_state_ui_element_t ui_element_slot_05_main_menu_statistics;
-extern game_state_ui_element_t ui_element_slot_footer_variant_a;
-extern game_state_ui_element_t ui_element_slot_footer_variant_b;
-extern game_state_ui_element_t ui_element_slot_09;
-extern game_state_ui_element_t ui_element_slot_11;
-extern game_state_ui_element_t ui_element_slot_12_layout_a;
-extern game_state_ui_element_t ui_element_slot_13;
-extern game_state_ui_element_t ui_element_slot_14;
-extern game_state_ui_element_t ui_element_slot_18_layout_b;
-extern game_state_ui_element_t ui_element_slot_23;
-extern game_state_ui_element_t ui_element_slot_24;
-extern game_state_ui_element_t ui_element_slot_25;
-extern game_state_ui_element_t ui_element_slot_27;
-extern game_state_ui_element_t ui_element_slot_28;
-extern game_state_ui_element_t ui_element_slot_30;
-extern game_state_ui_element_t ui_element_slot_31;
-extern game_state_ui_element_t ui_element_slot_32_layout_c;
-extern game_state_ui_element_t ui_element_slot_33;
-extern game_state_ui_element_t ui_element_slot_35;
-extern game_state_ui_element_t ui_element_slot_37;
-extern game_state_ui_element_t ui_element_slot_39;
-extern game_state_ui_element_t ui_element_slot_40;
+extern ui_element_t *ui_element_table_end;
+extern ui_element_t ui_sign_crimson;
+extern ui_element_t ui_element_slot_02_main_menu_primary;
+extern ui_element_t ui_element_slot_03_main_menu_play_game;
+extern ui_element_t ui_element_slot_04_main_menu_options;
+extern ui_element_t ui_element_slot_05_main_menu_statistics;
+extern ui_element_t ui_element_slot_footer_variant_a;
+extern ui_element_t ui_element_slot_footer_variant_b;
+extern ui_element_t ui_element_slot_09;
+extern ui_element_t ui_element_slot_11;
+extern ui_element_t ui_element_slot_12_layout_a;
+extern ui_element_t ui_element_slot_13;
+extern ui_element_t ui_element_slot_14;
+extern ui_element_t ui_element_slot_18_layout_b;
+extern ui_element_t ui_element_slot_23;
+extern ui_element_t ui_element_slot_24;
+extern ui_element_t ui_element_slot_25;
+extern ui_element_t ui_element_slot_27;
+extern ui_element_t ui_element_slot_28;
+extern ui_element_t ui_element_slot_30;
+extern ui_element_t ui_element_slot_31;
+extern ui_element_t ui_element_slot_32_layout_c;
+extern ui_element_t ui_element_slot_33;
+extern ui_element_t ui_element_slot_35;
+extern ui_element_t ui_element_slot_37;
+extern ui_element_t ui_element_slot_39;
+extern ui_element_t ui_element_slot_40;
 
 void ui_elements_reset_state(void);
 int console_input_poll(void);
@@ -134,27 +113,39 @@ extern "C" void game_state_set(game_state_id_t state_id)
                 if (i == 6) {
                     atlas_row = GAME_STATE_PERK_SELECTION;
                 }
-                (&ui_element_table_end)[i]->counter_id =
+                (&ui_element_table_end)[i]->overlay_texture_handle =
                     ui_item_texts_texture;
-                (&ui_element_table_end)[i]->atlas_quad[0].uv = game_state_vec2_t(
-                    0.0f, (float)atlas_row * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[1].uv = game_state_vec2_t(
-                    1.0f, (float)atlas_row * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[2].uv = game_state_vec2_t(
-                    1.0f, (float)(atlas_row + 1) * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[3].uv = game_state_vec2_t(
-                    0.0f, (float)(atlas_row + 1) * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[0].u =
+                    game_state_vec2_t(0.0f, (float)atlas_row * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[1].u =
+                    game_state_vec2_t(1.0f, (float)atlas_row * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[2].u =
+                    game_state_vec2_t(
+                        1.0f, (float)(atlas_row + 1) * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[3].u =
+                    game_state_vec2_t(
+                        0.0f, (float)(atlas_row + 1) * 0.125f);
             } else {
-                (&ui_element_table_end)[i]->counter_id =
+                (&ui_element_table_end)[i]->overlay_texture_handle =
                     ui_item_texts_texture;
-                (&ui_element_table_end)[i]->atlas_quad[0].uv = game_state_vec2_t(
-                    0.0f, (float)atlas_row * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[1].uv = game_state_vec2_t(
-                    1.0f, (float)atlas_row * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[2].uv = game_state_vec2_t(
-                    1.0f, (float)(atlas_row + 1) * 0.125f);
-                (&ui_element_table_end)[i]->atlas_quad[3].uv = game_state_vec2_t(
-                    0.0f, (float)(atlas_row + 1) * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[0].u =
+                    game_state_vec2_t(0.0f, (float)atlas_row * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[1].u =
+                    game_state_vec2_t(1.0f, (float)atlas_row * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[2].u =
+                    game_state_vec2_t(
+                        1.0f, (float)(atlas_row + 1) * 0.125f);
+                *(game_state_vec2_t *)&(&ui_element_table_end)[i]
+                    ->overlay_vertices[3].u =
+                    game_state_vec2_t(
+                        0.0f, (float)(atlas_row + 1) * 0.125f);
             }
 
             if (i == 2 && game_is_full_version()) {
@@ -240,12 +231,13 @@ extern "C" void game_state_set(game_state_id_t state_id)
         }
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
-        ui_element_slot_13.pos = game_state_vec2_t(-180.0f, 135.0f);
+        *(game_state_vec2_t *)&ui_element_slot_13.pos_x =
+            game_state_vec2_t(-180.0f, 135.0f);
         ui_element_slot_31.active = 1;
-        ui_element_slot_13.pos.x = -58.0f;
+        ui_element_slot_13.pos_x = -58.0f;
         ui_element_slot_32_layout_c.active = 1;
         ui_screen_phase = 0;
-        ui_element_slot_13.pos.y +=
+        ui_element_slot_13.pos_y +=
             screen_scale * 150.0f + 10.0f - 150.0f;
     } else if (state_id == GAME_STATE_STATISTICS_MENU) {
         highscore_return_latch = 0;
@@ -260,12 +252,13 @@ extern "C" void game_state_set(game_state_id_t state_id)
     } else if (state_id == GAME_STATE_CONTROLS_MENU) {
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
-        ui_element_slot_13.pos = game_state_vec2_t(-180.0f, 139.0f);
+        *(game_state_vec2_t *)&ui_element_slot_13.pos_x =
+            game_state_vec2_t(-180.0f, 139.0f);
         ui_sign_crimson.active = 1;
         ui_element_slot_14.active = 1;
         ui_element_slot_18_layout_b.active = 1;
         ui_element_slot_40.active = 1;
-        ui_element_slot_13.pos.y =
+        ui_element_slot_13.pos_y =
             screen_scale * 150.0f - 150.0f + 139.0f;
     } else if (state_id == GAME_STATE_HIGHSCORES) {
         ui_sign_crimson.active = 1;

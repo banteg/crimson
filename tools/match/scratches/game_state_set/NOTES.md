@@ -14,6 +14,15 @@ is supported by the native 0x50-byte frame and its four 0x1c-stride XY copies;
 the two config branches deliberately remain separate because the non-wide path
 remaps the perk-selection row.
 
+Those 0x1c-stride destinations are now recovered in the canonical
+`ui_element_t` as the first four records of an eight-entry `overlay_vertices`
+bank. The dispatcher writes each vertex's `u`/`v` pair at offsets `0x138`,
+`0x154`, `0x170`, and `0x18c` and assigns the following texture handle at
+`0x204`. This removes the former 0x208-byte partial UI mirror while preserving
+the result below byte-for-byte. The same shared fields are consumed by
+`ui_element_render`, independently confirming the full vertex interpretation
+rather than a UV-only padding view.
+
 Current MSVC 6.5 `/O2 /GB` result: **85.35%**, with an exact **166/399**
 instruction prefix, 399 native instructions versus 393 candidate instructions,
 the exact 0x50-byte frame, and reference audit **161 resolved / 1 unresolved /

@@ -23,6 +23,14 @@ and the enabled overlay uses `255 - counter_timer / 2` for timer values below
 256. These details and the repeated matrix/position calculations are retained
 as observed rather than consolidated.
 
+The two 0xe0-byte overlay banks at `ui_element_t+0x124` and `+0x20c` are now
+canonical arrays of eight `ui_element_vertex_t` records rather than anonymous
+byte padding. This function consumes the first four records of each bank.
+Their 0x1c stride, color alpha at vertex offset `0x13`, submission base,
+following texture handles, and the main-menu UV writes all independently
+establish the layout. This type recovery preserves the current instruction,
+fuzzy-byte, and reference results.
+
 The small residual is code-generation shape: VC6 keeps a temporary for the
 seven-pixel Y coordinate in each offset-shadow submission and schedules
 otherwise equivalent vertex-call arguments differently. Introducing an

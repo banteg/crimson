@@ -22,7 +22,7 @@ extern "C" void ui_element_init_defaults(ui_element_t *element)
 
     element->texture_handle = -1;
     element->overlay_texture_handle = -1;
-    *(int *)&element->_pad5[0xe4] = -1;
+    element->secondary_overlay_texture_handle = -1;
     *(ui_vec2_t *)&element->hover_min_x = ui_vec2_t(233.0f, 28.0f);
     element->time_since_ready = 256;
     element->on_activate = 0;
