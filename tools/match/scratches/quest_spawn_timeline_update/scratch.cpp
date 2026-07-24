@@ -90,7 +90,7 @@ spawn_entries:
                 creature_spawn_template(
                     *template_id,
                     &pos.x,
-                    *(float *)(template_id - 1));
+                    entry->heading);
 
                 ++spawn_index;
                 spread += 0x28;

@@ -39,13 +39,15 @@ spread loop, group-consumption tail, and all 13 masked references agree.
 Native creates an interior pointer to the current entry's template-id field
 after the positive-count guard, briefly homes it in the stack slot that is then
 reused by the integer spread, and loads heading/template through that pointer.
-The source retains that clean scoped pointer, but the calibrated compiler folds
-it back to the typed entry base, removing the `lea` and dead home store. Those
-are the candidate's only two missing instructions; their byte-length shift also
-changes local branch-label tokens in the normalized diff. Recovering the typed
-position and vector addition raises the honest score from `88.60%` to `91.23%`
-without changing the exact prefix, instruction count delta, frame, or reference
-audit.
+The source retains the scoped template-id pointer but expresses heading through
+the recovered `entry->heading` field instead of a preceding-word cast. A shadow
+probe confirms that VC6 folds both forms to identical code. The calibrated
+compiler also folds the template pointer back to the typed entry base, removing
+the native `lea` and dead home store. Those are the candidate's only two missing
+instructions; their byte-length shift also changes local branch-label tokens in
+the normalized diff. Recovering the typed position and vector addition raises
+the honest score from `88.60%` to `91.23%` without changing the exact prefix,
+instruction count delta, frame, or reference audit.
 
 MSVC 6.0 and 6.6 produce the same best body, 6.5pp is slightly worse, and 7.0
 adds its aligned-frame prologue. `/Og-` broadly deoptimizes the function. No
