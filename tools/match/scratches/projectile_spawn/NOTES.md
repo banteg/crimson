@@ -35,6 +35,14 @@ callers, and live Binary Ninja prototype therefore use `const vec2f_t *`; this
 is ABI-neutral and leaves all six affected caller/callee match scores
 unchanged.
 
+The canonical 0x40-byte projectile record now has a separate flat Binary Ninja
+view (`pos_x`/`pos_y`, origin, velocity, `type_id`, timers, damage, radius,
+budget, and owner) while the matching view retains its evidenced
+interior-cursor overlays. This is a type-presentation change only: exact
+neighbors and the three large projectile candidates compile byte-for-byte as
+before. Refreshing the authoritative type removes the former `pos.tail.vy.*`
+decompiler paths without discarding the cursor evidence from matching source.
+
 The recovered legacy `oldtypes.h` independently spells the source lineage as
 `ShootBullet(vec2_t from, ...)`. A direct by-value reconstruction with the
 available vector class changes VC6 alias analysis and regresses this target to

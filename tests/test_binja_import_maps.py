@@ -43,6 +43,23 @@ class _FakeView:
         return self._prefix[:size]
 
 
+class _FakeTypeView:
+    def __init__(self):
+        self.types = {"projectile_t": "old"}
+        self.actions = []
+
+    def get_type_by_name(self, name):
+        return self.types.get(str(name))
+
+    def undefine_user_type(self, name):
+        self.actions.append(("undefine", str(name)))
+        self.types.pop(str(name), None)
+
+    def define_user_type(self, name, type_obj):
+        self.actions.append(("define", str(name), type_obj))
+        self.types[str(name)] = type_obj
+
+
 def test_resolve_creates_direct_jump_target_without_create_flag(monkeypatch):
     importer = _load_importer()
     wrapper = SimpleNamespace(start=0x1000)
@@ -129,8 +146,40 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
         object(),
     )
+    assert importer._should_replace_repo_type(
+        "projectile_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "projectile_pool_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "mod_interface_t",
+        object(),
+        object(),
+    )
     assert not importer._should_replace_repo_type(
         "unrelated_complete_type",
         object(),
         object(),
     )
+
+
+def test_define_or_replace_removes_silent_duplicate_first(monkeypatch):
+    importer = _load_importer()
+    monkeypatch.setattr(importer, "bn", object())
+    view = _FakeTypeView()
+
+    assert importer._define_or_replace_user_type(
+        view,
+        "projectile_t",
+        "flat",
+    )
+    assert view.types["projectile_t"] == "flat"
+    assert view.actions == [
+        ("undefine", "projectile_t"),
+        ("define", "projectile_t", "flat"),
+    ]

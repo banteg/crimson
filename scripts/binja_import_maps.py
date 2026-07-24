@@ -31,12 +31,31 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # The importer previously synthesized FILE as a one-byte opaque
         # structure before the bundled CRT layout was recovered.
         "FILE",
+        # The original database kept the projectile record's interior-cursor
+        # view as its primary layout, which rendered ordinary accesses as
+        # pos.tail.vy.*. Prefer the equivalent flat Binary Ninja view.
+        "projectile_t",
+        "projectile_pool_t",
+        # Use the equivalent flat parameters view so onPause and request_exit
+        # survive anonymous-union lowering as named fields.
+        "mod_interface_t",
         # This layout is shared by three ui_element_t rendering layers. Keep
         # the recovered z/rhw/color/u/v members in sync with the canonical
         # header instead of preserving older field_0xNN database members.
         "ui_menu_item_subtemplate_slot_t",
     },
 )
+
+_REPO_TYPE_VIEW_OVERRIDES = {
+    "mod_interface_t": "mod_interface_binja_t",
+    # Keep the cursor-oriented compiler view in the matching header, but give
+    # Binary Ninja the equivalent flat record so ordinary IL uses field names.
+    "projectile_t": "projectile_binja_t",
+}
+
+_REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
+    "projectile_pool_t": ("projectile_binja_t", 0x60),
+}
 
 _TYPE_REPLACEMENTS = {
     "IGrim2D": "void",
@@ -231,11 +250,10 @@ def _undefine_user_type(bv, name) -> bool:
 
 
 def _define_or_replace_user_type(bv, name, type_obj) -> bool:
-    if _define_user_type(bv, name, type_obj):
-        return True
-    if _undefine_user_type(bv, name):
-        return _define_user_type(bv, name, type_obj)
-    return False
+    if _get_type_by_name(bv, name) is not None:
+        if not _undefine_user_type(bv, name):
+            return False
+    return _define_user_type(bv, name, type_obj)
 
 
 def _define_alias_type(bv, name: str, type_obj) -> bool:
@@ -409,6 +427,22 @@ def _seed_repo_headers(bv) -> None:
             name_str = str(name)
             if not name_str:
                 raise RuntimeError(f"type header produced unnamed type in {header_path}")
+            view_name = _REPO_TYPE_VIEW_OVERRIDES.get(name_str)
+            if view_name is not None:
+                type_obj = types.get(view_name)
+                if type_obj is None:
+                    raise RuntimeError(
+                        f"missing Binary Ninja view {view_name} for {name_str}",
+                    )
+            array_view = _REPO_TYPE_ARRAY_VIEW_OVERRIDES.get(name_str)
+            if array_view is not None:
+                view_name, count = array_view
+                element_type = types.get(view_name)
+                if element_type is None:
+                    raise RuntimeError(
+                        f"missing Binary Ninja view {view_name} for {name_str}",
+                    )
+                type_obj = bn.Type.array(element_type, count)
             existing = _get_type_by_name(bv, name_str)
             if existing is not None:
                 if not _should_replace_repo_type(name_str, existing, type_obj):

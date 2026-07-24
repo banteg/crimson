@@ -504,6 +504,29 @@ typedef struct projectile_t {
 
 typedef projectile_t projectile_pool_t[0x60];
 
+// Binary Ninja presentation view for the same 0x40-byte record. The matching
+// view above preserves native interior-pointer codegen; this flat view lets
+// ordinary decompilation name every field without `pos.tail.vy` paths.
+typedef struct projectile_binja_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float pos_x;
+    float pos_y;
+    float origin_x;
+    float origin_y;
+    float vel_x;
+    float vel_y;
+    projectile_type_id_t type_id;
+    float life_timer;
+    float reserved;
+    float speed_scale;
+    float damage_pool;
+    float hit_radius;
+    float travel_budget;
+    int owner_id;
+} projectile_binja_t;
+
 typedef struct particle_t {
     unsigned char active;
     unsigned char render_flag;
@@ -1265,6 +1288,15 @@ struct mod_interface_t {
     mod_api_t *cl;
     mod_parms_t parms;
 };
+
+// Binary Ninja presentation view for the same 0x408-byte interface. Native
+// code accesses the parameter bytes directly; exposing the fields here avoids
+// anonymous-union offsets such as `parms.fields.__offset(1)`.
+typedef struct mod_interface_binja_t {
+    mod_interface_vtbl_t *vtable;
+    mod_api_t *cl;
+    mod_parms_fields_t parms;
+} mod_interface_binja_t;
 
 typedef struct highscore_record_t {
     char player_name[0x20];
