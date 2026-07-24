@@ -1560,6 +1560,24 @@ class TriageRow:
         return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
 
 
+@dataclass(frozen=True, slots=True)
+class ProbeResult:
+    baseline: ScratchStatus
+    probe: ScratchStatus
+    source_sha256: str
+    label: str | None = None
+
+    @property
+    def fuzzy_delta_bytes(self) -> float:
+        return self.probe.fuzzy_weighted_bytes - self.baseline.fuzzy_weighted_bytes
+
+    @property
+    def ratio_delta(self) -> float | None:
+        if self.baseline.ratio is None or self.probe.ratio is None:
+            return None
+        return self.probe.ratio - self.baseline.ratio
+
+
 def load_scratch_config(directory: Path) -> ScratchConfig:
     values: dict[str, str] = {}
     for token in shlex.split((directory / "scratch.conf").read_text(encoding="utf-8"), comments=True):
@@ -1836,6 +1854,136 @@ def compile_scratch(
         json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
     )
     return obj_path
+
+
+def evaluate_scratch(
+    config: ScratchConfig,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> ScratchStatus:
+    """Compile and evaluate one explicit scratch configuration."""
+
+    match_root = match_root.resolve()
+    image_path, functions_path, metadata_path = _paths_for_image(config.image)
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=config.image,
+    )
+    address = 0
+    target_size = 0
+    try:
+        function, start, end = resolve_function(manifest, config.function, end_override=config.end_va)
+        address = function.address
+        image = load_image(image_path, manifest.image_base)
+        target_size = len(image.function_bytes(start, end))
+        obj_path = compile_scratch(config, match_root)
+        result = run_match(
+            obj_path=obj_path,
+            function=config.function,
+            image_path=image_path,
+            functions_path=functions_path,
+            metadata_path=metadata_path,
+            symbol_name=config.symbol,
+            end_va=config.end_va,
+            reference_aliases=config.reference_aliases,
+        )
+        return ScratchStatus(
+            config=config,
+            address=address,
+            target_size=target_size,
+            ratio=result.ratio,
+            prefix_instructions=result.prefix_instructions,
+            target_instructions=len(result.target_lines),
+            candidate_instructions=len(result.candidate_lines),
+            error=None,
+            masked_ok=result.masked_operand_audit.ok_count,
+            masked_unresolved=result.masked_operand_audit.unresolved_count,
+            masked_mismatches=result.masked_operand_audit.mismatch_count,
+            audit=result.masked_operand_audit,
+        )
+    except Exception as exc:
+        return ScratchStatus(
+            config=config,
+            address=address,
+            target_size=target_size,
+            ratio=None,
+            prefix_instructions=0,
+            target_instructions=0,
+            candidate_instructions=0,
+            error=str(exc).splitlines()[0] if str(exc) else type(exc).__name__,
+        )
+
+
+def evaluate_source_probe(
+    config: ScratchConfig,
+    source_text: str,
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    compiler: str | None = None,
+    cflags: str | None = None,
+    label: str | None = None,
+) -> ProbeResult:
+    """Compare a temporary source overlay without modifying the scratch."""
+
+    import tempfile
+
+    match_root = match_root.resolve()
+    baseline_config = replace(
+        config,
+        compiler=compiler or config.compiler,
+        cflags=cflags or config.cflags,
+    )
+    baseline = evaluate_scratch(baseline_config, match_root)
+    source_name = Path(config.source).name
+    with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
+        shadow_directory = Path(temp_name)
+        (shadow_directory / "scratch.conf").write_text(
+            (config.directory / "scratch.conf").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        (shadow_directory / source_name).write_text(source_text, encoding="utf-8")
+        shadow_config = replace(
+            baseline_config,
+            directory=shadow_directory,
+            source=source_name,
+        )
+        probe = evaluate_scratch(shadow_config, match_root)
+    return ProbeResult(
+        baseline=baseline,
+        probe=probe,
+        source_sha256=hashlib.sha256(source_text.encode()).hexdigest(),
+        label=label,
+    )
+
+
+def available_scratch_compilers(match_root: Path = DEFAULT_MATCH_ROOT) -> tuple[str, ...]:
+    roots = (
+        match_root.resolve() / "compilers",
+        REPO_ROOT.parent / "snail-mail" / "tools" / "match" / "compilers",
+    )
+    names: set[str] = set()
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for directory in root.iterdir():
+            if directory.is_dir() and any((directory / "Bin" / name).is_file() for name in ("CL.EXE", "cl.exe")):
+                names.add(directory.name)
+    return tuple(sorted(names))
+
+
+def evaluate_profile_matrix(
+    config: ScratchConfig,
+    *,
+    compilers: tuple[str, ...],
+    cflags: tuple[str, ...],
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> list[ScratchStatus]:
+    profiles = [
+        replace(config, compiler=compiler, cflags=profile_cflags)
+        for compiler in dict.fromkeys(compilers)
+        for profile_cflags in dict.fromkeys(cflags)
+    ]
+    return [evaluate_scratch(profile, match_root) for profile in profiles]
 
 
 def _paths_for_image(image: str) -> tuple[Path, Path, Path]:
@@ -2185,6 +2333,19 @@ TRIAGE_HEADER = (
     "scratch",
     "note",
 )
+PROFILE_HEADER = (
+    "rank",
+    "state",
+    "compiler",
+    "cflags",
+    "fuzzy",
+    "gap",
+    "match",
+    "insns",
+    "prefix",
+    "refs",
+    "error",
+)
 
 
 def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
@@ -2373,6 +2534,101 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "note": status.config.note,
         "error": status.error,
     }
+
+
+def probe_result_payload(result: ProbeResult) -> dict[str, Any]:
+    baseline = scratch_status_payload(result.baseline)
+    probe = scratch_status_payload(result.probe)
+    probe["scratch"] = "<shadow>"
+    return {
+        "label": result.label,
+        "source_sha256": result.source_sha256,
+        "baseline": baseline,
+        "probe": probe,
+        "delta": {
+            "match_ratio": result.ratio_delta,
+            "fuzzy_weighted_bytes": result.fuzzy_delta_bytes,
+            "candidate_instructions": result.probe.candidate_instructions
+            - result.baseline.candidate_instructions,
+            "prefix_instructions": result.probe.prefix_instructions
+            - result.baseline.prefix_instructions,
+            "references": {
+                "ok": result.probe.masked_ok - result.baseline.masked_ok,
+                "unresolved": result.probe.masked_unresolved - result.baseline.masked_unresolved,
+                "mismatch": result.probe.masked_mismatches - result.baseline.masked_mismatches,
+            },
+        },
+    }
+
+
+def render_probe_result(result: ProbeResult) -> str:
+    def status_line(label: str, status: ScratchStatus) -> str:
+        if status.ratio is None:
+            return f"{label}: state=error error={status.error}"
+        return (
+            f"{label}: state={status.state} match={status.ratio:.2%} "
+            f"fuzzy={status.fuzzy_weighted_bytes:.0f}/{status.target_size} "
+            f"insns={status.candidate_instructions}/{status.target_instructions} "
+            f"prefix={status.prefix_instructions}/{status.target_instructions} "
+            f"refs={status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches}"
+        )
+
+    ratio_delta = f"{result.ratio_delta:+.2%}" if result.ratio_delta is not None else "-"
+    return "\n".join(
+        (
+            status_line("baseline", result.baseline),
+            status_line("probe", result.probe),
+            f"delta: match={ratio_delta} fuzzy={result.fuzzy_delta_bytes:+.0f} "
+            f"insns={result.probe.candidate_instructions - result.baseline.candidate_instructions:+d} "
+            f"prefix={result.probe.prefix_instructions - result.baseline.prefix_instructions:+d} "
+            f"refs={result.probe.masked_ok - result.baseline.masked_ok:+d}/"
+            f"{result.probe.masked_unresolved - result.baseline.masked_unresolved:+d}/"
+            f"{result.probe.masked_mismatches - result.baseline.masked_mismatches:+d}",
+            f"source_sha256={result.source_sha256}",
+        ),
+    )
+
+
+def sort_profile_statuses(statuses: list[ScratchStatus]) -> list[ScratchStatus]:
+    return sorted(statuses, key=_status_rank, reverse=True)
+
+
+def render_profile_table(statuses: list[ScratchStatus]) -> str:
+    rows: list[tuple[str, ...]] = [PROFILE_HEADER]
+    for rank, status in enumerate(sort_profile_statuses(statuses), start=1):
+        rows.append(
+            (
+                str(rank),
+                status.state,
+                status.config.compiler,
+                status.config.cflags,
+                (
+                    f"{status.fuzzy_weighted_bytes:.0f}/{status.target_size}"
+                    if status.ratio is not None
+                    else "-"
+                ),
+                f"{status.fuzzy_gap_bytes:.0f}" if status.ratio is not None else "-",
+                f"{status.ratio:.2%}" if status.ratio is not None else "-",
+                (
+                    f"{status.candidate_instructions}/{status.target_instructions}"
+                    if status.ratio is not None
+                    else "-"
+                ),
+                (
+                    f"{status.prefix_instructions}/{status.target_instructions}"
+                    if status.ratio is not None
+                    else "-"
+                ),
+                (
+                    f"{status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches}"
+                    if status.ratio is not None
+                    else "-"
+                ),
+                status.error or "",
+            ),
+        )
+    widths = [max(len(row[column]) for row in rows) for column in range(len(PROFILE_HEADER))]
+    return "\n".join("  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows)
 
 
 def triage_row_payload(row: TriageRow) -> dict[str, Any]:

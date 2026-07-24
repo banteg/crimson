@@ -28,6 +28,7 @@ from crimson.match import (
     MatchResult,
     ObjectFunction,
     ObjectRelocationReference,
+    ProbeResult,
     ReferenceCatalog,
     ScratchConfig,
     ScratchStatus,
@@ -43,6 +44,8 @@ from crimson.match import (
     compile_scratch,
     diff_regions,
     disassemble_normalized_function,
+    evaluate_profile_matrix,
+    evaluate_source_probe,
     extract_object_function,
     load_function_manifest,
     load_reference_catalog,
@@ -50,12 +53,15 @@ from crimson.match import (
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
+    render_probe_result,
+    render_profile_table,
     render_status_markdown,
     render_status_rows,
     render_status_summary,
     render_status_table,
     render_triage_rows,
     resolve_function,
+    sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
     validate_scratch_source,
@@ -1146,6 +1152,154 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
     assert optimized.read_bytes() != unoptimized.read_bytes()
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
+
+
+def test_source_probe_uses_temporary_shadow_without_touching_scratch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    source = scratch / "scratch.cpp"
+    source.write_text("baseline\n", encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    observed_directories: list[Path] = []
+
+    def fake_evaluate(probe_config: ScratchConfig, match_root: Path) -> ScratchStatus:
+        del match_root
+        observed_directories.append(probe_config.directory)
+        text = (probe_config.directory / probe_config.source).read_text(encoding="utf-8")
+        ratio = 0.75 if text == "variant\n" else 0.5
+        return ScratchStatus(
+            config=probe_config,
+            address=0x401000,
+            target_size=100,
+            ratio=ratio,
+            prefix_instructions=2,
+            target_instructions=10,
+            candidate_instructions=10,
+            error=None,
+        )
+
+    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+
+    result = evaluate_source_probe(config, "variant\n", match_root=tmp_path, label="scalar-copy")
+
+    assert source.read_text(encoding="utf-8") == "baseline\n"
+    assert result.fuzzy_delta_bytes == 25
+    assert result.ratio_delta == pytest.approx(0.25)
+    assert result.label == "scalar-copy"
+    assert observed_directories[0] == scratch
+    assert observed_directories[1] != scratch
+    assert not observed_directories[1].exists()
+    assert "delta: match=+25.00% fuzzy=+25" in render_probe_result(result)
+
+
+def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "scratch.cpp").write_text("baseline\n", encoding="utf-8")
+    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
+    config = ScratchConfig(
+        directory=scratch,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    baseline = ScratchStatus(
+        config=config,
+        address=0x401000,
+        target_size=10,
+        ratio=0.5,
+        prefix_instructions=1,
+        target_instructions=4,
+        candidate_instructions=4,
+        error=None,
+    )
+    probe = replace(baseline, config=replace(config, directory=Path("/tmp/shadow")), ratio=0.75)
+    result = ProbeResult(baseline=baseline, probe=probe, source_sha256="abc", label="trial")
+    monkeypatch.setattr("crimson.cli.match.matchlib.evaluate_source_probe", lambda *args, **kwargs: result)
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["probe", str(scratch), "--stdin", "--label", "trial", "--record", "--json"],
+        input="variant\n",
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    assert payload["delta"]["fuzzy_weighted_bytes"] == 2.5
+    assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
+    recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
+    assert recorded["recorded_at"].endswith("+00:00")
+    assert recorded["label"] == "trial"
+    assert (scratch / "scratch.cpp").read_text(encoding="utf-8") == "baseline\n"
+
+
+def test_profile_matrix_deduplicates_and_ranks_honest_matches(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = ScratchConfig(
+        directory=tmp_path,
+        function="foo",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+
+    def fake_evaluate(profile: ScratchConfig, match_root: Path) -> ScratchStatus:
+        del match_root
+        exact = profile.compiler == "msvc6.5pp" and profile.cflags == "/O1"
+        return ScratchStatus(
+            config=profile,
+            address=0x401000,
+            target_size=20,
+            ratio=1.0 if exact else 0.75,
+            prefix_instructions=5 if exact else 2,
+            target_instructions=5,
+            candidate_instructions=5,
+            error=None,
+            masked_ok=2 if exact else 1,
+        )
+
+    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+
+    statuses = evaluate_profile_matrix(
+        config,
+        compilers=("msvc6.5", "msvc6.5pp", "msvc6.5"),
+        cflags=("/O2", "/O1", "/O2"),
+        match_root=tmp_path,
+    )
+
+    assert len(statuses) == 4
+    ranked = sort_profile_statuses(statuses)
+    assert (ranked[0].config.compiler, ranked[0].config.cflags, ranked[0].state) == (
+        "msvc6.5pp",
+        "/O1",
+        "match",
+    )
+    assert "msvc6.5pp" in render_profile_table(statuses)
 
 
 def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPatch) -> None:

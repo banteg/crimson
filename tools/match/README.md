@@ -150,6 +150,33 @@ uv run crimson match triage --image crimsonland.exe --summary-only
 uv run crimson match triage --image crimsonland.exe --state missing --json
 ```
 
+Probe a source-shape experiment without editing the tracked scratch. The
+baseline and shadow build use the same selected compiler profile, and the
+report shows deltas for fuzzy bytes, instruction count, prefix, and references.
+
+```sh
+uv run crimson match probe tools/match/scratches/player_update \
+  --source /tmp/player_update_variant.cpp --label scalar-entry-copy
+uv run crimson match probe tools/match/scratches/player_update \
+  --stdin --json < /tmp/player_update_variant.cpp
+```
+
+Pass `--record` to append the complete result, source SHA-256, profile, label,
+and timestamp to `experiments.jsonl` in the scratch directory. Recording is
+explicit; ordinary probes leave both the scratch and repository untouched.
+
+Sweep one scratch across installed compilers and one or more flag sets. Options
+are repeatable and the result is ranked with exact, reference-clean matches
+first:
+
+```sh
+uv run crimson match profiles tools/match/scratches/creature_spawn \
+  --compiler msvc6.5 --compiler msvc6.5pp --compiler msvc6.6
+uv run crimson match profiles tools/match/scratches/creature_spawn \
+  --compiler msvc6.5 --cflags "/O2 /GB /W3 /GR-" \
+  --cflags "/O2 /G6 /W3 /GR-" --json
+```
+
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. A cache entry is invalidated by the scratch source/config, compiler
 arguments and binary, `cl.sh`, the transitive local-header graph, the target

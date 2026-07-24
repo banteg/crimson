@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -207,6 +209,94 @@ def cmd_match_validate(source: Path = typer.Argument(..., help="scratch source f
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
     typer.echo("ok")
+
+
+@match_app.command("probe")
+def cmd_match_probe(
+    directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
+    source: Path | None = typer.Option(None, "--source", help="temporary replacement source"),
+    use_stdin: bool = typer.Option(False, "--stdin", help="read temporary replacement source from stdin"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: str | None = typer.Option(None, "--compiler", help="profile used for baseline and probe"),
+    cflags: str | None = typer.Option(None, "--cflags", help="flags used for baseline and probe"),
+    label: str | None = typer.Option(None, "--label", help="short experiment label"),
+    record: bool = typer.Option(False, "--record", help="append the result to experiments.jsonl"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+) -> None:
+    """Compare an untracked source overlay against the current scratch."""
+    if source is None and not use_stdin:
+        raise typer.BadParameter("pass --source or --stdin")
+    if source is not None and use_stdin:
+        raise typer.BadParameter("--source and --stdin are mutually exclusive")
+    try:
+        config = matchlib.load_scratch_config(directory.resolve())
+        if use_stdin:
+            source_text = sys.stdin.read()
+        else:
+            assert source is not None
+            source_text = source.read_text(encoding="utf-8")
+        result = matchlib.evaluate_source_probe(
+            config,
+            source_text,
+            match_root=match_root,
+            compiler=compiler,
+            cflags=cflags,
+            label=label,
+        )
+    except Exception as exc:
+        typer.echo(f"probe failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    payload = matchlib.probe_result_payload(result)
+    if record:
+        record_path = config.directory / "experiments.jsonl"
+        record_payload = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            **payload,
+        }
+        with record_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record_payload, separators=(",", ":"), sort_keys=True) + "\n")
+        payload["recorded_to"] = str(record_path)
+    if as_json:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        typer.echo(matchlib.render_probe_result(result))
+        if record:
+            typer.echo(f"recorded={payload['recorded_to']}")
+    if result.baseline.state == "error" or result.probe.state == "error":
+        raise typer.Exit(code=2)
+
+
+@match_app.command("profiles")
+def cmd_match_profiles(
+    directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: list[str] | None = typer.Option(None, "--compiler", help="compiler to try; repeat for a matrix"),
+    cflags: list[str] | None = typer.Option(None, "--cflags", help="flag set to try; repeat for a matrix"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when any requested profile cannot be evaluated"),
+) -> None:
+    """Rank a compiler/flags matrix for one scratch."""
+    try:
+        config = matchlib.load_scratch_config(directory.resolve())
+        compilers = tuple(compiler or matchlib.available_scratch_compilers(match_root) or (config.compiler,))
+        flag_sets = tuple(cflags or (config.cflags,))
+        statuses = matchlib.evaluate_profile_matrix(
+            config,
+            compilers=compilers,
+            cflags=flag_sets,
+            match_root=match_root,
+        )
+    except Exception as exc:
+        typer.echo(f"profile sweep failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    ranked = matchlib.sort_profile_statuses(statuses)
+    if as_json:
+        typer.echo(json.dumps([matchlib.scratch_status_payload(status) for status in ranked], indent=2, sort_keys=True))
+    else:
+        typer.echo(matchlib.render_profile_table(ranked))
+    if check and any(status.state == "error" for status in statuses):
+        raise typer.Exit(code=1)
 
 
 @match_app.command("status")
