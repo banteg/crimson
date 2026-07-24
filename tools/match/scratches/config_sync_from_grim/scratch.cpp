@@ -25,8 +25,7 @@ extern "C" bool config_sync_from_grim(void)
     FILE *fp;
     int i;
 
-    config_blob.windowed =
-        *(unsigned char *)&grim_interface_ptr->grim_get_config_var(8).words[0];
+    config_blob.windowed = grim_interface_ptr->grim_get_config_var(8);
     config_blob.display_bpp =
         grim_interface_ptr->grim_get_config_var(0x2b).words[0];
     config_blob.screen_width =
@@ -36,7 +35,7 @@ extern "C" bool config_sync_from_grim(void)
     *(unsigned int *)&config_blob.texture_scale =
         grim_interface_ptr->grim_get_config_var(0x59).words[0];
     config_blob.safe_mode_backend_enabled =
-        *(unsigned char *)&grim_interface_ptr->grim_get_config_var(0x54).words[0];
+        grim_interface_ptr->grim_get_config_var(0x54);
 
     strcpy(config_blob.player_name, highscore_active_record.player_name);
     config_blob.player_name_length = player_name_length;

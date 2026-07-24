@@ -108,8 +108,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
                 atlas_row = GAME_STATE_STATISTICS_MENU;
             }
 
-            if (*(unsigned char *)grim_interface_ptr
-                    ->grim_get_config_var(100).words == 0) {
+            if (!grim_interface_ptr->grim_get_config_var(100)) {
                 if (i == 6) {
                     atlas_row = GAME_STATE_PERK_SELECTION;
                 }
@@ -164,8 +163,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
         ui_element_slot_04_main_menu_options.active = 1;
         ui_element_slot_05_main_menu_statistics.active = 1;
         ui_element_slot_footer_variant_a.active = 1;
-        if (*(unsigned char *)grim_interface_ptr
-                ->grim_get_config_var(100).words == 0) {
+        if (!grim_interface_ptr->grim_get_config_var(100)) {
             ui_element_slot_footer_variant_a.active = 0;
         }
         ui_element_slot_footer_variant_b.active = 1;

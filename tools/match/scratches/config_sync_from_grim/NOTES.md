@@ -22,3 +22,8 @@ The store at `config_windowed` is byte-sized and the function returns `true` in
 correct the earlier four-byte field and `int` return guesses. Natural VC6
 `/O2 /GB` code matches all 277 instructions and references `37/0/0`; the source
 passes the fakematch validator without coercion or dead expressions.
+
+The two boolean config slots now use the recovered
+`grim_config_value_t::operator bool()` directly, consistent with the other
+game-side Grim callers. This removes byte-pointer casts over the value object
+while preserving the exact 277-instruction result.

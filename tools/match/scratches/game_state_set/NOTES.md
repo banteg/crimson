@@ -42,3 +42,9 @@ The sole unresolved reference is the zero written at `0x00487260` on game-over
 entry. Binary Ninja finds no other code or data xrefs, so the scratch retains a
 descriptive local name without promoting an unsupported semantic name into the
 shared data map.
+
+Both main-menu width checks now use the recovered
+`grim_config_value_t::operator bool()` instead of manually reinterpreting the
+first byte of the returned value object. The source shape matches the already
+exact UI layout caller and leaves the `85.35%`, `166/399` prefix, and
+`161/1/0` reference audit unchanged.
