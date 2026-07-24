@@ -14,6 +14,12 @@ header now exposes the proven entity fields instead of treating the first 16
 bytes and the constructor-touched offsets `0x38`, `0x74`, `0x78`, `0x90`, and
 `0x98` as anonymous padding.
 
+The initializer now derives its zero-data C++ construction view from the
+canonical recovered `player_state_t`. This retains the native inline member
+boundary while removing the former duplicate 0x360-byte definition and all of
+its padding spans. Inherited canonical field names and the typed two-float move
+target preserve the exact 50/50 result.
+
 Offset `0x98` is now typed as `float`: the constructor writes floating zero
 bits, and `player_render_overlays` is its only recovered read, through an x87
 load compared with `0.25f`. Its reserved name remains until a writer or
