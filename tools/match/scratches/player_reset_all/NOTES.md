@@ -27,6 +27,14 @@ The native immediate-zero store and its placement among neighboring gameplay
 timers identify `player_reset_reserved_zero` as a write-only float, rather than
 the earlier provisional integer view.
 
+The scratch now uses the canonical recovered `player_state_t` directly for
+`plaguebearer_active`, position, health, `state_aux`, and the two bonus timers.
+This removes the former 0x360-byte local padding mirror; the only cast left at
+the position boundary is the native two-float vector operation over the
+canonical `pos_x`/`pos_y` pair. Binary Ninja independently resolves the same
+stores to those named `player_state_t` fields. This type-only cleanup preserves
+the result below byte-for-byte.
+
 Current VC6 result: 91.83%, exact 94/127-instruction prefix, 127 target versus
 130 candidate instructions, and references 57/0/1. The recovered vector
 members reproduce the native 0x24-byte frame and the center, even-offset,
