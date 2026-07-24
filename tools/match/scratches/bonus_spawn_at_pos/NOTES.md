@@ -24,3 +24,8 @@ compiler saves both registers in the prologue for this clean source. The body
 otherwise aligns instruction-for-instruction after accounting for the shifted
 save/restore sites. Do not distort the source to manufacture the register
 schedule without compiler or neighboring-object evidence.
+
+Inverting the guard into a valid-position body does not induce shrink-wrapping:
+VC6 still saves both registers in the prologue and also changes the floating
+comparison forms, reducing the score to 80.40% with two fewer aligned
+references. The native-facing invalid guard remains the stronger source shape.

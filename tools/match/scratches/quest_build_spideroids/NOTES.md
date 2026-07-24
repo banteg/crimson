@@ -21,3 +21,7 @@ final-entry address, early-pop return path, and all 62 instructions. It scores
 constant 1 immediately before the first x-coordinate store in the candidate
 and immediately after it in the target. The evidenced helper shape is retained
 without adding an artificial ordering constraint.
+
+Moving the shared template-id declaration to the first setter boundary produces
+the identical candidate: VC6 still hoists the constant load ahead of the first
+x-coordinate store. The residual is therefore not explained by local lifetime.
