@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=74.76% prefix=26/3159 target_insns=3159 candidate_insns=3082 refs=341/0/1
+match=77.09% prefix=26/3159 target_insns=3159 candidate_insns=3078 refs=349/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -300,3 +300,12 @@ Frame/prefix notes:
   regresses, while their coherent combination improves every grid region.
   Aggregate rewrites for template `0x0f` and the second ring remain rejected
   because they lose fuzzy coverage and resolved references.
+- The eight spawn-controller templates materialize one
+  `creature_spawn_slot_t *` after allocation and initialize the timer record
+  through that pointer. This reproduces native's single scaled table `lea`
+  followed by member stores instead of repeated indexed global expressions.
+  The shared source shape removes four candidate instructions, raises the
+  score from `74.76%` to `77.09%`, improves the reference audit from
+  `341/0/1` to `349/0/1`, and gains 328 fuzzy-weighted bytes. A pointer for
+  the later template `0x00` scheduler was independently tested but perturbs
+  VC6 allocation across the aligned ladder and was rejected.
