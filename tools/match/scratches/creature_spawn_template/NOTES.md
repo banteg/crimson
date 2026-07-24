@@ -247,3 +247,19 @@ Frame/prefix notes:
   two native fallback edges changes block placement and settles the honest
   combined scratch at `63.91%`. The semantic edges are kept despite that small
   normalized-score decrease rather than being fakematched away.
+- A focused revisit of template `0x13` at `0x00431217..0x00431445` recovered
+  two further source-order details. The root formation writes its computed
+  two-float position before assigning `max_health` and `ai_mode`; putting the
+  value copy first reproduces native's exact `ecx`/`eax` store sequence at
+  `0x00431329..0x00431345`. In the child loop, the shared `60.0f`
+  health/reward/max-health group follows the position and velocity values
+  rather than splitting the trigonometric construction.
+- Native also keeps the scaled child X orbit direction in the distinct
+  `[esp+0x30]` float temporary while the unscaled cosine remains at
+  `[esp+0x38]`. Naming that previously anonymous local recovers the exact x87
+  store/reload sequence at `0x0043139d..0x004313ab`. Together the three
+  natural changes raise the whole-function score from `63.91%` to `64.53%`
+  with the same 2,950 candidate instructions, exact `0x48` frame,
+  26-instruction prefix, and honest `316/0/1` reference audit. Direct scaled
+  expressions and scalarized child-vector writes were tested and rejected
+  because they reduced both alignment and candidate coverage.

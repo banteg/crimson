@@ -46,7 +46,8 @@ typedef struct creature_spawn_template_named_locals_t {
     int scratch_head;
     creature_spawn_vec2_t zero_velocity;
     creature_spawn_vec2_t chain_position;
-    int scratch_tail[2];
+    float scaled_orbit_x;
+    int scratch_tail;
     creature_spawn_tint_scratch_t tint_scratch;
     creature_tint_t child_tint;
 } creature_spawn_template_named_locals_t;
@@ -72,6 +73,7 @@ typedef union creature_spawn_template_locals_t {
 #define child_tint_a_bits (*(int *)&child_tint.a)
 #define zero_velocity locals.named.zero_velocity
 #define chain_position locals.named.chain_position
+#define scaled_orbit_x locals.named.scaled_orbit_x
 #define orbit_direction locals.named.tint_scratch.orbit_direction
 
 #define STORE_FLOAT_BITS(field, slot, bits) \
@@ -432,15 +434,15 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                 zero_velocity.set(0.0f, 0.0f);
                 child_tint.set(0.4f, 0.7f, 0.11f, 1.0f);
                 alien_chain_cursor = 2;
-                creature->max_health = 200.0f;
                 orbit_direction.x = (float)cos(0.0f);
                 orbit_direction.y = (float)sin(0.0f);
                 orbit_direction.x = orbit_direction.x * 256.0f;
                 orbit_direction.y = orbit_direction.y * 256.0f;
                 chain_position.x = orbit_direction.x + *pos;
-                creature->ai_mode = CREATURE_AI_ORBIT_LINK;
                 chain_position.y = orbit_direction.y + pos[1];
                 *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
+                creature->max_health = 200.0f;
+                creature->ai_mode = CREATURE_AI_ORBIT_LINK;
                 chain_link_idx = root_slot_idx;
                 do {
                     child_slot_idx = creature_alloc_slot();
@@ -452,13 +454,13 @@ extern "C" void *creature_spawn_template(int template_id, float *pos, float head
                     creature->orbit_radius.raw_u32 = 0x41200000;
                     orbit_direction.x = (float)cos(angle);
                     orbit_direction.y = (float)sin(angle);
-                    orbit_direction.x = orbit_direction.x * 256.0f;
+                    scaled_orbit_x = orbit_direction.x * 256.0f;
                     orbit_direction.y = orbit_direction.y * 256.0f;
-                    chain_position.x = orbit_direction.x + *pos;
-                    creature->health = 60.0f;
+                    chain_position.x = scaled_orbit_x + *pos;
                     chain_position.y = orbit_direction.y + pos[1];
                     *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;
                     *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;
+                    creature->health = 60.0f;
                     creature->reward_value = 60.0f;
                     creature->max_health = 60.0f;
                     *(creature_tint_t *)&creature->tint_r = child_tint;
