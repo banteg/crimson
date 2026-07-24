@@ -1,5 +1,6 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
+#include <stddef.h>
 
 extern "C" char typo_target_name_table[384][64];
 extern "C" float camera_offset_x;
@@ -43,7 +44,10 @@ extern "C" void typo_target_name_draw_labels(void)
     char *name = &typo_target_name_table[0][0];
     float *lifecycle_stage = &creature_pool[0].lifecycle_stage;
     do {
-        if (((creature_t *)(lifecycle_stage - 4))->active) {
+        creature_t *creature = (creature_t *)(
+            (char *)lifecycle_stage
+            - offsetof(creature_t, lifecycle_stage));
+        if (creature->active) {
             width = grim_interface_ptr->grim_measure_text_width(name);
             alpha = *lifecycle_stage < 0.0f
                 ? (*lifecycle_stage + 10.0f) * 0.1f
@@ -54,10 +58,10 @@ extern "C" void typo_target_name_draw_labels(void)
                 alpha = 0.0f;
             }
 
-            text_position.x = camera_offset_x + lifecycle_stage[1]
+            text_position.x = camera_offset_x + creature->pos_x
                 - (float)width * 0.5f;
             text_position.y =
-                camera_offset_y + lifecycle_stage[2] - 50.0f;
+                camera_offset_y + creature->pos_y - 50.0f;
             background_color.a = alpha * 0.67f;
             background_position.set(
                 text_position.x - 4.0f, text_position.y);

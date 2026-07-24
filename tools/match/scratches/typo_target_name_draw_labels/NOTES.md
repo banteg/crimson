@@ -23,6 +23,12 @@ match=100.00% prefix=111/111 target_insns=111 candidate_insns=111 refs=20/0/0
   and uses `alpha * 0.67f`.
 - The foreground text is white with the unclipped label alpha.
 
+The loop retains the native lifecycle-field induction cursor, but now derives
+its containing `creature_t` with `offsetof(creature_t, lifecycle_stage)`.
+Named `active`, `pos_x`, and `pos_y` accesses replace the former cursor-relative
+cast and float indices. A shadow probe confirmed that the recovered type view
+still emits the exact 111/111 instructions with all 20 references aligned.
+
 Two local vector values are essential source evidence. One retains the centered
 text position while the other receives the background origin through its
 ordinary `set` method. Modeling x and y as unrelated scalar locals lets VC6
