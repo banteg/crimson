@@ -93,6 +93,17 @@ first_target=jne L3f7a
 first_candidate=jne L3d5a
 ```
 
+Two additional type/source-shape leads were measured after the movement
+recovery and rejected. Declaring the four alternate movement/turn key globals
+as bytes follows several native byte loads, but VC6 adds eight zero-extension
+instructions elsewhere in the dispatcher: the result falls to 54.73% with
+4,027 candidate instructions (`refs=736/0/10`). Splitting the entry mouse-to-
+aim aggregate copy into two float assignments instead selects x87 loads and
+stores, falling to 54.76% and `refs=734/0/11`. The existing integer-shaped
+two-float aggregate copy and integer key declarations therefore remain the
+strongest whole-function source model; neither local clue justifies weakening
+the surrounding native shape.
+
 The point-control movement arm at `0x00414035..0x004141ad` retains its own
 two-float displacement value through acceleration, deceleration, and the
 shared spawn-avoidance call. The adjacent dual-axis arm uses a different
