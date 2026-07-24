@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **718/2173** functions matched exactly, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **286924/676681** code bytes (**42.4%**).
+Fuzzy-weighted alignment is **286966/676681** code bytes (**42.4%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 257348/386756 | 66.5% | 621/997 | 319177/386756 | 82.5% | 501/621 |
+| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 257390/386756 | 66.6% | 621/997 | 319177/386756 | 82.5% | 501/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**501/997** functions, **107380/386756** bytes (**27.8%**), **257348/386756** fuzzy-weighted bytes (**66.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
+**501/997** functions, **107380/386756** bytes (**27.8%**), **257390/386756** fuzzy-weighted bytes (**66.6%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
 
 | state | function | address | bytes | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---|---|
@@ -184,7 +184,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
 | match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
 | match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
-| wip | quest_results_screen_update | 0x00410d20 | 4857 | 1164/1168 | 85.59% | 1/1168 | 424/0/9 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 1164/1168 | 86.45% | 1/1168 | 429/0/9 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
 | match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |

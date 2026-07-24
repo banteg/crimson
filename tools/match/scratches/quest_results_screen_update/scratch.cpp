@@ -373,21 +373,21 @@ extern "C" void quest_results_screen_update(void)
         quest_results_highscore_rank_index = highscore_rank_index();
         grim_interface_ptr->grim_flush_input();
         grim_interface_ptr->grim_was_key_pressed(0x1c);
-        if (quest_results_highscore_rank_index < 100) {
-            name_input.max_chars = 0x14;
-            name_input.text = quest_results_name_input_buffer;
-            ui_screen_phase = 1;
-            strcpy(
-                quest_results_name_input_buffer,
-                highscore_active_record.player_name);
-            name_input.cursor =
-                strlen(highscore_active_record.player_name);
-        } else {
+        if (quest_results_highscore_rank_index >= 100) {
             name_input.cursor = 0;
             name_input.max_chars = 0;
             name_input.text = quest_results_name_input_buffer;
             ui_screen_phase = 2;
+            goto done;
         }
+        name_input.max_chars = 0x14;
+        name_input.text = quest_results_name_input_buffer;
+        ui_screen_phase = 1;
+        strcpy(
+            quest_results_name_input_buffer,
+            highscore_active_record.player_name);
+        name_input.cursor =
+            strlen(highscore_active_record.player_name);
         goto done;
     }
 

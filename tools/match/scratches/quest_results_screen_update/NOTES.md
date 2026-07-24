@@ -39,7 +39,7 @@ those scoped `REFERENCE_ALIASES`.
 ## Matching evidence and honest residual
 
 The verified VC6 build is 1,164 normalized instructions against 1,168 native,
-scores 85.59%, and audits 424 references as resolved, zero as unresolved, and
+scores 86.45%, and audits 429 references as resolved, zero as unresolved, and
 9 as mismatched within nonmatching instruction regions. The remaining broad
 delta is register/stack allocation: native uses a 24-byte frame and caches the
 working coordinates in `edi`/`ebp`, while the natural reconstruction uses a
@@ -47,3 +47,11 @@ working coordinates in `edi`/`ebp`, while the natural reconstruction uses a
 hoists the constant-one and name-buffer values. Reusing or artificially
 overlapping those positions made the source less faithful and reduced the
 instruction match, so the residual is recorded rather than forced.
+
+The score-ranking branch at `0x0041168d` is invalid-first: records ranked 100
+or worse clear the name-input state, advance directly to the completed-results
+phase, and return. Qualifying records then fall through into the name-entry
+setup. Expressing that early exit instead of an inverted condition with an
+`else` restores the native basic-block order, aligns five additional
+references, and raises the score from 85.59% without changing the frame or
+instruction count.
