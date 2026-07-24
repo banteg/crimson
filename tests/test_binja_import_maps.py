@@ -209,3 +209,11 @@ def test_quest_builder_signature_uses_array_presentation_view():
         "quest_start_selected",
         "void quest_start_selected(int major, int minor)",
     ) == "void quest_start_selected(int major, int minor)"
+    assert importer._presentation_signature(
+        "quest_build_everred_pastures",
+        "void quest_build_everred_pastures("
+        "quest_spawn_entry_t *entries, int *count)",
+    ) == (
+        "void quest_build_everred_pastures("
+        "quest_spawn_entry_t *entries, int *count)"
+    )

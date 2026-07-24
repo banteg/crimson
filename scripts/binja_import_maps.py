@@ -61,6 +61,29 @@ _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
     "projectile_pool_t": ("projectile_binja_t", 0x60),
 }
 
+# These builders advance an entry cursor through a loop. Keeping the canonical
+# element-pointer signature gives Binary Ninja the correct 0x18 pointer stride;
+# the table wrapper is reserved for builders dominated by fixed-index stores.
+_QUEST_CURSOR_BUILDERS = frozenset(
+    {
+        "quest_build_arachnoid_farm",
+        "quest_build_deja_vu",
+        "quest_build_everred_pastures",
+        "quest_build_evil_zombies_at_large",
+        "quest_build_frontline_assault",
+        "quest_build_gauntlet",
+        "quest_build_nagolipoli",
+        "quest_build_surrounded_by_reptiles",
+        "quest_build_survival_of_the_fastest",
+        "quest_build_sweep_stakes",
+        "quest_build_target_practice",
+        "quest_build_the_killing",
+        "quest_build_the_massacre",
+        "quest_build_the_unblitzkrieg",
+        "quest_build_two_fronts",
+    },
+)
+
 _TYPE_REPLACEMENTS = {
     "IGrim2D": "void",
     "LPDIRECT3D8": "void *",
@@ -583,7 +606,7 @@ def _sanitize_signature(signature: str, bv=None) -> str:
 
 def _presentation_signature(name: str, signature: str) -> str:
     """Use layout-equivalent types that produce clearer Binary Ninja IL."""
-    if not name.startswith("quest_build_"):
+    if not name.startswith("quest_build_") or name in _QUEST_CURSOR_BUILDERS:
         return signature
 
     import re
