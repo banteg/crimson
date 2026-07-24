@@ -4,19 +4,19 @@ void perks_rebuild_available(void)
 {
     int remaining = perk_id_max + 1;
     if (remaining > 0) {
-        int *available = &perk_meta_table[0].available;
+        unsigned char *available = &perk_meta_table[0].available;
         do {
-            *(unsigned char *)available = 0;
-            available += sizeof(perk_meta_t) / sizeof(int);
+            *available = 0;
+            available += sizeof(perk_meta_t);
             --remaining;
         } while (remaining != 0);
     }
 
     {
         int antiperk_id = perk_id_antiperk;
-        unsigned char *available = (unsigned char *)&perk_meta_table[1].available;
+        unsigned char *available = &perk_meta_table[1].available;
         unsigned char one = 1;
-        *(unsigned char *)&perk_meta_table[antiperk_id].available = 0;
+        perk_meta_table[antiperk_id].available = 0;
         do {
             *available = one;
             available += sizeof(perk_meta_t);
@@ -26,10 +26,10 @@ void perks_rebuild_available(void)
             int man_bomb_id = perk_id_man_bomb;
             int living_fortress_id = perk_id_living_fortress;
             int fire_caugh_id = perk_id_fire_caugh;
-            *(unsigned char *)&perk_meta_table[man_bomb_id].available = one;
-            *(unsigned char *)&perk_meta_table[living_fortress_id].available = one;
-            *(unsigned char *)&perk_meta_table[fire_caugh_id].available = one;
-            *(unsigned char *)&perk_meta_table[perk_id_tough_reloader].available = one;
+            perk_meta_table[man_bomb_id].available = one;
+            perk_meta_table[living_fortress_id].available = one;
+            perk_meta_table[fire_caugh_id].available = one;
+            perk_meta_table[perk_id_tough_reloader].available = one;
 
             {
                 int unlock_count = quest_unlock_index;
@@ -40,11 +40,11 @@ void perks_rebuild_available(void)
                     int perk_id = *unlock_perk_id;
                     ++index;
                     unlock_perk_id += sizeof(quest_meta_t) / sizeof(int);
-                    *(unsigned char *)&perk_meta_table[perk_id].available = one;
+                    perk_meta_table[perk_id].available = one;
                 }
             }
         }
 
-        *(unsigned char *)&perk_meta_table[antiperk_id].available = 0;
+        perk_meta_table[antiperk_id].available = 0;
     }
 }

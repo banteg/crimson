@@ -11,6 +11,13 @@ four always-available perks, bounded quest-unlock scan, byte-sized availability
 writes, and final Antiperk exclusion. All 16 masked references resolve to the
 intended ids, metadata fields, and quest table boundaries.
 
+The shared `perk_meta_t.available` field is now byte-sized with explicit
+three-byte trailing padding. Every recovered access in this rebuild,
+`perk_select_random`, and the unlock-database views is a byte read or write;
+Binary Ninja now renders the same direct `uint8_t` field. Removing the former
+integer-field casts preserves this WIP's 73.08% result and keeps
+`perk_select_random` exact at 32/32 instructions.
+
 The unconditional clear is behaviorally important. The Zig port previously
 returned early when the quest unlock index was unchanged, allowing stale or
 injected availability bits to survive. Native rebuilds on every call; the port

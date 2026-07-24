@@ -9,7 +9,7 @@ int perk_select_random(void)
     do {
         perk_id = crt_rand();
         perk_id = perk_id % perk_id_max + 1;
-        if ((char)perk_meta_table[perk_id].available != 0) {
+        if (perk_meta_table[perk_id].available != 0) {
             can_offer = perk_can_offer(perk_id);
             if ((char)can_offer != 0) {
                 return perk_id;

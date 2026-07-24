@@ -903,7 +903,8 @@ typedef struct perk_meta_t {
     char *name;
     char *description;
     int flags;
-    int available;
+    unsigned char available;
+    unsigned char _pad_available[3];
     int prerequisite;
 } perk_meta_t;
 
