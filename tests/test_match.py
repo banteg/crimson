@@ -870,6 +870,7 @@ def test_render_status_rows_includes_prefix() -> None:
             byte_total=1000,
             matched_functions=0,
             matched_bytes=0,
+            fuzzy_weighted_bytes=5.0,
             candidate_functions=1,
             candidate_bytes=10,
             scratch_count=1,
@@ -881,6 +882,7 @@ def test_render_status_rows_includes_prefix() -> None:
             byte_total=2000,
             matched_functions=0,
             matched_bytes=0,
+            fuzzy_weighted_bytes=0.0,
             candidate_functions=0,
             candidate_bytes=0,
             scratch_count=0,
@@ -892,6 +894,8 @@ def test_render_status_rows_includes_prefix() -> None:
         "0/10",
         "0/1000",
         "0.0%",
+        "5/1000",
+        "0.5%",
         "1/10",
         "10/1000",
         "1.0%",
@@ -899,11 +903,16 @@ def test_render_status_rows_includes_prefix() -> None:
     )
     assert (
         "all images: 0/30 functions, 0/3000 bytes (0.0%) matched; "
+        "5/3000 fuzzy-weighted bytes (0.2%); "
         "1/30 source candidates covering 10/3000 bytes (0.3%); "
         "0/1 scratches verified"
     ) in render_status_table([status], totals)
     markdown = render_status_markdown([status], totals)
-    assert "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 1/10 | 10/1000 | 1.0% | 0/1 |" in markdown
+    assert (
+        "| crimsonland.exe | 0/10 | 0/1000 | 0.0% | 5/1000 | 0.5% | "
+        "1/10 | 10/1000 | 1.0% | 0/1 |"
+    ) in markdown
+    assert "Fuzzy-weighted alignment is **5/3000** code bytes (**0.2%**)." in markdown
     assert "Candidate coverage includes exact matches and WIPs" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
@@ -1101,6 +1110,7 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             byte_total=6,
             matched_functions=1,
             matched_bytes=3,
+            fuzzy_weighted_bytes=4.5,
             candidate_functions=2,
             candidate_bytes=6,
             scratch_count=3,
@@ -1112,6 +1122,7 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
             byte_total=2,
             matched_functions=0,
             matched_bytes=0,
+            fuzzy_weighted_bytes=0.0,
             candidate_functions=0,
             candidate_bytes=0,
             scratch_count=0,

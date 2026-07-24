@@ -1515,6 +1515,7 @@ class ImageTotals:
     byte_total: int
     matched_functions: int
     matched_bytes: int
+    fuzzy_weighted_bytes: float
     candidate_functions: int
     candidate_bytes: int
     scratch_count: int
@@ -1523,6 +1524,10 @@ class ImageTotals:
     @property
     def byte_percentage(self) -> float:
         return self.matched_bytes / self.byte_total if self.byte_total else 0.0
+
+    @property
+    def fuzzy_byte_percentage(self) -> float:
+        return self.fuzzy_weighted_bytes / self.byte_total if self.byte_total else 0.0
 
     @property
     def candidate_byte_percentage(self) -> float:
@@ -2117,6 +2122,8 @@ IMAGE_TOTALS_HEADER = (
     "exact functions",
     "exact bytes",
     "exact code",
+    "fuzzy-weighted bytes",
+    "fuzzy code",
     "candidate functions",
     "candidate bytes",
     "candidate code",
@@ -2138,9 +2145,14 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
         byte_total = sum(len(image.function_bytes(function.address, function.end)) for function in manifest.functions)
         image_statuses = [status for status in statuses if status.config.image == image_name]
         matched_by_function: dict[int, int] = {}
+        fuzzy_bytes_by_function: dict[int, float] = {}
         candidate_by_function: dict[int, int] = {}
         for status in image_statuses:
             if status.ratio is not None:
+                fuzzy_bytes_by_function[status.address] = max(
+                    fuzzy_bytes_by_function.get(status.address, 0.0),
+                    status.target_size * status.ratio,
+                )
                 candidate_by_function[status.address] = max(
                     candidate_by_function.get(status.address, 0),
                     status.target_size,
@@ -2157,6 +2169,7 @@ def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
                 byte_total=byte_total,
                 matched_functions=len(matched_by_function),
                 matched_bytes=sum(matched_by_function.values()),
+                fuzzy_weighted_bytes=sum(fuzzy_bytes_by_function.values()),
                 candidate_functions=len(candidate_by_function),
                 candidate_bytes=sum(candidate_by_function.values()),
                 scratch_count=len(image_statuses),
@@ -2204,6 +2217,8 @@ def render_image_total_rows(totals: list[ImageTotals]) -> list[tuple[str, ...]]:
             f"{total.matched_functions}/{total.function_count}",
             f"{total.matched_bytes}/{total.byte_total}",
             f"{total.byte_percentage:.1%}",
+            f"{total.fuzzy_weighted_bytes:.0f}/{total.byte_total}",
+            f"{total.fuzzy_byte_percentage:.1%}",
             f"{total.candidate_functions}/{total.function_count}",
             f"{total.candidate_bytes}/{total.byte_total}",
             f"{total.candidate_byte_percentage:.1%}",
@@ -2220,6 +2235,7 @@ def _overall_totals(totals: list[ImageTotals]) -> ImageTotals:
         byte_total=sum(total.byte_total for total in totals),
         matched_functions=sum(total.matched_functions for total in totals),
         matched_bytes=sum(total.matched_bytes for total in totals),
+        fuzzy_weighted_bytes=sum(total.fuzzy_weighted_bytes for total in totals),
         candidate_functions=sum(total.candidate_functions for total in totals),
         candidate_bytes=sum(total.candidate_bytes for total in totals),
         scratch_count=sum(total.scratch_count for total in totals),
@@ -2232,6 +2248,8 @@ def _image_summary(total: ImageTotals) -> str:
         f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
         f"{total.matched_bytes}/{total.byte_total} bytes "
         f"({total.byte_percentage:.1%}) matched; "
+        f"{total.fuzzy_weighted_bytes:.0f}/{total.byte_total} fuzzy-weighted bytes "
+        f"({total.fuzzy_byte_percentage:.1%}); "
         f"{total.candidate_functions}/{total.function_count} source candidates covering "
         f"{total.candidate_bytes}/{total.byte_total} bytes "
         f"({total.candidate_byte_percentage:.1%}); "
@@ -2248,6 +2266,8 @@ def render_status_table(statuses: list[ScratchStatus], totals: list[ImageTotals]
         f"\nall images: {overall.matched_functions}/{overall.function_count} functions, "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
+        f"{overall.fuzzy_weighted_bytes:.0f}/{overall.byte_total} fuzzy-weighted bytes "
+        f"({overall.fuzzy_byte_percentage:.1%}); "
         f"{overall.candidate_functions}/{overall.function_count} source candidates covering "
         f"{overall.candidate_bytes}/{overall.byte_total} bytes "
         f"({overall.candidate_byte_percentage:.1%}); "
@@ -2270,6 +2290,10 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
         f"(**{overall.byte_percentage:.1%}**). Byte totals are manifest function "
         "extents with terminal padding trimmed.",
         "",
+        f"Fuzzy-weighted alignment is **{overall.fuzzy_weighted_bytes:.0f}/"
+        f"{overall.byte_total}** code bytes "
+        f"(**{overall.fuzzy_byte_percentage:.1%}**).",
+        "",
         f"Compilable source candidates cover **{overall.candidate_functions}/{overall.function_count}** "
         f"functions and **{overall.candidate_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.candidate_byte_percentage:.1%}**). Candidate coverage includes exact "
@@ -2278,7 +2302,7 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
         "## Images",
         "",
         "| " + " | ".join(IMAGE_TOTALS_HEADER) + " |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in render_image_total_rows(totals):
         lines.append("| " + " | ".join(row) + " |")
@@ -2292,6 +2316,8 @@ def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTota
                 f"**{total.matched_functions}/{total.function_count}** functions, "
                 f"**{total.matched_bytes}/{total.byte_total}** bytes "
                 f"(**{total.byte_percentage:.1%}**), "
+                f"**{total.fuzzy_weighted_bytes:.0f}/{total.byte_total}** fuzzy-weighted bytes "
+                f"(**{total.fuzzy_byte_percentage:.1%}**), "
                 f"**{total.candidate_functions}/{total.function_count}** source candidates covering "
                 f"**{total.candidate_bytes}/{total.byte_total}** bytes "
                 f"(**{total.candidate_byte_percentage:.1%}**), "
