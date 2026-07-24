@@ -479,7 +479,7 @@ extern "C" void player_render_overlays(void)
         for (int player_index = 0;
              player_index < config_player_count;
             ++player_index, ++line_player) {
-            if (*(float *)&line_player->player_reserved_98 > 0.25f) {
+            if (line_player->player_reserved_98 > 0.25f) {
                 if (player_render_distance(
                         *(player_render_vec2_t *)&line_player->pos_x,
                         *(player_render_vec2_t *)&creature_pool

@@ -59,6 +59,7 @@ High-confidence fields (partial):
 | `0x3c` | weapon reset latch | `player_weapon_reset_latch` | Cleared by `weapon_assign_player` and `bonus_apply` (Weapon Power Up / Fire Bullets) when timers/ammo reset. |
 | `0x44` | move speed / accel | `player_move_speed` | Ramps up/down based on input; scales movement. |
 | `0x70` | move phase | `player_move_phase` | Incremented by movement speed, wrapped to `[0, 14]` for step/anim phase. |
+| `0x74` | reserved overlay gate (float) | `player_reserved_98` | Initialized to floating zero; the only recovered read compares it with `0.25f` before drawing the optional target trail. |
 | `0x78` | Hot Tempered timer | `player_hot_tempered_timer` | Used by perk ring burst logic. |
 | `0x7c` | Man Bomb timer | `player_man_bomb_timer` | Charge timer for perk ring burst. |
 | `0x80` | Living Fortress timer | `player_living_fortress_timer` | Accumulates while stationary. |

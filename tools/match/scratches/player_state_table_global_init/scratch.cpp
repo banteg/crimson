@@ -22,7 +22,7 @@ struct player_state_native_t {
     unsigned char padding7c[0x14];
     int ai_mode;
     float anim_phase;
-    int player_reserved_98;
+    float player_reserved_98;
     float hot_tempered_timer;
     float man_bomb_timer;
     float living_fortress_timer;
@@ -93,7 +93,7 @@ extern "C" void player_state_table_global_init(void)
         entry->move_target = player_vec2_t(-1.0f, -1.0f);
         entry->evil_eyes_target_creature = -1;
         entry->auto_target = 0;
-        entry->player_reserved_98 = 0;
+        entry->player_reserved_98 = 0.0f;
         entry->hot_tempered_timer = 0.0f;
         entry->reload_active = 0;
         entry->shield_timer = 0.0f;

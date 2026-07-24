@@ -242,7 +242,7 @@ typedef struct player_state_t {
     unsigned char _pad_entity_link[0x14];
     int entity_ai_mode;
     float move_phase;
-    int player_reserved_98;
+    float player_reserved_98;
     float hot_tempered_timer;
     float man_bomb_timer;
     float living_fortress_timer;

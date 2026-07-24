@@ -11,10 +11,11 @@ shield layers, muzzle flash, and the final segmented target-trail branch.
 The reconstructed control flow and constants are corroborated by live Binary
 Ninja HLIL/disassembly and the retained IDA artifact. The modern world renderer
 also independently carries the active aura, trooper, shield, and muzzle-flash
-passes. The native callback uses a raw float at player offset `0x98` to gate the
-target trail; the shared header currently gives that storage an integer-shaped
-reserved name, so the scratch preserves the evidenced float view locally
-instead of changing a broad ABI declaration from one use.
+passes. The native callback uses a float at player offset `0x98` to gate the
+target trail. A live reference inventory found only the constructor's zero
+store and this x87 load/`0.25f` comparison, so the shared header now records
+the proven `float` type while conservatively retaining the reserved field name.
+The scratch can therefore use the field without a bit reinterpretation.
 
 The target-trail selector is initialized to perk id zero by the native perk
 database constructor and has no other writer in the executable. The branch is

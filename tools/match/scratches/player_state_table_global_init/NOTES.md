@@ -13,3 +13,8 @@ stores hoists the first move-target component across that boundary. The native
 header now exposes the proven entity fields instead of treating the first 16
 bytes and the constructor-touched offsets `0x38`, `0x74`, `0x78`, `0x90`, and
 `0x98` as anonymous padding.
+
+Offset `0x98` is now typed as `float`: the constructor writes floating zero
+bits, and `player_render_overlays` is its only recovered read, through an x87
+load compared with `0.25f`. Its reserved name remains until a writer or
+stronger gameplay role is recovered.
