@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=73.74% prefix=26/3159 target_insns=3159 candidate_insns=2954 refs=341/0/1
+match=74.76% prefix=26/3159 target_insns=3159 candidate_insns=3082 refs=341/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -289,3 +289,14 @@ Frame/prefix notes:
   149 repository fuzzy-weighted bytes. Whole-value conversions for `0x3e` and
   the ordinary macro ordering for `0x00` were retested in this aligned ladder
   and rejected because they reduced both normalized and fuzzy coverage.
+- Native grid templates `0x14..0x18` construct reusable two-float zero
+  velocity, two-float child position, and four-float root/child tint values
+  before copying them into each allocated creature. Recovering those shared
+  value-object shapes across the five repeated formations adds 128
+  native-shaped candidate instructions, raises the score from `73.74%` to
+  `74.76%`, preserves the exact `0x48` frame, 26-instruction prefix, and
+  `341/0/1` reference audit, and gains 144 fuzzy-weighted bytes. The three
+  pieces were also probed independently; each perturbs VC6 allocation and
+  regresses, while their coherent combination improves every grid region.
+  Aggregate rewrites for template `0x0f` and the second ring remain rejected
+  because they lose fuzzy coverage and resolved references.

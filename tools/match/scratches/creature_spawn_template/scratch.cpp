@@ -95,14 +95,12 @@ typedef union creature_spawn_template_locals_t {
         creature->pos_x = *pos;                                                                             \
         creature->pos_y = pos[1];                                                                           \
         creature->ai_mode = (root_ai_mode);                                                                 \
-        creature->tint_r = (red);                                                                           \
-        creature->tint_g = (green);                                                                         \
+        child_tint.set((red), (green), (blue), 1.0f);                                                       \
+        *(creature_tint_t *)&creature->tint_r = child_tint;                                                \
         creature->health = (health_value);                                                                  \
         creature->move_speed = (speed_value);                                                               \
-        creature->tint_b = (blue);                                                                          \
         creature->reward_value = 600.0f;                                                                    \
         creature->size = (size_value);                                                                      \
-        creature->tint_a = 1.0f;                                                                            \
         creature->contact_damage = 40.0f;                                                                   \
         creature->pos_x = *pos;                                                                             \
         creature->pos_y = pos[1];                                                                           \
@@ -119,17 +117,14 @@ typedef union creature_spawn_template_locals_t {
         creature->anim_phase = 0.0f;                                                                                       \
         creature->link_index = root_slot_idx;                                                                              \
         creature->target_offset_x = (float)slot_10_i;                                                                      \
-        creature->vel_x = 0.0f;                                                                                            \
-        creature->pos_x = *pos + creature->target_offset_x;                                                                \
-        creature->vel_y = 0.0f;                                                                                            \
-        creature->pos_y = creature->target_offset_y + pos[1];                                                              \
+        chain_position.set(*pos + creature->target_offset_x, creature->target_offset_y + pos[1]);                          \
+        *(creature_spawn_vec2_t *)&creature->pos_x = chain_position;                                                       \
+        *(creature_spawn_vec2_t *)&creature->vel_x = zero_velocity;                                                        \
         creature->health = (child_health);                                                                                 \
         creature->max_health = (child_health);                                                                             \
-        creature->tint_r = (red);                                                                                          \
+        *(creature_tint_t *)&creature->tint_r = child_tint;                                                                \
         grid_vertical_offset = grid_vertical_offset + 0x40;                                                                \
-        creature->tint_g = (green);                                                                                        \
         creature->collision_flag = 0;                                                                                      \
-        creature->tint_b = (blue);                                                                                         \
         creature->collision_timer = 0.0f;                                                                                  \
         creature->active = 1;                                                                                              \
         creature->state_flag = 1;                                                                                          \
@@ -138,13 +133,14 @@ typedef union creature_spawn_template_locals_t {
         creature->type_id = (child_type);                                                                                  \
         creature->move_speed = (child_speed);                                                                              \
         creature->reward_value = 60.0f;                                                                                    \
-        creature->tint_a = (alpha);                                                                                        \
         creature->size = (child_size);                                                                                     \
         creature->contact_damage = (damage);                                                                               \
     } while (0)
 
 #define SPAWN_GRID(child_ai_mode, child_type, child_health, red, green, blue, child_speed, alpha, child_size, damage) \
     do {                                                                                                             \
+        zero_velocity.set(0.0f, 0.0f);                                                                              \
+        child_tint.set((red), (green), (blue), (alpha));                                                             \
         slot_10_i = 0;                                                                                               \
         do {                                                                                                         \
             grid_vertical_offset = 0x80;                                                                             \
