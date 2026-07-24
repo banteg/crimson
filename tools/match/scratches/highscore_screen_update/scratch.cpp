@@ -811,44 +811,36 @@ play_game_done:
                 stage = 0;
                 highscore_batch_sync_stage_index = 0;
             } else {
-                switch (stage) {
-                case -3:
+                if (stage == -3) {
                     config_blob.game_mode = GAME_MODE_SURVIVAL;
-                    break;
-                case -2:
+                } else if (stage == -2) {
                     config_blob.game_mode = GAME_MODE_RUSH;
-                    break;
-                case -1:
+                } else if (stage == -1) {
                     if (config_blob.player_count > 1) {
                         stage = 0;
                         highscore_batch_sync_stage_index = 0;
                     }
                     config_blob.game_mode = GAME_MODE_TYPO_SHOOTER;
-                    break;
                 }
             }
 
-            bool start_sync = stage < 0;
-            if (!start_sync) {
-                int unlock_index;
-                if (hardcore) {
-                    unlock_index = game_status_blob.quest_unlock_index_full;
+            if (stage >= 0) {
+                if ((!hardcore
+                        && game_status_blob.quest_unlock_index < stage)
+                    || (hardcore
+                        && game_status_blob.quest_unlock_index_full < stage)
+                    || stage / 10 + 1 >= 5) {
+                    highscore_batch_sync_mode = 0;
                 } else {
-                    unlock_index = game_status_blob.quest_unlock_index;
-                }
-                if (stage <= unlock_index && stage / 10 + 1 < 5) {
                     quest_stage_major = stage / 10 + 1;
                     config_blob.game_mode = GAME_MODE_QUEST;
                     quest_stage_minor = stage % 10 + 1;
-                    start_sync = true;
                 }
             }
-            if (start_sync) {
+            if (highscore_batch_sync_mode) {
                 Sleep(50);
                 online_sync_status = 1;
                 crt_beginthread(highscore_sync_worker, 0, 0);
-            } else {
-                highscore_batch_sync_mode = 0;
             }
         }
     }

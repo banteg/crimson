@@ -21,12 +21,22 @@ screen callback:
 - proves all nine local-static destructor thunks at `0x00444330` through
   `0x004443b0` as exact one-instruction returns.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 75.85% of 2,004 target
-instructions with 1,954 candidate instructions. The candidate has the native
+The natural `msvc6.5 /O2 /GB` reconstruction matches 76.92% of 2,004 target
+instructions with 1,956 candidate instructions. The candidate has the native
 `0x84`-byte frame, a 41-instruction matching prefix, and audited references of
-`567/0/8` (ok/unresolved/mismatch). The eight residual reference mismatches are
+`577/0/8` (ok/unresolved/mismatch). The eight residual reference mismatches are
 instruction-alignment or x87 temporary-order differences; every corresponding
 field, constant, string, and gameplay object is present in the recovered flow.
+
+The Shift batch synchronizer at `0x00443b23..0x00443c2a` is a chained
+stage machine rather than a switch lowered around shared case tails. Stages
+`-3`, `-2`, and `-1` select Survival, Rush, and Typ'o'Shooter through explicit
+`if`/`else if` arms. Negative stages then branch directly to the shared sync
+start, while nonnegative stages reject normal and Hardcore quest indices
+through separate invalid-first comparisons before validating the major stage.
+Expressing that native control flow removes an unsupported `start_sync` local,
+keeps the exact frame and instruction prefix, aligns ten additional
+references, and raises the whole-function score from `75.85%` to `76.92%`.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, unreachable shaping, or platform substitutions are used.
