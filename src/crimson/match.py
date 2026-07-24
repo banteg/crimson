@@ -7,6 +7,7 @@ import os
 import re
 import shlex
 import struct
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -381,6 +382,7 @@ class DisassemblyLine:
     offset: int
     address: int
     text: str
+    size: int = 0
     masked_references: tuple[MaskedReference, ...] = ()
 
 
@@ -482,6 +484,17 @@ class DiffRegion:
     prefix_instructions: int
     target_lines: tuple[str, ...]
     candidate_lines: tuple[str, ...]
+    target_byte_start: int | None = None
+    target_byte_end: int | None = None
+    candidate_byte_start: int | None = None
+    candidate_byte_end: int | None = None
+    target_address_start: int | None = None
+    target_address_end: int | None = None
+    fuzzy_weighted_bytes: float = 0.0
+    masked_ok: int = 0
+    masked_unresolved: int = 0
+    masked_mismatches: int = 0
+    hints: tuple[str, ...] = ()
 
     @property
     def target_span(self) -> str:
@@ -490,6 +503,30 @@ class DiffRegion:
     @property
     def candidate_span(self) -> str:
         return f"{self.candidate_start}:{self.candidate_end}"
+
+    @property
+    def target_byte_span(self) -> str:
+        if self.target_byte_start is None or self.target_byte_end is None:
+            return "-"
+        return f"0x{self.target_byte_start:x}:0x{self.target_byte_end:x}"
+
+    @property
+    def candidate_byte_span(self) -> str:
+        if self.candidate_byte_start is None or self.candidate_byte_end is None:
+            return "-"
+        return f"0x{self.candidate_byte_start:x}:0x{self.candidate_byte_end:x}"
+
+    @property
+    def target_address_span(self) -> str:
+        if self.target_address_start is None or self.target_address_end is None:
+            return "-"
+        return f"0x{self.target_address_start:08x}:0x{self.target_address_end:08x}"
+
+    @property
+    def target_byte_count(self) -> int:
+        if self.target_byte_start is None or self.target_byte_end is None:
+            return 0
+        return self.target_byte_end - self.target_byte_start
 
 
 @dataclass(frozen=True, slots=True)
@@ -1196,6 +1233,7 @@ def disassemble_normalized_function(
                 offset=insn_offset,
                 address=insn.address,
                 text=f"{insn.mnemonic} {', '.join(operands)}".strip(),
+                size=insn.size,
                 masked_references=tuple(masked_references),
             ),
         )
@@ -1340,6 +1378,67 @@ def match_function(
     )
 
 
+def _disassembly_slice_bounds(
+    lines: tuple[DisassemblyLine, ...],
+    start: int,
+    end: int,
+) -> tuple[int | None, int | None, int | None, int | None]:
+    if not lines:
+        return None, None, None, None
+
+    def boundary(index: int) -> tuple[int, int]:
+        if index < len(lines):
+            line = lines[index]
+            return line.offset, line.address
+        line = lines[-1]
+        return line.offset + line.size, line.address + line.size
+
+    byte_start, address_start = boundary(start)
+    byte_end, address_end = boundary(end)
+    return byte_start, byte_end, address_start, address_end
+
+
+def _region_hints(
+    target_lines: tuple[str, ...],
+    candidate_lines: tuple[str, ...],
+    *,
+    masked_unresolved: int,
+    masked_mismatches: int,
+) -> tuple[str, ...]:
+    target_mnemonics = tuple(line.partition(" ")[0] for line in target_lines)
+    candidate_mnemonics = tuple(line.partition(" ")[0] for line in candidate_lines)
+    all_mnemonics = (*target_mnemonics, *candidate_mnemonics)
+    hints: list[str] = []
+
+    if masked_mismatches:
+        hints.append("reference-mismatch")
+    if masked_unresolved:
+        hints.append("unresolved-reference")
+    branch_mnemonics = {
+        mnemonic
+        for mnemonic in all_mnemonics
+        if mnemonic.startswith("j") or mnemonic in {"call", "loop", "loope", "loopne"}
+    }
+    if branch_mnemonics and target_mnemonics != candidate_mnemonics:
+        hints.append("possible-control-flow-shape")
+    if any(mnemonic.startswith("f") for mnemonic in all_mnemonics) and target_lines != candidate_lines:
+        hints.append("possible-x87-lifetime-or-ordering")
+    if len(target_lines) > len(candidate_lines):
+        hints.append("possible-missing-candidate-instructions")
+    elif len(candidate_lines) > len(target_lines):
+        hints.append("possible-extra-candidate-instructions")
+    if any(re.search(r"\b(?:esp|ebp)\b", line) for line in (*target_lines, *candidate_lines)):
+        if target_lines != candidate_lines:
+            hints.append("possible-stack-frame-or-lifetime")
+    if target_mnemonics == candidate_mnemonics and target_lines != candidate_lines:
+        hints.append("possible-register-literal-or-operand-allocation")
+    elif Counter(target_mnemonics) == Counter(candidate_mnemonics) and target_mnemonics != candidate_mnemonics:
+        hints.append("possible-instruction-scheduling")
+    if not hints:
+        hints.append("instruction-shape-difference")
+    return tuple(dict.fromkeys(hints))
+
+
 def diff_regions(
     result: MatchResult,
     *,
@@ -1382,6 +1481,34 @@ def diff_regions(
         target_slice = result.target_lines[target_start:target_end]
         candidate_slice = result.candidate_lines[candidate_start:candidate_end]
         local_ratio = difflib.SequenceMatcher(a=target_slice, b=candidate_slice, autojunk=False).ratio()
+        target_byte_start, target_byte_end, target_address_start, target_address_end = _disassembly_slice_bounds(
+            result.target_disassembly,
+            target_start,
+            target_end,
+        )
+        candidate_byte_start, candidate_byte_end, _, _ = _disassembly_slice_bounds(
+            result.candidate_disassembly,
+            candidate_start,
+            candidate_end,
+        )
+        scoped_audit = [
+            entry
+            for entry in result.masked_operand_audit.entries
+            if (
+                target_start <= entry.target_index < target_end
+                or candidate_start <= entry.candidate_index < candidate_end
+            )
+        ]
+        masked_ok = sum(entry.status == "ok" for entry in scoped_audit)
+        masked_unresolved = sum(entry.status == "unresolved" for entry in scoped_audit)
+        masked_mismatches = sum(entry.status == "mismatch" for entry in scoped_audit)
+        changed_target_lines = result.target_lines[group["a0"] : group["a1"]]
+        changed_candidate_lines = result.candidate_lines[group["b0"] : group["b1"]]
+        target_byte_count = (
+            target_byte_end - target_byte_start
+            if target_byte_start is not None and target_byte_end is not None
+            else 0
+        )
         regions.append(
             DiffRegion(
                 target_start=target_start,
@@ -1394,9 +1521,84 @@ def diff_regions(
                 prefix_instructions=common_prefix_length(target_slice, candidate_slice),
                 target_lines=target_slice,
                 candidate_lines=candidate_slice,
+                target_byte_start=target_byte_start,
+                target_byte_end=target_byte_end,
+                candidate_byte_start=candidate_byte_start,
+                candidate_byte_end=candidate_byte_end,
+                target_address_start=target_address_start,
+                target_address_end=target_address_end,
+                fuzzy_weighted_bytes=target_byte_count * local_ratio,
+                masked_ok=masked_ok,
+                masked_unresolved=masked_unresolved,
+                masked_mismatches=masked_mismatches,
+                hints=_region_hints(
+                    changed_target_lines,
+                    changed_candidate_lines,
+                    masked_unresolved=masked_unresolved,
+                    masked_mismatches=masked_mismatches,
+                ),
             ),
         )
     return regions
+
+
+def diff_region_payload(region: DiffRegion) -> dict[str, Any]:
+    return {
+        "target_instructions": {
+            "start": region.target_start,
+            "end": region.target_end,
+            "changed": region.changed_target_instructions,
+        },
+        "candidate_instructions": {
+            "start": region.candidate_start,
+            "end": region.candidate_end,
+            "changed": region.changed_candidate_instructions,
+        },
+        "target_bytes": {
+            "start": region.target_byte_start,
+            "end": region.target_byte_end,
+            "count": region.target_byte_count,
+            "address_start": region.target_address_start,
+            "address_end": region.target_address_end,
+        },
+        "candidate_bytes": {
+            "start": region.candidate_byte_start,
+            "end": region.candidate_byte_end,
+        },
+        "match_ratio": region.ratio,
+        "fuzzy_weighted_bytes": region.fuzzy_weighted_bytes,
+        "prefix_instructions": region.prefix_instructions,
+        "references": {
+            "ok": region.masked_ok,
+            "unresolved": region.masked_unresolved,
+            "mismatch": region.masked_mismatches,
+        },
+        "hints": list(region.hints),
+        "target_lines": list(region.target_lines),
+        "candidate_lines": list(region.candidate_lines),
+    }
+
+
+def match_result_payload(
+    result: MatchResult,
+    *,
+    region_context: int = 4,
+    max_regions: int | None = None,
+) -> dict[str, Any]:
+    regions = diff_regions(result, context=region_context, max_regions=max_regions) if result.ratio != 1.0 else []
+    return {
+        "exact": result.exact,
+        "match_ratio": result.ratio,
+        "prefix_instructions": result.prefix_instructions,
+        "target_instructions": len(result.target_lines),
+        "candidate_instructions": len(result.candidate_lines),
+        "references": {
+            "ok": result.masked_operand_audit.ok_count,
+            "unresolved": result.masked_operand_audit.unresolved_count,
+            "mismatch": result.masked_operand_audit.mismatch_count,
+        },
+        "regions": [diff_region_payload(region) for region in regions],
+    }
 
 
 def run_match(

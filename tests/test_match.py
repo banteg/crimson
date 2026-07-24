@@ -35,6 +35,7 @@ from crimson.match import (
     TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
+    _region_hints,
     _scratch_build_key,
     _ScratchIncludeResolver,
     collect_image_totals,
@@ -42,6 +43,7 @@ from crimson.match import (
     collect_triage_rows,
     common_prefix_length,
     compile_scratch,
+    diff_region_payload,
     diff_regions,
     disassemble_normalized_function,
     evaluate_profile_matrix,
@@ -50,6 +52,7 @@ from crimson.match import (
     load_function_manifest,
     load_reference_catalog,
     match_function,
+    match_result_payload,
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
@@ -837,6 +840,58 @@ def test_diff_regions_reports_localized_mismatch() -> None:
     assert len(regions) == 1
     assert regions[0].target_span == "1:4"
     assert regions[0].candidate_span == "1:4"
+    assert regions[0].target_byte_span == "0x1:0x6"
+    assert regions[0].candidate_byte_span == "0x1:0x9"
+    assert regions[0].target_address_span == "0x00401001:0x00401006"
+    assert regions[0].target_byte_count == 5
+    assert regions[0].fuzzy_weighted_bytes == pytest.approx(5 * regions[0].ratio)
+    assert regions[0].hints == ("instruction-shape-difference",)
+    payload = diff_region_payload(regions[0])
+    assert payload["target_bytes"]["count"] == 5
+    assert payload["hints"] == ["instruction-shape-difference"]
+
+
+def test_diff_command_json_includes_region_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    target = bytes.fromhex("558bec31c040c3")
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("558becb80100000040c3"),
+        relocation_offsets=frozenset(),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0),
+        target_va=0x401000,
+    )
+    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["diff", "candidate.obj", "foo", "--json", "--region-context", "1", "--max-regions", "1"],
+    )
+
+    assert completed.exit_code == 1
+    payload = json.loads(completed.output)
+    assert payload == match_result_payload(result, region_context=1, max_regions=1)
+    assert payload["regions"][0]["target_bytes"]["address_start"] == 0x401001
+
+
+def test_region_hints_are_cautious_and_composable() -> None:
+    hints = _region_hints(
+        ("fld dword [ebp-0x4]", "fstp dword [ebp-0x8]", "jne L10"),
+        ("fstp dword [ebp-0x8]", "fld dword [ebp-0x4]", "je L10"),
+        masked_unresolved=1,
+        masked_mismatches=1,
+    )
+
+    assert hints == (
+        "reference-mismatch",
+        "unresolved-reference",
+        "possible-control-flow-shape",
+        "possible-x87-lifetime-or-ordering",
+        "possible-stack-frame-or-lifetime",
+    )
 
 
 def test_validate_scratch_source_rejects_inline_asm(tmp_path: Path) -> None:

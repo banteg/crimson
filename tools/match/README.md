@@ -177,6 +177,23 @@ uv run crimson match profiles tools/match/scratches/creature_spawn \
   --cflags "/O2 /G6 /W3 /GR-" --json
 ```
 
+Localized mismatch regions include normalized instruction spans, native and
+candidate byte ranges, native VAs, local fuzzy-weighted bytes, scoped reference
+counts, and cautious diagnostic hints:
+
+```sh
+tools/match/match.sh tools/match/scratches/player_update \
+  --regions --region-context 3 --max-regions 8
+uv run crimson match scratch tools/match/scratches/player_update \
+  --json --max-regions 8
+```
+
+Hints such as `possible-control-flow-shape`,
+`possible-x87-lifetime-or-ordering`, and
+`possible-stack-frame-or-lifetime` are triage aids, not proof. Use native
+decompilation, call/reference evidence, and plausible source shape before
+changing a scratch.
+
 The status pipeline caches unchanged results and evaluates stale scratches in
 parallel. A cache entry is invalidated by the scratch source/config, compiler
 arguments and binary, `cl.sh`, the transitive local-header graph, the target

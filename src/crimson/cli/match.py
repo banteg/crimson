@@ -74,15 +74,42 @@ def _finish_diff(
     full: bool,
     regions: bool,
     region_context: int,
+    max_regions: int | None,
+    as_json: bool,
 ) -> None:
+    if as_json:
+        typer.echo(
+            json.dumps(
+                matchlib.match_result_payload(
+                    result,
+                    region_context=region_context,
+                    max_regions=max_regions,
+                ),
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+        if result.ratio != 1.0 or result.masked_operand_audit.problem_count:
+            raise typer.Exit(code=1)
+        return
+
     _echo_result(result)
     if regions and result.ratio != 1.0:
-        for index, region in enumerate(matchlib.diff_regions(result, context=region_context), start=1):
+        for index, region in enumerate(
+            matchlib.diff_regions(result, context=region_context, max_regions=max_regions),
+            start=1,
+        ):
             typer.echo(
                 f"\nregion {index}: target={region.target_span} "
                 f"candidate={region.candidate_span} match={region.ratio:.2%} "
-                f"prefix={region.prefix_instructions}",
+                f"prefix={region.prefix_instructions} "
+                f"target_bytes={region.target_byte_span} "
+                f"target_va={region.target_address_span} "
+                f"candidate_bytes={region.candidate_byte_span} "
+                f"fuzzy={region.fuzzy_weighted_bytes:.0f}/{region.target_byte_count} "
+                f"refs={region.masked_ok}/{region.masked_unresolved}/{region.masked_mismatches}",
             )
+            typer.echo(f"  hints: {', '.join(region.hints)}")
             for line in region.target_lines:
                 typer.echo(f"- {line}")
             for line in region.candidate_lines:
@@ -110,6 +137,8 @@ def cmd_match_diff(
     full: bool = typer.Option(False, "--full", help="print the full normalized unified diff"),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for --regions"),
+    max_regions: int | None = typer.Option(None, "--max-regions", min=1, help="maximum mismatch regions"),
+    as_json: bool = typer.Option(False, "--json", help="emit match and region data as JSON"),
 ) -> None:
     """Diff a compiled scratch object against a native image function."""
     try:
@@ -126,7 +155,14 @@ def cmd_match_diff(
         typer.echo(f"match failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc
 
-    _finish_diff(result, full=full, regions=regions, region_context=region_context)
+    _finish_diff(
+        result,
+        full=full,
+        regions=regions,
+        region_context=region_context,
+        max_regions=max_regions,
+        as_json=as_json,
+    )
 
 
 @match_app.command("scratch")
@@ -136,6 +172,8 @@ def cmd_match_scratch(
     full: bool = typer.Option(False, "--full", help="print the full normalized unified diff"),
     regions: bool = typer.Option(False, "--regions", help="print localized mismatch regions before the diff"),
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for --regions"),
+    max_regions: int | None = typer.Option(None, "--max-regions", min=1, help="maximum mismatch regions"),
+    as_json: bool = typer.Option(False, "--json", help="emit match and region data as JSON"),
 ) -> None:
     """Compile and compare one configured scratch through the cached pipeline."""
     try:
@@ -155,7 +193,14 @@ def cmd_match_scratch(
     except Exception as exc:
         typer.echo(f"match failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc
-    _finish_diff(result, full=full, regions=regions, region_context=region_context)
+    _finish_diff(
+        result,
+        full=full,
+        regions=regions,
+        region_context=region_context,
+        max_regions=max_regions,
+        as_json=as_json,
+    )
 
 
 @match_app.command("dump")
