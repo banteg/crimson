@@ -216,3 +216,21 @@ typed stack or embedded positions. Binary Ninja independently renders the
 corresponding calls as `&projectile->pos_x` vectors, and the saved creature
 cursor is now a `vec2f_t *`. The change preserves 46.9124%, 2,137/2,203
 instructions, and the `336/0/29` audit.
+
+## Projectile-family aggregate recovery
+
+The canonical source layout now overlays vectors on the mixed projectile
+storage without discarding its type-bearing tail blocks: primary and secondary
+positions, primary origin and velocity, secondary velocity, and particle
+position/velocity are all named aggregates. `projectile_update` consequently
+removes 17 first-float casts, and render code addresses the named position,
+origin, and velocity views rather than `pos_x`, `origin_x`, or `vel_x`.
+Sprite effects likewise expose RGBA color, position, and velocity aggregates.
+The update remains 46.9124% at 2,137/2,203 instructions with `336/0/29`
+references; projectile rendering remains 43.04%.
+
+Binary Ninja keeps the existing named mixed projectile blocks because replacing
+them with anonymous union overlays makes its HLIL regress to `__offset(...)`.
+Its particle and sprite-effect records safely use direct named aggregates
+instead, also correcting `particle_t::style_id` and
+`sprite_effect_t::active` from stale 32-bit interpretations to bytes.

@@ -86,13 +86,13 @@ extern "C" void projectile_update(void)
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
                         creatures_apply_radius_damage(
-                            (const vec2f_t *)&projectile->pos_x,
+                            &projectile->position,
                             ion_damage_scale * 88.0f,
                             frame_dt * 100.0f,
                             7);
                     } else {
                         creatures_apply_radius_damage(
-                            (const vec2f_t *)&projectile->pos_x,
+                            &projectile->position,
                             ion_damage_scale * 60.0f,
                             frame_dt * 40.0f,
                             7);
@@ -100,7 +100,7 @@ extern "C" void projectile_update(void)
                 } else if (type_id == PROJECTILE_TYPE_ION_CANNON) {
                     projectile->pos.tail.vy.life_timer -= frame_dt * 0.7f;
                     creatures_apply_radius_damage(
-                        (const vec2f_t *)&projectile->pos_x,
+                        &projectile->position,
                         ion_damage_scale * 128.0f,
                         frame_dt * 300.0f,
                         7);
@@ -110,7 +110,7 @@ extern "C" void projectile_update(void)
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                 }
             } else {
-                vec2f_t *position = (vec2f_t *)&projectile->pos_x;
+                vec2f_t *position = &projectile->position;
                 if (projectile->pos_x < -64.0f
                     || projectile->pos.pos_y < -64.0f
                     || (float)(terrain_texture_width + 64)
@@ -712,7 +712,7 @@ extern "C" void projectile_update(void)
                     };
                     fx_queue_add(
                         0x10,
-                        (vec2f_t *)&secondary->pos_x,
+                        &secondary->position,
                         extent,
                         extent,
                         0.0f,
@@ -758,7 +758,7 @@ extern "C" void projectile_update(void)
                     frame_dt * secondary->pos.vx.vy.vel_y,
                 };
                 vec2_add(
-                    (vec2f_t *)&secondary->pos_x,
+                    &secondary->position,
                     &movement);
 
                 secondary_projectile_type_id_t type_id =
@@ -794,7 +794,7 @@ extern "C" void projectile_update(void)
                             .active) {
                         secondary->pos.vx.vy.target_id =
                             creature_find_nearest(
-                                (const vec2f_t *)&secondary->pos_x,
+                                &secondary->position,
                                 -1,
                                 0.0f);
                     }
@@ -856,7 +856,7 @@ extern "C" void projectile_update(void)
                 }
 
                 int hit_id = creature_find_in_radius(
-                    (const vec2f_t *)&secondary->pos_x,
+                    &secondary->position,
                     8.0f,
                     0);
                 if (hit_id != -1) {
@@ -904,7 +904,7 @@ extern "C" void projectile_update(void)
                         int count = 4;
                         do {
                             effect_spawn_freeze_shard(
-                                (const vec2f_t *)&secondary->pos_x,
+                                &secondary->position,
                                 (float)(crt_rand() % 612) * 0.01f);
                             --count;
                         } while (count != 0);
@@ -915,7 +915,7 @@ extern "C" void projectile_update(void)
                         damage = secondary->life_timer * 50.0f + 500.0f;
                         if (config_detail_preset > 2) {
                             effect_spawn_explosion_burst(
-                                (const vec2f_t *)&secondary->pos_x,
+                                &secondary->position,
                                 0.4f);
                         }
                     } else if (type_id
@@ -933,7 +933,7 @@ extern "C" void projectile_update(void)
                     } else {
                         sfx_play_panned(
                             sfx_explosion_medium,
-                            (const vec2f_t *)&secondary->pos_x,
+                            &secondary->position,
                             1.0f);
                     }
 
@@ -974,7 +974,7 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    (const vec2f_t *)&secondary->pos_x,
+                                    &secondary->position,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
@@ -1004,7 +1004,7 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    (const vec2f_t *)&secondary->pos_x,
+                                    &secondary->position,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
@@ -1053,7 +1053,7 @@ extern "C" void projectile_update(void)
                             (float)(sin(angle) * magnitude),
                         };
                         int effect_id = fx_spawn_sprite(
-                            (const vec2f_t *)&secondary->pos_x,
+                            &secondary->position,
                             &velocity,
                             14.0f);
                         sprite_effect_pool[effect_id].color_a = 0.37f;
@@ -1111,7 +1111,7 @@ extern "C" void projectile_update(void)
                                 * particle->intensity,
                         };
                         vec2_add(
-                            (vec2f_t *)&particle->pos_x,
+                            &particle->position,
                             &movement);
                     }
                 }
@@ -1130,7 +1130,7 @@ extern "C" void projectile_update(void)
                             * particle->intensity,
                     };
                     vec2_add(
-                        (vec2f_t *)&particle->pos_x,
+                        &particle->position,
                         &movement);
                 }
             }
@@ -1190,7 +1190,7 @@ extern "C" void projectile_update(void)
 
                 if (particle->render_flag) {
                     int hit_id = creature_find_in_radius(
-                        (const vec2f_t *)&particle->pos_x,
+                        &particle->position,
                         particle->intensity * 8.0f,
                         0);
                     if (hit_id != -1) {

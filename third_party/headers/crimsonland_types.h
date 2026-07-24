@@ -465,24 +465,39 @@ typedef struct projectile_vel_y_block_t {
 
 typedef struct projectile_tail_t {
     float origin_y;
-    float vel_x;
-    projectile_vel_y_block_t vy;
+    union {
+        struct {
+            float vel_x;
+            projectile_vel_y_block_t vy;
+        };
+        vec2f_t velocity;
+    };
 } projectile_tail_t;
 
 // Similar to projectile_tail_t, but anchored at `pos_y` so loops that take
 // `&projectile_t.pos_y` get a mixed-type view (type_id as enum/int, not float).
 typedef struct projectile_pos_y_block_t {
     float pos_y;
-    float origin_x;
-    projectile_tail_t tail;
+    union {
+        struct {
+            float origin_x;
+            projectile_tail_t tail;
+        };
+        vec2f_t origin;
+    };
 } projectile_pos_y_block_t;
 
 typedef struct projectile_t {
     unsigned char active;
     unsigned char _pad0[3];
     float angle;
-    float pos_x;
-    projectile_pos_y_block_t pos;
+    union {
+        struct {
+            float pos_x;
+            projectile_pos_y_block_t pos;
+        };
+        vec2f_t position;
+    };
 } projectile_t;
 
 typedef projectile_t projectile_pool_t[0x60];
@@ -491,10 +506,20 @@ typedef struct particle_t {
     unsigned char active;
     unsigned char render_flag;
     unsigned char _pad0[2];
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
     float scale_x;
     float scale_y;
     float scale_z;
@@ -526,8 +551,13 @@ typedef struct secondary_projectile_vel_y_block_t {
 } secondary_projectile_vel_y_block_t;
 
 typedef struct secondary_projectile_vel_x_block_t {
-    float vel_x;
-    secondary_projectile_vel_y_block_t vy;
+    union {
+        struct {
+            float vel_x;
+            secondary_projectile_vel_y_block_t vy;
+        };
+        vec2f_t velocity;
+    };
 } secondary_projectile_vel_x_block_t;
 
 typedef struct secondary_projectile_pos_y_block_t {
@@ -540,12 +570,17 @@ typedef struct secondary_projectile_t {
     unsigned char _pad0[3];
     float angle;
     float life_timer;
-    float pos_x;
-    // Field grouping used to steer the decompiler away from float-bitpattern type ids.
-    //
-    // Native code frequently takes the address of `pos_y` / `vel_y` and then
-    // indexes into subsequent mixed-type fields.
-    secondary_projectile_pos_y_block_t pos;
+    union {
+        struct {
+            float pos_x;
+            // Field grouping used to steer the decompiler away from
+            // float-bitpattern type ids. Native code frequently takes the
+            // address of `pos_y` / `vel_y` and then indexes into subsequent
+            // mixed-type fields.
+            secondary_projectile_pos_y_block_t pos;
+        };
+        vec2f_t position;
+    };
 } secondary_projectile_t;
 
 typedef secondary_projectile_t secondary_projectile_pool_t[0x40];
@@ -563,15 +598,30 @@ typedef struct fx_queue_entry_t {
 typedef struct sprite_effect_t {
     unsigned char active;
     unsigned char _pad0[3];
-    float color_r;
-    float color_g;
-    float color_b;
-    float color_a;
+    union {
+        struct {
+            float color_r;
+            float color_g;
+            float color_b;
+            float color_a;
+        };
+        effect_color_t color;
+    };
     float rotation;
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
+    union {
+        struct {
+            float vel_x;
+            float vel_y;
+        };
+        vec2f_t velocity;
+    };
     float scale;
 } sprite_effect_t;
 

@@ -205,26 +205,26 @@ extern "C" void projectile_render(float transition_alpha)
         if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {
             projectile_render_vec2_t current =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             projectile_render_vec2_t origin =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
             projectile_render_vec2_t half_width =
-                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x;
+                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
             point3 = origin - half_width;
         } else if (type_id == PROJECTILE_TYPE_PISTOL) {
             projectile_render_vec2_t half_width =
-                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.2f;
             projectile_render_vec2_t current =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             projectile_render_vec2_t origin =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
@@ -235,28 +235,28 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_color_slot(
                 3, 0.2f, 0.5f, 1.0f, alpha);
             projectile_render_vec2_t half_width =
-                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 1.1f;
             projectile_render_vec2_t current =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             projectile_render_vec2_t origin =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
             point3 = origin - half_width;
         } else {
             projectile_render_vec2_t half_width =
-                *(projectile_render_vec2_t *)&projectile->pos.tail.vel_x
+                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity
                 * 0.7f;
             projectile_render_vec2_t current =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             projectile_render_vec2_t origin =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos.origin_x;
+                + *(projectile_render_vec2_t *)&projectile->pos.origin;
             point0 = current - half_width;
             point1 = current + half_width;
             point2 = origin + half_width;
@@ -835,14 +835,14 @@ extern "C" void projectile_render(float transition_alpha)
                     projectile_render_vec2_t arc =
                         *(projectile_render_vec2_t *)
                              &creature_pool[creature_index].pos_x
-                        - *(projectile_render_vec2_t *)&projectile->pos_x;
+                        - *(projectile_render_vec2_t *)&projectile->position;
                     vec2_normalize_dispatch(
                         (vec2f_t *)&arc, (const vec2f_t *)&arc);
                     projectile_render_vec2_t side(-arc.y, arc.x);
                     side = side * effect_scale;
                     projectile_render_vec2_t start =
                         camera_offset
-                        + *(projectile_render_vec2_t *)&projectile->pos_x;
+                        + *(projectile_render_vec2_t *)&projectile->position;
                     projectile_render_vec2_t end =
                         camera_offset
                         + *(projectile_render_vec2_t *)
@@ -1067,7 +1067,7 @@ extern "C" void projectile_render(float transition_alpha)
                 float heading = projectile->angle - 1.5707964f;
                 projectile_render_vec2_t draw_pos =
                     camera_offset
-                    + *(projectile_render_vec2_t *)&projectile->pos_x
+                    + *(projectile_render_vec2_t *)&projectile->position
                     - projectile_render_vec2_t(
                           (float)cos(heading), (float)sin(heading))
                         * 5.0f
@@ -1105,7 +1105,7 @@ extern "C" void projectile_render(float transition_alpha)
         if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
             draw_pos -= 7.0f;
@@ -1117,7 +1117,7 @@ extern "C" void projectile_render(float transition_alpha)
         } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
             draw_pos -= 5.0f;
@@ -1129,7 +1129,7 @@ extern "C" void projectile_render(float transition_alpha)
         } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x;
+                + *(projectile_render_vec2_t *)&projectile->position;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
             draw_pos -= 4.0f;
@@ -1166,7 +1166,7 @@ extern "C" void projectile_render(float transition_alpha)
             float heading = projectile->angle - 1.5707964f;
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x
+                + *(projectile_render_vec2_t *)&projectile->position
                 - projectile_render_vec2_t(
                           (float)cos(heading), (float)sin(heading))
                     * 9.0f
@@ -1182,7 +1182,7 @@ extern "C" void projectile_render(float transition_alpha)
             float heading = projectile->angle - 1.5707964f;
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x
+                + *(projectile_render_vec2_t *)&projectile->position
                 - projectile_render_vec2_t(
                           (float)cos(heading), (float)sin(heading))
                     * 9.0f
@@ -1198,7 +1198,7 @@ extern "C" void projectile_render(float transition_alpha)
             float heading = projectile->angle - 1.5707964f;
             projectile_render_vec2_t draw_pos =
                 camera_offset
-                + *(projectile_render_vec2_t *)&projectile->pos_x
+                + *(projectile_render_vec2_t *)&projectile->position
                 - projectile_render_vec2_t(
                           (float)cos(heading), (float)sin(heading))
                     * 9.0f
