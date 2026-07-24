@@ -69,7 +69,7 @@ extern "C" void player_fire_weapon(
     player_state_table[render_overlay_player_index].shot_cooldown = 0.0f;
     typo_fire_vec2_t local_offset(0.0f, 0.0f);
     *(typo_fire_vec2_t *)&player_state_table[render_overlay_player_index]
-         .move_dx = local_offset;
+         .movement = local_offset;
     player_state_table[render_overlay_player_index].spread_heat = 0.0f;
     player_state_table[render_overlay_player_index].ammo =
         player_state_table[render_overlay_player_index].clip_size;
@@ -80,14 +80,14 @@ extern "C" void player_fire_weapon(
     }
 
     bool normal_fire_ready = false;
-    *(typo_fire_vec2_t *)&player_state_table[render_overlay_player_index]
-         .aim_x = *aim;
+    player_state_table[render_overlay_player_index].aim =
+        *(const vec2f_t *)aim;
     player_state_table[render_overlay_player_index].aim_heading =
         (*(typo_fire_vec2_t *)&player_state_table[render_overlay_player_index]
-              .pos_x
+              .position
          - *(typo_fire_vec2_t *)&player_state_table
                [render_overlay_player_index]
-                   .aim_x)
+                   .aim)
                 .angle()
         - 1.57079637f;
 
@@ -139,8 +139,7 @@ extern "C" void player_fire_weapon(
                 weapon_table[player_state_table[render_overlay_player_index]
                                  .weapon_id]
                     .shot_sfx_base_id,
-                (const vec2f_t *)
-                    &player_state_table[render_overlay_player_index].pos_x,
+                &player_state_table[render_overlay_player_index].position,
                 1.0f);
 
             if (player_state_table[render_overlay_player_index].weapon_id
@@ -152,27 +151,27 @@ extern "C" void player_fire_weapon(
                 float heading_sin = (float)sin(shot_heading);
                 effect_velocity.y = heading_sin * 25.0f;
                 effect_position.x =
-                    player_state_table[render_overlay_player_index].pos_x
+                    player_state_table[render_overlay_player_index].position.x
                     + local_offset.x;
                 effect_position.y =
-                    player_state_table[render_overlay_player_index].pos_y
+                    player_state_table[render_overlay_player_index].position.y
                     + local_offset.y;
 
                 int effect_index = fx_spawn_sprite(
                     (const vec2f_t *)&effect_position,
                     (const vec2f_t *)&effect_velocity,
                     1.0f);
-                sprite_effect_pool[effect_index].color_r = 0.5f;
-                sprite_effect_pool[effect_index].color_g = 0.5f;
-                sprite_effect_pool[effect_index].color_b = 0.5f;
-                sprite_effect_pool[effect_index].color_a = 0.25f;
+                sprite_effect_pool[effect_index].color.r = 0.5f;
+                sprite_effect_pool[effect_index].color.g = 0.5f;
+                sprite_effect_pool[effect_index].color.b = 0.5f;
+                sprite_effect_pool[effect_index].color.a = 0.25f;
 
                 effect_velocity.x = heading_cos * 15.0f;
                 effect_velocity.y = heading_sin * 15.0f;
                 typo_fire_vec2_t *player_position =
                     (typo_fire_vec2_t *)&player_state_table
                         [render_overlay_player_index]
-                            .pos_x;
+                            .position;
                 effect_position.x =
                     player_position->x + local_offset.x;
                 effect_position.y =
@@ -181,17 +180,17 @@ extern "C" void player_fire_weapon(
                     (const vec2f_t *)&effect_position,
                     (const vec2f_t *)&effect_velocity,
                     2.0f);
-                sprite_effect_pool[effect_index].color_r = 0.5f;
-                sprite_effect_pool[effect_index].color_g = 0.5f;
-                sprite_effect_pool[effect_index].color_b = 0.5f;
-                sprite_effect_pool[effect_index].color_a = 0.223f;
+                sprite_effect_pool[effect_index].color.r = 0.5f;
+                sprite_effect_pool[effect_index].color.g = 0.5f;
+                sprite_effect_pool[effect_index].color.b = 0.5f;
+                sprite_effect_pool[effect_index].color.a = 0.223f;
 
                 int pellet_count = 12;
                 do {
                     player_position =
                         (typo_fire_vec2_t *)&player_state_table
                             [render_overlay_player_index]
-                                .pos_x;
+                                .position;
                     effect_position.x =
                         player_position->x + local_offset.x;
                     effect_position.y =

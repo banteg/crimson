@@ -35,3 +35,11 @@ The two muzzle-sprite calls now expose their position and velocity arguments as
 read-only vector aggregates at the shared `fx_spawn_sprite` boundary. This
 keeps the same honest 86.7725% score, exact 378-instruction count, and all 141
 references.
+
+The player-state accesses now also use the recovered `movement`, `aim`, and
+`position` vector members, and the muzzle sprites use their recovered color
+aggregate. These are source-shape improvements rather than score claims: VC6
+emits the same 378 instructions at 86.7725%, with all 141 references still
+resolved. An explicit byte-local experiment did not move the second readiness
+initialization to the native location, so the semantically appropriate `bool`
+locals remain.
