@@ -2,13 +2,16 @@
 
 Native target: `crimsonland.exe` at `0x00444980` (1,518 bytes).
 
-Despite the legacy name and decompiler prototype, stack accesses prove this is
-the bespoke Typ-o Shooter player frame/firing routine with three arguments:
-an aim-point pointer, a fire-request byte, and a reload-request byte. It tops up
-the equipped shotgun every frame, copies the submitted creature position into
-the player's aim point, emits the muzzle sprites and twelve jittered shotgun
-projectiles when firing, applies perk-dependent spread/cooldown rules, wraps the
-movement phase, and clamps the player to the terrain bounds.
+Despite the legacy name, stack accesses prove this is the bespoke Typ-o Shooter
+player frame/firing routine with three arguments: a typed two-float aim-point
+pointer, a fire-request byte, and a reload-request byte. Binary Ninja previously
+modeled only the two bytes and discarded the leading pointer; the sole native
+callsite pushes all three, and the corrected prototype now exposes
+`&typo_target_world` in the caller. The routine tops up the equipped shotgun
+every frame, copies the submitted creature position into the player's aim
+point, emits the muzzle sprites and twelve jittered shotgun projectiles when
+firing, applies perk-dependent spread/cooldown rules, wraps the movement phase,
+and clamps the player to the terrain bounds.
 
 The signature and source are grounded in the live Binary Ninja disassembly.
 The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in

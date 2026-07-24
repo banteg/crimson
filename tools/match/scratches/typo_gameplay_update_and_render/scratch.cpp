@@ -54,7 +54,7 @@ void perks_update_effects(void);
 void creature_update_all(void);
 void projectile_update(void);
 void player_fire_weapon(
-    float *aim,
+    typo_vec2_t *aim,
     char fire_requested,
     char reload_requested);
 void camera_update(void);
@@ -146,9 +146,9 @@ extern "C" void typo_gameplay_update_and_render(void)
         if (game_state_id == GAME_STATE_TYPO_GAMEPLAY) {
             for (render_overlay_player_index = 0;
                  render_overlay_player_index < config_player_count;
-                 ++render_overlay_player_index) {
+                ++render_overlay_player_index) {
                 player_fire_weapon(
-                    (float *)&target_world,
+                    &target_world,
                     fire_requested,
                     reload_requested);
             }

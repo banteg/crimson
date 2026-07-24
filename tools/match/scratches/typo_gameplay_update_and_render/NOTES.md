@@ -13,9 +13,12 @@ match=98.43% prefix=33/508 target_insns=508 candidate_insns=508 refs=194/0/0
 
 ## Recovered source shape
 
-- A function-local static two-float aim vector starts 128 units to the right of
-  player zero. Its native one-bit guard and empty exit-time destructor account
-  for `typo_runtime_init_flag`, `typo_target_world_x/y`, and `nullsub_71`.
+- A function-local static `typo_vec2_t` aim vector starts 128 units to the right
+  of player zero. Its mangled symbol proves the aggregate type; applying it to
+  the live database merges the former scalar `typo_target_world_x/y` objects
+  into named `.x/.y` fields. Its native one-bit guard and empty exit-time
+  destructor account for `typo_runtime_init_flag`, `typo_target_world`, and
+  `nullsub_71`.
 - Enter submits any nonempty buffer, increments the attempt count, resolves the
   first active creature with that name, and requests one aimed shot. The
   unmatched command `reload` requests a reload instead.
