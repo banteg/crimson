@@ -42,6 +42,13 @@ Barrel Greaser is active for a player-owned projectile. Each microstep adds
 accumulator at length 4 or near the loop tail, and advances the logical step by
 three.
 
+The microstep accumulator is now a `vec2f_t delta` in the matching source, and
+the shared exact `vec2_add` boundary takes vector pointers. All ten raw
+`delta[0]`/`delta[1]` accesses are replaced by `x`/`y`, including Pulse Gun
+knockback and the reset after each collision batch. Binary Ninja independently
+recovers the same stack slot as `vec2f_t delta`. The candidate remains
+2,137/2,203 instructions at 46.91% with the same 336 aligned references.
+
 Native constants read directly from the image recover the lingering cases:
 
 - Ion Rifle: `frame_dt * 100`, radius `ion_scale * 88`

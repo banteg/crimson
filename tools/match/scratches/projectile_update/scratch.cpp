@@ -22,7 +22,7 @@ void creatures_apply_radius_damage(
     int damage_type);
 int creature_find_in_radius(float *pos, float radius, int start_index);
 int player_find_in_radius(int owner_id, float *pos, float radius);
-int vec2_add(float *dst, float *delta);
+int vec2_add(vec2f_t *dst, const vec2f_t *delta);
 int vec2_add_inplace(
     int entity_index,
     vec2f_t *pos,
@@ -118,21 +118,21 @@ extern "C" void projectile_update(void)
                         step_count *= 2.0f;
                     }
 
-                    float delta[2] = {0.0f, 0.0f};
+                    vec2f_t delta = {0.0f, 0.0f};
                     int step = 0;
                     if (step_count > 0) {
                         do {
-                            delta[0] += step_x
+                            delta.x += step_x
                                 * projectile->pos.tail.vy.speed_scale * 3.0f;
-                            delta[1] += step_y
+                            delta.y += step_y
                                 * projectile->pos.tail.vy.speed_scale * 3.0f;
 
                             float distance = (float)sqrt(
-                                delta[0] * delta[0]
-                                + delta[1] * delta[1]);
+                                delta.x * delta.x
+                                + delta.y * delta.y);
                             if (distance >= 4.0f
                                 || step + 3 >= step_count) {
-                                vec2_add(pos, delta);
+                                vec2_add(position, &delta);
                                 int hit_id = creature_find_in_radius(
                                     pos,
                                     projectile->pos.tail.vy.hit_radius,
@@ -448,9 +448,9 @@ extern "C" void projectile_update(void)
                                     } else if (type_id
                                         == PROJECTILE_TYPE_PULSE_GUN) {
                                         creature_pool[hit_id].pos_x +=
-                                            delta[0] * 3.0f;
+                                            delta.x * 3.0f;
                                         creature_pool[hit_id].pos_y +=
-                                            delta[1] * 3.0f;
+                                            delta.y * 3.0f;
                                     } else if (type_id
                                         == PROJECTILE_TYPE_PLAGUE_SPREADER) {
                                         creature_pool[hit_id].collision_flag =
@@ -660,8 +660,8 @@ extern "C" void projectile_update(void)
                                     }
                                 }
 
-                                delta[0] = 0.0f;
-                                delta[1] = 0.0f;
+                                delta.x = 0.0f;
+                                delta.y = 0.0f;
                             }
                             step += 3;
                         } while (step < step_count);
@@ -735,7 +735,9 @@ extern "C" void projectile_update(void)
                     frame_dt * secondary->pos.vx.vel_x,
                     frame_dt * secondary->pos.vx.vy.vel_y,
                 };
-                vec2_add(&secondary->pos_x, &movement.x);
+                vec2_add(
+                    (vec2f_t *)&secondary->pos_x,
+                    &movement);
 
                 secondary_projectile_type_id_t type_id =
                     secondary->pos.vx.vy.type_id;
@@ -1088,7 +1090,9 @@ extern "C" void projectile_update(void)
                             frame_dt * particle->vel_y
                                 * particle->intensity,
                         };
-                        vec2_add(&particle->pos_x, &movement.x);
+                        vec2_add(
+                            (vec2f_t *)&particle->pos_x,
+                            &movement);
                     }
                 }
             } else {
@@ -1105,7 +1109,9 @@ extern "C" void projectile_update(void)
                         frame_dt * particle->vel_y * 2.5f
                             * particle->intensity,
                     };
-                    vec2_add(&particle->pos_x, &movement.x);
+                    vec2_add(
+                        (vec2f_t *)&particle->pos_x,
+                        &movement);
                 }
             }
 
