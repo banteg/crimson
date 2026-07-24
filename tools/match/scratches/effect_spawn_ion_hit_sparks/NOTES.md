@@ -12,3 +12,7 @@ details are visible. The unclamped lifetime remains a local x87 value for the
 `> 1.1` test instead of being read back from the shared template. The small
 inline detail-count helper adjusts the integer while it is still in EAX; an
 early return then delays reserving ESI/EDI until at least one spark will run.
+
+The original `PART_SpawnIonBurst(vec2_t pos, float size)` declaration confirms
+the aggregate input. Its lowered source and Binary Ninja boundary now use
+`const vec2f_t *`, preserving all 86 instructions and 31 references.

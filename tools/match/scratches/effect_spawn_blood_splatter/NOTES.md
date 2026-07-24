@@ -13,3 +13,7 @@ into the float angle argument used for per-particle rotation, but keeps the x87
 value live across both cosine and sine projections. A plain float direction
 has identical gameplay behavior but spills and reloads instead of emitting the
 native `fld st(0)` pair.
+
+The original particle API passes positions as `vec2_t`; the lowered matching
+boundary and saved Binary Ninja prototype therefore use `const vec2f_t *`.
+This type-only recovery preserves all 82 instructions and 27 references.

@@ -3,7 +3,7 @@
 #include "crimsonland_gameplay.h"
 
 extern "C" void effect_spawn_blood_splatter(
-    float *pos,
+    const vec2f_t *pos,
     float angle,
     float age)
 {
@@ -39,6 +39,6 @@ extern "C" void effect_spawn_blood_splatter(
         effect_template.rotation_step = 0.0f;
         effect_template.scale_step =
             (float)(crt_rand() & 127) * 0.03f + 0.1f;
-        effect_spawn(7, pos);
+        effect_spawn(7, (float *)pos);
     } while (--remaining != 0);
 }

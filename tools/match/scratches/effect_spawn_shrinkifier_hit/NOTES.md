@@ -11,3 +11,7 @@ All 92 native instructions and all 38 static references match. The same inline
 detail-count helper recovered in `effect_spawn_ion_hit_sparks` is decisive
 here: starting from four, it halves the count below preset 3 and preserves the
 native positive-count guard before entering the debris loop.
+
+The original `PART_SpawnShrinkFx(vec2_t pos)` declaration confirms the
+aggregate input. Its lowered source and Binary Ninja boundary now use
+`const vec2f_t *`, preserving all 92 instructions and 38 references.

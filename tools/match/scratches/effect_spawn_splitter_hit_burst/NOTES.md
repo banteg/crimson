@@ -19,3 +19,7 @@ statements preserves the separate `1/512` and float-tau multiplications.
 Finally, `distance` is `double`: VC6 keeps that value live on the x87 stack
 across both `fcos`/`fsin` projections, emits `fmul st(1)` twice, and pops the
 preserved value only after the second coordinate.
+
+The source and saved Binary Ninja prototype now type the input and generated
+stack position as `vec2f_t`. Named `x`/`y` fields replace all four raw indexes
+without changing the exact 75-instruction, 23-reference result.

@@ -10,3 +10,6 @@ Zig implementations rounded `cos` and `sin` before multiplying by particle
 speed. Native keeps each trigonometric result wide through the PC=24 multiply
 and rounds only on the particle velocity store. The corresponding port fix
 also canonicalizes the Python spawn inputs and spin multiplication as f32.
+
+The spawn position is recovered as a read-only `vec2f_t` in both source and
+Binary Ninja, replacing `pos[0]`/`pos[1]` without changing the exact match.

@@ -14,6 +14,10 @@ temporary constructors and final tint pointer are source-level object
 operations, not scheduling constraints. Ordinary signed `%` expressions also
 recover the native negative-remainder correction for the two-way type roll.
 
+Its input is likewise a read-only `vec2f_t`. Source and the saved Binary Ninja
+prototype now render `pos->x`/`pos->y`; the aggregate recovery preserves all
+517 instructions and 85 references.
+
 Focused result: **100.00%**, 517/517 instructions and 85/0/0 references. The
 anti-fakematch validator passes; there are no volatile operations, synthetic
 references, dead expressions, or register-forcing constructs.

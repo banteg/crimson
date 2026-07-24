@@ -60,13 +60,13 @@ struct survival_creature_t {
     float anim_phase;
 };
 
-extern "C" void survival_spawn_creature(float *pos)
+extern "C" void survival_spawn_creature(const vec2f_t *pos)
 {
     survival_creature_t *creature =
         (survival_creature_t *)&creature_pool[creature_alloc_slot()];
 
-    creature->pos_x = pos[0];
-    creature->pos_y = pos[1];
+    creature->pos_x = pos->x;
+    creature->pos_y = pos->y;
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->ai_mode = 0;

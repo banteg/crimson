@@ -10,7 +10,11 @@ typedef struct particle_scale_t {
     float age;
 } particle_scale_t;
 
-extern "C" int fx_spawn_particle(float *pos, float angle, void *, float intensity)
+extern "C" int fx_spawn_particle(
+    const vec2f_t *pos,
+    float angle,
+    void *,
+    float intensity)
 {
     particle_scale_t scale;
     int index = 0;
@@ -31,8 +35,8 @@ found:
     scale.age = 0.0f;
 
     particle_pool[index].active = 1;
-    particle_pool[index].pos_x = pos[0];
-    particle_pool[index].pos_y = pos[1];
+    particle_pool[index].pos_x = pos->x;
+    particle_pool[index].pos_y = pos->y;
     particle_pool[index].vel_x = (float)cos(angle) * 90.0f;
     particle_pool[index].vel_y = (float)sin(angle) * 90.0f;
     particle_pool[index].intensity = intensity;
