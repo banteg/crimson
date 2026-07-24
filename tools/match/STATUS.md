@@ -2,9 +2,9 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**718/2173** functions matched exactly, **134067/676681** code bytes (**19.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**719/2173** functions matched exactly, **134444/676681** code bytes (**19.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289337/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289489/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 501/997 | 107380/386756 | 27.8% | 259761/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 501/621 |
+| crimsonland.exe | 502/997 | 107757/386756 | 27.9% | 259913/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 502/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**501/997** functions, **107380/386756** bytes (**27.8%**), **259761/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **501/621** scratches verified.
+**502/997** functions, **107757/386756** bytes (**27.9%**), **259913/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **502/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -614,7 +614,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | quest_select_unused_blue_color_destroy | 0x00448b20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-blue-color-empty-destructor |
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
-| wip | input_detect_active_analog_axis | 0x00448b50 | 377 | 224/377 | 153 | 102/103 | 59.51% | 2/103 | 13/0/0 |  | input-analog-axis-detection |
+| match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
 | wip | controls_menu_update | 0x00448cd0 | 21289 | 10815/21289 | 10474 | 4488/5421 | 50.80% | 4/5421 | 863/2/34 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | wip | play_game_menu_update | 0x0044ed80 | 3238 | 2831/3238 | 407 | 776/777 | 87.44% | 120/777 | 275/0/28 |  | play-game-mode-buttons-player-count-and-routing |

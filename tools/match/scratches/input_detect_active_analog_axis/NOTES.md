@@ -9,9 +9,13 @@ greater than `0.5f`. If no channel is active, it flushes pending input through
 `IGrim2D_cpp::grim_flush_input()` and returns zero.
 
 The recovered source preserves all calls, channel IDs, comparisons, early
-returns, and the no-hit flush. It remains a work in progress: MSVC 6.5 `/O2`
-hoists the repeated `0x7fffffff` mask into `ESI`, while the native object emits
-the immediate mask at every test. `/O1` is decisively less plausible because it
-adds a frame, registerizes channel IDs, changes x87 condition lowering, and
-shares the return paths. No dummy dependencies or volatile fakematching are
-used to suppress the honest optimizer difference.
+returns, and the no-hit flush. The six magnitude tests use the same small
+inlined `abs_bits(float)` helper recovered in the game's angular math. Each
+expansion owns a short-lived integer bit view, so VC6 emits the native
+immediate `0x7fffffff` mask at every test instead of hoisting one mask into a
+saved register.
+
+The result is an exact 103/103-instruction, 377/377-byte match with all 13
+native references aligned. The helper is ordinary reusable source shape; no
+dummy dependency, volatile qualifier, fake reference, or register constraint
+is used.
