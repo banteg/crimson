@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -217,3 +218,27 @@ def test_quest_builder_signature_uses_array_presentation_view():
         "void quest_build_everred_pastures("
         "quest_spawn_entry_t *entries, int *count)"
     )
+
+
+def test_data_map_preserves_recovered_pool_extents():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    types_by_name = {
+        row["name"]: row.get("type")
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+
+    assert types_by_name["effect_uv_strip16"] == "uv2f_t[16]"
+    assert types_by_name["effect_uv2"] == "uv2f_t[4]"
+    assert types_by_name["effect_uv4"] == "uv2f_t[16]"
+    assert types_by_name["effect_uv8"] == "uv2f_t[64]"
+    assert types_by_name["effect_uv16"] == "uv2f_t[256]"
+    assert types_by_name["fx_queue"] == "fx_queue_entry_t[128]"
+    assert types_by_name["particle_pool"] == "particle_t[128]"

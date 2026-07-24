@@ -6107,7 +6107,7 @@
       "comment": "Horizontal UV strip with 16 entries spanning U = 0/16 through 15/16 and V = 0.",
       "name": "effect_uv_strip16",
       "program": "crimsonland.exe",
-      "type": "uv2f_t"
+      "type": "uv2f_t[16]"
     },
     {
       "address": "0x00491000",
@@ -6121,7 +6121,7 @@
       "comment": "Effect UV table for 8x8 atlas frames (u,v).",
       "name": "effect_uv8",
       "program": "crimsonland.exe",
-      "type": "uv2f_t"
+      "type": "uv2f_t[64]"
     },
     {
       "address": "0x00491014",
@@ -6141,7 +6141,7 @@
       "comment": "Effect UV table for 4x4 atlas frames (u,v).",
       "name": "effect_uv4",
       "program": "crimsonland.exe",
-      "type": "uv2f_t"
+      "type": "uv2f_t[16]"
     },
     {
       "address": "0x00491214",
@@ -6168,7 +6168,7 @@
       "comment": "Effect UV table for 2x2 atlas frames (u,v).",
       "name": "effect_uv2",
       "program": "crimsonland.exe",
-      "type": "uv2f_t"
+      "type": "uv2f_t[4]"
     },
     {
       "address": "0x00491294",
@@ -6190,7 +6190,7 @@
       "address": "0x004912b8",
       "comment": "FX queue base (0x80 entries, stride 0x28)",
       "name": "fx_queue",
-      "type": "fx_queue_entry_t",
+      "type": "fx_queue_entry_t[128]",
       "program": "crimsonland.exe"
     },
     {
@@ -6348,7 +6348,7 @@
       "address": "0x00493eb8",
       "comment": "Particle pool base (0x80 entries, stride 0x38)",
       "name": "particle_pool",
-      "type": "particle_t",
+      "type": "particle_t[128]",
       "program": "crimsonland.exe"
     },
     {
@@ -6955,7 +6955,7 @@
       "comment": "Effect UV table for 16x16 atlas frames (u,v).",
       "name": "effect_uv16",
       "program": "crimsonland.exe",
-      "type": "uv2f_t"
+      "type": "uv2f_t[256]"
     },
     {
       "address": "0x004aa4dc",
