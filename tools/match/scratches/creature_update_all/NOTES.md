@@ -166,3 +166,15 @@ through particle, projectile, effect, and panned-audio calls. This removes the
 parallel raw-float alias and makes the aggregate boundary explicit without
 changing the honest 49.09% WIP score, 1,290/1,338 instructions, or `207/0/4`
 reference audit.
+
+## Target-player type recovery
+
+Native consistently loads `creature_t::target_player` with `movsx`, including
+the initial multiplayer distance calculation and the later AI, ranged, and
+contact paths. The canonical field is therefore an explicitly signed byte,
+not an unsigned byte repeatedly reinterpreted through `(char)` casts. Recovering
+that type removes seven scalar sign casts and the raw interior `char *` view;
+the latter is now a direct `signed char *` to the named field. This source-shape
+cleanup is matcher-neutral at 49.09%, 1,290/1,338 instructions, and `207/0/4`
+references. The adjacent reset loop remains 99.02%, 307/307 instructions, and
+`213/0/0` references.

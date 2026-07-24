@@ -139,8 +139,8 @@ extern "C" void creature_update_all(void)
                 }
 
                 {
-                    char current_player =
-                        (char)creature_pool[creature_index].target_player;
+                    signed char current_player =
+                        creature_pool[creature_index].target_player;
                     int current_player_index = (int)current_player;
                     vec2f_t *position =
                         (vec2f_t *)&creature_pool[creature_index].pos_x;
@@ -158,7 +158,7 @@ extern "C" void creature_update_all(void)
                                 alternate_distance = (float)sqrt(dx * dx + dy * dy);
                                 if (alternate_distance < distance) {
                                     creature_pool[creature_index].target_player =
-                                        (unsigned char)(1 - current_player);
+                                        1 - current_player;
                                     distance = alternate_distance;
                                 }
                             }
@@ -169,7 +169,7 @@ extern "C" void creature_update_all(void)
                         }
 
                         current_player =
-                            (char)creature_pool[creature_index].target_player;
+                            creature_pool[creature_index].target_player;
                         current_player_index = (int)current_player;
                         dx = player_state_table[0].pos_x
                             - creature_pool[player_state_table[current_player_index].auto_target].pos_x;
@@ -182,7 +182,7 @@ extern "C" void creature_update_all(void)
 
                     if (player_state_table[current_player_index].health <= 0.0f) {
                         creature_pool[creature_index].target_player =
-                            (unsigned char)(1 - current_player);
+                            1 - current_player;
                     }
 
                     lifecycle_stage = &creature_pool[creature_index].lifecycle_stage;
@@ -225,7 +225,7 @@ extern "C" void creature_update_all(void)
                         int ai_mode = creature_pool[creature_index].ai_mode;
                         if (ai_mode == CREATURE_AI_ORBIT_PLAYER) {
                             current_player_index =
-                                (int)(char)creature_pool[creature_index].target_player;
+                                creature_pool[creature_index].target_player;
                             if (distance > 800.0f) {
                                 creature_pool[creature_index].target_x =
                                     player_state_table[current_player_index].pos_x;
@@ -241,7 +241,7 @@ extern "C" void creature_update_all(void)
                             }
                         } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_WIDE) {
                             current_player_index =
-                                (int)(char)creature_pool[creature_index].target_player;
+                                creature_pool[creature_index].target_player;
                             creature_pool[creature_index].target_x =
                                 (float)cos(phase_angle) * distance * 0.9f
                                 + player_state_table[current_player_index].pos_x;
@@ -250,7 +250,7 @@ extern "C" void creature_update_all(void)
                                 + player_state_table[current_player_index].pos_y;
                         } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_TIGHT) {
                             current_player_index =
-                                (int)(char)creature_pool[creature_index].target_player;
+                                creature_pool[creature_index].target_player;
                             if (distance > 800.0f) {
                                 creature_pool[creature_index].target_x =
                                     player_state_table[current_player_index].pos_x;
@@ -311,7 +311,7 @@ extern "C" void creature_update_all(void)
                             linked_index = creature_pool[creature_index].link_index;
                             if (creature_pool[linked_index].health > 0.0f) {
                                 current_player_index =
-                                    (int)(char)creature_pool[creature_index].target_player;
+                                    creature_pool[creature_index].target_player;
                                 if (distance > 800.0f) {
                                     creature_pool[creature_index].target_x =
                                         player_state_table[current_player_index].pos_x;
@@ -386,7 +386,7 @@ extern "C" void creature_update_all(void)
                             || creature_pool[creature_index].ai_mode
                                 == CREATURE_AI_CHASE_PLAYER) {
                             current_player_index =
-                                (int)(char)creature_pool[creature_index].target_player;
+                                creature_pool[creature_index].target_player;
                             creature_pool[creature_index].target_x =
                                 player_state_table[current_player_index].pos_x;
                             creature_pool[creature_index].target_y =
@@ -527,8 +527,8 @@ extern "C" void creature_update_all(void)
                             *attack_cooldown = 0.0f;
                         }
 
-                        char *target_player =
-                            (char *)&creature_pool[creature_index].target_player;
+                        signed char *target_player =
+                            &creature_pool[creature_index].target_player;
                         current_player_index = (int)*target_player;
                         dx = position->x - player_state_table[current_player_index].pos_x;
                         dy = position->y - player_state_table[current_player_index].pos_y;
