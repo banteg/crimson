@@ -2,7 +2,9 @@
 
 #include "crimsonland_gameplay.h"
 
-extern "C" void effect_spawn_freeze_shard(float *pos, float angle)
+extern "C" void effect_spawn_freeze_shard(
+    const vec2f_t *pos,
+    float angle)
 {
     effect_color_t color = {1.0f, 1.0f, 1.0f, 0.5f};
 
@@ -29,5 +31,5 @@ extern "C" void effect_spawn_freeze_shard(float *pos, float angle)
     effect_template.scale_step =
         (float)-(crt_rand() & 15) * 0.1f;
 
-    effect_spawn(crt_rand() % 3 + 8, pos);
+    effect_spawn(crt_rand() % 3 + 8, (float *)pos);
 }

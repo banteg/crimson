@@ -2,7 +2,9 @@
 
 #include "crimsonland_gameplay.h"
 
-extern "C" void effect_spawn_freeze_shatter(float *pos, float angle)
+extern "C" void effect_spawn_freeze_shatter(
+    const vec2f_t *pos,
+    float angle)
 {
     effect_color_t color = {1.0f, 1.0f, 1.0f, 0.5f};
 
@@ -22,7 +24,7 @@ extern "C" void effect_spawn_freeze_shatter(float *pos, float angle)
         effect_template.half_height = half_extent;
         effect_template.rotation_step =
             ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 1.9f;
-        effect_spawn(14, pos);
+        effect_spawn(14, (float *)pos);
     }
 
     int remaining = 4;

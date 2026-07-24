@@ -102,11 +102,11 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             if (creature_pool[creature_iter].active && creature_pool[creature_iter].health <= 0.0f) {
                 for (int shard_iter = 0; shard_iter < 8; ++shard_iter) {
                     effect_spawn_freeze_shard(
-                        &creature_pool[creature_iter].pos_x,
+                        (const vec2f_t *)&creature_pool[creature_iter].pos_x,
                         (float)(crt_rand() % 612) * 0.01f);
                 }
                 effect_spawn_freeze_shatter(
-                    &creature_pool[creature_iter].pos_x,
+                    (const vec2f_t *)&creature_pool[creature_iter].pos_x,
                     (float)(crt_rand() % 612) * 0.01f);
                 creature_pool[creature_iter].active = 0;
             }
@@ -236,7 +236,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             (float)(crt_rand() % 628) * 0.01f,
             PROJECTILE_TYPE_GAUSS_GUN,
             -100);
-        effect_spawn_explosion_burst((float *)bonus_pos, 1.0f);
+        effect_spawn_explosion_burst(bonus_pos, 1.0f);
         camera_shake_pulses = 20;
         camera_shake_timer = 0.2f;
 

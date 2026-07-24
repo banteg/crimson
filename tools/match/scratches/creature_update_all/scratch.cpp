@@ -591,7 +591,9 @@ extern "C" void creature_update_all(void)
                                 player_state_table[0].experience = (int)(
                                     (float)player_state_table[0].experience
                                     + creature_pool[creature_index].reward_value);
-                                effect_spawn_burst(pos, 6);
+                                effect_spawn_burst(
+                                    (const vec2f_t *)pos,
+                                    6);
                                 sfx_play_panned(sfx_ui_bonus, pos, 0.8f);
                                 bonus_spawn_guard = 1;
                                 creature_handle_death(creature_index, 0);

@@ -74,7 +74,9 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         creature_pool[child_id].lifecycle_stage = 16.0f;
         creature_pool[child_id].contact_damage *= 0.7f;
 
-        effect_spawn_burst(&creature->pos_x, 8);
+        effect_spawn_burst(
+            (const vec2f_t *)&creature->pos_x,
+            8);
     }
 
     if (keep_corpse) {
@@ -115,14 +117,14 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         int count = 8;
         do {
             effect_spawn_freeze_shard(
-                &pos->x,
+                pos,
                 (float)(crt_rand() % 612) * 0.01f
             );
             --count;
         } while (count != 0);
 
         effect_spawn_freeze_shatter(
-            &pos->x,
+            pos,
             (float)(crt_rand() % 612) * 0.01f
         );
         ++creature_kill_count;

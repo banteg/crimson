@@ -18,3 +18,6 @@ four color constants on the stack and then copies them to the shared template.
 All three native callers ignore EAX, as do neighboring effect-only wrappers,
 so the source prototype is conservatively modeled as `void`. The allocator
 itself does return `effect_entry_t *`; its former `void *` type was generic.
+
+The position input is recovered as a read-only `vec2f_t` in source and Binary
+Ninja. This type-only change preserves all 32 instructions and 16 references.

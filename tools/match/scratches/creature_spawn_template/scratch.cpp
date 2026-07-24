@@ -974,7 +974,9 @@ extern "C" creature_t *creature_spawn_template(
         && (float)terrain_texture_width > creature->pos_x
         && creature->pos_y > 0.0f
         && (float)terrain_texture_height > creature->pos_y) {
-        effect_spawn_burst(&creature->pos_x, 8);
+        effect_spawn_burst(
+            (const vec2f_t *)&creature->pos_x,
+            8);
     }
 
     creature->max_health = creature->health;

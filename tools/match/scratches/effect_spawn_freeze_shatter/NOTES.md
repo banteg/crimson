@@ -11,3 +11,7 @@ The ordinary source matches all 79 native instructions and all 27 static
 references. Passing the secondary angle expression directly is material: VC6
 reserves its outgoing float argument with `push ecx` and stores the x87 result
 in place, exactly as native; a named local adds a spill/reload pair.
+
+The original `PART_SpawnIceBurstBig(vec2_t pos, float angle)` declaration
+confirms the aggregate input. Its lowered shared declaration, source, and
+Binary Ninja prototype now use `const vec2f_t *`, preserving the exact match.

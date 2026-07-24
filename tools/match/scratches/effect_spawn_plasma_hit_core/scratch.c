@@ -1,6 +1,9 @@
 #include "crimsonland_gameplay.h"
 
-void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime)
+void effect_spawn_plasma_hit_core(
+    const vec2f_t *pos,
+    float scale_step,
+    float lifetime)
 {
     effect_color_t color = {0.9f, 0.6f, 0.3f, 1.0f};
 
@@ -14,5 +17,5 @@ void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime)
     effect_template.rotation = 0.0f;
     effect_template.vel_x = 0.0f;
     effect_template.vel_y = 0.0f;
-    effect_spawn(1, pos);
+    effect_spawn(1, (float *)pos);
 }

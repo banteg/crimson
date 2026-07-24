@@ -23,6 +23,12 @@ before its sound effects. This is a literal reset, not restoration of an
 incoming guard value; Python and Zig preserve that transition and exercise it
 from an initially set guard.
 
+Final Revenge's embedded player position and zero force are now recovered as
+`const vec2f_t *player_pos` and `vec2f_t impulse`. Named components replace the
+four remaining raw indexes in the exact source. Binary Ninja independently
+shows the impulse aggregate, and its position cursor is saved with the same
+read-only vector type. All 267 instructions and 73 references remain exact.
+
 Every perk query is a call to the global `perk_count_get`; unlike the indexed
 health, shield, reload, position, and timer fields, it always reads player 1.
 This includes Death Clock, Tough Reloader, Thick Skinned, Ninja, Dodger,

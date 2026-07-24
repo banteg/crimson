@@ -1,6 +1,6 @@
 #include "crimsonland_gameplay.h"
 
-extern "C" void effect_spawn_burst(float *pos, int count)
+extern "C" void effect_spawn_burst(const vec2f_t *pos, int count)
 {
     effect_color_t color = {0.4f, 0.5f, 1.0f, 0.5f};
 
@@ -19,7 +19,7 @@ extern "C" void effect_spawn_burst(float *pos, int count)
             effect_template.vel_y = (float)((crt_rand() & 0x7f) - 64);
             effect_template.scale_step =
                 (float)(crt_rand() % 100) * 0.01f + 0.1f;
-            effect_spawn(0, pos);
+            effect_spawn(0, (float *)pos);
         } while (--count != 0);
     }
 }

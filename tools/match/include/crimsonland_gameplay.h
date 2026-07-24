@@ -323,9 +323,9 @@ unsigned char fx_queue_add_rotated(
 );
 void effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime);
 void effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime);
-void effect_spawn_freeze_shard(float *pos, float angle);
-void effect_spawn_freeze_shatter(float *pos, float angle);
-void effect_spawn_explosion_burst(float *pos, float scale);
+void effect_spawn_freeze_shard(const vec2f_t *pos, float angle);
+void effect_spawn_freeze_shatter(const vec2f_t *pos, float angle);
+void effect_spawn_explosion_burst(const vec2f_t *pos, float scale);
 int projectile_spawn(
     const vec2f_t *pos,
     float angle,
@@ -351,7 +351,7 @@ int creature_apply_damage(
     float damage,
     int damage_type,
     float *impulse);
-void effect_spawn_burst(float *pos, int count);
+void effect_spawn_burst(const vec2f_t *pos, int count);
 
 extern cvar_float_t *cv_friendlyFire;
 extern cvar_float_t *cv_terrainBodiesTransparency;

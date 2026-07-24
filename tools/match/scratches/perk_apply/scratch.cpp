@@ -51,7 +51,9 @@ extern "C" void perk_apply(int perk_id)
                 && creature->health <= 500.0f
                 && (creature->flags & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
                 creature->active = 0;
-                effect_spawn_burst(&creature->pos_x, 4);
+                effect_spawn_burst(
+                    (const vec2f_t *)&creature->pos_x,
+                    4);
             }
             ++creature;
             ++i;
@@ -168,7 +170,9 @@ extern "C" void perk_apply(int perk_id)
             }
             player_state_t *player = (player_state_t *)(
                 (char *)cursor - offsetof(player_state_t, health));
-            effect_spawn_burst(&player->pos_x, 8);
+            effect_spawn_burst(
+                (const vec2f_t *)&player->pos_x,
+                8);
             player_count = config_player_count;
             ++i;
             cursor += sizeof(player_state_t) / sizeof(*cursor);

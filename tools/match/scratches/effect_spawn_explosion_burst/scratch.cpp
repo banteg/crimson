@@ -11,7 +11,9 @@ static inline int explosion_debris_count(int detail)
     return count;
 }
 
-extern "C" void effect_spawn_explosion_burst(float *pos, float scale)
+extern "C" void effect_spawn_explosion_burst(
+    const vec2f_t *pos,
+    float scale)
 {
     effect_color_t core_color = {0.6f, 0.6f, 0.6f, 1.0f};
 
@@ -25,7 +27,7 @@ extern "C" void effect_spawn_explosion_burst(float *pos, float scale)
     effect_template.vel_x = 0.0f;
     effect_template.vel_y = 0.0f;
     effect_template.scale_step = scale * 25.0f;
-    effect_spawn(1, pos);
+    effect_spawn(1, (float *)pos);
 
     effect_color_t shockwave_color = {0.1f, 0.1f, 0.1f, 1.0f};
     effect_template.flags = 0x5d;
@@ -46,7 +48,7 @@ extern "C" void effect_spawn_explosion_burst(float *pos, float scale)
                 (float)(crt_rand() % 614) * 0.02f;
             effect_template.rotation_step = 1.4f;
             effect_template.scale_step = shockwave_scale_step;
-            effect_spawn(17, pos);
+            effect_spawn(17, (float *)pos);
         }
     }
 
@@ -61,7 +63,7 @@ extern "C" void effect_spawn_explosion_burst(float *pos, float scale)
     effect_template.vel_x = 0.0f;
     effect_template.vel_y = 0.0f;
     effect_template.scale_step = scale * 45.0f;
-    effect_spawn(0, pos);
+    effect_spawn(0, (float *)pos);
 
     effect_color_t debris_color = {1.0f, 1.0f, 1.0f, 1.0f};
     effect_template.flags = 0x1d;
@@ -86,7 +88,7 @@ extern "C" void effect_spawn_explosion_burst(float *pos, float scale)
                 (float)((crt_rand() - 3) & 7) * scale;
             effect_template.rotation_step =
                 (float)((crt_rand() + 3) & 7);
-            effect_spawn(12, pos);
+            effect_spawn(12, (float *)pos);
         } while (--count != 0);
     }
 }

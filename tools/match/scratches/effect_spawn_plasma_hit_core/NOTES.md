@@ -24,6 +24,9 @@ Both callers ignore EAX, as do neighboring effect-only wrappers, so the source
 prototype is conservatively modeled as `void`; the retained allocator result
 does not establish a pointer return on its own.
 
+The position input is recovered as a read-only `vec2f_t` in source and Binary
+Ninja. This type-only change preserves all 31 instructions and 15 references.
+
 Both ports reproduce those calls and the helper constants. The Zig effect pool
 also narrows spawn fields and every age update to `f32`. Python's `EffectPool`,
 however, stores and accumulates Python doubles. At a float32 60 Hz timestep,

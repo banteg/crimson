@@ -69,14 +69,16 @@ post_damage:
         }
 
         if (perk_count_get(perk_id_final_revenge) != 0) {
-            float *player_pos = &player_state_table[player_index].pos_x;
+            const vec2f_t *player_pos =
+                (const vec2f_t *)&player_state_table[player_index].pos_x;
             effect_spawn_explosion_burst(player_pos, 1.8f);
             bonus_spawn_guard = 1;
 
             int creature_index = 0;
             do {
                 if (creature_pool[creature_index].active) {
-                    abs_delta = abs_bits(creature_pool[creature_index].pos_x - player_pos[0]);
+                    abs_delta = abs_bits(
+                        creature_pool[creature_index].pos_x - player_pos->x);
                     if (abs_delta <= 512.0f) {
                         abs_delta = abs_bits(
                             creature_pool[creature_index].pos_y - player_state_table[player_index].pos_y
@@ -84,13 +86,17 @@ post_damage:
                         if (abs_delta <= 512.0f) {
                             float blast = 512.0f - vec2_distance(
                                 (vec2f_t *)&creature_pool[creature_index].pos_x,
-                                (vec2f_t *)player_pos
+                                player_pos
                             );
                             if (blast > 0.0f) {
-                                float impulse[2];
-                                impulse[0] = 0.0f;
-                                impulse[1] = 0.0f;
-                                creature_apply_damage(creature_index, blast * 5.0f, 3, impulse);
+                                vec2f_t impulse;
+                                impulse.x = 0.0f;
+                                impulse.y = 0.0f;
+                                creature_apply_damage(
+                                    creature_index,
+                                    blast * 5.0f,
+                                    3,
+                                    (float *)&impulse);
                             }
                         }
                     }
@@ -99,8 +105,14 @@ post_damage:
             } while (creature_index < 0x180);
 
             bonus_spawn_guard = 0;
-            sfx_play_panned(sfx_explosion_large, player_pos, 1.0f);
-            sfx_play_panned(sfx_shockwave, player_pos, 1.0f);
+            sfx_play_panned(
+                sfx_explosion_large,
+                (float *)player_pos,
+                1.0f);
+            sfx_play_panned(
+                sfx_shockwave,
+                (float *)player_pos,
+                1.0f);
         } else {
             sfx_play_panned(crt_rand() % 2 + sfx_trooper_die_01,
                             &player_state_table[player_index].pos_x,

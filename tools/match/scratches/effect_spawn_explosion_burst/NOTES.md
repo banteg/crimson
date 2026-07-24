@@ -13,3 +13,7 @@ phase reuses one `scale * 5` local across its two entries and derives age and
 lifetime from the same `index * 0.2` x87 value. The debris tier is a compact
 inline policy returning 1 below detail 2, 3 at detail 2..3, and 4 at detail 4+;
 that policy boundary preserves native's common positive-count guard.
+
+The original particle API passes explosion positions as `vec2_t`; the lowered
+shared declaration, matching source, and saved Binary Ninja prototype now use
+`const vec2f_t *`. The exact 182/182 code and all 75 references are unchanged.

@@ -567,7 +567,7 @@ extern "C" void projectile_update(void)
                                                         + offset_y,
                                                 };
                                                 effect_spawn_freeze_shard(
-                                                    &shard_pos.x,
+                                                    &shard_pos,
                                                     impact_heading
                                                         + (float)(
                                                             crt_rand() % 100)
@@ -631,7 +631,7 @@ extern "C" void projectile_update(void)
                                         } while (count != 0);
                                     } else {
                                         effect_spawn_freeze_shard(
-                                            pos,
+                                            (const vec2f_t *)pos,
                                             projectile->angle
                                                 - 1.5707964f
                                                 + (float)(crt_rand() % 100)
@@ -885,7 +885,7 @@ extern "C" void projectile_update(void)
                         int count = 4;
                         do {
                             effect_spawn_freeze_shard(
-                                &secondary->pos_x,
+                                (const vec2f_t *)&secondary->pos_x,
                                 (float)(crt_rand() % 612) * 0.01f);
                             --count;
                         } while (count != 0);
@@ -896,7 +896,7 @@ extern "C" void projectile_update(void)
                         damage = secondary->life_timer * 50.0f + 500.0f;
                         if (config_detail_preset > 2) {
                             effect_spawn_explosion_burst(
-                                &secondary->pos_x,
+                                (const vec2f_t *)&secondary->pos_x,
                                 0.4f);
                         }
                     } else if (type_id
@@ -955,7 +955,7 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    &secondary->pos_x,
+                                    (const vec2f_t *)&secondary->pos_x,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
@@ -985,7 +985,7 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    &secondary->pos_x,
+                                    (const vec2f_t *)&secondary->pos_x,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
@@ -1015,7 +1015,8 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    &creature_pool[hit_id].pos_x,
+                                    (const vec2f_t *)
+                                        &creature_pool[hit_id].pos_x,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
