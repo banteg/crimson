@@ -41,6 +41,11 @@ struct projectile_render_vec2_t {
         return projectile_render_vec2_t(x - other.x, y - other.y);
     }
 
+    projectile_render_vec2_t operator-(float value) const
+    {
+        return projectile_render_vec2_t(x - value, y - value);
+    }
+
     projectile_render_vec2_t operator*(float scale) const
     {
         return projectile_render_vec2_t(x * scale, y * scale);
@@ -59,6 +64,13 @@ struct projectile_render_vec2_t {
     {
         x -= other.x;
         y -= other.y;
+        return *this;
+    }
+
+    projectile_render_vec2_t &operator-=(float value)
+    {
+        x -= value;
+        y -= value;
         return *this;
     }
 
@@ -1053,13 +1065,16 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, transition_alpha * 0.48f);
                 float heading = projectile->angle - 1.5707964f;
+                projectile_render_vec2_t draw_pos =
+                    camera_offset
+                    + *(projectile_render_vec2_t *)&projectile->pos_x
+                    - projectile_render_vec2_t(
+                          (float)cos(heading), (float)sin(heading))
+                        * 5.0f
+                    - 70.0f;
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        - (float)cos(heading) * 5.0f
-                        - 70.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        - (float)sin(heading) * 5.0f
-                        - 70.0f,
+                    draw_pos.x,
+                    draw_pos.y,
                     140.0f,
                     140.0f);
             }
@@ -1087,34 +1102,42 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
         grim_interface_ptr->grim_set_rotation(projectile->angle);
-        switch (type_id) {
-        case SECONDARY_PROJECTILE_TYPE_ROCKET:
+        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 7.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 7.0f,
-                camera_offset_y + projectile->pos.pos_y - 7.0f,
+                draw_pos.x,
+                draw_pos.y,
                 14.0f,
                 14.0f);
-            break;
-        case SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET:
+        } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 5.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 5.0f,
-                camera_offset_y + projectile->pos.pos_y - 5.0f,
+                draw_pos.x,
+                draw_pos.y,
                 10.0f,
                 10.0f);
-            break;
-        case SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN:
+        } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x;
             grim_interface_ptr->grim_set_color(
                 0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+            draw_pos -= 4.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 4.0f,
-                camera_offset_y + projectile->pos.pos_y - 4.0f,
+                draw_pos.x,
+                draw_pos.y,
                 8.0f,
                 8.0f);
-            break;
         }
     }
     grim_interface_ptr->grim_end_batch();
@@ -1137,52 +1160,54 @@ extern "C" void projectile_render(float transition_alpha)
         }
         secondary_projectile_type_id_t type_id =
             projectile->pos.vx.vy.type_id;
-        switch (type_id) {
-        case SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN: {
+        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
             grim_interface_ptr->grim_set_color(
                 0.7f, 0.7f, 1.0f, transition_alpha * 0.158f);
             float heading = projectile->angle - 1.5707964f;
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x
+                - projectile_render_vec2_t(
+                          (float)cos(heading), (float)sin(heading))
+                    * 9.0f
+                - 15.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
-                    - (float)cos(heading) * 9.0f
-                    - 15.0f,
-                camera_offset_y + projectile->pos.pos_y
-                    - (float)sin(heading) * 9.0f
-                    - 15.0f,
+                draw_pos.x,
+                draw_pos.y,
                 30.0f,
                 30.0f);
-            break;
-        }
-        case SECONDARY_PROJECTILE_TYPE_ROCKET: {
+        } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, transition_alpha * 0.68f);
             float heading = projectile->angle - 1.5707964f;
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x
+                - projectile_render_vec2_t(
+                          (float)cos(heading), (float)sin(heading))
+                    * 9.0f
+                - 30.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
-                    - (float)cos(heading) * 9.0f
-                    - 30.0f,
-                camera_offset_y + projectile->pos.pos_y
-                    - (float)sin(heading) * 9.0f
-                    - 30.0f,
+                draw_pos.x,
+                draw_pos.y,
                 60.0f,
                 60.0f);
-            break;
-        }
-        case SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET: {
+        } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, transition_alpha * 0.58f);
             float heading = projectile->angle - 1.5707964f;
+            projectile_render_vec2_t draw_pos =
+                camera_offset
+                + *(projectile_render_vec2_t *)&projectile->pos_x
+                - projectile_render_vec2_t(
+                          (float)cos(heading), (float)sin(heading))
+                    * 9.0f
+                - 20.0f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
-                    - (float)cos(heading) * 9.0f
-                    - 20.0f,
-                camera_offset_y + projectile->pos.pos_y
-                    - (float)sin(heading) * 9.0f
-                    - 20.0f,
+                draw_pos.x,
+                draw_pos.y,
                 40.0f,
                 40.0f);
-            break;
-        }
         }
     }
     grim_interface_ptr->grim_end_batch();

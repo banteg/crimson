@@ -31,7 +31,10 @@ The ion/fire family likewise has separate live and fading arms. In particular,
 the live arm sets atlas frame (2, 2) before recomputing frame (4, 2), while the
 fading arm applies rotation before drawing the trail. The bullet billboard,
 secondary sprite, and secondary glow passes use direct per-type draw arms
-rather than parameterized sizes and colors.
+rather than parameterized sizes and colors. Native disassembly further proves
+that the secondary sprite arms are an ordered `1 -> 2 -> 4` comparison chain,
+while the detail-glow arms are ordered `4 -> 1 -> 2`; neither pass was a source
+`switch`.
 
 The native callback's geometry is built from the game's two-float vector type,
 not from independently named scalar coordinates. Live Binary Ninja IL and
@@ -41,13 +44,16 @@ type constructs its current point, origin point, half-width, and four output
 points within its own branch; and the fading ion-chain arm constructs a
 normalized perpendicular, its camera-space endpoints, and four strip points.
 After drawing the 10-unit strip, native mutates those same four points by four
-more units before drawing the wider 14-unit strip. The recovered source now
-uses those vector operations and preserves that in-place widening rather than
-recomputing unrelated scalar expressions.
+more units before drawing the wider 14-unit strip. The secondary bloom and
+three glow arms likewise construct camera-space positions by subtracting
+direction vectors and scalar half-sizes. Each sprite arm first materializes
+`camera + position`, sets its tint, and only then subtracts the half-size in
+place. The recovered source now preserves all of those vector operations and
+mutations instead of recomputing unrelated scalar expressions.
 
-Those source-shape recoveries raise the honest build from 33.68% to 39.77%.
-The candidate now has 2,792 normalized instructions against 3,021 target
-instructions, with 301 proven, zero unresolved, and 30 mismatched aligned
+Those source-shape recoveries raise the honest build from 33.68% to 43.04%.
+The candidate now has 2,839 normalized instructions against 3,021 target
+instructions, with 325 proven, zero unresolved, and 28 mismatched aligned
 references. Treating the adjacent camera coordinates as the aggregate
 `camera_offset` object is backed by the native symbol layout and accounts for
 the formerly unresolved object-level reference without weakening reference
