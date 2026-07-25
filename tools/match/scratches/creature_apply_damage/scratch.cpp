@@ -90,8 +90,8 @@ extern "C" int creature_apply_damage(
         }
 
         creature_pool[creature_id].health -= damage;
-        creature_pool[creature_id].vel_x -= impulse->x;
-        creature_pool[creature_id].vel_y -= impulse->y;
+        creature_pool[creature_id].velocity.x -= impulse->x;
+        creature_pool[creature_id].velocity.y -= impulse->y;
 
         if (creature_pool[creature_id].health <= 0.0f) {
             creature_pool[creature_id].lifecycle_stage -= frame_dt;
@@ -99,8 +99,8 @@ extern "C" int creature_apply_damage(
 
             damage_vec2_t doubled_impulse =
                 *(const damage_vec2_t *)impulse * 2.0f;
-            creature_pool[creature_id].vel_x -= doubled_impulse.x;
-            creature_pool[creature_id].vel_y -= doubled_impulse.y;
+            creature_pool[creature_id].velocity.x -= doubled_impulse.x;
+            creature_pool[creature_id].velocity.y -= doubled_impulse.y;
 
             if ((creature_pool[creature_id].flags
                     & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
@@ -108,16 +108,16 @@ extern "C" int creature_apply_damage(
                 effect_template.flags = 0x1d;
                 effect_template.color = color;
                 effect_template.lifetime = 0.7f;
-                effect_template.half_width = 36.0f;
-                effect_template.half_height = 36.0f;
+                effect_template.half_extent.x = 36.0f;
+                effect_template.half_extent.y = 36.0f;
 
                 int count = 5;
                 do {
                     effect_template.rotation =
                         (float)(crt_rand() & 0x7f) * 0.049087387f;
-                    effect_template.vel_x =
+                    effect_template.velocity.x =
                         (float)((crt_rand() & 0x7f) - 0x40);
-                    effect_template.vel_y =
+                    effect_template.velocity.y =
                         (float)((crt_rand() & 0x7f) - 0x40);
                     effect_template.scale_step =
                         (float)(crt_rand() % 140) * 0.01f + 0.3f;

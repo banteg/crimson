@@ -30,6 +30,11 @@ burst only overwrites flags, color, lifetime, half-size, and each particle's
 rotation, velocity, and scale step; it deliberately leaves the remaining
 global effect-template fields untouched.
 
+The direct creature impulse stores now use `creature_t::velocity.x/y`, and the
+shock burst uses `effect_template.velocity` and `half_extent` components.
+These canonical aggregate members are byte-neutral: the candidate remains
+`237/237` instructions at `89.87%`, with the same `80/0/0` reference audit.
+
 Every perk gate in this function calls the exact `perk_count_get` helper, which
 reads player 0 only. Both ports now preserve that native asymmetry when
 `preserve_bugs` is enabled for Uranium Filled Bullets, Living Fortress, Barrel
