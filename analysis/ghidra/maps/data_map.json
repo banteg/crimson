@@ -2357,7 +2357,7 @@
       "comment": "Current tutorial bonus object pointer used for hint overlay checks.",
       "name": "tutorial_hint_bonus_ptr",
       "program": "crimsonland.exe",
-      "type": "creature_t *"
+      "type": "tutorial_bonus_carrier_binja_t *"
     },
     {
       "address": "0x004808b0",
@@ -2641,7 +2641,7 @@
       "address": "0x004824d4",
       "comment": "Modal/plugin interface pointer used when game_state_id == 0x16.",
       "name": "plugin_interface_ptr",
-      "type": "mod_interface_t *",
+      "type": "mod_interface_binja_t *",
       "program": "crimsonland.exe"
     },
     {

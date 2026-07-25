@@ -73,6 +73,14 @@ expressions from this native function. The matching source now uses the same
 canonical bonus-argument union instead of recreating its two signed halfwords
 at every read and write.
 
+Binary Ninja initially chose the union's ordinary `link_index` arm and rendered
+the two packed values as anonymous halfword slices. The tutorial-specific
+global therefore uses a `tutorial_bonus_carrier_binja_t *` presentation type.
+That view retains the proven active, health, and flags offsets while naming
+both reads and later writes as `bonus_args.bonus_id` and
+`bonus_args.duration_override`; ordinary creature links keep their canonical
+`link_index` interpretation elsewhere.
+
 Stages two, five, and seven now express their 16-slot bonus-pool emptiness test
 as an indexed loop. VC6 strength-reduces the typed index into the native
 record pointer while retaining the count in a separate register, reproducing

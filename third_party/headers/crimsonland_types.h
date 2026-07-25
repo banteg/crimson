@@ -471,6 +471,22 @@ typedef struct creature_t {
     float anim_phase;
 } creature_t;
 
+// Binary Ninja presentation view for tutorial bonus carriers. The tutorial
+// reuses the creature `link_index` slot as two signed 16-bit bonus arguments;
+// keeping this view on its tutorial-specific global lets HLIL name that overlay
+// without misrepresenting ordinary creature link-index accesses.
+typedef struct tutorial_bonus_carrier_binja_t {
+    unsigned char active;
+    unsigned char _reserved_01[0x23];
+    float health;
+    unsigned char _reserved_28[0x50];
+    creature_bonus_args_t bonus_args;
+    unsigned char _reserved_7c[0x10];
+    int flags;
+    int ai_mode;
+    float anim_phase;
+} tutorial_bonus_carrier_binja_t;
+
 // Binary Ninja presentation view for the same 0x98-byte record. The matching
 // view above keeps aggregate aliases used by recovered source, while this flat
 // view prevents array/interior-pointer analysis from degrading ordinary

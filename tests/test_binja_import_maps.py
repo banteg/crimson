@@ -400,7 +400,10 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["music_entry_table"] == "music_entry_t[128]"
     assert types_by_name["sfx_entry_table"] == "sfx_entry_t[128]"
     assert types_by_name["effect_free_list_head"] == "effect_entry_t *"
-    assert types_by_name["tutorial_hint_bonus_ptr"] == "creature_t *"
+    assert (
+        types_by_name["tutorial_hint_bonus_ptr"]
+        == "tutorial_bonus_carrier_binja_t *"
+    )
     assert types_by_name["ui_element_table_end"] == "ui_element_t *[41]"
 
 
@@ -585,3 +588,41 @@ def test_name_map_preserves_creature_death_pointer_local():
             "type": "creature_t *",
         },
     ]
+
+
+def test_data_map_preserves_tutorial_bonus_carrier_overlay():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    carrier_row = next(
+        row
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+        and row.get("name") == "tutorial_hint_bonus_ptr"
+    )
+
+    assert carrier_row["type"] == "tutorial_bonus_carrier_binja_t *"
+
+
+def test_data_map_uses_flat_plugin_interface_presentation():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "data_map.json"
+    )
+    rows = json.loads(map_path.read_text())["entries"]
+    interface_row = next(
+        row
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+        and row.get("name") == "plugin_interface_ptr"
+    )
+
+    assert interface_row["type"] == "mod_interface_binja_t *"

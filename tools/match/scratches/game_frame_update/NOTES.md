@@ -51,10 +51,11 @@ from `299/0/0` to `314/0/0`.
 
 The shared `mod_parms_t` union now uses a named `mod_parms_fields_t` view, so
 offset `1` is authoritatively identified as `onPause` in the type graph and
-source. Binary Ninja still prints `fields.__offset(0x1)` in this nested-union
-case even after a field-reference override and reanalysis; that is a
-decompiler presentation limitation, not an unresolved layout. The union
-layout and generated code are unchanged.
+source. Binary Ninja's nested-union recovery still rendered that access as
+`fields.__offset(0x1)`, so its data map uses the layout-equivalent
+`mod_interface_binja_t *` presentation view. That exposes
+`parms.onPause` directly while the matching header retains the canonical union;
+the layout and generated code are unchanged.
 
 Both transition fades test the zero-timeline case first, leaving the constant
 `1.0f` result on the native fallthrough and putting the calculated division in
