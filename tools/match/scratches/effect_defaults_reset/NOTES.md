@@ -22,3 +22,8 @@ The otherwise-unreferenced words at `0x004ab268` and `0x004c2b34` are named as
 reserved zeros rather than assigning unsupported counter semantics. The
 two-float block at `0x004ab1b0` is likewise only claimed as the position/default
 block that this function clears.
+
+The shared template's zero velocity is now assigned through the canonical
+`vec2f_t` / `effect_template_t::velocity` aggregate. This removes a
+layout-equivalent cast while preserving the exact 59/59 body and all
+29 references.

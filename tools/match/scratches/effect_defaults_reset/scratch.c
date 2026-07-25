@@ -25,8 +25,8 @@ void effect_defaults_reset(void)
     effect_template.rotation_step = 1.0f;
     effect_template.scale_step = 1.0f;
     {
-        effect_vec2_t zero = {0.0f, 0.0f};
-        *(effect_vec2_t *)&effect_template.velocity = zero;
+        vec2f_t zero = {0.0f, 0.0f};
+        effect_template.velocity = zero;
     }
     effect_defaults_reserved_zero = 0;
 
