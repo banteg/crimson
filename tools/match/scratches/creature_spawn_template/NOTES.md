@@ -419,3 +419,11 @@ Frame/prefix notes:
   identically; later placements and three stat permutations scored lower, so
   the retained spelling is the earliest equivalent and agrees with the
   already recovered `0x12` child ordering.
+- The `0x19` ring root has the same source-level lifetime: its health
+  assignment precedes the typed tint copy even though VC6 interleaves both
+  with the remaining root statistics at `0x00430d31..0x00430d73`. The
+  symmetric recovery raises the score from `83.26%` to `83.55%` and gains
+  another 40 fuzzy-weighted bytes with unchanged instruction, prefix, and
+  reference counts. Copy placements after speed, reward, and size were
+  machine-code equivalent, so the earliest health-before-copy spelling again
+  preserves the strongest common source shape.

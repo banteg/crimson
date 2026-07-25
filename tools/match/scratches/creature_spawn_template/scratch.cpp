@@ -299,9 +299,9 @@ extern "C" creature_t *creature_spawn_template(
 
     if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_5_19) {
         tint.set(0.95f, 0.55f, 0.37f, 1.0f);
-        *(creature_tint_t *)&creature->color = tint;
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->health = 50.0f;
+        *(creature_tint_t *)&creature->color = tint;
         creature->move_speed = 3.8f;
         creature->reward_value = 300.0f;
         creature->size = 55.0f;
