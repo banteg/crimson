@@ -195,7 +195,7 @@ void highscore_load_table(void)
             for (inner = 0; inner < highscore_table_count; inner++) {
                 if ((highscore_table[inner].flags & 1) == 0 ||
                     strcmp(
-                        highscore_table[best].player_name,
+                        highscore_table[index].player_name,
                         highscore_table[inner].player_name) != 0) {
                     continue;
                 }
