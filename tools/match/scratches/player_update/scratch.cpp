@@ -262,8 +262,8 @@ extern "C" void player_update(void)
             movement_input.x = (float)cos(muzzle_heading) * 16.0f;
             movement_input.y = (float)sin(muzzle_heading) * 16.0f;
 
-            random_offset.x = player->aim_x;
-            random_offset.y = player->aim_y;
+            random_offset.x = player->aim.x;
+            random_offset.y = player->aim.y;
             move_delta.x = random_offset.x - player_position->x;
             move_delta.y = random_offset.y - player_position->y;
             float spread_radius = vec2_length(&move_delta) * 0.5f;
@@ -417,14 +417,14 @@ extern "C" void player_update(void)
                 scratch_pos.x =
                     player_aim_screen_x[render_overlay_player_index * 2]
                     - camera_offset_x;
-                player->move_target_x = scratch_pos.x;
-                player->move_target_y = scratch_pos.y;
+                player->move_target.x = scratch_pos.x;
+                player->move_target.y = scratch_pos.y;
             }
 
             bool moving_to_target = false;
-            if (player->move_target_x != -1.0f) {
-                scratch_pos.y = player_position->y - player->move_target_y;
-                scratch_pos.x = player_position->x - player->move_target_x;
+            if (player->move_target.x != -1.0f) {
+                scratch_pos.y = player_position->y - player->move_target.y;
+                scratch_pos.x = player_position->x - player->move_target.x;
                 if ((float)sqrt(
                         scratch_pos.y * scratch_pos.y
                         + scratch_pos.x * scratch_pos.x)
@@ -893,8 +893,8 @@ extern "C" void player_update(void)
             scratch_pos.x =
                 player_aim_screen_x[render_overlay_player_index * 2]
                 - camera_offset_x;
-            player->aim_x = scratch_pos.x;
-            player->aim_y = scratch_pos.y;
+            player->aim.x = scratch_pos.x;
+            player->aim.y = scratch_pos.y;
         } else if (aim_scheme == 4) {
             movement_input.y = grim_interface_ptr->grim_get_config_float(
                 player->input.axis_aim_y);
@@ -912,8 +912,8 @@ extern "C" void player_update(void)
             scratch_pos.y =
                 scalar * movement_input.y + player_position->y;
             scratch_pos.x = move_delta.x + player_position->x;
-            player->aim_x = scratch_pos.x;
-            player->aim_y = scratch_pos.y;
+            player->aim.x = scratch_pos.x;
+            player->aim.y = scratch_pos.y;
         } else if (aim_scheme == 3) {
             movement_input.y =
                 player_aim_screen_x[render_overlay_player_index * 2 + 1]
@@ -930,8 +930,8 @@ extern "C" void player_update(void)
                 scratch_pos.y = move_delta.y * 60.0f + player_position->y;
                 scratch_pos.x =
                     (float)cos(random_offset.x) * 60.0f + player_position->x;
-                player->aim_x = scratch_pos.x;
-                player->aim_y = scratch_pos.y;
+                player->aim.x = scratch_pos.x;
+                player->aim.y = scratch_pos.y;
             }
             if ((float)sqrt(
                     movement_input.x * movement_input.x
@@ -967,8 +967,8 @@ extern "C" void player_update(void)
                 scratch_pos.y = move_delta.y * 60.0f + player_position->y;
                 scratch_pos.x =
                     (float)cos(random_offset.x) * 60.0f + player_position->x;
-                player->aim_x = scratch_pos.x;
-                player->aim_y = scratch_pos.y;
+                player->aim.x = scratch_pos.x;
+                player->aim.y = scratch_pos.y;
             }
         } else {
             if (input_aim_pov_left_active()) {
@@ -984,15 +984,15 @@ extern "C" void player_update(void)
             scratch_pos.y = move_delta.y * 60.0f + player_position->y;
             scratch_pos.x =
                 (float)cos(random_offset.x) * 60.0f + player_position->x;
-            player->aim_x = scratch_pos.x;
-            player->aim_y = scratch_pos.y;
+            player->aim.x = scratch_pos.x;
+            player->aim.y = scratch_pos.y;
         }
     } else {
         int target_index = player->auto_target;
         movement_input.y =
-            creature_pool[target_index].position.y - player->aim_y;
+            creature_pool[target_index].position.y - player->aim.y;
         movement_input.x =
-            creature_pool[target_index].position.x - player->aim_x;
+            creature_pool[target_index].position.x - player->aim.x;
         scalar = (float)sqrt(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
@@ -1000,11 +1000,11 @@ extern "C" void player_update(void)
             vec2_normalize_dispatch(&movement_input, &movement_input);
             angle_step = (scalar * 6.0f) * frame_dt;
             move_delta.x = movement_input.x * angle_step;
-            player->aim_x = player->aim_x + move_delta.x;
-            player->aim_y = player->aim_y + movement_input.y * angle_step;
+            player->aim.x = player->aim.x + move_delta.x;
+            player->aim.y = player->aim.y + movement_input.y * angle_step;
         } else {
-            player->aim_x = creature_pool[target_index].position.x;
-            player->aim_y = creature_pool[target_index].position.y;
+            player->aim.x = creature_pool[target_index].position.x;
+            player->aim.y = creature_pool[target_index].position.y;
         }
         if (scalar < 128.0f && creature_pool[target_index].health > 0.0f) {
             auto_fire = true;
@@ -1013,8 +1013,8 @@ extern "C" void player_update(void)
 
     player->aim_heading =
         (float)atan2(
-            player_position->y - player->aim_y,
-            player_position->x - player->aim_x)
+            player_position->y - player->aim.y,
+            player_position->x - player->aim.x)
         - 1.5707964f;
 
     normal_fire_ready = false;
@@ -1148,8 +1148,8 @@ extern "C" void player_update(void)
             owner_id = -100;
         }
 
-        random_offset.x = player->aim_x;
-        random_offset.y = player->aim_y;
+        random_offset.x = player->aim.x;
+        random_offset.y = player->aim.y;
         move_delta.x = random_offset.x - player_position->x;
         move_delta.y = random_offset.y - player_position->y;
         angle_step = vec2_length(&move_delta) * 0.5f;

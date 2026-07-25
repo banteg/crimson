@@ -47,3 +47,7 @@ instructions from the independent-guard spelling and raises the match from
 91.43% to exact. Combining the conditions instead tail-merges all three cleanup
 paths and regresses the score; no `goto`, volatile data, dead expression, or
 register forcing is retained.
+
+The distance gate now reads player zero through
+`player_state_t::position.x/y`. The record-base aggregate view compiles
+identically, preserving the exact 207/207 instructions and 47/0/0 references.

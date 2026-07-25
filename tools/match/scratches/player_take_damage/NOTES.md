@@ -39,3 +39,8 @@ use player 1 as the perk/alive source under `preserve_bugs`, while corrected
 mode keeps the damaged player's perks. Final Revenge also retains native's
 strict-negative lethal boundary and is suppressed when player 1 was already
 dead before the hit.
+
+The remaining creature/player distance operand now names both canonical
+position aggregates. This complements the already-typed Final Revenge
+arguments and remains byte-for-byte exact at 267/267 instructions and 73/0/0
+references.

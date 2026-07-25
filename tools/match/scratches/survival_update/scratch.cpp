@@ -67,8 +67,8 @@ extern "C" void survival_update(void)
             pos += survival_recent_death_pos[2];
             pos.x *= 0.333333343f;
             pos.y *= 0.333333343f;
-            float dx = player_state_table[0].pos_x - pos.x;
-            float dy = player_state_table[0].pos_y - pos.y;
+            float dx = player_state_table[0].position.x - pos.x;
+            float dy = player_state_table[0].position.y - pos.y;
             if ((float)sqrt(dx * dx + dy * dy) < 16.0f
                 && player_state_table[0].health < 15.0f) {
                 weapon_assign_player(0, WEAPON_ID_BLADE_GUN);

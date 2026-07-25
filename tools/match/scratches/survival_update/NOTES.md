@@ -41,3 +41,8 @@ taking the address of its first float member. Binary Ninja confirms that
 prototype at `0x00407510` and identifies the stack locals as vector aggregates.
 The change preserves the honest 98.21% score, exact 504-instruction count, and
 all 139 references.
+
+The recent-death reward distance now also reads player zero through
+`player_state_t::position`. The aggregate field spelling is byte-neutral at
+98.21%, 504/504 instructions, a 102-instruction prefix, and 139/0/0
+references.

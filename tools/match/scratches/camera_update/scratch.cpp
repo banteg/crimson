@@ -50,19 +50,19 @@ extern "C" void camera_update(void)
     if (config_blob.player_count == 1) {
         camera_offset_x =
             (float)(screen_width / 2)
-            - player_state_table[render_overlay_player_index].pos_x;
+            - player_state_table[render_overlay_player_index].position.x;
         next_camera_y =
             (float)(screen_height / 2)
-            - player_state_table[render_overlay_player_index].pos_y;
+            - player_state_table[render_overlay_player_index].position.y;
         goto apply_shake;
     }
 
     if (player_state_table[0].health <= 0.0f) {
         if (player_state_table[1].health > 0.0f) {
             camera_offset_x =
-                (float)(screen_width / 2) - player_state_table[1].pos_x;
+                (float)(screen_width / 2) - player_state_table[1].position.x;
             next_camera_y =
-                (float)(screen_height / 2) - player_state_table[1].pos_y;
+                (float)(screen_height / 2) - player_state_table[1].position.y;
             goto apply_shake;
         }
     } else if (player_state_table[1].health > 0.0f) {
@@ -71,9 +71,9 @@ extern "C" void camera_update(void)
 
     if (player_state_table[0].health > 0.0f) {
         camera_offset_x =
-            (float)(screen_width / 2) - player_state_table[0].pos_x;
+            (float)(screen_width / 2) - player_state_table[0].position.x;
         next_camera_y =
-            (float)(screen_height / 2) - player_state_table[0].pos_y;
+            (float)(screen_height / 2) - player_state_table[0].position.y;
         goto apply_shake;
     }
 
@@ -85,13 +85,13 @@ focus_both_players:
     if (player_state_table[0].health > 0.0f) {
         camera_offset_x =
             (float)(screen_width / 2)
-            - (player_state_table[0].pos_x
-               - (player_state_table[0].pos_x - player_state_table[1].pos_x)
+            - (player_state_table[0].position.x
+               - (player_state_table[0].position.x - player_state_table[1].position.x)
                    * 0.5f);
         next_camera_y =
             (float)(screen_height / 2)
-            - (player_state_table[0].pos_y
-               - (player_state_table[0].pos_y - player_state_table[1].pos_y)
+            - (player_state_table[0].position.y
+               - (player_state_table[0].position.y - player_state_table[1].position.y)
                    * 0.5f);
         goto apply_shake;
     }

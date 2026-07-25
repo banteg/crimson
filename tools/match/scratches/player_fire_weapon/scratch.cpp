@@ -239,20 +239,20 @@ extern "C" void player_fire_weapon(
 
     float half_size =
         player_state_table[render_overlay_player_index].size * 0.5f;
-    if (player_state_table[render_overlay_player_index].pos_x < half_size) {
-        player_state_table[render_overlay_player_index].pos_x = half_size;
+    if (player_state_table[render_overlay_player_index].position.x < half_size) {
+        player_state_table[render_overlay_player_index].position.x = half_size;
     }
     if ((float)terrain_texture_width - half_size
-        < player_state_table[render_overlay_player_index].pos_x) {
-        player_state_table[render_overlay_player_index].pos_x =
+        < player_state_table[render_overlay_player_index].position.x) {
+        player_state_table[render_overlay_player_index].position.x =
             (float)terrain_texture_width - half_size;
     }
-    if (player_state_table[render_overlay_player_index].pos_y < half_size) {
-        player_state_table[render_overlay_player_index].pos_y = half_size;
+    if (player_state_table[render_overlay_player_index].position.y < half_size) {
+        player_state_table[render_overlay_player_index].position.y = half_size;
     }
     if ((float)terrain_texture_height - half_size
-        < player_state_table[render_overlay_player_index].pos_y) {
-        player_state_table[render_overlay_player_index].pos_y =
+        < player_state_table[render_overlay_player_index].position.y) {
+        player_state_table[render_overlay_player_index].position.y =
             (float)terrain_texture_height - half_size;
     }
     if (player_state_table[render_overlay_player_index].muzzle_flash_alpha

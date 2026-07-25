@@ -144,8 +144,8 @@ extern "C" void creature_update_all(void)
                     int current_player_index = (int)current_player;
                     vec2f_t *position =
                         &creature_pool[creature_index].position;
-                    float dx = player_state_table[current_player_index].pos_x - position->x;
-                    float dy = player_state_table[current_player_index].pos_y - position->y;
+                    float dx = player_state_table[current_player_index].position.x - position->x;
+                    float dy = player_state_table[current_player_index].position.y - position->y;
                     distance = (float)sqrt(dx * dx + dy * dy);
 
                     if (creature_update_tick % 70 != 0) {
@@ -163,17 +163,17 @@ extern "C" void creature_update_all(void)
                                 }
                             }
                         } else {
-                            dx = player_state_table[0].pos_x - position->x;
-                            dy = player_state_table[0].pos_y - position->y;
+                            dx = player_state_table[0].position.x - position->x;
+                            dy = player_state_table[0].position.y - position->y;
                             alternate_distance = (float)sqrt(dx * dx + dy * dy);
                         }
 
                         current_player =
                             creature_pool[creature_index].target_player;
                         current_player_index = (int)current_player;
-                        dx = player_state_table[0].pos_x
+                        dx = player_state_table[0].position.x
                             - creature_pool[player_state_table[current_player_index].auto_target].pos_x;
-                        dy = player_state_table[0].pos_y
+                        dy = player_state_table[0].position.y
                             - creature_pool[player_state_table[current_player_index].auto_target].pos_y;
                         if (alternate_distance < (float)sqrt(dx * dx + dy * dy)) {
                             player_state_table[current_player_index].auto_target = creature_index;
@@ -228,41 +228,41 @@ extern "C" void creature_update_all(void)
                                 creature_pool[creature_index].target_player;
                             if (distance > 800.0f) {
                                 creature_pool[creature_index].target_x =
-                                    player_state_table[current_player_index].pos_x;
+                                    player_state_table[current_player_index].position.x;
                                 creature_pool[creature_index].target_y =
-                                    player_state_table[current_player_index].pos_y;
+                                    player_state_table[current_player_index].position.y;
                             } else {
                                 creature_pool[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.85f
-                                    + player_state_table[current_player_index].pos_x;
+                                    + player_state_table[current_player_index].position.x;
                                 creature_pool[creature_index].target_y =
                                     (float)sin(phase_angle) * distance * 0.85f
-                                    + player_state_table[current_player_index].pos_y;
+                                    + player_state_table[current_player_index].position.y;
                             }
                         } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_WIDE) {
                             current_player_index =
                                 creature_pool[creature_index].target_player;
                             creature_pool[creature_index].target_x =
                                 (float)cos(phase_angle) * distance * 0.9f
-                                + player_state_table[current_player_index].pos_x;
+                                + player_state_table[current_player_index].position.x;
                             creature_pool[creature_index].target_y =
                                 (float)sin(phase_angle) * distance * 0.9f
-                                + player_state_table[current_player_index].pos_y;
+                                + player_state_table[current_player_index].position.y;
                         } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_TIGHT) {
                             current_player_index =
                                 creature_pool[creature_index].target_player;
                             if (distance > 800.0f) {
                                 creature_pool[creature_index].target_x =
-                                    player_state_table[current_player_index].pos_x;
+                                    player_state_table[current_player_index].position.x;
                                 creature_pool[creature_index].target_y =
-                                    player_state_table[current_player_index].pos_y;
+                                    player_state_table[current_player_index].position.y;
                             } else {
                                 creature_pool[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.55f
-                                    + player_state_table[current_player_index].pos_x;
+                                    + player_state_table[current_player_index].position.x;
                                 creature_pool[creature_index].target_y =
                                     (float)sin(phase_angle) * distance * 0.55f
-                                    + player_state_table[current_player_index].pos_y;
+                                    + player_state_table[current_player_index].position.y;
                             }
                         } else if (ai_mode == CREATURE_AI_FOLLOW_LINK) {
                             linked_index = creature_pool[creature_index].link_index;
@@ -314,16 +314,16 @@ extern "C" void creature_update_all(void)
                                     creature_pool[creature_index].target_player;
                                 if (distance > 800.0f) {
                                     creature_pool[creature_index].target_x =
-                                        player_state_table[current_player_index].pos_x;
+                                        player_state_table[current_player_index].position.x;
                                     creature_pool[creature_index].target_y =
-                                        player_state_table[current_player_index].pos_y;
+                                        player_state_table[current_player_index].position.y;
                                 } else {
                                     creature_pool[creature_index].target_x =
                                         (float)cos(phase_angle) * distance * 0.85f
-                                        + player_state_table[current_player_index].pos_x;
+                                        + player_state_table[current_player_index].position.x;
                                     creature_pool[creature_index].target_y =
                                         (float)sin(phase_angle) * distance * 0.85f
-                                        + player_state_table[current_player_index].pos_y;
+                                        + player_state_table[current_player_index].position.y;
                                 }
                             } else {
                                 creature_pool[creature_index].ai_mode =
@@ -388,9 +388,9 @@ extern "C" void creature_update_all(void)
                             current_player_index =
                                 creature_pool[creature_index].target_player;
                             creature_pool[creature_index].target_x =
-                                player_state_table[current_player_index].pos_x;
+                                player_state_table[current_player_index].position.x;
                             creature_pool[creature_index].target_y =
-                                player_state_table[current_player_index].pos_y;
+                                player_state_table[current_player_index].position.y;
                         }
 
                         float desired_heading = (float)atan2(
@@ -528,8 +528,8 @@ extern "C" void creature_update_all(void)
                         signed char *target_player =
                             &creature_pool[creature_index].target_player;
                         current_player_index = (int)*target_player;
-                        dx = position->x - player_state_table[current_player_index].pos_x;
-                        dy = position->y - player_state_table[current_player_index].pos_y;
+                        dx = position->x - player_state_table[current_player_index].position.x;
+                        dy = position->y - player_state_table[current_player_index].position.y;
                         distance = (float)sqrt(dx * dx + dy * dy);
 
                         if (distance < 100.0f
@@ -645,15 +645,15 @@ extern "C" void creature_update_all(void)
                                         current_player_index,
                                         creature_pool[creature_index].contact_damage);
                                     creature_vec2_t contact_delta(
-                                        player_state_table[current_player_index].pos_x - position->x,
-                                        player_state_table[current_player_index].pos_y - position->y);
+                                        player_state_table[current_player_index].position.x - position->x,
+                                        player_state_table[current_player_index].position.y - position->y);
                                     vec2_normalize_dispatch(
                                         (vec2f_t *)&contact_delta,
                                         (vec2f_t *)&contact_delta);
                                     creature_vec2_t impact(
-                                        player_state_table[current_player_index].pos_x
+                                        player_state_table[current_player_index].position.x
                                             + contact_delta.x * 3.0f,
-                                        player_state_table[current_player_index].pos_y
+                                        player_state_table[current_player_index].position.y
                                             + contact_delta.y * 3.0f);
                                     fx_queue_add_random((vec2f_t *)&impact);
                                     *attack_cooldown += 1.0f;

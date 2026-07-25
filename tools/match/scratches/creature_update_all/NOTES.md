@@ -204,3 +204,9 @@ velocity, tint, targeting, damage, spawn, death, perk, and render consumers can
 now pass or copy named aggregates without first-float pointer casts. The live
 Binary Ninja layout carries the same five types, and the full match/status pass
 is required to keep every affected exact or WIP consumer honest.
+
+Every direct player-position access in the sweep now also uses
+`player_state_t::position`. This completes the aggregate boundary already
+established for the active creature cursor and alternate-player value without
+mislabeling either interior pointer. A whole-function shadow compile is
+byte-neutral at 1,290/1,338 instructions, 49.09%, and `207/0/4` references.

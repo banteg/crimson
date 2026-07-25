@@ -55,3 +55,8 @@ emits the same 378 instructions at 86.7725%, with all 141 references still
 resolved. An explicit byte-local experiment did not move the second readiness
 initialization to the native location, so the semantically appropriate `bool`
 locals remain.
+
+The final terrain clamp now addresses the selected player's canonical
+`position.x/y` fields directly. This removes the last scalar position aliases
+from the function without changing its 86.77%, 378/378-instruction, 141/0/0
+result.

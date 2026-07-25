@@ -39,3 +39,8 @@ and reflex interval. Their presentation camera code intentionally generalizes
 the fixed 1-or-2-player native focus and configured-resolution clamp to the
 current player list and runtime viewport; this scratch records the exact native
 edge behavior for future parity work without changing that presentation policy.
+
+All focus calculations now name the proven `player_state_t::position`
+aggregate instead of its scalar compatibility aliases. This is byte-neutral:
+the camera coordinator remains exact at 249/249 instructions and 76/0/0
+references.

@@ -489,3 +489,9 @@ remains available only where an evidenced interior pointer is needed to
 reproduce native induction. This removes matching-layout plumbing from the
 weapon cases without changing the 4,019/4,206 instruction count, 54.81% score,
 or `736/0/11` reference audit.
+
+The remaining direct aim and point-control target fields now use the canonical
+`player_state_t::aim` and `player_state_t::move_target` aggregates. VC6 emits
+the same 4,019/4,206 instructions, 54.86% score, seven-instruction prefix, and
+`736/0/11` reference audit, so the stronger types do not steer the unresolved
+whole-function allocation.
