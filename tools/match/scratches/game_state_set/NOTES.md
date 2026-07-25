@@ -73,3 +73,10 @@ renders both branches as named `overlay_vertices[0..3].u/v` writes, including
 the shared fourth-vertex phi, instead of falling back to
 `void * + 0x138..0x190`. This is presentation-only type recovery; it does not
 alter the matching scratch or the **85.35%**, `166/399`, `161/1/0` result.
+
+The Play Game and Controls entry arms now address slot 13 through the
+canonical `ui_element_t::pos` aggregate for their initial vector copy and
+subsequent x/y adjustments. The existing local vector-class cast remains only
+at the class-assignment boundary. This source cleanup is byte-neutral at
+85.35%, 393/399 instructions, a 166-instruction prefix, and `161/1/0`
+references.

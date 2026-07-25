@@ -229,13 +229,13 @@ extern "C" void game_state_set(game_state_id_t state_id)
         }
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
-        *(game_state_vec2_t *)&ui_element_slot_13.pos_x =
+        *(game_state_vec2_t *)&ui_element_slot_13.pos =
             game_state_vec2_t(-180.0f, 135.0f);
         ui_element_slot_31.active = 1;
-        ui_element_slot_13.pos_x = -58.0f;
+        ui_element_slot_13.pos.x = -58.0f;
         ui_element_slot_32_layout_c.active = 1;
         ui_screen_phase = 0;
-        ui_element_slot_13.pos_y +=
+        ui_element_slot_13.pos.y +=
             screen_scale * 150.0f + 10.0f - 150.0f;
     } else if (state_id == GAME_STATE_STATISTICS_MENU) {
         highscore_return_latch = 0;
@@ -250,13 +250,13 @@ extern "C" void game_state_set(game_state_id_t state_id)
     } else if (state_id == GAME_STATE_CONTROLS_MENU) {
         float screen_scale =
             (float)config_blob.screen_width * 0.00156250002f;
-        *(game_state_vec2_t *)&ui_element_slot_13.pos_x =
+        *(game_state_vec2_t *)&ui_element_slot_13.pos =
             game_state_vec2_t(-180.0f, 139.0f);
         ui_sign_crimson.active = 1;
         ui_element_slot_14.active = 1;
         ui_element_slot_18_layout_b.active = 1;
         ui_element_slot_40.active = 1;
-        ui_element_slot_13.pos_y =
+        ui_element_slot_13.pos.y =
             screen_scale * 150.0f - 150.0f + 139.0f;
     } else if (state_id == GAME_STATE_HIGHSCORES) {
         ui_sign_crimson.active = 1;
