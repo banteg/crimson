@@ -8,11 +8,13 @@ color clamping: experience-tier type selection, randomized base size/heading,
 type-specific speed and health, experience-driven tint ramps, three rare color
 variants, two rarer boss variants, and final health/reward/color normalization.
 
-The exact VC6 shape revealed two aggregate members that the current flat ABI
-header does not preserve: a two-float velocity and a four-float RGBA tint. The
-temporary constructors and final tint pointer are source-level object
-operations, not scheduling constraints. Ordinary signed `%` expressions also
-recover the native negative-remainder correction for the two-way type roll.
+The exact VC6 shape reveals two aggregate member operations: a two-float
+velocity and a four-float RGBA tint. The scratch now uses the canonical
+`creature_t` directly, including its `velocity` and `color` overlays, instead
+of maintaining a second padded 0x98-byte creature layout. The temporary
+constructors and final color pointer are source-level object operations, not
+scheduling constraints. Ordinary signed `%` expressions also recover the
+native negative-remainder correction for the two-way type roll.
 
 Its input is likewise a read-only `vec2f_t`. Source and the saved Binary Ninja
 prototype now render `pos->x`/`pos->y`; the aggregate recovery preserves all

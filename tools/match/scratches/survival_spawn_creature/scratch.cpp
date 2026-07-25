@@ -18,52 +18,9 @@ struct survival_color_t {
         : r(red), g(green), b(blue), a(alpha) {}
 };
 
-struct survival_creature_t {
-    unsigned char active;
-    unsigned char _pad0[3];
-    int phase_seed;
-    unsigned char state_flag;
-    unsigned char collision_flag;
-    unsigned char _pad1[2];
-    float collision_timer;
-    float lifecycle_stage;
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
-    float health;
-    float max_health;
-    float heading;
-    float target_heading;
-    float size;
-    float hit_flash_timer;
-    survival_color_t tint;
-    unsigned char force_target;
-    unsigned char _pad_force_target[3];
-    float target_x;
-    float target_y;
-    float contact_damage;
-    float move_speed;
-    float attack_cooldown;
-    float reward_value;
-    unsigned char _pad2[4];
-    int type_id;
-    int target_player;
-    unsigned char _pad3[4];
-    int link_index;
-    float target_offset_x;
-    float target_offset_y;
-    float orbit_angle;
-    unsigned int orbit_radius;
-    int flags;
-    int ai_mode;
-    float anim_phase;
-};
-
 extern "C" void survival_spawn_creature(const vec2f_t *pos)
 {
-    survival_creature_t *creature =
-        (survival_creature_t *)&creature_pool[creature_alloc_slot()];
+    creature_t *creature = &creature_pool[creature_alloc_slot()];
 
     creature->pos_x = pos->x;
     creature->pos_y = pos->y;
@@ -116,7 +73,7 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     creature->force_target = 0;
     creature->lifecycle_stage = 16.0f;
     creature->size = (float)(size_roll % 20 + 44);
-    *(survival_vec2_t *)&creature->vel_x = survival_vec2_t(0.0f, 0.0f);
+    *(survival_vec2_t *)&creature->velocity = survival_vec2_t(0.0f, 0.0f);
     creature->heading = (float)(crt_rand() % 314) * 0.01f;
     creature->move_speed =
         (float)(player_state_table[0].experience / 4000) * 0.045f + 0.9f;
@@ -146,50 +103,50 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     creature->reward_value = 0.0f;
 
     if (player_state_table[0].experience < 50000) {
-        creature->tint.r =
+        creature->color.r =
             1.0f
             - 1.0f / ((float)(player_state_table[0].experience / 1000) + 10.0f);
-        creature->tint.g =
+        creature->color.g =
             (float)(crt_rand() % 10) * 0.01f
             + 0.9f
             - 1.0f / ((float)(player_state_table[0].experience / 10000) + 10.0f);
-        creature->tint.b = (float)(crt_rand() % 10) * 0.01f + 0.7f;
+        creature->color.b = (float)(crt_rand() % 10) * 0.01f + 0.7f;
     } else {
         if (player_state_table[0].experience < 100000) {
-            creature->tint.r =
+            creature->color.r =
                 0.9f
                 - 1.0f
                     / ((float)(player_state_table[0].experience / 1000) + 10.0f);
-            creature->tint.g =
+            creature->color.g =
                 (float)(crt_rand() % 10) * 0.01f
                 + 0.8f
                 - 1.0f
                     / ((float)(player_state_table[0].experience / 10000) + 10.0f);
-            creature->tint.b =
+            creature->color.b =
                 (float)(crt_rand() % 10) * 0.01f
                 + (float)(player_state_table[0].experience - 50000) * 0.000006f
                 + 0.7f;
         } else {
-            creature->tint.r =
+            creature->color.r =
                 1.0f
                 - 1.0f
                     / ((float)(player_state_table[0].experience / 1000) + 10.0f);
-            creature->tint.g =
+            creature->color.g =
                 (float)(crt_rand() % 10) * 0.01f
                 + 0.9f
                 - 1.0f
                     / ((float)(player_state_table[0].experience / 10000) + 10.0f);
-            creature->tint.b =
+            creature->color.b =
                 (float)(crt_rand() % 10) * 0.01f
                 + 1.0f
                 - (float)(player_state_table[0].experience - 100000) * 0.000003f;
-            if (creature->tint.b < 0.5f) {
-                creature->tint.b = 0.5f;
+            if (creature->color.b < 0.5f) {
+                creature->color.b = 0.5f;
             }
         }
     }
 
-    creature->tint.a = 1.0f;
+    creature->color.a = 1.0f;
     creature->contact_damage = creature->size * 0.0952381f;
     if (creature->reward_value == 0.0f) {
         creature->reward_value =
@@ -200,27 +157,32 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     }
 
     if (crt_rand() % 180 < 2) {
-        creature->tint = survival_color_t(0.9f, 0.4f, 0.4f, 1.0f);
+        *(survival_color_t *)&creature->color =
+            survival_color_t(0.9f, 0.4f, 0.4f, 1.0f);
         creature->health = 65.0f;
         creature->reward_value = 320.0f;
     } else if (crt_rand() % 240 < 2) {
-        creature->tint = survival_color_t(0.4f, 0.9f, 0.4f, 1.0f);
+        *(survival_color_t *)&creature->color =
+            survival_color_t(0.4f, 0.9f, 0.4f, 1.0f);
         creature->health = 85.0f;
         creature->reward_value = 420.0f;
     } else if (crt_rand() % 360 < 2) {
-        creature->tint = survival_color_t(0.4f, 0.4f, 0.9f, 1.0f);
+        *(survival_color_t *)&creature->color =
+            survival_color_t(0.4f, 0.4f, 0.9f, 1.0f);
         creature->health = 125.0f;
         creature->reward_value = 520.0f;
     }
 
     if (crt_rand() % 1320 < 4) {
         creature->health += 230.0f;
-        creature->tint = survival_color_t(0.84f, 0.24f, 0.89f, 1.0f);
+        *(survival_color_t *)&creature->color =
+            survival_color_t(0.84f, 0.24f, 0.89f, 1.0f);
         creature->size = 80.0f;
         creature->reward_value = 600.0f;
     } else if (crt_rand() % 1620 < 4) {
         creature->health += 2230.0f;
-        creature->tint = survival_color_t(0.94f, 0.84f, 0.29f, 1.0f);
+        *(survival_color_t *)&creature->color =
+            survival_color_t(0.94f, 0.84f, 0.29f, 1.0f);
         creature->size = 85.0f;
         creature->reward_value = 900.0f;
     }
@@ -229,7 +191,7 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     creature->max_health = creature->health;
     creature->reward_value *= 0.8f;
 
-    survival_color_t *color = &creature->tint;
+    effect_color_t *color = &creature->color;
     if (color->r < 0.0f) {
         color->r = 0.0f;
     } else if (color->r > 1.0f) {

@@ -34,3 +34,12 @@ provides the named player `health` field instead of the former `aim[-11]`
 alias, while aim and bonus positions use named vector components. A shadow
 probe verified byte-for-byte identical candidate output and unchanged
 reference agreement.
+
+The three particle render passes now use the canonical `particle_t` directly
+instead of a scratch-local 0x38-byte record with two padding regions. Static
+analysis shows that particle styles reinterpret the four floats at
+`+0x14..+0x20` as either scale/age or RGBA, the float at `+0x24` as
+intensity/progress, and `+0x2c` as spin/rotation. Those overlays now live in
+the shared type and are authoritative in the Binary Ninja importer. The
+refactor is byte-neutral here at 1,091 instructions, 85.64%, and
+`212/0/12`; both particle constructors remain exact at 67/67.

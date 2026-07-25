@@ -16,29 +16,6 @@ struct bonus_render_color_t {
         : r(red), g(green), b(blue), a(alpha) {}
 };
 
-struct bonus_render_particle_t {
-    unsigned char active;
-    unsigned char render_flag;
-    unsigned char _pad0[2];
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
-    union {
-        float color_r;
-        float size_scale;
-    } value_14;
-    float color_g;
-    float color_b;
-    float color_a;
-    float progress;
-    float angle;
-    float rotation;
-    unsigned char style_id;
-    unsigned char _pad1[3];
-    int target_id;
-};
-
 extern "C" {
 extern float ui_transition_alpha;
 extern game_state_id_t game_state_prev;
@@ -325,8 +302,7 @@ telekinetic_threshold:
         }
     }
 
-    bonus_render_particle_t *particle =
-        (bonus_render_particle_t *)particle_pool;
+    particle_t *particle = particle_pool;
     if (config_fx_detail_flag1) {
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 2u);
@@ -340,7 +316,7 @@ telekinetic_threshold:
         for (int particle_index = 0;
              particle_index < 0x80;
              ++particle_index) {
-            bonus_render_particle_t *glow =
+            particle_t *glow =
                 &particle[particle_index];
             if (glow->active
                 && particle_index % 2 == 0
@@ -374,12 +350,12 @@ telekinetic_threshold:
     for (int sprite_index = 0;
          sprite_index < 0x80;
          ++sprite_index) {
-        bonus_render_particle_t *sprite =
-            &particle[sprite_index];
+            particle_t *sprite =
+                &particle[sprite_index];
         if (sprite->active && sprite->style_id != 8) {
             grim_interface_ptr->grim_set_rotation(sprite->rotation);
             grim_interface_ptr->grim_set_color(
-                sprite->value_14.color_r,
+                sprite->color_r,
                 sprite->color_g,
                 sprite->color_b,
                 sprite->color_a);
@@ -408,8 +384,8 @@ telekinetic_threshold:
     for (int beam_index = 0;
          beam_index < 0x80;
          ++beam_index) {
-        bonus_render_particle_t *beam =
-            &particle[beam_index];
+            particle_t *beam =
+                &particle[beam_index];
         if (beam->active && beam->style_id == 8) {
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, beam->color_a);
@@ -417,10 +393,10 @@ telekinetic_threshold:
             float half_width = 15.0f - phase_size;
             float half_height =
                 (phase_size + 15.0f)
-                * beam->value_14.size_scale
+                * beam->scale_x
                 * 7.0f;
             half_width =
-                half_width * beam->value_14.size_scale * 7.0f;
+                half_width * beam->scale_x * 7.0f;
             float height = half_height + half_height;
             float width = half_width + half_width;
             grim_interface_ptr->grim_draw_quad(

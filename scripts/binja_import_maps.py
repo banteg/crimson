@@ -36,6 +36,13 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # pos.tail.vy.*. Prefer the equivalent flat Binary Ninja view.
         "projectile_t",
         "projectile_pool_t",
+        # Particle render styles reinterpret the four-float scale block as
+        # RGBA, intensity as progress, and spin as rotation.
+        "particle_t",
+        # The database's older creature layout typed phase_seed as float even
+        # though allocation stores masked rand() integers and AI converts the
+        # member to float explicitly before using it as an orbit phase.
+        "creature_t",
         # Use the equivalent flat parameters view so onPause and request_exit
         # survive anonymous-union lowering as named fields.
         "mod_interface_t",

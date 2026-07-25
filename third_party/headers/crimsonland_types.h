@@ -545,13 +545,30 @@ typedef struct particle_t {
         };
         vec2f_t velocity;
     };
-    float scale_x;
-    float scale_y;
-    float scale_z;
-    float age;
-    float intensity;
+    union {
+        struct {
+            float scale_x;
+            float scale_y;
+            float scale_z;
+            float age;
+        };
+        struct {
+            float color_r;
+            float color_g;
+            float color_b;
+            float color_a;
+        };
+        effect_color_t color;
+    };
+    union {
+        float intensity;
+        float progress;
+    };
     float angle;
-    float spin;
+    union {
+        float spin;
+        float rotation;
+    };
     unsigned char style_id;
     unsigned char _pad1[3];
     int target_id;
