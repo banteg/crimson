@@ -4531,9 +4531,9 @@
       "aliases": [
         "ui_element_table"
       ],
-      "comment": "UI element pointer table slot 0 (logo sign root); also the low/end anchor used by ui_elements_update_and_render.",
+      "comment": "41-entry UI element pointer table; slot 0 is the logo sign root and low/end anchor used by ui_elements_update_and_render.",
       "name": "ui_element_table_end",
-      "type": "ui_element_t *",
+      "type": "ui_element_t *[41]",
       "program": "crimsonland.exe"
     },
     {

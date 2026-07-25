@@ -105,6 +105,16 @@ _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
     "bonus_hud_slot_table_t": ("bonus_hud_slot_binja_t", 0x10),
 }
 
+# Pointer arrays are not aggregate records for general importer overlap
+# purposes: data maps may intentionally name and type their individual slots.
+# This recovered table is the exception. Preserve its full array data variable
+# while still applying the 41 interior symbols and comments.
+_FORCED_DATA_AGGREGATES = frozenset(
+    {
+        "ui_element_table_end",
+    },
+)
+
 # These builders advance an entry cursor through a loop. Keeping the canonical
 # element-pointer signature gives Binary Ninja the correct 0x18 pointer stride;
 # the table wrapper is reserved for builders dominated by fixed-index stores.
@@ -716,7 +726,12 @@ def _strip_param_names(signature: str) -> str:
 
 def _resolve_data_type(bv, type_text: str):
     _seed_common_types(bv)
-    return _parse_type_string(bv, _rewrite_type_tokens(type_text, bv))
+    rewritten = _rewrite_type_tokens(type_text, bv)
+    if rewritten.isidentifier():
+        named_type = _get_type_by_name(bv, rewritten)
+        if named_type is not None:
+            return named_type
+    return _parse_type_string(bv, rewritten)
 
 
 def _deref_type(bv, type_obj):
@@ -1013,7 +1028,10 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                     changed = True
                 except Exception as exc:
                     raise RuntimeError(f"type apply failed for {_entry_label(row, addr)} ({type_text})") from exc
-                if data_type.width > 1 and _is_aggregate_type(bv, data_type):
+                if data_type.width > 1 and (
+                    name in _FORCED_DATA_AGGREGATES
+                    or _is_aggregate_type(bv, data_type)
+                ):
                     aggregate_ranges.append((addr, addr + data_type.width, _entry_label(row, addr)))
             elif not changed:
                 stats["skipped"] += 1

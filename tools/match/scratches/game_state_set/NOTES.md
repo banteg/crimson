@@ -58,3 +58,11 @@ remaining `+0x138`, `+0x154`, `+0x170`, and `+0x18c` renderings are decompiler
 artifacts, not unrecovered fields. Temporarily wrapping the object in another
 aggregate does not preserve those register types. The matching result remains
 unchanged.
+
+The global UI graph is now imported as its evidenced
+`ui_element_t *[41]` extent instead of 41 unrelated pointer data variables.
+This recovers indexed `ui_element_table_end[index]` accesses in the dispatcher
+and preserves every interior slot symbol/comment. The remaining transient
+atlas destinations still render as `void * + offset` only after Binary Ninja
+copies a typed element pointer into short-lived SSA registers; the owning
+object and all four destination fields are typed above.

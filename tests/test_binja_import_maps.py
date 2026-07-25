@@ -384,6 +384,31 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["sfx_entry_table"] == "sfx_entry_t[128]"
     assert types_by_name["effect_free_list_head"] == "effect_entry_t *"
     assert types_by_name["tutorial_hint_bonus_ptr"] == "creature_t *"
+    assert types_by_name["ui_element_table_end"] == "ui_element_t *[41]"
+
+
+def test_importer_preserves_ui_element_pointer_table_aggregate():
+    importer = _load_importer()
+
+    assert importer._FORCED_DATA_AGGREGATES == frozenset(
+        {"ui_element_table_end"},
+    )
+
+
+def test_resolve_data_type_accepts_array_typedef(monkeypatch):
+    importer = _load_importer()
+    array_type = object()
+    view = SimpleNamespace(
+        get_type_by_name=lambda name: (
+            array_type if str(name) == "bonus_hud_slot_table_t" else None
+        ),
+    )
+    monkeypatch.setattr(importer, "_seed_common_types", lambda _bv: None)
+
+    assert importer._resolve_data_type(
+        view,
+        "bonus_hud_slot_table_t",
+    ) is array_type
 
 
 def test_name_map_preserves_recovered_core_pointer_signatures():

@@ -46,3 +46,10 @@ constructor therefore no longer carries a second private structure, casts the
 global element table, or casts elements back to the canonical type at helper
 boundaries. This type-only recovery is matcher-neutral at the score and audit
 above.
+
+The data map now gives the pointer graph its full `ui_element_t *[41]` extent
+while retaining the 41 interior slot names and comments. Binary Ninja therefore
+shows the constructor's clear as one 0xa4-byte table operation and its
+population as indexed array stores rather than pointer arithmetic relative to
+slot zero. This is a presentation-only type recovery and does not change the
+matching result.

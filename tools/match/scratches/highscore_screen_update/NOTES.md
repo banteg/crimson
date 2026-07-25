@@ -49,3 +49,9 @@ references, and raises the whole-function score from `75.85%` to `76.92%`.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, unreachable shaping, or platform substitutions are used.
+
+The score-line builder now carries a typed
+`char (*)[164]` cursor through the ten-row backing array. This expresses the
+native `+0xa4` row stride directly instead of byte arithmetic, keeps the
+evidenced `char *` item table separate from its storage, and is matcher-neutral
+at **77.21%**, the exact `0x84`-byte frame, and reference audit `581/0/8`.

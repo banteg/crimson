@@ -349,13 +349,13 @@ extern "C" void highscore_screen_update(void)
     int selected_score = -1;
     int score_count = 0;
     char **score_line_item = score_line_items;
-    char *score_line_buffer = score_line_buffers[0];
+    char (*score_line_buffer)[164] = score_line_buffers;
     highscore_record_t *record = highscore_table;
     position.y += 16.0f;
     position.y += 1.0f;
     do {
-        *score_line_item = score_line_buffer;
-        memset(score_line_buffer, 0, sizeof(score_line_buffers[0]));
+        *score_line_item = *score_line_buffer;
+        memset(*score_line_buffer, 0, sizeof(*score_line_buffer));
         if (record->survival_elapsed_ms == 0) {
             break;
         }
@@ -363,15 +363,15 @@ extern "C" void highscore_screen_update(void)
         int prefix_length = 0;
         if ((record->flags & 5) != 0
             && ((record->flags & 2) == 0 || (record->flags & 4) != 0)) {
-            score_line_buffer[0] = '\\';
-            score_line_buffer[1] = 'g';
+            (*score_line_buffer)[0] = '\\';
+            (*score_line_buffer)[1] = 'g';
             prefix_length = 2;
         }
 
         switch (config_blob.game_mode) {
         case GAME_MODE_RUSH:
             crt_sprintf(
-                score_line_buffer + prefix_length,
+                *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 (int)record->survival_elapsed_ms / 1000,
@@ -379,7 +379,7 @@ extern "C" void highscore_screen_update(void)
             break;
         case GAME_MODE_QUEST:
             crt_sprintf(
-                score_line_buffer + prefix_length,
+                *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 (int)record->survival_elapsed_ms / 1000,
@@ -387,7 +387,7 @@ extern "C" void highscore_screen_update(void)
             break;
         default:
             crt_sprintf(
-                score_line_buffer + prefix_length,
+                *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 record->score_xp,
@@ -397,9 +397,9 @@ extern "C" void highscore_screen_update(void)
         ++record;
         ++score_line_item;
         ++score_count;
-        score_line_buffer += sizeof(score_line_buffers[0]);
+        ++score_line_buffer;
         ++score_number;
-    } while (score_line_buffer < score_line_buffers[10]);
+    } while (score_line_buffer < score_line_buffers + 10);
 
     position.x += 16.0f;
     static highscore_scrollbar_t score_scrollbar;
