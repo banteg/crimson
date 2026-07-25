@@ -11,3 +11,8 @@ The exact VC6 source order is style id, active, intensity, the scale/age value,
 spin, render flag, and target id. It produces the native induction cursor at
 `particle_pool + 0x24` and confirms that style id is a byte at offset `0x30`,
 not a 32-bit field; the shared native header now records that layout.
+
+The initializer now walks the canonical `particle_t` pool directly instead of
+maintaining a private padded 0x38-byte record. Its local `particle_scale_t`
+exists only for the four-float constructor store into the recovered scale/age
+overlay. The result remains exact at 44/44 instructions and 3/0/0 references.
