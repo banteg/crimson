@@ -2558,6 +2558,18 @@
     "address": "0x00426220",
     "name": "creature_update_all",
     "signature": "void creature_update_all(void)",
+    "local_types": [
+      {
+        "address": "0x00426403",
+        "name": "creature_position",
+        "type": "vec2f_t *"
+      },
+      {
+        "address": "0x0042646e",
+        "name": "alternate_player_position",
+        "type": "vec2f_t *"
+      }
+    ],
     "comment": "primary creature update loop: AI, movement, attacks, and animation phase"
   },
   {

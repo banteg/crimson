@@ -763,6 +763,18 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
             "type": "vec2f_t *",
         },
     ]
+    assert rows_by_name["creature_update_all"]["local_types"] == [
+        {
+            "address": "0x00426403",
+            "name": "creature_position",
+            "type": "vec2f_t *",
+        },
+        {
+            "address": "0x0042646e",
+            "name": "alternate_player_position",
+            "type": "vec2f_t *",
+        },
+    ]
     assert rows_by_name["terrain_generate"]["local_types"] == [
         {
             "address": "0x00417d11",

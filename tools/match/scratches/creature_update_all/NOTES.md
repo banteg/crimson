@@ -130,7 +130,10 @@ final body culling.
   cursor as `vec2f_t *pos`. The full source rewrite is matcher-neutral at
   1,290 instructions, `49.09%`, and references `207/0/4`.
   The alternate-player branch now takes `player_state_t::position` directly,
-  removing its last cast from `pos_x` with identical codegen.
+  removing its last cast from `pos_x` with identical codegen. The native
+  `lea edi, creature_pool[i].position` and branch-local
+  `player_state_table[1-current].position` definitions are persisted as
+  instruction-scoped `vec2f_t *` views in the replay map.
 - The Energizer eat path reverts the just-applied movement with direct position
   subtracts at `0x00427161..0x00427176`; there is no bounds clamp. After its
   direct player-zero XP award and burst/SFX, native pushes `(creature_id, 0)`,
