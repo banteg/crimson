@@ -46,10 +46,8 @@ initialize:
     spawned->pos.tail.vy.owner_id = owner_id;
     spawned->active = 1;
     spawned->pos.tail.vy.travel_budget = weapon_table[type_id].travel_budget;
-    spawned->pos_x = pos->x;
-    spawned->pos.pos_y = pos->y;
-    spawned->pos.origin_x = pos->x;
-    spawned->pos.tail.origin_y = pos->y;
+    spawned->position = *pos;
+    spawned->pos.origin = *pos;
     spawned->angle = angle;
     spawned->pos.tail.vy.type_id = (projectile_type_id_t)type_id;
     spawned->pos.tail.vy.life_timer = 0.4f;

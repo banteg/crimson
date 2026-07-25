@@ -31,3 +31,8 @@ The input is now recovered as a read-only `vec2f_t *` in both source and the
 saved Binary Ninja prototype at `0x00420360`; the helper reads `x` and `y` but
 never mutates the caller's position. The type correction preserves the exact
 65/65 instruction match and all 13 references.
+
+The allocated record now receives that value through
+`secondary_projectile_t::position`, and seeker targeting passes the canonical
+`player_state_t::aim` vector directly. Both aggregate recoveries remove scalar
+aliases/casts while preserving the exact body.

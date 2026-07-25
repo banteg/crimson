@@ -43,6 +43,10 @@ neighbors and the three large projectile candidates compile byte-for-byte as
 before. Refreshing the authoritative type removes the former `pos.tail.vy.*`
 decompiler paths without discarding the cursor evidence from matching source.
 
+The initializer now copies the input through the matching record's canonical
+`position` and nested `origin` aggregates. Both assignments compile identically
+to the four scalar stores, preserving the 71.67% score and all 13 references.
+
 The recovered legacy `oldtypes.h` independently spells the source lineage as
 `ShootBullet(vec2_t from, ...)`. A direct by-value reconstruction with the
 available vector class changes VC6 alias analysis and regresses this target to

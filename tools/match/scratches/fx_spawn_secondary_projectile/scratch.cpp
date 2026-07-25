@@ -27,8 +27,7 @@ found:
 
     projectile = &secondary_projectile_pool[index];
     projectile->active = 1;
-    projectile->pos_x = pos->x;
-    projectile->pos.pos_y = pos->y;
+    projectile->position = *pos;
     projectile->life_timer = 2.0f;
 
     vel_x = (float)cos(angle - 1.57079637f);
@@ -43,8 +42,7 @@ found:
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
         projectile->pos.vx.vy.target_id =
             creature_find_nearest(
-                (const vec2f_t *)&player_state_table[render_overlay_player_index]
-                    .aim_x,
+                &player_state_table[render_overlay_player_index].aim,
                 -1,
                 0.0f);
         projectile->pos.vx.vel_x = vel_x * 190.0f;
