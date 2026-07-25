@@ -1273,10 +1273,15 @@ typedef struct crimson_cfg_t {
     int screen_height;
     unsigned char windowed;
     unsigned char reserved_windowed[3];
-    int keybinds_p1[13];
-    unsigned char reserved2[0x0c];
-    int keybinds_p2[13];
-    unsigned char reserved3[0x0c];
+    union {
+        player_input_config_t input_config[2];
+        struct {
+            int keybinds_p1[13];
+            unsigned char reserved2[0x0c];
+            int keybinds_p2[13];
+            unsigned char reserved3[0x0c];
+        };
+    };
     unsigned char reserved4[0x200];
     unsigned char hardcore;
     unsigned char ui_info_texts;

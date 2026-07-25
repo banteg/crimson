@@ -17,6 +17,10 @@ both players' key bindings, detail/audio settings, and POV directions. An
 indexed saved-name loop naturally produces the native pair of strength-reduced
 induction cursors.
 
+The persisted player bindings use the recovered
+`player_input_config_t input_config[2]` aggregate, including the Y/X order of
+the four analog-axis slots and the three unbound tail entries.
+
 The store at `config_windowed` is byte-sized and the function returns `true` in
 `AL`, leaving the upper return bytes as ordinary call residue. Those facts
 correct the earlier four-byte field and `int` return guesses. Natural VC6

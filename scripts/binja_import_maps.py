@@ -61,6 +61,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # The status initializer writes the reserved tail as four independent
         # random dwords; retain both that word view and the raw byte span.
         "game_status_t",
+        # Both 0x40-byte persisted binding spans are complete per-player
+        # records, not 13 keys followed by unrelated padding.
+        "player_input_config_t",
+        "crimson_cfg_t",
         # The construction base precedes the shifted public weapon_stats_t view
         # by one dword and owns the ammo class at the start of every row.
         "weapon_storage_entry_t",

@@ -19,6 +19,23 @@ Crimsonland executable. It is **not** the save/status file (that is `game.cfg`).
 `config_blob` (`DAT_00480348`) is typed as `crimson_cfg_t`:
 
 ```c
+typedef struct player_input_config_t {
+    int move_key_forward;
+    int move_key_backward;
+    int turn_key_left;
+    int turn_key_right;
+    int fire_key;
+    int key_reserved_0;
+    int key_reserved_1;
+    int aim_key_left;
+    int aim_key_right;
+    int axis_aim_y;
+    int axis_aim_x;
+    int axis_move_y;
+    int axis_move_x;
+    int reserved[3];
+} player_input_config_t;
+
 typedef struct crimson_cfg_t {
     unsigned char sound_disabled;
     unsigned char music_disabled;
@@ -50,10 +67,7 @@ typedef struct crimson_cfg_t {
     int screen_width;
     int screen_height;
     int windowed;
-    int keybinds_p1[13];
-    unsigned char reserved2[0x0c];
-    int keybinds_p2[13];
-    unsigned char reserved3[0x0c];
+    player_input_config_t input_config[2];
     unsigned char reserved4[0x200];
     unsigned char hardcore;
     unsigned char full_version;
