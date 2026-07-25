@@ -168,6 +168,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "game_status_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "mod_interface_t",
         object(),
         object(),

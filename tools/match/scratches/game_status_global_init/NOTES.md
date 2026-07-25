@@ -15,3 +15,9 @@ well. No wider reset or inferred safety correction is substituted.
 
 No dummy references, inline assembly, volatile ordering constraints, or dead
 expressions are used.
+
+The exact initializer now writes the canonical `game_status_t` directly. Its
+formerly opaque 16-byte tail has a `reserved_seed_words[4]` overlay, grounded
+by the four independent `crt_rand() % 345354345` dword stores, so neither the
+scratch nor Binary Ninja needs a private status layout. The result remains
+exact at 45/45 instructions with all 18 references.

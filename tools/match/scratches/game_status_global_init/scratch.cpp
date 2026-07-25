@@ -1,19 +1,8 @@
 #include <string.h>
 
-struct game_status_native_t {
-    unsigned short quest_unlock_index;
-    unsigned short quest_unlock_index_full;
-    unsigned int weapon_usage_counts[53];
-    unsigned int quest_play_counts[91];
-    unsigned int mode_play_survival;
-    unsigned int mode_play_rush;
-    unsigned int mode_play_typo;
-    unsigned int mode_play_other;
-    unsigned int game_sequence_id;
-    unsigned int reserved_seed_words[4];
-};
+#include "crimsonland_gameplay.h"
 
-extern "C" game_status_native_t game_status_blob;
+extern "C" game_status_t game_status_blob;
 extern "C" int crt_rand(void);
 
 extern "C" void game_status_global_init(void)

@@ -1042,7 +1042,10 @@ typedef struct game_status_t {
     unsigned int mode_play_typo;
     unsigned int mode_play_other;
     unsigned int game_sequence_id;
-    unsigned char reserved0[0x10];
+    union {
+        unsigned char reserved0[0x10];
+        unsigned int reserved_seed_words[4];
+    };
 } game_status_t;
 
 // Sliding cursor view used by some quest builder loops.

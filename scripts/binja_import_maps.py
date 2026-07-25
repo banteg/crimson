@@ -43,6 +43,9 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # though allocation stores masked rand() integers and AI converts the
         # member to float explicitly before using it as an orbit phase.
         "creature_t",
+        # The status initializer writes the reserved tail as four independent
+        # random dwords; retain both that word view and the raw byte span.
+        "game_status_t",
         # Use the equivalent flat parameters view so onPause and request_exit
         # survive anonymous-union lowering as named fields.
         "mod_interface_t",
