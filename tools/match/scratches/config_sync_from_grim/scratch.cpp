@@ -81,15 +81,15 @@ extern "C" bool config_sync_from_grim(void)
         defaults.aim_pov_right = 9000;
         defaults.aim_pov_left = 27000;
         *(int *)&defaults.reserved1_1a4[0] = 100;
-        *(int *)&defaults.reserved0_48[0x24] = 0;
+        defaults.reserved0_6c = 0;
         defaults.screen_width = 800;
         defaults.screen_height = 600;
         defaults.windowed = 0;
         defaults.reserved0_0f = 0;
-        defaults.player_mode_flags = 2;
-        *(int *)&defaults.reserved0_20[0] = 2;
-        defaults.aim_scheme = 0;
-        *(int *)&defaults.reserved0_48[0] = 0;
+        defaults.movement_schemes[0] = 2;
+        defaults.movement_schemes[1] = 2;
+        defaults.aim_schemes[0] = 0;
+        defaults.aim_schemes[1] = 0;
         defaults.sfx_volume = 1.0f;
         defaults.music_volume = 1.0f;
 

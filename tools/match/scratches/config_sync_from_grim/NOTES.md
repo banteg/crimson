@@ -20,6 +20,8 @@ induction cursors.
 The persisted player bindings use the recovered
 `player_input_config_t input_config[2]` aggregate, including the Y/X order of
 the four analog-axis slots and the three unbound tail entries.
+The preceding movement and aim selectors are four-entry per-player arrays,
+matching the native controls-menu indexing and the fixed file schema.
 
 The store at `config_windowed` is byte-sized and the function returns `true` in
 `AL`, leaving the upper return bytes as ordinary call residue. Those facts

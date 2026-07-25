@@ -1253,10 +1253,11 @@ typedef struct crimson_cfg_t {
     unsigned char reserved0_12[2];
     int player_count;
     game_mode_id_t game_mode;
-    int player_mode_flags;
-    unsigned char reserved0_20[0x24];
-    int aim_scheme;
-    unsigned char reserved0_48[0x28];
+    int movement_schemes[4];
+    unsigned char reserved0_2c[0x18];
+    int aim_schemes[4];
+    unsigned char reserved0_54[0x18];
+    int reserved0_6c;
     float texture_scale;
     char player_name_buf[12];
     int selected_saved_name_slot;

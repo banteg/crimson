@@ -39,7 +39,7 @@ extern "C" void config_init_defaults(void)
     config_blob.sound_frequency_adjustment = 1;
     *(int *)&config_blob.reserved1_1a4[4] = 0;
     *(int *)&config_blob.reserved1_1a4[8] = 0;
-    *(int *)&config_blob.reserved0_48[0x24] = 0;
+    config_blob.reserved0_6c = 0;
 
     config_blob.display_bpp = 32;
     config_blob.windowed = 0;
@@ -47,10 +47,10 @@ extern "C" void config_init_defaults(void)
     config_blob.fx_detail_flag0 = 1;
     config_blob.reserved0_0f = 0;
     config_blob.fx_detail_flag1 = 1;
-    config_blob.player_mode_flags = 2;
-    *(int *)&config_blob.reserved0_20[0] = 2;
-    config_blob.aim_scheme = 0;
-    *(int *)&config_blob.reserved0_48[0] = 0;
+    config_blob.movement_schemes[0] = 2;
+    config_blob.movement_schemes[1] = 2;
+    config_blob.aim_schemes[0] = 0;
+    config_blob.aim_schemes[1] = 0;
     config_blob.fx_detail_flag2 = 1;
     config_blob.player_count = 1;
     config_blob.input_config[0].turn_key_right = 32;

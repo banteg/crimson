@@ -11,6 +11,11 @@ The two contiguous 0x40-byte binding spans are now represented as
 the three unbound tail slots per player without changing their persisted
 layout.
 
+The four movement selectors at `0x1c` and four aim selectors at `0x44` are
+likewise recovered as per-player arrays. This agrees with the native indexed
+controls-menu accesses and the fixed `crimson.cfg` parser, replacing the old
+single-player fields plus byte-gap presentation.
+
 The function is `void`. Its only discovered consumer is the static-initializer
 thunk recorded at `0x0047100c`, and the apparent `0x17e` return is just EAX
 residue from the repeated unbound-key assignments.
