@@ -77,8 +77,8 @@ extern "C" void typo_gameplay_update_and_render(void)
     bool fire_requested = false;
     bool reload_requested = false;
     static typo_vec2_t target_world(
-        player_state_table[0].pos_x + 128.0f,
-        player_state_table[0].pos_y);
+        player_state_table[0].position.x + 128.0f,
+        player_state_table[0].position.y);
 
     if (typo_mode_reset_flag) {
         typo_input_length = 0;

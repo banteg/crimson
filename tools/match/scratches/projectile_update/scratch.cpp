@@ -726,8 +726,8 @@ extern "C" void projectile_update(void)
                 do {
                     creature_t *creature = &creature_pool[creature_id];
                     if (creature->active && creature->health > 0.0f) {
-                        float dx = creature->pos_x - secondary->pos_x;
-                        float dy = creature->pos_y - secondary->pos.pos_y;
+                        float dx = creature->position.x - secondary->pos_x;
+                        float dy = creature->position.y - secondary->pos.pos_y;
                         float distance =
                             (float)sqrt(dx * dx + dy * dy);
                         if (distance < radius) {
@@ -1289,9 +1289,9 @@ extern "C" void projectile_update(void)
                             }
                             fx_queue_add_random(
                                 &hit_creature->position);
-                            hit_creature->pos_x +=
+                            hit_creature->position.x +=
                                 frame_dt * particle->vel_x;
-                            hit_creature->pos_y +=
+                            hit_creature->position.y +=
                                 frame_dt * particle->vel_y;
                         }
                     }

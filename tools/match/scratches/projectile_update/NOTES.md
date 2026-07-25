@@ -260,3 +260,10 @@ that their pointer values are owning-record bases. The sprite-effect cursor is
 left automatic because its register is reused for unrelated return values later
 in the function. This presentation-only recovery preserves 46.91%,
 2,137/2,203 instructions, and `336/0/29` references.
+
+The explosion-radius creature walk now names
+`creature_t::position.x/y` from its owning record pointer. The surrounding
+primary and secondary projectile paths retain their nested views because their
+native induction cursors genuinely begin inside those records. This targeted
+type recovery is byte-neutral at 46.91%, 2,137/2,203 instructions, and
+`336/0/29` references.

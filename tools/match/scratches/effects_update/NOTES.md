@@ -50,3 +50,7 @@ rotation, scale, and alpha at the native stores, while Zig performs the same
 plasma-style boundary active through age `0.9999997019767761` and expires it on
 the following update; zero-`dt` expiry and sub-epsilon lifetime cases cover the
 two removed guards in both runtimes.
+
+The owning effect cursor now uses `effect_entry_t::position` and `velocity`
+components for integration. This removes four scalar compatibility aliases
+while preserving the exact 85/85 instructions and 10/0/0 references.

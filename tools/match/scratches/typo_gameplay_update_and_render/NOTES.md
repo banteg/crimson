@@ -71,3 +71,8 @@ constants, calls, references, frame size, and instruction count otherwise
 agree. A layout-only aggregate could force those offsets, but there is no
 source evidence for such an aggregate, so the natural vector objects are
 retained.
+
+The static Typ-o target now initializes from
+`player_state_t::position.x/y`. The aggregate field view is byte-neutral at
+98.43%, 508/508 instructions, a 33-instruction prefix, and 194/0/0
+references.

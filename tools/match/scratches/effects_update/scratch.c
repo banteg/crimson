@@ -31,11 +31,11 @@ void effects_update(void)
             } else if (entry->age >= 0.0f) {
                 float dt = frame_dt;
                 effect_vec2_t movement = {
-                    dt * entry->vel_x,
-                    dt * entry->vel_y,
+                    dt * entry->velocity.x,
+                    dt * entry->velocity.y,
                 };
-                entry->pos_x += movement.x;
-                entry->pos_y += movement.y;
+                entry->position.x += movement.x;
+                entry->position.y += movement.y;
                 if ((flags & 4) != 0) {
                     entry->rotation += frame_dt * entry->rotation_step;
                 }
