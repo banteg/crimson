@@ -103,9 +103,8 @@ Notes:
 ## Pre-logo loading pipeline (inside `crimsonland_main`)
 
 This is the simplified startup slice **before** the logo/splash assets are first
-loaded. All callsites below are visible in
-`analysis/ghidra/raw/crimsonland.exe_decompiled.c` under
-`crimsonland_main @ 0x0042c450`.
+loaded. All callsites below are in `crimsonland_main` at `0x0042c450`; use
+`just analysis-function crimsonland_main` to refresh the current tool views.
 
 1) Seed + DirectX check:
    - `FUN_004623b2` → `crt_srand`.
@@ -163,9 +162,9 @@ Binary Ninja HLIL shows the **real `game_startup_init` entry** at
 
 Ghidra’s auto-analysis had previously created a shorter function at
 `0x0042b090` that does **not** include the intro music handoff block. We now
-label `0x0042b090` as `game_startup_init_prelude` and force-create
-`game_startup_init` at `0x0042b290` so the decompiler exports include the
-intro play/mute and theme switch logic.
+label `0x0042b090` as `game_startup_init_prelude`; the shared function map also
+creates `game_startup_init` at `0x0042b290`, preserving the intro play/mute and
+theme switch logic in every tool.
 
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.

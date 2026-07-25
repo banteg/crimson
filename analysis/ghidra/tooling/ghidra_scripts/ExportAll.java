@@ -1,11 +1,8 @@
 /* ###
- * Export comprehensive analysis: decompiled code, functions, strings, calls, and symbols
+ * Export structured analysis: functions, strings, calls, and summary metadata
  * @category Export
  */
 
-import ghidra.app.decompiler.DecompInterface;
-import ghidra.app.decompiler.DecompileOptions;
-import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.script.GhidraScript;
 import ghidra.program.model.data.DataType;
 import ghidra.program.model.listing.*;
@@ -38,9 +35,6 @@ public class ExportAll extends GhidraScript {
 
         // Export summary first
         exportSummary();
-
-        // Export decompiled code
-        exportDecompiled();
 
         // Export functions
         exportFunctions();
@@ -96,46 +90,6 @@ public class ExportAll extends GhidraScript {
                     (block.isWrite() ? " [W]" : "") +
                     (block.isRead() ? " [R]" : ""));
             }
-        }
-    }
-
-    private void exportDecompiled() throws Exception {
-        File outputFile = new File(outputDir, programName + "_decompiled.c");
-        println("Exporting decompiled code to: " + outputFile.getName());
-
-        DecompInterface decompiler = new DecompInterface();
-        DecompileOptions options = new DecompileOptions();
-        decompiler.setOptions(options);
-
-        if (!decompiler.openProgram(currentProgram)) {
-            printerr("Failed to initialize decompiler");
-            return;
-        }
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
-            writer.println("/* Decompiled from: " + currentProgram.getName() + " */");
-            writer.println("");
-
-            FunctionIterator functions = currentProgram.getFunctionManager().getFunctions(true);
-            int count = 0;
-
-            while (functions.hasNext() && !monitor.isCancelled()) {
-                Function func = functions.next();
-                // Keep thunks in decompiled export so dispatch stubs are visible
-                // to downstream extraction/refactor workflows.
-                if (func.isExternal()) continue;
-
-                DecompileResults results = decompiler.decompileFunction(func, 30, monitor);
-                if (results.decompileCompleted()) {
-                    writer.println("/* " + func.getName() + " @ " + func.getEntryPoint() + " */");
-                    writer.println(results.getDecompiledFunction().getC());
-                    writer.println("");
-                    count++;
-                }
-            }
-            println("  Decompiled " + count + " functions");
-        } finally {
-            decompiler.dispose();
         }
     }
 

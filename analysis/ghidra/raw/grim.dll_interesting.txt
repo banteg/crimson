@@ -7,10 +7,21 @@ Interesting Functions and Patterns
   `vector_deleting_destructor' @ 1000b2fd
   FID_conflict:`vector_deleting_destructor' @ 1000b348
   grim_vertex_space_converter_destroy @ 1001692e
+  grim_pixel_format_destroy_dxt @ 10016c3c
   grim_vertex_space_converter_destroy @ 1001a574
+  grim_pixel_format_scalar_deleting_destroy @ 1001ae58
+  grim_pixel_format_scalar_deleting_destroy_dxt_base @ 1001aec8
+  grim_pixel_format_scalar_deleting_destroy_dxt @ 1001b472
+  j_grim_pixel_format_destroy_dxt @ 1001b48e
+  grim_pixel_format_destroy_yuv @ 1001b493
+  grim_pixel_format_scalar_deleting_destroy_yuv_base @ 1001bc68
+  grim_pixel_format_scalar_deleting_destroy_yuv @ 1001bc84
+  j_grim_pixel_format_destroy_yuv @ 1001bca0
   inflate_codes_new @ 10036381
   inflate_codes @ 100363b5
   inflate_codes_free @ 10036919
+  grim_pixel_format_destroy_dxt_eh_handler @ 1004b9ef
+  grim_pixel_format_destroy_yuv_eh_handler @ 1004ba59
 
 [KEY related]
   grim_set_key_char_buffer @ 10005c20
@@ -22,12 +33,49 @@ Interesting Functions and Patterns
   grim_keyboard_init @ 1000a390
   grim_keyboard_poll @ 1000a4a0
   grim_keyboard_shutdown @ 1000a550
+  grim_pixel_format_quantize_color_key_yuv @ 10016c3b
+  grim_pixel_format_quantize_color_key @ 100173dc
   grim_apply_color_key @ 100174a8
+  grim_pixel_format_quantize_color_key_dxt @ 1001af00
 
 [FILE related]
   grim_texture_load_file @ 10004ec0
+  D3DXSaveSurfaceToFileA @ 1000ae52
+  D3DXSaveTextureToFileA @ 1000c1e8
+  D3DXCreateTextureFromFileInMemoryEx @ 1000cb5c
+  D3DXCreateTextureFromFileExA @ 1000cb9c
 
 [READ related]
+  grim_pixel_format_read_r8g8b8 @ 100192a7
+  grim_pixel_format_read_a8r8g8b8 @ 10019333
+  grim_pixel_format_read_x8r8g8b8 @ 100193d9
+  grim_pixel_format_read_r5g6b5 @ 10019475
+  grim_pixel_format_read_x1r5g5b5 @ 1001951a
+  grim_pixel_format_read_a1r5g5b5 @ 100195bc
+  grim_pixel_format_read_a4r4g4b4 @ 1001966c
+  grim_pixel_format_read_a2b10g10r10 @ 1001971b
+  grim_pixel_format_read_g16r16 @ 100197f1
+  grim_pixel_format_read_r3g3b2 @ 10019883
+  grim_pixel_format_read_a8 @ 10019925
+  grim_pixel_format_read_a8r3g3b2 @ 10019997
+  grim_pixel_format_read_x4r4g4b4 @ 10019a49
+  grim_pixel_format_read_a8p8 @ 10019ae8
+  grim_pixel_format_read_p8 @ 10019b6f
+  grim_pixel_format_read_l8 @ 10019bd3
+  grim_pixel_format_read_a8l8 @ 10019c41
+  grim_pixel_format_read_a4l4 @ 10019cca
+  grim_pixel_format_read_v8u8 @ 10019d53
+  grim_pixel_format_read_l6v5u5 @ 10019dd5
+  grim_pixel_format_read_x8l8v8u8 @ 10019e86
+  grim_pixel_format_read_q8w8v8u8 @ 10019f17
+  grim_pixel_format_read_v16u16 @ 10019fae
+  grim_pixel_format_read_w11v11u10 @ 1001a031
+  grim_pixel_format_read_a2w10v10u10 @ 1001a0eb
+  grim_pixel_format_read_unorm16 @ 1001a1be
+  grim_pixel_format_read_al16 @ 1001a22e
+  grim_pixel_format_read_r16 @ 1001a2bc
+  grim_pixel_format_read_ar16 @ 1001a348
+  grim_pixel_format_read_yuv_cache @ 1001abbf
   grim_pixel_format_read_dxt_cache @ 1001b0fd
   png_create_read_struct @ 1001e191
   png_read_data @ 1002047c
@@ -77,6 +125,7 @@ Interesting Functions and Patterns
   sprintf @ 1000a8d0
 
 [ERROR related]
+  grim_jaz_jpeg_error_exit @ 10004e90
   grim_get_error_text @ 10006ca0
   png_error @ 1001e114
   png_crc_error @ 10024821

@@ -1,3 +1,0 @@
-# direct callgraph
-
-projectile_spawn -> projectile_spawn (0x00420440)

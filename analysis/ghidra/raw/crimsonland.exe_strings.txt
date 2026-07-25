@@ -251,7 +251,6 @@ Program:
 
 004712b0: > %s
 
-004712c4: Crimsonland 1.9.93
 00471315: 0tons
 0047131c: default
 00471324: %s\%s

@@ -969,9 +969,6 @@ def _resolve_function_for_name_row(bv, row: dict, addr: int):
             raise RuntimeError(f"failed to create direct-jump target for {_entry_label(row, addr)}")
         return created, True
 
-    if not row.get("create"):
-        return None, False
-
     if not containing:
         bv.create_user_function(addr)
         created = bv.get_function_at(addr)
@@ -1006,6 +1003,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "applied": 0,
         "renamed": 0,
         "signatures": 0,
+        "signature_errors": 0,
         "local_types": 0,
         "analysis_overrides": 0,
         "comments": 0,
@@ -1046,9 +1044,11 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
             try:
                 _apply_function_signature(bv, func, signature)
             except Exception as exc:
-                raise RuntimeError(f"signature parse/apply failed for {_entry_label(row, addr)}") from exc
-            stats["signatures"] += 1
-            changed = True
+                _log_error(f"Signature skipped for {_entry_label(row, addr)}: {exc}")
+                stats["signature_errors"] += 1
+            else:
+                stats["signatures"] += 1
+                changed = True
 
         comment = row.get("comment") or ""
         if comment:
@@ -1107,6 +1107,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     _log_info(f"Applied name map: {map_path}")
     _log_info(
         "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, "
+        "signature errors {signature_errors}, "
         "local types {local_types}, analysis overrides {analysis_overrides}, "
         "comments {comments})".format(
             **stats,
@@ -1131,6 +1132,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "renamed": 0,
         "comments": 0,
         "types": 0,
+        "type_errors": 0,
         "missing": 0,
         "skipped": 0,
     }
@@ -1185,21 +1187,25 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
             try:
                 data_type = _resolve_data_type(bv, type_text)
             except Exception as exc:
-                raise RuntimeError(f"type resolution failed for {_entry_label(row, addr)} ({type_text})") from exc
+                _log_error(f"Data type skipped for {_entry_label(row, addr)} ({type_text}): {exc}")
+                stats["type_errors"] += 1
+                data_type = None
             enclosing = _find_enclosing_aggregate_range(aggregate_ranges, addr)
-            if enclosing is None:
+            if data_type is not None and enclosing is None:
                 try:
                     bv.define_user_data_var(addr, data_type)
+                except Exception as exc:
+                    _log_error(f"Data type skipped for {_entry_label(row, addr)} ({type_text}): {exc}")
+                    stats["type_errors"] += 1
+                else:
                     stats["types"] += 1
                     changed = True
-                except Exception as exc:
-                    raise RuntimeError(f"type apply failed for {_entry_label(row, addr)} ({type_text})") from exc
-                if data_type.width > 1 and (
-                    name in _FORCED_DATA_AGGREGATES
-                    or _is_aggregate_type(bv, data_type)
-                ):
-                    aggregate_ranges.append((addr, addr + data_type.width, _entry_label(row, addr)))
-            elif not changed:
+                    if data_type.width > 1 and (
+                        name in _FORCED_DATA_AGGREGATES
+                        or _is_aggregate_type(bv, data_type)
+                    ):
+                        aggregate_ranges.append((addr, addr + data_type.width, _entry_label(row, addr)))
+            elif data_type is not None and not changed:
                 stats["skipped"] += 1
 
         if changed:
@@ -1210,7 +1216,8 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
     _log_info(f"Applied data map: {map_path}")
     _log_info(
-        "Updated entries: {applied} (created {created}, renamed {renamed}, comments {comments}, types {types})".format(
+        "Updated entries: {applied} (created {created}, renamed {renamed}, comments {comments}, "
+        "types {types}, type errors {type_errors})".format(
             **stats,
         ),
     )

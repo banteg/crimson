@@ -16,9 +16,12 @@ tags:
 
 - Earliest drift is pre-combat movement (`tick 29`) with no RNG mismatch (`rand_calls delta = 0`), indicating input reconstruction/capture mismatch rather than simulation-side combat logic.
 - Capture telemetry at `tick 29` shows `turn_left_pressed=true` and no forward key in `input_player_keys`, while `input_approx.move_dy=-2.227553367614746` indicates forward-like motion was applied by native.
-- Ghidra `player_update` shows single-player alternate bindings use `grim_is_key_down` fallback checks when primary binding is not active:
-  - `analysis/ghidra/raw/crimsonland.exe_decompiled.c:12337`, `analysis/ghidra/raw/crimsonland.exe_decompiled.c:12355`, `analysis/ghidra/raw/crimsonland.exe_decompiled.c:12378`, `analysis/ghidra/raw/crimsonland.exe_decompiled.c:12387`.
-- Grim vtable mapping confirms slot `0x44` is `grim_is_key_down` (`analysis/ghidra/derived/grim2d_vtable_map.csv:19`), and Grim decompile confirms this path reads keyboard down-state (`analysis/ghidra/raw/grim.dll_decompiled.c:3876`).
+- Static analysis of `player_update` at `0x004136b0` shows that single-player
+  alternate bindings use `grim_is_key_down` fallback checks when the primary
+  binding is not active.
+- Grim vtable mapping confirms slot `0x44` is `grim_is_key_down`
+  (`analysis/ghidra/derived/grim2d_vtable_map.csv:19`); consult the Grim
+  function at `0x100073d0` for the current tool view.
 
 ### Landed Changes
 
@@ -48,4 +51,3 @@ tags:
 - Keep replay conversion strict (no legacy fallbacks) so any future telemetry gaps fail fast and are fixed in instrumentation.
 
 ---
-

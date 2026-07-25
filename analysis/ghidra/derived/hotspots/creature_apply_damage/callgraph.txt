@@ -1,8 +1,0 @@
-# direct callgraph
-
-creature_apply_damage -> creature_apply_damage (0x004207c0)
-  -> creature_handle_death [extracted]
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]
-  -> perk_count_get [extracted]
-  -> sfx_play_panned [extracted]

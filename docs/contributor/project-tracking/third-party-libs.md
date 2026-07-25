@@ -10,8 +10,8 @@ outputs.
 ## Bundled/embedded libraries (from the game binaries)
 
 ### libpng (version 1.0.5)
-- Evidence: grim.dll calls png_create_read_struct("1.0.5", ...) at
-  `analysis/ghidra/raw/grim.dll_decompiled.c:11549`.
+- Evidence: Grim function `FUN_100103d6` at `0x100103d6` calls
+  `png_create_read_struct("1.0.5", ...)`.
 
 - Status: headers imported (`third_party/headers/png_struct_stub.h`).
 - Status: public headers synced from libpng v1.0.5 (`third_party/headers/png.h`,
@@ -20,8 +20,8 @@ outputs.
 - Status: png_* signatures mapped (name map).
 
 ### zlib (version 1.1.3)
-- Evidence: grim.dll initializes zlib with "1.1.3" at
-  `analysis/ghidra/raw/grim.dll_decompiled.c:22511`.
+- Evidence: Grim function `FUN_1001c82f` at `0x1001c82f` initializes zlib with
+  `"1.1.3"`.
 
 - Evidence: zlib strings report "deflate 1.1.3" and "inflate 1.1.3" at
   `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
@@ -80,17 +80,17 @@ Versions are not pinned yet; we need to match SDKs/headers by interface GUIDs
 and vtable shapes. Evidence comes from Ghidra import discovery.
 
 ### DirectX SDK version (likely 8.1)
-- Evidence: grim.dll calls Direct3DCreate8(0xDC) (D3D_SDK_VERSION = 220) at
-  `analysis/ghidra/raw/grim.dll_decompiled.c:993` (also at `:2562`, `:5483`).
+- Evidence: Grim functions including `FUN_10003090` at `0x10003090` call
+  `Direct3DCreate8(0xDC)` (`D3D_SDK_VERSION = 220`).
 
-- Evidence: crimsonland.exe also calls Direct3DCreate8(0xDC) at
-  `analysis/ghidra/raw/crimsonland.exe_decompiled.c:21721`.
+- Evidence: the executable imports and calls `Direct3DCreate8` with the same
+  SDK version.
 
 - Evidence: error string explicitly references DirectX 8.1 at
   `analysis/ghidra/raw/grim.dll_strings.txt:435`.
 
-- Evidence: DirectInput8Create uses version 0x0800 (DIRECTINPUT_VERSION) at
-  `analysis/ghidra/raw/grim.dll_decompiled.c:5950` (also at `:6081`, `:6226`).
+- Evidence: Grim function `FUN_10009a50` at `0x10009a50` and adjacent input
+  initialization paths pass version `0x0800` to `DirectInput8Create`.
 
 ### grim.dll imports
 - ADVAPI32.DLL, D3D8.DLL, DINPUT8.DLL, GDI32.DLL, KERNEL32.DLL, MSVCRT.DLL,

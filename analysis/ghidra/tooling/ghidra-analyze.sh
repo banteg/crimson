@@ -31,22 +31,22 @@ Options:
   -v, --verbose            Verbose output
   -h, --help               Show this help
 
+Environment:
+  GHIDRA_LOG_DIR            Directory for transient analyzer logs
+
 Built-in Scripts (use with -s):
-  ExportDecompiled.java    Export all functions as decompiled C code
-  ExportFunctions.java     Export function list with addresses and signatures
-  ExportStrings.java       Export all strings found in the binary
-  ExportCalls.java         Export function call graph
+  ExportAll.java           Export structured functions, calls, strings, and summary
   ExportSymbols.java       Export all symbols and their addresses
 
 Examples:
-  # Basic analysis with decompilation output
-  ghidra-analyze.sh -s ExportDecompiled.java -o ./output myprogram
+  # Basic structured analysis export
+  ghidra-analyze.sh -s ExportAll.java -o ./output myprogram
 
   # Analyze with specific architecture
   ghidra-analyze.sh -p ARM:LE:32:v7 firmware.bin
 
-  # Run multiple scripts
-  ghidra-analyze.sh -s ExportFunctions.java -s ExportStrings.java binary
+  # Add a complete symbol-table export
+  ghidra-analyze.sh -s ExportAll.java -s ExportSymbols.java binary
 
   # Keep project for later use
   ghidra-analyze.sh --keep-project --project-name MyProject binary
@@ -214,8 +214,12 @@ if [[ "$KEEP_PROJECT" != true ]]; then
     CMD+=(-deleteProject)
 fi
 
-# Add log file
-LOG_FILE="$OUTPUT_DIR/ghidra_analysis.log"
+# Keep transient logs out of the structured snapshot directory.
+LOG_DIR="${GHIDRA_LOG_DIR:-${TMPDIR:-/tmp}/crimson-ghidra-logs}"
+mkdir -p "$LOG_DIR"
+PROGRAM_TAG="$(basename "$BINARY" | tr '.' '_')"
+LOG_FILE="$LOG_DIR/${PROGRAM_TAG}_analysis.log"
+OUTPUT_LOG="$LOG_DIR/${PROGRAM_TAG}_output.log"
 CMD+=(-log "$LOG_FILE")
 
 # Run the analysis
@@ -223,7 +227,7 @@ if [[ "$VERBOSE" == true ]]; then
     echo "Running: ${CMD[*]}"
 fi
 
-"${CMD[@]}" 2>&1 | tee "$OUTPUT_DIR/ghidra_output.log"
+"${CMD[@]}" 2>&1 | tee "$OUTPUT_LOG"
 
 exit_code=${PIPESTATUS[0]}
 

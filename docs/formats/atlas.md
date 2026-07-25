@@ -4,7 +4,8 @@ tags:
 ---
 
 # Sprite atlas cutting (Crimsonland)
-This is based on the decompiled engine in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
+This is based on address-keyed analysis of the native renderer and the compact
+usage manifest in `analysis/reference/atlas_usage.json`.
 The engine does **not** load atlas metadata from disk; all slicing is hard‑coded.
 
 ## UV grid tables
@@ -112,8 +113,8 @@ The engine uses **two patterns**:
 ### Known assets and grids
 
 - `artifacts/assets/crimson/game/projs.png` (`projectile_texture` / `DAT_0048f7d4`)
-  - Uses **grid=4** (e.g. `+0x104(4, …)` around `analysis/ghidra/raw/crimsonland.exe_decompiled.c:18448`).
-  - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
+  - Uses **grid=4** for frames `2`, `3`, and `6`.
+  - Uses **grid=2** frame `0` for some effects.
   - Several projectile/beam effects draw **repeated quads** along a vector
     using a single frame (segment tiling instead of unique frames).
 
@@ -197,12 +198,11 @@ engine sprite table (grid 4).
 
 ### Bulk export
 
-To export all textures referenced by the static scan into `artifacts/atlas/frames/`,
-run:
+To export all textures in the tracked usage manifest into
+`artifacts/atlas/frames/`, run:
 
 ```bash
-uv run scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
-uv run scripts/atlas_export.py --all
+just atlas-export-all
 ```
 
 The output layout is:
@@ -213,18 +213,13 @@ The output layout is:
 Manifests include `used_indices` when the static scan reported concrete frame
 indices for a grid.
 
-## Atlas usage by texture (static scan)
+## Atlas usage by texture
 
-The notes below come from scanning `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
-for texture binds (`+0xc4`) followed by atlas selection (`+0x104` or
-`effect_select_texture` (`FUN_0042e0a0`). Use:
-
-```bash
-uv run scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
-```
-
-The JSON output includes `texture`, `direct` (grid/index), and `table_indices`
-per bound texture.
+The notes below preserve the result of the original static scan. The tracked
+`analysis/reference/atlas_usage.json` includes `texture`, `direct`
+(`grid`/`index`), and `table_indices` per bound texture. Update it from current
+function views when new usage is recovered; it is intentionally not generated
+from a whole-program decompile.
 
 They list which grids and indices are used, but not the semantic meaning of
 each frame.

@@ -119,7 +119,7 @@ normal unlocks.
 
 ## Evidence pointers
 
-- `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
+- Address-keyed native analysis:
   - `survival_update` handout checks around `0x00407cd0`
   - `gameplay_render_world` guard checks around `0x00405960`
   - `player_update` fire flag write around `0x004136b0`

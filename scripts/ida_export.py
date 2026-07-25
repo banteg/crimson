@@ -1,6 +1,7 @@
 import json
 import os
 
+import ida_auto
 import idaapi
 import idautils
 import idc
@@ -133,37 +134,41 @@ def main():
     name_map = argv[2] if len(argv) > 2 else ""
     data_map = argv[3] if len(argv) > 3 else ""
 
-    install_repo_types()
+    old_auto_state = ida_auto.enable_auto(False)
+    try:
+        install_repo_types()
 
-    if name_map:
-        stats = apply_name_map(name_map, program_name)
-        print(
-            "Applied name map:",
-            name_map,
-            f"(updated {stats['updated']}, created {stats['created']}, renamed {stats['renamed']}, signatures {stats['signatures']}, comments {stats['comments']}, skipped {stats['skipped']})",
-        )
-    if data_map:
-        stats = apply_data_map(data_map, program_name)
-        print(
-            "Applied data map:",
-            data_map,
-            f"(updated {stats['updated']}, renamed {stats['renamed']}, types {stats['types']}, comments {stats['comments']}, skipped {stats['skipped']})",
-        )
+        if name_map:
+            stats = apply_name_map(name_map, program_name)
+            print(
+                "Applied name map:",
+                name_map,
+                f"(updated {stats['updated']}, created {stats['created']}, renamed {stats['renamed']}, signatures {stats['signatures']}, signature errors {stats['signature_errors']}, comments {stats['comments']}, skipped {stats['skipped']})",
+            )
+        if data_map:
+            stats = apply_data_map(data_map, program_name)
+            print(
+                "Applied data map:",
+                data_map,
+                f"(updated {stats['updated']}, renamed {stats['renamed']}, types {stats['types']}, type errors {stats['type_errors']}, comments {stats['comments']}, skipped {stats['skipped']})",
+            )
 
-    artifacts = {
-        "functions.json": collect_functions(),
-        "strings.json": collect_strings(),
-        "imports.json": collect_imports(),
-        "exports.json": collect_exports(),
-        "segments.json": collect_segments(),
-        "metadata.json": collect_metadata(),
-    }
+        artifacts = {
+            "functions.json": collect_functions(),
+            "strings.json": collect_strings(),
+            "imports.json": collect_imports(),
+            "exports.json": collect_exports(),
+            "segments.json": collect_segments(),
+            "metadata.json": collect_metadata(),
+        }
 
-    for name, payload in artifacts.items():
-        path = os.path.join(out_dir, name)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, indent=2, sort_keys=True)
-            f.write("\n")
+        for name, payload in artifacts.items():
+            path = os.path.join(out_dir, name)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(payload, f, indent=2, sort_keys=True)
+                f.write("\n")
+    finally:
+        ida_auto.enable_auto(old_auto_state)
 
     print("IDA export complete:", out_dir)
     return 0

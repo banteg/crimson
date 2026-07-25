@@ -97,7 +97,7 @@ def test_resolve_creates_direct_jump_target_without_create_flag(monkeypatch):
     assert view.removed == []
 
 
-def test_resolve_splits_explicit_padding_prefixed_function(monkeypatch):
+def test_resolve_splits_padding_prefixed_function_without_create_flag(monkeypatch):
     importer = _load_importer()
     padding_function = SimpleNamespace(start=0x2000)
     view = _FakeView([padding_function], prefix=b"\x90" * 8)
@@ -105,7 +105,7 @@ def test_resolve_splits_explicit_padding_prefixed_function(monkeypatch):
 
     func, created = importer._resolve_function_for_name_row(
         view,
-        {"name": "empty_destructor", "create": True},
+        {"name": "empty_destructor"},
         0x2008,
     )
 
@@ -115,20 +115,19 @@ def test_resolve_splits_explicit_padding_prefixed_function(monkeypatch):
     assert view.created == [0x2008]
 
 
-def test_resolve_does_not_create_unmarked_interior_function(monkeypatch):
+def test_resolve_rejects_non_padding_interior_function_without_create_flag(monkeypatch):
     importer = _load_importer()
     containing = SimpleNamespace(start=0x3000)
     view = _FakeView([containing], prefix=b"\x55\x8b\xec")
     monkeypatch.setattr(importer, "_is_direct_jump_wrapper", lambda _bv, _func, _addr: False)
 
-    func, created = importer._resolve_function_for_name_row(
-        view,
-        {"name": "interior"},
-        0x3003,
-    )
+    with pytest.raises(RuntimeError, match="inside an existing function"):
+        importer._resolve_function_for_name_row(
+            view,
+            {"name": "interior"},
+            0x3003,
+        )
 
-    assert func is None
-    assert created is False
     assert view.created == []
     assert view.removed == []
 

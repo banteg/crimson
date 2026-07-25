@@ -1,6 +1,0 @@
-# direct callgraph
-
-effect_spawn_ion_hit_sparks -> effect_spawn_ion_hit_sparks (0x0042f540)
-  -> __ftol [extracted]
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]

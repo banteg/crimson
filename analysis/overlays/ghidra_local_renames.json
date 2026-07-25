@@ -1,0 +1,123 @@
+{
+  "program": "crimsonland.exe",
+  "functions": {
+    "bonus_try_spawn_on_kill": {
+      "pos": "kill_pos_ptr",
+      "pbVar2": "spawned_bonus_ptr",
+      "pbVar3": "bonus_scan_ptr",
+      "uVar4": "rng_value",
+      "iVar5": "effect_scale_rand"
+    },
+    "creature_apply_damage": {
+      "uVar3": "rng_value",
+      "pfVar5": "living_fortress_timer_ptr"
+    },
+    "creature_handle_death": {
+      "pos": "death_pos_ptr",
+      "pcVar1": "creature_ptr",
+      "uVar6": "rng_value",
+      "pcVar8": "copy_src_ptr",
+      "pcVar9": "copy_dst_ptr",
+      "lVar10": "xp_gain_i64"
+    },
+    "creature_spawn_template": {
+      "pfVar5": "origin_pos_ptr",
+      "iVar6": "root_slot_idx",
+      "iVar8": "child_slot_idx",
+      "uVar9": "rng_value",
+      "pcVar10": "creature_ptr"
+    },
+    "creature_update_all": {
+      "local_7c": "creature_idx",
+      "pfVar14": "health_ptr",
+      "pfVar1": "lifecycle_stage_ptr",
+      "puVar2": "collision_flag_ptr",
+      "pfVar3": "attack_cooldown_ptr",
+      "piVar4": "target_player_ptr",
+      "iVar5": "spawn_limit",
+      "fVar6": "target_delta_y",
+      "local_78": "dist_to_target_player",
+      "local_70": "move_scale",
+      "local_6c": "alt_player_dist",
+      "local_50": "tmp_vec_scratch"
+    },
+    "effect_spawn": {
+      "uVar4": "detail_skip_bit",
+      "iVar2": "size_code",
+      "iVar3": "frame_idx",
+      "pfVar5": "effect_ptr",
+      "iVar6": "copy_word_idx",
+      "pfVar8": "effect_write_ptr"
+    },
+    "effect_spawn_explosion_burst": {
+      "pos_00": "burst_pos_ptr",
+      "uVar3": "rng_value"
+    },
+    "effect_spawn_ion_hit_sparks": {
+      "fVar1": "spark_scale",
+      "pvVar2": "last_effect_ptr",
+      "uVar3": "rng_value",
+      "iVar4": "scale_rand",
+      "pvVar5": "sparks_left",
+      "lVar6": "spark_count_i64"
+    },
+    "effect_spawn_shrinkifier_hit": {
+      "uVar1": "rng_value",
+      "iVar2": "scale_rand",
+      "pvVar3": "last_effect_ptr",
+      "iVar4": "spark_count"
+    },
+    "effect_spawn_splitter_hit_burst": {
+      "fVar1": "angle_radians",
+      "uVar2": "rng_value",
+      "iVar3": "radius_rand",
+      "pvVar4": "last_effect_ptr",
+      "lVar7": "radius_i64",
+      "local_10": "spawn_x",
+      "local_c": "spawn_y"
+    },
+    "player_apply_move_with_spawn_avoidance": {
+      "iVar6": "alternate_weapon_perk_count",
+      "pcVar3": "spawn_owner_ptr",
+      "fVar4": "collision_radius",
+      "pcVar7": "spawn_slot_ptr"
+    },
+    "player_take_damage": {
+      "pos": "player_pos_ptr",
+      "bVar3": "dodge_triggered",
+      "uVar5": "rng_value",
+      "pcVar6": "creature_ptr",
+      "bVar7": "was_dead_before_hit",
+      "local_c": "damage_scale",
+      "local_8": "zero_impulse"
+    },
+    "player_update": {
+      "iVar7": "player_idx",
+      "pfVar16": "player_pos_ptr",
+      "ppVar6": "player_ptr",
+      "uVar9": "rng_value",
+      "pVar21": "projectile_type",
+      "pcVar13": "creature_ptr",
+      "pfVar1": "spread_heat_ptr",
+      "local_24": "player_start_pos_y"
+    },
+    "projectile_spawn": {
+      "base_damage": "travel_budget",
+      "projectile_meta": "travel_budget",
+      "ppVar1": "slot_ptr",
+      "iVar2": "slot_idx"
+    },
+    "projectile_update": {
+      "cVar3": "particle_kind",
+      "local_e8": "slot_idx",
+      "local_ec": "loop_idx",
+      "local_e4": "plasma_ring_idx",
+      "local_d8": "spray_max_offset",
+      "local_cc": "substep_dx",
+      "local_c8": "substep_dy",
+      "pVar4": "projectile_type",
+      "sVar5": "secondary_type",
+      "psVar14": "secondary_proj_ptr"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "textures": [
+    {
+      "var": "particles_texture",
+      "texture": "artifacts/assets/crimson/game/particles.png",
+      "direct": [
+        {
+          "grid": 2,
+          "index": "dynamic"
+        },
+        {
+          "grid": 4,
+          "index": "dynamic"
+        },
+        {
+          "grid": 8,
+          "index": "dynamic"
+        },
+        {
+          "grid": 16,
+          "index": "dynamic"
+        }
+      ],
+      "table_indices": []
+    },
+    {
+      "var": "projectile_texture",
+      "texture": "artifacts/assets/crimson/game/projs.png",
+      "direct": [
+        {
+          "grid": 2,
+          "index": 0
+        },
+        {
+          "grid": 4,
+          "index": 2
+        },
+        {
+          "grid": 4,
+          "index": 3
+        },
+        {
+          "grid": 4,
+          "index": 6
+        }
+      ],
+      "table_indices": []
+    }
+  ]
+}

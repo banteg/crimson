@@ -1,0 +1,150 @@
+{
+  "program": "crimsonland.exe",
+  "functions": {
+    "bonus_try_spawn_on_kill": {
+      "address": "0x0041f8d0",
+      "notes": [
+        "Mode and demo gates disable kill-based bonus drops.",
+        "The pistol branch can force weapon drops before duplicate and favourite-weapon suppression.",
+        "The general drop path has an extra bonus-magnet retry chance.",
+        "An accepted drop emits a blue burst fan-out at the kill position."
+      ]
+    },
+    "creature_apply_damage": {
+      "address": "0x004207c0",
+      "notes": [
+        "Damage type 1 stacks perk modifiers before touching health.",
+        "Non-heavy targets receive a randomized heading kick when hit.",
+        "Damage type 7 applies the ion-gun mastery multiplier.",
+        "Already-dead targets only advance their lifecycle stage.",
+        "The live path applies optional fire bonus, health loss, and knockback.",
+        "Lethal resolution performs death bookkeeping and type-dependent sound and effects.",
+        "The armored death branch spawns five tinted debris effects."
+      ]
+    },
+    "creature_handle_death": {
+      "address": "0x0041e910",
+      "notes": [
+        "Flag 0x400 creatures force a bonus spawn on death.",
+        "Survival kill streak bookkeeping toggles reward gates at three kills.",
+        "Spawn-slot-owned creatures release their slot immediately.",
+        "The split-on-death branch duplicates the creature into two weaker side spawns.",
+        "Corpse policy either shrinks the corpse or marks the slot inactive.",
+        "XP grant uses the same conversion path for base and double-XP awards.",
+        "Freeze bonus adds shard and shatter effects and clears corpse state."
+      ]
+    },
+    "creature_spawn_template": {
+      "address": "0x00430af0",
+      "notes": [
+        "All template branches share root-slot initialization.",
+        "Multi-body templates build linked ring formations.",
+        "The dispatch covers fixed encounters, procedural families, bosses, and spawner roots.",
+        "Template 0x13 builds a serpent-style linked chain.",
+        "Unknown template IDs emit diagnostics and keep the game running.",
+        "Post-dispatch normalization applies difficulty and hardcore scaling."
+      ]
+    },
+    "creature_update_all": {
+      "address": "0x00426220",
+      "notes": [
+        "The function performs one master sweep over active creature slots.",
+        "Freeze bonus pauses most live AI behavior.",
+        "Flag-driven lanes apply periodic poison or self damage.",
+        "AI7 alternates roaming and orbit phases on a pulse timer.",
+        "Retargeting chooses the nearest live player and updates auto-target feedback.",
+        "The active-body path handles collision, target synthesis, movement, and attacks.",
+        "AI mode dispatch selects follow, orbit, link, and idle target points.",
+        "Heading, velocity, animation, cooldowns, ranged attacks, and contact damage are updated in sequence.",
+        "The corpse path shrinks, slides, emits effects, and eventually deactivates the slot."
+      ]
+    },
+    "effect_spawn": {
+      "address": "0x0042e120",
+      "notes": [
+        "Low detail presets skip every other spawn.",
+        "The function pops a free-list entry and clones the active effect template.",
+        "Size-code dispatch selects 16x16, 8x8, 4x4, or 2x2 atlas lanes."
+      ]
+    },
+    "effect_spawn_explosion_burst": {
+      "address": "0x0042f6c0",
+      "notes": [
+        "The burst builds a core flash ring and soft halo.",
+        "High detail adds two delayed outer rings.",
+        "A shockwave pulse seeds the streak fan-out."
+      ]
+    },
+    "effect_spawn_ion_hit_sparks": {
+      "address": "0x0042f540",
+      "notes": [
+        "Shared ion spark setup scales with incoming hit strength.",
+        "Emission count and spark parameters are randomized according to detail level."
+      ]
+    },
+    "effect_spawn_shrinkifier_hit": {
+      "address": "0x0042f080",
+      "notes": [
+        "The hit creates a core shrinkifier pulse followed by spark setup.",
+        "The random spark fan-out scales with detail level."
+      ]
+    },
+    "effect_spawn_splitter_hit_burst": {
+      "address": "0x0042f3f0",
+      "notes": [
+        "Legacy stack seeds mirror the original template setup.",
+        "Particles use randomized polar angle and radius around the hit point."
+      ]
+    },
+    "player_apply_move_with_spawn_avoidance": {
+      "address": "0x0041e290",
+      "notes": [
+        "Alternate-weapon perk dampens movement before collision checks.",
+        "The overlap test uses a reduced combined radius against the spawn owner.",
+        "Resolution tries rollback and axis reapplication before the legacy full-move fallback."
+      ]
+    },
+    "player_take_damage": {
+      "address": "0x00425e50",
+      "notes": [
+        "Death-clock immunity and tough-reloader mitigation are hard pre-gates.",
+        "Shielded hits skip health, dodge, and death branches.",
+        "Ninja and dodger can short-circuit direct health subtraction.",
+        "The function resolves ordinary damage or the highlander one-shot path.",
+        "Post-hit handling selects pain reaction, lethal resolution, and final revenge.",
+        "Non-dodged hits may add heading and spread penalties and trigger low-health bleeding."
+      ]
+    },
+    "player_update": {
+      "address": "0x004136b0",
+      "notes": [
+        "Early gates handle UI, console, and dead-player short circuits.",
+        "Always-on upkeep updates timers and low-health bleed effects.",
+        "Perk timers can spawn projectiles and effects.",
+        "Movement selects player-controlled or demo-assisted branches.",
+        "Weapon readiness updates spread, reload timers, and reload perks.",
+        "Aim updates according to mouse, stick, key, or demo-assist mode.",
+        "Fire execution selects regular weapon dispatch or the fire-bullets fallback.",
+        "End-of-frame normalization wraps phase, rolls back temporary speed bonuses, and clamps world bounds."
+      ]
+    },
+    "projectile_spawn": {
+      "address": "0x00420440",
+      "notes": [
+        "The Fire Bullets owner rewrite preserves the looped shots-fired side effect.",
+        "Allocation uses the first inactive slot or reuses terminal slot 0x5f.",
+        "Shared initialization precedes per-type radius and damage tuning."
+      ]
+    },
+    "projectile_update": {
+      "address": "0x00420b90",
+      "notes": [
+        "The primary pool sweep applies lifetime and bounds gates before collision stepping.",
+        "Movement integrates in coarse substeps and resolves swept hits.",
+        "Impact behavior and damage accounting are projectile-type-specific.",
+        "Expiring ion and gauss projectiles can still emit radius damage.",
+        "Secondary projectile, sprite-effect, and particle pools are updated afterward."
+      ]
+    }
+  }
+}

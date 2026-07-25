@@ -1,8 +1,0 @@
-# direct callgraph
-
-creature_spawn_template -> creature_spawn_template (0x00430af0)
-  -> console_printf [extracted]
-  -> creature_alloc_slot [extracted]
-  -> creature_spawn_slot_alloc [extracted]
-  -> crt_rand [extracted]
-  -> effect_spawn_burst [extracted]

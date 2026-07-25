@@ -19,8 +19,8 @@ wire save editing and runtime validation around concrete logic instead of rumor 
 
 ## Evidence: secret-hint string cluster
 
-Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the startup log path in
-`analysis/ghidra/raw/crimsonland.exe_decompiled.c` (inside `crimsonland_main`).
+Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the startup log path
+inside `crimsonland_main` at `0x0042c450`.
 
 ### Strings (static addresses)
 
@@ -83,8 +83,8 @@ Decompiled main-loop logic (outside `statistics_menu_update`) shows a date + RNG
   - set color to `(0.2, 1.0, 0.6, 0.5)`
   - draw `"Orbes Volantes Exstare"` at y=`5.0` with x=`rand % 64 + 16`
 
-Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
-`0x0040ccf1` (`lines 7751-7771` in current export).
+Evidence anchor: `game_frame_update` at `0x0040c1c0`, instruction
+`0x0040ccf1`.
 
 ### Startup prelude: date-gated `balloon.tga`
 
@@ -100,8 +100,8 @@ loads a hidden texture pair:
   - call `texture_get_or_load("balloon", "balloon.tga")`
 - then clear `DAT_004aaed8 = 0`
 
-Evidence anchor: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` around
-`0x0042b10a` (`lines 23806-23818` in current export).
+Evidence anchor: `game_startup_init_prelude` at `0x0042b090`, instruction
+`0x0042b10a`.
 
 Cross-reference result (v1.9.93): all in-binary references to the `balloon`
 string literals and `DAT_004aaed8` resolve back to `game_startup_init_prelude`

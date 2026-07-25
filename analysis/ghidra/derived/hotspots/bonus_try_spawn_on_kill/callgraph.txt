@@ -1,8 +1,0 @@
-# direct callgraph
-
-bonus_try_spawn_on_kill -> bonus_try_spawn_on_kill (0x0041f8d0)
-  -> bonus_spawn_at_pos [missing]
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]
-  -> perk_count_get [extracted]
-  -> weapon_pick_random_available [extracted]

@@ -1,6 +1,0 @@
-# direct callgraph
-
-effect_spawn_splitter_hit_burst -> effect_spawn_splitter_hit_burst (0x0042f3f0)
-  -> __ftol [extracted]
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]

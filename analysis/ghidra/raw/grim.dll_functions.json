@@ -58,7 +58,7 @@
   {
     "name": "grim_backup_textures",
     "address": "100028d0",
-    "signature": "int grim_backup_textures(void)",
+    "signature": "bool grim_backup_textures(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_noop"]
@@ -66,58 +66,58 @@
   {
     "name": "grim_restore_textures",
     "address": "10002b40",
-    "signature": "int grim_restore_textures(void)",
+    "signature": "bool grim_restore_textures(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_noop"]
   },
   {
-    "name": "FUN_10002cf0",
+    "name": "grim_try_reset_device",
     "address": "10002cf0",
-    "signature": "undefined4 FUN_10002cf0(void)",
+    "signature": "undefined4 grim_try_reset_device(void)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_10004520", "MessageBoxA", "Sleep", "grim_noop", "grim_restore_textures"]
+    "calls": ["MessageBoxA", "Sleep", "grim_apply_render_state", "grim_noop", "grim_restore_textures"]
   },
   {
-    "name": "FUN_10002f60",
+    "name": "grim_app_cleanup",
     "address": "10002f60",
-    "signature": "bool FUN_10002f60(void * arg1)",
+    "signature": "void grim_app_cleanup(void * self)",
     "external": false,
     "calls_total": 1,
     "calls": ["DeleteObject"]
   },
   {
-    "name": "FUN_10002f80",
+    "name": "grim_app_tick",
     "address": "10002f80",
-    "signature": "uint FUN_10002f80(void * arg1)",
+    "signature": "bool grim_app_tick(void * self)",
     "external": false,
     "calls_total": 1,
     "calls": ["timeGetTime"]
   },
   {
-    "name": "FUN_10002fc0",
+    "name": "grim_app_init",
     "address": "10002fc0",
-    "signature": "int FUN_10002fc0(char * arg1)",
+    "signature": "bool grim_app_init(void * self)",
     "external": false,
     "calls_total": 3,
     "calls": ["GetClientRect", "_getcwd", "grim_noop"]
   },
   {
-    "name": "thunk_FUN_10002f60",
+    "name": "grim_app_shutdown",
     "address": "10003080",
-    "signature": "bool thunk_FUN_10002f60(void * arg1)",
+    "signature": "void grim_app_shutdown(void * self)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10003090",
+    "name": "grim_app_pump",
     "address": "10003090",
-    "signature": "int FUN_10003090(void)",
+    "signature": "void grim_app_pump(void * self)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_10002f80", "grim_noop"]
+    "calls": ["grim_app_tick", "grim_noop"]
   },
   {
     "name": "FUN_100030b0",
@@ -125,15 +125,23 @@
     "signature": "undefined4 FUN_100030b0(void)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_10004520", "MessageBoxA", "Sleep", "grim_noop", "grim_restore_textures"]
+    "calls": ["MessageBoxA", "Sleep", "grim_apply_render_state", "grim_noop", "grim_restore_textures"]
   },
   {
-    "name": "FUN_10003c00",
+    "name": "grim_window_proc",
+    "address": "100033b0",
+    "signature": "long grim_window_proc(void * hwnd, uint message, uint wparam, long lparam)",
+    "external": false,
+    "calls_total": 11,
+    "calls": ["BeginPaint", "DefWindowProcA", "EndPaint", "FUN_100030b0", "PostQuitMessage", "SendMessageA", "SetFocus", "grim_apply_render_state", "grim_backup_textures", "grim_noop", "grim_restore_textures"]
+  },
+  {
+    "name": "grim_run_loop",
     "address": "10003c00",
-    "signature": "undefined4 FUN_10003c00(void)",
+    "signature": "int grim_run_loop(void)",
     "external": false,
     "calls_total": 18,
-    "calls": ["DispatchMessageA", "FUN_10002cf0", "FUN_10002fc0", "FUN_10003090", "FUN_10004920", "FUN_10004970", "PeekMessageA", "SetFocus", "SetForegroundWindow", "ShowCursor", "Sleep", "TranslateMessage", "grim_joystick_poll", "grim_keyboard_poll", "grim_mouse_poll", "grim_window_destroy", "thunk_FUN_10002f60", "timeEndPeriod"]
+    "calls": ["DispatchMessageA", "PeekMessageA", "SetFocus", "SetForegroundWindow", "ShowCursor", "Sleep", "TranslateMessage", "grim_app_init", "grim_app_pump", "grim_app_shutdown", "grim_joystick_poll", "grim_keyboard_poll", "grim_mouse_poll", "grim_timing_init", "grim_timing_update", "grim_try_reset_device", "grim_window_destroy", "timeEndPeriod"]
   },
   {
     "name": "grim_d3d_init",
@@ -141,36 +149,36 @@
     "signature": "int grim_d3d_init(void)",
     "external": false,
     "calls_total": 15,
-    "calls": ["Direct3DCreate8", "FUN_10004280", "FUN_10004350", "FUN_10004520", "FUN_1000cb5c", "FindResourceA", "LoadResource", "LockResource", "MessageBoxA", "SizeofResource", "grim_is_texture_format_supported", "grim_select_texture_format", "grim_window_create", "grim_window_destroy", "strchr"]
+    "calls": ["D3DXCreateTextureFromFileInMemoryEx", "Direct3DCreate8", "FindResourceA", "LoadResource", "LockResource", "MessageBoxA", "SizeofResource", "grim_apply_render_state", "grim_create_geometry_buffers", "grim_d3d_shutdown", "grim_is_texture_format_supported", "grim_select_texture_format", "grim_window_create", "grim_window_destroy", "strchr"]
   },
   {
-    "name": "FUN_10004280",
+    "name": "grim_d3d_shutdown",
     "address": "10004280",
-    "signature": "undefined FUN_10004280(void)",
+    "signature": "void grim_d3d_shutdown(void)",
     "external": false,
     "calls_total": 3,
-    "calls": ["FUN_100044e0", "grim_texture_release", "operator_delete"]
+    "calls": ["grim_release_geometry_buffers", "grim_texture_release", "operator_delete"]
   },
   {
-    "name": "FUN_10004350",
+    "name": "grim_create_geometry_buffers",
     "address": "10004350",
-    "signature": "undefined4 FUN_10004350(void)",
+    "signature": "bool grim_create_geometry_buffers(void)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_100044e0"]
+    "calls": ["grim_release_geometry_buffers"]
   },
   {
-    "name": "FUN_100044e0",
+    "name": "grim_release_geometry_buffers",
     "address": "100044e0",
-    "signature": "undefined FUN_100044e0(void)",
+    "signature": "void grim_release_geometry_buffers(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10004520",
+    "name": "grim_apply_render_state",
     "address": "10004520",
-    "signature": "undefined FUN_10004520(void)",
+    "signature": "void grim_apply_render_state(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -178,7 +186,7 @@
   {
     "name": "grim_is_texture_format_supported",
     "address": "100047f0",
-    "signature": "int grim_is_texture_format_supported(uint format)",
+    "signature": "bool grim_is_texture_format_supported(uint format)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -186,23 +194,23 @@
   {
     "name": "grim_select_texture_format",
     "address": "10004830",
-    "signature": "int grim_select_texture_format(void)",
+    "signature": "bool grim_select_texture_format(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_is_texture_format_supported"]
   },
   {
-    "name": "FUN_10004920",
+    "name": "grim_timing_init",
     "address": "10004920",
-    "signature": "undefined FUN_10004920(void)",
+    "signature": "void grim_timing_init(void)",
     "external": false,
     "calls_total": 2,
     "calls": ["timeBeginPeriod", "timeGetTime"]
   },
   {
-    "name": "FUN_10004970",
+    "name": "grim_timing_update",
     "address": "10004970",
-    "signature": "undefined FUN_10004970(void)",
+    "signature": "void grim_timing_update(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["timeGetTime"]
@@ -224,28 +232,36 @@
     "calls": ["operator_delete"]
   },
   {
-    "name": "FUN_10004b00",
+    "name": "grim_path_has_extension",
     "address": "10004b00",
-    "signature": "bool FUN_10004b00(char * param_1, char * param_2)",
+    "signature": "bool grim_path_has_extension(char * path, char * extension)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10004b70",
+    "name": "grim_decode_jaz_texture",
     "address": "10004b70",
-    "signature": "char * FUN_10004b70(char * arg1, void * * arg2, int * arg3, int * arg4)",
+    "signature": "uchar * grim_decode_jaz_texture(uchar * source, uint source_size, uint * image_size, int * width, int * height)",
     "external": false,
     "calls_total": 14,
     "calls": ["FUN_10009a50", "FUN_10009b20", "FUN_10009b30", "FUN_10009e00", "FUN_10009ec0", "FUN_1000a070", "FUN_1000a810", "FUN_1000a880", "FUN_1003a990", "FUN_1003ab10", "grim_noop", "operator_delete", "operator_new", "setjmp3"]
   },
   {
+    "name": "grim_jaz_jpeg_error_exit",
+    "address": "10004e90",
+    "signature": "void grim_jaz_jpeg_error_exit(void * * context)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "grim_texture_load_file",
     "address": "10004ec0",
-    "signature": "int grim_texture_load_file(void * this, void * texture, ushort * path)",
+    "signature": "bool grim_texture_load_file(void * this, void * texture, char * path)",
     "external": false,
     "calls_total": 12,
-    "calls": ["FUN_10004b00", "FUN_10004b70", "FUN_10005ae0", "FUN_10005b80", "FUN_1000cb5c", "FUN_1000cb9c", "fclose", "fopen", "fread", "fseek", "ftell", "operator_new"]
+    "calls": ["D3DXCreateTextureFromFileExA", "D3DXCreateTextureFromFileInMemoryEx", "fclose", "fopen", "fread", "fseek", "ftell", "grim_decode_jaz_texture", "grim_lookup_blob_find", "grim_lookup_blob_size_for_path", "grim_path_has_extension", "operator_new"]
   },
   {
     "name": "grim_texture_name_equals",
@@ -274,39 +290,39 @@
   {
     "name": "grim_load_texture_internal",
     "address": "100051e0",
-    "signature": "int grim_load_texture_internal(char * name, ushort * path)",
+    "signature": "int grim_load_texture_internal(char * name, char * path)",
     "external": false,
     "calls_total": 7,
     "calls": ["grim_find_free_texture_slot", "grim_find_texture_by_name", "grim_texture_init", "grim_texture_load_file", "grim_texture_release", "operator_delete", "operator_new"]
   },
   {
-    "name": "FUN_100052f0",
+    "name": "grim_state_init",
     "address": "100052f0",
-    "signature": "undefined FUN_100052f0(void)",
+    "signature": "void grim_state_init(void)",
     "external": false,
     "calls_total": 2,
     "calls": ["_strdup", "operator_new"]
   },
   {
-    "name": "FUN_10005a40",
+    "name": "grim_lookup_blob_load",
     "address": "10005a40",
-    "signature": "undefined4 FUN_10005a40(char * param_1)",
+    "signature": "bool grim_lookup_blob_load(char * path)",
     "external": false,
     "calls_total": 7,
     "calls": ["fclose", "fopen", "fread", "fseek", "ftell", "operator_delete", "operator_new"]
   },
   {
-    "name": "FUN_10005ae0",
+    "name": "grim_lookup_blob_find",
     "address": "10005ae0",
-    "signature": "int FUN_10005ae0(byte * param_1)",
+    "signature": "char * grim_lookup_blob_find(char * path)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10005b80",
+    "name": "grim_lookup_blob_size_for_path",
     "address": "10005b80",
-    "signature": "undefined4 FUN_10005b80(byte * param_1)",
+    "signature": "uint grim_lookup_blob_size_for_path(char * path)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -352,17 +368,17 @@
     "calls": []
   },
   {
-    "name": "grim_check_device",
+    "name": "grim_save_screenshot",
     "address": "10005cb0",
-    "signature": "int grim_check_device(void)",
+    "signature": "bool grim_save_screenshot(char * path)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_1000ae52"]
+    "calls": ["D3DXSaveSurfaceToFileA"]
   },
   {
     "name": "grim_apply_config",
     "address": "10005d40",
-    "signature": "int grim_apply_config(void)",
+    "signature": "bool grim_apply_config(void)",
     "external": false,
     "calls_total": 2,
     "calls": ["Direct3DCreate8", "MessageBoxA"]
@@ -370,10 +386,10 @@
   {
     "name": "grim_init_system",
     "address": "10005eb0",
-    "signature": "int grim_init_system(void)",
+    "signature": "bool grim_init_system(void)",
     "external": false,
     "calls_total": 12,
-    "calls": ["FUN_10004280", "FUN_10004920", "FUN_10004970", "FUN_10005ae0", "_getcwd", "grim_d3d_init", "grim_joystick_init", "grim_keyboard_init", "grim_keyboard_shutdown", "grim_mouse_init", "grim_mouse_shutdown", "grim_window_destroy"]
+    "calls": ["_getcwd", "grim_d3d_init", "grim_d3d_shutdown", "grim_joystick_init", "grim_keyboard_init", "grim_keyboard_shutdown", "grim_lookup_blob_find", "grim_mouse_init", "grim_mouse_shutdown", "grim_timing_init", "grim_timing_update", "grim_window_destroy"]
   },
   {
     "name": "grim_shutdown",
@@ -381,15 +397,15 @@
     "signature": "void grim_shutdown(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_10004280", "FUN_10005a40", "FUN_1000a330", "grim_keyboard_shutdown", "grim_mouse_shutdown", "grim_window_destroy"]
+    "calls": ["grim_d3d_shutdown", "grim_joystick_shutdown", "grim_keyboard_shutdown", "grim_lookup_blob_load", "grim_mouse_shutdown", "grim_window_destroy"]
   },
   {
     "name": "grim_apply_settings",
     "address": "10006020",
-    "signature": "void grim_apply_settings(void)",
+    "signature": "bool grim_apply_settings(void)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_10003c00"]
+    "calls": ["grim_run_loop"]
   },
   {
     "name": "grim_set_texture_stage_ops",
@@ -402,15 +418,15 @@
   {
     "name": "grim_set_config_var",
     "address": "10006580",
-    "signature": "void grim_set_config_var(uint id, uint value)",
+    "signature": "void grim_set_config_var(uint id, grim_config_value_t value)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_10005a40", "_strdup", "ftol", "grim_set_texture_stage_ops", "operator_delete", "operator_new"]
+    "calls": ["_strdup", "ftol", "grim_lookup_blob_load", "grim_set_texture_stage_ops", "operator_delete", "operator_new"]
   },
   {
     "name": "grim_get_config_var",
     "address": "10006c30",
-    "signature": "void grim_get_config_var(uint * out, int id)",
+    "signature": "grim_config_value_t * grim_get_config_var(grim_config_value_t * out, int id)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -434,7 +450,7 @@
   {
     "name": "grim_set_render_target",
     "address": "10006d50",
-    "signature": "int grim_set_render_target(int target_index)",
+    "signature": "bool grim_set_render_target(int target_index)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -472,33 +488,33 @@
     "calls": []
   },
   {
-    "name": "FUN_10006ea0",
+    "name": "grim_joystick_up_active",
     "address": "10006ea0",
-    "signature": "undefined4 FUN_10006ea0(void)",
+    "signature": "int grim_joystick_up_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10006ef0",
+    "name": "grim_joystick_down_active",
     "address": "10006ef0",
-    "signature": "undefined4 FUN_10006ef0(void)",
+    "signature": "int grim_joystick_down_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10006f40",
+    "name": "grim_joystick_left_active",
     "address": "10006f40",
-    "signature": "undefined4 FUN_10006f40(void)",
+    "signature": "int grim_joystick_left_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10006f90",
+    "name": "grim_joystick_right_active",
     "address": "10006f90",
-    "signature": "undefined4 FUN_10006f90(void)",
+    "signature": "int grim_joystick_right_active(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -506,10 +522,10 @@
   {
     "name": "grim_is_key_active",
     "address": "10006fe0",
-    "signature": "int grim_is_key_active(void * this, int key)",
+    "signature": "uchar grim_is_key_active(void * this, int key)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_10006ea0", "FUN_10006ef0", "FUN_10006f40", "FUN_10006f90"]
+    "calls": ["grim_joystick_down_active", "grim_joystick_left_active", "grim_joystick_right_active", "grim_joystick_up_active"]
   },
   {
     "name": "grim_get_config_float",
@@ -554,7 +570,7 @@
   {
     "name": "grim_is_key_down",
     "address": "10007320",
-    "signature": "int grim_is_key_down(uint key)",
+    "signature": "uchar grim_is_key_down(uint key)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_keyboard_key_down"]
@@ -570,7 +586,7 @@
   {
     "name": "grim_was_key_pressed",
     "address": "10007390",
-    "signature": "int grim_was_key_pressed(uint key)",
+    "signature": "bool grim_was_key_pressed(uint key)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_keyboard_key_down"]
@@ -578,7 +594,7 @@
   {
     "name": "grim_is_mouse_button_down",
     "address": "10007410",
-    "signature": "int grim_is_mouse_button_down(int button)",
+    "signature": "uchar grim_is_mouse_button_down(int button)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_mouse_button_down"]
@@ -586,7 +602,7 @@
   {
     "name": "grim_was_mouse_button_pressed",
     "address": "10007440",
-    "signature": "int grim_was_mouse_button_pressed(int button)",
+    "signature": "bool grim_was_mouse_button_pressed(int button)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -690,15 +706,15 @@
   {
     "name": "grim_is_joystick_button_down",
     "address": "100075c0",
-    "signature": "int grim_is_joystick_button_down(int button)",
+    "signature": "uchar grim_is_joystick_button_down(int button)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_1000a310"]
+    "calls": ["grim_joystick_button_down"]
   },
   {
     "name": "grim_create_texture",
     "address": "100075d0",
-    "signature": "int grim_create_texture(char * name, int width, int height)",
+    "signature": "uchar grim_create_texture(char * name, int width, int height)",
     "external": false,
     "calls_total": 3,
     "calls": ["grim_find_free_texture_slot", "grim_texture_init", "operator_new"]
@@ -706,7 +722,7 @@
   {
     "name": "grim_load_texture",
     "address": "100076e0",
-    "signature": "int grim_load_texture(char * name, char * path)",
+    "signature": "uchar grim_load_texture(char * name, char * path)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_load_texture_internal"]
@@ -728,20 +744,20 @@
     "calls": ["grim_find_texture_by_name"]
   },
   {
-    "name": "grim_validate_texture",
+    "name": "grim_save_texture",
     "address": "10007750",
-    "signature": "int grim_validate_texture(int handle)",
+    "signature": "uchar grim_save_texture(int handle, char * path)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_1000c1e8"]
+    "calls": ["D3DXSaveTextureToFileA"]
   },
   {
     "name": "grim_recreate_texture",
     "address": "10007790",
-    "signature": "int grim_recreate_texture(int handle)",
+    "signature": "uchar grim_recreate_texture(int handle)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_1000b297", "FUN_1000b3fe"]
+    "calls": ["D3DXCreateTexture", "d3dx_copy_texture_filtered"]
   },
   {
     "name": "grim_bind_texture",
@@ -754,7 +770,7 @@
   {
     "name": "grim_draw_fullscreen_quad",
     "address": "10007870",
-    "signature": "void grim_draw_fullscreen_quad(void)",
+    "signature": "void grim_draw_fullscreen_quad(int unused)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -762,7 +778,7 @@
   {
     "name": "grim_draw_rect_filled",
     "address": "100078e0",
-    "signature": "void grim_draw_rect_filled(float * xy, float w, float h)",
+    "signature": "void grim_draw_rect_filled(float * xy, float w, float h, float * rgba)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -837,7 +853,15 @@
     "signature": "void grim_draw_line(float * p0, float * p1, float thickness)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_1000a92c", "thunk_FUN_1000cc2c"]
+    "calls": ["D3DXVec2Normalize", "FUN_1000a92c"]
+  },
+  {
+    "name": "grim_line_vector_dtor",
+    "address": "10008140",
+    "signature": "void grim_line_vector_dtor(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
   },
   {
     "name": "grim_draw_line_quad",
@@ -898,7 +922,7 @@
   {
     "name": "grim_submit_vertices_offset_color",
     "address": "10008430",
-    "signature": "void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)",
+    "signature": "void grim_submit_vertices_offset_color(float * verts, int count, float * offset, uint * color)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -906,7 +930,7 @@
   {
     "name": "grim_submit_vertices_transform_color",
     "address": "100084e0",
-    "signature": "void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)",
+    "signature": "void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, uint * color)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1029,7 +1053,7 @@
     "signature": "IGrim2D * GRIM__GetInterface(void)",
     "external": false,
     "calls_total": 4,
-    "calls": ["Direct3DCreate8", "FUN_100052f0", "MessageBoxA", "operator_new"]
+    "calls": ["Direct3DCreate8", "MessageBoxA", "grim_state_init", "operator_new"]
   },
   {
     "name": "DllMain",
@@ -1112,9 +1136,25 @@
     "calls": []
   },
   {
+    "name": "grim_joystick_enum_device",
+    "address": "1000a110",
+    "signature": "undefined grim_joystick_enum_device()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "grim_joystick_configure_axis",
+    "address": "1000a150",
+    "signature": "undefined grim_joystick_configure_axis()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "grim_joystick_init",
     "address": "1000a1c0",
-    "signature": "int grim_joystick_init(int hwnd)",
+    "signature": "bool grim_joystick_init(void * hwnd)",
     "external": false,
     "calls_total": 5,
     "calls": ["DirectInput8Create", "GetDesktopWindow", "GetForegroundWindow", "GetModuleHandleA", "grim_joystick_poll"]
@@ -1122,23 +1162,23 @@
   {
     "name": "grim_joystick_poll",
     "address": "1000a2b0",
-    "signature": "int grim_joystick_poll(void)",
+    "signature": "bool grim_joystick_poll(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_1000a310",
+    "name": "grim_joystick_button_down",
     "address": "1000a310",
-    "signature": "byte FUN_1000a310(uint param_1)",
+    "signature": "uchar grim_joystick_button_down(uint button)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_1000a330",
+    "name": "grim_joystick_shutdown",
     "address": "1000a330",
-    "signature": "undefined FUN_1000a330(void)",
+    "signature": "void grim_joystick_shutdown(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1146,7 +1186,7 @@
   {
     "name": "grim_keyboard_key_down",
     "address": "1000a370",
-    "signature": "int grim_keyboard_key_down(uint key)",
+    "signature": "uchar grim_keyboard_key_down(uint key)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1154,7 +1194,7 @@
   {
     "name": "grim_keyboard_init",
     "address": "1000a390",
-    "signature": "int grim_keyboard_init(int hwnd)",
+    "signature": "bool grim_keyboard_init(void * hwnd)",
     "external": false,
     "calls_total": 5,
     "calls": ["DirectInput8Create", "GetDesktopWindow", "GetForegroundWindow", "GetModuleHandleA", "grim_keyboard_poll"]
@@ -1162,7 +1202,7 @@
   {
     "name": "grim_keyboard_poll",
     "address": "1000a4a0",
-    "signature": "int grim_keyboard_poll(void)",
+    "signature": "bool grim_keyboard_poll(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1178,7 +1218,7 @@
   {
     "name": "grim_mouse_button_down",
     "address": "1000a590",
-    "signature": "int grim_mouse_button_down(int button)",
+    "signature": "uchar grim_mouse_button_down(int button)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1186,7 +1226,7 @@
   {
     "name": "grim_mouse_init",
     "address": "1000a5a0",
-    "signature": "int grim_mouse_init(void)",
+    "signature": "bool grim_mouse_init(void)",
     "external": false,
     "calls_total": 5,
     "calls": ["DirectInput8Create", "GetDesktopWindow", "GetForegroundWindow", "GetModuleHandleA", "grim_mouse_poll"]
@@ -1194,7 +1234,7 @@
   {
     "name": "grim_mouse_poll",
     "address": "1000a670",
-    "signature": "int grim_mouse_poll(void)",
+    "signature": "bool grim_mouse_poll(void)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_noop"]
@@ -1416,9 +1456,17 @@
     "calls": ["FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "seh_prolog"]
   },
   {
-    "name": "FUN_1000ae52",
+    "name": "grim_yuv_cache_entry_init",
+    "address": "1000ae4f",
+    "signature": "void * grim_yuv_cache_entry_init(void * this)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "D3DXSaveSurfaceToFileA",
     "address": "1000ae52",
-    "signature": "int FUN_1000ae52(int arg1, int arg2, int * arg3, int arg4, int * arg5)",
+    "signature": "int D3DXSaveSurfaceToFileA(char * path, int format, void * surface, void * palette, void * rect)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_1000ad9f"]
@@ -1448,9 +1496,9 @@
     "calls": ["FUN_1000af45"]
   },
   {
-    "name": "FUN_1000b297",
+    "name": "D3DXCreateTexture",
     "address": "1000b297",
-    "signature": "int FUN_1000b297(void * this, int * * arg1, int arg2, int arg3, int arg4)",
+    "signature": "int D3DXCreateTexture(void * this, void * device, uint width, uint height, uint mip_levels, uint usage, int format, int pool, void * * texture)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_1000b26f"]
@@ -1472,9 +1520,9 @@
     "calls": ["FUN_1004b5cf", "operator_delete", "thunk_FUN_100161a0"]
   },
   {
-    "name": "`vector_constructor_iterator'",
+    "name": "grim_vector_constructor_iterator",
     "address": "1000b393",
-    "signature": "void `vector_constructor_iterator'(void * param_1, uint param_2, int param_3, _func_void_ptr_void_ptr * param_4)",
+    "signature": "void grim_vector_constructor_iterator(void * base, uint size, int count, void * constructor)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1488,12 +1536,12 @@
     "calls": []
   },
   {
-    "name": "FUN_1000b3fe",
+    "name": "d3dx_copy_texture_filtered",
     "address": "1000b3fe",
-    "signature": "int FUN_1000b3fe(int * arg1, int * arg2, int arg3, int arg4, float arg5)",
+    "signature": "int d3dx_copy_texture_filtered(void * destination, void * source, void * destination_options, uint copy_flags, uint filter, float scale)",
     "external": false,
     "calls_total": 10,
-    "calls": ["FUN_1000b3b5", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "`vector_constructor_iterator'", "grim_format_info_lookup", "grim_pixel_format_create", "operator_delete", "operator_new", "thunk_FUN_1000ce69"]
+    "calls": ["FUN_1000b3b5", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "grim_format_info_lookup", "grim_pixel_format_create", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "thunk_FUN_1000ce69"]
   },
   {
     "name": "FUN_1000bbfc",
@@ -1520,9 +1568,9 @@
     "calls": ["FID_conflict:`vector_deleting_destructor'", "FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_100161bb", "FUN_100165d3", "FUN_1004b6c3", "`vector_deleting_destructor'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
-    "name": "FUN_1000c1e8",
+    "name": "D3DXSaveTextureToFileA",
     "address": "1000c1e8",
-    "signature": "void * FUN_1000c1e8(int arg1, int arg2, int * arg3, int arg4)",
+    "signature": "int D3DXSaveTextureToFileA(char * path, int format, void * texture, void * palette)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_1000be28"]
@@ -1544,20 +1592,20 @@
     "calls": ["FUN_1000abad", "FUN_1000ac8f", "FUN_1000acc0", "FUN_1000ae72", "FUN_1000af45", "FUN_1000c205", "FUN_10010285", "FUN_1001029e", "FUN_10012677", "grim_format_info_lookup", "seh_prolog"]
   },
   {
-    "name": "FUN_1000cb5c",
+    "name": "D3DXCreateTextureFromFileInMemoryEx",
     "address": "1000cb5c",
-    "signature": "int FUN_1000cb5c(int * * arg1, void * arg2, int * arg3, int arg4, int arg5, int arg6, int arg7, void * arg8, int arg9, int arg10, int * * arg11, int arg12, int arg13, int arg14, int arg15)",
+    "signature": "int D3DXCreateTextureFromFileInMemoryEx(IDirect3DDevice8 * device, void * source_data, uint source_data_size, uint width, uint height, uint mip_levels, ulong usage, D3DFORMAT format, D3DPOOL pool, ulong filter, ulong mip_filter, ulong color_key, void * source_info, PALETTEENTRY * palette, IDirect3DTexture8 * * texture)",
     "external": false,
     "calls_total": 1,
     "calls": ["FUN_1000c4e9"]
   },
   {
-    "name": "FUN_1000cb9c",
+    "name": "D3DXCreateTextureFromFileExA",
     "address": "1000cb9c",
-    "signature": "int FUN_1000cb9c(int * * arg1, int * arg2, int arg3, int arg4, int arg5, int arg6, void * arg7, int arg8, int arg9, int * * arg10, int arg11, int arg12, int arg13, int arg14)",
+    "signature": "int D3DXCreateTextureFromFileExA(IDirect3DDevice8 * device, char * path, uint width, uint height, uint mip_levels, ulong usage, D3DFORMAT format, D3DPOOL pool, ulong filter, ulong mip_filter, ulong color_key, void * source_info, PALETTEENTRY * palette, IDirect3DTexture8 * * texture)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_1000cb5c", "FUN_1001bca5", "FUN_1001bcb7", "FUN_1001bed2"]
+    "calls": ["D3DXCreateTextureFromFileInMemoryEx", "FUN_1001bca5", "FUN_1001bcb7", "FUN_1001bed2"]
   },
   {
     "name": "float_near_equal",
@@ -1576,9 +1624,9 @@
     "calls": ["grim_select_renderer_backend"]
   },
   {
-    "name": "thunk_FUN_1000cc2c",
+    "name": "D3DXVec2Normalize",
     "address": "1000cc39",
-    "signature": "undefined thunk_FUN_1000cc2c(void)",
+    "signature": "undefined D3DXVec2Normalize(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2341,7 +2389,7 @@
     "signature": "int FUN_10012b93(int * arg1)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10013007",
@@ -2501,7 +2549,7 @@
     "signature": "int FUN_100142a2(int * arg1)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014393",
@@ -2509,7 +2557,7 @@
     "signature": "int FUN_10014393(int * arg1)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014595",
@@ -2517,7 +2565,7 @@
     "signature": "int FUN_10014595(int * arg1)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014799",
@@ -2525,7 +2573,7 @@
     "signature": "int FUN_10014799(int * arg1)",
     "external": false,
     "calls_total": 16,
-    "calls": ["FUN_100132bb", "FUN_10013551", "FUN_10013582", "FUN_100136d2", "FUN_100137f6", "FUN_10013945", "FUN_10013a98", "FUN_10013bd7", "FUN_10013c72", "FUN_10013dbe", "FUN_10013edf", "FUN_1001402b", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["FUN_100132bb", "FUN_10013551", "FUN_10013582", "FUN_100136d2", "FUN_100137f6", "FUN_10013945", "FUN_10013a98", "FUN_10013bd7", "FUN_10013c72", "FUN_10013dbe", "FUN_10013edf", "FUN_1001402b", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014bbc",
@@ -2533,7 +2581,7 @@
     "signature": "int FUN_10014bbc(int * arg1)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_1001504e",
@@ -2549,7 +2597,7 @@
     "signature": "int FUN_1001514e(int * arg1)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_1001504e", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["FUN_1001504e", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10015534",
@@ -2557,7 +2605,7 @@
     "signature": "int FUN_10015534(int * arg1)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_1001504e", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["FUN_1001504e", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10015c65",
@@ -2565,7 +2613,7 @@
     "signature": "int FUN_10015c65(int * arg1)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10016007",
@@ -2656,17 +2704,17 @@
     "calls": []
   },
   {
-    "name": "FUN_10016c3b",
+    "name": "grim_pixel_format_quantize_color_key_yuv",
     "address": "10016c3b",
-    "signature": "undefined FUN_10016c3b(void)",
+    "signature": "void grim_pixel_format_quantize_color_key_yuv(void * this)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_10016c3c",
+    "name": "grim_pixel_format_destroy_dxt",
     "address": "10016c3c",
-    "signature": "int FUN_10016c3c(void * * * arg1)",
+    "signature": "void grim_pixel_format_destroy_dxt(void * this)",
     "external": false,
     "calls_total": 3,
     "calls": ["grim_vertex_space_converter_destroy", "operator_delete", "seh_prolog"]
@@ -2677,7 +2725,7 @@
     "signature": "void grim_pixel_format_write_dxt_cache(void * this, uint x, uint y, float * pixels)",
     "external": false,
     "calls_total": 5,
-    "calls": ["`vector_constructor_iterator'", "grim_convert_vertex_space", "operator_delete", "operator_new", "seh_prolog"]
+    "calls": ["grim_convert_vertex_space", "grim_vector_constructor_iterator", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "fpu_set_round_trunc",
@@ -2693,7 +2741,7 @@
     "signature": "void * grim_pixel_format_init(void * this, uint * desc, uint bits_per_pixel, uint coord_mode)",
     "external": false,
     "calls_total": 1,
-    "calls": ["`vector_constructor_iterator'"]
+    "calls": ["grim_vector_constructor_iterator"]
   },
   {
     "name": "FUN_10017345",
@@ -2709,12 +2757,12 @@
     "signature": "int FUN_10017361(void * arg1, void * arg2)",
     "external": false,
     "calls_total": 3,
-    "calls": ["`vector_constructor_iterator'", "operator_new", "seh_prolog"]
+    "calls": ["grim_vector_constructor_iterator", "operator_new", "seh_prolog"]
   },
   {
-    "name": "FUN_100173dc",
+    "name": "grim_pixel_format_quantize_color_key",
     "address": "100173dc",
-    "signature": "int FUN_100173dc(int * arg1)",
+    "signature": "void grim_pixel_format_quantize_color_key(void * this)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_convert_vertex_space"]
@@ -2968,225 +3016,233 @@
     "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
-    "name": "FUN_100192a7",
+    "name": "grim_pixel_format_read_r8g8b8",
     "address": "100192a7",
-    "signature": "void * FUN_100192a7(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_r8g8b8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019333",
+    "name": "grim_pixel_format_read_a8r8g8b8",
     "address": "10019333",
-    "signature": "int * FUN_10019333(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a8r8g8b8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_100193d9",
+    "name": "grim_pixel_format_read_x8r8g8b8",
     "address": "100193d9",
-    "signature": "void * FUN_100193d9(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_x8r8g8b8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019475",
+    "name": "grim_pixel_format_read_r5g6b5",
     "address": "10019475",
-    "signature": "short * FUN_10019475(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_r5g6b5(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001951a",
+    "name": "grim_pixel_format_read_x1r5g5b5",
     "address": "1001951a",
-    "signature": "short * FUN_1001951a(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_x1r5g5b5(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_100195bc",
+    "name": "grim_pixel_format_read_a1r5g5b5",
     "address": "100195bc",
-    "signature": "short * FUN_100195bc(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a1r5g5b5(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001966c",
+    "name": "grim_pixel_format_read_a4r4g4b4",
     "address": "1001966c",
-    "signature": "void * FUN_1001966c(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a4r4g4b4(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001971b",
+    "name": "grim_pixel_format_read_a2b10g10r10",
     "address": "1001971b",
-    "signature": "int * FUN_1001971b(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a2b10g10r10(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_100197f1",
+    "name": "grim_pixel_format_read_g16r16",
     "address": "100197f1",
-    "signature": "int * FUN_100197f1(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_g16r16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019883",
+    "name": "grim_pixel_format_read_r3g3b2",
     "address": "10019883",
-    "signature": "char * FUN_10019883(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_r3g3b2(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019925",
+    "name": "grim_pixel_format_read_a8",
     "address": "10019925",
-    "signature": "char * FUN_10019925(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019997",
+    "name": "grim_pixel_format_read_a8r3g3b2",
     "address": "10019997",
-    "signature": "char * FUN_10019997(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a8r3g3b2(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019a49",
+    "name": "grim_pixel_format_read_x4r4g4b4",
     "address": "10019a49",
-    "signature": "void * FUN_10019a49(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_x4r4g4b4(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019ae8",
+    "name": "grim_pixel_format_read_a8p8",
     "address": "10019ae8",
-    "signature": "char * FUN_10019ae8(void * this, void * arg1, void * arg2, int arg3, uint arg4)",
+    "signature": "void grim_pixel_format_read_a8p8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019bd3",
+    "name": "grim_pixel_format_read_p8",
+    "address": "10019b6f",
+    "signature": "void grim_pixel_format_read_p8(void * this, uint row, uint depth, float * pixels)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["grim_apply_color_key"]
+  },
+  {
+    "name": "grim_pixel_format_read_l8",
     "address": "10019bd3",
-    "signature": "char * FUN_10019bd3(void * this, void * arg1, int arg2, int arg3, uint arg4)",
+    "signature": "void grim_pixel_format_read_l8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019c41",
+    "name": "grim_pixel_format_read_a8l8",
     "address": "10019c41",
-    "signature": "char * FUN_10019c41(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a8l8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019cca",
+    "name": "grim_pixel_format_read_a4l4",
     "address": "10019cca",
-    "signature": "char * FUN_10019cca(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a4l4(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019d53",
+    "name": "grim_pixel_format_read_v8u8",
     "address": "10019d53",
-    "signature": "char * FUN_10019d53(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_v8u8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019dd5",
+    "name": "grim_pixel_format_read_l6v5u5",
     "address": "10019dd5",
-    "signature": "char * FUN_10019dd5(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_l6v5u5(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019e86",
+    "name": "grim_pixel_format_read_x8l8v8u8",
     "address": "10019e86",
-    "signature": "char * FUN_10019e86(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_x8l8v8u8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019f17",
+    "name": "grim_pixel_format_read_q8w8v8u8",
     "address": "10019f17",
-    "signature": "char * FUN_10019f17(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_q8w8v8u8(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_10019fae",
+    "name": "grim_pixel_format_read_v16u16",
     "address": "10019fae",
-    "signature": "short * FUN_10019fae(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_v16u16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a031",
+    "name": "grim_pixel_format_read_w11v11u10",
     "address": "1001a031",
-    "signature": "int * FUN_1001a031(void * this, void * arg1, uint arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_w11v11u10(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a0eb",
+    "name": "grim_pixel_format_read_a2w10v10u10",
     "address": "1001a0eb",
-    "signature": "int * FUN_1001a0eb(void * this, void * arg1, uint arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_a2w10v10u10(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a1be",
+    "name": "grim_pixel_format_read_unorm16",
     "address": "1001a1be",
-    "signature": "short * FUN_1001a1be(void * this, void * arg1, int arg2, int arg3, uint arg4)",
+    "signature": "void grim_pixel_format_read_unorm16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a22e",
+    "name": "grim_pixel_format_read_al16",
     "address": "1001a22e",
-    "signature": "int * FUN_1001a22e(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_al16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a2bc",
+    "name": "grim_pixel_format_read_r16",
     "address": "1001a2bc",
-    "signature": "void * FUN_1001a2bc(void * this, void * arg1, int arg2, int arg3, int arg4)",
+    "signature": "void grim_pixel_format_read_r16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 1,
     "calls": ["grim_apply_color_key"]
   },
   {
-    "name": "FUN_1001a348",
+    "name": "grim_pixel_format_read_ar16",
     "address": "1001a348",
-    "signature": "uint FUN_1001a348(void * this, uint arg1, uint arg2, int arg3, uint arg4)",
+    "signature": "void grim_pixel_format_read_ar16(void * this, uint row, uint depth, float * pixels)",
     "external": false,
     "calls_total": 2,
     "calls": ["__aullshr", "grim_apply_color_key"]
@@ -3205,7 +3261,7 @@
     "signature": "void * grim_pixel_format_init_yuv(void * this, uint * desc)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "grim_pixel_format_init", "operator_new", "seh_prolog"]
+    "calls": ["grim_pixel_format_init", "grim_vector_constructor_iterator", "operator_new", "seh_prolog"]
   },
   {
     "name": "grim_pixel_format_ctor_a8r8g8b8",
@@ -3328,6 +3384,14 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
+    "name": "grim_pixel_format_read_yuv_cache",
+    "address": "1001abbf",
+    "signature": "void grim_pixel_format_read_yuv_cache(void * this, uint x, uint y, float * pixels)",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["grim_apply_color_key", "grim_pixel_format_load_yuv_cache"]
+  },
+  {
     "name": "grim_pixel_format_ctor_g16r16",
     "address": "1001ac2e",
     "signature": "void * grim_pixel_format_ctor_g16r16(void * this, uint * desc)",
@@ -3352,9 +3416,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001ae58",
+    "name": "grim_pixel_format_scalar_deleting_destroy",
     "address": "1001ae58",
-    "signature": "void * * * FUN_1001ae58(void * this, void * * * arg1, char arg2)",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy(void * this, uint flags)",
     "external": false,
     "calls_total": 2,
     "calls": ["grim_vertex_space_converter_destroy", "operator_delete"]
@@ -3384,12 +3448,12 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001aec8",
+    "name": "grim_pixel_format_scalar_deleting_destroy_dxt_base",
     "address": "1001aec8",
-    "signature": "void * * * FUN_1001aec8(void * this, void * * * arg1, char arg2)",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_dxt_base(void * this, uint flags)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_10016c3c", "operator_delete"]
+    "calls": ["grim_pixel_format_destroy_dxt", "operator_delete"]
   },
   {
     "name": "grim_pixel_format_ctor_a4l4",
@@ -3400,9 +3464,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001af00",
+    "name": "grim_pixel_format_quantize_color_key_dxt",
     "address": "1001af00",
-    "signature": "void * FUN_1001af00(void * arg1)",
+    "signature": "void grim_pixel_format_quantize_color_key_dxt(void * this)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3485,7 +3549,7 @@
     "signature": "void grim_pixel_format_read_dxt_cache(void * this, uint x, uint y, float * out)",
     "external": false,
     "calls_total": 4,
-    "calls": ["`vector_constructor_iterator'", "fpu_set_round_trunc", "operator_new", "seh_prolog"]
+    "calls": ["fpu_set_round_trunc", "grim_vector_constructor_iterator", "operator_new", "seh_prolog"]
   },
   {
     "name": "grim_pixel_format_ctor_al16",
@@ -3552,25 +3616,25 @@
     "calls": ["grim_pixel_format_init_dxt"]
   },
   {
-    "name": "FUN_1001b472",
+    "name": "grim_pixel_format_scalar_deleting_destroy_dxt",
     "address": "1001b472",
-    "signature": "void * * * FUN_1001b472(void * this, void * * * arg1, char arg2)",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_dxt(void * this, uint flags)",
     "external": false,
     "calls_total": 2,
-    "calls": ["operator_delete", "thunk_FUN_10016c3c"]
+    "calls": ["j_grim_pixel_format_destroy_dxt", "operator_delete"]
   },
   {
-    "name": "thunk_FUN_10016c3c",
+    "name": "j_grim_pixel_format_destroy_dxt",
     "address": "1001b48e",
-    "signature": "int thunk_FUN_10016c3c(void * * * arg1)",
+    "signature": "void j_grim_pixel_format_destroy_dxt(void * this)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_1001b493",
+    "name": "grim_pixel_format_destroy_yuv",
     "address": "1001b493",
-    "signature": "int FUN_1001b493(void * * * arg1)",
+    "signature": "void grim_pixel_format_destroy_yuv(void * this)",
     "external": false,
     "calls_total": 4,
     "calls": ["grim_pixel_format_flush_yuv_cache", "grim_vertex_space_converter_destroy", "operator_delete", "seh_prolog"]
@@ -3600,17 +3664,25 @@
     "calls": ["grim_pixel_format_ctor_a1r5g5b5", "grim_pixel_format_ctor_a2b10g10r10", "grim_pixel_format_ctor_a2w10v10u10", "grim_pixel_format_ctor_a4l4", "grim_pixel_format_ctor_a4r4g4b4", "grim_pixel_format_ctor_a8", "grim_pixel_format_ctor_a8l8", "grim_pixel_format_ctor_a8p8", "grim_pixel_format_ctor_a8r3g3b2", "grim_pixel_format_ctor_a8r8g8b8", "grim_pixel_format_ctor_al16", "grim_pixel_format_ctor_ar16", "grim_pixel_format_ctor_d16_lockable", "grim_pixel_format_ctor_dxt1", "grim_pixel_format_ctor_dxt2", "grim_pixel_format_ctor_dxt3", "grim_pixel_format_ctor_dxt4", "grim_pixel_format_ctor_dxt5", "grim_pixel_format_ctor_g16r16", "grim_pixel_format_ctor_l16", "grim_pixel_format_ctor_l6v5u5", "grim_pixel_format_ctor_l8", "grim_pixel_format_ctor_p8", "grim_pixel_format_ctor_q8w8v8u8", "grim_pixel_format_ctor_r16", "grim_pixel_format_ctor_r3g3b2", "grim_pixel_format_ctor_r5g6b5", "grim_pixel_format_ctor_r8g8b8", "grim_pixel_format_ctor_uyvy", "grim_pixel_format_ctor_v16u16", "grim_pixel_format_ctor_v8u8", "grim_pixel_format_ctor_w11v11u10", "grim_pixel_format_ctor_x1r5g5b5", "grim_pixel_format_ctor_x4r4g4b4", "grim_pixel_format_ctor_x8l8v8u8", "grim_pixel_format_ctor_x8r8g8b8", "grim_pixel_format_ctor_yuy2", "operator_new", "seh_prolog"]
   },
   {
-    "name": "FUN_1001bc84",
-    "address": "1001bc84",
-    "signature": "void * * * FUN_1001bc84(void * this, void * * * arg1, char arg2)",
+    "name": "grim_pixel_format_scalar_deleting_destroy_yuv_base",
+    "address": "1001bc68",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_yuv_base(void * this, uint flags)",
     "external": false,
     "calls_total": 2,
-    "calls": ["operator_delete", "thunk_FUN_1001b493"]
+    "calls": ["grim_pixel_format_destroy_yuv", "operator_delete"]
   },
   {
-    "name": "thunk_FUN_1001b493",
+    "name": "grim_pixel_format_scalar_deleting_destroy_yuv",
+    "address": "1001bc84",
+    "signature": "void * grim_pixel_format_scalar_deleting_destroy_yuv(void * this, uint flags)",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["j_grim_pixel_format_destroy_yuv", "operator_delete"]
+  },
+  {
+    "name": "j_grim_pixel_format_destroy_yuv",
     "address": "1001bca0",
-    "signature": "int thunk_FUN_1001b493(void * * * arg1)",
+    "signature": "void j_grim_pixel_format_destroy_yuv(void * this)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -4480,6 +4552,14 @@
     "calls": ["grim_dxt1_decode_color_block"]
   },
   {
+    "name": "grim_dxt1_encode_block",
+    "address": "10021b96",
+    "signature": "int grim_dxt1_encode_block(void * out_block, float * rgba)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["grim_dxt1_encode_color_block"]
+  },
+  {
     "name": "grim_dxt3_encode_block",
     "address": "10021bae",
     "signature": "void grim_dxt3_encode_block(uint * out_block, float * rgba)",
@@ -4494,6 +4574,22 @@
     "external": false,
     "calls_total": 3,
     "calls": ["fpu_save_control_word", "grim_dxt1_encode_color_block", "grim_dxt5_optimize_alpha_endpoints"]
+  },
+  {
+    "name": "grim_dxt2_decode_block",
+    "address": "10022114",
+    "signature": "int grim_dxt2_decode_block(float * out_rgba, uint * block)",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["grim_dxt3_decode_block", "grim_dxt_unpremultiply_rgba_block"]
+  },
+  {
+    "name": "grim_dxt4_decode_block",
+    "address": "10022137",
+    "signature": "int grim_dxt4_decode_block(float * out_rgba, uint * block)",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["grim_dxt5_decode_block", "grim_dxt_unpremultiply_rgba_block"]
   },
   {
     "name": "grim_dxt2_encode_block",
@@ -4781,7 +4877,7 @@
     "signature": "undefined FUN_10023abf(int * param_1)",
     "external": false,
     "calls_total": 3,
-    "calls": ["FUN_10016c3b", "FUN_100239de", "zcfree"]
+    "calls": ["FUN_100239de", "grim_pixel_format_quantize_color_key_yuv", "zcfree"]
   },
   {
     "name": "FUN_10023aef",
@@ -4789,7 +4885,7 @@
     "signature": "undefined FUN_10023aef(int * param_1)",
     "external": false,
     "calls_total": 3,
-    "calls": ["FUN_10016c3b", "FUN_1002e65a", "FUN_1002e689"]
+    "calls": ["FUN_1002e65a", "FUN_1002e689", "grim_pixel_format_quantize_color_key_yuv"]
   },
   {
     "name": "FUN_10023ba3",
@@ -7336,6 +7432,14 @@
     "calls": ["grim_vertex_space_converter_destroy"]
   },
   {
+    "name": "grim_pixel_format_destroy_dxt_eh_handler",
+    "address": "1004b9ef",
+    "signature": "void grim_pixel_format_destroy_dxt_eh_handler(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "Unwind@1004b9f9",
     "address": "1004b9f9",
     "signature": "undefined Unwind@1004b9f9(void)",
@@ -7368,6 +7472,14 @@
     "calls": ["operator_delete"]
   },
   {
+    "name": "grim_pixel_format_init_yuv_eh_handler",
+    "address": "1004ba33",
+    "signature": "void grim_pixel_format_init_yuv_eh_handler(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "Unwind@1004ba3d",
     "address": "1004ba3d",
     "signature": "undefined Unwind@1004ba3d(void)",
@@ -7382,6 +7494,14 @@
     "external": false,
     "calls_total": 1,
     "calls": ["grim_vertex_space_converter_destroy"]
+  },
+  {
+    "name": "grim_pixel_format_destroy_yuv_eh_handler",
+    "address": "1004ba59",
+    "signature": "void grim_pixel_format_destroy_yuv_eh_handler(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
   },
   {
     "name": "Unwind@1004ba63",

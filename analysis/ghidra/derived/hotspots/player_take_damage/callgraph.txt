@@ -1,8 +1,0 @@
-# direct callgraph
-
-player_take_damage -> player_take_damage (0x00425e50)
-  -> creature_apply_damage [extracted]
-  -> crt_rand [extracted]
-  -> effect_spawn_explosion_burst [extracted]
-  -> perk_count_get [extracted]
-  -> sfx_play_panned [extracted]

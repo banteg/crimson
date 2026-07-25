@@ -51,13 +51,12 @@ flowchart TD
     G --> E
 ```
 
-Relevant native evidence is in
-[`crimsonland.exe_decompiled.c`](../../analysis/ghidra/raw/crimsonland.exe_decompiled.c):
+Relevant native evidence is address-keyed:
 
-- `gameplay_reset_state()` around line 11543
-- `terrain_generate_random()` around line 13987
-- `quest_start_selected()` around line 32878
-- gameplay mode entry around line 40832
+- `gameplay_reset_state` at `0x00412dc0`
+- `terrain_generate_random` at `0x004181b0`
+- `quest_start_selected` at `0x0043a790`
+- `game_state_set` at `0x004461c0`
 
 ## Why the replay boundary is later
 

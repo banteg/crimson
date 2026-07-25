@@ -5,7 +5,8 @@ tags:
 
 # Detangling notes
 This page tracks high-value functions to name and the evidence gathered so far.
-Use the hotspot script to refresh the lists when the decompile is regenerated.
+Use the hotspot script to refresh the lists when structured function snapshots
+are regenerated.
 
 ## Hotspot script
 

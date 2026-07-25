@@ -82,7 +82,9 @@ src/
   crimson/          game logic — modes, weapons, perks, creatures, UI, replay
   grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
 analysis/
-  ghidra/           name/type maps (source of truth) and raw decompile exports
+  ghidra/           name/type maps (source of truth) and structured snapshots
+  binary_ninja/     preferred live analysis databases
+  ida/              structured function/import/string snapshots
   frida/            runtime capture evidence (state snapshots, RNG traces)
   windbg/           debugger session logs
 docs/               100+ pages: formats, structs, algorithms, parity tracking
@@ -92,7 +94,10 @@ tests/              200+ tests: gameplay, perks, physics, replay, parity
 
 ## Reverse engineering
 
-**Static analysis** is the source of truth. Names and types live in [`analysis/ghidra/maps/`](analysis/ghidra/maps/); raw decompiles in [`analysis/ghidra/raw/`](analysis/ghidra/raw/) are regenerated output.
+**Static analysis** is the source of truth. Names and types live in
+[`analysis/ghidra/maps/`](analysis/ghidra/maps/); consult current function views
+in Binary Ninja, IDA, then Ghidra using the shared address-keyed workflow in
+[`analysis/README.md`](analysis/README.md).
 
 **Runtime tooling** (Frida, WinDbg) validates ambiguous behavior and captures ground truth. Evidence summaries live under [`analysis/frida/`](analysis/frida/).
 

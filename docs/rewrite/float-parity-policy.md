@@ -45,43 +45,36 @@ rounding flips ~5% of components by 1 ulp. This is why the rewrite's
 f32-after-every-op idiom works, and it is the default model for any
 newly-ported expression.
 
-### Evidence in decompile artifacts
+### Address-keyed static evidence
 
 - CRT startup explicitly sets x87 precision-control to 53-bit (`PC_53`):
-  - `_start` calls `crt_run_initializers`:
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83734](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83734),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83777](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83777).
-  - `crt_run_initializers` invokes `FUN_00460cb8` via `data_47b160`:
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:83626](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L83626),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:104544](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L104544).
+  - `_start` at `0x00463026` calls `crt_run_initializers` at instruction
+    `0x004630cb`.
+  - `crt_run_initializers` at `0x00462eb0` invokes `FUN_00460cb8` through
+    `data_47b160` at `0x0047b160`.
   - `FUN_00460cb8` calls `sub_4636e7`, which returns
-    `sub_469e81(0x10000, 0x30000)`:
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81032](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L81032),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81036](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L81036),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:84238](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L84238).
+    `sub_469e81(0x10000, 0x30000)` (`0x00460cb8`, `0x00460cc7`, and
+    `0x004636f8`).
   - In the CRT mapping helper, `arg1 & 0x30000 == 0x10000` sets CW precision
-    bits to `0x200` (53-bit mode):
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91988](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91988),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91992](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91992),
-    [analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:91993](../../analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt#L91993).
+    bits to `0x200` (53-bit mode) around `0x00469f8e`–`0x00469f9e`.
   - IDA function names align with this path:
     `__setdefaultprecision -> __controlfp`:
     `analysis/ida/raw/crimsonland.exe/functions.json` lines around `13692`,
     `13687`.
 - Trig and atan paths are emitted as x87 transcendental ops with `float10`
   temporaries:
-  - `angle_approach` callsites in creature movement:
-    `analysis/ghidra/raw/crimsonland.exe_decompiled.c` (`0x0041f430`,
-    lines around `21767`).
+  - `angle_approach` at `0x0041f430` is called from creature movement.
   - Heading/direction math uses `fpatan` + `fcos/fsin` with `float10` casts:
-    same file, lines around `12248`, `12226`, `12230`, `21754`, `21771`, `21775`.
+    see `player_update` at `0x004136b0` and `creature_update_all` at
+    `0x00426220`.
   - Player movement/aim branches repeatedly compute
     `fcos(heading - 1.5707964)` / `fsin(heading - 1.5707964)` via `float10`.
 - Those results are then spilled back to `float` state fields at explicit
   assignment points, for example:
-  - `(float)(fVar17 * ...)` assignments into `move_dx/move_dy` and velocity
-    slots (same file, lines around `12227-12233`, `21772-21778`).
-  - similar float spills in low-health effect direction math (`11961-11962`).
+  - assignments into `move_dx`/`move_dy` and velocity slots in `player_update`
+    and `creature_update_all`;
+  - similar float spills in the low-health effect direction path in
+    `player_update`.
 - Binary Ninja HLIL shows the same pattern as `fconvert.t(...)` (widen) and
   `fconvert.s(...)` (spill to float32), confirming “extended intermediate,
   float32 storage” rather than all-float64 storage.

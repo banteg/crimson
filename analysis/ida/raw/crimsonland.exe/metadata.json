@@ -1,5 +1,5 @@
 {
-  "file_path": "/Users/banteg/dev/banteg/crimson/game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
+  "file_path": "/private/var/folders/zq/vyffd7255m38x2mbmvvd102w0000gn/T/crimson-ida.g16eGO/crimsonland.exe",
   "ida_sdk_version": 930,
   "ida_version": "9.3",
   "image_base": "0x00400000",

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +42,14 @@ public class ApplyNameMap extends GhidraScript {
     }
 
     private static final Pattern QUALIFIER_RE = Pattern.compile("\\b(const|volatile)\\b\\s*");
+    private static final Pattern CALL_CONV_RE = Pattern.compile(
+        "\\b__(cdecl|fastcall|stdcall|thiscall|usercall|vectorcall)\\b\\s*"
+    );
     private static final Pattern FUNCTION_POINTER_RE = Pattern.compile(
         "\\b(?<ret>[A-Za-z_][A-Za-z0-9_\\s]*?)\\(\\s*\\*\\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\\s*\\)\\s*\\([^)]*\\)"
     );
     private static final Pattern FILE_POINTER_RE = Pattern.compile("\\bFILE\\s*\\*");
+    private static final Pattern HWND_RE = Pattern.compile("\\bHWND\\b");
 
     private static String defaultMapPath() {
         String jsonPath = "analysis" + File.separator + "ghidra" + File.separator + "maps"
@@ -247,8 +252,55 @@ public class ApplyNameMap extends GhidraScript {
         int renamed = 0;
         int signatures = 0;
         int comments = 0;
+        int created = 0;
+        int split = 0;
         int missing = 0;
         int skipped = 0;
+
+        List<Row> boundaryRows = new ArrayList<>();
+        for (Row row : rows) {
+            if (row == null || row.address == null || row.address.isBlank()) {
+                continue;
+            }
+            if (row.program != null && !row.program.isBlank()
+                && !row.program.equalsIgnoreCase(programName)) {
+                continue;
+            }
+            boundaryRows.add(row);
+        }
+        boundaryRows.sort(
+            Comparator.comparingLong((Row row) -> parseAddressValue(row.address)).reversed()
+        );
+
+        // Every curated row is a function boundary. Process high addresses
+        // first so splitting an overgrown auto-analysis function cannot
+        // re-absorb a higher entry point.
+        for (Row row : boundaryRows) {
+            Address addr = toAddr(parseAddressValue(row.address));
+            Function function = functionManager.getFunctionAt(addr);
+            if (function != null) {
+                continue;
+            }
+            Function containing = functionManager.getFunctionContaining(addr);
+            if (containing != null && !containing.getEntryPoint().equals(addr)) {
+                println(
+                    "ApplyNameMap: splitting " + containing.getEntryPoint()
+                    + " at curated boundary " + addr
+                );
+                removeFunction(containing);
+                split++;
+            }
+            if (currentProgram.getListing().getInstructionAt(addr) == null) {
+                disassemble(addr);
+            }
+            function = createFunction(addr, row.name);
+            if (function == null) {
+                printerr("ApplyNameMap: failed to create " + row.name + " at " + addr);
+                missing++;
+            } else {
+                created++;
+            }
+        }
 
         for (Row row : rows) {
             if (row == null || row.address == null || row.address.isBlank()) {
@@ -269,23 +321,8 @@ public class ApplyNameMap extends GhidraScript {
             }
             Function function = functionManager.getFunctionAt(addr);
             if (function == null) {
-                boolean shouldCreate = row.create != null && row.create.booleanValue();
-                if (shouldCreate) {
-                    if (functionManager.getFunctionContaining(addr) != null) {
-                        printerr("ApplyNameMap: address " + addr + " inside existing function for " + row.name);
-                        missing++;
-                        continue;
-                    }
-                    if (currentProgram.getListing().getInstructionAt(addr) == null) {
-                        disassemble(addr);
-                    }
-                    function = createFunction(addr, row.name);
-                }
-                if (function == null) {
-                    printerr("No function at " + addr + " for " + row.name);
-                    missing++;
-                    continue;
-                }
+                printerr("No function at " + addr + " for " + row.name);
+                continue;
             }
 
             boolean changed = false;
@@ -353,6 +390,7 @@ public class ApplyNameMap extends GhidraScript {
         println("Program: " + programName);
         println("Updated entries: " + applied);
         println("Renamed: " + renamed + ", Signatures: " + signatures + ", Comments: " + comments);
+        println("Created: " + created + ", Split: " + split);
         println("Missing: " + missing + ", Skipped: " + skipped);
     }
 
@@ -361,8 +399,11 @@ public class ApplyNameMap extends GhidraScript {
             return "";
         }
         String normalized = QUALIFIER_RE.matcher(signature).replaceAll("");
+        normalized = CALL_CONV_RE.matcher(normalized).replaceAll("");
         normalized = FUNCTION_POINTER_RE.matcher(normalized)
             .replaceAll(match -> match.group("ret").trim() + " *" + match.group("name"));
+        normalized = normalized.replace("unsigned __int64", "unsigned long long");
+        normalized = normalized.replace("__int64", "long long");
         normalized = normalized.replaceAll("\\s+", " ").trim();
         return normalized;
     }
@@ -371,6 +412,7 @@ public class ApplyNameMap extends GhidraScript {
         if (signature == null || signature.isBlank()) {
             return "";
         }
-        return FILE_POINTER_RE.matcher(signature).replaceAll("void *");
+        String normalized = FILE_POINTER_RE.matcher(signature).replaceAll("void *");
+        return HWND_RE.matcher(normalized).replaceAll("void *");
     }
 }

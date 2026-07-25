@@ -99,7 +99,7 @@ tags:
 
 - Landed fix removed the dominant `tick 5226` RNG-stream drift and advanced first mismatch to a narrow one-tick timer rounding discrepancy.
 - Next probe should target native `frame_dt` round-trip side effects in `player_update` and post-player-update timer decrement ordering:
-  - `analysis/ghidra/raw/crimsonland.exe_decompiled.c` (`player_update` around `0x004136b0`, `frame_dt` temporary rescale/restore),
+  - `player_update` at `0x004136b0` (`frame_dt` temporary rescale/restore),
   - `src/crimson/gameplay.py`,
   - `src/crimson/sim/world_state.py`.
 
@@ -192,7 +192,9 @@ tags:
 - `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8964 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_8964_nm20_nocache.json`
 - `uv run crimson original focus-trace artifacts/frida/share/gameplay_diff_capture.json.gz --tick 8974 --near-miss-threshold 20 --no-cache --json-out analysis/frida/reports/capture_49aec5d3_fix40_focus_8974_nm20_nocache.json`
 - `uv run python - <<'PY' ... _FocusRuntime slot-31 drift scan over ancestry ticks ...` (onset localization + heading/target deltas + force_target inspection)
-- `sg run -p 'while ($COND) { $$$BODY }' analysis/ghidra/raw/crimsonland.exe_decompiled.c -l c --json=stream` (structural scan over decompile loops including `angle_approach`/movement loop forms)
+- Historical structural scan over the then-current Ghidra view, covering
+  `angle_approach` and movement-loop forms; refresh those functions by address
+  through `just analysis-function`.
 
 ### Outcome / Next Probe
 
@@ -204,4 +206,3 @@ tags:
   - emitted at least for slot `31` around `8679..9014` and the player-chase onset window (`8730..8900`).
 
 ---
-

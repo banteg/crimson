@@ -106,7 +106,7 @@ const GRIM_VTABLE_OFFSETS = {
 
 // Grim internal RVAs
 const GRIM_RVAS = {
-    // Grim2D vtable config/state dispatcher (see `analysis/ghidra/raw/grim.dll_decompiled.c`).
+    // Grim2D vtable config/state dispatcher (grim_set_config_var @ 0x10006580).
     set_config_var: 0x06580,
     set_render_target: 0x06d50,
     get_texture_handle: 0x07740,
@@ -842,7 +842,7 @@ function hookTerrainStampTracing() {
     }
 
     // Config vars (blend state, filtering, etc). Useful for verifying parity.
-    // See: `analysis/ghidra/raw/grim.dll_decompiled.c` (grim_set_config_var).
+    // Static anchor: grim_set_config_var @ 0x10006580.
     Interceptor.attach(grimBase.add(GRIM_RVAS.set_config_var), {
         onEnter: function () {
             if (!isTerrainGenerateThread(this.threadId)) return;

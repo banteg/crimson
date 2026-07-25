@@ -73,8 +73,8 @@
     "end": "0x0040116A",
     "external": false,
     "library": false,
-    "name": "sub_401160",
-    "signature": "int()",
+    "name": "console_global_construct_and_register",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -85,7 +85,7 @@
     "external": false,
     "library": true,
     "name": "console_global_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -97,8 +97,8 @@
     "end": "0x0040118C",
     "external": false,
     "library": false,
-    "name": "console_register_clear_log_atexit",
-    "signature": "int()",
+    "name": "console_register_global_destructor_atexit",
+    "signature": "void()",
     "size": 12,
     "thunk": false
   },
@@ -108,8 +108,8 @@
     "end": "0x0040119A",
     "external": false,
     "library": true,
-    "name": "func",
-    "signature": "void __cdecl()",
+    "name": "console_global_destroy",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -261,7 +261,7 @@
     "external": false,
     "library": false,
     "name": "console_init",
-    "signature": "int *(int *console_state)",
+    "signature": "",
     "size": 382,
     "thunk": false
   },
@@ -291,7 +291,7 @@
     "external": false,
     "library": false,
     "name": "console_push_line",
-    "signature": "char(char *line)",
+    "signature": "int __stdcall(char *Source)",
     "size": 193,
     "thunk": false
   },
@@ -305,7 +305,7 @@
     "external": false,
     "library": false,
     "name": "console_printf",
-    "signature": "char(void *console_state, char *fmt, ...)",
+    "signature": "int __cdecl(int, char *Format, char ArgList)",
     "size": 49,
     "thunk": false
   },
@@ -346,7 +346,7 @@
     "external": false,
     "library": false,
     "name": "console_exec_line",
-    "signature": "char(char *line)",
+    "signature": "int __thiscall(int, int)",
     "size": 254,
     "thunk": false
   },
@@ -369,7 +369,7 @@
     "external": false,
     "library": false,
     "name": "console_update",
-    "signature": "void(int console_state)",
+    "signature": "int __thiscall(int)",
     "size": 904,
     "thunk": false
   },
@@ -383,7 +383,7 @@
     "external": false,
     "library": false,
     "name": "console_render",
-    "signature": "int(void *arg1)",
+    "signature": "",
     "size": 1408,
     "thunk": false
   },
@@ -400,7 +400,7 @@
     "external": false,
     "library": false,
     "name": "console_register_cvar",
-    "signature": "void *(char *name, char *value)",
+    "signature": "int __stdcall(char *Source, char *String)",
     "size": 295,
     "thunk": false
   },
@@ -450,7 +450,7 @@
     "external": false,
     "library": false,
     "name": "console_tokenize_line",
-    "signature": "void(char *line)",
+    "signature": "",
     "size": 161,
     "thunk": false
   },
@@ -518,7 +518,7 @@
     "external": false,
     "library": false,
     "name": "console_flush_log",
-    "signature": "int(void *console_state, char *filename)",
+    "signature": "unsigned __int8 __thiscall(void *console_state, char *filename)",
     "size": 121,
     "thunk": false
   },
@@ -540,7 +540,7 @@
     "external": false,
     "library": false,
     "name": "config_init_defaults",
-    "signature": "int()",
+    "signature": "void()",
     "size": 734,
     "thunk": false
   },
@@ -577,7 +577,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_loading",
-    "signature": "int()",
+    "signature": "void()",
     "size": 375,
     "thunk": false
   },
@@ -667,7 +667,7 @@
     "external": false,
     "library": false,
     "name": "demo_mode_start",
-    "signature": "int()",
+    "signature": "void()",
     "size": 155,
     "thunk": false
   },
@@ -707,7 +707,7 @@
     "external": false,
     "library": false,
     "name": "game_core_init",
-    "signature": "int()",
+    "signature": "unsigned __int8()",
     "size": 73,
     "thunk": false
   },
@@ -782,8 +782,8 @@
     "end": "0x00405131",
     "external": false,
     "library": false,
-    "name": "nullsub_1",
-    "signature": "void __cdecl()",
+    "name": "demo_trial_already_paid_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -793,8 +793,8 @@
     "end": "0x00405141",
     "external": false,
     "library": false,
-    "name": "nullsub_2",
-    "signature": "void __cdecl()",
+    "name": "demo_trial_purchase_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -804,8 +804,8 @@
     "end": "0x00405151",
     "external": false,
     "library": false,
-    "name": "nullsub_3",
-    "signature": "void __cdecl()",
+    "name": "demo_trial_maybe_later_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -888,8 +888,8 @@
     "end": "0x00406131",
     "external": false,
     "library": false,
-    "name": "nullsub_4",
-    "signature": "void __cdecl()",
+    "name": "perk_selection_select_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -899,8 +899,8 @@
     "end": "0x00406141",
     "external": false,
     "library": false,
-    "name": "nullsub_5",
-    "signature": "void __cdecl()",
+    "name": "perk_selection_cancel_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -910,8 +910,8 @@
     "end": "0x00406151",
     "external": false,
     "library": false,
-    "name": "nullsub_6",
-    "signature": "void __cdecl()",
+    "name": "perk_selection_choice_items_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -921,8 +921,8 @@
     "end": "0x00406161",
     "external": false,
     "library": false,
-    "name": "nullsub_7",
-    "signature": "void __cdecl()",
+    "name": "perk_selection_hover_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -932,8 +932,8 @@
     "end": "0x00406171",
     "external": false,
     "library": false,
-    "name": "nullsub_8",
-    "signature": "void __cdecl()",
+    "name": "perk_selection_idle_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -976,7 +976,7 @@
     "external": false,
     "library": false,
     "name": "game_update_victory_screen",
-    "signature": "int()",
+    "signature": "void()",
     "size": 1883,
     "thunk": false
   },
@@ -986,8 +986,8 @@
     "end": "0x00406AB1",
     "external": false,
     "library": false,
-    "name": "nullsub_9",
-    "signature": "void __cdecl()",
+    "name": "game_completed_main_menu_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -997,8 +997,8 @@
     "end": "0x00406AC1",
     "external": false,
     "library": false,
-    "name": "nullsub_10",
-    "signature": "void __cdecl()",
+    "name": "game_completed_typo_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1008,8 +1008,8 @@
     "end": "0x00406AD1",
     "external": false,
     "library": false,
-    "name": "nullsub_11",
-    "signature": "void __cdecl()",
+    "name": "game_completed_rush_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1019,8 +1019,8 @@
     "end": "0x00406AE1",
     "external": false,
     "library": false,
-    "name": "nullsub_12",
-    "signature": "void __cdecl()",
+    "name": "game_completed_survival_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1036,7 +1036,7 @@
     "external": false,
     "library": false,
     "name": "game_update_generic_menu",
-    "signature": "int()",
+    "signature": "void()",
     "size": 72,
     "thunk": false
   },
@@ -1103,7 +1103,7 @@
     "external": false,
     "library": false,
     "name": "survival_spawn_creature",
-    "signature": "void(float *pos)",
+    "signature": "void(const vec2f_t *pos)",
     "size": 1973,
     "thunk": false
   },
@@ -1137,7 +1137,7 @@
     "external": false,
     "library": false,
     "name": "tutorial_prompt_dialog",
-    "signature": "void(char *text, float alpha)",
+    "signature": "void(char *text, float alpha, char tutorial_complete)",
     "size": 1084,
     "thunk": false
   },
@@ -1266,8 +1266,8 @@
     "end": "0x0040AA91",
     "external": false,
     "library": false,
-    "name": "nullsub_15",
-    "signature": "void __cdecl()",
+    "name": "ui_render_aim_lifetime_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1277,8 +1277,8 @@
     "end": "0x0040AAA1",
     "external": false,
     "library": false,
-    "name": "nullsub_16",
-    "signature": "void __cdecl()",
+    "name": "ui_render_aim_screen_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1383,8 +1383,8 @@
     "end": "0x0040C1A1",
     "external": false,
     "library": false,
-    "name": "nullsub_17",
-    "signature": "void __cdecl()",
+    "name": "demo_purchase_purchase_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1394,8 +1394,8 @@
     "end": "0x0040C1B1",
     "external": false,
     "library": false,
-    "name": "nullsub_18",
-    "signature": "void __cdecl()",
+    "name": "demo_purchase_maybe_later_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1441,7 +1441,7 @@
     "external": false,
     "library": false,
     "name": "game_frame_update",
-    "signature": "void()",
+    "signature": "unsigned __int8()",
     "size": 3588,
     "thunk": false
   },
@@ -1451,8 +1451,8 @@
     "end": "0x0040CFD5",
     "external": false,
     "library": false,
-    "name": "sub_40CFD0",
-    "signature": "",
+    "name": "credits_line_table_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -1462,8 +1462,8 @@
     "end": "0x0040CFF8",
     "external": false,
     "library": false,
-    "name": "sub_40CFE0",
-    "signature": "int *()",
+    "name": "credits_line_table_global_init",
+    "signature": "void()",
     "size": 24,
     "thunk": false
   },
@@ -1537,8 +1537,8 @@
     "end": "0x0040DF51",
     "external": false,
     "library": false,
-    "name": "nullsub_19",
-    "signature": "void __cdecl()",
+    "name": "credits_secret_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1548,8 +1548,8 @@
     "end": "0x0040DF61",
     "external": false,
     "library": false,
-    "name": "nullsub_20",
-    "signature": "void __cdecl()",
+    "name": "credits_back_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -1571,7 +1571,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_105",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -1582,7 +1582,7 @@
     "external": false,
     "library": false,
     "name": "j_mod_api_init",
-    "signature": "",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -1602,13 +1602,13 @@
     "calls": [
       "console_push_line",
       "crt_vsprintf",
-      "mod_api_core_printf"
+      "mod_api_debug_printf"
     ],
     "end": "0x0040DFF4",
     "external": false,
     "library": false,
-    "name": "sub_40DFC0",
-    "signature": "char(int, char *fmt, ...)",
+    "name": "mod_api_core_printf",
+    "signature": "void(const char *fmt, ...)",
     "size": 52,
     "thunk": false
   },
@@ -1621,7 +1621,7 @@
     "end": "0x0040E032",
     "external": false,
     "library": false,
-    "name": "mod_api_core_printf",
+    "name": "mod_api_debug_printf",
     "signature": "void(const char *fmt, ...)",
     "size": 50,
     "thunk": false
@@ -2111,8 +2111,8 @@
     "end": "0x0040F3D1",
     "external": false,
     "library": false,
-    "name": "nullsub_22",
-    "signature": "void __cdecl()",
+    "name": "mods_menu_launch_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2122,8 +2122,8 @@
     "end": "0x0040F3E1",
     "external": false,
     "library": false,
-    "name": "nullsub_23",
-    "signature": "void __cdecl()",
+    "name": "mods_menu_main_menu_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2133,8 +2133,8 @@
     "end": "0x0040F3F1",
     "external": false,
     "library": false,
-    "name": "nullsub_24",
-    "signature": "void __cdecl()",
+    "name": "mods_menu_scrollbar_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2145,7 +2145,7 @@
     "external": false,
     "library": false,
     "name": "credits_secret_match3_find",
-    "signature": "uint(int *board, int *out_idx, unsigned __int8 *out_dir)",
+    "signature": "unsigned __int8(int *board, int *out_idx, unsigned __int8 *out_dir)",
     "size": 230,
     "thunk": false
   },
@@ -2239,8 +2239,8 @@
     "end": "0x00410791",
     "external": false,
     "library": false,
-    "name": "nullsub_27",
-    "signature": "void __cdecl()",
+    "name": "game_over_main_menu_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2250,8 +2250,8 @@
     "end": "0x004107A1",
     "external": false,
     "library": false,
-    "name": "nullsub_28",
-    "signature": "void __cdecl()",
+    "name": "game_over_highscores_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2261,8 +2261,8 @@
     "end": "0x004107B1",
     "external": false,
     "library": false,
-    "name": "nullsub_29",
-    "signature": "void __cdecl()",
+    "name": "game_over_play_again_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2272,8 +2272,8 @@
     "end": "0x004107C1",
     "external": false,
     "library": false,
-    "name": "nullsub_30",
-    "signature": "void __cdecl()",
+    "name": "game_over_name_input_state_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2283,8 +2283,8 @@
     "end": "0x004107D1",
     "external": false,
     "library": false,
-    "name": "nullsub_31",
-    "signature": "void __cdecl()",
+    "name": "game_over_name_submit_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2321,8 +2321,8 @@
     "end": "0x00410CF1",
     "external": false,
     "library": false,
-    "name": "nullsub_32",
-    "signature": "void __cdecl()",
+    "name": "quest_failed_main_menu_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2332,8 +2332,8 @@
     "end": "0x00410D01",
     "external": false,
     "library": false,
-    "name": "nullsub_33",
-    "signature": "void __cdecl()",
+    "name": "quest_failed_play_another_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2343,8 +2343,8 @@
     "end": "0x00410D11",
     "external": false,
     "library": false,
-    "name": "nullsub_34",
-    "signature": "void __cdecl()",
+    "name": "quest_failed_play_again_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2387,8 +2387,8 @@
     "end": "0x00412021",
     "external": false,
     "library": false,
-    "name": "nullsub_35",
-    "signature": "void __cdecl()",
+    "name": "quest_results_main_menu_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2398,8 +2398,8 @@
     "end": "0x00412031",
     "external": false,
     "library": false,
-    "name": "nullsub_36",
-    "signature": "void __cdecl()",
+    "name": "quest_results_highscores_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2409,8 +2409,8 @@
     "end": "0x00412041",
     "external": false,
     "library": false,
-    "name": "nullsub_37",
-    "signature": "void __cdecl()",
+    "name": "quest_results_play_again_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2420,8 +2420,8 @@
     "end": "0x00412051",
     "external": false,
     "library": false,
-    "name": "nullsub_38",
-    "signature": "void __cdecl()",
+    "name": "quest_results_play_next_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2431,8 +2431,8 @@
     "end": "0x00412061",
     "external": false,
     "library": false,
-    "name": "nullsub_39",
-    "signature": "void __cdecl()",
+    "name": "quest_results_name_input_state_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2442,8 +2442,8 @@
     "end": "0x00412071",
     "external": false,
     "library": false,
-    "name": "nullsub_40",
-    "signature": "void __cdecl()",
+    "name": "quest_results_name_submit_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -2465,7 +2465,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_106",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -2511,7 +2511,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_107",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -2523,8 +2523,8 @@
     "end": "0x0041218A",
     "external": false,
     "library": false,
-    "name": "sub_412180",
-    "signature": "int()",
+    "name": "quest_meta_global_construct_and_register",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -2547,8 +2547,8 @@
     "end": "0x004121DD",
     "external": false,
     "library": false,
-    "name": "ctor",
-    "signature": "void __thiscall(_DWORD *this)",
+    "name": "quest_meta_entry_init",
+    "signature": "void __thiscall(void *)",
     "size": 45,
     "thunk": false
   },
@@ -2560,8 +2560,8 @@
     "end": "0x004121EF",
     "external": false,
     "library": false,
-    "name": "dtor",
-    "signature": "void __thiscall(void **this)",
+    "name": "quest_meta_entry_release",
+    "signature": "void __thiscall(void *)",
     "size": 15,
     "thunk": false
   },
@@ -2574,7 +2574,7 @@
     "external": false,
     "library": false,
     "name": "quest_meta_register_atexit",
-    "signature": "int()",
+    "signature": "void()",
     "size": 12,
     "thunk": false
   },
@@ -2586,8 +2586,8 @@
     "end": "0x00412214",
     "external": false,
     "library": false,
-    "name": "sub_412200",
-    "signature": "void __cdecl()",
+    "name": "quest_meta_table_destroy",
+    "signature": "void()",
     "size": 20,
     "thunk": false
   },
@@ -2597,8 +2597,8 @@
     "end": "0x00412225",
     "external": false,
     "library": false,
-    "name": "sub_412220",
-    "signature": "",
+    "name": "bonus_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -2608,8 +2608,8 @@
     "end": "0x00412247",
     "external": false,
     "library": false,
-    "name": "sub_412230",
-    "signature": "int *()",
+    "name": "bonus_pool_global_init",
+    "signature": "void()",
     "size": 23,
     "thunk": false
   },
@@ -2619,8 +2619,8 @@
     "end": "0x00412255",
     "external": false,
     "library": false,
-    "name": "sub_412250",
-    "signature": "",
+    "name": "creature_spawn_slot_table_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -2630,8 +2630,8 @@
     "end": "0x0041228D",
     "external": false,
     "library": false,
-    "name": "sub_412260",
-    "signature": "float *()",
+    "name": "creature_spawn_slot_table_global_init",
+    "signature": "void()",
     "size": 45,
     "thunk": false
   },
@@ -2641,8 +2641,8 @@
     "end": "0x00412295",
     "external": false,
     "library": false,
-    "name": "sub_412290",
-    "signature": "",
+    "name": "game_status_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -2654,8 +2654,8 @@
     "end": "0x0041234B",
     "external": false,
     "library": false,
-    "name": "sub_4122A0",
-    "signature": "int()",
+    "name": "game_status_global_init",
+    "signature": "void()",
     "size": 171,
     "thunk": false
   },
@@ -2691,8 +2691,8 @@
     "end": "0x004123CA",
     "external": false,
     "library": false,
-    "name": "sub_4123C0",
-    "signature": "int()",
+    "name": "bonus_meta_global_construct_and_register",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -2715,8 +2715,8 @@
     "end": "0x0041240B",
     "external": false,
     "library": false,
-    "name": "sub_4123F0",
-    "signature": "void __thiscall(_DWORD *this)",
+    "name": "bonus_meta_entry_init",
+    "signature": "void __thiscall(void *)",
     "size": 27,
     "thunk": false
   },
@@ -2729,7 +2729,7 @@
     "external": false,
     "library": false,
     "name": "bonus_meta_entry_release",
-    "signature": "void(int *entry)",
+    "signature": "void __thiscall(void *)",
     "size": 36,
     "thunk": false
   },
@@ -2742,7 +2742,7 @@
     "external": false,
     "library": false,
     "name": "bonus_meta_register_atexit",
-    "signature": "int()",
+    "signature": "void()",
     "size": 12,
     "thunk": false
   },
@@ -2754,8 +2754,8 @@
     "end": "0x00412464",
     "external": false,
     "library": false,
-    "name": "sub_412450",
-    "signature": "void __cdecl()",
+    "name": "bonus_meta_table_destroy",
+    "signature": "void()",
     "size": 20,
     "thunk": false
   },
@@ -2794,7 +2794,7 @@
     "external": false,
     "library": false,
     "name": "bonus_reset_availability",
-    "signature": "char *()",
+    "signature": "void()",
     "size": 26,
     "thunk": false
   },
@@ -2953,7 +2953,7 @@
     "external": false,
     "library": false,
     "name": "vec2_sub",
-    "signature": "float *(float *arg1, float *arg2, float *arg3)",
+    "signature": "float *__thiscall(vec2f_t *self, float *dst, const vec2f_t *rhs)",
     "size": 26,
     "thunk": false
   },
@@ -2964,7 +2964,7 @@
     "external": false,
     "library": false,
     "name": "vec2_length",
-    "signature": "float(float *v)",
+    "signature": "float(const vec2f_t *v)",
     "size": 26,
     "thunk": false
   },
@@ -2989,7 +2989,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_template_pool_init",
-    "signature": "int()",
+    "signature": "void()",
     "size": 336,
     "thunk": false
   },
@@ -2999,8 +2999,8 @@
     "end": "0x004177E5",
     "external": false,
     "library": false,
-    "name": "sub_4177E0",
-    "signature": "",
+    "name": "ui_element_globals_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3014,8 +3014,8 @@
     "end": "0x00417A86",
     "external": false,
     "library": false,
-    "name": "sub_4177F0",
-    "signature": "int()",
+    "name": "ui_element_globals_init",
+    "signature": "void()",
     "size": 662,
     "thunk": false
   },
@@ -3026,7 +3026,7 @@
     "external": false,
     "library": true,
     "name": "ui_template_slot_ctor_noop",
-    "signature": "void *(void *slot)",
+    "signature": "ui_menu_item_subtemplate_slot_t *__fastcall(ui_menu_item_subtemplate_slot_t *slot)",
     "size": 3,
     "thunk": false
   },
@@ -3037,7 +3037,7 @@
     "external": false,
     "library": false,
     "name": "ui_template_block_set_mode4",
-    "signature": "void *(void *block)",
+    "signature": "ui_menu_item_subtemplate_block_t *__fastcall(ui_menu_item_subtemplate_block_t *block)",
     "size": 13,
     "thunk": false
   },
@@ -3048,7 +3048,7 @@
     "external": false,
     "library": false,
     "name": "ui_template_triplet_reset_and_seed_modes",
-    "signature": "void *(void *block)",
+    "signature": "ui_menu_template_triplet_t *__fastcall(ui_menu_template_triplet_t *block)",
     "size": 48,
     "thunk": false
   },
@@ -3059,7 +3059,7 @@
     "external": false,
     "library": false,
     "name": "ui_draw_textured_quad",
-    "signature": "void(int texture_id, int x, int y, int w, int h)",
+    "signature": "void(int x, int y, int w, int h, int texture_id)",
     "size": 158,
     "thunk": false
   },
@@ -3072,7 +3072,7 @@
     "external": false,
     "library": false,
     "name": "terrain_generate",
-    "signature": "void(void *desc)",
+    "signature": "void(quest_meta_t *quest)",
     "size": 1569,
     "thunk": false
   },
@@ -3112,7 +3112,7 @@
     "external": false,
     "library": false,
     "name": "creature_render_type",
-    "signature": "void(int type_id)",
+    "signature": "void(int type_id, float transition_alpha)",
     "size": 2834,
     "thunk": false
   },
@@ -3138,7 +3138,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_set_rect",
-    "signature": "void(ui_element_t *element, float width, float height, float *offset)",
+    "signature": "void(ui_menu_item_subtemplate_block_t *element, float width, float height, float *offset)",
     "size": 348,
     "thunk": false
   },
@@ -3151,7 +3151,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_load",
-    "signature": "void(ui_element_t *element, char *jaz_path)",
+    "signature": "void(ui_menu_item_subtemplate_block_t *element, char *jaz_path)",
     "size": 207,
     "thunk": false
   },
@@ -3215,7 +3215,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_aim_enhancement",
-    "signature": "void()",
+    "signature": "void(float *xy)",
     "size": 518,
     "thunk": false
   },
@@ -3254,8 +3254,8 @@
     "end": "0x0041A7C5",
     "external": false,
     "library": false,
-    "name": "sub_41A7C0",
-    "signature": "",
+    "name": "bonus_hud_slot_table_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3265,8 +3265,8 @@
     "end": "0x0041A808",
     "external": false,
     "library": false,
-    "name": "sub_41A7D0",
-    "signature": "_DWORD *()",
+    "name": "bonus_hud_slot_table_global_init",
+    "signature": "void()",
     "size": 56,
     "thunk": false
   },
@@ -3290,7 +3290,7 @@
     "external": false,
     "library": false,
     "name": "bonus_hud_slot_update_and_render",
-    "signature": "void(float *xy, int slot)",
+    "signature": "void(float *y, int slot, float transition_alpha)",
     "size": 1566,
     "thunk": false
   },
@@ -3308,7 +3308,7 @@
     "external": false,
     "library": false,
     "name": "ui_render_hud",
-    "signature": "void()",
+    "signature": "void(float transition_alpha)",
     "size": 7081,
     "thunk": false
   },
@@ -3318,8 +3318,8 @@
     "end": "0x0041CA81",
     "external": false,
     "library": false,
-    "name": "nullsub_41",
-    "signature": "void __cdecl()",
+    "name": "ui_hud_progress_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -3343,7 +3343,7 @@
       "crt_snprintf",
       "crt_tolower",
       "dx_get_version_fallback_from_files",
-      "sub_41CDB0"
+      "dx_get_version_from_dxdiag"
     ],
     "end": "0x0041CDAB",
     "external": false,
@@ -3366,8 +3366,8 @@
     "end": "0x0041CFDC",
     "external": false,
     "library": false,
-    "name": "sub_41CDB0",
-    "signature": "int __usercall@<eax>(int@<esi>, LONG *, int, LONG *)",
+    "name": "dx_get_version_from_dxdiag",
+    "signature": "int(int *major, int *minor, char *letter)",
     "size": 556,
     "thunk": false
   },
@@ -3436,7 +3436,7 @@
     "external": false,
     "library": false,
     "name": "grim_load_interface",
-    "signature": "int(char *dll_name)",
+    "signature": "IGrim2D *(char *dll_name)",
     "size": 83,
     "thunk": false
   },
@@ -3457,8 +3457,8 @@
     "end": "0x0041DD82",
     "external": false,
     "library": false,
-    "name": "sub_41DD40",
-    "signature": "int __cdecl(int, int, int, int)",
+    "name": "vorbis_mem_seek",
+    "signature": "int(void *datasource, ogg_int64_t offset, int whence)",
     "size": 66,
     "thunk": false
   },
@@ -3468,8 +3468,8 @@
     "end": "0x0041DD96",
     "external": false,
     "library": false,
-    "name": "sub_41DD90",
-    "signature": "int()",
+    "name": "vorbis_mem_close_callback",
+    "signature": "int(void *datasource)",
     "size": 6,
     "thunk": false
   },
@@ -3493,7 +3493,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_pcm_seek",
-    "signature": "int(void *stream, uint sample_offset)",
+    "signature": "int __thiscall(void *stream, unsigned int sample_offset)",
     "size": 22,
     "thunk": false
   },
@@ -3502,10 +3502,10 @@
     "calls": [
       "__alldiv",
       "__allmul",
+      "crt_printf",
       "ov_info",
       "ov_open_callbacks",
       "ov_pcm_total",
-      "sub_461FD5",
       "vorbis_mem_tell"
     ],
     "end": "0x0041DED4",
@@ -3526,7 +3526,7 @@
     "external": false,
     "library": false,
     "name": "vorbis_mem_close",
-    "signature": "void(void *stream)",
+    "signature": "void __thiscall(void *stream)",
     "size": 29,
     "thunk": false
   },
@@ -3548,9 +3548,9 @@
     "calls": [],
     "end": "0x0041DF43",
     "external": false,
-    "library": false,
+    "library": true,
     "name": "game_is_full_version",
-    "signature": "int()",
+    "signature": "unsigned __int8()",
     "size": 3,
     "thunk": false
   },
@@ -3582,8 +3582,8 @@
     "end": "0x0041DF75",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_4",
-    "signature": "",
+    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3593,8 +3593,8 @@
     "end": "0x0041DFA9",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_4",
-    "signature": "",
+    "name": "unused_fx_queue_random_prefix_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3604,8 +3604,8 @@
     "end": "0x0041DFB5",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_5",
-    "signature": "",
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3615,8 +3615,8 @@
     "end": "0x0041DFE9",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_5",
-    "signature": "",
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3626,8 +3626,8 @@
     "end": "0x0041DFF5",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_6",
-    "signature": "",
+    "name": "unused_aim64_prefix_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3637,8 +3637,8 @@
     "end": "0x0041E029",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_6",
-    "signature": "",
+    "name": "unused_aim64_prefix_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3648,8 +3648,8 @@
     "end": "0x0041E035",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_7",
-    "signature": "",
+    "name": "unused_fx_rotated_scale_prefix_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3659,8 +3659,8 @@
     "end": "0x0041E069",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_7",
-    "signature": "",
+    "name": "unused_fx_rotated_scale_prefix_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3670,8 +3670,8 @@
     "end": "0x0041E075",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_8",
-    "signature": "",
+    "name": "render_tint_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3681,8 +3681,8 @@
     "end": "0x0041E0A9",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_8",
-    "signature": "",
+    "name": "render_tint_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3692,8 +3692,8 @@
     "end": "0x0041E0B5",
     "external": false,
     "library": false,
-    "name": "j_nullsub_108",
-    "signature": "",
+    "name": "unused_global_noop_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3703,7 +3703,7 @@
     "end": "0x0041E0C1",
     "external": false,
     "library": false,
-    "name": "nullsub_108",
+    "name": "unused_global_noop_init",
     "signature": "void()",
     "size": 1,
     "thunk": false
@@ -3714,8 +3714,8 @@
     "end": "0x0041E0D5",
     "external": false,
     "library": false,
-    "name": "j___cfltcvt_init_9",
-    "signature": "",
+    "name": "unused_particle_pool_suffix_color_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3725,8 +3725,8 @@
     "end": "0x0041E109",
     "external": false,
     "library": true,
-    "name": "__cfltcvt_init_9",
-    "signature": "",
+    "name": "unused_particle_pool_suffix_color_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3736,8 +3736,8 @@
     "end": "0x0041E115",
     "external": false,
     "library": false,
-    "name": "sub_41E110",
-    "signature": "",
+    "name": "unused_effect_uv8_prefix_state_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3747,8 +3747,8 @@
     "end": "0x0041E13C",
     "external": false,
     "library": false,
-    "name": "sub_41E120",
-    "signature": "int()",
+    "name": "unused_effect_uv8_prefix_state_global_init",
+    "signature": "void()",
     "size": 28,
     "thunk": false
   },
@@ -3758,8 +3758,8 @@
     "end": "0x0041E145",
     "external": false,
     "library": false,
-    "name": "sub_41E140",
-    "signature": "",
+    "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3769,7 +3769,7 @@
     "end": "0x0041E165",
     "external": false,
     "library": false,
-    "name": "sub_41E150",
+    "name": "unused_effect_uv16_prefix_vec2_global_init",
     "signature": "void()",
     "size": 21,
     "thunk": false
@@ -3780,8 +3780,8 @@
     "end": "0x0041E175",
     "external": false,
     "library": false,
-    "name": "sub_41E170",
-    "signature": "",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3791,7 +3791,7 @@
     "end": "0x0041E195",
     "external": false,
     "library": false,
-    "name": "sub_41E180",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
     "signature": "void()",
     "size": 21,
     "thunk": false
@@ -3802,8 +3802,8 @@
     "end": "0x0041E1A5",
     "external": false,
     "library": false,
-    "name": "sub_41E1A0",
-    "signature": "",
+    "name": "fx_queue_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3813,8 +3813,8 @@
     "end": "0x0041E243",
     "external": false,
     "library": false,
-    "name": "sub_41E1B0",
-    "signature": "int *()",
+    "name": "fx_queue_global_init",
+    "signature": "void()",
     "size": 147,
     "thunk": false
   },
@@ -3836,7 +3836,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_109",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -3847,7 +3847,7 @@
     "external": false,
     "library": false,
     "name": "vec2_add",
-    "signature": "void(float *dst, float *delta)",
+    "signature": "int(vec2f_t *dst, const vec2f_t *delta)",
     "size": 26,
     "thunk": false
   },
@@ -3860,7 +3860,7 @@
     "external": false,
     "library": false,
     "name": "player_apply_move_with_spawn_avoidance",
-    "signature": "void(int player_index, float *pos, float *delta)",
+    "signature": "int(int player_index, vec2f_t *pos, vec2f_t *delta)",
     "size": 356,
     "thunk": false
   },
@@ -3871,7 +3871,7 @@
     "external": false,
     "library": false,
     "name": "vec2_add_inplace",
-    "signature": "void(int unused, float *pos, float *delta)",
+    "signature": "int(int entity_index, vec2f_t *pos, const vec2f_t *delta)",
     "size": 26,
     "thunk": false
   },
@@ -3881,8 +3881,8 @@
     "end": "0x0041E425",
     "external": false,
     "library": false,
-    "name": "sub_41E420",
-    "signature": "",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3892,7 +3892,7 @@
     "end": "0x0041E445",
     "external": false,
     "library": false,
-    "name": "sub_41E430",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init",
     "signature": "void()",
     "size": 21,
     "thunk": false
@@ -3903,8 +3903,8 @@
     "end": "0x0041E455",
     "external": false,
     "library": false,
-    "name": "sub_41E450",
-    "signature": "",
+    "name": "secondary_projectile_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3914,8 +3914,8 @@
     "end": "0x0041E489",
     "external": false,
     "library": false,
-    "name": "sub_41E460",
-    "signature": "_DWORD *()",
+    "name": "secondary_projectile_pool_global_init",
+    "signature": "void()",
     "size": 41,
     "thunk": false
   },
@@ -3925,8 +3925,8 @@
     "end": "0x0041E495",
     "external": false,
     "library": false,
-    "name": "sub_41E490",
-    "signature": "",
+    "name": "sprite_effect_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3936,8 +3936,8 @@
     "end": "0x0041E501",
     "external": false,
     "library": false,
-    "name": "sub_41E4A0",
-    "signature": "sprite_effect_t *()",
+    "name": "sprite_effect_pool_global_init",
+    "signature": "void()",
     "size": 97,
     "thunk": false
   },
@@ -3947,8 +3947,8 @@
     "end": "0x0041E515",
     "external": false,
     "library": false,
-    "name": "sub_41E510",
-    "signature": "",
+    "name": "particle_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3960,8 +3960,8 @@
     "end": "0x0041E5BF",
     "external": false,
     "library": false,
-    "name": "sub_41E520",
-    "signature": "int()",
+    "name": "particle_pool_global_init",
+    "signature": "void()",
     "size": 159,
     "thunk": false
   },
@@ -3971,8 +3971,8 @@
     "end": "0x0041E5C5",
     "external": false,
     "library": false,
-    "name": "sub_41E5C0",
-    "signature": "",
+    "name": "player_state_table_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -3982,8 +3982,8 @@
     "end": "0x0041E6B3",
     "external": false,
     "library": false,
-    "name": "sub_41E5D0",
-    "signature": "_DWORD *()",
+    "name": "player_state_table_global_init",
+    "signature": "void()",
     "size": 227,
     "thunk": false
   },
@@ -3993,8 +3993,8 @@
     "end": "0x0041E6C5",
     "external": false,
     "library": false,
-    "name": "sub_41E6C0",
-    "signature": "",
+    "name": "creature_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -4004,8 +4004,8 @@
     "end": "0x0041E70C",
     "external": false,
     "library": false,
-    "name": "sub_41E6D0",
-    "signature": "int *()",
+    "name": "creature_pool_global_init",
+    "signature": "void()",
     "size": 60,
     "thunk": false
   },
@@ -4027,7 +4027,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_110",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4049,7 +4049,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_111",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4059,8 +4059,8 @@
     "end": "0x0041E755",
     "external": false,
     "library": false,
-    "name": "sub_41E750",
-    "signature": "",
+    "name": "projectile_pool_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -4070,8 +4070,8 @@
     "end": "0x0041E793",
     "external": false,
     "library": false,
-    "name": "sub_41E760",
-    "signature": "_DWORD *()",
+    "name": "projectile_pool_global_init",
+    "signature": "void()",
     "size": 51,
     "thunk": false
   },
@@ -4093,7 +4093,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_112",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4115,7 +4115,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_113",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4137,7 +4137,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_114",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4159,7 +4159,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_115",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4181,7 +4181,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_116",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -4192,7 +4192,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add",
-    "signature": "int(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
+    "signature": "unsigned __int8(int effect_id, vec2f_t *pos, float w, float h, float rotation, effect_color_t *color)",
     "size": 140,
     "thunk": false
   },
@@ -4254,7 +4254,7 @@
     "external": false,
     "library": false,
     "name": "config_sync_from_grim",
-    "signature": "int()",
+    "signature": "bool()",
     "size": 1225,
     "thunk": false
   },
@@ -4300,7 +4300,7 @@
     "external": false,
     "library": false,
     "name": "angle_approach",
-    "signature": "void(float *angle, float target, float rate)",
+    "signature": "float(float *angle, float target, float rate)",
     "size": 299,
     "thunk": false
   },
@@ -4310,8 +4310,8 @@
     "end": "0x0041F565",
     "external": false,
     "library": false,
-    "name": "sub_41F560",
-    "signature": "",
+    "name": "bonus_pool_sentinel_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -4321,7 +4321,7 @@
     "end": "0x0041F57B",
     "external": false,
     "library": false,
-    "name": "sub_41F570",
+    "name": "bonus_pool_sentinel_global_init",
     "signature": "void()",
     "size": 11,
     "thunk": false
@@ -4348,7 +4348,7 @@
     "external": false,
     "library": false,
     "name": "bonus_spawn_at",
-    "signature": "bonus_entry_t *(float *pos, bonus_id_t bonus_id, int duration_override)",
+    "signature": "bonus_entry_t *(vec2f_t *pos, bonus_id_t bonus_id, int duration_override)",
     "size": 479,
     "thunk": false
   },
@@ -4364,7 +4364,7 @@
     "external": false,
     "library": false,
     "name": "bonus_spawn_at_pos",
-    "signature": "bonus_entry_t *(float *pos)",
+    "signature": "bonus_entry_t *(const vec2f_t *pos)",
     "size": 309,
     "thunk": false
   },
@@ -4381,7 +4381,7 @@
     "external": false,
     "library": false,
     "name": "bonus_try_spawn_on_kill",
-    "signature": "void(float *pos)",
+    "signature": "void(const vec2f_t *pos)",
     "size": 730,
     "thunk": false
   },
@@ -4394,7 +4394,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_sprite",
-    "signature": "int(float *pos, float *vel, float scale)",
+    "signature": "int(const vec2f_t *pos, const vec2f_t *vel, float scale)",
     "size": 175,
     "thunk": false
   },
@@ -4418,7 +4418,7 @@
     "external": false,
     "library": false,
     "name": "player_reset_all",
-    "signature": "void *()",
+    "signature": "void()",
     "size": 584,
     "thunk": false
   },
@@ -4440,7 +4440,7 @@
     "external": false,
     "library": false,
     "name": "creature_find_nearest",
-    "signature": "int(float *pos, int exclude_id, float min_dist)",
+    "signature": "int(const vec2f_t *pos, int exclude_id, float min_dist)",
     "size": 225,
     "thunk": false
   },
@@ -4453,7 +4453,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_particle",
-    "signature": "int(float *pos, float angle, void *unused, float intensity)",
+    "signature": "int(const vec2f_t *pos, float angle, const vec2f_t *unused, float intensity)",
     "size": 264,
     "thunk": false
   },
@@ -4466,7 +4466,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_particle_slow",
-    "signature": "int(float *pos, float angle)",
+    "signature": "int(const vec2f_t *pos, float angle)",
     "size": 274,
     "thunk": false
   },
@@ -4479,7 +4479,7 @@
     "external": false,
     "library": false,
     "name": "fx_spawn_secondary_projectile",
-    "signature": "int(float *pos, float angle, secondary_projectile_type_id_t type_id)",
+    "signature": "int(const vec2f_t *pos, float angle, secondary_projectile_type_id_t type_id)",
     "size": 218,
     "thunk": false
   },
@@ -4490,7 +4490,7 @@
     "external": false,
     "library": false,
     "name": "projectile_spawn",
-    "signature": "int(float *pos, float angle, projectile_type_id_t type_id, int owner_id)",
+    "signature": "int(const vec2f_t *pos, float angle, projectile_type_id_t type_id, int owner_id)",
     "size": 400,
     "thunk": false
   },
@@ -4514,7 +4514,7 @@
     "external": false,
     "library": false,
     "name": "creatures_apply_radius_damage",
-    "signature": "void(float *pos, float radius, float damage, int damage_type)",
+    "signature": "void(const vec2f_t *pos, float radius, float damage, int damage_type)",
     "size": 159,
     "thunk": false
   },
@@ -4525,7 +4525,7 @@
     "external": false,
     "library": false,
     "name": "creature_find_in_radius",
-    "signature": "int(float *pos, float radius, int start_index)",
+    "signature": "int(const vec2f_t *pos, float radius, int start_index)",
     "size": 133,
     "thunk": false
   },
@@ -4536,7 +4536,7 @@
     "external": false,
     "library": false,
     "name": "player_find_in_radius",
-    "signature": "int(int owner_id, float *pos, float radius)",
+    "signature": "int(int owner_id, const vec2f_t *pos, float radius)",
     "size": 133,
     "thunk": false
   },
@@ -4553,7 +4553,7 @@
     "external": false,
     "library": false,
     "name": "creature_apply_damage",
-    "signature": "int(int creature_id, float damage, int damage_type, float *impulse)",
+    "signature": "int(int creature_id, float damage, int damage_type, const vec2f_t *impulse)",
     "size": 963,
     "thunk": false
   },
@@ -4608,7 +4608,7 @@
     "external": false,
     "library": false,
     "name": "projectile_render",
-    "signature": "void()",
+    "signature": "void(float transition_alpha)",
     "size": 12551,
     "thunk": false
   },
@@ -4680,7 +4680,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add_random",
-    "signature": "void(float *pos)",
+    "signature": "void(vec2f_t *pos)",
     "size": 291,
     "thunk": false
   },
@@ -4690,8 +4690,8 @@
     "end": "0x00427831",
     "external": false,
     "library": false,
-    "name": "nullsub_42",
-    "signature": "void __cdecl()",
+    "name": "fx_queue_random_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -4702,7 +4702,7 @@
     "external": false,
     "library": false,
     "name": "fx_queue_add_rotated",
-    "signature": "int(float *pos, float *rgba, float rotation, float scale, int effect_id)",
+    "signature": "unsigned __int8(vec2f_t *pos, effect_color_t *color, float rotation, float scale, int effect_id)",
     "size": 210,
     "thunk": false
   },
@@ -4765,7 +4765,7 @@
     "external": false,
     "library": false,
     "name": "creature_spawn",
-    "signature": "int(float *pos, float *tint_rgba, int type_id)",
+    "signature": "int(const vec2f_t *pos, const effect_color_t *tint, int type_id)",
     "size": 334,
     "thunk": false
   },
@@ -5054,8 +5054,8 @@
     "end": "0x0042B28F",
     "external": false,
     "library": false,
-    "name": "sub_42B250",
-    "signature": "void __cdecl __noreturn()",
+    "name": "startup_audio_load_thread",
+    "signature": "void(void *unused)",
     "size": 63,
     "thunk": false
   },
@@ -5083,7 +5083,7 @@
     "external": false,
     "library": false,
     "name": "game_startup_init",
-    "signature": "void()",
+    "signature": "unsigned __int8()",
     "size": 4303,
     "thunk": false
   },
@@ -5231,8 +5231,8 @@
     "end": "0x0042DE05",
     "external": false,
     "library": false,
-    "name": "sub_42DE00",
-    "signature": "",
+    "name": "effect_pool_vertices_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -5244,8 +5244,8 @@
     "end": "0x0042DE37",
     "external": false,
     "library": false,
-    "name": "sub_42DE10",
-    "signature": "int()",
+    "name": "effect_pool_vertices_global_init",
+    "signature": "void()",
     "size": 39,
     "thunk": false
   },
@@ -5267,7 +5267,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_117",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -5289,7 +5289,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_118",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -5300,7 +5300,7 @@
     "external": false,
     "library": false,
     "name": "effect_init_entry",
-    "signature": "void(void *entry)",
+    "signature": "void(effect_entry_t *entry)",
     "size": 143,
     "thunk": false
   },
@@ -5324,7 +5324,7 @@
     "external": false,
     "library": false,
     "name": "effect_free",
-    "signature": "void(void *entry)",
+    "signature": "void(effect_entry_t *entry)",
     "size": 29,
     "thunk": false
   },
@@ -5346,7 +5346,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn",
-    "signature": "void *(int effect_id, float *pos)",
+    "signature": "effect_entry_t *(int effect_id, const vec2f_t *pos)",
     "size": 1507,
     "thunk": false
   },
@@ -5387,7 +5387,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_blood_splatter",
-    "signature": "void(float *pos, float angle, float age)",
+    "signature": "void(const vec2f_t *pos, float angle, float age)",
     "size": 361,
     "thunk": false
   },
@@ -5401,7 +5401,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_freeze_shard",
-    "signature": "void(float *pos, float angle)",
+    "signature": "void(const vec2f_t *pos, float angle)",
     "size": 376,
     "thunk": false
   },
@@ -5416,7 +5416,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_freeze_shatter",
-    "signature": "void(float *pos, float angle)",
+    "signature": "void(const vec2f_t *pos, float angle)",
     "size": 339,
     "thunk": false
   },
@@ -5430,7 +5430,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_burst",
-    "signature": "void(float *pos, int count)",
+    "signature": "void(const vec2f_t *pos, int count)",
     "size": 282,
     "thunk": false
   },
@@ -5444,7 +5444,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_shrinkifier_hit",
-    "signature": "void *(float *pos)",
+    "signature": "void(const vec2f_t *pos)",
     "size": 482,
     "thunk": false
   },
@@ -5457,7 +5457,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_ion_hit_core",
-    "signature": "void *(float *pos, float scale_step, float lifetime)",
+    "signature": "void(const vec2f_t *pos, float scale_step, float lifetime)",
     "size": 191,
     "thunk": false
   },
@@ -5470,7 +5470,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_plasma_hit_core",
-    "signature": "void *(float *pos, float scale_step, float lifetime)",
+    "signature": "void(const vec2f_t *pos, float scale_step, float lifetime)",
     "size": 185,
     "thunk": false
   },
@@ -5485,7 +5485,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_splitter_hit_burst",
-    "signature": "void *(float *pos, float radius, int count)",
+    "signature": "void(const vec2f_t *pos, float radius, int count)",
     "size": 333,
     "thunk": false
   },
@@ -5500,7 +5500,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_ion_hit_sparks",
-    "signature": "void *(float *pos, float scale)",
+    "signature": "void(const vec2f_t *pos, float scale)",
     "size": 378,
     "thunk": false
   },
@@ -5514,7 +5514,7 @@
     "external": false,
     "library": false,
     "name": "effect_spawn_explosion_burst",
-    "signature": "void(float *pos, float scale)",
+    "signature": "void(const vec2f_t *pos, float scale)",
     "size": 964,
     "thunk": false
   },
@@ -5526,8 +5526,8 @@
     "end": "0x0042FA9A",
     "external": false,
     "library": false,
-    "name": "sub_42FA90",
-    "signature": "int()",
+    "name": "perk_meta_global_construct_and_register",
+    "signature": "void()",
     "size": 10,
     "thunk": false
   },
@@ -5550,8 +5550,8 @@
     "end": "0x0042FADB",
     "external": false,
     "library": false,
-    "name": "sub_42FAC0",
-    "signature": "void __thiscall(_DWORD *this)",
+    "name": "perk_meta_entry_init",
+    "signature": "void __thiscall(void *)",
     "size": 27,
     "thunk": false
   },
@@ -5564,7 +5564,7 @@
     "external": false,
     "library": false,
     "name": "perk_meta_register_atexit",
-    "signature": "int()",
+    "signature": "void()",
     "size": 12,
     "thunk": false
   },
@@ -5576,8 +5576,8 @@
     "end": "0x0042FB07",
     "external": false,
     "library": false,
-    "name": "sub_42FAF0",
-    "signature": "void __cdecl()",
+    "name": "perk_meta_table_destroy",
+    "signature": "void()",
     "size": 23,
     "thunk": false
   },
@@ -5669,7 +5669,7 @@
     "external": false,
     "library": false,
     "name": "quest_meta_init_entry",
-    "signature": "int(quest_meta_t *meta, int tier, int index, char *name)",
+    "signature": "void(quest_meta_t *meta, int tier, int index, char *name)",
     "size": 170,
     "thunk": false
   },
@@ -5697,7 +5697,7 @@
     "external": false,
     "library": false,
     "name": "creature_spawn_template",
-    "signature": "void *(int template_id, float *pos, float heading)",
+    "signature": "creature_t *(int template_id, const vec2f_t *pos, float heading)",
     "size": 14099,
     "thunk": false
   },
@@ -5708,7 +5708,7 @@
     "external": false,
     "library": false,
     "name": "quest_spawn_table_empty",
-    "signature": "int()",
+    "signature": "unsigned __int8()",
     "size": 39,
     "thunk": false
   },
@@ -6365,7 +6365,7 @@
     "external": false,
     "library": false,
     "name": "highscore_submit_full_version_guard",
-    "signature": "int()",
+    "signature": "unsigned __int8(highscore_record_t *record)",
     "size": 38,
     "thunk": false
   },
@@ -6401,7 +6401,7 @@
     "external": false,
     "library": false,
     "name": "highscore_record_equals",
-    "signature": "int(byte *left, byte *right)",
+    "signature": "char(highscore_record_t *left, highscore_record_t *right)",
     "size": 151,
     "thunk": false
   },
@@ -6421,7 +6421,7 @@
     "external": false,
     "library": false,
     "name": "highscore_update_record",
-    "signature": "int(char *path, byte *record)",
+    "signature": "unsigned __int8(char *path, highscore_record_t *record)",
     "size": 255,
     "thunk": false
   },
@@ -6437,7 +6437,7 @@
     "external": false,
     "library": false,
     "name": "highscore_write_record",
-    "signature": "void(byte *record, FILE *fp)",
+    "signature": "void(highscore_record_t *record, FILE *fp)",
     "size": 318,
     "thunk": false
   },
@@ -6448,7 +6448,7 @@
     "external": false,
     "library": false,
     "name": "highscore_compare_survival_score_desc",
-    "signature": "int(const void *a, const void *b)",
+    "signature": "int(const highscore_record_t *a, const highscore_record_t *b)",
     "size": 32,
     "thunk": false
   },
@@ -6459,7 +6459,7 @@
     "external": false,
     "library": false,
     "name": "highscore_compare_rush_field32_desc",
-    "signature": "int(const void *a, const void *b)",
+    "signature": "int(const highscore_record_t *a, const highscore_record_t *b)",
     "size": 32,
     "thunk": false
   },
@@ -6470,7 +6470,7 @@
     "external": false,
     "library": false,
     "name": "highscore_compare_quest_field32_asc_nonzero_first",
-    "signature": "int(const void *a, const void *b)",
+    "signature": "int(const highscore_record_t *a, const highscore_record_t *b)",
     "size": 53,
     "thunk": false
   },
@@ -6481,7 +6481,7 @@
     "external": false,
     "library": false,
     "name": "highscore_find_name_entry",
-    "signature": "byte *(byte *record, int count)",
+    "signature": "highscore_record_t *(const char *player_name, int count)",
     "size": 101,
     "thunk": false
   },
@@ -6521,7 +6521,7 @@
     "external": false,
     "library": false,
     "name": "highscore_save_record",
-    "signature": "void(byte *record)",
+    "signature": "void(highscore_record_t *record)",
     "size": 182,
     "thunk": false
   },
@@ -6595,7 +6595,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_reset_runtime_state",
-    "signature": "void *(void *entry)",
+    "signature": "",
     "size": 54,
     "thunk": false
   },
@@ -6695,12 +6695,12 @@
   {
     "address": "0x0043B9E0",
     "calls": [
-      "__strcmpi",
       "crt_fclose",
       "crt_fopen",
       "crt_fread",
       "crt_fseek",
       "crt_ftell",
+      "crt_stricmp",
       "resource_pack_read_cstring"
     ],
     "end": "0x0043BAC9",
@@ -6733,7 +6733,7 @@
     "external": false,
     "library": false,
     "name": "dsound_init",
-    "signature": "int(void *hwnd, uint coop_level)",
+    "signature": "unsigned __int8(HWND hwnd, DWORD coop_level, int channels, DWORD sample_rate, int bits_per_sample)",
     "size": 289,
     "thunk": false
   },
@@ -6794,7 +6794,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_load_ogg",
-    "signature": "int(void *entry, byte *path)",
+    "signature": "unsigned __int8(sfx_entry_t *entry, char *path)",
     "size": 304,
     "thunk": false
   },
@@ -6807,7 +6807,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_seek",
-    "signature": "void(int entry, int sample_offset)",
+    "signature": "void(sfx_entry_t *entry, unsigned int sample_offset)",
     "size": 56,
     "thunk": false
   },
@@ -6824,7 +6824,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_start_playback",
-    "signature": "int(int entry)",
+    "signature": "int(sfx_entry_t *entry)",
     "size": 215,
     "thunk": false
   },
@@ -6835,7 +6835,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_resume",
-    "signature": "void(int entry)",
+    "signature": "void(sfx_entry_t *entry)",
     "size": 27,
     "thunk": false
   },
@@ -6846,7 +6846,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_stop",
-    "signature": "void(int entry)",
+    "signature": "void(sfx_entry_t *entry)",
     "size": 60,
     "thunk": false
   },
@@ -6859,7 +6859,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_set_volume",
-    "signature": "void(int entry, float volume)",
+    "signature": "void(sfx_entry_t *entry, float volume)",
     "size": 120,
     "thunk": false
   },
@@ -6875,7 +6875,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_load_wav",
-    "signature": "int(void *entry, byte *path)",
+    "signature": "unsigned __int8(sfx_entry_t *entry, char *path)",
     "size": 104,
     "thunk": false
   },
@@ -6889,7 +6889,7 @@
     "external": false,
     "library": false,
     "name": "sfx_release_entry",
-    "signature": "void(int entry)",
+    "signature": "void(sfx_entry_t *entry)",
     "size": 119,
     "thunk": false
   },
@@ -6908,7 +6908,7 @@
     "external": false,
     "library": false,
     "name": "wav_parse_into_entry",
-    "signature": "int(void *entry, void *data, int size)",
+    "signature": "unsigned __int8(sfx_entry_t *entry, void *data, unsigned int size)",
     "size": 274,
     "thunk": false
   },
@@ -6921,7 +6921,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_upload_buffer",
-    "signature": "int(int entry)",
+    "signature": "unsigned __int8(sfx_entry_t *entry)",
     "size": 123,
     "thunk": false
   },
@@ -6935,7 +6935,7 @@
     "external": false,
     "library": false,
     "name": "sfx_entry_create_buffers",
-    "signature": "int(int entry)",
+    "signature": "unsigned __int8(sfx_entry_t *entry)",
     "size": 238,
     "thunk": false
   },
@@ -6952,7 +6952,7 @@
     "external": false,
     "library": false,
     "name": "music_entry_load_ogg",
-    "signature": "int(void *entry, byte *path)",
+    "signature": "unsigned __int8(music_entry_t *entry, char *path)",
     "size": 380,
     "thunk": false
   },
@@ -6965,7 +6965,7 @@
     "external": false,
     "library": false,
     "name": "music_stream_update",
-    "signature": "void(int entry)",
+    "signature": "void(music_entry_t *entry)",
     "size": 109,
     "thunk": false
   },
@@ -6979,7 +6979,7 @@
     "external": false,
     "library": false,
     "name": "music_stream_fill",
-    "signature": "int(int entry)",
+    "signature": "unsigned __int8(music_entry_t *entry)",
     "size": 221,
     "thunk": false
   },
@@ -6989,8 +6989,8 @@
     "end": "0x0043C675",
     "external": false,
     "library": false,
-    "name": "sub_43C670",
-    "signature": "",
+    "name": "sfx_entry_table_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -7002,8 +7002,8 @@
     "end": "0x0043C69F",
     "external": false,
     "library": false,
-    "name": "sub_43C680",
-    "signature": "void *()",
+    "name": "sfx_entry_table_init",
+    "signature": "void()",
     "size": 31,
     "thunk": false
   },
@@ -7013,8 +7013,8 @@
     "end": "0x0043C6A5",
     "external": false,
     "library": false,
-    "name": "sub_43C6A0",
-    "signature": "",
+    "name": "audio_asset_id_table_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -7024,8 +7024,8 @@
     "end": "0x0043C6C1",
     "external": false,
     "library": false,
-    "name": "sub_43C6B0",
-    "signature": "int()",
+    "name": "audio_asset_id_table_init",
+    "signature": "void()",
     "size": 17,
     "thunk": false
   },
@@ -7035,8 +7035,8 @@
     "end": "0x0043C6D5",
     "external": false,
     "library": false,
-    "name": "sub_43C6D0",
-    "signature": "",
+    "name": "music_entry_table_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -7048,8 +7048,8 @@
     "end": "0x0043C6FF",
     "external": false,
     "library": false,
-    "name": "sub_43C6E0",
-    "signature": "void *()",
+    "name": "music_entry_table_init",
+    "signature": "void()",
     "size": 31,
     "thunk": false
   },
@@ -7164,7 +7164,7 @@
     "external": false,
     "library": false,
     "name": "sfx_system_init",
-    "signature": "int()",
+    "signature": "unsigned __int8()",
     "size": 214,
     "thunk": false
   },
@@ -7222,7 +7222,7 @@
     "external": false,
     "library": false,
     "name": "sfx_play",
-    "signature": "int(int sfx_id)",
+    "signature": "int(int sfx_id, float volume)",
     "size": 320,
     "thunk": false
   },
@@ -7237,7 +7237,7 @@
     "external": false,
     "library": false,
     "name": "sfx_play_panned",
-    "signature": "float(float sfx_id)",
+    "signature": "int(int sfx_id, const vec2f_t *pos, float volume)",
     "size": 386,
     "thunk": false
   },
@@ -7357,7 +7357,7 @@
     "external": false,
     "library": false,
     "name": "ui_focus_update",
-    "signature": "int(int id)",
+    "signature": "bool(int id)",
     "size": 268,
     "thunk": false
   },
@@ -7386,7 +7386,7 @@
     "external": false,
     "library": false,
     "name": "ui_segmented_slider_update",
-    "signature": "int(float *xy, ui_segmented_slider_t *state)",
+    "signature": "void(float *xy, ui_segmented_slider_t *state)",
     "size": 714,
     "thunk": false
   },
@@ -7403,7 +7403,7 @@
     "external": false,
     "library": false,
     "name": "ui_checkbox_update",
-    "signature": "int(float *xy, ui_checkbox_t *checkbox)",
+    "signature": "bool(float *xy, ui_checkbox_t *checkbox)",
     "size": 622,
     "thunk": false
   },
@@ -7421,7 +7421,7 @@
     "external": false,
     "library": false,
     "name": "ui_scrollbar_update",
-    "signature": "void(float *xy, float *state)",
+    "signature": "void(vec2f_t *xy, ui_scrollbar_t *state)",
     "size": 1767,
     "thunk": false
   },
@@ -7441,7 +7441,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_item_update",
-    "signature": "int(float *xy, ui_menu_item_t *item)",
+    "signature": "bool(float *xy, ui_menu_item_t *item)",
     "size": 548,
     "thunk": false
   },
@@ -7451,8 +7451,8 @@
     "end": "0x0043E811",
     "external": false,
     "library": false,
-    "name": "nullsub_43",
-    "signature": "void __cdecl()",
+    "name": "ui_menu_hover_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7462,8 +7462,8 @@
     "end": "0x0043E821",
     "external": false,
     "library": false,
-    "name": "nullsub_44",
-    "signature": "void __cdecl()",
+    "name": "ui_menu_idle_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7482,7 +7482,7 @@
     "external": false,
     "library": false,
     "name": "ui_button_update",
-    "signature": "int(float *xy, ui_button_t *button)",
+    "signature": "bool(float *xy, ui_button_t *button)",
     "size": 1215,
     "thunk": false
   },
@@ -7502,7 +7502,7 @@
     "external": false,
     "library": false,
     "name": "ui_text_input_update",
-    "signature": "int(float *xy, ui_text_input_state_t *input_state)",
+    "signature": "bool(float *xy, ui_text_input_state_t *input_state)",
     "size": 716,
     "thunk": false
   },
@@ -7653,8 +7653,8 @@
     "end": "0x00440941",
     "external": false,
     "library": false,
-    "name": "nullsub_53",
-    "signature": "void __cdecl()",
+    "name": "unlocked_weapons_back_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7664,8 +7664,8 @@
     "end": "0x00440951",
     "external": false,
     "library": false,
-    "name": "nullsub_54",
-    "signature": "void __cdecl()",
+    "name": "unlocked_weapons_scrollbar_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7690,8 +7690,8 @@
     "end": "0x00441181",
     "external": false,
     "library": false,
-    "name": "nullsub_55",
-    "signature": "void __cdecl()",
+    "name": "unlocked_perks_back_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7701,8 +7701,8 @@
     "end": "0x00441191",
     "external": false,
     "library": false,
-    "name": "nullsub_56",
-    "signature": "void __cdecl()",
+    "name": "unlocked_perks_scrollbar_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7724,7 +7724,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_119",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -7759,7 +7759,7 @@
     "external": false,
     "library": false,
     "name": "highscore_format_date_label",
-    "signature": "char *(int day, int month_index)",
+    "signature": "char *(int day, int month_index, int year)",
     "size": 256,
     "thunk": false
   },
@@ -7778,7 +7778,7 @@
     "external": false,
     "library": false,
     "name": "ui_text_input_render",
-    "signature": "void(void *input_state, float y, float alpha)",
+    "signature": "void(float *xy, highscore_record_t *record, float alpha, int rank)",
     "size": 3504,
     "thunk": false
   },
@@ -7841,8 +7841,8 @@
     "end": "0x00444331",
     "external": false,
     "library": false,
-    "name": "nullsub_58",
-    "signature": "void __cdecl()",
+    "name": "highscore_game_mode_list_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7852,8 +7852,8 @@
     "end": "0x00444341",
     "external": false,
     "library": false,
-    "name": "nullsub_59",
-    "signature": "void __cdecl()",
+    "name": "highscore_player_count_list_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7863,8 +7863,8 @@
     "end": "0x00444351",
     "external": false,
     "library": false,
-    "name": "nullsub_60",
-    "signature": "void __cdecl()",
+    "name": "highscore_date_filter_list_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7874,8 +7874,8 @@
     "end": "0x00444361",
     "external": false,
     "library": false,
-    "name": "nullsub_61",
-    "signature": "void __cdecl()",
+    "name": "highscore_online_scores_checkbox_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7885,8 +7885,8 @@
     "end": "0x00444371",
     "external": false,
     "library": false,
-    "name": "nullsub_62",
-    "signature": "void __cdecl()",
+    "name": "highscore_back_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7896,8 +7896,8 @@
     "end": "0x00444381",
     "external": false,
     "library": false,
-    "name": "nullsub_63",
-    "signature": "void __cdecl()",
+    "name": "highscore_play_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7907,8 +7907,8 @@
     "end": "0x00444391",
     "external": false,
     "library": false,
-    "name": "nullsub_64",
-    "signature": "void __cdecl()",
+    "name": "highscore_update_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7918,8 +7918,8 @@
     "end": "0x004443A1",
     "external": false,
     "library": false,
-    "name": "nullsub_65",
-    "signature": "void __cdecl()",
+    "name": "highscore_score_scrollbar_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7929,8 +7929,8 @@
     "end": "0x004443B1",
     "external": false,
     "library": false,
-    "name": "nullsub_66",
-    "signature": "void __cdecl()",
+    "name": "highscore_hardcore_checkbox_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -7950,7 +7950,7 @@
     "external": false,
     "library": false,
     "name": "ui_profile_menu_update",
-    "signature": "int(float *arg1, char arg2)",
+    "signature": "bool(float *xy, char enabled)",
     "size": 1033,
     "thunk": false
   },
@@ -8008,7 +8008,7 @@
     "external": false,
     "library": false,
     "name": "creature_spawn_tinted",
-    "signature": "int(float *pos, float *rgba, int type_id)",
+    "signature": "int(const vec2f_t *pos, const effect_color_t *color, int type_id)",
     "size": 364,
     "thunk": false
   },
@@ -8028,7 +8028,7 @@
     "external": false,
     "library": false,
     "name": "player_fire_weapon",
-    "signature": "void(char param_1, char param_2)",
+    "signature": "void(const vec2f_t *aim, char fire_requested, char reload_requested)",
     "size": 1518,
     "thunk": false
   },
@@ -8174,7 +8174,7 @@
     "external": false,
     "library": false,
     "name": "input_primary_just_pressed",
-    "signature": "int()",
+    "signature": "bool()",
     "size": 188,
     "thunk": false
   },
@@ -8346,7 +8346,7 @@
     "external": false,
     "library": false,
     "name": "ui_menu_click_back_contextual",
-    "signature": "int()",
+    "signature": "void()",
     "size": 45,
     "thunk": false
   },
@@ -8533,8 +8533,8 @@
     "end": "0x00448AB1",
     "external": false,
     "library": false,
-    "name": "nullsub_79",
-    "signature": "void __cdecl()",
+    "name": "quest_select_back_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8544,8 +8544,8 @@
     "end": "0x00448AC1",
     "external": false,
     "library": false,
-    "name": "nullsub_80",
-    "signature": "void __cdecl()",
+    "name": "quest_select_hardcore_checkbox_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8555,8 +8555,8 @@
     "end": "0x00448AD1",
     "external": false,
     "library": false,
-    "name": "nullsub_81",
-    "signature": "void __cdecl()",
+    "name": "quest_select_unused_orange_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8566,8 +8566,8 @@
     "end": "0x00448AE1",
     "external": false,
     "library": false,
-    "name": "nullsub_82",
-    "signature": "void __cdecl()",
+    "name": "quest_select_hovered_stage_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8577,8 +8577,8 @@
     "end": "0x00448AF1",
     "external": false,
     "library": false,
-    "name": "nullsub_83",
-    "signature": "void __cdecl()",
+    "name": "quest_select_selected_stage_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8588,8 +8588,8 @@
     "end": "0x00448B01",
     "external": false,
     "library": false,
-    "name": "nullsub_84",
-    "signature": "void __cdecl()",
+    "name": "quest_select_title_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8599,8 +8599,8 @@
     "end": "0x00448B11",
     "external": false,
     "library": false,
-    "name": "nullsub_85",
-    "signature": "void __cdecl()",
+    "name": "quest_select_unused_blue_dim_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8610,8 +8610,8 @@
     "end": "0x00448B21",
     "external": false,
     "library": false,
-    "name": "nullsub_86",
-    "signature": "void __cdecl()",
+    "name": "quest_select_unused_blue_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8621,8 +8621,8 @@
     "end": "0x00448B31",
     "external": false,
     "library": false,
-    "name": "nullsub_87",
-    "signature": "void __cdecl()",
+    "name": "quest_select_row_hover_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8632,8 +8632,8 @@
     "end": "0x00448B41",
     "external": false,
     "library": false,
-    "name": "nullsub_88",
-    "signature": "void __cdecl()",
+    "name": "quest_select_row_idle_color_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8682,7 +8682,7 @@
     "external": false,
     "library": false,
     "name": "vec2_add_out",
-    "signature": "float *(float *dst, float *lhs)",
+    "signature": "float *__thiscall(vec2f_t *self, float *dst, const vec2f_t *rhs)",
     "size": 26,
     "thunk": false
   },
@@ -8789,8 +8789,8 @@
     "end": "0x0044FA31",
     "external": false,
     "library": false,
-    "name": "nullsub_96",
-    "signature": "void __cdecl()",
+    "name": "play_game_player_count_list_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8800,8 +8800,8 @@
     "end": "0x0044FA41",
     "external": false,
     "library": false,
-    "name": "nullsub_97",
-    "signature": "void __cdecl()",
+    "name": "play_game_tutorial_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8811,8 +8811,8 @@
     "end": "0x0044FA51",
     "external": false,
     "library": false,
-    "name": "nullsub_98",
-    "signature": "void __cdecl()",
+    "name": "play_game_hardcore_checkbox_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8822,8 +8822,8 @@
     "end": "0x0044FA61",
     "external": false,
     "library": false,
-    "name": "nullsub_99",
-    "signature": "void __cdecl()",
+    "name": "play_game_typo_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8833,8 +8833,8 @@
     "end": "0x0044FA71",
     "external": false,
     "library": false,
-    "name": "nullsub_100",
-    "signature": "void __cdecl()",
+    "name": "play_game_survival_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8844,8 +8844,8 @@
     "end": "0x0044FA81",
     "external": false,
     "library": false,
-    "name": "nullsub_101",
-    "signature": "void __cdecl()",
+    "name": "play_game_rush_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8855,8 +8855,8 @@
     "end": "0x0044FA91",
     "external": false,
     "library": false,
-    "name": "nullsub_102",
-    "signature": "void __cdecl()",
+    "name": "play_game_quests_button_destroy",
+    "signature": "void()",
     "size": 1,
     "thunk": false
   },
@@ -8869,7 +8869,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_init_defaults",
-    "signature": "ui_element_t *(ui_element_t *element)",
+    "signature": "void(ui_element_t *element)",
     "size": 173,
     "thunk": false
   },
@@ -8880,7 +8880,7 @@
     "external": false,
     "library": false,
     "name": "ui_element_layout_calc",
-    "signature": "float(float arg1)",
+    "signature": "void(ui_element_t *element)",
     "size": 288,
     "thunk": false
   },
@@ -8932,8 +8932,8 @@
     "end": "0x00451905",
     "external": false,
     "library": false,
-    "name": "sub_451900",
-    "signature": "",
+    "name": "weapon_table_defaults_global_init_thunk",
+    "signature": "void()",
     "size": 5,
     "thunk": true
   },
@@ -8943,8 +8943,8 @@
     "end": "0x004519A6",
     "external": false,
     "library": false,
-    "name": "sub_451910",
-    "signature": "int()",
+    "name": "weapon_table_defaults_global_init",
+    "signature": "void()",
     "size": 150,
     "thunk": false
   },
@@ -9020,7 +9020,7 @@
     "external": false,
     "library": false,
     "name": "vec2_normalize_dispatch_init",
-    "signature": "float *(float *dst, float *src)",
+    "signature": "vec2f_t *__stdcall(vec2f_t *dst, const vec2f_t *src)",
     "size": 13,
     "thunk": false
   },
@@ -9031,7 +9031,7 @@
     "external": false,
     "library": false,
     "name": "vec2_normalize_dispatch",
-    "signature": "float *(float *dst, float *src)",
+    "signature": "vec2f_t *__stdcall(vec2f_t *dst, const vec2f_t *src)",
     "size": 6,
     "thunk": true
   },
@@ -9056,7 +9056,7 @@
     "external": false,
     "library": false,
     "name": "sub_452F5A",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 142,
     "thunk": false
   },
@@ -9081,7 +9081,7 @@
     "external": false,
     "library": false,
     "name": "sub_453012",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 175,
     "thunk": false
   },
@@ -9106,7 +9106,7 @@
     "external": false,
     "library": false,
     "name": "sub_4530F0",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float, float)",
+    "signature": "int __stdcall(int, int, int, int, float, float)",
     "size": 67,
     "thunk": false
   },
@@ -9119,7 +9119,7 @@
     "external": false,
     "library": false,
     "name": "sub_453133",
-    "signature": "int()",
+    "signature": "",
     "size": 13,
     "thunk": false
   },
@@ -9143,7 +9143,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_0045315a",
-    "signature": "int __stdcall(_DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9168,7 +9168,7 @@
     "external": false,
     "library": false,
     "name": "sub_453197",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 174,
     "thunk": false
   },
@@ -9193,7 +9193,7 @@
     "external": false,
     "library": false,
     "name": "sub_45326F",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 209,
     "thunk": false
   },
@@ -9218,7 +9218,7 @@
     "external": false,
     "library": false,
     "name": "sub_45336F",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float, float)",
+    "signature": "int __stdcall(int, int, int, int, float, float)",
     "size": 93,
     "thunk": false
   },
@@ -9229,7 +9229,7 @@
     "external": false,
     "library": false,
     "name": "sub_4533D9",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 139,
     "thunk": false
   },
@@ -9253,7 +9253,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00453464",
-    "signature": "int __stdcall(_DWORD, _DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9264,7 +9264,7 @@
     "external": false,
     "library": false,
     "name": "sub_453484",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 102,
     "thunk": false
   },
@@ -9290,7 +9290,7 @@
     "external": false,
     "library": false,
     "name": "sub_4534FB",
-    "signature": "int()",
+    "signature": "",
     "size": 17,
     "thunk": false
   },
@@ -9301,7 +9301,7 @@
     "external": false,
     "library": false,
     "name": "sub_453519",
-    "signature": "float *__stdcall(float *, float *, float *, float *)",
+    "signature": "",
     "size": 240,
     "thunk": false
   },
@@ -9326,7 +9326,7 @@
     "external": false,
     "library": false,
     "name": "sub_453640",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 209,
     "thunk": false
   },
@@ -9351,7 +9351,7 @@
     "external": false,
     "library": false,
     "name": "sub_45373B",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, int, int, float)",
     "size": 243,
     "thunk": false
   },
@@ -9376,7 +9376,7 @@
     "external": false,
     "library": false,
     "name": "sub_45385D",
-    "signature": "float *__stdcall(float *, float *, float *, float *, float, float)",
+    "signature": "int __stdcall(int, int, int, int, float, float)",
     "size": 119,
     "thunk": false
   },
@@ -9387,7 +9387,7 @@
     "external": false,
     "library": false,
     "name": "sub_4538E1",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 159,
     "thunk": false
   },
@@ -9398,7 +9398,7 @@
     "external": false,
     "library": false,
     "name": "sub_45398D",
-    "signature": "double __stdcall(float *)",
+    "signature": "",
     "size": 202,
     "thunk": false
   },
@@ -9422,7 +9422,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00453a57",
-    "signature": "int __cdecl(_DWORD, _DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9433,7 +9433,7 @@
     "external": false,
     "library": false,
     "name": "sub_453A6A",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 566,
     "thunk": false
   },
@@ -9457,7 +9457,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00453ca0",
-    "signature": "int __stdcall(_DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9468,7 +9468,7 @@
     "external": false,
     "library": false,
     "name": "sub_453CB3",
-    "signature": "int __stdcall(int, int)",
+    "signature": "",
     "size": 109,
     "thunk": false
   },
@@ -9479,7 +9479,7 @@
     "external": false,
     "library": false,
     "name": "sub_453D2D",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 566,
     "thunk": false
   },
@@ -9503,7 +9503,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00453f63",
-    "signature": "int __stdcall(_DWORD, _DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9516,7 +9516,7 @@
     "external": false,
     "library": false,
     "name": "sub_453F76",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 909,
     "thunk": false
   },
@@ -9541,7 +9541,7 @@
     "external": false,
     "library": false,
     "name": "sub_454331",
-    "signature": "int __stdcall(int, int, int, int)",
+    "signature": "",
     "size": 92,
     "thunk": false
   },
@@ -9566,7 +9566,7 @@
     "external": false,
     "library": false,
     "name": "sub_4543BB",
-    "signature": "int __stdcall(int, int, int, int)",
+    "signature": "",
     "size": 92,
     "thunk": false
   },
@@ -9692,7 +9692,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_004546fe",
-    "signature": "int __stdcall(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9703,7 +9703,7 @@
     "external": false,
     "library": false,
     "name": "sub_454711",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 226,
     "thunk": false
   },
@@ -9758,7 +9758,7 @@
     "external": false,
     "library": false,
     "name": "sub_454859",
-    "signature": "float *__stdcall(float *, float, float *, int, float *)",
+    "signature": "int __stdcall(int, float, int, int, int)",
     "size": 230,
     "thunk": false
   },
@@ -9771,7 +9771,7 @@
     "external": false,
     "library": false,
     "name": "sub_454966",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 157,
     "thunk": false
   },
@@ -9782,7 +9782,7 @@
     "external": false,
     "library": false,
     "name": "sub_454A10",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 308,
     "thunk": false
   },
@@ -9845,7 +9845,7 @@
     "external": false,
     "library": false,
     "name": "sub_454BF4",
-    "signature": "float *__stdcall(float *, float, float, float)",
+    "signature": "int __stdcall(int, float, float, float)",
     "size": 217,
     "thunk": false
   },
@@ -9869,7 +9869,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00454ccd",
-    "signature": "int __stdcall(_DWORD, _DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9880,7 +9880,7 @@
     "external": false,
     "library": false,
     "name": "sub_454CE0",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 150,
     "thunk": false
   },
@@ -9893,7 +9893,7 @@
     "external": false,
     "library": false,
     "name": "sub_454D83",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 185,
     "thunk": false
   },
@@ -9917,7 +9917,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00454e3c",
-    "signature": "int __stdcall(_DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -9930,7 +9930,7 @@
     "external": false,
     "library": false,
     "name": "sub_454E4F",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 180,
     "thunk": false
   },
@@ -9955,7 +9955,7 @@
     "external": false,
     "library": false,
     "name": "sub_454F09",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 126,
     "thunk": false
   },
@@ -9979,7 +9979,7 @@
     "external": false,
     "library": false,
     "name": "sub_454F8D",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 155,
     "thunk": false
   },
@@ -10015,7 +10015,7 @@
     "external": false,
     "library": false,
     "name": "sub_455052",
-    "signature": "float *__stdcall(float *, float *, float *, float)",
+    "signature": "int __stdcall(int, int, int, float)",
     "size": 227,
     "thunk": false
   },
@@ -10083,7 +10083,7 @@
     "external": false,
     "library": false,
     "name": "sub_4551F6",
-    "signature": "_DWORD *__stdcall(_DWORD *, _DWORD *, int, int, float, float)",
+    "signature": "int __stdcall(int, int, int, int, float, float)",
     "size": 139,
     "thunk": false
   },
@@ -10107,7 +10107,7 @@
     "external": false,
     "library": false,
     "name": "j_FUN_00455281",
-    "signature": "int __stdcall(_DWORD, _DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },
@@ -10120,7 +10120,7 @@
     "external": false,
     "library": false,
     "name": "sub_455294",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 164,
     "thunk": false
   },
@@ -10133,7 +10133,7 @@
     "external": false,
     "library": false,
     "name": "sub_455345",
-    "signature": "float *__stdcall(float *, float *, float *, float *)",
+    "signature": "",
     "size": 162,
     "thunk": false
   },
@@ -10144,7 +10144,7 @@
     "external": false,
     "library": false,
     "name": "sub_4553F4",
-    "signature": "int __stdcall(int, float *, int)",
+    "signature": "",
     "size": 56,
     "thunk": false
   },
@@ -10157,7 +10157,7 @@
     "external": false,
     "library": false,
     "name": "sub_455439",
-    "signature": "float *__stdcall(float *, float *, float *, float *)",
+    "signature": "",
     "size": 162,
     "thunk": false
   },
@@ -10168,7 +10168,7 @@
     "external": false,
     "library": false,
     "name": "sub_4554E8",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 159,
     "thunk": false
   },
@@ -10181,7 +10181,7 @@
     "external": false,
     "library": false,
     "name": "vec2_normalize_safe",
-    "signature": "float *(float *dst, float *src)",
+    "signature": "vec2f_t *__stdcall(vec2f_t *dst, const vec2f_t *src)",
     "size": 141,
     "thunk": false
   },
@@ -10256,7 +10256,7 @@
     "external": false,
     "library": false,
     "name": "sub_45589A",
-    "signature": "float *__stdcall(float *, int, int, float *, float *, float *)",
+    "signature": "",
     "size": 365,
     "thunk": false
   },
@@ -10313,7 +10313,7 @@
     "external": false,
     "library": false,
     "name": "sub_455CBF",
-    "signature": "float *__stdcall(float *, float *, int, float *, float *, int, float *)",
+    "signature": "",
     "size": 692,
     "thunk": false
   },
@@ -10326,7 +10326,7 @@
     "external": false,
     "library": false,
     "name": "sub_455F73",
-    "signature": "float *__stdcall(float *, float *, int)",
+    "signature": "",
     "size": 218,
     "thunk": false
   },
@@ -10339,7 +10339,7 @@
     "external": false,
     "library": false,
     "name": "sub_45604D",
-    "signature": "float *__stdcall(float *, int)",
+    "signature": "",
     "size": 191,
     "thunk": false
   },
@@ -10355,7 +10355,7 @@
     "external": false,
     "library": false,
     "name": "sub_45610C",
-    "signature": "int __stdcall(float *, float *, float *, float *, float *, float *, float *)",
+    "signature": "",
     "size": 986,
     "thunk": false
   },
@@ -10369,8 +10369,8 @@
     "end": "0x00456542",
     "external": false,
     "library": false,
-    "name": "sub_4564E6",
-    "signature": "BOOL __cdecl(int, LPCSTR lpValueName, LPBYTE lpData, DWORD cbData)",
+    "name": "renderer_registry_read",
+    "signature": "int(unsigned int type, const char *name, unsigned __int8 *data, unsigned int size)",
     "size": 92,
     "thunk": false
   },
@@ -10381,7 +10381,7 @@
     "external": false,
     "library": false,
     "name": "sub_456542",
-    "signature": "BOOL()",
+    "signature": "",
     "size": 56,
     "thunk": false
   },
@@ -10394,7 +10394,7 @@
     "external": false,
     "library": false,
     "name": "sub_45657A",
-    "signature": "int()",
+    "signature": "",
     "size": 165,
     "thunk": false
   },
@@ -10409,20 +10409,20 @@
     "end": "0x004566D3",
     "external": false,
     "library": false,
-    "name": "sub_45661F",
-    "signature": "int __cdecl(DWORD ProcessorFeature)",
+    "name": "renderer_processor_feature_available",
+    "signature": "int(unsigned int feature)",
     "size": 180,
     "thunk": false
   },
   {
     "address": "0x004566D3",
     "calls": [
-      "sub_4564E6",
-      "sub_45661F",
-      "sub_4567B0",
-      "sub_4568C0",
-      "sub_456AA5",
-      "sub_457127"
+      "renderer_patch_3dnow",
+      "renderer_patch_portable",
+      "renderer_patch_sse",
+      "renderer_patch_sse2",
+      "renderer_processor_feature_available",
+      "renderer_registry_read"
     ],
     "end": "0x004567B0",
     "external": false,
@@ -10438,8 +10438,8 @@
     "end": "0x004568B6",
     "external": false,
     "library": false,
-    "name": "sub_4567B0",
-    "signature": "__m128 *(__stdcall **__cdecl(__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)",
+    "name": "renderer_patch_sse",
+    "signature": "void(void **table)",
     "size": 262,
     "thunk": false
   },
@@ -10449,8 +10449,8 @@
     "end": "0x004569CA",
     "external": false,
     "library": false,
-    "name": "sub_4568C0",
-    "signature": "__m128 *(__stdcall **__cdecl(__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)",
+    "name": "renderer_patch_sse2",
+    "signature": "void(void **table)",
     "size": 266,
     "thunk": false
   },
@@ -10473,8 +10473,8 @@
     "end": "0x00456CCB",
     "external": false,
     "library": false,
-    "name": "sub_456AA5",
-    "signature": "int __cdecl(__m64 *(__stdcall **)(__m64 *, __m64 *, __m64 *))",
+    "name": "renderer_patch_3dnow",
+    "signature": "void(void **table)",
     "size": 550,
     "thunk": false
   },
@@ -10485,7 +10485,7 @@
     "external": false,
     "library": false,
     "name": "sub_456CCB",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 105,
     "thunk": false
   },
@@ -10496,41 +10496,8 @@
     "external": false,
     "library": false,
     "name": "sub_456D34",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 53,
-    "thunk": false
-  },
-  {
-    "address": "0x00456D69",
-    "calls": [],
-    "end": "0x00456DF4",
-    "external": false,
-    "library": false,
-    "name": "sub_456D69",
-    "signature": "float *__stdcall(float *, float *, float *)",
-    "size": 139,
-    "thunk": false
-  },
-  {
-    "address": "0x00456DF4",
-    "calls": [],
-    "end": "0x00456E53",
-    "external": false,
-    "library": false,
-    "name": "sub_456DF4",
-    "signature": "float *__stdcall(float *, float *, float *)",
-    "size": 95,
-    "thunk": false
-  },
-  {
-    "address": "0x00456E53",
-    "calls": [],
-    "end": "0x00456EEC",
-    "external": false,
-    "library": false,
-    "name": "sub_456E53",
-    "signature": "float *__stdcall(float *, float *, float *)",
-    "size": 153,
     "thunk": false
   },
   {
@@ -10572,8 +10539,8 @@
     "end": "0x00457163",
     "external": false,
     "library": false,
-    "name": "sub_457127",
-    "signature": "float *(__stdcall **__cdecl(float *(__stdcall **)(float *a1, float *a2, float *a3)))(float *a1, float *a2, float *a3)",
+    "name": "renderer_patch_portable",
+    "signature": "void(void **table)",
     "size": 60,
     "thunk": false
   },
@@ -10584,7 +10551,7 @@
     "external": false,
     "library": false,
     "name": "sub_457170",
-    "signature": "__m128 *__stdcall(__m128 *, unsigned int *, __m128 *)",
+    "signature": "",
     "size": 64,
     "thunk": false
   },
@@ -10595,7 +10562,7 @@
     "external": false,
     "library": false,
     "name": "sub_4571B0",
-    "signature": "double *__stdcall(double *, unsigned int *, __m128 *)",
+    "signature": "",
     "size": 89,
     "thunk": false
   },
@@ -10606,19 +10573,8 @@
     "external": false,
     "library": false,
     "name": "sub_457210",
-    "signature": "double *__stdcall(double *, unsigned int *, __m128 *)",
+    "signature": "",
     "size": 57,
-    "thunk": false
-  },
-  {
-    "address": "0x00457250",
-    "calls": [],
-    "end": "0x0045725E",
-    "external": false,
-    "library": false,
-    "name": "sub_457250",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10628,19 +10584,8 @@
     "external": false,
     "library": false,
     "name": "sub_45725E",
-    "signature": "int __stdcall(int, int, int)",
+    "signature": "",
     "size": 229,
-    "thunk": false
-  },
-  {
-    "address": "0x00457350",
-    "calls": [],
-    "end": "0x0045735E",
-    "external": false,
-    "library": false,
-    "name": "sub_457350",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10650,19 +10595,8 @@
     "external": false,
     "library": false,
     "name": "sub_45735E",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 184,
-    "thunk": false
-  },
-  {
-    "address": "0x00457420",
-    "calls": [],
-    "end": "0x0045742E",
-    "external": false,
-    "library": false,
-    "name": "sub_457420",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10672,19 +10606,8 @@
     "external": false,
     "library": false,
     "name": "sub_45742E",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 202,
-    "thunk": false
-  },
-  {
-    "address": "0x00457500",
-    "calls": [],
-    "end": "0x0045750E",
-    "external": false,
-    "library": false,
-    "name": "sub_457500",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10694,7 +10617,7 @@
     "external": false,
     "library": false,
     "name": "sub_45750E",
-    "signature": "__m128 *__stdcall(__m128 *, int, int, int)",
+    "signature": "",
     "size": 152,
     "thunk": false
   },
@@ -10705,7 +10628,7 @@
     "external": false,
     "library": false,
     "name": "sub_4575B0",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 156,
     "thunk": false
   },
@@ -10716,7 +10639,7 @@
     "external": false,
     "library": false,
     "name": "sub_457650",
-    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, unsigned int)",
+    "signature": "",
     "size": 180,
     "thunk": false
   },
@@ -10727,7 +10650,7 @@
     "external": false,
     "library": false,
     "name": "sub_457710",
-    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, double *, int, const double *, int, const double *, unsigned int)",
+    "signature": "",
     "size": 135,
     "thunk": false
   },
@@ -10738,7 +10661,7 @@
     "external": false,
     "library": false,
     "name": "sub_4577A0",
-    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, unsigned int)",
+    "signature": "",
     "size": 167,
     "thunk": false
   },
@@ -10749,7 +10672,7 @@
     "external": false,
     "library": false,
     "name": "sub_457850",
-    "signature": "int __userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, int, const double *, const double *, const double *, const double *, unsigned int)",
+    "signature": "",
     "size": 181,
     "thunk": false
   },
@@ -10760,7 +10683,7 @@
     "external": false,
     "library": false,
     "name": "sub_457910",
-    "signature": "__m128 *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128 *, __m128 *, __m128 *, __m128 *, __m128 *, unsigned int)",
+    "signature": "",
     "size": 156,
     "thunk": false
   },
@@ -10771,7 +10694,7 @@
     "external": false,
     "library": false,
     "name": "sub_4579B0",
-    "signature": "double *__userpurge@<eax>(__m128@<xmm1>, __m128@<xmm2>, __m128@<xmm3>, double *, int, const double *, int, const double *, unsigned int)",
+    "signature": "",
     "size": 136,
     "thunk": false
   },
@@ -10782,7 +10705,7 @@
     "external": false,
     "library": false,
     "name": "sub_457A40",
-    "signature": "int __stdcall(int, const double *, const double *, const double *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 92,
     "thunk": false
   },
@@ -10793,7 +10716,7 @@
     "external": false,
     "library": false,
     "name": "sub_457AA0",
-    "signature": "__m128 *__stdcall(__m128 *, __m128 *, __m128 *, __m128 *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 72,
     "thunk": false
   },
@@ -10804,7 +10727,7 @@
     "external": false,
     "library": false,
     "name": "sub_457AF0",
-    "signature": "double *__stdcall(double *, const double *, const double *, const double *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 81,
     "thunk": false
   },
@@ -10815,19 +10738,8 @@
     "external": false,
     "library": false,
     "name": "sub_457B50",
-    "signature": "int __userpurge@<eax>(__m128@<xmm5>, __m128@<xmm6>, int, __m128 *, const double *, const double *)",
+    "signature": "",
     "size": 190,
-    "thunk": false
-  },
-  {
-    "address": "0x00457C10",
-    "calls": [],
-    "end": "0x00457C1E",
-    "external": false,
-    "library": false,
-    "name": "sub_457C10",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10837,19 +10749,8 @@
     "external": false,
     "library": false,
     "name": "sub_457C1E",
-    "signature": "__m128 *__stdcall(__m128 *, const double *, const double *, const double *)",
+    "signature": "",
     "size": 214,
-    "thunk": false
-  },
-  {
-    "address": "0x00457D00",
-    "calls": [],
-    "end": "0x00457D0E",
-    "external": false,
-    "library": false,
-    "name": "sub_457D00",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10859,19 +10760,8 @@
     "external": false,
     "library": false,
     "name": "sub_457D0E",
-    "signature": "double *__stdcall(double *, __m128 *, __m128 *)",
+    "signature": "",
     "size": 380,
-    "thunk": false
-  },
-  {
-    "address": "0x00457E90",
-    "calls": [],
-    "end": "0x00457E9E",
-    "external": false,
-    "library": false,
-    "name": "sub_457E90",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10881,7 +10771,7 @@
     "external": false,
     "library": false,
     "name": "sub_457E9E",
-    "signature": "__m128 *__stdcall(__m128 *, const double *)",
+    "signature": "",
     "size": 198,
     "thunk": false
   },
@@ -10892,7 +10782,7 @@
     "external": false,
     "library": false,
     "name": "sub_457F70",
-    "signature": "double *__stdcall(double *, int, int)",
+    "signature": "",
     "size": 130,
     "thunk": false
   },
@@ -10903,19 +10793,8 @@
     "external": false,
     "library": false,
     "name": "sub_458000",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 156,
-    "thunk": false
-  },
-  {
-    "address": "0x004580A0",
-    "calls": [],
-    "end": "0x004580AE",
-    "external": false,
-    "library": false,
-    "name": "sub_4580A0",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10925,7 +10804,7 @@
     "external": false,
     "library": false,
     "name": "sub_4580AE",
-    "signature": "__m128 *__stdcall(__m128 *, int)",
+    "signature": "",
     "size": 97,
     "thunk": false
   },
@@ -10936,19 +10815,8 @@
     "external": false,
     "library": false,
     "name": "sub_458110",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 276,
-    "thunk": false
-  },
-  {
-    "address": "0x00458230",
-    "calls": [],
-    "end": "0x0045823E",
-    "external": false,
-    "library": false,
-    "name": "sub_458230",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10960,19 +10828,8 @@
     "external": false,
     "library": false,
     "name": "sub_45823E",
-    "signature": "__m128 *__stdcall(__m128 *, unsigned int, unsigned int, unsigned int)",
+    "signature": "",
     "size": 179,
-    "thunk": false
-  },
-  {
-    "address": "0x00458300",
-    "calls": [],
-    "end": "0x0045830E",
-    "external": false,
-    "library": false,
-    "name": "sub_458300",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -10982,19 +10839,8 @@
     "external": false,
     "library": false,
     "name": "sub_45830E",
-    "signature": "int __stdcall(int, int, int)",
+    "signature": "",
     "size": 164,
-    "thunk": false
-  },
-  {
-    "address": "0x004583C0",
-    "calls": [],
-    "end": "0x004583CE",
-    "external": false,
-    "library": false,
-    "name": "sub_4583C0",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11004,19 +10850,8 @@
     "external": false,
     "library": false,
     "name": "sub_4583CE",
-    "signature": "__m128 *__stdcall(__m128 *, int, int)",
+    "signature": "",
     "size": 163,
-    "thunk": false
-  },
-  {
-    "address": "0x00458480",
-    "calls": [],
-    "end": "0x0045848E",
-    "external": false,
-    "library": false,
-    "name": "sub_458480",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11026,19 +10861,8 @@
     "external": false,
     "library": false,
     "name": "sub_45848E",
-    "signature": "__m128 *__stdcall(__m128 *, __m128 *, int)",
+    "signature": "",
     "size": 173,
-    "thunk": false
-  },
-  {
-    "address": "0x00458540",
-    "calls": [],
-    "end": "0x0045854E",
-    "external": false,
-    "library": false,
-    "name": "sub_458540",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11048,19 +10872,8 @@
     "external": false,
     "library": false,
     "name": "sub_45854E",
-    "signature": "double *__stdcall(double *, unsigned int *, const double *)",
+    "signature": "",
     "size": 312,
-    "thunk": false
-  },
-  {
-    "address": "0x00458690",
-    "calls": [],
-    "end": "0x0045869E",
-    "external": false,
-    "library": false,
-    "name": "sub_458690",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11070,19 +10883,8 @@
     "external": false,
     "library": false,
     "name": "sub_45869E",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 184,
-    "thunk": false
-  },
-  {
-    "address": "0x00458760",
-    "calls": [],
-    "end": "0x0045876E",
-    "external": false,
-    "library": false,
-    "name": "sub_458760",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11092,19 +10894,8 @@
     "external": false,
     "library": false,
     "name": "sub_45876E",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 202,
-    "thunk": false
-  },
-  {
-    "address": "0x00458840",
-    "calls": [],
-    "end": "0x0045884E",
-    "external": false,
-    "library": false,
-    "name": "sub_458840",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11114,19 +10905,8 @@
     "external": false,
     "library": false,
     "name": "sub_45884E",
-    "signature": "double *__stdcall(double *, _DWORD *, const double *)",
+    "signature": "",
     "size": 683,
-    "thunk": false
-  },
-  {
-    "address": "0x00458B00",
-    "calls": [],
-    "end": "0x00458B0E",
-    "external": false,
-    "library": false,
-    "name": "sub_458B00",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11136,19 +10916,8 @@
     "external": false,
     "library": false,
     "name": "sub_458B0E",
-    "signature": "double *__stdcall(double *, unsigned int *, const double *)",
+    "signature": "",
     "size": 330,
-    "thunk": false
-  },
-  {
-    "address": "0x00458C60",
-    "calls": [],
-    "end": "0x00458C6E",
-    "external": false,
-    "library": false,
-    "name": "sub_458C60",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11158,19 +10927,8 @@
     "external": false,
     "library": false,
     "name": "sub_458C6E",
-    "signature": "__m128 *__stdcall(__m128 *, int, int, int)",
+    "signature": "",
     "size": 152,
-    "thunk": false
-  },
-  {
-    "address": "0x00458D10",
-    "calls": [],
-    "end": "0x00458D1E",
-    "external": false,
-    "library": false,
-    "name": "sub_458D10",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11182,19 +10940,8 @@
     "external": false,
     "library": false,
     "name": "sub_458D1E",
-    "signature": "int __stdcall(int, unsigned int)",
+    "signature": "",
     "size": 109,
-    "thunk": false
-  },
-  {
-    "address": "0x00458D90",
-    "calls": [],
-    "end": "0x00458D9E",
-    "external": false,
-    "library": false,
-    "name": "sub_458D90",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11206,19 +10953,8 @@
     "external": false,
     "library": false,
     "name": "sub_458D9E",
-    "signature": "int __stdcall(int, unsigned int)",
+    "signature": "",
     "size": 116,
-    "thunk": false
-  },
-  {
-    "address": "0x00458E20",
-    "calls": [],
-    "end": "0x00458E2E",
-    "external": false,
-    "library": false,
-    "name": "sub_458E20",
-    "signature": "void __stdcall(int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11228,19 +10964,8 @@
     "external": false,
     "library": false,
     "name": "sub_458E2E",
-    "signature": "double __stdcall(int)",
+    "signature": "",
     "size": 189,
-    "thunk": false
-  },
-  {
-    "address": "0x00458EF0",
-    "calls": [],
-    "end": "0x00458EFE",
-    "external": false,
-    "library": false,
-    "name": "sub_458EF0",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11250,19 +10975,8 @@
     "external": false,
     "library": false,
     "name": "sub_458EFE",
-    "signature": "__m128 *__stdcall(__m128 *, const double *, const double *, const double *)",
+    "signature": "",
     "size": 214,
-    "thunk": false
-  },
-  {
-    "address": "0x00458FE0",
-    "calls": [],
-    "end": "0x00458FEE",
-    "external": false,
-    "library": false,
-    "name": "sub_458FE0",
-    "signature": "void __stdcall(int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11272,19 +10986,8 @@
     "external": false,
     "library": false,
     "name": "sub_458FEE",
-    "signature": "double *__stdcall(double *, __m128 *, __m128 *)",
+    "signature": "",
     "size": 380,
-    "thunk": false
-  },
-  {
-    "address": "0x00459170",
-    "calls": [],
-    "end": "0x0045917E",
-    "external": false,
-    "library": false,
-    "name": "sub_459170",
-    "signature": "void __stdcall(int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11294,7 +10997,7 @@
     "external": false,
     "library": false,
     "name": "sub_45917E",
-    "signature": "__m128 *__stdcall(__m128 *, const double *)",
+    "signature": "",
     "size": 198,
     "thunk": false
   },
@@ -11305,19 +11008,8 @@
     "external": false,
     "library": false,
     "name": "sub_459250",
-    "signature": "float *__stdcall(float *, float *)",
+    "signature": "",
     "size": 276,
-    "thunk": false
-  },
-  {
-    "address": "0x00459370",
-    "calls": [],
-    "end": "0x0045937E",
-    "external": false,
-    "library": false,
-    "name": "sub_459370",
-    "signature": "void __stdcall(int, int, int, int)",
-    "size": 14,
     "thunk": false
   },
   {
@@ -11329,30 +11021,8 @@
     "external": false,
     "library": false,
     "name": "sub_45937E",
-    "signature": "__m128 *__stdcall(__m128 *, unsigned int, unsigned int, unsigned int)",
+    "signature": "",
     "size": 179,
-    "thunk": false
-  },
-  {
-    "address": "0x00459440",
-    "calls": [],
-    "end": "0x004594D9",
-    "external": false,
-    "library": false,
-    "name": "sub_459440",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 153,
-    "thunk": false
-  },
-  {
-    "address": "0x004594D9",
-    "calls": [],
-    "end": "0x00459536",
-    "external": false,
-    "library": false,
-    "name": "sub_4594D9",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
-    "size": 93,
     "thunk": false
   },
   {
@@ -11364,7 +11034,7 @@
     "external": false,
     "library": false,
     "name": "sub_459536",
-    "signature": "int __stdcall(__m64 *, int, _DWORD *)",
+    "signature": "",
     "size": 179,
     "thunk": false
   },
@@ -11375,7 +11045,7 @@
     "external": false,
     "library": false,
     "name": "sub_4595E9",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 540,
     "thunk": false
   },
@@ -11386,7 +11056,7 @@
     "external": false,
     "library": false,
     "name": "sub_459805",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 533,
     "thunk": false
   },
@@ -11399,7 +11069,7 @@
     "external": false,
     "library": false,
     "name": "sub_459A1A",
-    "signature": "__m64 *__userpurge@<eax>(__m64 *, __m64, __m64)",
+    "signature": "",
     "size": 197,
     "thunk": false
   },
@@ -11413,7 +11083,7 @@
     "external": false,
     "library": false,
     "name": "sub_459ADF",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 108,
     "thunk": false
   },
@@ -11427,7 +11097,7 @@
     "external": false,
     "library": false,
     "name": "sub_459B4B",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 311,
     "thunk": false
   },
@@ -11440,7 +11110,7 @@
     "external": false,
     "library": false,
     "name": "sub_459C82",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 141,
     "thunk": false
   },
@@ -11453,7 +11123,7 @@
     "external": false,
     "library": false,
     "name": "sub_459D0F",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 146,
     "thunk": false
   },
@@ -11464,7 +11134,7 @@
     "external": false,
     "library": false,
     "name": "sub_459DA1",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 100,
     "thunk": false
   },
@@ -11478,7 +11148,7 @@
     "external": false,
     "library": false,
     "name": "sub_459E05",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 167,
     "thunk": false
   },
@@ -11491,7 +11161,7 @@
     "external": false,
     "library": false,
     "name": "sub_459EAC",
-    "signature": "__m64 *__userpurge@<eax>(unsigned int@<esi>, __m64 *, __m64 *)",
+    "signature": "",
     "size": 165,
     "thunk": false
   },
@@ -11506,7 +11176,7 @@
     "external": false,
     "library": false,
     "name": "sub_459F51",
-    "signature": "__m64 *__userpurge@<eax>(unsigned int@<esi>, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 2649,
     "thunk": false
   },
@@ -11517,7 +11187,7 @@
     "external": false,
     "library": false,
     "name": "sub_45A9AA",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 562,
     "thunk": false
   },
@@ -11528,7 +11198,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ABDC",
-    "signature": "double __stdcall(unsigned int *)",
+    "signature": "",
     "size": 207,
     "thunk": false
   },
@@ -11539,7 +11209,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ACAB",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int, unsigned int, unsigned int)",
+    "signature": "",
     "size": 80,
     "thunk": false
   },
@@ -11552,7 +11222,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ACFB",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 235,
     "thunk": false
   },
@@ -11565,7 +11235,7 @@
     "external": false,
     "library": false,
     "name": "sub_45ADE6",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 220,
     "thunk": false
   },
@@ -11578,7 +11248,7 @@
     "external": false,
     "library": false,
     "name": "sub_45AEC2",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int)",
+    "signature": "",
     "size": 99,
     "thunk": false
   },
@@ -11591,7 +11261,7 @@
     "external": false,
     "library": false,
     "name": "sub_45AF25",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int)",
+    "signature": "",
     "size": 94,
     "thunk": false
   },
@@ -11604,7 +11274,7 @@
     "external": false,
     "library": false,
     "name": "sub_45AF83",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int)",
+    "signature": "",
     "size": 89,
     "thunk": false
   },
@@ -11615,7 +11285,7 @@
     "external": false,
     "library": false,
     "name": "sub_45AFDC",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int, unsigned int, unsigned int)",
+    "signature": "",
     "size": 71,
     "thunk": false
   },
@@ -11626,7 +11296,7 @@
     "external": false,
     "library": false,
     "name": "sub_45B023",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 111,
     "thunk": false
   },
@@ -11637,7 +11307,7 @@
     "external": false,
     "library": false,
     "name": "sub_45B092",
-    "signature": "__m64 *__cdecl(__m64 *)",
+    "signature": "",
     "size": 57,
     "thunk": false
   },
@@ -11648,7 +11318,7 @@
     "external": false,
     "library": false,
     "name": "sub_45B0CB",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 210,
     "thunk": false
   },
@@ -11659,7 +11329,7 @@
     "external": false,
     "library": false,
     "name": "sub_45B19D",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 181,
     "thunk": false
   },
@@ -11670,7 +11340,7 @@
     "external": false,
     "library": false,
     "name": "sub_45B252",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 4504,
     "thunk": false
   },
@@ -11683,7 +11353,7 @@
     "external": false,
     "library": false,
     "name": "sub_45C3EA",
-    "signature": "__m64 *__userpurge@<eax>(__m64 *, __m64, __m64)",
+    "signature": "",
     "size": 421,
     "thunk": false
   },
@@ -11694,7 +11364,7 @@
     "external": false,
     "library": false,
     "name": "sub_45C58F",
-    "signature": "__m64 *__stdcall(__m64 *, unsigned int, __m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 1332,
     "thunk": false
   },
@@ -11708,7 +11378,7 @@
     "external": false,
     "library": false,
     "name": "sub_45CAC3",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 281,
     "thunk": false
   },
@@ -11719,7 +11389,7 @@
     "external": false,
     "library": false,
     "name": "sub_45CBDC",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 4436,
     "thunk": false
   },
@@ -11730,7 +11400,7 @@
     "external": false,
     "library": false,
     "name": "sub_45DD30",
-    "signature": "__m64 *__stdcall(__m64 *, _DWORD *, __m64 *)",
+    "signature": "",
     "size": 738,
     "thunk": false
   },
@@ -11741,7 +11411,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E012",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 1016,
     "thunk": false
   },
@@ -11765,30 +11435,8 @@
     "external": false,
     "library": false,
     "name": "sub_45E73E",
-    "signature": "float *__stdcall(float *, float *, float *)",
+    "signature": "",
     "size": 28,
-    "thunk": false
-  },
-  {
-    "address": "0x0045E75A",
-    "calls": [],
-    "end": "0x0045E7CB",
-    "external": false,
-    "library": false,
-    "name": "sub_45E75A",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 113,
-    "thunk": false
-  },
-  {
-    "address": "0x0045E7CB",
-    "calls": [],
-    "end": "0x0045E832",
-    "external": false,
-    "library": false,
-    "name": "sub_45E7CB",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 103,
     "thunk": false
   },
   {
@@ -11798,7 +11446,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E832",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 95,
     "thunk": false
   },
@@ -11809,7 +11457,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E891",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 113,
     "thunk": false
   },
@@ -11820,7 +11468,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E902",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 212,
     "thunk": false
   },
@@ -11831,7 +11479,7 @@
     "external": false,
     "library": false,
     "name": "sub_45E9D6",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 234,
     "thunk": false
   },
@@ -11909,107 +11557,8 @@
     "external": false,
     "library": false,
     "name": "sub_45F0C5",
-    "signature": "float *__stdcall(float *out, __m64 *vec, __m64 *, __m64 *, __m64 *rhs, __m64 *lhs)",
+    "signature": "",
     "size": 307,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F218",
-    "calls": [],
-    "end": "0x0045F26D",
-    "external": false,
-    "library": false,
-    "name": "sub_45F218",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 85,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F26D",
-    "calls": [],
-    "end": "0x0045F2A6",
-    "external": false,
-    "library": false,
-    "name": "sub_45F26D",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 57,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F2A6",
-    "calls": [],
-    "end": "0x0045F30A",
-    "external": false,
-    "library": false,
-    "name": "sub_45F2A6",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 100,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F30A",
-    "calls": [],
-    "end": "0x0045F3A2",
-    "external": false,
-    "library": false,
-    "name": "sub_45F30A",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
-    "size": 152,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F3A2",
-    "calls": [],
-    "end": "0x0045F3EB",
-    "external": false,
-    "library": false,
-    "name": "sub_45F3A2",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, unsigned int, unsigned int)",
-    "size": 73,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F3EB",
-    "calls": [],
-    "end": "0x0045F42E",
-    "external": false,
-    "library": false,
-    "name": "sub_45F3EB",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
-    "size": 67,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F42E",
-    "calls": [],
-    "end": "0x0045F4D9",
-    "external": false,
-    "library": false,
-    "name": "sub_45F42E",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
-    "size": 171,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F4D9",
-    "calls": [],
-    "end": "0x0045F55B",
-    "external": false,
-    "library": false,
-    "name": "sub_45F4D9",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 130,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F55B",
-    "calls": [],
-    "end": "0x0045F5BA",
-    "external": false,
-    "library": false,
-    "name": "sub_45F55B",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
-    "size": 95,
     "thunk": false
   },
   {
@@ -12019,7 +11568,7 @@
     "external": false,
     "library": false,
     "name": "sub_45F5BA",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 306,
     "thunk": false
   },
@@ -12030,7 +11579,7 @@
     "external": false,
     "library": false,
     "name": "sub_45F6EC",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, unsigned int, unsigned int)",
+    "signature": "",
     "size": 113,
     "thunk": false
   },
@@ -12041,7 +11590,7 @@
     "external": false,
     "library": false,
     "name": "sub_45F75D",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 200,
     "thunk": false
   },
@@ -12052,41 +11601,8 @@
     "external": false,
     "library": false,
     "name": "sub_45F825",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *, __m64 *, unsigned int)",
+    "signature": "",
     "size": 222,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F903",
-    "calls": [],
-    "end": "0x0045F946",
-    "external": false,
-    "library": false,
-    "name": "sub_45F903",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
-    "size": 67,
-    "thunk": false
-  },
-  {
-    "address": "0x0045F946",
-    "calls": [],
-    "end": "0x0045FA2A",
-    "external": false,
-    "library": false,
-    "name": "sub_45F946",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *)",
-    "size": 228,
-    "thunk": false
-  },
-  {
-    "address": "0x0045FA2A",
-    "calls": [],
-    "end": "0x0045FAE8",
-    "external": false,
-    "library": false,
-    "name": "sub_45FA2A",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *, __m64 *)",
-    "size": 190,
     "thunk": false
   },
   {
@@ -12096,7 +11612,7 @@
     "external": false,
     "library": false,
     "name": "sub_45FAE8",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *)",
+    "signature": "",
     "size": 100,
     "thunk": false
   },
@@ -12107,7 +11623,7 @@
     "external": false,
     "library": false,
     "name": "sub_45FB4C",
-    "signature": "__m64 *__stdcall(__m64 *, __m64 *, __m64 *)",
+    "signature": "",
     "size": 126,
     "thunk": false
   },
@@ -12118,7 +11634,7 @@
     "external": false,
     "library": false,
     "name": "sub_45FBD0",
-    "signature": "__m128 *__cdecl(__m128 *, __m128 *, __m128 *)",
+    "signature": "",
     "size": 492,
     "thunk": false
   },
@@ -12129,7 +11645,7 @@
     "external": false,
     "library": false,
     "name": "sub_45FDC0",
-    "signature": "__m128 __userpurge@<xmm0>(__m128i@<xmm0>, int, int, int, int)",
+    "signature": "",
     "size": 232,
     "thunk": false
   },
@@ -12140,7 +11656,7 @@
     "external": false,
     "library": false,
     "name": "sub_45FEB0",
-    "signature": "__m128 *__cdecl(__m128i *, __m128 *, __m128 *)",
+    "signature": "",
     "size": 329,
     "thunk": false
   },
@@ -12173,7 +11689,7 @@
     "external": false,
     "library": false,
     "name": "sub_4603C0",
-    "signature": "void()",
+    "signature": "",
     "size": 233,
     "thunk": false
   },
@@ -12221,7 +11737,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_103",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -12232,7 +11748,7 @@
     "external": false,
     "library": true,
     "name": "__cfltcvt_init_10",
-    "signature": "int(void)",
+    "signature": "",
     "size": 56,
     "thunk": false
   },
@@ -12397,7 +11913,7 @@
     "external": false,
     "library": true,
     "name": "__ftol",
-    "signature": "signed __int64 __usercall@<edx:eax>()",
+    "signature": "",
     "size": 39,
     "thunk": false
   },
@@ -12439,7 +11955,7 @@
     "external": false,
     "library": true,
     "name": "crt_atof_l",
-    "signature": "float(char *str)",
+    "signature": "double(char *str)",
     "size": 87,
     "thunk": false
   },
@@ -12574,7 +12090,7 @@
     "external": false,
     "library": false,
     "name": "sub_461501",
-    "signature": "int()",
+    "signature": "",
     "size": 9,
     "thunk": false
   },
@@ -12928,8 +12444,8 @@
     "end": "0x00462016",
     "external": false,
     "library": false,
-    "name": "sub_461FD5",
-    "signature": "int(char *, ...)",
+    "name": "crt_printf",
+    "signature": "int(char *format, ...)",
     "size": 65,
     "thunk": false
   },
@@ -13109,21 +12625,43 @@
   {
     "address": "0x004625C1",
     "calls": [
-      "0x0046F138",
+      "FUN_0046262b",
       "FUN_00466ca6",
-      "FUN_00467a2d",
-      "crt_free_base",
       "crt_lock",
-      "crt_sbh_find_block",
-      "crt_sbh_find_region",
-      "crt_unlock"
+      "crt_sbh_find_region"
     ],
-    "end": "0x004626AA",
+    "end": "0x0046262B",
     "external": false,
     "library": false,
     "name": "crt_free_base",
     "signature": "void(void *ptr)",
-    "size": 233,
+    "size": 106,
+    "thunk": false
+  },
+  {
+    "address": "0x0046262B",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x00462634",
+    "external": false,
+    "library": false,
+    "name": "FUN_0046262b",
+    "signature": "int()",
+    "size": 9,
+    "thunk": false
+  },
+  {
+    "address": "0x00462683",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x0046268C",
+    "external": false,
+    "library": false,
+    "name": "FUN_00462683",
+    "signature": "int()",
+    "size": 9,
     "thunk": false
   },
   {
@@ -13131,28 +12669,49 @@
     "calls": [
       "0x0046F13C",
       "0x0046F140",
+      "FUN_00462835",
       "FUN_00466ca6",
       "FUN_00467484",
-      "FUN_00467a2d",
-      "FUN_00467d9e",
       "_malloc",
       "crt_bufcpy",
       "crt_call_new_handler",
       "crt_free_base",
       "crt_lock",
-      "crt_realloc",
       "crt_sbh_alloc",
-      "crt_sbh_alloc_units",
-      "crt_sbh_find_block",
-      "crt_sbh_find_region",
-      "crt_unlock"
+      "crt_sbh_find_region"
     ],
-    "end": "0x004629D9",
+    "end": "0x00462835",
     "external": false,
     "library": false,
     "name": "crt_realloc",
     "signature": "void *(void *ptr, size_t size)",
-    "size": 815,
+    "size": 395,
+    "thunk": false
+  },
+  {
+    "address": "0x00462835",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x0046283E",
+    "external": false,
+    "library": false,
+    "name": "FUN_00462835",
+    "signature": "int()",
+    "size": 9,
+    "thunk": false
+  },
+  {
+    "address": "0x00462983",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x0046298E",
+    "external": false,
+    "library": false,
+    "name": "FUN_00462983",
+    "signature": "int()",
+    "size": 11,
     "thunk": false
   },
   {
@@ -13185,19 +12744,42 @@
   {
     "address": "0x00462A17",
     "calls": [
-      "0x0046F140",
-      "FUN_00462a17",
+      "FUN_00462a7e",
       "crt_lock",
-      "crt_sbh_alloc",
-      "crt_sbh_alloc_units",
-      "crt_unlock"
+      "crt_sbh_alloc"
     ],
-    "end": "0x00462B13",
+    "end": "0x00462A7E",
     "external": false,
     "library": false,
     "name": "FUN_00462a17",
     "signature": "void *(uint arg1)",
-    "size": 252,
+    "size": 103,
+    "thunk": false
+  },
+  {
+    "address": "0x00462A7E",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x00462A87",
+    "external": false,
+    "library": false,
+    "name": "FUN_00462a7e",
+    "signature": "int()",
+    "size": 9,
+    "thunk": false
+  },
+  {
+    "address": "0x00462ADD",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x00462AE6",
+    "external": false,
+    "library": false,
+    "name": "FUN_00462add",
+    "signature": "int()",
+    "size": 9,
     "thunk": false
   },
   {
@@ -13288,8 +12870,8 @@
     "end": "0x00462EB0",
     "external": false,
     "library": true,
-    "name": "__strcmpi",
-    "signature": "int __cdecl(const char *String1, const char *String2)",
+    "name": "crt_stricmp",
+    "signature": "int(const char *lhs, const char *rhs)",
     "size": 208,
     "thunk": false
   },
@@ -13426,6 +13008,7 @@
       "crimsonland_main",
       "crt_build_argv",
       "crt_build_environ",
+      "crt_exception_filter",
       "crt_exit",
       "crt_get_environment_strings",
       "crt_heap_init",
@@ -13479,7 +13062,7 @@
     "external": false,
     "library": false,
     "name": "nullsub_104",
-    "signature": "void()",
+    "signature": "",
     "size": 1,
     "thunk": false
   },
@@ -13764,7 +13347,7 @@
     "external": false,
     "library": true,
     "name": "__setdefaultprecision",
-    "signature": "int(void)",
+    "signature": "",
     "size": 18,
     "thunk": false
   },
@@ -13927,19 +13510,42 @@
   {
     "address": "0x00463B86",
     "calls": [
-      "0x0046F160",
+      "FUN_00463bf0",
       "crt_lock",
-      "crt_msize",
-      "crt_sbh_find_block",
-      "crt_sbh_find_region",
+      "crt_sbh_find_region"
+    ],
+    "end": "0x00463BF0",
+    "external": false,
+    "library": false,
+    "name": "crt_msize",
+    "signature": "size_t(void *ptr)",
+    "size": 106,
+    "thunk": false
+  },
+  {
+    "address": "0x00463BF0",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x00463BF9",
+    "external": false,
+    "library": false,
+    "name": "FUN_00463bf0",
+    "signature": "int()",
+    "size": 9,
+    "thunk": false
+  },
+  {
+    "address": "0x00463C6B",
+    "calls": [
       "crt_unlock"
     ],
     "end": "0x00463C74",
     "external": false,
     "library": false,
-    "name": "crt_msize",
-    "signature": "size_t(void *ptr)",
-    "size": 238,
+    "name": "FUN_00463c6b",
+    "signature": "int()",
+    "size": 9,
     "thunk": false
   },
   {
@@ -14930,21 +14536,42 @@
   {
     "address": "0x004667AC",
     "calls": [
-      "0x0046F140",
-      "_memset",
-      "crt_call_new_handler",
-      "crt_calloc",
+      "FUN_00466845",
       "crt_lock",
-      "crt_sbh_alloc",
-      "crt_sbh_alloc_units",
-      "crt_unlock"
+      "crt_sbh_alloc"
     ],
-    "end": "0x004668E9",
+    "end": "0x00466845",
     "external": false,
     "library": false,
     "name": "crt_calloc",
     "signature": "void *(unsigned int count, unsigned int size)",
-    "size": 317,
+    "size": 153,
+    "thunk": false
+  },
+  {
+    "address": "0x00466845",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x0046684E",
+    "external": false,
+    "library": false,
+    "name": "FUN_00466845",
+    "signature": "int()",
+    "size": 9,
+    "thunk": false
+  },
+  {
+    "address": "0x004668CE",
+    "calls": [
+      "crt_unlock"
+    ],
+    "end": "0x004668D7",
+    "external": false,
+    "library": false,
+    "name": "FUN_004668ce",
+    "signature": "int()",
+    "size": 9,
     "thunk": false
   },
   {
@@ -15003,7 +14630,7 @@
     "external": false,
     "library": false,
     "name": "crt_heap_select",
-    "signature": "int()",
+    "signature": "",
     "size": 328,
     "thunk": false
   },
@@ -15020,7 +14647,7 @@
     "external": false,
     "library": false,
     "name": "crt_heap_init",
-    "signature": "int __cdecl(int)",
+    "signature": "",
     "size": 93,
     "thunk": false
   },
@@ -15130,7 +14757,7 @@
     "external": false,
     "library": false,
     "name": "crt_sbh_create_region",
-    "signature": "int *()",
+    "signature": "",
     "size": 324,
     "thunk": false
   },
@@ -15158,7 +14785,7 @@
     "external": false,
     "library": false,
     "name": "sub_467914",
-    "signature": "void __cdecl(int)",
+    "signature": "",
     "size": 194,
     "thunk": false
   },
@@ -15209,7 +14836,7 @@
     "external": false,
     "library": false,
     "name": "sub_467C7A",
-    "signature": "int __cdecl(int, unsigned int, unsigned int)",
+    "signature": "",
     "size": 292,
     "thunk": false
   },
@@ -15420,7 +15047,7 @@
     "external": false,
     "library": false,
     "name": "crt_report_runtime_error",
-    "signature": "int *__cdecl(DWORD NumberOfBytesWritten)",
+    "signature": "int __cdecl(DWORD NumberOfBytesWritten)",
     "size": 339,
     "thunk": false
   },
@@ -15912,7 +15539,7 @@
     "external": false,
     "library": false,
     "name": "sub_46A344",
-    "signature": "int __cdecl(int *, int *)",
+    "signature": "",
     "size": 45,
     "thunk": false
   },
@@ -15926,7 +15553,7 @@
     "external": false,
     "library": false,
     "name": "sub_46A371",
-    "signature": "int __cdecl(int *, int *)",
+    "signature": "",
     "size": 45,
     "thunk": false
   },
@@ -16757,7 +16384,7 @@
     "external": false,
     "library": false,
     "name": "sub_46D66C",
-    "signature": "int()",
+    "signature": "",
     "size": 3,
     "thunk": false
   },
@@ -16783,7 +16410,7 @@
     "external": false,
     "library": false,
     "name": "sub_46D6B5",
-    "signature": "LONG (__stdcall *())(struct _EXCEPTION_POINTERS *ExceptionInfo)",
+    "signature": "",
     "size": 17,
     "thunk": false
   },
@@ -16796,7 +16423,7 @@
     "external": false,
     "library": false,
     "name": "sub_46D6C6",
-    "signature": "LPTOP_LEVEL_EXCEPTION_FILTER()",
+    "signature": "",
     "size": 13,
     "thunk": false
   },
@@ -17259,7 +16886,7 @@
     "external": false,
     "library": false,
     "name": "Direct3DCreate8",
-    "signature": "int __stdcall(_DWORD)",
+    "signature": "",
     "size": 6,
     "thunk": true
   },

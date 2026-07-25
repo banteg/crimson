@@ -1,5 +1,0 @@
-# direct callgraph
-
-effect_spawn_explosion_burst -> effect_spawn_explosion_burst (0x0042f6c0)
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]

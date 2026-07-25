@@ -1398,8 +1398,8 @@ class CreaturePool:
             if (not frozen_by_evil_eyes) and (
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
             ):
-                # Ported from creature_update_all (see `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
-                # around the 0x004276xx ranged-fire branch).
+                # Ported from creature_update_all @ 0x00426220, around the
+                # 0x004276xx ranged-fire branch.
                 if target_dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = ProjectileTemplateId.PLASMA_RIFLE

@@ -66,9 +66,9 @@ v38 = config_screen_height - 128.0;     // Base Y position
 
 The text is vertically centered within the panel (17 pixels from top of 53-pixel panel).
 
-### Original Decompiled Reference
+### Original static reference
 
-From `analysis/ghidra/raw/crimsonland.exe_decompiled.c` lines 37565-37586:
+Preserved excerpt from `typo_gameplay_update_and_render` at `0x004457c0`:
 ```c
 // Bind ind_panel texture
 (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
@@ -104,6 +104,5 @@ iVar5 = (*grim_measure_text_width)(text);
 
 ## Files Referenced
 
-- Original implementation: `analysis/ghidra/raw/crimsonland.exe_decompiled.c` lines 37565-37586
-- Original implementation: `analysis/ida/raw/crimsonland.exe/crimsonland.exe_decompiled.c` lines 51199-51462
+- Original implementation: `typo_gameplay_update_and_render` at `0x004457c0`
 - Current implementation: `src/crimson/modes/typo_mode.py` lines 36-41, 363-400

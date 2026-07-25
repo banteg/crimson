@@ -2,11 +2,85 @@ Interesting Functions and Patterns
 ===================================
 
 [DES related]
+  console_register_global_destructor_atexit @ 00401180
+  console_global_destroy @ 00401190
   console_destroy @ 004016e0
+  demo_trial_already_paid_button_destroy @ 00405130
+  demo_trial_purchase_button_destroy @ 00405140
+  demo_trial_maybe_later_button_destroy @ 00405150
+  perk_selection_select_button_destroy @ 00406130
+  perk_selection_cancel_button_destroy @ 00406140
+  perk_selection_choice_items_destroy @ 00406150
+  perk_selection_hover_color_destroy @ 00406160
+  perk_selection_idle_color_destroy @ 00406170
+  game_completed_main_menu_button_destroy @ 00406ab0
+  game_completed_typo_button_destroy @ 00406ac0
+  game_completed_rush_button_destroy @ 00406ad0
+  game_completed_survival_button_destroy @ 00406ae0
+  ui_render_aim_lifetime_destroy @ 0040aa90
+  ui_render_aim_screen_destroy @ 0040aaa0
+  demo_purchase_purchase_button_destroy @ 0040c1a0
+  demo_purchase_maybe_later_button_destroy @ 0040c1b0
+  credits_secret_button_destroy @ 0040df50
+  credits_back_button_destroy @ 0040df60
+  mods_menu_launch_button_destroy @ 0040f3d0
+  mods_menu_main_menu_button_destroy @ 0040f3e0
+  mods_menu_scrollbar_destroy @ 0040f3f0
+  game_over_main_menu_button_destroy @ 00410790
+  game_over_highscores_button_destroy @ 004107a0
+  game_over_play_again_button_destroy @ 004107b0
+  game_over_name_input_state_destroy @ 004107c0
+  game_over_name_submit_button_destroy @ 004107d0
+  quest_failed_main_menu_button_destroy @ 00410cf0
+  quest_failed_play_another_button_destroy @ 00410d00
+  quest_failed_play_again_button_destroy @ 00410d10
+  quest_results_main_menu_button_destroy @ 00412020
+  quest_results_highscores_button_destroy @ 00412030
+  quest_results_play_again_button_destroy @ 00412040
+  quest_results_play_next_button_destroy @ 00412050
+  quest_results_name_input_state_destroy @ 00412060
+  quest_results_name_submit_button_destroy @ 00412070
+  quest_meta_table_destroy @ 00412200
+  bonus_meta_table_destroy @ 00412450
   ui_template_triplet_reset_and_seed_modes @ 00417ab0
+  ui_hud_progress_color_destroy @ 0041ca80
+  fx_queue_random_color_destroy @ 00427830
+  perk_meta_table_destroy @ 0042faf0
   highscore_compare_survival_score_desc @ 0043aeb0
   highscore_compare_rush_field32_desc @ 0043aed0
   sfx_update_mute_fades @ 0043d5b0
+  ui_menu_hover_color_destroy @ 0043e810
+  ui_menu_idle_color_destroy @ 0043e820
+  unlocked_weapons_back_button_destroy @ 00440940
+  unlocked_weapons_scrollbar_destroy @ 00440950
+  unlocked_perks_back_button_destroy @ 00441180
+  unlocked_perks_scrollbar_destroy @ 00441190
+  highscore_game_mode_list_destroy @ 00444330
+  highscore_player_count_list_destroy @ 00444340
+  highscore_date_filter_list_destroy @ 00444350
+  highscore_online_scores_checkbox_destroy @ 00444360
+  highscore_back_button_destroy @ 00444370
+  highscore_play_button_destroy @ 00444380
+  highscore_update_button_destroy @ 00444390
+  highscore_score_scrollbar_destroy @ 004443a0
+  highscore_hardcore_checkbox_destroy @ 004443b0
+  quest_select_back_button_destroy @ 00448ab0
+  quest_select_hardcore_checkbox_destroy @ 00448ac0
+  quest_select_unused_orange_color_destroy @ 00448ad0
+  quest_select_hovered_stage_color_destroy @ 00448ae0
+  quest_select_selected_stage_color_destroy @ 00448af0
+  quest_select_title_color_destroy @ 00448b00
+  quest_select_unused_blue_dim_color_destroy @ 00448b10
+  quest_select_unused_blue_color_destroy @ 00448b20
+  quest_select_row_hover_color_destroy @ 00448b30
+  quest_select_row_idle_color_destroy @ 00448b40
+  play_game_player_count_list_destroy @ 0044fa30
+  play_game_tutorial_button_destroy @ 0044fa40
+  play_game_hardcore_checkbox_destroy @ 0044fa50
+  play_game_typo_button_destroy @ 0044fa60
+  play_game_survival_button_destroy @ 0044fa70
+  play_game_rush_button_destroy @ 0044fa80
+  play_game_quests_button_destroy @ 0044fa90
 
 [SHA related]
   effect_spawn_freeze_shard @ 0042ec80
@@ -14,6 +88,7 @@ Interesting Functions and Patterns
   crt_flushall @ 0046150a
 
 [SECRET related]
+  credits_secret_button_destroy @ 0040df50
   credits_secret_match3_find @ 0040f400
   credits_secret_alien_zookeeper_update @ 0040f4f0
 
@@ -56,10 +131,12 @@ Interesting Functions and Patterns
   ov_open_callbacks @ 0046e932
 
 [READ related]
+  demo_trial_already_paid_button_destroy @ 00405130
   vorbis_mem_read @ 0041dce0
   vorbis_read_pcm16 @ 0041df00
   plaguebearer_spread_infection @ 00425d80
   reg_read_dword_default @ 0042a980
+  startup_audio_load_thread @ 0042b250
   highscore_read_record @ 0043ab10
   buffer_reader_init @ 0043b850
   buffer_reader_seek @ 0043b870
@@ -70,6 +147,7 @@ Interesting Functions and Patterns
   resource_pack_read_cstring @ 0043b940
   resource_open_read @ 0043b9e0
   resource_read_alloc @ 0043bca0
+  renderer_registry_read @ 004564e6
   crt_fread @ 00461af7
   crt_fread_nolock @ 00461b26
   crt_beginthread @ 0046223f
@@ -156,8 +234,10 @@ Interesting Functions and Patterns
   crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
 
+[DEBUG related]
+  mod_api_debug_printf @ 0040e000
+
 [LOG related]
-  console_register_clear_log_atexit @ 00401180
   console_clear_log @ 004011a0
   console_log_node_free @ 004011f0
   console_flush_log @ 00402860
@@ -167,11 +247,13 @@ Interesting Functions and Patterns
 
 [PRINT related]
   console_printf @ 00401870
-  mod_api_core_printf @ 0040e000
+  mod_api_core_printf @ 0040dfc0
+  mod_api_debug_printf @ 0040e000
   mod_api_gfx_printf @ 0040e240
   crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
   crt_snprintf @ 00461e4a
+  crt_printf @ 00461fd5
 
 [ERROR related]
   quest_build_8_legged_terror @ 00436120
@@ -182,5 +264,8 @@ Interesting Functions and Patterns
 
 [FAIL related]
   quest_failed_screen_update @ 004107e0
+  quest_failed_main_menu_button_destroy @ 00410cf0
+  quest_failed_play_another_button_destroy @ 00410d00
+  quest_failed_play_again_button_destroy @ 00410d10
 
 [POTENTIALLY DANGEROUS FUNCTIONS]

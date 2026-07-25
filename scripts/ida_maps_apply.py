@@ -36,6 +36,7 @@ typedef struct {
 
 ARRAY_DECL_RE = re.compile(r"^(?P<base>.+?)(?P<arrays>(?:\s*\[[^\]]+\])+)\s*$")
 TYPE_SPACE_RE = re.compile(r"\s+")
+CALL_CONV_RE = re.compile(r"\b__(?:cdecl|fastcall|stdcall|thiscall|usercall|vectorcall)\b")
 
 
 def get_argv():
@@ -44,10 +45,6 @@ def get_argv():
 
 def basename(path):
     return os.path.basename(path).lower()
-
-
-def is_generic_function_name(name):
-    return (name or "").startswith("FUN_")
 
 
 def load_json(path):
@@ -93,6 +90,20 @@ def parse_decl_or_raise(decl, context):
     if not ida_typeinf.parse_decl(tinfo, None, normalized, PT_FLAGS):
         raise RuntimeError(f"parse_decl failed for {context}: {normalized}")
     return tinfo
+
+
+def parse_function_decl_or_raise(decl, context):
+    normalized = normalize_decl(decl)
+    candidates = [normalized]
+    without_call_conv = CALL_CONV_RE.sub("", normalized)
+    without_call_conv = TYPE_SPACE_RE.sub(" ", without_call_conv).strip()
+    if without_call_conv != normalized:
+        candidates.append(without_call_conv)
+    for candidate in candidates:
+        tinfo = ida_typeinf.tinfo_t()
+        if ida_typeinf.parse_decl(tinfo, None, candidate, PT_FLAGS):
+            return tinfo
+    raise RuntimeError(f"parse_decl failed for {context}: {normalized}")
 
 
 def apply_tinfo_or_raise(ea, tinfo, context):
@@ -157,7 +168,7 @@ def set_comment(ea, comment):
 def apply_signature(ea, signature, context):
     if not signature:
         return False
-    tinfo = parse_decl_or_raise(signature, context)
+    tinfo = parse_function_decl_or_raise(signature, context)
     apply_tinfo_or_raise(ea, tinfo, context)
     return True
 
@@ -197,33 +208,52 @@ def apply_data_type(ea, type_text, context):
 
 
 def ensure_function(ea, context):
+    explicit_end = idc.BADADDR
     while True:
         func = ida_funcs.get_func(ea)
         if func and func.start_ea == ea:
             return False
         chunk = ida_funcs.get_fchunk(ea)
-        if chunk and chunk.start_ea == ea and func and func.start_ea != ea:
-            if not idc.remove_fchunk(func.start_ea, ea):
+        if chunk and func and chunk.start_ea != func.start_ea:
+            owner_start = func.start_ea
+            tail_start = chunk.start_ea
+            tail_end = chunk.end_ea
+            if not idc.remove_fchunk(owner_start, tail_start):
                 raise RuntimeError(f"remove_fchunk failed for {context}")
-            idaapi.auto_wait()
             if ida_funcs.get_fchunk(ea):
                 raise RuntimeError(f"tail chunk still present after remove_fchunk for {context}")
-            continue
+            if tail_start < ea:
+                owner = ida_funcs.get_func(owner_start)
+                if owner is None or not ida_funcs.append_func_tail(owner, tail_start, ea):
+                    raise RuntimeError(f"tail-prefix restore failed for {context}")
+            explicit_end = tail_end
+            break
         if func and func.start_ea < ea:
-            if not idc.set_func_end(func.start_ea, ea):
-                raise RuntimeError(f"set_func_end failed for {context}")
-            idaapi.auto_wait()
+            owner_start = func.start_ea
+            if not idc.set_func_end(owner_start, ea):
+                # IDA refuses to resize a few compiler-generated EH layouts.
+                # Rebuild the entry chunk explicitly so the curated boundary
+                # remains authoritative across tools.
+                if not idc.del_func(owner_start):
+                    raise RuntimeError(f"del_func fallback failed for {context}")
+                if not ida_funcs.add_func(owner_start, ea):
+                    raise RuntimeError(f"add_func fallback failed for owner of {context}")
             next_func = ida_funcs.get_func(ea)
             if next_func and next_func.start_ea < ea:
                 raise RuntimeError(f"function still spans target after set_func_end for {context}")
-            continue
+            # Claim the new boundary before auto-analysis has a chance to merge
+            # the containing function back across it.
+            break
         if func:
             raise RuntimeError(f"unexpected function layout for {context}: owner starts at 0x{func.start_ea:08X}")
         break
-    created = idc.add_func(ea)
+    created = (
+        ida_funcs.add_func(ea)
+        if explicit_end == idc.BADADDR
+        else ida_funcs.add_func(ea, explicit_end)
+    )
     if not created:
         raise RuntimeError(f"add_func failed for {context}")
-    idaapi.auto_wait()
     func = idaapi.get_func(ea)
     if not func or func.start_ea != ea:
         raise RuntimeError(f"function creation verification failed for {context}")
@@ -235,9 +265,17 @@ def apply_name_map(path, program_name):
     rows = [
         row
         for row in all_rows
-        if basename(row.get("program", "")) == program_name and not is_generic_function_name(row.get("name") or "")
+        if basename(row.get("program", "")) == program_name
     ]
-    stats = {"updated": 0, "renamed": 0, "signatures": 0, "comments": 0, "created": 0, "skipped": 0}
+    stats = {
+        "updated": 0,
+        "renamed": 0,
+        "signatures": 0,
+        "signature_errors": 0,
+        "comments": 0,
+        "created": 0,
+        "skipped": 0,
+    }
     creation_rows = sorted(rows, key=parse_address, reverse=True)
     for row in creation_rows:
         ea = parse_address(row)
@@ -254,8 +292,12 @@ def apply_name_map(path, program_name):
         if comment:
             set_func_comment(ea, comment)
             stats["comments"] += 1
-        if apply_signature(ea, row.get("signature") or "", context):
-            stats["signatures"] += 1
+        try:
+            if apply_signature(ea, row.get("signature") or "", context):
+                stats["signatures"] += 1
+        except RuntimeError as error:
+            print(f"signature skipped for {context}: {error}")
+            stats["signature_errors"] += 1
         stats["updated"] += 1
     return stats
 
@@ -263,7 +305,7 @@ def apply_name_map(path, program_name):
 def apply_data_map(path, program_name):
     payload = load_json(path)
     rows = sorted(payload["entries"] if isinstance(payload, dict) else payload, key=parse_address)
-    stats = {"updated": 0, "renamed": 0, "types": 0, "comments": 0, "skipped": 0}
+    stats = {"updated": 0, "renamed": 0, "types": 0, "type_errors": 0, "comments": 0, "skipped": 0}
     covered_ranges = []
 
     def is_covered(ea):
@@ -281,7 +323,12 @@ def apply_data_map(path, program_name):
             stats["skipped"] += 1
             continue
         context = entry_label(row, ea)
-        typed, coverage_size = apply_data_type(ea, row.get("type") or "", context)
+        try:
+            typed, coverage_size = apply_data_type(ea, row.get("type") or "", context)
+        except RuntimeError as error:
+            print(f"data type skipped for {context}: {error}")
+            typed, coverage_size = False, 0
+            stats["type_errors"] += 1
         if typed:
             stats["types"] += 1
         if coverage_size:

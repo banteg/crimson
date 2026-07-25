@@ -9,7 +9,8 @@ tags:
 
 This page documents runtime location evidence for each perk in:
 
-- **Original**: Crimsonland v1.9.93 (`analysis/ghidra/raw/crimsonland.exe_decompiled.c`)
+- **Original**: Crimsonland v1.9.93, resolved by canonical function name/address
+  through `just analysis-function`
 - **Rewrite parity implementation**: Python port (`src/`)
 
 For gameplay effects and mechanics, see [Perks](../../mechanics/perks.md).

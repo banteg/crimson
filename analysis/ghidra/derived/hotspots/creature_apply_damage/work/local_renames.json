@@ -1,8 +1,0 @@
-{
-  "functions": {
-    "creature_apply_damage": {
-      "uVar3": "rng_value",
-      "pfVar5": "living_fortress_timer_ptr"
-    }
-  }
-}

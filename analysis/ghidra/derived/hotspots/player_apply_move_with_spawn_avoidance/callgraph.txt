@@ -1,4 +1,0 @@
-# direct callgraph
-
-player_apply_move_with_spawn_avoidance -> player_apply_move_with_spawn_avoidance (0x0041e290)
-  -> perk_count_get [extracted]

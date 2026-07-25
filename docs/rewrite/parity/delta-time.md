@@ -25,11 +25,13 @@ This page is the source of truth for delta-time semantics used by Python/Zig rew
 
 Ordering is parity-critical: scaling, remap, integer re-derive, and restore must occur in the same sequence.
 
-## Decompile reference anchors
+## Static reference anchors
 
-- `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81336` shows the `__ftol` control-word save/restore sequence.
-- `analysis/binary_ninja/raw/crimsonland.exe.bndb_hlil.txt:81342` shows the round-control override (`| 0x0c`) used for trunc/chop behavior before conversion.
-- `analysis/ghidra/raw/crimsonland.exe_decompiled.c:6742` shows an explicit gameplay zero-gate write where both `frame_dt_ms` and `frame_dt` are forced to zero.
+- `__ftol` at `0x00461054` contains the control-word save/restore sequence.
+- Instruction `0x00461063` applies the round-control override (`| 0x0c`) used
+  for truncation before conversion.
+- `gameplay_update_and_render` at `0x0040aab0` contains the explicit zero gate
+  that clears both `frame_dt_ms` and `frame_dt`.
 
 ## Conversion contract (`__ftol`)
 

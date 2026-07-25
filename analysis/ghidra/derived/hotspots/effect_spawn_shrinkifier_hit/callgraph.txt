@@ -1,5 +1,0 @@
-# direct callgraph
-
-effect_spawn_shrinkifier_hit -> effect_spawn_shrinkifier_hit (0x0042f080)
-  -> crt_rand [extracted]
-  -> effect_spawn [extracted]

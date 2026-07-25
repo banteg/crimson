@@ -6,8 +6,8 @@ tags:
 # Grim2D API vtable (draft)
 
 This is a first-pass extraction of the Grim2D API vtable usage from the
-classic `crimsonland.exe` decompilation. The engine interface pointer is
-`DAT_0048083c` in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
+classic `crimsonland.exe` analysis. The engine interface pointer is
+`grim_interface_ptr` at `0x0048083c`.
 
 The exact-matched `GRIM__GetInterface` export probes DirectX 8.1, initializes
 the Grim2D global state, allocates the four-byte interface object, and installs
@@ -26,10 +26,9 @@ For a high-level summary, see [Grim2D overview](index.md).
 We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
 
 - `analysis/ghidra/derived/grim2d_vtable_calls.json`
-- `analysis/ghidra/derived/grim2d_vtable_callsites.json` (full callsite index with line numbers)
 
-
-The JSON includes offset, callsite count, unique functions, and sample lines.
+The JSON includes offset, callsite count, unique functions, and representative
+expressions. Generated whole-decompile line numbers are intentionally omitted.
 
 We also dumped the Grim2D vtable itself from `game_bins/crimsonland/1.9.93-gog/grim.dll` and joined the
 two datasets:

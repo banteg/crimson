@@ -3,7 +3,6 @@
 /artifacts/
 /_site/
 /analysis/ghidra/projects/
-/analysis/ghidra/raw/*.log
 /analysis/frida/raw/
 /analysis/frida/reports/
 /analysis/frida/facts.jsonl

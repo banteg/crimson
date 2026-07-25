@@ -4,7 +4,7 @@ set windows-shell := ["powershell", "-NoLogo", "-Command"]
 version := "1.9.93-gog"
 game_dir := "game_bins/crimsonland/" + version
 assets_dir := "artifacts/assets"
-atlas_usage := "artifacts/atlas/atlas_usage.json"
+atlas_usage := "analysis/reference/atlas_usage.json"
 atlas_frames := "artifacts/atlas/frames"
 share_dir := "/mnt/c/share/frida"
 frida_share_dir := "artifacts/frida/share"
@@ -64,9 +64,6 @@ extract:
     uv run crimson extract {{game_dir}} {{assets_dir}}
 
 # Atlas
-atlas-scan:
-    uv run scripts/atlas_scan.py --output-json {{atlas_usage}}
-
 atlas-export-all:
     uv run scripts/atlas_export.py --all --usage-json {{atlas_usage}} --out-root {{atlas_frames}}
 
@@ -88,23 +85,26 @@ docs-zensical-fix:
     uv run scripts/zensical_fix_md.py docs
 
 # Analysis
+analysis-function query program="crimsonland.exe":
+    uv run scripts/analysis_view.py show "{{query}}" --program "{{program}}"
+
+analysis-check program="crimsonland.exe" binja_live="false":
+    uv run scripts/analysis_view.py check --program "{{program}}" {{ if binja_live == "true" { "--binja-live" } else { "" } }}
+
+binja-sync program="crimsonland.exe":
+    bn py exec --target "{{program}}.bndb" --script scripts/binja_import_maps.py --format text --no-spill
+
 entrypoint-trace:
     uv run scripts/entrypoint_trace.py --depth 2 --skip-external
 
 function-hotspots:
     uv run scripts/function_hotspots.py --top 12 --only-fun
 
-dat-hotspots *args:
-    uv run scripts/dat_hotspots.py {{args}}
-
 schema-inventory *args:
     uv run scripts/schema_inventory.py {{args}}
 
 save-status *args:
     uv run scripts/save_status.py {{args}}
-
-weapon-table:
-    uv run scripts/extract_weapon_table.py
 
 spawn-templates:
     uv run scripts/gen_spawn_templates.py
@@ -116,11 +116,6 @@ ghidra-exe:
       --script-path analysis/ghidra/scripts \
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
-      -s CreateCreditsScreenUpdate.java \
-      -s CreateCreditsSecretUpdate.java \
-      -s CreateQuestBuilders.java \
-      -s CreateConsoleFunctions.java \
-      -s CreateGameStateCallbacks.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
       -s ExportAll.java \
@@ -230,19 +225,19 @@ ghidra-sync:
 
 [windows]
 ida-export-exe:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida.log" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\crimsonland.exe"
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; $LOG_FILE=Join-Path $env:TEMP "crimson-ida-exe.log"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$LOG_FILE" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\crimsonland.exe"
 
 [windows]
 ida-export-grim:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida.log" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\grim.dll"
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; $LOG_FILE=Join-Path $env:TEMP "crimson-ida-grim.log"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$LOG_FILE" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\grim.dll"
 
-[windows]
-ida-decompile-exe:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; mkdir -Force $OUT_DIR | Out-Null; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida_decompile.log" -S"scripts\\ida_decompile.py $OUT_DIR\\crimsonland.exe_decompiled.c $NAME_MAP $DATA_MAP" "{{game_dir}}\\crimsonland.exe"
+[unix]
+ida-export-exe:
+    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/crimsonland.exe analysis/ida/raw/crimsonland.exe
 
-[windows]
-ida-decompile-grim:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; mkdir -Force $OUT_DIR | Out-Null; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida_decompile.log" -S"scripts\\ida_decompile.py $OUT_DIR\\grim.dll_decompiled.c $NAME_MAP $DATA_MAP" "{{game_dir}}\\grim.dll"
+[unix]
+ida-export-grim:
+    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
 
 [unix]
 frida-copy-share:
@@ -299,13 +294,3 @@ game-screenshot:
     nircmd win activate process crimsonland.exe
     sleep 1
     nircmd savescreenshotwin "screenshots\\screen.png"
-
-zip-decompile:
-    zip -r crimson.zip \
-        analysis/ghidra/ \
-        analysis/ida/ \
-        analysis/binary_ninja/raw/*.txt \
-        scripts src docs third_party/headers/crimsonland_types.h \
-        -x "*__pycache__*" \
-        -x "*winapi_32.gdt*"
-    open -R crimson.zip
