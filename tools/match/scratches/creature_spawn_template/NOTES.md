@@ -404,3 +404,8 @@ Frame/prefix notes:
   short-lived values removes six candidate instructions, raises the score to
   `82.93%` with 3,126 candidate instructions, and gains 60 fuzzy-weighted bytes
   without changing the frame, prefix, or `351/0/1` reference audit.
+- Template `0x20` retains its randomized size across the immediately following
+  health calculation at `0x00432866..0x00432879`. Recovering that scalar
+  removes one candidate instruction, raises the score to `82.97%` with 3,125
+  candidate instructions, and gains six fuzzy-weighted bytes. The same spelling
+  was neutral for the neighboring random-stat cases and was not applied there.

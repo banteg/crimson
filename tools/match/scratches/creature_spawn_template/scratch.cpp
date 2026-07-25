@@ -690,8 +690,10 @@ extern "C" creature_t *creature_spawn_template(
                     RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_RANDOM_GREEN_20) {
                     creature->type_id = CREATURE_TYPE_ALIEN;
-                    RAND_FIELD_INT_BASE(creature->size, 0x1e, 0x28);
-                    creature->health = creature->size * 1.1428572f + 20.0f;
+                    random_heading_roll = crt_rand();
+                    float random_size = (float)(random_heading_roll % 0x1e + 0x28);
+                    creature->size = random_size;
+                    creature->health = random_size * 1.1428572f + 20.0f;
                     RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);
                     creature->tint_a = 1.0f;
                     creature->tint_r = 0.3f;
