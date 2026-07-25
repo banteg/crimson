@@ -22,3 +22,21 @@ its pointer induction base. Direct position fields, an all-fields setter, a
 metadata-only setter, `msvc6.5pp`, and `/G6` were checked. None removes that
 allocation without degrading the proven x87 shape or adding an artificial
 dependency, so this remains an honest WIP.
+
+## Binary Ninja loop recovery
+
+The authoritative map now types the `xor edx, edx` definition as the integer
+`angle_index` and the native `&entries[3].template_id` induction value as a
+`quest_spawn_entry_template_cursor_t *`. A live replay removes Binary Ninja's
+former invented `quest_spawn_entries_binja_t *i = nullptr` loop variable,
+recovers `angle_index += 1` and the signed `< 28` backedge, and exposes the
+cursor's exact 24-byte entry stride.
+
+VC6 reuses the original `entries` argument stack slot as the integer index
+spill and advances the template cursor one record before the loop stores. That
+still leaves a misleading `table = angle_index` assignment and negative raw
+offsets in HLIL. A layout-equivalent 36-byte one-ahead view containing the
+previous entry plus the next position was tested live, but Binary Ninja kept
+all six negative offsets instead of presenting `previous` fields. The durable
+map keeps the narrower types that improve the recovered control flow without
+claiming the remaining decompiler artifacts are source structure.

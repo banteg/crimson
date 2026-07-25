@@ -1006,6 +1006,18 @@ def test_name_map_preserves_quest_spawn_cursor_local_views():
             "type": "quest_spawn_entry_t *",
         },
     ]
+    assert rows_by_name["quest_build_lizard_kings"]["local_types"] == [
+        {
+            "address": "0x00437799",
+            "name": "angle_index",
+            "type": "int",
+        },
+        {
+            "address": "0x004377a2",
+            "name": "ring_spawn_cursor",
+            "type": "quest_spawn_entry_template_cursor_t *",
+        },
+    ]
     assert rows_by_name["quest_build_the_annihilation"]["local_types"] == [
         {
             "address": "0x004382ea",

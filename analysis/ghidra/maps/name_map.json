@@ -3437,6 +3437,18 @@
     "address": "0x00437710",
     "name": "quest_build_lizard_kings",
     "signature": "void quest_build_lizard_kings(quest_spawn_entry_t *entries, int *count)",
+    "local_types": [
+      {
+        "address": "0x00437799",
+        "name": "angle_index",
+        "type": "int"
+      },
+      {
+        "address": "0x004377a2",
+        "name": "ring_spawn_cursor",
+        "type": "quest_spawn_entry_template_cursor_t *"
+      }
+    ],
     "comment": "quest builder for Tier 3 Quest 2 (Lizard Kings)"
   },
   {
