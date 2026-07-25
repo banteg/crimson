@@ -252,9 +252,9 @@ extern "C" creature_t *creature_spawn_template(
         tint.g = 0.85f;
         tint.b = 0.97f;
         tint.a = 1.0f;
-        *(creature_tint_t *)&creature->color = tint;
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->health = 200.0f;
+        *(creature_tint_t *)&creature->color = tint;
         creature->move_speed = 2.2f;
         creature->reward_value = 600.0f;
         creature->size = 55.0f;

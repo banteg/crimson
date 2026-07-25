@@ -409,3 +409,13 @@ Frame/prefix notes:
   removes one candidate instruction, raises the score to `82.97%` with 3,125
   candidate instructions, and gains six fuzzy-weighted bytes. The same spelling
   was neutral for the neighboring random-stat cases and was not applied there.
+- The `0x12` ring root constructs its tint before assigning health, but copies
+  the completed RGBA value after that health assignment. VC6 then interleaves
+  the four component copies with the root's type, health, speed, reward, size,
+  damage, and max-health stores at `0x00430bd6..0x00430c18`. Recovering that
+  ordinary source order raises the score from `82.97%` to `83.26%` and gains
+  40 fuzzy-weighted bytes without changing instruction count, prefix, or
+  references. Placing the copy after speed, reward, or size compiled
+  identically; later placements and three stat permutations scored lower, so
+  the retained spelling is the earliest equivalent and agrees with the
+  already recovered `0x12` child ordering.

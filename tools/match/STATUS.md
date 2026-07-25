@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **290123/676681** code bytes (**42.9%**).
+Fuzzy-weighted alignment is **290163/676681** code bytes (**42.9%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260547/386756 | 67.4% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260587/386756 | 67.4% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **260547/386756** fuzzy-weighted bytes (**67.4%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **260587/386756** fuzzy-weighted bytes (**67.4%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -406,7 +406,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 170/170 | 0 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 30/30 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 11698/14099 | 2401 | 3125/3159 | 82.97% | 26/3159 | 351/0/1 |  | gameplay-spawn-switch |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 11739/14099 | 2360 | 3125/3159 | 83.26% | 26/3159 | 351/0/1 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 39/39 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
