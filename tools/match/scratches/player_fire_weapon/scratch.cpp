@@ -143,8 +143,8 @@ extern "C" void player_fire_weapon(
 
             if (player_state_table[render_overlay_player_index].weapon_id
                 == WEAPON_ID_SHOTGUN) {
-                typo_fire_vec2_t effect_velocity;
-                typo_fire_vec2_t effect_position;
+                vec2f_t effect_velocity;
+                vec2f_t effect_position;
                 float heading_cos = (float)cos(shot_heading);
                 effect_velocity.x = heading_cos * 25.0f;
                 float heading_sin = (float)sin(shot_heading);
@@ -157,8 +157,8 @@ extern "C" void player_fire_weapon(
                     + local_offset.y;
 
                 int effect_index = fx_spawn_sprite(
-                    (const vec2f_t *)&effect_position,
-                    (const vec2f_t *)&effect_velocity,
+                    &effect_position,
+                    &effect_velocity,
                     1.0f);
                 sprite_effect_pool[effect_index].color.r = 0.5f;
                 sprite_effect_pool[effect_index].color.g = 0.5f;
@@ -167,17 +167,15 @@ extern "C" void player_fire_weapon(
 
                 effect_velocity.x = heading_cos * 15.0f;
                 effect_velocity.y = heading_sin * 15.0f;
-                typo_fire_vec2_t *player_position =
-                    (typo_fire_vec2_t *)&player_state_table
-                        [render_overlay_player_index]
-                            .position;
+                vec2f_t *player_position =
+                    &player_state_table[render_overlay_player_index].position;
                 effect_position.x =
                     player_position->x + local_offset.x;
                 effect_position.y =
                     player_position->y + local_offset.y;
                 effect_index = fx_spawn_sprite(
-                    (const vec2f_t *)&effect_position,
-                    (const vec2f_t *)&effect_velocity,
+                    &effect_position,
+                    &effect_velocity,
                     2.0f);
                 sprite_effect_pool[effect_index].color.r = 0.5f;
                 sprite_effect_pool[effect_index].color.g = 0.5f;
@@ -187,15 +185,13 @@ extern "C" void player_fire_weapon(
                 int pellet_count = 12;
                 do {
                     player_position =
-                        (typo_fire_vec2_t *)&player_state_table
-                            [render_overlay_player_index]
-                                .position;
+                        &player_state_table[render_overlay_player_index].position;
                     effect_position.x =
                         player_position->x + local_offset.x;
                     effect_position.y =
                         player_position->y + local_offset.y;
                     int projectile_index = projectile_spawn(
-                        (const vec2f_t *)&effect_position,
+                        &effect_position,
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + shot_heading,
                         PROJECTILE_TYPE_SHOTGUN,

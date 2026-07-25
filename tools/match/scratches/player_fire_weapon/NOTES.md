@@ -39,6 +39,10 @@ read-only vector aggregates at the shared `fx_spawn_sprite` boundary. This
 keeps the same honest 86.7725% score, exact 378-instruction count, and all 141
 references.
 
+Those two stack values now use canonical `vec2f_t` storage directly, and the
+repeated player-position cursor points at `player_state_t::position`. This
+removes five layout casts without changing the honest WIP result.
+
 The player-state accesses now also use the recovered `movement`, `aim`, and
 `position` vector members, and the muzzle sprites use their recovered color
 aggregate. These are source-shape improvements rather than score claims: VC6
