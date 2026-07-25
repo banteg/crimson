@@ -739,6 +739,30 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "name": "creature_lifecycle_cursor",
         "type": "float *",
     }
+    assert rows_by_name["bonus_update"]["local_types"] == [
+        {
+            "address": "0x0040a337",
+            "name": "bonus_time_cursor",
+            "type": "bonus_entry_time_block_t *",
+        },
+        {
+            "address": "0x0040a346",
+            "name": "bonus_entry",
+            "type": "bonus_entry_t *",
+        },
+    ]
+    assert rows_by_name["player_update"]["local_types"] == [
+        {
+            "address": "0x004136ed",
+            "name": "player",
+            "type": "player_state_t *",
+        },
+        {
+            "address": "0x004136f6",
+            "name": "player_position",
+            "type": "vec2f_t *",
+        },
+    ]
     assert rows_by_name["terrain_generate"]["local_types"] == [
         {
             "address": "0x00417d11",

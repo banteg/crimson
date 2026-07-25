@@ -22,7 +22,9 @@ Binary Ninja retains two split views of the loop address: a
 owning `bonus_entry_t *` base. Typing the latter exposes `bonus_id`, `state`,
 and `time.time_left` on the base-dependent stores and call argument instead of
 negative anonymous offsets. The interior time cursor and its 0x1c stride are
-kept because they are the actual native induction shape.
+kept because they are the actual native induction shape. Both views are now
+keyed to their native `mov edi, &bonus_pool[0].time` and
+`lea esi, [edi-8]` definitions in the replay map.
 
 ## Port parity
 

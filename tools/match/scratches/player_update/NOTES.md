@@ -188,7 +188,10 @@ The live Binary Ninja split variable produced after the final
 now explicitly a `player_state_t *`. This replaces raw `EDI + 0x10..0x35c`
 accesses with named player fields throughout the decompilation while leaving
 the preceding strength-reduced `index * 3 * 0x120` calculation visible. `ESI`
-retains its independently evidenced `vec2f_t *` position view.
+retains its independently evidenced `vec2f_t *` position view. Both
+instruction-scoped types are persisted in the replay map at the native
+`add edi, player_state_table` and `lea esi, [edi+0x14]` definitions, so a
+fresh Binary Ninja database does not regress to anonymous offset cursors.
 
 That same address now has a `vec2f_t *player_position` view for field access,
 while the raw pointer remains only for legacy helper arguments whose

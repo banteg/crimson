@@ -673,6 +673,18 @@
     "address": "0x0040a320",
     "name": "bonus_update",
     "signature": "void bonus_update(void)",
+    "local_types": [
+      {
+        "address": "0x0040a337",
+        "name": "bonus_time_cursor",
+        "type": "bonus_entry_time_block_t *"
+      },
+      {
+        "address": "0x0040a346",
+        "name": "bonus_entry",
+        "type": "bonus_entry_t *"
+      }
+    ],
     "comment": "updates bonus lifetimes and handles player pickups"
   },
   {
@@ -1544,6 +1556,18 @@
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
+    "local_types": [
+      {
+        "address": "0x004136ed",
+        "name": "player",
+        "type": "player_state_t *"
+      },
+      {
+        "address": "0x004136f6",
+        "name": "player_position",
+        "type": "vec2f_t *"
+      }
+    ],
     "comment": "per-player gameplay update: movement, firing, status timers, and effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned ids are 34 and 37 (with secondary 30)."
   },
   {
