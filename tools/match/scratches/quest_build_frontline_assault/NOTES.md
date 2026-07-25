@@ -29,3 +29,10 @@ An address-keyed Binary Ninja local type now preserves the second wave-ten
 cursor after VC6 advances it. Both midpoint brutes render as named
 `quest_spawn_entry_t` fields; the remaining negative trigger/count access is a
 real induction-pointer artifact, not an unknown structure member.
+
+The compiler-facing builder now uses that same canonical
+`quest_spawn_entry_t` directly. Removing its private layout duplicate and
+replacing the nested position aliases with `pos_x`/`pos_y` is byte-neutral:
+the candidate remains 81/84 instructions, 75.15%, with the same reference
+audit. This makes the recovered source and Binary Ninja presentation agree on
+one evidenced entry type without steering code generation.

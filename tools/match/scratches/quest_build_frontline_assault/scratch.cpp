@@ -1,28 +1,15 @@
 #include "crimsonland_gameplay.h"
 
-struct quest_vec2_t {
-    float x;
-    float y;
-};
-
-struct quest_entry_original_t {
-    quest_vec2_t pos;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
-};
-
 extern "C" void quest_build_frontline_assault(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
+    quest_spawn_entry_t *cursor = entries;
     int entry_count = 0;
     int trigger_step_ms = 2500;
 
     for (int wave = 2; wave < 22; ++wave) {
-        cursor->pos.x = (float)(terrain_texture_width / 2);
-        cursor->pos.y = 1088.0f;
+        cursor->pos_x = (float)(terrain_texture_width / 2);
+        cursor->pos_y = 1088.0f;
         if (wave <= 4) {
             cursor->template_id = SPAWN_ID_ALIEN_CONST_PALE_GREEN_26;
         } else if (wave < 10) {
@@ -37,8 +24,8 @@ extern "C" void quest_build_frontline_assault(
         ++entry_count;
 
         if (wave > 4) {
-            cursor->pos.x = -64.0f;
-            cursor->pos.y = -64.0f;
+            cursor->pos_x = -64.0f;
+            cursor->pos_y = -64.0f;
             cursor->template_id = SPAWN_ID_ALIEN_CONST_PALE_GREEN_26;
             cursor->trigger_time_ms = trigger_time_ms;
             cursor->count = 1;
@@ -47,8 +34,8 @@ extern "C" void quest_build_frontline_assault(
         }
 
         if (wave > 10) {
-            cursor->pos.x = 1088.0f;
-            cursor->pos.y = -64.0f;
+            cursor->pos_x = 1088.0f;
+            cursor->pos_y = -64.0f;
             cursor->template_id = SPAWN_ID_ALIEN_CONST_PALE_GREEN_26;
             cursor->trigger_time_ms = trigger_time_ms;
             cursor->count = 1;
@@ -60,16 +47,16 @@ extern "C" void quest_build_frontline_assault(
             int burst_trigger_ms = (trigger_step_ms * 5 - 2500) * 2;
             int brute_template_id = SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29;
 
-            cursor->pos.x = 1088.0f;
-            cursor->pos.y = 512.0f;
+            cursor->pos_x = 1088.0f;
+            cursor->pos_y = 512.0f;
             cursor->template_id = brute_template_id;
             cursor->trigger_time_ms = burst_trigger_ms;
             cursor->count = 1;
             ++cursor;
             ++entry_count;
 
-            cursor->pos.x = -64.0f;
-            cursor->pos.y = 512.0f;
+            cursor->pos_x = -64.0f;
+            cursor->pos_y = 512.0f;
             cursor->template_id = brute_template_id;
             cursor->trigger_time_ms = burst_trigger_ms;
             cursor->count = 1;
