@@ -36,3 +36,7 @@ Zig stored f32 values but associated reward from health back toward the random
 base; seed 10 exposed a one-ULP final reward difference. Both ports now follow
 the recovered left-to-right PC24 chain, with bit-exact contact, reward, and tint
 regressions.
+
+The allocated creature now receives the caller's coordinates through the
+canonical `creature_t::position` aggregate rather than two scalar aliases.
+VC6 emits the same exact 517/517 instructions and 85/0/0 references.

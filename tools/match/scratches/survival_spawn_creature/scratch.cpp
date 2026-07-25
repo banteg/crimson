@@ -22,8 +22,7 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
 {
     creature_t *creature = &creature_pool[creature_alloc_slot()];
 
-    creature->pos_x = pos->x;
-    creature->pos_y = pos->y;
+    creature->position = *pos;
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->ai_mode = 0;

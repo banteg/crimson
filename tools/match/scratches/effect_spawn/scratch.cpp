@@ -71,8 +71,7 @@ extern "C" effect_entry_t *effect_spawn(
     }
 
     *(effect_template_t *)&entry->velocity = effect_template;
-    entry->pos_x = pos->x;
-    entry->pos_y = pos->y;
+    entry->position = *pos;
     entry->effect_id = (unsigned char)effect_id;
 
     if (size_code == 0x10) {

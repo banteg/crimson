@@ -44,3 +44,8 @@ global and renders the complete allocator and four atlas paths as numeric
 indices. With the pointer type applied, the native HLIL exposes `next_free`,
 `position`, `velocity`, `effect_id`, and every named vertex member. No native
 bytes or matching source changed.
+
+The allocated effect now copies its input through
+`effect_entry_t::position`. This completes the record-base aggregate recovery
+alongside the existing template/velocity copy and remains exact at 350/350
+instructions with 90/0/0 references.
