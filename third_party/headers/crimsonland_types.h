@@ -697,10 +697,20 @@ typedef struct projectile_t {
         struct {
             float pos_x;
             float pos_y;
-            float origin_x;
-            float origin_y;
-            float vel_x;
-            float vel_y;
+            union {
+                struct {
+                    float origin_x;
+                    float origin_y;
+                };
+                vec2f_t origin;
+            };
+            union {
+                struct {
+                    float vel_x;
+                    float vel_y;
+                };
+                vec2f_t velocity;
+            };
             projectile_type_id_t type_id;
             float life_timer;
             float reserved;
@@ -859,8 +869,13 @@ typedef struct secondary_projectile_t {
         struct {
             float pos_x;
             float pos_y;
-            float vel_x;
-            float vel_y;
+            union {
+                struct {
+                    float vel_x;
+                    float vel_y;
+                };
+                vec2f_t velocity;
+            };
             secondary_projectile_type_id_t type_id;
             float trail_timer;
             int target_id;

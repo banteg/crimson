@@ -55,6 +55,12 @@ The semantic `owner_id`, travel budget, type, timers, velocity, damage, and
 radius names compile byte-for-byte identically at 114/126 instructions,
 71.67%, and 13/0/0 references.
 
+The flat owning-record view now carries explicit `origin` and `velocity`
+aggregates. Initialization consequently copies `fields.origin` and writes
+`fields.velocity.x/y`, while the nested cursor overlays remain reserved for
+the update loops that actually begin inside the record. This is byte-neutral
+at the same 114/126 instructions, 71.67%, and 13/0/0 references.
+
 The recovered legacy `oldtypes.h` independently spells the source lineage as
 `ShootBullet(vec2_t from, ...)`. A direct by-value reconstruction with the
 available vector class changes VC6 alias analysis and regresses this target to

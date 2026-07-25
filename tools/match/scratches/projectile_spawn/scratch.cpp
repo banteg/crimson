@@ -47,14 +47,14 @@ initialize:
     spawned->active = 1;
     spawned->fields.travel_budget = weapon_table[type_id].travel_budget;
     spawned->position = *pos;
-    spawned->pos.origin = *pos;
+    spawned->fields.origin = *pos;
     spawned->angle = angle;
     spawned->fields.type_id = (projectile_type_id_t)type_id;
     spawned->fields.life_timer = 0.4f;
     spawned->fields.reserved = 0.0f;
     spawned->fields.speed_scale = 1.0f;
-    spawned->fields.vel_x = (float)(cos(angle) * 1.5f);
-    spawned->fields.vel_y = (float)(sin(angle) * 1.5f);
+    spawned->fields.velocity.x = (float)(cos(angle) * 1.5f);
+    spawned->fields.velocity.y = (float)(sin(angle) * 1.5f);
 
     if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
         spawned->fields.hit_radius = 3.0f;

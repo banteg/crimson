@@ -31,10 +31,10 @@ found:
     projectile->life_timer = 2.0f;
 
     vel_x = (float)cos(angle - 1.57079637f);
-    projectile->fields.vel_x = vel_x * 90.0f;
+    projectile->fields.velocity.x = vel_x * 90.0f;
 
     vel_y = (float)sin(angle - 1.57079637f);
-    projectile->fields.vel_y = vel_y * 90.0f;
+    projectile->fields.velocity.y = vel_y * 90.0f;
     projectile->angle = angle;
     projectile->fields.trail_timer = 0.0f;
     projectile->fields.type_id = type_id;
@@ -45,8 +45,8 @@ found:
                 &player_state_table[render_overlay_player_index].aim,
                 -1,
                 0.0f);
-        projectile->fields.vel_x = vel_x * 190.0f;
-        projectile->fields.vel_y = vel_y * 190.0f;
+        projectile->fields.velocity.x = vel_x * 190.0f;
+        projectile->fields.velocity.y = vel_y * 190.0f;
     }
 
     return index;

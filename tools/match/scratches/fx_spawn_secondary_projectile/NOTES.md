@@ -42,3 +42,8 @@ projectile view for velocity, type, trail timer, and seeker target fields. The
 nested mixed-type view remains limited to update/render induction cursors that
 are genuinely anchored inside the record. This cleaner source view preserves
 the exact 65/65 instructions and 13/0/0 references.
+
+That flat view now exposes velocity as a real `vec2f_t` subobject, so both the
+initial 90-unit stores and seeker 190-unit overrides use
+`fields.velocity.x/y`. The constructor remains exact at 65/65 instructions
+and 13/0/0 references.
