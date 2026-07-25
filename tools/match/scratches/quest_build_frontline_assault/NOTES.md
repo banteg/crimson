@@ -24,3 +24,8 @@ wave-ten count increments into `+= 2`, and schedules the constant bottom y
 store before the x87 conversion. `pos.set(x, y)` and `msvc6.5pp` do not improve
 the result. Dummy dependencies or semantically distinct fake template values
 are not used to preserve the native control-flow spelling.
+
+An address-keyed Binary Ninja local type now preserves the second wave-ten
+cursor after VC6 advances it. Both midpoint brutes render as named
+`quest_spawn_entry_t` fields; the remaining negative trigger/count access is a
+real induction-pointer artifact, not an unknown structure member.

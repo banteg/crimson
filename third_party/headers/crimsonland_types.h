@@ -1315,6 +1315,12 @@ typedef struct quest_spawn_entry_t {
     int count;
 } quest_spawn_entry_t;
 
+// Binary Ninja presentation view for loops that emit two entries per
+// iteration. The compiler-facing source retains a quest_spawn_entry_t cursor.
+typedef struct quest_spawn_pair_binja_t {
+    quest_spawn_entry_t entries[2];
+} quest_spawn_pair_binja_t;
+
 // Binary Ninja presentation view for quest builder parameters. Native builders
 // receive the first element as `quest_spawn_entry_t *`, but direct displacements
 // beyond the first record otherwise degrade to raw `__offset(...)` accesses.

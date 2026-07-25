@@ -240,6 +240,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "quest_spawn_pair_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "quest_spawn_entries_binja_t",
         object(),
         object(),
@@ -586,6 +591,72 @@ def test_name_map_preserves_creature_death_pointer_local():
             "address": "0x0041e91d",
             "name": "creature",
             "type": "creature_t *",
+        },
+    ]
+
+
+def test_name_map_preserves_quest_spawn_cursor_local_views():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text())
+    rows_by_name = {
+        row["name"]: row
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+
+    assert rows_by_name["quest_build_alien_squads"]["local_types"] == [
+        {
+            "address": "0x00436037",
+            "name": "spawn_pair",
+            "type": "quest_spawn_pair_binja_t *",
+        },
+    ]
+    assert rows_by_name["quest_build_8_legged_terror"]["local_types"] == [
+        {
+            "address": "0x0043615f",
+            "name": "spawn_pairs",
+            "type": "quest_spawn_pair_binja_t *",
+        },
+        {
+            "address": "0x004361aa",
+            "name": "second_pair",
+            "type": "quest_spawn_pair_binja_t *",
+        },
+    ]
+    assert rows_by_name["quest_build_frontline_assault"]["local_types"] == [
+        {
+            "address": "0x00437eea",
+            "name": "center_left_spawn",
+            "type": "quest_spawn_entry_t *",
+        },
+    ]
+    nagolipoli_types = rows_by_name["quest_build_nagolipoli"]["local_types"]
+    assert nagolipoli_types[:4] == [
+        {
+            "address": "0x004345aa",
+            "name": "corner_spawn_cursor",
+            "type": "quest_spawn_entry_t *",
+        },
+        {
+            "address": "0x004345e4",
+            "name": "corner_spawn_second",
+            "type": "quest_spawn_entry_t *",
+        },
+        {
+            "address": "0x00434605",
+            "name": "corner_spawn_third",
+            "type": "quest_spawn_entry_t *",
+        },
+        {
+            "address": "0x00434627",
+            "name": "corner_spawn_fourth",
+            "type": "quest_spawn_entry_t *",
         },
     ]
 

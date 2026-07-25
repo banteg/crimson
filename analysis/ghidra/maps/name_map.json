@@ -2894,6 +2894,21 @@
         "type": "quest_spawn_entry_t *"
       },
       {
+        "address": "0x004345e4",
+        "name": "corner_spawn_second",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x00434605",
+        "name": "corner_spawn_third",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x00434627",
+        "name": "corner_spawn_fourth",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
         "address": "0x0043476d",
         "name": "tail_spawner_top",
         "type": "quest_spawn_entry_t *"
@@ -3004,7 +3019,14 @@
     "address": "0x00435ea0",
     "name": "quest_build_alien_squads",
     "signature": "void quest_build_alien_squads(quest_spawn_entry_t *entries, int *count)",
-    "comment": "quest builder for Tier 1 Quest 8 (Alien Squads)"
+    "comment": "quest builder for Tier 1 Quest 8 (Alien Squads)",
+    "local_types": [
+      {
+        "address": "0x00436037",
+        "name": "spawn_pair",
+        "type": "quest_spawn_pair_binja_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -3018,7 +3040,19 @@
     "address": "0x00436120",
     "name": "quest_build_8_legged_terror",
     "signature": "void quest_build_8_legged_terror(quest_spawn_entry_t *entries, int *count)",
-    "comment": "quest builder for Tier 1 Quest 10 (8-legged Terror)"
+    "comment": "quest builder for Tier 1 Quest 10 (8-legged Terror)",
+    "local_types": [
+      {
+        "address": "0x0043615f",
+        "name": "spawn_pairs",
+        "type": "quest_spawn_pair_binja_t *"
+      },
+      {
+        "address": "0x004361aa",
+        "name": "second_pair",
+        "type": "quest_spawn_pair_binja_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -3226,7 +3260,14 @@
     "address": "0x00437e10",
     "name": "quest_build_frontline_assault",
     "signature": "void quest_build_frontline_assault(quest_spawn_entry_t *entries, int *count)",
-    "comment": "quest builder for Tier 1 Quest 4 (Frontline Assault)"
+    "comment": "quest builder for Tier 1 Quest 4 (Frontline Assault)",
+    "local_types": [
+      {
+        "address": "0x00437eea",
+        "name": "center_left_spawn",
+        "type": "quest_spawn_entry_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",

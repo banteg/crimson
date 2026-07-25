@@ -34,3 +34,8 @@ scheduling of independent fixed-entry vector and metadata stores, plus the
 order of the loop cursor adjustment and initial trigger load. An explicit
 cursor is ruled out because VC6 then proves the final count is constant and
 eliminates the native count register; indexed source is the plausible shape.
+
+Binary Ninja now types the repeated-wave cursor as a layout-equivalent
+`quest_spawn_pair_binja_t *` presentation view. The loop consequently renders
+both entries as `entries[0]` and `entries[1]`, including position, template,
+trigger, and count, instead of leaving the second wave behind raw offsets.

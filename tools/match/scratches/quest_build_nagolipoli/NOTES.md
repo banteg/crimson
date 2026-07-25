@@ -44,10 +44,10 @@ final literal-vector copies through different stack slots; the candidate uses
 record-base cursors, collapses the four increments, and chooses other legal
 temporary slots.
 
-Five address-keyed Binary Ninja local types preserve the recovered record
-shape across compiler-generated cursor expressions. The first corner entry and
-all four tail entries now render as `quest_spawn_entry_t` fields rather than
-untyped dword offsets. Ring and line cursors intentionally remain interior
+Eight address-keyed Binary Ninja local types preserve the recovered record
+shape across compiler-generated cursor expressions. All four corner entries
+and all four tail entries now render as `quest_spawn_entry_t` fields rather
+than untyped dword offsets. Ring and line cursors intentionally remain interior
 pointers: their negative displacements are native VC6 strength reduction, not
 missing record fields.
 

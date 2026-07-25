@@ -71,6 +71,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # Quest builders write an array through their first-element pointer.
         # Keep both the element and table presentation layouts authoritative.
         "quest_spawn_entry_t",
+        "quest_spawn_pair_binja_t",
         "quest_spawn_entries_binja_t",
         # This layout is shared by three ui_element_t rendering layers. Keep
         # the recovered z/rhw/color/u/v members in sync with the canonical
