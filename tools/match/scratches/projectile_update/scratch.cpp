@@ -111,12 +111,12 @@ extern "C" void projectile_update(void)
                 }
             } else {
                 vec2f_t *position = &projectile->position;
-                if (projectile->pos_x < -64.0f
-                    || projectile->pos.pos_y < -64.0f
+                if (projectile->position.x < -64.0f
+                    || projectile->position.y < -64.0f
                     || (float)(terrain_texture_width + 64)
-                        < projectile->pos_x
+                        < projectile->position.x
                     || (float)(terrain_texture_height + 64)
-                        < projectile->pos.pos_y) {
+                        < projectile->position.y) {
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                 } else {
                     int step_count =
@@ -290,21 +290,21 @@ extern "C" void projectile_update(void)
                                             impact.x =
                                                 (float)(crt_rand() % range
                                                     + lower)
-                                                + creature_pool[hit_id].pos_x;
+                                                + creature_pool[hit_id].position.x;
                                             impact.y =
                                                 (float)(crt_rand() % range
                                                     + lower)
-                                                + creature_pool[hit_id].pos_y;
+                                                + creature_pool[hit_id].position.y;
                                             fx_queue_add_random(&impact);
 
                                             impact.x =
                                                 (float)(crt_rand() % range
                                                     + lower)
-                                                + creature_pool[hit_id].pos_x;
+                                                + creature_pool[hit_id].position.x;
                                             impact.y =
                                                 (float)(crt_rand() % range
                                                     + lower)
-                                                + creature_pool[hit_id].pos_y;
+                                                + creature_pool[hit_id].position.y;
                                             fx_queue_add_random(&impact);
 
                                             lower -= 10;
@@ -325,18 +325,18 @@ extern "C" void projectile_update(void)
                                         int jitter = crt_rand() & 3;
                                         float heading =
                                             projectile->angle - 1.5707964f;
-                                        projectile->pos_x +=
+                                        projectile->position.x +=
                                             (float)(cos(heading) * jitter);
-                                        projectile->pos.pos_y +=
+                                        projectile->position.y +=
                                             (float)(sin(heading) * jitter);
                                     }
 
                                     float damage_dx =
                                         projectile->pos.origin_x
-                                        - projectile->pos_x;
+                                        - projectile->position.x;
                                     float damage_dy =
                                         projectile->pos.tail.origin_y
-                                        - projectile->pos.pos_y;
+                                        - projectile->position.y;
                                     float damage_distance = (float)sqrt(
                                         damage_dx * damage_dx
                                         + damage_dy * damage_dy);
@@ -374,12 +374,10 @@ extern "C" void projectile_update(void)
                                                 100.0f);
                                             bonus_spawn_guard = 1;
                                             float chain_angle = (float)atan2(
-                                                creature_pool[next_id].pos_y
-                                                    - creature_pool[hit_id]
-                                                        .pos_y,
-                                                creature_pool[next_id].pos_x
-                                                    - creature_pool[hit_id]
-                                                        .pos_x);
+                                                creature_pool[next_id].position.y
+                                                    - creature_pool[hit_id].position.y,
+                                                creature_pool[next_id].position.x
+                                                    - creature_pool[hit_id].position.x);
                                             shock_chain_projectile_id =
                                                 projectile_spawn(
                                                     position,
@@ -425,11 +423,11 @@ extern "C" void projectile_update(void)
                                             child_pos.x =
                                                 (float)(cos(child_angle)
                                                     * child_radius)
-                                                + projectile->pos_x;
+                                                + projectile->position.x;
                                             child_pos.y =
                                                 (float)(sin(child_angle)
                                                     * child_radius)
-                                                + projectile->pos.pos_y;
+                                                + projectile->position.y;
                                             projectile_spawn(
                                                 &child_pos,
                                                 child_angle,
@@ -467,9 +465,9 @@ extern "C" void projectile_update(void)
                                         }
                                     } else if (type_id
                                         == PROJECTILE_TYPE_PULSE_GUN) {
-                                        creature_pool[hit_id].pos_x +=
+                                        creature_pool[hit_id].position.x +=
                                             delta.x * 3.0f;
-                                        creature_pool[hit_id].pos_y +=
+                                        creature_pool[hit_id].position.y +=
                                             delta.y * 3.0f;
                                     } else if (type_id
                                         == PROJECTILE_TYPE_PLAGUE_SPREADER) {
@@ -567,9 +565,9 @@ extern "C" void projectile_update(void)
                                                 (float)sin(impact_heading)
                                                 * speed * 20.0f;
                                             vec2f_t impulse_pos = {
-                                                creature_pool[hit_id].pos_x
+                                                creature_pool[hit_id].position.x
                                                     + offset_x,
-                                                creature_pool[hit_id].pos_y
+                                                creature_pool[hit_id].position.y
                                                     + offset_y,
                                             };
                                             vec2f_t zero = {0.0f, 0.0f};
@@ -581,9 +579,9 @@ extern "C" void projectile_update(void)
 
                                             if (bonus_freeze_timer > 0.0f) {
                                                 vec2f_t shard_pos = {
-                                                    projectile->pos_x
+                                                    projectile->position.x
                                                         + offset_x,
-                                                    projectile->pos.pos_y
+                                                    projectile->position.y
                                                         + offset_y,
                                                 };
                                                 effect_spawn_freeze_shard(
@@ -595,9 +593,9 @@ extern "C" void projectile_update(void)
                                             }
 
                                             vec2f_t decal_pos = {
-                                                creature_pool[hit_id].pos_x
+                                                creature_pool[hit_id].position.x
                                                     + offset_x,
-                                                creature_pool[hit_id].pos_y
+                                                creature_pool[hit_id].position.y
                                                     + offset_y,
                                             };
                                             fx_queue_add_random(&decal_pos);
@@ -726,8 +724,8 @@ extern "C" void projectile_update(void)
                 do {
                     creature_t *creature = &creature_pool[creature_id];
                     if (creature->active && creature->health > 0.0f) {
-                        float dx = creature->position.x - secondary->pos_x;
-                        float dy = creature->position.y - secondary->pos.pos_y;
+                        float dx = creature->position.x - secondary->position.x;
+                        float dy = creature->position.y - secondary->position.y;
                         float distance =
                             (float)sqrt(dx * dx + dy * dy);
                         if (distance < radius) {
@@ -802,8 +800,8 @@ extern "C" void projectile_update(void)
                     creature_t *target = &creature_pool[
                         secondary->pos.vx.vy.target_id];
                     float target_angle = (float)atan2(
-                        secondary->pos.pos_y - target->pos_y,
-                        secondary->pos_x - target->pos_x);
+                        secondary->position.y - target->position.y,
+                        secondary->position.x - target->position.x);
                     secondary->angle = target_angle - 1.5707964f;
                     secondary->pos.vx.vel_x +=
                         (float)cos(
@@ -845,9 +843,9 @@ extern "C" void projectile_update(void)
                     float trail_heading =
                         secondary->angle - 1.5707964f;
                     vec2f_t trail_pos = {
-                        secondary->pos_x
+                        secondary->position.x
                             - (float)cos(trail_heading) * 9.0f,
-                        secondary->pos.pos_y
+                        secondary->position.y
                             - (float)sin(trail_heading) * 9.0f,
                     };
                     int effect_id = fx_spawn_sprite(&trail_pos, &trail_velocity, 14.0f);
@@ -871,9 +869,9 @@ extern "C" void projectile_update(void)
                         };
                         vec2f_t decal_pos_1 = {
                             decal_offset_1.x
-                                + creature_pool[hit_id].pos_x,
+                                + creature_pool[hit_id].position.x,
                             decal_offset_1.y
-                                + creature_pool[hit_id].pos_y,
+                                + creature_pool[hit_id].position.y,
                         };
                         fx_queue_add_random(&decal_pos_1);
 
@@ -883,9 +881,9 @@ extern "C" void projectile_update(void)
                         };
                         vec2f_t decal_pos_2 = {
                             decal_offset_2.x
-                                + creature_pool[hit_id].pos_x,
+                                + creature_pool[hit_id].position.x,
                             decal_offset_2.y
-                                + creature_pool[hit_id].pos_y,
+                                + creature_pool[hit_id].position.y,
                         };
                         fx_queue_add_random(&decal_pos_2);
 
@@ -895,9 +893,9 @@ extern "C" void projectile_update(void)
                         };
                         vec2f_t decal_pos_3 = {
                             decal_offset_3.x
-                                + creature_pool[hit_id].pos_x,
+                                + creature_pool[hit_id].position.x,
                             decal_offset_3.y
-                                + creature_pool[hit_id].pos_y,
+                                + creature_pool[hit_id].position.y,
                         };
                         fx_queue_add_random(&decal_pos_3);
                     } else {
@@ -963,9 +961,9 @@ extern "C" void projectile_update(void)
                                 int radius = crt_rand() % 90;
                                 vec2f_t decal_pos = {
                                     (float)(cos(angle) * radius)
-                                        + creature_pool[hit_id].pos_x,
+                                        + creature_pool[hit_id].position.x,
                                     (float)(sin(angle) * radius)
-                                        + creature_pool[hit_id].pos_y,
+                                        + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
                                 --count;
@@ -993,9 +991,9 @@ extern "C" void projectile_update(void)
                                 int radius = crt_rand() % 64;
                                 vec2f_t decal_pos = {
                                     (float)(cos(angle) * radius)
-                                        + creature_pool[hit_id].pos_x,
+                                        + creature_pool[hit_id].position.x,
                                     (float)(sin(angle) * radius)
-                                        + creature_pool[hit_id].pos_y,
+                                        + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
                                 --count;
@@ -1023,9 +1021,9 @@ extern "C" void projectile_update(void)
                                 int radius = crt_rand() % 44;
                                 vec2f_t decal_pos = {
                                     (float)(cos(angle) * radius)
-                                        + creature_pool[hit_id].pos_x,
+                                        + creature_pool[hit_id].position.x,
                                     (float)(sin(angle) * radius)
-                                        + creature_pool[hit_id].pos_y,
+                                        + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
                                 --count;
@@ -1074,10 +1072,10 @@ extern "C" void projectile_update(void)
     sprite_effect_t *sprite = sprite_effect_pool;
     do {
         if (sprite->active) {
-            float move_x = frame_dt * sprite->vel_x;
-            float move_y = frame_dt * sprite->vel_y;
-            sprite->pos_x += move_x;
-            sprite->pos_y += move_y;
+            float move_x = frame_dt * sprite->velocity.x;
+            float move_y = frame_dt * sprite->velocity.y;
+            sprite->position.x += move_x;
+            sprite->position.y += move_y;
             sprite->rotation += frame_dt * 3.0f;
             sprite->color_a -= frame_dt;
             if (sprite->color_a <= 0.0f) {
@@ -1097,16 +1095,16 @@ extern "C" void projectile_update(void)
                 particle->intensity -= frame_dt * 0.11f;
                 particle->spin += frame_dt * 5.0f;
                 if (particle->render_flag) {
-                    float move_x = frame_dt * particle->vel_x;
+                    float move_x = frame_dt * particle->velocity.x;
                     if (particle->intensity <= 0.15f) {
-                        particle->pos_x +=
+                        particle->position.x +=
                             move_x * 0.55f * particle->intensity;
-                        particle->pos_y += frame_dt * particle->vel_y
+                        particle->position.y += frame_dt * particle->velocity.y
                             * 0.55f * particle->intensity;
                     } else {
                         vec2f_t movement = {
                             move_x * particle->intensity,
-                            frame_dt * particle->vel_y
+                            frame_dt * particle->velocity.y
                                 * particle->intensity,
                         };
                         vec2_add(
@@ -1117,15 +1115,15 @@ extern "C" void projectile_update(void)
             } else {
                 particle->intensity -= frame_dt * 0.9f;
                 particle->spin += frame_dt;
-                float move_x = frame_dt * particle->vel_x;
+                float move_x = frame_dt * particle->velocity.x;
                 if (particle->intensity <= 0.15f) {
-                    particle->pos_x += move_x * 2.5f * 0.15f;
-                    particle->pos_y += frame_dt * particle->vel_y
+                    particle->position.x += move_x * 2.5f * 0.15f;
+                    particle->position.y += frame_dt * particle->velocity.y
                         * 2.5f * 0.15f;
                 } else {
                     vec2f_t movement = {
                         move_x * 2.5f * particle->intensity,
-                        frame_dt * particle->vel_y * 2.5f
+                        frame_dt * particle->velocity.y * 2.5f
                             * particle->intensity,
                     };
                     vec2_add(
@@ -1156,25 +1154,25 @@ extern "C" void projectile_update(void)
                         int turn = crt_rand() % 100 - 50;
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.96f;
-                        particle->vel_x =
+                        particle->velocity.x =
                             (float)cos(particle->angle) * 82.0f;
-                        particle->vel_y =
+                        particle->velocity.y =
                             (float)sin(particle->angle) * 82.0f;
                     } else if (style_id == 8) {
                         int turn = crt_rand() % 100 - 50;
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.1f;
-                        particle->vel_x =
+                        particle->velocity.x =
                             (float)cos(particle->angle) * 62.0f;
-                        particle->vel_y =
+                        particle->velocity.y =
                             (float)sin(particle->angle) * 62.0f;
                     } else {
                         int turn = crt_rand() % 100 - 50;
                         particle->angle -= (float)turn * 0.06f
                             * particle->intensity * frame_dt * 1.1f;
-                        particle->vel_x =
+                        particle->velocity.x =
                             (float)cos(particle->angle) * 82.0f;
-                        particle->vel_y =
+                        particle->velocity.y =
                             (float)sin(particle->angle) * 82.0f;
                     }
                 }
@@ -1194,10 +1192,10 @@ extern "C" void projectile_update(void)
                     if (hit_id != -1) {
                         particle->render_flag = 0;
                         if (style_id == 8) {
-                            particle->pos_x = creature_pool[hit_id].pos_x;
-                            particle->pos_y = creature_pool[hit_id].pos_y;
-                            particle->vel_x = 0.0f;
-                            particle->vel_y = 0.0f;
+                            particle->position.x = creature_pool[hit_id].position.x;
+                            particle->position.y = creature_pool[hit_id].position.y;
+                            particle->velocity.x = 0.0f;
+                            particle->velocity.y = 0.0f;
                             creature_pool[hit_id].state_flag = 0;
                             particle->target_id = hit_id;
                         } else {
@@ -1209,12 +1207,12 @@ extern "C" void projectile_update(void)
                             }
 
                             float hit_angle = (float)atan2(
-                                particle->pos_y
-                                    - frame_dt * particle->vel_y
-                                    - creature_pool[hit_id].pos_y,
-                                particle->pos_x
-                                    - frame_dt * particle->vel_x
-                                    - creature_pool[hit_id].pos_x);
+                                particle->position.y
+                                    - frame_dt * particle->velocity.y
+                                    - creature_pool[hit_id].position.y,
+                                particle->position.x
+                                    - frame_dt * particle->velocity.x
+                                    - creature_pool[hit_id].position.x);
                             while (6.2831855f < hit_angle) {
                                 hit_angle -= 6.2831855f;
                             }
@@ -1227,13 +1225,13 @@ extern "C" void projectile_update(void)
                             } else {
                                 particle->angle -= 1.2566371f;
                             }
-                            particle->vel_x =
+                            particle->velocity.x =
                                 (float)cos(particle->angle) * 82.0f;
-                            particle->vel_y =
+                            particle->velocity.y =
                                 (float)sin(particle->angle) * 82.0f;
                             int speed_scale = crt_rand() % 10;
-                            particle->vel_x *= (float)speed_scale * 0.1f;
-                            particle->vel_y *= (float)speed_scale * 0.1f;
+                            particle->velocity.x *= (float)speed_scale * 0.1f;
+                            particle->velocity.y *= (float)speed_scale * 0.1f;
                             creature_pool[hit_id].state_flag = 1;
                             vec2f_t impulse = {0.0f, 0.0f};
                             creature_apply_damage(
@@ -1290,9 +1288,9 @@ extern "C" void projectile_update(void)
                             fx_queue_add_random(
                                 &hit_creature->position);
                             hit_creature->position.x +=
-                                frame_dt * particle->vel_x;
+                                frame_dt * particle->velocity.x;
                             hit_creature->position.y +=
-                                frame_dt * particle->vel_y;
+                                frame_dt * particle->velocity.y;
                         }
                     }
                 }

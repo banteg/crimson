@@ -272,3 +272,10 @@ The plasma projectile effect now writes its size through
 `effect_template_t::half_extent`, completing the template aggregate boundary
 already used for velocity and color. This is byte-neutral at the same 46.91%,
 2,137/2,203 instructions, and `336/0/29` references.
+
+Every owning-record coordinate in the update now follows the same rule.
+Primary and secondary projectiles, hit creatures, sprite effects, and
+particles use their canonical `position` and `velocity` components directly;
+only native induction cursors that genuinely begin inside a projectile record
+retain the nested compatibility views. The 39-component rewrite is exactly
+byte-neutral at 46.91%, 2,137/2,203 instructions, and `336/0/29` references.
