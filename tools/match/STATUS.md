@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289555/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289935/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 259979/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260359/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **259979/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **260359/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -118,7 +118,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | demo_purchase_screen_update | 0x0040b740 | 2642 | 2330/2642 | 312 | 697/691 | 88.18% | 1/691 | 187/0/0 |  | demo-purchase-screen-complete-flow |
 | match | demo_purchase_purchase_button_destroy | 0x0040c1a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-purchase-button-empty-destructor |
 | match | demo_purchase_maybe_later_button_destroy | 0x0040c1b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-maybe-later-button-empty-destructor |
-| wip | game_frame_update | 0x0040c1c0 | 3588 | 3370/3588 | 218 | 903/905 | 93.92% | 363/905 | 314/0/0 |  | core-frame-timing-input-and-state-dispatch |
+| wip | game_frame_update | 0x0040c1c0 | 3588 | 3447/3588 | 141 | 904/905 | 96.08% | 363/905 | 317/0/0 |  | core-frame-timing-input-and-state-dispatch |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 24/24 | 0 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 64/64 | 0 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
@@ -406,7 +406,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
 | match | quest_meta_init_entry | 0x00430a20 | 170 | 170/170 | 0 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | quest-metadata-initialization |
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 30/30 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
-| wip | creature_spawn_template | 0x00430af0 | 14099 | 11405/14099 | 2694 | 3106/3159 | 80.89% | 26/3159 | 350/0/1 |  | gameplay-spawn-switch |
+| wip | creature_spawn_template | 0x00430af0 | 14099 | 11593/14099 | 2506 | 3136/3159 | 82.22% | 26/3159 | 351/0/1 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 39/39 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
@@ -474,7 +474,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 53/53 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 101/101 | 0 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
-| wip | highscore_load_table | 0x0043afa0 | 1198 | 809/1198 | 389 | 339/354 | 67.53% | 0/354 | 51/0/0 |  | highscore-table-load-filter-sort |
+| wip | highscore_load_table | 0x0043afa0 | 1198 | 923/1198 | 275 | 344/354 | 77.08% | 67/354 | 55/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 182/182 | 0 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 78/133 | 55 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
