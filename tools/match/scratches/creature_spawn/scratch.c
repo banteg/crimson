@@ -1,8 +1,8 @@
 #include "crimsonland_gameplay.h"
 
 typedef union creature_spawn_locals_t {
-    int i[2];
-    float f[2];
+    int zero_words[2];
+    vec2f_t zero_velocity;
 } creature_spawn_locals_t;
 
 #define CREATURE_SPAWN_ELAPSED_SCALE 0.000010000001f
@@ -13,7 +13,7 @@ int creature_spawn(
     int type_id)
 {
     int slot_id = creature_alloc_slot();
-    creature_spawn_locals_t locals = {{0, 0}};
+    creature_spawn_locals_t velocity_storage = {{0, 0}};
 
     creature_pool[slot_id].position = *pos;
     creature_pool[slot_id].type_id = type_id;
@@ -24,8 +24,8 @@ int creature_spawn(
     creature_pool[slot_id].force_target = 0;
     creature_pool[slot_id].state_flag = 1;
     creature_pool[slot_id].lifecycle_stage = 16.0f;
-    creature_pool[slot_id].vel_x = locals.f[0];
-    creature_pool[slot_id].vel_y = locals.f[1];
+    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;
+    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;
     creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;
     creature_pool[slot_id].heading = (float)(crt_rand() % 314) * 0.01f;
     creature_pool[slot_id].move_speed = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 2.5f;

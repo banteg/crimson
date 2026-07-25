@@ -37,3 +37,11 @@ The initializer now also copies those values through the canonical embedded
 `creature_t::position` and `creature_t::color` aggregates. Both assignments
 remain byte-for-byte exact, and the color copy no longer needs a duplicate
 layout-only structure or pointer casts.
+
+The function's observed eight-byte stack frame holds two explicitly written
+zero words that are later read as velocity components. Its compiler-facing
+overlay now names that float view as `vec2f_t zero_velocity` instead of
+addressing anonymous parallel `int[2]` and `float[2]` arrays. A plain
+initialized `vec2f_t` lets VC6 fold away the frame and seven instructions, so
+the storage view is retained honestly. The named form remains exact at 92/92
+instructions and 34/0/0 references.

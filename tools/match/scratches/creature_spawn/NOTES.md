@@ -27,6 +27,15 @@ That source-shape recovery is byte-neutral. Binary Ninja also types the
 embedded destination beginning at `creature_t::tint_r` as
 `effect_color_t *creature_tint`.
 
+The native function explicitly materializes two zero words in its eight-byte
+stack frame before reading them back as the creature velocity. The matching
+source keeps that observed storage overlay, but names its float view as a
+`vec2f_t zero_velocity` instead of exposing anonymous parallel `int[2]` and
+`float[2]` indexes. A plain initialized `vec2f_t` is not equivalent under this
+C front end: VC6 folds it away, deleting the native frame and six
+instructions. The named overlay is byte-neutral at 86.08%, 79/79 instructions,
+and 27/0/0 references.
+
 The candidate has the exact 79-instruction length, resolves all 27 audited
 references, and scores 86.08% with a seven-instruction exact prefix. Its
 remaining differences are instruction scheduling rather than missing behavior:

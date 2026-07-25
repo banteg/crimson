@@ -3,8 +3,8 @@
 #undef creature_spawn_tinted
 
 typedef union creature_spawn_tinted_locals_t {
-    int i[2];
-    float f[2];
+    int zero_words[2];
+    vec2f_t zero_velocity;
 } creature_spawn_tinted_locals_t;
 
 int creature_spawn_tinted(
@@ -13,12 +13,12 @@ int creature_spawn_tinted(
     int type_id)
 {
     int slot_id = creature_alloc_slot();
-    creature_spawn_tinted_locals_t locals = {{0, 0}};
+    creature_spawn_tinted_locals_t velocity_storage = {{0, 0}};
 
     creature_pool[slot_id].position = *pos;
     creature_pool[slot_id].active = 1;
     creature_pool[slot_id].state_flag = 1;
-    creature_pool[slot_id].vel_x = locals.f[0];
+    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;
     creature_pool[slot_id].ai_mode = 2;
     creature_pool[slot_id].collision_flag = 0;
     creature_pool[slot_id].collision_timer = 0.0f;
@@ -26,7 +26,7 @@ int creature_spawn_tinted(
     creature_pool[slot_id].force_target = 0;
     creature_pool[slot_id].lifecycle_stage = 16.0f;
     creature_pool[slot_id].health = 1.0f;
-    creature_pool[slot_id].vel_y = locals.f[1];
+    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;
     {
         int heading_roll = crt_rand();
         creature_pool[slot_id].move_speed = 1.7f;
