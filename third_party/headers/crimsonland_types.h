@@ -556,6 +556,85 @@ typedef struct creature_binja_t {
     float anim_phase;
 } creature_binja_t;
 
+// Binary Ninja induction view anchored at creature_t::lifecycle_stage. The
+// trailing prefix makes sizeof(view) equal the 0x98-byte creature stride, so a
+// native field cursor advances by one typed element while forward accesses
+// retain their recovered field names.
+typedef struct creature_lifecycle_stride_binja_t {
+    float lifecycle_stage;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float health;
+    float max_health;
+    float heading;
+    float target_heading;
+    float size;
+    float hit_flash_timer;
+    float tint_r;
+    float tint_g;
+    float tint_b;
+    float tint_a;
+    unsigned char force_target;
+    unsigned char _pad_force_target[3];
+    float target_x;
+    float target_y;
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    unsigned char _pad2[4];
+    int type_id;
+    signed char target_player;
+    unsigned char _pad_target_player[3];
+    int entity_reserved_74;
+    int link_index;
+    float target_offset_x;
+    float target_offset_y;
+    float orbit_angle;
+    creature_orbit_radius_t orbit_radius;
+    int flags;
+    int ai_mode;
+    float anim_phase;
+    unsigned char _next_record_prefix[0x10];
+} creature_lifecycle_stride_binja_t;
+
+// Equivalent 0x98-byte induction view for loops anchored at max_health.
+typedef struct creature_max_health_stride_binja_t {
+    float max_health;
+    float heading;
+    float target_heading;
+    float size;
+    float hit_flash_timer;
+    float tint_r;
+    float tint_g;
+    float tint_b;
+    float tint_a;
+    unsigned char force_target;
+    unsigned char _pad_force_target[3];
+    float target_x;
+    float target_y;
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    unsigned char _pad2[4];
+    int type_id;
+    signed char target_player;
+    unsigned char _pad_target_player[3];
+    int entity_reserved_74;
+    int link_index;
+    float target_offset_x;
+    float target_offset_y;
+    float orbit_angle;
+    creature_orbit_radius_t orbit_radius;
+    int flags;
+    int ai_mode;
+    float anim_phase;
+    unsigned char _next_record_prefix[0x28];
+} creature_max_health_stride_binja_t;
+
 typedef struct creature_spawn_slot_t {
     creature_t *owner;
     int count;

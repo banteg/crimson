@@ -67,3 +67,23 @@ materially regresses the stack frame and floating-point comparisons. No
 volatile fields, dummy expressions, fake references, hard-coded addresses, or
 artificial register constraints are used, so this remains an evidence-backed
 semantic WIP rather than a fakematch.
+
+## Binary Ninja type and control-flow recovery
+
+This 2,834-byte renderer was still timeout-skipped. The durable name-map policy
+now restores its 124-block LLIL, MLIL, and HLIL, and its prototype includes the
+second `float transition_alpha` argument independently proven by all five
+callers and the matching source.
+
+Native anchors its four pool walks at lifecycle stage, max health, animation
+phase, and lifecycle stage. Two 0x98-byte Binary Ninja stride views now model
+the first, second, and fourth cursors without lying about their interior
+addresses. Forward accesses therefore read as `type_id`, `flags`, `tint_*`,
+`heading`, `size`, `hit_flash_timer`, and `anim_phase`; the only remaining
+negative offsets are fields genuinely located before the native cursor, such
+as `active`, position, and lifecycle in the max-health pass. Pointer increments
+also decompile as one record because both presentation views retain the proven
+0x98 stride.
+
+The analysis/type recovery does not affect code generation: the honest match
+remains 78.45%, 757/765 instructions, prefix 25, and `136/0/5` references.

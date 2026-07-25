@@ -31,3 +31,11 @@ Source-shape evidence:
   lowering.
 - A single `freeze_alpha * transition_alpha * 0.7f` expression reproduces the
   native floating-point scheduling around the batch call.
+
+Binary Ninja had also discarded this exact-matched body at the default
+analysis-time limit. Its name-map row now retains full IL, types the first
+0x98-byte walk with the recovered lifecycle stride view, and names the later
+size-anchored freeze cursor. Monster Vision and damage overlays consequently
+show named lifecycle, position, and flags fields while preserving the genuine
+negative offsets before the freeze-size anchor. The source remains exact at
+349/349 instructions with `87/0/0` references.

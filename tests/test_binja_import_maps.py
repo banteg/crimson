@@ -206,6 +206,16 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "creature_lifecycle_stride_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "creature_max_health_stride_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "creature_type_t",
         object(),
         object(),
@@ -610,6 +620,9 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "int creature_id, float damage, int damage_type, "
         "const vec2f_t *impulse)"
     )
+    assert signatures_by_name["creature_render_type"] == (
+        "void creature_render_type(int type_id, float transition_alpha)"
+    )
     assert signatures_by_name["player_fire_weapon"] == (
         "void player_fire_weapon("
         "const vec2f_t *aim, char fire_requested, char reload_requested)"
@@ -672,6 +685,10 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "player_heading_approach_target",
         "projectile_update",
         "creature_spawn_template",
+        "terrain_generate",
+        "creature_render_type",
+        "creature_render_all",
+        "projectile_render",
     } <= never_skip
     assert rows_by_name["projectile_update"]["local_types"] == [
         {
@@ -696,6 +713,52 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "name": "creature_lifecycle_cursor",
         "type": "float *",
     }
+    assert rows_by_name["terrain_generate"]["local_types"] == [
+        {
+            "address": "0x00417d11",
+            "name": "base_quad_size",
+            "type": "float",
+        },
+        {
+            "address": "0x00417e78",
+            "name": "detail_quad_size",
+            "type": "float",
+        },
+        {
+            "address": "0x00417fdb",
+            "name": "accent_quad_size",
+            "type": "float",
+        },
+    ]
+    assert rows_by_name["creature_render_type"]["local_types"][:2] == [
+        {
+            "address": "0x00418c0a",
+            "name": "detail_lifecycle_cursor",
+            "type": "creature_lifecycle_stride_binja_t *",
+        },
+        {
+            "address": "0x00418eb0",
+            "name": "energizer_max_health_cursor",
+            "type": "creature_max_health_stride_binja_t *",
+        },
+    ]
+    assert rows_by_name["projectile_render"]["local_types"][1:4] == [
+        {
+            "address": "0x00423011",
+            "name": "bullet_vel_y_cursor",
+            "type": "projectile_vel_y_block_t *",
+        },
+        {
+            "address": "0x004237e4",
+            "name": "plasma_pos_y_cursor",
+            "type": "projectile_pos_y_block_t *",
+        },
+        {
+            "address": "0x00424184",
+            "name": "projectile_origin_y_cursor",
+            "type": "projectile_tail_t *",
+        },
+    ]
 
 
 def test_name_map_preserves_creature_death_pointer_local():

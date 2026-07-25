@@ -74,3 +74,19 @@ from 39.77% to 39.08%; the higher-scoring scalar spelling remains semantically
 identical and better supported by the current compiler evidence. No dummy
 locals, fake references, hard-coded addresses, or artificial register
 constraints are retained.
+
+## Binary Ninja type and control-flow recovery
+
+The default analysis-time limit had left this 12,551-byte callback without
+LLIL, MLIL, or HLIL. A durable `never_skip` policy now restores 214 basic
+blocks. Its six major induction variables are named for the player
+aim-heading, conventional-bullet velocity, plasma position, primary origin,
+secondary bloom, and secondary sprite passes.
+
+The primary projectile walks now use the existing native cursor-block types
+anchored at `vel_y`, `pos_y`, and `origin_y`. This recovers enum `type_id`,
+`life_timer`, `speed_scale`, origin, velocity, and tail fields without
+pretending that an interior address is a `projectile_t *`. The two secondary
+walks analogously use the `pos_y` block, and only fields physically before
+their cursor remain negative offsets. The callback stays at 43.04%,
+2,839/3,021 instructions, and `325/0/28` references.

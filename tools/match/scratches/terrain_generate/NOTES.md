@@ -24,3 +24,17 @@ texture as the fallback render target and returns. Otherwise it reproduces the
 complete Grim2D render-target setup, tinting, batch boundaries, camera reset,
 and final render-state restoration. No inline assembly, volatile state, dummy
 references, or dead expressions are used.
+
+## Binary Ninja type recovery
+
+Binary Ninja's default time limit had discarded all IL for this function.
+The name map now retains its complete control flow. Reanalysis exposed a
+register-propagation error in all three texture passes: each 128-unit quad size
+is stored as float bits in `EDI`, but inherited the `quest_meta_t *` type of an
+earlier `EDI` lifetime. The three address-keyed locals are now typed and named
+as `base_quad_size`, `detail_quad_size`, and `accent_quad_size`. HLIL therefore
+passes floats to `grim_draw_quad_xy` instead of rendering impossible
+pointer-from-float conversions.
+
+This is a presentation-only correction; the source remains an exact 408/408
+instruction match with `88/0/0` references.

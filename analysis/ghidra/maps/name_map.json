@@ -1625,6 +1625,24 @@
     "address": "0x00417b80",
     "name": "terrain_generate",
     "signature": "void terrain_generate(quest_meta_t *quest)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00417d11",
+        "name": "base_quad_size",
+        "type": "float"
+      },
+      {
+        "address": "0x00417e78",
+        "name": "detail_quad_size",
+        "type": "float"
+      },
+      {
+        "address": "0x00417fdb",
+        "name": "accent_quad_size",
+        "type": "float"
+      }
+    ],
     "comment": "generates terrain texture into a render target using a level descriptor"
   },
   {
@@ -1645,7 +1663,30 @@
     "program": "crimsonland.exe",
     "address": "0x00418b60",
     "name": "creature_render_type",
-    "signature": "void creature_render_type(int type_id)",
+    "signature": "void creature_render_type(int type_id, float transition_alpha)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00418c0a",
+        "name": "detail_lifecycle_cursor",
+        "type": "creature_lifecycle_stride_binja_t *"
+      },
+      {
+        "address": "0x00418eb0",
+        "name": "energizer_max_health_cursor",
+        "type": "creature_max_health_stride_binja_t *"
+      },
+      {
+        "address": "0x00419171",
+        "name": "main_anim_phase_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x0041945e",
+        "name": "hit_flash_lifecycle_cursor",
+        "type": "creature_lifecycle_stride_binja_t *"
+      }
+    ],
     "comment": "renders active creatures matching type_id using 8x8 atlases and animation strips"
   },
   {
@@ -1653,6 +1694,19 @@
     "address": "0x00419680",
     "name": "creature_render_all",
     "signature": "void creature_render_all(void)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00419756",
+        "name": "overlay_lifecycle_cursor",
+        "type": "creature_lifecycle_stride_binja_t *"
+      },
+      {
+        "address": "0x00419a8d",
+        "name": "freeze_size_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "creature render pass: overlays + per-type draws via creature_render_type"
   },
   {
@@ -2407,6 +2461,39 @@
     "address": "0x00422c70",
     "name": "projectile_render",
     "signature": "void projectile_render(float transition_alpha)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00422d47",
+        "name": "player_aim_heading_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x00423011",
+        "name": "bullet_vel_y_cursor",
+        "type": "projectile_vel_y_block_t *"
+      },
+      {
+        "address": "0x004237e4",
+        "name": "plasma_pos_y_cursor",
+        "type": "projectile_pos_y_block_t *"
+      },
+      {
+        "address": "0x00424184",
+        "name": "projectile_origin_y_cursor",
+        "type": "projectile_tail_t *"
+      },
+      {
+        "address": "0x00425859",
+        "name": "secondary_bloom_pos_y_cursor",
+        "type": "secondary_projectile_pos_y_block_t *"
+      },
+      {
+        "address": "0x00425a96",
+        "name": "secondary_sprite_pos_y_cursor",
+        "type": "secondary_projectile_pos_y_block_t *"
+      }
+    ],
     "comment": "renders projectiles/secondary projectiles and related beam/trail effects using the caller-supplied transition alpha"
   },
   {
