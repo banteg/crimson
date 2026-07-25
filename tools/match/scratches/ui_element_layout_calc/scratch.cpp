@@ -21,54 +21,42 @@ struct ui_layout_vec2_t {
     }
 };
 
-struct ui_layout_vertex_t {
-    ui_layout_vec2_t position;
-    float z;
-    float rhw;
-    unsigned int color;
-    ui_layout_vec2_t uv;
-};
-
-struct ui_element_layout_t {
-    unsigned char _head[0x18];
-    ui_layout_vec2_t position;
-    ui_layout_vec2_t hover_min;
-    ui_layout_vec2_t hover_max;
-    unsigned char _pad30[0x0c];
-    ui_layout_vertex_t vertices[8];
-    int texture_handle;
-    int vertex_count;
-    unsigned char _pad124[0x1f0];
-    unsigned char direction_flag;
-};
-
 extern "C" void ui_element_layout_calc(ui_element_t *element)
 {
     if (element == &ui_element_slot_26 || element == &ui_element_slot_27) {
         return;
     }
 
-    ui_element_layout_t *layout = (ui_element_layout_t *)element;
-    layout->hover_min += layout->position + layout->vertices[0].position;
-    layout->hover_max += layout->position + layout->vertices[0].position;
+    ui_layout_vec2_t &position =
+        *(ui_layout_vec2_t *)&element->pos;
+    ui_layout_vec2_t &hover_min =
+        *(ui_layout_vec2_t *)&element->hover_min;
+    ui_layout_vec2_t &hover_max =
+        *(ui_layout_vec2_t *)&element->hover_max;
+    ui_layout_vec2_t &vertex_0 =
+        *(ui_layout_vec2_t *)&element->vertices[0].position;
+    ui_layout_vec2_t &vertex_2 =
+        *(ui_layout_vec2_t *)&element->vertices[2].position;
 
-    layout->hover_min = layout->position + layout->vertices[0].position;
-    float width = layout->vertices[2].position.x
-        - layout->vertices[0].position.x;
-    layout->hover_min.x += width * 0.54f;
-    float height = layout->vertices[2].position.y
-        - layout->vertices[0].position.y;
-    layout->hover_min.y += height * 0.28f;
+    hover_min += position + vertex_0;
+    hover_max += position + vertex_0;
 
-    layout->hover_max = layout->position + layout->vertices[2].position;
-    layout->hover_max.x -= width * 0.05f;
-    layout->hover_max.y -= height * 0.1f;
+    hover_min = position + vertex_0;
+    float width = vertex_2.x - vertex_0.x;
+    hover_min.x += width * 0.54f;
+    float height = vertex_2.y - vertex_0.y;
+    hover_min.y += height * 0.28f;
 
-    if (layout->direction_flag) {
-        for (int i = 0; i < layout->vertex_count; i += 2) {
-            float u = layout->vertices[i].uv.x;
-            layout->vertices[i].uv.x = layout->vertices[i + 1].uv.x;
-            layout->vertices[i + 1].uv.x = u;
+    hover_max = position + vertex_2;
+    unsigned char direction_flag = element->direction_flag;
+    hover_max.x -= width * 0.05f;
+    hover_max.y -= height * 0.1f;
+
+    if (direction_flag) {
+        for (int i = 0; i < element->vertex_count; i += 2) {
+            float u = element->vertices[i].u;
+            element->vertices[i].u = element->vertices[i + 1].u;
+            element->vertices[i + 1].u = u;
         }
     }
 }

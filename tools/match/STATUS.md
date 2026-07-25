@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289552/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289555/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 259976/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 259979/386756 | 67.2% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **259976/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **259979/386756** fuzzy-weighted bytes (**67.2%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -626,7 +626,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | play_game_rush_button_destroy | 0x0044fa80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-rush-button-empty-destructor |
 | match | play_game_quests_button_destroy | 0x0044fa90 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-quests-button-empty-destructor |
 | match | ui_element_init_defaults | 0x0044faa0 | 173 | 173/173 | 0 | 40/40 | 100.00% | 40/40 | 3/0/0 |  | ui-element-default-state |
-| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 275/288 | 13 | 86/86 | 95.35% | 16/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
+| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 278/288 | 10 | 86/86 | 96.51% | 34/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
 | wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 4012/7237 | 3225 | 1302/1422 | 55.43% | 1/1422 | 305/0/48 |  | menu-element-graph-layout-and-responsive-transforms |
