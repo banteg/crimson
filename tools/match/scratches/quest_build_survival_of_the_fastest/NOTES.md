@@ -40,3 +40,17 @@ into stores. Fixed-count, combined-setter, and corner-vector-constructor
 spellings all regressed materially; the latter changed the frame from 12 to 20
 bytes. No volatile state, dummy dependencies, or register-forcing constructs
 are used.
+
+## Cursor type recovery
+
+The native loops intentionally advance pointers rooted at each entry's
+`trigger_time_ms` field, so their negative indices are genuine interior-cursor
+accesses rather than missing `quest_spawn_entry_t` base types. The five
+phase cursors are now saved as named `int32_t *` locals in Binary Ninja.
+
+The final four fixed-corner pointers are different: each points to a complete
+entry, but Binary Ninja had degraded all four to `int32_t *`. Address-keyed
+local annotations recover them as `quest_spawn_entry_t *`, and live readback
+now renders `pos_x`, `pos_y`, `template_id`, `trigger_time_ms`, and `count`
+for every corner. This is presentation-only and leaves the 62.02% candidate
+and its reference audit unchanged.

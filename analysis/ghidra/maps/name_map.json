@@ -3088,7 +3088,54 @@
     "address": "0x00437060",
     "name": "quest_build_survival_of_the_fastest",
     "signature": "void quest_build_survival_of_the_fastest(quest_spawn_entry_t *entries, int *count)",
-    "comment": "quest builder for Tier 2 Quest 7 (Survival Of The Fastest)"
+    "comment": "quest builder for Tier 2 Quest 7 (Survival Of The Fastest)",
+    "local_types": [
+      {
+        "address": "0x00437085",
+        "name": "east_trigger_cursor",
+        "type": "int32_t *"
+      },
+      {
+        "address": "0x004370e2",
+        "name": "south_trigger_cursor",
+        "type": "int32_t *"
+      },
+      {
+        "address": "0x00437173",
+        "name": "west_trigger_cursor",
+        "type": "int32_t *"
+      },
+      {
+        "address": "0x00437203",
+        "name": "north_trigger_cursor",
+        "type": "int32_t *"
+      },
+      {
+        "address": "0x00437288",
+        "name": "inner_east_trigger_cursor",
+        "type": "int32_t *"
+      },
+      {
+        "address": "0x004372e8",
+        "name": "corner_top_left",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x00437336",
+        "name": "corner_top_right",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x00437367",
+        "name": "corner_bottom_left",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x00437396",
+        "name": "corner_bottom_right",
+        "type": "quest_spawn_entry_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
