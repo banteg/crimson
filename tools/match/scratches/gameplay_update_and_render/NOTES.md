@@ -34,3 +34,7 @@ that staged player-0 value rather than reconstructing the active record from
 the later live player state.
 
 MSVC 6.5 matches all 713 instructions and all 291 references exactly.
+
+The perk-prompt hit test now represents its relative mouse position as a
+`vec2f_t` local. Named component assignments and bounds checks replace the raw
+two-float array while preserving that complete exact match.

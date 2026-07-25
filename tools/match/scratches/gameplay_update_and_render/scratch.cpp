@@ -235,9 +235,9 @@ extern "C" void gameplay_update_and_render(void)
         && (player_state_table[0].health > 0.0f
             || (config_blob.player_count == 2
                 && player_state_table[1].health > 0.0f))) {
-        float relative_mouse[2];
-        relative_mouse[0] = ui_mouse_x - perk_prompt_origin_x;
-        relative_mouse[1] = ui_mouse_y - perk_prompt_origin_y;
+        vec2f_t relative_mouse;
+        relative_mouse.x = ui_mouse_x - perk_prompt_origin_x;
+        relative_mouse.y = ui_mouse_y - perk_prompt_origin_y;
 
         if (game_state_pending != GAME_STATE_PERK_SELECTION) {
             if (grim_interface_ptr->grim_is_key_active(config_blob.key_pick_perk)
@@ -249,10 +249,10 @@ extern "C" void gameplay_update_and_render(void)
                     perk_choices_dirty = 0;
                 }
                 game_state_set(GAME_STATE_PERK_SELECTION);
-            } else if (relative_mouse[0] > perk_prompt_bounds_min_x
-                       && relative_mouse[1] > perk_prompt_bounds_min_y
-                       && relative_mouse[0] < perk_prompt_bounds_max_x
-                       && relative_mouse[1] < perk_prompt_bounds_max_y) {
+            } else if (relative_mouse.x > perk_prompt_bounds_min_x
+                       && relative_mouse.y > perk_prompt_bounds_min_y
+                       && relative_mouse.x < perk_prompt_bounds_max_x
+                       && relative_mouse.y < perk_prompt_bounds_max_y) {
                 perk_prompt_hover_active = 1;
                 if (input_primary_just_pressed()) {
                     if (perk_choices_dirty) {
