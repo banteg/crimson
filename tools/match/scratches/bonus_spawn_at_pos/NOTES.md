@@ -29,6 +29,10 @@ The entry initialization also copies through the canonical
 `bonus_entry_t::time.position` aggregate. The aggregate assignment compiles
 identically to the two scalar component stores, preserving the 88.44% WIP.
 
+The spacing scan now reads that same aggregate on every owning bonus record,
+removing its last `time.pos_x`/`time.pos_y` compatibility aliases. The result
+remains 100/99 instructions, 88.44%, and 14/0/0 references.
+
 The remaining mismatch is register-save placement. Native saves `EDI` at entry
 and shrink-wraps the `ESI` save until after the early guard; the calibrated VC6
 compiler saves both registers in the prologue for this clean source. The body
