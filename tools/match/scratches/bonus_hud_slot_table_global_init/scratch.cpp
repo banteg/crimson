@@ -1,14 +1,6 @@
-struct bonus_hud_slot_slide_cpp_t {
-    float slide_x;
-    float field_0x08;
-    float *timer_ptr;
-    float *alt_timer_ptr;
-    char *label;
-    int icon_id;
-    float field_0x1c;
-};
+#include "crimsonland_gameplay.h"
 
-class bonus_hud_slot_cpp_t {
+class bonus_hud_slot_cpp_t : public bonus_hud_slot_t {
 public:
     bonus_hud_slot_cpp_t(void)
     {
@@ -19,10 +11,6 @@ public:
         slide.label = "Empty";
         slide.field_0x08 = 1.0f;
     }
-
-    unsigned char active;
-    unsigned char padding[3];
-    bonus_hud_slot_slide_cpp_t slide;
 };
 
 bonus_hud_slot_cpp_t bonus_hud_slot_table[0x10];

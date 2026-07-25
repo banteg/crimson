@@ -15,3 +15,8 @@ instructions and the queue reference at `0x004912b8`.
 The recovered source uses ordinary C++ value construction and assignment. No
 dummy references, inline assembly, volatile ordering constraints, or dead
 expressions are used.
+
+The loop now walks the canonical `fx_queue_entry_t` array and uses its named
+position, extent, and color members. Only the two small C++ value views remain
+to reproduce the original aggregate assignments. The 42/42 instruction and
+single-reference exact match is unchanged.
