@@ -467,6 +467,56 @@ typedef struct creature_t {
     float anim_phase;
 } creature_t;
 
+// Binary Ninja presentation view for the same 0x98-byte record. The matching
+// view above keeps aggregate aliases used by recovered source, while this flat
+// view prevents array/interior-pointer analysis from degrading ordinary
+// position, velocity, color, and target accesses to `__offset(...)`.
+typedef struct creature_binja_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    int phase_seed;
+    unsigned char state_flag;
+    unsigned char collision_flag;
+    unsigned char _pad1[2];
+    float collision_timer;
+    float lifecycle_stage;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float health;
+    float max_health;
+    float heading;
+    float target_heading;
+    float size;
+    float hit_flash_timer;
+    float tint_r;
+    float tint_g;
+    float tint_b;
+    float tint_a;
+    unsigned char force_target;
+    unsigned char _pad_force_target[3];
+    float target_x;
+    float target_y;
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    unsigned char _pad2[4];
+    int type_id;
+    signed char target_player;
+    unsigned char _pad_target_player[3];
+    int entity_reserved_74;
+    int link_index;
+    float target_offset_x;
+    float target_offset_y;
+    float orbit_angle;
+    creature_orbit_radius_t orbit_radius;
+    int flags;
+    int ai_mode;
+    float anim_phase;
+} creature_binja_t;
+
 typedef struct creature_spawn_slot_t {
     creature_t *owner;
     int count;

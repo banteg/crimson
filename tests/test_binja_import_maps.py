@@ -168,6 +168,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "creature_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "game_status_t",
         object(),
         object(),
@@ -221,6 +226,17 @@ def test_define_or_replace_removes_silent_duplicate_first(monkeypatch):
     ]
 
 
+def test_repo_type_view_overrides_use_flat_decompiler_records():
+    importer = _load_importer()
+
+    assert importer._REPO_TYPE_VIEW_OVERRIDES["projectile_t"] == (
+        "projectile_binja_t"
+    )
+    assert importer._REPO_TYPE_VIEW_OVERRIDES["creature_t"] == (
+        "creature_binja_t"
+    )
+
+
 def test_quest_builder_signature_uses_array_presentation_view():
     importer = _load_importer()
 
@@ -267,6 +283,7 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["effect_uv16"] == "uv2f_t[256]"
     assert types_by_name["fx_queue"] == "fx_queue_entry_t[128]"
     assert types_by_name["particle_pool"] == "particle_t[128]"
+    assert types_by_name["creature_pool"] == "creature_t[384]"
     assert types_by_name["highscore_table"] == "highscore_record_t[100]"
     assert types_by_name["quest_selected_meta"] == "quest_meta_t[50]"
     assert (

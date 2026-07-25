@@ -43,6 +43,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # though allocation stores masked rand() integers and AI converts the
         # member to float explicitly before using it as an orbit phase.
         "creature_t",
+        "creature_binja_t",
         # The status initializer writes the reserved tail as four independent
         # random dwords; retain both that word view and the raw byte span.
         "game_status_t",
@@ -69,6 +70,7 @@ _REPO_TYPE_VIEW_OVERRIDES = {
     # Keep the cursor-oriented compiler view in the matching header, but give
     # Binary Ninja the equivalent flat record so ordinary IL uses field names.
     "projectile_t": "projectile_binja_t",
+    "creature_t": "creature_binja_t",
 }
 
 _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
