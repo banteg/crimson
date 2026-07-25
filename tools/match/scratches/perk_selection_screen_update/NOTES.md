@@ -42,6 +42,11 @@ either retained that four-byte delta or worsened instruction order. No union,
 volatile state, fake reference, or artificial register constraint is used to
 force the native allocation.
 
+The live Binary Ninja local listing independently confirms the native
+40-byte frame and the overlapping two-float local roles. The remaining delta
+is therefore classified as compiler allocation residue rather than missing
+behavior.
+
 The panel anchor now consumes the recovered `ui_element_t::pos` and
 `ui_element_vertex_t::position` aggregates. This type-only cleanup preserves
 the same 314 instructions, 86.94% score, and 117 resolved references.

@@ -23,40 +23,35 @@ The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
 3; Sawed-off Shotgun id 4 has distinct ordinary-runtime recipes and is not the
 mode loadout.
 
-MSVC 6.5 currently produces 378 instructions against the native 378 at an
-86.77% match, with all 141 masked references resolved and no mismatches. The
-remaining broad delta is localized to two honest code-generation differences:
+MSVC 6.5 currently produces 378 instructions against the native 378 at a
+95.24% match, with a 174-instruction exact prefix and all 141 masked references
+resolved. Declaring the perk-assisted readiness flag after aim computation but
+before the normal-readiness test reproduces the native zero-store schedule and
+raises the score from 86.77% without changing behavior or instruction count.
+The remaining delta is localized to one honest code-generation difference:
 the native reuses the same four stack floats with opposite position/velocity
 roles between its two sprite calls, while the straightforward two-vector C++
-keeps each vector in one stable slot; and VC6 schedules the second fire-ready
-flag's zero initialization later than the native. Separate scoped vectors grow
-the frame, while scalar locals lose the required adjacent-vector semantics, so
-this scratch intentionally does not use a layout-only array or other artificial
+keeps each vector in one stable slot. Separate scoped vectors grow the frame,
+while scalar locals lose the required adjacent-vector semantics, so this
+scratch intentionally does not use a layout-only array or other artificial
 constraint to improve the score.
 
-The two muzzle-sprite calls now expose their position and velocity arguments as
-read-only vector aggregates at the shared `fx_spawn_sprite` boundary. This
-keeps the same honest 86.7725% score, exact 378-instruction count, and all 141
-references.
+The two muzzle-sprite calls expose their position and velocity arguments as
+read-only vector aggregates at the shared `fx_spawn_sprite` boundary.
 
-Those two stack values now use canonical `vec2f_t` storage directly, and the
-repeated player-position cursor points at `player_state_t::position`. This
-removes five layout casts without changing the honest WIP result.
+Those two stack values use canonical `vec2f_t` storage directly, and the
+repeated player-position cursor points at `player_state_t::position`.
 
 The shotgun pellet update now names the flat projectile
 `fields.speed_scale` member instead of traversing the matching-only
-`pos.tail.vy` cursor overlay. This source cleanup is byte-neutral: the
-candidate remains 378/378 instructions at 86.77% with all 141 references.
+`pos.tail.vy` cursor overlay.
 
 The player-state accesses now also use the recovered `movement`, `aim`, and
 `position` vector members, and the muzzle sprites use their recovered color
-aggregate. These are source-shape improvements rather than score claims: VC6
-emits the same 378 instructions at 86.7725%, with all 141 references still
-resolved. An explicit byte-local experiment did not move the second readiness
-initialization to the native location, so the semantically appropriate `bool`
-locals remain.
+aggregate. The readiness values remain semantically appropriate `bool` locals;
+only the declaration boundary needed correction to reproduce native
+scheduling.
 
 The final terrain clamp now addresses the selected player's canonical
 `position.x/y` fields directly. This removes the last scalar position aliases
-from the function without changing its 86.77%, 378/378-instruction, 141/0/0
-result.
+from the function.

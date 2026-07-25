@@ -7,7 +7,8 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
     float dy = lhs->y - rhs->y;
     float distance_sq = dx * dx;
     distance_sq += dy * dy;
-    return (float)sqrt(distance_sq);
+    float distance = (float)sqrt(distance_sq);
+    return distance;
 }
 
 extern "C" int creature_find_nearest(

@@ -90,6 +90,7 @@ extern "C" void player_fire_weapon(
                 .angle()
         - 1.57079637f;
 
+    bool perk_fire_ready = false;
     if (player_state_table[render_overlay_player_index].shot_cooldown <= 0.0f
         && player_state_table[render_overlay_player_index].reload_timer
             == 0.0f) {
@@ -97,7 +98,6 @@ extern "C" void player_fire_weapon(
         player_state_table[render_overlay_player_index].reload_active = 0;
     }
 
-    bool perk_fire_ready = false;
     if (player_state_table[render_overlay_player_index].shot_cooldown <= 0.0f
         && player_state_table[render_overlay_player_index].experience > 0
         && (perk_count_get(perk_id_regression_bullets) != 0

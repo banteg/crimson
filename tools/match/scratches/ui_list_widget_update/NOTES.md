@@ -2,7 +2,7 @@
 
 - Native function: `0x0043efc0` (`1420` bytes, `403` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `90.93%`, `402` candidate instructions, `50/0/0`
+- Current result: `98.76%`, `403` candidate instructions, `50/0/0`
   relocation references.
 
 ## Callers
@@ -45,7 +45,14 @@ The recovered helper:
 ## Remaining mismatch
 
 The candidate has the native `0x1c` frame and the same calls, constants,
-branches, state accesses, instruction scale, and references. The residual is a
-single branch-local x87 width spill, an MSVC register choice in down-key
-navigation, and equivalent row-vector expression scheduling. No source padding
-or semantic distortion is used to force those allocator details.
+branches, state accesses, instruction count, and references. Materializing the
+disabled-widget width before clearing `open` is behaviorally equivalent and
+recovers the native branch-local x87 spill. It improves the weighted gap from
+128.77 to 17.62 bytes and the exact prefix from 32 to 119 instructions. Writing
+the down-key clamp directly against `item_count` also recovers the native
+register allocation without changing its bounds.
+
+The residual is the equivalent clamp control-flow lowering (`item_count - 1`
+before comparison versus decrement after comparison) plus row-vector
+expression scheduling. No source padding or semantic distortion is used to
+force those compiler details.

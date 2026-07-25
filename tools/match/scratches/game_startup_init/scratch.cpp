@@ -210,7 +210,7 @@ extern "C" unsigned char game_startup_init(void)
                 }
 
                 grim_interface_ptr->grim_begin_batch();
-                if (startup_splash_timer >= 1.0f
+                if (startup_splash_timer > 1.0f
                     && startup_splash_timer < 2.0f) {
                     grim_interface_ptr->grim_set_color(
                         1.0f,
@@ -223,8 +223,8 @@ extern "C" unsigned char game_startup_init(void)
                             - logo_height / 2),
                         512.0f,
                         (float)logo_height);
-                } else if (startup_splash_timer < 4.0f
-                    && startup_splash_timer >= 2.0f) {
+                } else if (startup_splash_timer >= 2.0f
+                    && startup_splash_timer < 4.0f) {
                     grim_interface_ptr->grim_set_color(
                         1.0f, 1.0f, 1.0f, 1.0f);
                     grim_interface_ptr->grim_draw_quad(
@@ -250,7 +250,7 @@ extern "C" unsigned char game_startup_init(void)
                             - logo_height / 2),
                         512.0f,
                         (float)logo_height);
-                } else if (startup_splash_timer >= 7.0f
+                } else if (startup_splash_timer > 7.0f
                     && startup_splash_timer < 8.0f) {
                     grim_interface_ptr->grim_set_color(
                         1.0f,
@@ -386,7 +386,7 @@ render_loading_screen:
         grim_interface_ptr->grim_draw_text_small_fmt(
             screen_width_f * 0.5f - 246.0f,
             screen_height_f * 0.5f + 32.0f,
-            "Grim GFX: %d/%d",
+            "Grim GFX %d/%d",
             startup_texture_load_stage,
             startup_texture_load_stage_count - 1);
         grim_interface_ptr->grim_draw_text_small_fmt(

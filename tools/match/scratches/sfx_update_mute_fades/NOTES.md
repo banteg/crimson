@@ -7,8 +7,14 @@ negative accumulator on the following check; overshooting the target volume is
 clamped immediately. A non-positive configured volume directly stops the
 primary buffer before the same mute/volume reconciliation.
 
-Current VC6 `/O2 /GB` result: 83.76% (118 target instructions, 116 candidate,
-26 audited references). The remaining delta is compiler shape: native spills
-each newly computed volume to the local and table, pops the x87 value, then
-reloads the local before comparison; the plausible source keeps that value live.
-The target-volume selection also uses the opposite equivalent branch layout.
+Live instructions at `0x0043d6c7..0x0043d6e4` reload the newly computed
+volume, compare it with the configured target, and take the local-volume arm
+when it is less than or unordered. Expressing the clamp as the positive
+`volume >= music_volume` arm preserves that native short-circuit boundary and
+raises the VC6 `/O2 /GB` result from 83.76% to 84.48%. The weighted gap falls
+from 60.7350 to 58.0345 bytes, with 118 target instructions, 114 candidate
+instructions, and all 26 references still audited.
+
+The remaining delta is compiler shape: native spills each newly computed
+volume to the local and table, pops the x87 value, then reloads the local
+before comparison; the plausible source keeps that value live.

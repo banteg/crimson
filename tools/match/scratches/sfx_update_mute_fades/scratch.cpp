@@ -47,10 +47,10 @@ extern "C" void sfx_update_mute_fades(void)
         } else if (sfx_volume_table[i] < config_blob.music_volume) {
             volume = sfx_volume_table[i] + frame_dt;
             sfx_volume_table[i] = volume;
-            if (volume < config_blob.music_volume) {
-                sfx_entry_set_volume(entry, volume);
-            } else {
+            if (volume >= config_blob.music_volume) {
                 sfx_entry_set_volume(entry, config_blob.music_volume);
+            } else {
+                sfx_entry_set_volume(entry, volume);
             }
         } else if (sfx_volume_table[i] > config_blob.music_volume) {
             sfx_entry_set_volume(

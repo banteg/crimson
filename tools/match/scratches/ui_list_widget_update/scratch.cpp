@@ -66,8 +66,8 @@ extern "C" int ui_list_widget_update(
     if (!list->enabled) {
         height = 16.0f;
         list->hovered = 0;
-        list->open = 0;
         width = (float)(max_text_width + 48);
+        list->open = 0;
     } else if (list->open > 0) {
         width = (float)(max_text_width + 48);
         height = (float)(list->item_count * 16 + 24);
@@ -103,9 +103,8 @@ extern "C" int ui_list_widget_update(
                 list->open = 1;
             } else {
                 ++list->active_index;
-                int last_index = list->item_count - 1;
-                if (list->active_index > last_index) {
-                    list->active_index = last_index;
+                if (list->active_index >= list->item_count) {
+                    list->active_index = list->item_count - 1;
                 }
             }
         }

@@ -35,14 +35,22 @@ The recovered callback also includes:
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=93.73% prefix=1/1126 target_insns=1126 candidate_insns=1123 refs=325/0/3
+match=98.93% prefix=1/1126 target_insns=1126 candidate_insns=1126 refs=333/0/0
 first_target=sub esp, 0xc
 first_candidate=sub esp, 0x10
 ```
 
-The remaining differences are compiler source-shape residue: the candidate
-uses a `0x10` local frame instead of the native `0x0c`, and VC6 schedules a few
-x87 comparisons around the two logo fades differently. All recovered behavior
-and callsites are represented. The scratch deliberately leaves those
-differences honest rather than using volatile state, dead expressions, dummy
-references, inline assembly, forced layout, or layout-only control flow.
+The native interval ladder evaluates the second hold phase as
+`timer >= 2 && timer < 4`; preserving that operand order lets VC6 reproduce
+the native overlapping x87 comparisons and raises the candidate from
+93.73%/1123 instructions to 98.93%/1126. Native condition masks also prove
+strict lower bounds at 1 and 7, and the native progress string is
+`"Grim GFX %d/%d"` without a colon. Those corrections eliminate all three
+reference mismatches.
+
+The remaining differences are compiler residue: the candidate uses a `0x10`
+local frame instead of the native `0x0c`, plus one independent x87/vtable-load
+scheduling swap. All recovered behavior and callsites are represented. The
+scratch deliberately leaves those differences honest rather than using
+volatile state, dead expressions, dummy references, inline assembly, forced
+layout, or layout-only control flow.
