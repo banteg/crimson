@@ -1,23 +1,10 @@
 #include "crimsonland_gameplay.h"
 
-struct quest_vec2_t {
-    float x;
-    float y;
-};
-
-struct quest_entry_original_t {
-    quest_vec2_t pos;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
-};
-
 struct quest_spawn_builder_t {
-    quest_entry_original_t *cursor;
+    quest_spawn_entry_t *cursor;
     int count;
 
-    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)
+    quest_spawn_builder_t(quest_spawn_entry_t *spawn_entries)
         : cursor(spawn_entries), count(0) {}
 };
 
@@ -27,7 +14,7 @@ extern "C" void quest_build_the_killing(
     int trigger_time_ms = 2000;
     int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;
     int wave = 0;
-    quest_spawn_builder_t builder((quest_entry_original_t *)entries);
+    quest_spawn_builder_t builder(entries);
 
     while (wave < 10) {
         crt_rand();
@@ -43,8 +30,8 @@ extern "C" void quest_build_the_killing(
         crt_rand();
         int layout = wave % 5;
         if (layout == 0) {
-            builder.cursor->pos.x = (float)(terrain_texture_width + 64);
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
+            builder.cursor->pos_x = (float)(terrain_texture_width + 64);
+            builder.cursor->pos_y = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
@@ -52,8 +39,8 @@ extern "C" void quest_build_the_killing(
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 1) {
-            builder.cursor->pos.x = -64.0f;
-            builder.cursor->pos.y = (float)(terrain_texture_width / 2);
+            builder.cursor->pos_x = -64.0f;
+            builder.cursor->pos_y = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
@@ -61,8 +48,8 @@ extern "C" void quest_build_the_killing(
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 2) {
-            builder.cursor->pos.y = (float)(terrain_texture_width + 64);
-            builder.cursor->pos.x = (float)(terrain_texture_width / 2);
+            builder.cursor->pos_y = (float)(terrain_texture_width + 64);
+            builder.cursor->pos_x = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
@@ -70,8 +57,8 @@ extern "C" void quest_build_the_killing(
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 3) {
-            builder.cursor->pos.y = -64.0f;
-            builder.cursor->pos.x = (float)(terrain_texture_width / 2);
+            builder.cursor->pos_y = -64.0f;
+            builder.cursor->pos_x = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
@@ -79,24 +66,24 @@ extern "C" void quest_build_the_killing(
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 4) {
-            builder.cursor->pos.y = (float)(crt_rand() % 768 + 128);
-            builder.cursor->pos.x = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
             builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 3;
             ++builder.count;
             ++builder.cursor;
 
-            builder.cursor->pos.y = (float)(crt_rand() % 768 + 128);
-            builder.cursor->pos.x = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
             builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
             builder.cursor->trigger_time_ms = trigger_time_ms + 1000;
             builder.cursor->count = 3;
             ++builder.count;
             ++builder.cursor;
 
-            builder.cursor->pos.y = (float)(crt_rand() % 768 + 128);
-            builder.cursor->pos.x = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
+            builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
             builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
             builder.cursor->trigger_time_ms = trigger_time_ms + 2000;
             builder.cursor->count = 3;

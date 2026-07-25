@@ -41,3 +41,7 @@ two register-resident values before spilling wave zero, matching the native
 prologue without an artificial dependency.
 
 The candidate is exact: 173/173 instructions and 14/0/0 audited references.
+
+The cursor/count builder now owns a canonical `quest_spawn_entry_t *` rather
+than a private layout duplicate. Using the flat position fields preserves the
+exact 173-instruction body and all 14 references.
