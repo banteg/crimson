@@ -2624,7 +2624,14 @@
     "address": "0x0042de80",
     "name": "effect_init_entry",
     "signature": "void effect_init_entry(effect_entry_t *entry)",
-    "comment": "initializes an effect entry to default values"
+    "comment": "initializes an effect entry to default values",
+    "local_types": [
+      {
+        "address": "0x0042def0",
+        "name": "vertex_zrhw_cursor",
+        "type": "effect_vertex_zrhw_cursor_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",

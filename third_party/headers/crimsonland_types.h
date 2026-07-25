@@ -810,6 +810,16 @@ typedef struct effect_vertex_t {
     effect_vec2_t tex;
 } effect_vertex_t;
 
+// Interior cursor emitted by VC6 when initializing effect vertices. The
+// cursor starts at one vertex's zrhw and advances by the full 0x1c-byte vertex
+// stride, so its tail overlaps the next vertex's position.
+typedef struct effect_vertex_zrhw_cursor_t {
+    effect_vec2_t zrhw;
+    unsigned int color;
+    effect_vec2_t tex;
+    effect_vec2_t next_pos;
+} effect_vertex_zrhw_cursor_t;
+
 typedef struct effect_entry_t {
     union {
         struct {

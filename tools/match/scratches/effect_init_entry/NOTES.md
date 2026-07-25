@@ -16,3 +16,11 @@ color, and a texture-coordinate vector. Four vertices end at offset 0xb8,
 where the allocator stores the free-list link. Scoping the white color and
 `zrhw` temporaries separately lets the compiler reuse the same 16-byte local,
 which reproduces the native stack frame without volatile or dummy data.
+
+The same loop carries an interior pointer from `vertices[0].zrhw` and advances
+it by the full 0x1c-byte vertex stride. The shared
+`effect_vertex_zrhw_cursor_t` presentation type models that positive-offset
+view explicitly. An address-keyed Binary Ninja local annotation now renders
+the stores as `vertex_zrhw_cursor->color` and
+`vertex_zrhw_cursor->zrhw.{x,y}` instead of leaving the packed color as
+`__offset(0x8)`.
