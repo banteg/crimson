@@ -859,7 +859,15 @@ typedef struct ui_element_vertex_t {
     };
     float z;
     float rhw;
-    unsigned int color;
+    union {
+        unsigned int color;
+        struct {
+            unsigned char color_b;
+            unsigned char color_g;
+            unsigned char color_r;
+            unsigned char color_a;
+        };
+    };
     float u;
     float v;
 } ui_element_vertex_t;
@@ -871,10 +879,34 @@ typedef struct ui_menu_item_subtemplate_slot_t {
     float y;
     float z;
     float rhw;
-    unsigned int color;
+    union {
+        unsigned int color;
+        struct {
+            unsigned char color_b;
+            unsigned char color_g;
+            unsigned char color_r;
+            unsigned char color_a;
+        };
+    };
     float u;
     float v;
 } ui_menu_item_subtemplate_slot_t;
+
+// Binary Ninja presentation view for the same 0x1c-byte vertex. The packed
+// dword remains canonical for matching, while this flat byte view lets alpha
+// induction loops render as `color_a` instead of `color + 3`.
+typedef struct ui_menu_item_subtemplate_slot_binja_t {
+    float x;
+    float y;
+    float z;
+    float rhw;
+    unsigned char color_b;
+    unsigned char color_g;
+    unsigned char color_r;
+    unsigned char color_a;
+    float u;
+    float v;
+} ui_menu_item_subtemplate_slot_binja_t;
 
 // 0xe8-byte menu item subtemplate payload:
 // 8 slots (8 * 0x1c = 0xe0) + texture handle (+0xe0) + quad mode (+0xe4).

@@ -37,6 +37,15 @@ The map importer deliberately refreshes this authoritative record instead of
 preserving an older complete-but-anonymous database definition, so the two
 alpha cursors begin at named `color` fields rather than `field_0x10`.
 
+Packed vertex colors now expose their little-endian BGRA bytes alongside the
+existing dword alias, so all three source cursors begin at a named `color_a`
+field rather than casting `color + 3`. The enabled-overlay loop's remaining
+back-reference is expressed as one subtemplate block plus one vertex stride,
+which is the native single-cursor lowering. A direct indexed two-array loop
+compiled to 510 instructions and regressed to 82.25%, so it is not retained.
+The typed form preserves 515/521 instructions, 83.3977%, and `59/0/0`
+references exactly.
+
 The small residual is code-generation shape: VC6 keeps a temporary for the
 seven-pixel Y coordinate in each offset-shadow submission and schedules
 otherwise equivalent vertex-call arguments differently. Introducing an

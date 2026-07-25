@@ -67,6 +67,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # the recovered z/rhw/color/u/v members in sync with the canonical
         # header instead of preserving older field_0xNN database members.
         "ui_menu_item_subtemplate_slot_t",
+        "ui_menu_item_subtemplate_slot_binja_t",
     },
 )
 
@@ -78,6 +79,9 @@ _REPO_TYPE_VIEW_OVERRIDES = {
     "creature_t": "creature_binja_t",
     "particle_t": "particle_binja_t",
     "fx_queue_entry_t": "fx_queue_entry_binja_t",
+    "ui_menu_item_subtemplate_slot_t": (
+        "ui_menu_item_subtemplate_slot_binja_t"
+    ),
 }
 
 _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {

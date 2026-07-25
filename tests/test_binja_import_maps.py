@@ -217,6 +217,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
         object(),
     )
+    assert importer._should_replace_repo_type(
+        "ui_menu_item_subtemplate_slot_binja_t",
+        object(),
+        object(),
+    )
     assert not importer._should_replace_repo_type(
         "unrelated_complete_type",
         object(),
@@ -256,6 +261,9 @@ def test_repo_type_view_overrides_use_flat_decompiler_records():
     assert importer._REPO_TYPE_VIEW_OVERRIDES["fx_queue_entry_t"] == (
         "fx_queue_entry_binja_t"
     )
+    assert importer._REPO_TYPE_VIEW_OVERRIDES[
+        "ui_menu_item_subtemplate_slot_t"
+    ] == ("ui_menu_item_subtemplate_slot_binja_t")
 
 
 def test_quest_builder_signature_uses_array_presentation_view():

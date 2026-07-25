@@ -75,14 +75,14 @@ extern "C" void ui_element_render(ui_element_t *element)
         }
         if (!element->on_activate) {
             unsigned char *color_alpha =
-                (unsigned char *)&element->overlay_vertices[0].color + 3;
+                &element->overlay_vertices[0].color_a;
             for (int vertex = 0; vertex < 4; ++vertex) {
                 *color_alpha = 200;
                 color_alpha += sizeof(ui_element_vertex_t);
             }
         } else {
             unsigned char *color_alpha =
-                (unsigned char *)&element->overlay_vertices[0].color + 3;
+                &element->overlay_vertices[0].color_a;
             int remaining_vertices = 4;
             do {
                 color_alpha += sizeof(ui_element_vertex_t);
@@ -250,11 +250,13 @@ extern "C" void ui_element_render(ui_element_t *element)
     if (element->time_since_ready >= 0
         && element->time_since_ready <= 0xff) {
         unsigned char *enabled_alpha =
-            (unsigned char *)&element->enabled_overlay_vertices[0].color + 3;
+            &element->enabled_overlay_vertices[0].color_a;
         int remaining_vertices = 4;
         do {
             enabled_alpha += sizeof(ui_element_vertex_t);
-            *(enabled_alpha - 0x104) = (unsigned char)(
+            *(enabled_alpha
+              - sizeof(ui_menu_item_subtemplate_block_t)
+              - sizeof(ui_element_vertex_t)) = (unsigned char)(
                 255 - element->time_since_ready / 2);
             --remaining_vertices;
             *(enabled_alpha - sizeof(ui_element_vertex_t)) =
