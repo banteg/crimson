@@ -912,11 +912,23 @@ def _apply_analysis_skip_override(func, policy: str) -> bool:
 
     current = func.analysis_skip_override
     desired = type(current).NeverSkipFunctionAnalysis
-    if current == desired:
-        return False
-    func.analysis_skip_override = desired
-    func.reanalyze()
-    return True
+    changed = current != desired
+    if changed:
+        func.analysis_skip_override = desired
+
+    # The skip override prevents Binary Ninja from discarding fresh IL, but a
+    # large function whose advanced analysis was already released still needs
+    # an explicit retention request before reanalysis. Keep exactly one live
+    # request so replaying the map remains idempotent.
+    analysis_missing = func.llil_if_available is None
+    advanced_requests = getattr(func, "_advanced_analysis_requests", 0)
+    requested = analysis_missing and advanced_requests == 0
+    if requested:
+        func.request_advanced_analysis_data()
+
+    if changed or requested:
+        func.reanalyze()
+    return changed or requested
 
 
 def _read_instruction_info(bv, func):

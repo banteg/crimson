@@ -93,6 +93,22 @@ first_target=jne L3f7a
 first_candidate=jne L3d5a
 ```
 
+## Binary Ninja control-flow retention
+
+The saved database had released all advanced analysis for this 16,257-byte
+function: its 485 disassembly basic blocks remained, but LLIL, MLIL, and HLIL
+were all unavailable. A `never_skip` override alone did not rebuild them after
+reanalyzing. Binary Ninja also requires one live
+`request_advanced_analysis_data()` retention request for a function whose IL
+has already been released.
+
+The map importer now makes that request exactly once when a `never_skip`
+function has no LLIL, then reanalyzes it. The `player_update` map row durably
+opts into that policy. A live replay restores LLIL, MLIL, and HLIL for the
+complete 485-block player simulation, including its movement, targeting,
+reload, perk, and weapon-dispatch branches, without changing source or matcher
+results.
+
 Two additional type/source-shape leads were measured after the movement
 recovery and rejected. Declaring the four alternate movement/turn key globals
 as bytes follows several native byte loads, but VC6 adds eight zero-extension

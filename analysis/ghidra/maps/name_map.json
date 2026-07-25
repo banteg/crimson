@@ -1556,6 +1556,7 @@
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
+    "analysis_skip_override": "never_skip",
     "local_types": [
       {
         "address": "0x004136ed",

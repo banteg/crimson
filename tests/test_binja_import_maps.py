@@ -533,7 +533,13 @@ def test_analysis_skip_override_is_idempotent():
             self.analysis_skip_override = (
                 AnalysisOverride.DefaultFunctionAnalysis
             )
+            self.llil_if_available = None
+            self._advanced_analysis_requests = 0
             self.reanalysis_count = 0
+
+        def request_advanced_analysis_data(self):
+            self._advanced_analysis_requests += 1
+            self.llil_if_available = object()
 
         def reanalyze(self):
             self.reanalysis_count += 1
@@ -545,6 +551,7 @@ def test_analysis_skip_override_is_idempotent():
         "never_skip",
     )
     assert function.reanalysis_count == 1
+    assert function._advanced_analysis_requests == 1
     assert (
         function.analysis_skip_override
         == AnalysisOverride.NeverSkipFunctionAnalysis
@@ -554,6 +561,7 @@ def test_analysis_skip_override_is_idempotent():
         "never_skip",
     )
     assert function.reanalysis_count == 1
+    assert function._advanced_analysis_requests == 1
 
 
 def test_apply_function_local_types_is_idempotent(monkeypatch):
@@ -727,6 +735,7 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "bonus_pick_random_type",
         "player_start_reload",
         "player_heading_approach_target",
+        "player_update",
         "projectile_update",
         "creature_spawn_template",
         "terrain_generate",
