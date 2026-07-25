@@ -38,9 +38,9 @@ those scoped `REFERENCE_ALIASES`.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 1,164 normalized instructions against 1,168 native,
-scores 86.45%, and audits 429 references as resolved, zero as unresolved, and
-9 as mismatched within nonmatching instruction regions. The remaining broad
+The verified VC6 build is 1,165 normalized instructions against 1,168 native,
+scores 86.50%, and audits 437 references as resolved, zero as unresolved, and
+2 as mismatched within nonmatching instruction regions. The remaining broad
 delta is register/stack allocation: native uses a 24-byte frame and caches the
 working coordinates in `edi`/`ebp`, while the natural reconstruction uses a
 32-byte frame for separately named panel, button, and record positions and
@@ -57,8 +57,11 @@ references, and raises the score from 85.59% without changing the frame or
 instruction count.
 
 The panel geometry now uses the recovered UI element and vertex position
-aggregates. This type-only cleanup preserves the 1,164/1,168 instruction
-build, 86.45% score, and 429/0/9 reference audit.
+aggregates in native operand order. The post-record spacing remains visibly
+split into its native 78- and 6-pixel additions, and the button alpha stores
+follow the native high-scores/play-next schedule. Together these source-shape
+recoveries move the build to 1,165/1,168 instructions, 86.4981%, and a
+437/0/2 reference audit without hiding either remaining mismatch.
 
 The quest-results name editor is now imported as its 32-byte character array,
 and the compiler-generated zero-based scan variable at `0x0041184d` is

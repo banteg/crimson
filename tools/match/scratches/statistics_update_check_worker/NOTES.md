@@ -3,7 +3,7 @@
 Native target: `crimsonland.exe` at `0x0042d8a0` (1364 bytes).
 
 Work in progress: 69.95% normalized match, 21/361-instruction exact prefix,
-371 candidate instructions, and 101/1/0 reference audit.
+371 candidate instructions, and 102/0/0 reference audit.
 
 Live Binary Ninja evidence and the MSVC candidate recover the complete worker:
 
@@ -32,3 +32,10 @@ Natural scope, initializer, loop, failure-label, and MSVC 6.6 variants were
 tested; the retained source has the best aligned reference audit and avoids
 padding, byte-by-byte source spelling, volatility, or artificial register
 constraints.
+
+The former unresolved `_sscanf` relocation is now scoped to native
+`FUN_00462ba0`. Live Binary Ninja shows the sole call from this worker, the
+native cdecl varargs wrapper, and its handoff to the CRT scanning core; the
+callsite passes the recovered `Crimsonland %d.%d.%d<` format and three integer
+outputs. The alias therefore resolves the same callee rather than masking an
+unknown reference.

@@ -1031,10 +1031,10 @@ extern "C" void player_update(void)
     }
 
     if (perk_count_get(perk_id_alternate_weapon) != 0) {
-        if ((player_alt_weapon_swap_cooldown_ms < 1
+        if ((player_alt_weapon_swap_cooldown_ms <= 0
                 || (player_alt_weapon_swap_cooldown_ms =
                         player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
-                    player_alt_weapon_swap_cooldown_ms < 1))
+                    player_alt_weapon_swap_cooldown_ms <= 0))
             && grim_interface_ptr->grim_is_key_active(config_key_reload)) {
             int swap_weapon_id = player->alt_weapon_id;
             player->alt_weapon_id = player->weapon_id;
@@ -1076,8 +1076,9 @@ extern "C" void player_update(void)
     }
 
     if ((normal_fire_ready || perk_fire_ready)
-        && (grim_interface_ptr->grim_is_key_active(player->input.fire_key)
-            || auto_fire)) {
+        && (movement_heading = player->aim_heading,
+            grim_interface_ptr->grim_is_key_active(player->input.fire_key)
+                || auto_fire)) {
         int owner_id;
         survival_reward_fire_seen = 1;
 
@@ -1102,7 +1103,6 @@ extern "C" void player_update(void)
             }
         }
 
-        movement_heading = player->aim_heading;
         angle_step = movement_heading - 1.5707964f;
         scalar = angle_step - 0.150915f;
         movement_input.x = (float)cos(scalar) * 16.0f;

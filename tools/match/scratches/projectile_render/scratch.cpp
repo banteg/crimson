@@ -181,7 +181,8 @@ extern "C" void projectile_render(float transition_alpha)
          projectile_index < 0x60;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
-        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
+        projectile_vel_y_block_t *tail = &projectile->pos.tail.vy;
+        projectile_type_id_t type_id = tail->type_id;
         if (!projectile->active
             || !((int)type_id <= 7
                 || type_id == PROJECTILE_TYPE_SPLITTER_GUN)) {
@@ -192,7 +193,7 @@ extern "C" void projectile_render(float transition_alpha)
         }
 
         float alpha = projectile_render_clamp(
-            projectile->pos.tail.vy.life_timer);
+            tail->life_timer);
         grim_interface_ptr->grim_set_color_slot(
             2, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);
         grim_interface_ptr->grim_set_color_slot(
@@ -307,7 +308,8 @@ extern "C" void projectile_render(float transition_alpha)
          projectile_index < 0x60;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
-        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
+        projectile_pos_y_block_t *plasma = &projectile->pos;
+        projectile_type_id_t type_id = plasma->tail.vy.type_id;
         if (!projectile->active
             || !(type_id == PROJECTILE_TYPE_PLASMA_RIFLE
                 || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN
@@ -317,9 +319,266 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        float life = projectile->pos.tail.vy.life_timer;
-        if (life != 0.4f) {
-            float fade = projectile_render_clamp(life * 2.5f);
+        if (plasma->tail.vy.life_timer == 0.4f) {
+            if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE) {
+                float dx = projectile->pos.origin_x - projectile->pos_x;
+                float dy = projectile->pos.tail.origin_y
+                    - projectile->pos.pos_y;
+                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int divisor_i = (int)(
+                    plasma->tail.vy.speed_scale * 2.5f);
+                int segment_count = distance_i / divisor_i;
+                if (segment_count > 8) {
+                    segment_count = 8;
+                }
+
+                float heading = projectile->angle + 1.5707964f;
+                float step_x = (float)cos(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.5f;
+                float step_y = (float)sin(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.5f;
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
+                for (int segment_index = 0;
+                     segment_index < segment_count;
+                     ++segment_index) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x
+                            + (float)segment_index * step_x
+                            - 11.0f,
+                        camera_offset_y + projectile->pos.pos_y
+                            + (float)segment_index * step_y
+                            - 11.0f,
+                        22.0f,
+                        22.0f);
+                }
+
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
+                grim_interface_ptr->grim_draw_quad(
+                    camera_offset_x + projectile->pos_x - 28.0f,
+                    camera_offset_y + projectile->pos.pos_y - 28.0f,
+                    56.0f,
+                    56.0f);
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.3f);
+                if (config_blob.fx_detail_flag1) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x - 128.0f,
+                        camera_offset_y + projectile->pos.pos_y - 128.0f,
+                        256.0f,
+                        256.0f);
+                }
+            } else if (type_id == PROJECTILE_TYPE_PLASMA_MINIGUN) {
+                float dx = projectile->pos.origin_x - projectile->pos_x;
+                float dy = projectile->pos.tail.origin_y
+                    - projectile->pos.pos_y;
+                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int divisor_i = (int)(
+                    plasma->tail.vy.speed_scale * 2.1f);
+                int segment_count = distance_i / divisor_i;
+                if (segment_count > 3) {
+                    segment_count = 3;
+                }
+
+                float heading = projectile->angle + 1.5707964f;
+                float step_x = (float)cos(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                float step_y = (float)sin(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
+                for (int segment_index = 0;
+                     segment_index < segment_count;
+                     ++segment_index) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x
+                            + (float)segment_index * step_x
+                            - 6.0f,
+                        camera_offset_y + projectile->pos.pos_y
+                            + (float)segment_index * step_y
+                            - 6.0f,
+                        12.0f,
+                        12.0f);
+                }
+
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
+                grim_interface_ptr->grim_draw_quad(
+                    camera_offset_x + projectile->pos_x - 8.0f,
+                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    16.0f,
+                    16.0f);
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.15f);
+                if (config_blob.fx_detail_flag1) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x - 60.0f,
+                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        120.0f,
+                        120.0f);
+                }
+            } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
+                float dx = projectile->pos.origin_x - projectile->pos_x;
+                float dy = projectile->pos.tail.origin_y
+                    - projectile->pos.pos_y;
+                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int divisor_i = (int)(
+                    plasma->tail.vy.speed_scale * 3.5f);
+                int segment_count = distance_i / divisor_i;
+                if (segment_count > 18) {
+                    segment_count = 18;
+                }
+
+                float heading = projectile->angle + 1.5707964f;
+                float step_x = (float)cos(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.6f;
+                float step_y = (float)sin(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.6f;
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
+                for (int segment_index = 0;
+                     segment_index < segment_count;
+                     ++segment_index) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x
+                            + (float)segment_index * step_x
+                            - 22.0f,
+                        camera_offset_y + projectile->pos.pos_y
+                            + (float)segment_index * step_y
+                            - 22.0f,
+                        44.0f,
+                        44.0f);
+                }
+
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
+                grim_interface_ptr->grim_draw_quad(
+                    camera_offset_x + projectile->pos_x - 42.0f,
+                    camera_offset_y + projectile->pos.pos_y - 42.0f,
+                    84.0f,
+                    84.0f);
+                grim_interface_ptr->grim_set_color(
+                    1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
+                if (config_blob.fx_detail_flag1) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x - 128.0f,
+                        camera_offset_y + projectile->pos.pos_y - 128.0f,
+                        256.0f,
+                        256.0f);
+                }
+            } else if (type_id == PROJECTILE_TYPE_SPIDER_PLASMA) {
+                float dx = projectile->pos.origin_x - projectile->pos_x;
+                float dy = projectile->pos.tail.origin_y
+                    - projectile->pos.pos_y;
+                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int divisor_i = (int)(
+                    plasma->tail.vy.speed_scale * 2.1f);
+                int segment_count = distance_i / divisor_i;
+                if (segment_count > 3) {
+                    segment_count = 3;
+                }
+
+                float heading = projectile->angle + 1.5707964f;
+                float step_x = (float)cos(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                float step_y = (float)sin(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 1.0f, 0.3f, transition_alpha * 0.4f);
+                for (int segment_index = 0;
+                     segment_index < segment_count;
+                     ++segment_index) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x
+                            + (float)segment_index * step_x
+                            - 6.0f,
+                        camera_offset_y + projectile->pos.pos_y
+                            + (float)segment_index * step_y
+                            - 6.0f,
+                        12.0f,
+                        12.0f);
+                }
+
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 1.0f, 0.3f, transition_alpha * 0.45f);
+                grim_interface_ptr->grim_draw_quad(
+                    camera_offset_x + projectile->pos_x - 8.0f,
+                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    16.0f,
+                    16.0f);
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 1.0f, 0.3f, transition_alpha * 0.15f);
+                if (config_blob.fx_detail_flag1) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x - 60.0f,
+                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        120.0f,
+                        120.0f);
+                }
+            } else {
+                float dx = projectile->pos.origin_x - projectile->pos_x;
+                float dy = projectile->pos.tail.origin_y
+                    - projectile->pos.pos_y;
+                int distance_i = (int)sqrt(dx * dx + dy * dy);
+                int divisor_i = (int)(
+                    plasma->tail.vy.speed_scale * 2.1f);
+                int segment_count = distance_i / divisor_i;
+                if (segment_count > 3) {
+                    segment_count = 3;
+                }
+
+                float heading = projectile->angle + 1.5707964f;
+                float step_x = (float)cos(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                float step_y = (float)sin(heading)
+                    * plasma->tail.vy.speed_scale
+                    * 2.1f;
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 0.3f, 1.0f, transition_alpha * 0.4f);
+                for (int segment_index = 0;
+                     segment_index < segment_count;
+                     ++segment_index) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x
+                            + (float)segment_index * step_x
+                            - 6.0f,
+                        camera_offset_y + projectile->pos.pos_y
+                            + (float)segment_index * step_y
+                            - 6.0f,
+                        12.0f,
+                        12.0f);
+                }
+
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 0.3f, 1.0f, transition_alpha * 0.45f);
+                grim_interface_ptr->grim_draw_quad(
+                    camera_offset_x + projectile->pos_x - 8.0f,
+                    camera_offset_y + projectile->pos.pos_y - 8.0f,
+                    16.0f,
+                    16.0f);
+                grim_interface_ptr->grim_set_color(
+                    0.3f, 0.3f, 1.0f, transition_alpha * 0.15f);
+                if (config_blob.fx_detail_flag1) {
+                    grim_interface_ptr->grim_draw_quad(
+                        camera_offset_x + projectile->pos_x - 60.0f,
+                        camera_offset_y + projectile->pos.pos_y - 60.0f,
+                        120.0f,
+                        120.0f);
+                }
+            }
+        } else {
+            float fade = projectile_render_clamp(
+                plasma->tail.vy.life_timer * 2.5f);
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, fade * transition_alpha);
             grim_interface_ptr->grim_draw_quad(
@@ -327,264 +586,6 @@ extern "C" void projectile_render(float transition_alpha)
                 camera_offset_y + projectile->pos.pos_y - 28.0f,
                 56.0f,
                 56.0f);
-            continue;
-        }
-
-        if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE) {
-            float dx = projectile->pos.origin_x - projectile->pos_x;
-            float dy = projectile->pos.tail.origin_y
-                - projectile->pos.pos_y;
-            int distance_i = (int)sqrt(dx * dx + dy * dy);
-            int divisor_i = (int)(
-                projectile->pos.tail.vy.speed_scale * 2.5f);
-            int segment_count = distance_i / divisor_i;
-            if (segment_count > 8) {
-                segment_count = 8;
-            }
-
-            float heading = projectile->angle + 1.5707964f;
-            float step_x = (float)cos(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.5f;
-            float step_y = (float)sin(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.5f;
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-            for (int segment_index = 0;
-                 segment_index < segment_count;
-                 ++segment_index) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        + (float)segment_index * step_x
-                        - 11.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        + (float)segment_index * step_y
-                        - 11.0f,
-                    22.0f,
-                    22.0f);
-            }
-
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
-            grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 28.0f,
-                camera_offset_y + projectile->pos.pos_y - 28.0f,
-                56.0f,
-                56.0f);
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.3f);
-            if (config_blob.fx_detail_flag1) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 128.0f,
-                    camera_offset_y + projectile->pos.pos_y - 128.0f,
-                    256.0f,
-                    256.0f);
-            }
-        } else if (type_id == PROJECTILE_TYPE_PLASMA_MINIGUN) {
-            float dx = projectile->pos.origin_x - projectile->pos_x;
-            float dy = projectile->pos.tail.origin_y
-                - projectile->pos.pos_y;
-            int distance_i = (int)sqrt(dx * dx + dy * dy);
-            int divisor_i = (int)(
-                projectile->pos.tail.vy.speed_scale * 2.1f);
-            int segment_count = distance_i / divisor_i;
-            if (segment_count > 3) {
-                segment_count = 3;
-            }
-
-            float heading = projectile->angle + 1.5707964f;
-            float step_x = (float)cos(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            float step_y = (float)sin(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-            for (int segment_index = 0;
-                 segment_index < segment_count;
-                 ++segment_index) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        + (float)segment_index * step_x
-                        - 6.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        + (float)segment_index * step_y
-                        - 6.0f,
-                    12.0f,
-                    12.0f);
-            }
-
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
-            grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 8.0f,
-                camera_offset_y + projectile->pos.pos_y - 8.0f,
-                16.0f,
-                16.0f);
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.15f);
-            if (config_blob.fx_detail_flag1) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 60.0f,
-                    camera_offset_y + projectile->pos.pos_y - 60.0f,
-                    120.0f,
-                    120.0f);
-            }
-        } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
-            float dx = projectile->pos.origin_x - projectile->pos_x;
-            float dy = projectile->pos.tail.origin_y
-                - projectile->pos.pos_y;
-            int distance_i = (int)sqrt(dx * dx + dy * dy);
-            int divisor_i = (int)(
-                projectile->pos.tail.vy.speed_scale * 3.5f);
-            int segment_count = distance_i / divisor_i;
-            if (segment_count > 18) {
-                segment_count = 18;
-            }
-
-            float heading = projectile->angle + 1.5707964f;
-            float step_x = (float)cos(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.6f;
-            float step_y = (float)sin(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.6f;
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-            for (int segment_index = 0;
-                 segment_index < segment_count;
-                 ++segment_index) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        + (float)segment_index * step_x
-                        - 22.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        + (float)segment_index * step_y
-                        - 22.0f,
-                    44.0f,
-                    44.0f);
-            }
-
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.45f);
-            grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 42.0f,
-                camera_offset_y + projectile->pos.pos_y - 42.0f,
-                84.0f,
-                84.0f);
-            grim_interface_ptr->grim_set_color(
-                1.0f, 1.0f, 1.0f, transition_alpha * 0.4f);
-            if (config_blob.fx_detail_flag1) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 128.0f,
-                    camera_offset_y + projectile->pos.pos_y - 128.0f,
-                    256.0f,
-                    256.0f);
-            }
-        } else if (type_id == PROJECTILE_TYPE_SPIDER_PLASMA) {
-            float dx = projectile->pos.origin_x - projectile->pos_x;
-            float dy = projectile->pos.tail.origin_y
-                - projectile->pos.pos_y;
-            int distance_i = (int)sqrt(dx * dx + dy * dy);
-            int divisor_i = (int)(
-                projectile->pos.tail.vy.speed_scale * 2.1f);
-            int segment_count = distance_i / divisor_i;
-            if (segment_count > 3) {
-                segment_count = 3;
-            }
-
-            float heading = projectile->angle + 1.5707964f;
-            float step_x = (float)cos(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            float step_y = (float)sin(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            grim_interface_ptr->grim_set_color(
-                0.3f, 1.0f, 0.3f, transition_alpha * 0.4f);
-            for (int segment_index = 0;
-                 segment_index < segment_count;
-                 ++segment_index) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        + (float)segment_index * step_x
-                        - 6.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        + (float)segment_index * step_y
-                        - 6.0f,
-                    12.0f,
-                    12.0f);
-            }
-
-            grim_interface_ptr->grim_set_color(
-                0.3f, 1.0f, 0.3f, transition_alpha * 0.45f);
-            grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 8.0f,
-                camera_offset_y + projectile->pos.pos_y - 8.0f,
-                16.0f,
-                16.0f);
-            grim_interface_ptr->grim_set_color(
-                0.3f, 1.0f, 0.3f, transition_alpha * 0.15f);
-            if (config_blob.fx_detail_flag1) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 60.0f,
-                    camera_offset_y + projectile->pos.pos_y - 60.0f,
-                    120.0f,
-                    120.0f);
-            }
-        } else {
-            float dx = projectile->pos.origin_x - projectile->pos_x;
-            float dy = projectile->pos.tail.origin_y
-                - projectile->pos.pos_y;
-            int distance_i = (int)sqrt(dx * dx + dy * dy);
-            int divisor_i = (int)(
-                projectile->pos.tail.vy.speed_scale * 2.1f);
-            int segment_count = distance_i / divisor_i;
-            if (segment_count > 3) {
-                segment_count = 3;
-            }
-
-            float heading = projectile->angle + 1.5707964f;
-            float step_x = (float)cos(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            float step_y = (float)sin(heading)
-                * projectile->pos.tail.vy.speed_scale
-                * 2.1f;
-            grim_interface_ptr->grim_set_color(
-                0.3f, 0.3f, 1.0f, transition_alpha * 0.4f);
-            for (int segment_index = 0;
-                 segment_index < segment_count;
-                 ++segment_index) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x
-                        + (float)segment_index * step_x
-                        - 6.0f,
-                    camera_offset_y + projectile->pos.pos_y
-                        + (float)segment_index * step_y
-                        - 6.0f,
-                    12.0f,
-                    12.0f);
-            }
-
-            grim_interface_ptr->grim_set_color(
-                0.3f, 0.3f, 1.0f, transition_alpha * 0.45f);
-            grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 8.0f,
-                camera_offset_y + projectile->pos.pos_y - 8.0f,
-                16.0f,
-                16.0f);
-            grim_interface_ptr->grim_set_color(
-                0.3f, 0.3f, 1.0f, transition_alpha * 0.15f);
-            if (config_blob.fx_detail_flag1) {
-                grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + projectile->pos_x - 60.0f,
-                    camera_offset_y + projectile->pos.pos_y - 60.0f,
-                    120.0f,
-                    120.0f);
-            }
         }
     }
     grim_interface_ptr->grim_end_batch();
@@ -600,18 +601,19 @@ extern "C" void projectile_render(float transition_alpha)
          projectile_index < 0x60;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
+        projectile_tail_t *primary = &projectile->pos.tail;
         if (!projectile->active) {
             continue;
         }
-        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
-        float life = projectile->pos.tail.vy.life_timer;
+        projectile_type_id_t type_id = primary->vy.type_id;
+        float life = primary->vy.life_timer;
 
         if (type_id == PROJECTILE_TYPE_PULSE_GUN) {
             grim_interface_ptr->grim_set_rotation(projectile->angle);
             grim_interface_ptr->grim_set_atlas_frame(2, 0);
-            if (life == 0.4f) {
-                float dx = projectile->pos.tail.vel_x;
-                float dy = projectile->pos.tail.vy.vel_y;
+            if (primary->vy.life_timer == 0.4f) {
+                float dx = primary->vel_x;
+                float dy = primary->vy.vel_y;
                 float pulse_scale = (float)sqrt(dx * dx + dy * dy) * 0.01f;
                 grim_interface_ptr->grim_set_color(
                     0.1f, 0.6f, 0.2f, transition_alpha * 0.7f);
@@ -637,11 +639,11 @@ extern "C" void projectile_render(float transition_alpha)
 
         if (type_id == PROJECTILE_TYPE_SPLITTER_GUN
             || type_id == PROJECTILE_TYPE_BLADE_GUN) {
-            if (life != 0.4f) {
+            if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
-            float dx = projectile->pos.tail.vel_x;
-            float dy = projectile->pos.tail.vy.vel_y;
+            float dx = primary->vel_x;
+            float dy = primary->vy.vel_y;
             float size = (float)sqrt(dx * dx + dy * dy);
             if (size > 20.0f) {
                 size = 20.0f;
@@ -674,7 +676,7 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (life == 0.4f) {
+        if (primary->vy.life_timer == 0.4f) {
             float effect_scale;
             if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
                 effect_scale = 1.05f;
@@ -690,7 +692,7 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_atlas_frame(2, 2);
             vec2f_t direction;
             direction.x = projectile->pos.origin_x - projectile->pos_x;
-            direction.y = projectile->pos.tail.origin_y
+            direction.y = primary->origin_y
                 - projectile->pos.pos_y;
             float distance = (float)sqrt(
                 direction.x * direction.x
@@ -755,7 +757,7 @@ extern "C" void projectile_render(float transition_alpha)
 
             vec2f_t direction;
             direction.x = projectile->pos.origin_x - projectile->pos_x;
-            direction.y = projectile->pos.tail.origin_y
+            direction.y = primary->origin_y
                 - projectile->pos.pos_y;
             float distance = (float)sqrt(
                 direction.x * direction.x

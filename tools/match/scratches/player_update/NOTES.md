@@ -92,15 +92,28 @@ evidenced direct player-record access while naming `player_state_t::position`,
 and the Fire Cough smoke velocity uses `effect_template_t::velocity`. A
 whole-function shadow compile is byte-neutral at 4,019/4,206 instructions,
 54.86%, a seven-instruction prefix, and `736/0/11` references. This is type
-recovery only; it does not claim to explain the remaining VC6 allocation
-delta.
+recovery only and remains the baseline before the control-flow recovery below.
+
+Two adjacent source shapes are now pinned by live Binary Ninja instructions.
+Alternate Weapon's debounce at `0x004157da..0x004157f0` tests the integer
+cooldown with `test`/`jle`, subtracts `frame_dt_ms`, stores the result, and
+uses `test`/`jg` to skip the swap while the result stays positive. Expressing
+the two equivalent integer predicates as `<= 0` restores that native branch
+shape. After the normal/perk readiness gate, `0x0041591e..0x00415937`
+snapshots `player->aim_heading` before calling the fire-key input method.
+Sequencing that snapshot after readiness and before the key/auto-fire operand
+preserves the native short-circuit ordering. Together these changes raise the
+score from 54.86% to 55.27%, reduce the weighted gap from 7,338.8743 to
+7,271.6721 bytes, and improve references from `736/0/11` to `742/0/9`,
+without changing the 4,019 candidate instructions or seven-instruction
+prefix.
 
 Current local score:
 
 ```txt
-match=54.86% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=736/0/11
+match=55.27% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=742/0/9
 first_target=jne L3f7a
-first_candidate=jne L3d52
+first_candidate=jne L3d50
 ```
 
 The Fire Cough muzzle sprite at `0x00413c0b..0x00413c38` writes the four

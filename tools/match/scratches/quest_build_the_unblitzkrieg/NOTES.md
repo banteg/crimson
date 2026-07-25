@@ -19,7 +19,7 @@ with `0x07` in every sweep.
 - x=200, y=`824 - offset/10`, triggers 68500 through 74800 by 700;
 - y=200, x=`200 + offset/10`, triggers 75500 through 82700 by 800.
 
-The candidate scores 70.10% with a twelve-instruction exact prefix, exactly
+The candidate scores 75.26% with a twelve-instruction exact prefix, exactly
 291 candidate and native instructions, and no static-reference debt. It
 reproduces the signed division-by-ten lowering, parity-to-template arithmetic,
 24-byte stride, loop limits, count reservation, trigger increments, register
@@ -27,12 +27,15 @@ frame, and final count. In particular, the first sweep advances the live count
 per entry while each later sweep reserves ten entries before looping, matching
 the native `add edi, 0xa` boundaries.
 
+Advancing the independent integer offset immediately after the coordinate
+expressions is semantics-neutral and recovers the native `add ebp, 0x270`
+schedule in most sweeps, improving the fuzzy gap from 291.49 to 241.24 bytes.
 The repeated residual is legal independent-store scheduling. Native VC6 uses
 the `template_id` field as its cursor base, advances that cursor before storing
 template/time/count through negative offsets, and leaves those metadata stores
-until after the x87 coordinate conversion. The candidate uses the record base
-and hoists constant count and trigger stores around the same conversion. A
-metadata-only setter and direct field stores compile identically; encoding a
-negative-field cursor would describe the optimizer rather than plausible game
-source. No volatile state, dummy dependencies, or register-forcing constructs
-are used.
+until after the x87 coordinate conversion. The candidate still hoists some
+constant count and trigger stores around that conversion. A metadata-only
+setter and direct field stores compile identically; a post-incremented spawn
+cursor regresses to 52.97%, and encoding a negative-field cursor would describe
+the optimizer rather than plausible game source. No volatile state, dummy
+dependencies, or register-forcing constructs are used.

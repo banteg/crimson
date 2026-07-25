@@ -123,18 +123,18 @@ extern "C" void quest_select_menu_update(void)
 {
     quest_select_vec2_t panel_position;
     panel_position.x =
-        ui_element_slot_37.vertices[0].position.x
-        + ui_element_slot_37.pos.x;
+        ui_element_slot_37.pos.x
+        + ui_element_slot_37.vertices[0].position.x;
     panel_position.y =
-        ui_element_slot_37.pos.y
-        + ui_element_slot_37.vertices[0].position.y;
+        ui_element_slot_37.vertices[0].position.y
+        + ui_element_slot_37.pos.y;
     panel_position.x += 300.0f;
 
     bool row_hovered = false;
     quest_select_vec2_t position = panel_position;
     position.y += 40.0f;
-    position.x += ui_element_slot_37.render_offset_x;
     position.x += 64.0f;
+    position.x += ui_element_slot_37.render_offset_x;
     position.x -= 145.0f;
     position.y += 4.0f;
 
@@ -191,7 +191,8 @@ extern "C" void quest_select_menu_update(void)
     int hovered_stage = -1;
     int stage = 1;
     int *digit_texture = &ui_digit_1_texture;
-    position.x += 80.0f;
+    position.x += 64.0f;
+    position.x += 16.0f;
     float icon_y = position.y + 3.0f;
     do {
         if (ui_mouse_x <= position.x

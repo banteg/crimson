@@ -168,12 +168,13 @@ extern "C" void mods_menu_update(void)
 
     static mods_scrollbar_t scrollbar;
     position.x += 4.0f;
+    IGrim2D_cpp *renderer = grim_interface_ptr;
     scrollbar.items = mods_menu_item_labels;
     scrollbar.item_count = mods_menu_entry_count;
     scrollbar.visible_rows = 5;
 
     position.y += 6.0f;
-    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
+    renderer->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
     grim_interface_ptr->grim_draw_text_small_fmt(
         position.x, position.y - 14.0f, "list of mods:");
     ui_scrollbar_update((float *)&position, (float *)&scrollbar);

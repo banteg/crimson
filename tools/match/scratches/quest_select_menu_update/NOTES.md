@@ -39,9 +39,10 @@ match.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 784 normalized instructions against 803 native,
-scores 71.08%, and audits 221 references as resolved, zero as unresolved, and
-16 as mismatched inside nonmatching instruction regions. The broad behavior
+The verified VC6 build is 785 normalized instructions against 803 native,
+scores 71.16%, and audits 228 references as resolved, zero as unresolved, and
+10 as mismatched inside nonmatching instruction regions. Its weighted gap
+improves from 993.78 to 990.99 bytes. The broad behavior
 and static-constructor sequence are recovered, but the natural reconstruction
 uses a 56-byte frame while native uses 48 bytes. Native also keeps icon Y and
 row/control constants in a different EBX/EBP/ESI allocation and lays out the
@@ -51,7 +52,12 @@ row labels reduced the match substantially, so those code-generation residuals
 are recorded rather than hidden with match-only shaping.
 
 The panel geometry now uses the recovered UI element and vertex position
-aggregates.
+aggregates in native operand order. Reordering the equivalent commutative
+additions aligns the same four UI-element references without changing
+behavior. Binary Ninja evidence around `0x004481cc` also shows that native adds
+the selected icon's 64- and 16-pixel X offsets separately, rather than folding
+them into 80. Expressing those two additions recovers the missing native
+instruction and produces the small score improvement above.
 
 The successful start path also retains the native selected-row dependency.
 Disassembly at `0x00448a72..0x00448a8f` reloads

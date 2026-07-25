@@ -88,5 +88,19 @@ anchored at `vel_y`, `pos_y`, and `origin_y`. This recovers enum `type_id`,
 `life_timer`, `speed_scale`, origin, velocity, and tail fields without
 pretending that an interior address is a `projectile_t *`. The two secondary
 walks analogously use the `pos_y` block, and only fields physically before
-their cursor remain negative offsets. The callback stays at 43.04%,
-2,839/3,021 instructions, and `325/0/28` references.
+their cursor remain negative offsets.
+
+The recovered source now mirrors the three primary cursor lifetimes with
+`vel_y`, `pos_y`, and `origin_y` views. In particular, the conventional pass
+now emits the native `active - 0x1c`, `type_id + 0x4`, and `life_timer + 0x8`
+layout from its induction pointer. The plasma pass also keeps its live
+`life_timer == 0.4f` body before the faded arm, matching the direct native
+comparison at `0x0042381b` and the fade path beginning at `0x0042407a`.
+Direct primary-life comparisons agree with the corresponding
+`projectile_origin_y_cursor` branches at `0x004241ae` through `0x004244b5`.
+
+These cursor and branch-layout recoveries raise the callback from 43.04% to
+44.84%, reducing the fuzzy gap from 7,149.358 to 6,923.578 bytes. The current
+candidate has 2,818 normalized instructions against 3,021 target instructions,
+with 358 proven, zero unresolved, and 22 mismatched aligned references. The
+native frame remains `0x19c` bytes versus the candidate's honest `0x118` bytes.

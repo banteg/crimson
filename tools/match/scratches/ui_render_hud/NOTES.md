@@ -17,11 +17,14 @@ The dword at `0x004902fc` has exactly one native xref: an unconditional zero
 store immediately before the quest spawn-count accumulation. It is retained as
 `quest_progress_reserved_zero`; no stronger semantics are claimed.
 
-The default VC6.5 `/O2 /GB /W3 /GR-` build scores **84.59%** with the exact
+The default VC6.5 `/O2 /GB /W3 /GR-` build scores **85.64%** with the exact
 native `0x34`-byte stack frame and exact 1,824/1,824 instruction count. The
-reference audit is 381 resolved, 0 unresolved, and 3 mismatched. Those three
-are alignment fallout (one player-table/config read and the two quest-clock
-format strings); no reference is hidden or force-accepted.
+reference audit is 385 resolved, 0 unresolved, and 0 mismatched. Writing the
+quest-clock leading-zero case as the fallthrough branch matches the native
+basic-block order and resolves both clock-format references. Keeping the
+player-zero weapon-id expression inside both icon-layout branches lets VC6
+hoist the common load in the native order, removing the final audit mismatch
+and 73.76 fuzzy-gap bytes. No reference is hidden or force-accepted.
 
 Remaining differences are ordinary old-MSVC register allocation, stack-slot
 coloring, and a few equivalent control-flow layouts. In particular, the
@@ -32,5 +35,5 @@ adding inert match-only scaffolding.
 The HUD ammo-class lookup now names the canonical
 `weapon_storage_entry_t::ammo_class` field instead of multiplying the weapon
 id by a raw 31-dword row stride. The source-only type correction is
-byte-neutral: validation remains 1,824/1,824 instructions at 84.5943% with
-`381/0/3` references.
+byte-neutral. With the branch-order recoveries above, final validation remains
+1,824/1,824 instructions at 85.6360% with `385/0/0` references.

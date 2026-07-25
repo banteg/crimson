@@ -141,11 +141,11 @@ extern "C" void quest_results_screen_update(void)
 
     quest_results_vec2_t panel_xy;
     panel_xy.x =
-        ui_element_slot_35.vertices[0].position.x
-        + ui_element_slot_35.pos.x;
+        ui_element_slot_35.pos.x
+        + ui_element_slot_35.vertices[0].position.x;
     panel_xy.y =
-        ui_element_slot_35.pos.y
-        + ui_element_slot_35.vertices[0].position.y;
+        ui_element_slot_35.vertices[0].position.y
+        + ui_element_slot_35.pos.y;
     panel_xy.x += 180.0f;
 
     quest_results_vec2_t xy = panel_xy;
@@ -502,7 +502,8 @@ show_results:
             &highscore_active_record,
             alpha,
             quest_results_highscore_rank_index + 1);
-        xy.y += 84.0f;
+        xy.y += 78.0f;
+        xy.y += 6.0f;
 
         if (quest_results_unlock_weapon_id != 0) {
             grim_interface_ptr->grim_set_color(
@@ -556,8 +557,8 @@ show_results:
         if (quest_stage_major == 5 && quest_stage_minor == 10) {
             play_next_button.label = "Show End Note";
         }
-        highscores_button.alpha = alpha;
         play_next_button.alpha = alpha;
+        highscores_button.alpha = alpha;
         xy.x += 20.0f;
         play_again_button.alpha = alpha;
         main_menu_button.alpha = alpha;

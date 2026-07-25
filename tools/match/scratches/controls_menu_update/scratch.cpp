@@ -202,8 +202,6 @@ static __forceinline void draw_rebind_row(
 
 extern "C" void controls_menu_update(void)
 {
-    int i = 0;
-
     if (!(controls_menu_init_flags & 1)) {
         controls_menu_init_flags |= 1;
         init_button(controls_redefine_button, nullsub_95);
@@ -324,6 +322,21 @@ extern "C" void controls_menu_update(void)
     config_direction_arrow_flags[controls_rebind_player_index] =
         controls_direction_arrow_checkbox.checked;
 
+    controls_vec2_t right_base(
+        ui_element_slot_40.vertices[0].x
+            + ui_element_slot_40.pos_x
+            + ui_element_slot_40.render_offset_x
+            - 64.0f
+            + 50.0f
+            + 64.0f
+            + 16.0f,
+        ui_element_slot_40.vertices[0].y
+            + ui_element_slot_40.pos_y
+            + 40.0f
+            + 32.0f
+            + 4.0f
+            - 38.0f);
+
     player_input_config_t *binding =
         (player_input_config_t *)config_p1_move_forward;
     player_state_t *player = player_state_table;
@@ -345,21 +358,6 @@ extern "C" void controls_menu_update(void)
         ++binding;
         ++player;
     } while (binding < (player_input_config_t *)config_p1_move_forward + 2);
-
-    controls_vec2_t right_base(
-        ui_element_slot_40.vertices[0].x
-            + ui_element_slot_40.pos_x
-            + ui_element_slot_40.render_offset_x
-            - 64.0f
-            + 50.0f
-            + 64.0f
-            + 16.0f,
-        ui_element_slot_40.vertices[0].y
-            + ui_element_slot_40.pos_y
-            + 40.0f
-            + 32.0f
-            + 4.0f
-            - 38.0f);
 
     grim_interface_ptr->grim_set_color(
         1.0f,
@@ -384,41 +382,53 @@ extern "C" void controls_menu_update(void)
 
     if (!(controls_menu_init_flags & 0x40)) {
         controls_menu_init_flags |= 0x40;
-        for (i = 0; i < 15; ++i) {
-            controls_rebind_items[i].enabled = 1;
-            controls_rebind_items[i].alpha = 1.0f;
-            controls_rebind_items[i].label = 0;
-            controls_rebind_items[i].activated = 0;
-            controls_rebind_items[i].hovered = 0;
-            controls_rebind_items[i].hover_phase = 0.0f;
-        }
+        int item_count = 15;
+        ui_menu_item_t *item = controls_rebind_items;
+        do {
+            item->enabled = 1;
+            item->alpha = 1.0f;
+            item->label = 0;
+            item->activated = 0;
+            item->hovered = 0;
+            item->hover_phase = 0.0f;
+            ++item;
+        } while (--item_count);
         crt_atexit(nullsub_89);
     }
 
-    for (i = 0; i < 15; ++i) {
-        controls_rebind_items[i].activated = 0;
-        controls_rebind_items[i].enabled = 1;
+    {
+        ui_menu_item_t *item = controls_rebind_items;
+        do {
+            item->activated = 0;
+            item->enabled = 1;
+            ++item;
+        } while (item < controls_rebind_items + 15);
     }
 
-    int binding_base = controls_rebind_player_index * 16;
-    for (i = 0; i < 13; ++i) {
+    {
+        int i = 0;
+        int binding_base = controls_rebind_player_index * 16;
+        do {
+            if (controls_rebind_items[i].label) {
+                crt_free(controls_rebind_items[i].label);
+            }
+            controls_rebind_items[i].label =
+                strdup_malloc(controls_key_name(
+                    config_p1_move_forward[binding_base]));
+            ++binding_base;
+            ++i;
+        } while (i < 13);
         if (controls_rebind_items[i].label) {
             crt_free(controls_rebind_items[i].label);
         }
         controls_rebind_items[i].label =
-            strdup_malloc(controls_key_name(
-                config_p1_move_forward[binding_base + i]));
+            strdup_malloc(controls_key_name(config_key_pick_perk));
+        if (controls_rebind_items[14].label) {
+            crt_free(controls_rebind_items[14].label);
+        }
+        controls_rebind_items[14].label =
+            strdup_malloc(controls_key_name(config_key_reload));
     }
-    if (controls_rebind_items[13].label) {
-        crt_free(controls_rebind_items[13].label);
-    }
-    controls_rebind_items[13].label =
-        strdup_malloc(controls_key_name(config_key_pick_perk));
-    if (controls_rebind_items[14].label) {
-        crt_free(controls_rebind_items[14].label);
-    }
-    controls_rebind_items[14].label =
-        strdup_malloc(controls_key_name(config_key_reload));
 
     if (controls_rebind_slot_index != -1) {
         ui_menu_item_t &active =
@@ -426,7 +436,7 @@ extern "C" void controls_menu_update(void)
         if (active.label) {
             crt_free(active.label);
         }
-        active.label = strdup_malloc("-");
+        active.label = strdup_malloc("???");
         active.enabled = 0;
     }
 
@@ -516,7 +526,7 @@ extern "C" void controls_menu_update(void)
         }
     }
 
-    for (i = 0; i < 15; ++i) {
+    for (int i = 0; i < 15; ++i) {
         if (controls_rebind_items[i].activated) {
             controls_rebind_capture_armed = 0;
             bool was_idle = controls_rebind_slot_index == -1;
@@ -592,7 +602,7 @@ extern "C" void controls_menu_update(void)
                 && !input_any_key_pressed()) {
                 controls_rebind_capture_armed = 1;
                 float *peak = &controls_rebind_axis_peak_abs_13f;
-                for (i = 0; i < 16; ++i) {
+                for (int i = 0; i < 16; ++i) {
                     peak[i] = 0.0f;
                 }
             }
@@ -608,7 +618,7 @@ extern "C" void controls_menu_update(void)
                 update_axis_peak(controls_rebind_axis_peak_abs_154, 0x154);
                 update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
                 float *peaks = &controls_rebind_axis_peak_abs_13f;
-                for (i = 0; i < 6; ++i) {
+                for (int i = 0; i < 6; ++i) {
                     if (peaks[i] > 0.5f) {
                         int binding =
                             controls_rebind_player_index * 16

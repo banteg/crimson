@@ -20,9 +20,7 @@ The persisted side of that copy is now a recovered
 `player_input_config_t` record rather than a 64-dword array plus negative
 indices. Its 13 named bindings, Y/X analog-axis storage order, and three-dword
 tail account for the native 0x40-byte row stride; the destination remains the
-distinct X/Y-ordered `player_input_t`. This source/type recovery is
-matcher-neutral at 4,488/5,421 instructions and keeps the `863/2/34`
-reference audit unchanged.
+distinct X/Y-ordered `player_input_t`.
 
 The native loop initially materializes `config_p1_move_forward + 0x30`, the
 `axis_move_x` field of the first persisted row, before incrementing the cursor
@@ -35,6 +33,14 @@ The point-and-click movement gate now uses the shared `cvar_float_t::value`
 field. The matching map and live Binary Ninja database carry the same cvar
 pointer type, replacing the former provisional byte-pointer-plus-`0x0c`
 access without changing code generation.
+
+Live Binary Ninja also shows that widget construction uses a 15-entry
+countdown/pointer walk, followed by a separate pointer reset walk. Keeping
+those cursors distinct from the 13-row key-label index restores the native
+local lifetimes. The configured-binding lookup now advances its own index
+alongside the row index instead of recomputing their sum, and the right-panel
+base is constructed before the two-player runtime copy as in the native
+schedule. The active rebinding row displays the native `"???"` placeholder.
 
 Key rebinding waits for all input to be released, accepts keyboard, mouse,
 joystick, and raw-input codes, and uses a separate analog-axis capture path
@@ -50,12 +56,13 @@ Reload. The scratch shares that policy through
 `CONTROLS_INLINE_KEY_NAME` gives VC6 the same force-inlined source body while
 the standalone scratch continues to compile it as `input_key_name`.
 
-Current MSVC 6.5 `/O2 /GB` result: **50.80%**, with 4 exact prefix
-instructions, 5,421 native instructions versus 4,488 candidate instructions,
-and reference audit **863 resolved / 2 unresolved / 34 mismatched**. Both
-functions use the native `0x74`-byte frame. The remaining gap is dominated by
-register allocation across the enormous inlined key-label bodies and by the
-recovered row-render helpers versus the native repeated lowering. All
-observed widgets, labels, scheme branches, runtime binding copies, row
-updates, capture rules, and dropdown writes are present; no fake dependency,
-padding, volatile coercion, or inline assembly is used.
+Current MSVC 6.5 `/O2 /GB` result: **64.72%**, with a fuzzy gap of
+7,511.49 bytes, 4 exact prefix instructions, 5,421 native instructions versus
+4,493 candidate instructions, and reference audit **1,121 resolved /
+3 unresolved / 33 mismatched**. Both functions use the native `0x74`-byte
+frame. The remaining gap is dominated by register allocation across the
+enormous inlined key-label bodies and by the recovered row-render helpers
+versus the native repeated lowering. All observed widgets, labels, scheme
+branches, runtime binding copies, row updates, capture rules, and dropdown
+writes are present; no fake dependency, padding, volatile coercion, or inline
+assembly is used.

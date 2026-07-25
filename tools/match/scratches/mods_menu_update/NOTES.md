@@ -20,13 +20,14 @@ Mods browser callback:
 The reconstructed source preserves the native two-stage vector expression.
 Writing `position = position + offset` exposes the VC6 return temporary seen
 in the opening x87 sequence. Keeping the three table accesses directly indexed
-also reproduces the native enumeration loop; no register hints or alias tricks
-are involved.
+also reproduces the native enumeration loop. The renderer used for the
+scrollbar-label color is captured before the scrollbar fields are populated,
+matching the native load at `0x0040ec74` and its use at `0x0040ecbc`.
 
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=83.06% prefix=0/648 target_insns=648 candidate_insns=645 refs=166/0/1
+match=83.53% prefix=0/648 target_insns=648 candidate_insns=645 refs=168/0/0
 first_target=sub esp, 0x144
 first_candidate=sub esp, 0x15c
 ```
@@ -34,12 +35,11 @@ first_candidate=sub esp, 0x15c
 The remaining differences are compiler lifetime and scheduling residue. The
 native function reuses the ended `_finddata_t` metadata area for the later
 16-byte version string and places a vector return temporary eight bytes later;
-the natural candidate retains a frame 24 bytes larger. Its one audited
-reference mismatch follows the static-scrollbar constructor's different
-register scheduling: both sides still reference the independently mapped item
-count and renderer globals. The source deliberately does not use unions,
-volatile state, dead expressions, forced addresses, inline assembly, or fake
-aliases to manufacture native local layout.
+the natural candidate retains a frame 24 bytes larger. Capturing the renderer
+at its recovered source lifetime removes the prior static-scrollbar scheduling
+mismatch and reduces the fuzzy gap by 12.10 bytes. The source deliberately does
+not use unions, volatile state, dead expressions, forced addresses, inline
+assembly, or fake aliases to manufacture native local layout.
 
 The function-local scrollbar, Main Menu button, Launch button, shared
 constructor guard, and all three `atexit` cleanup thunks are mapped. Each

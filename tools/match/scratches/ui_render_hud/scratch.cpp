@@ -172,13 +172,14 @@ extern "C" void ui_render_hud(float transition_alpha)
             ui_weapon_icons_texture, 0);
         grim_interface_ptr->grim_begin_batch();
 
-        int weapon_id = player_state_table[0].weapon_id;
         if (config_player_count == 1) {
             grim_interface_ptr->grim_set_sub_rect(
                 8,
                 2,
                 1,
-                weapon_table[weapon_id].hud_icon_id * 2);
+                weapon_table[player_state_table[0].weapon_id]
+                    .hud_icon_id
+                    * 2);
             grim_interface_ptr->grim_draw_quad(
                 220.0f, 2.0f, 64.0f, 32.0f);
         } else {
@@ -186,7 +187,9 @@ extern "C" void ui_render_hud(float transition_alpha)
                 8,
                 2,
                 1,
-                weapon_table[weapon_id].hud_icon_id * 2);
+                weapon_table[player_state_table[0].weapon_id]
+                    .hud_icon_id
+                    * 2);
             grim_interface_ptr->grim_draw_quad(
                 220.0f, 4.0f, 32.0f, 16.0f);
             grim_interface_ptr->grim_set_sub_rect(
@@ -401,18 +404,18 @@ extern "C" void ui_render_hud(float transition_alpha)
 
         grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
         int elapsed_seconds = quest_spawn_timeline / 1000;
-        if (elapsed_seconds % 60 >= 10) {
+        if (elapsed_seconds % 60 < 10) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 slide_x + 32.0f,
                 86.0f,
-                "%d:%d",
+                "%d:0%d",
                 elapsed_seconds / 60,
                 elapsed_seconds % 60);
         } else {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 slide_x + 32.0f,
                 86.0f,
-                "%d:0%d",
+                "%d:%d",
                 elapsed_seconds / 60,
                 elapsed_seconds % 60);
         }
