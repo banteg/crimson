@@ -200,13 +200,13 @@ extern "C" void highscore_screen_update(void)
     unsigned char arrow_hovered = 0;
     highscore_vec2_t left_panel =
         *(highscore_vec2_t *)&ui_element_slot_09.pos_x
-        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x;
-    left_panel += highscore_vec2_t(300.0f, 40.0f);
+        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x
+        + highscore_vec2_t(300.0f, 40.0f);
 
     highscore_vec2_t position = left_panel;
-    position += highscore_vec2_t(
-        ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 32.0f,
-        1.0f);
+    position.x =
+        position.x + ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 32.0f;
+    position.y += 1.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     static char title_buffer[128];

@@ -55,3 +55,24 @@ The score-line builder now carries a typed
 native `+0xa4` row stride directly instead of byte arithmetic, keeps the
 evidenced `char *` item table separate from its storage, and is matcher-neutral
 at **77.21%**, the exact `0x84`-byte frame, and reference audit `581/0/8`.
+
+The left panel origin is one chained vector expression:
+`element position + first vertex + (300, 40)`. Native keeps the first sum and
+the final sum in separate temporary slots before copying the result into the
+live screen cursor, exactly as the same source idiom does in the recovered
+options and Alien Zoo Keeper screens. Replacing the named intermediate
+`operator+=` with that value expression keeps all 1,962 candidate instructions,
+the exact frame, and `581/0/8` references while improving the prefix from 41 to
+45 instructions, the score from **77.21%** to **77.31%**, and fuzzy coverage by
+8 bytes. Applying the analogous rewrite to the later right panel was measured
+separately and rejected because it disrupts the aligned lifetime map.
+
+Native then advances the live cursor component by component: `x` starts from
+the chained panel result before adding the UI render offset and constants, while
+`y` adds one independently. Expressing those two scalar assignments instead of
+constructing another temporary vector keeps all 1,962 instructions and the
+45-instruction prefix, improves the score to **77.36%**, adds another 4 fuzzy
+bytes, and improves the reference audit from `581/0/8` to `583/0/7`.
+Reading the already-copied panel components directly was also isolated, but
+lost 8 fuzzy bytes and one aligned reference; keeping the live `position`
+assignments preserves the native lifetime implied by the copy.

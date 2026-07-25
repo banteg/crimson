@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289935/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289947/676681** code bytes (**42.8%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260359/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260371/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **260359/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **260371/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -560,7 +560,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | highscore_format_date_label | 0x00441270 | 256 | 256/256 | 0 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6197/8026 | 1829 | 1962/2004 | 77.21% | 41/2004 | 581/0/8 |  | highscore-list-filters-online-sync-and-state-routing |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 6209/8026 | 1817 | 1962/2004 | 77.36% | 45/2004 | 583/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |
