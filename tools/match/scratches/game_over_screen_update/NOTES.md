@@ -35,3 +35,10 @@ expression is required.
 The banner expression now names the recovered UI element and vertex position
 aggregates and remains exact at 471/471 instructions with 215 resolved
 references.
+
+The name editor's storage is now imported as the evidenced 32-byte character
+array, and the compiler-generated zero-based scan variable at `0x0041030f` is
+persisted as the integer `first_non_space`. Binary Ninja consequently renders
+the validation loop as `game_over_name_input_buffer[first_non_space]` instead
+of an untyped absolute base plus a `void *` offset. This presentation cleanup
+does not change the exact matching source.

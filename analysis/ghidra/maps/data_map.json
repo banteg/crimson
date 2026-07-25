@@ -2704,7 +2704,8 @@
       "address": "0x0048256c",
       "comment": "Game-over high-score name input buffer (ui_text_input_update target).",
       "name": "game_over_name_input_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[32]"
     },
     {
       "address": "0x00482590",
@@ -2797,7 +2798,8 @@
       "address": "0x004825dc",
       "comment": "Quest-results high-score name input buffer (ui_text_input_update target).",
       "name": "quest_results_name_input_buffer",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[32]"
     },
     {
       "address": "0x004825fc",

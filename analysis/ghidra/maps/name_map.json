@@ -1138,7 +1138,14 @@
     "address": "0x0040ffc0",
     "name": "game_over_screen_update",
     "signature": "void game_over_screen_update(void)",
-    "comment": "game over flow: high score entry, results text, and navigation buttons. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (714/716)."
+    "comment": "game over flow: high score entry, results text, and navigation buttons. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (714/716).",
+    "local_types": [
+      {
+        "address": "0x0041030f",
+        "name": "first_non_space",
+        "type": "int32_t"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1209,7 +1216,14 @@
     "address": "0x00410d20",
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
-    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989)."
+    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989).",
+    "local_types": [
+      {
+        "address": "0x0041184d",
+        "name": "first_non_space",
+        "type": "int32_t"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -4089,7 +4103,44 @@
     "address": "0x004461c0",
     "name": "game_state_set",
     "signature": "void game_state_set(game_state_id_t state_id)",
-    "comment": "resets UI state, updates game_state_prev/id, and seeds UI elements for the new state"
+    "comment": "resets UI state, updates game_state_prev/id, and seeds UI elements for the new state",
+    "local_types": [
+      {
+        "address": "0x004462cd",
+        "name": "atlas_vertex0_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00446304",
+        "name": "atlas_vertex1_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00446322",
+        "name": "atlas_vertex2_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00446353",
+        "name": "atlas_vertex3_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00446396",
+        "name": "atlas_vertex0_element_alt",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x004463cd",
+        "name": "atlas_vertex1_element_alt",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x004463eb",
+        "name": "atlas_vertex2_element_alt",
+        "type": "ui_element_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",

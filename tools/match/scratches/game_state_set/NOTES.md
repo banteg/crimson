@@ -66,3 +66,10 @@ and preserves every interior slot symbol/comment. The remaining transient
 atlas destinations still render as `void * + offset` only after Binary Ninja
 copies a typed element pointer into short-lived SSA registers; the owning
 object and all four destination fields are typed above.
+
+The importer now also persists `ui_element_t *` on the seven distinct MLIL
+variables defined by those compiler-generated reloads. Binary Ninja therefore
+renders both branches as named `overlay_vertices[0..3].u/v` writes, including
+the shared fourth-vertex phi, instead of falling back to
+`void * + 0x138..0x190`. This is presentation-only type recovery; it does not
+alter the matching scratch or the **85.35%**, `166/399`, `161/1/0` result.

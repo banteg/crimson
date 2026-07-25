@@ -59,3 +59,10 @@ instruction count.
 The panel geometry now uses the recovered UI element and vertex position
 aggregates. This type-only cleanup preserves the 1,164/1,168 instruction
 build, 86.45% score, and 429/0/9 reference audit.
+
+The quest-results name editor is now imported as its 32-byte character array,
+and the compiler-generated zero-based scan variable at `0x0041184d` is
+persisted as the integer `first_non_space`. The live decompiler therefore
+renders the validation loop through
+`quest_results_name_input_buffer[first_non_space]` rather than an untyped
+absolute base plus a `void *` offset. Matching remains unchanged.
