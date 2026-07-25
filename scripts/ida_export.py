@@ -107,7 +107,7 @@ def collect_segments():
     return segments
 
 
-def collect_metadata():
+def collect_metadata(file_path=None):
     md5 = idc.retrieve_input_file_md5()
     if isinstance(md5, (bytes, bytearray)):
         md5 = md5.hex()
@@ -116,23 +116,24 @@ def collect_metadata():
         "ida_sdk_version": idaapi.IDA_SDK_VERSION,
         "image_base": ea_hex(idaapi.get_imagebase()),
         "md5": md5,
-        "file_path": idaapi.get_input_file_path(),
+        "file_path": file_path or idaapi.get_input_file_path(),
     }
 
 
 def main():
     argv = get_argv()
     if len(argv) < 2:
-        print("Usage: ida_export.py <output_dir> [name_map.json] [data_map.json]")
+        print("Usage: ida_export.py <output_dir> [name_map.json] [data_map.json] [file_path]")
         return 1
 
     out_dir = os.path.normpath(os.path.abspath(argv[1].strip()))
     idaapi.auto_wait()
     os.makedirs(out_dir, exist_ok=True)
 
-    program_name = basename(idaapi.get_input_file_path())
     name_map = argv[2] if len(argv) > 2 else ""
     data_map = argv[3] if len(argv) > 3 else ""
+    file_path = argv[4] if len(argv) > 4 else idaapi.get_input_file_path()
+    program_name = basename(file_path)
 
     old_auto_state = ida_auto.enable_auto(False)
     try:
@@ -159,7 +160,7 @@ def main():
             "imports.json": collect_imports(),
             "exports.json": collect_exports(),
             "segments.json": collect_segments(),
-            "metadata.json": collect_metadata(),
+            "metadata.json": collect_metadata(file_path),
         }
 
         for name, payload in artifacts.items():

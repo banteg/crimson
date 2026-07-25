@@ -80,10 +80,10 @@ def test_frida_agent_reads_byte_sized_creature_force_target() -> None:
 def test_frida_agent_and_host_pin_the_supported_runtime_version() -> None:
     root = Path(__file__).parents[2]
     source = (root / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
-    justfile = (root / "justfile").read_text()
+    host = (root / "scripts" / "frida" / "gameplay_diff_capture_host.py").read_text()
 
     assert f'const REQUIRED_FRIDA_VERSION = "{FRIDA_RUNTIME_VERSION}";' in source
-    assert f"uv run --with frida=={FRIDA_RUNTIME_VERSION}" in justfile
+    assert "if frida_version != FRIDA_RUNTIME_VERSION:" in host
 
 
 def test_frida_agent_does_not_require_callable_rng_state_accessor_as_hook() -> None:
