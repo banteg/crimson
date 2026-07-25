@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=80.89% prefix=26/3159 target_insns=3159 candidate_insns=3106 refs=350/0/1
+match=82.22% prefix=26/3159 target_insns=3159 candidate_insns=3136 refs=351/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -360,3 +360,26 @@ Frame/prefix notes:
   exactly neutral: 3,106 instructions, `80.89%`, a 26-instruction prefix, and
   references `350/0/1`. The shared declaration and all recovered callers now
   carry that immutable vector contract without changing their machine code.
+- Live disassembly at `0x00433b87..0x00433c9c` proves that template `0x3e`
+  constructs a complete RGBA value and template `0x00` materializes one
+  `creature_spawn_slot_t *` after storing the allocated slot index. Each shape
+  had perturbed allocation when tested alone earlier, but recovering the two
+  linked lifetimes together raises the score from `80.89%` to `81.75%`, adds
+  eight candidate instructions, and improves the reference audit to
+  `351/0/1`.
+- The independent pre-dispatch ladder tests template `0x0f` at `0x00431ba8`
+  before template `0x18` at `0x00431c37`; the scratch had those two handlers
+  reversed. Restoring the native branch order removes the largest remaining
+  control-flow gap and raises the score to `82.19%` without changing behavior.
+  With that lifetime order in place, the previously rejected complete tint
+  value for `0x0f` becomes an improving recovery and raises the score again to
+  `82.23%`.
+- Template `0x19` likewise constructs its root tint in the shared typed value
+  slot at `[esp+0x38..0x44]`; replacing four integer bit-copy aliases with one
+  `creature_tint_t` assignment improves the aligned function. Its loop's
+  `[esp+0x10..0x14]` zero velocity and `[esp+0x38..0x44]` child tint are now
+  expressed as typed values rather than raw local-slot and integer aliases.
+  The zero-vector lifetime moves a few unrelated scheduled instructions and
+  leaves the honest combined score at `82.22%` with 3,136 candidate
+  instructions; it is retained because the native stack construction and
+  paired member loads prove the source object shape.

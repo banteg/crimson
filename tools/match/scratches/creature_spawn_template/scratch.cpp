@@ -62,27 +62,13 @@ typedef union creature_spawn_template_locals_t {
 #define slot_14_i locals.i[1]
 #define slot_18_i locals.i[2]
 #define tint locals.named.tint_scratch.tint
-#define tint_r_bits (*(int *)&tint.r)
-#define tint_g_bits (*(int *)&tint.g)
-#define tint_b_bits (*(int *)&tint.b)
-#define tint_a_bits (*(int *)&tint.a)
 #define child_tint locals.named.child_tint
-#define child_tint_r_bits (*(int *)&child_tint.r)
-#define child_tint_g_bits (*(int *)&child_tint.g)
-#define child_tint_b_bits (*(int *)&child_tint.b)
-#define child_tint_a_bits (*(int *)&child_tint.a)
 #define zero_velocity locals.named.zero_velocity
 #define chain_position locals.named.chain_position
 #define lizard_chain_position zero_velocity
 #define lizard_chain_zero_velocity chain_position
 #define scaled_orbit_x locals.named.scaled_orbit_x
 #define orbit_direction locals.named.tint_scratch.orbit_direction
-
-#define STORE_FLOAT_BITS(field, slot, bits) \
-    do {                                    \
-        (slot) = (bits);                    \
-        *(int *)&(field) = (slot);          \
-    } while (0)
 
 #define APPLY_UNHANDLED_TEMPLATE_FALLBACK()                                      \
     do {                                                                         \
@@ -312,10 +298,8 @@ extern "C" creature_t *creature_spawn_template(
     }
 
     if (template_id == SPAWN_ID_FORMATION_RING_ALIEN_5_19) {
-        STORE_FLOAT_BITS(creature->tint_r, tint_r_bits, 0x3f733333);
-        STORE_FLOAT_BITS(creature->tint_g, tint_g_bits, 0x3f0ccccd);
-        STORE_FLOAT_BITS(creature->tint_b, tint_b_bits, 0x3ebd70a4);
-        STORE_FLOAT_BITS(creature->tint_a, tint_a_bits, 0x3f800000);
+        tint.set(0.95f, 0.55f, 0.37f, 1.0f);
+        *(creature_tint_t *)&creature->color = tint;
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->health = 50.0f;
         creature->move_speed = 3.8f;
@@ -324,13 +308,10 @@ extern "C" creature_t *creature_spawn_template(
         creature->contact_damage = 40.0f;
         creature->max_health = 50.0f;
 
+        creature_spawn_vec2_t child_velocity;
         ring_member_idx = 0;
-        slot_10_i = 0;
-        slot_14_i = 0;
-        child_tint_r_bits = 0x3f366666;
-        child_tint_g_bits = 0x3ed33334;
-        child_tint_b_bits = 0x3e8e147b;
-        child_tint_a_bits = 0x3f19999a;
+        child_velocity.set(0.0f, 0.0f);
+        child_tint.set(0.7125f, 0.41250002f, 0.2775f, 0.6f);
         do {
             child_slot_idx = creature_alloc_slot();
             creature = &creature_pool[child_slot_idx];
@@ -340,16 +321,15 @@ extern "C" creature_t *creature_spawn_template(
             creature->target_offset_x = (float)cos(angle) * 110.0f;
             creature->target_offset_y = (float)sin(angle) * 110.0f;
             creature->pos_x = creature->target_offset_x + pos->x;
-            creature->vel_x = 0.0f;
             creature->pos_y = creature->target_offset_y + pos->y;
-            creature->vel_y = 0.0f;
+            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;
             creature->health = 220.0f;
             creature->max_health = 220.0f;
-            *(int *)&creature->tint_r = child_tint_r_bits;
+            creature->tint_r = child_tint.r;
             ring_member_idx = ring_member_idx + 1;
-            *(int *)&creature->tint_g = child_tint_g_bits;
+            creature->tint_g = child_tint.g;
             creature->collision_flag = 0;
-            *(int *)&creature->tint_b = child_tint_b_bits;
+            creature->tint_b = child_tint.b;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -358,7 +338,7 @@ extern "C" creature_t *creature_spawn_template(
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 3.8f;
             creature->reward_value = 60.0f;
-            *(int *)&creature->tint_a = child_tint_a_bits;
+            creature->tint_a = child_tint.a;
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
         } while (ring_member_idx < 5);
@@ -508,20 +488,20 @@ extern "C" creature_t *creature_spawn_template(
                                    1.0f, 1.0f, 1.0f, 1500.0f, 2.0f, 64.0f);
                     SPAWN_GRID(CREATURE_AI_LINK_GUARD, CREATURE_TYPE_LIZARD, 40.0f,
                                0.4f, 0.7f, 0.11f, 2.0f, 1.0f, 60.0f, 4.0f);
+                } else if (template_id == SPAWN_ID_ALIEN_CONST_BROWN_TRANSPARENT_0F) {
+                    creature->type_id = CREATURE_TYPE_ALIEN;
+                    creature->pos_x = pos->x;
+                    creature->pos_y = pos->y;
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 20.0f, 2.9f, 60.0f,
+                                             0.66499996f, 0.385f, 0.259f, 0.56f, 50.0f, 35.0f);
+                    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
+                    creature->max_health = 20.0f;
                 } else if (template_id == SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18) {
                     creature = &creature_pool[root_slot_idx];
                     INIT_GRID_ROOT(CREATURE_TYPE_ALIEN, CREATURE_AI_CHASE_PLAYER,
                                    0.7f, 0.8f, 0.31f, 500.0f, 2.0f, 40.0f);
                     SPAWN_GRID(CREATURE_AI_FOLLOW_LINK, CREATURE_TYPE_ALIEN, 260.0f,
                                0.7125f, 0.41250002f, 0.2775f, 3.8f, 0.6f, 50.0f, 35.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_BROWN_TRANSPARENT_0F) {
-                    creature->type_id = CREATURE_TYPE_ALIEN;
-                    creature->pos_x = pos->x;
-                    creature->pos_y = pos->y;
-                    SET_ROOT_STATS(CREATURE_TYPE_ALIEN, 20.0f, 2.9f, 60.0f,
-                                   0.66499996f, 0.385f, 0.259f, 0.56f, 50.0f, 35.0f);
-                    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
-                    creature->max_health = 20.0f;
     }
 
     if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
@@ -888,8 +868,8 @@ extern "C" creature_t *creature_spawn_template(
                     RAND_FIELD_INT_BASE(creature->size, 7, 0x2d);
                     creature->contact_damage = creature->size * 0.22f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_WHITE_FAST_3E) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP1, 1000.0f, 2.8f, 500.0f,
-                                   1.0f, 1.0f, 1.0f, 1.0f, 64.0f, 40.0f);
+                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 1000.0f, 2.8f, 500.0f,
+                                             1.0f, 1.0f, 1.0f, 1.0f, 64.0f, 40.0f);
                 } else if (template_id == SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00) {
                     creature->type_id = CREATURE_TYPE_ZOMBIE;
                     creature->flags = CREATURE_FLAG_ANIM_PING_PONG | CREATURE_FLAG_ANIM_LONG_STRIP;
@@ -902,12 +882,14 @@ extern "C" creature_t *creature_spawn_template(
                     creature->contact_damage = 50.0f;
                     child_slot_idx = creature_spawn_slot_alloc();
                     creature->link_index = child_slot_idx;
-                    creature_spawn_slot_table[child_slot_idx].timer_s = 1.0f;
-                    creature_spawn_slot_table[child_slot_idx].count = 0;
-                    creature_spawn_slot_table[child_slot_idx].limit = 0x32c;
-                    creature_spawn_slot_table[child_slot_idx].interval_s = 0.7f;
-                    creature_spawn_slot_table[child_slot_idx].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
-                    creature_spawn_slot_table[child_slot_idx].owner = creature;
+                    creature_spawn_slot_t *spawn_slot =
+                        &creature_spawn_slot_table[child_slot_idx];
+                    spawn_slot->timer_s = 1.0f;
+                    spawn_slot->count = 0;
+                    spawn_slot->limit = 0x32c;
+                    spawn_slot->interval_s = 0.7f;
+                    spawn_slot->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+                    spawn_slot->owner = creature;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_38) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
                     creature->flags = CREATURE_FLAG_AI7_LINK_TIMER;
@@ -1062,7 +1044,6 @@ extern "C" creature_t *creature_spawn_template(
     return creature;
 }
 
-#undef STORE_FLOAT_BITS
 #undef APPLY_UNHANDLED_TEMPLATE_FALLBACK
 #undef INIT_GRID_ROOT
 #undef INIT_GRID_CHILD
@@ -1077,15 +1058,7 @@ extern "C" creature_t *creature_spawn_template(
 #undef slot_14_i
 #undef slot_18_i
 #undef tint
-#undef tint_r_bits
-#undef tint_g_bits
-#undef tint_b_bits
-#undef tint_a_bits
 #undef child_tint
-#undef child_tint_r_bits
-#undef child_tint_g_bits
-#undef child_tint_b_bits
-#undef child_tint_a_bits
 #undef zero_velocity
 #undef chain_position
 #undef orbit_direction
