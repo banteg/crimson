@@ -47,6 +47,14 @@ The initializer now copies the input through the matching record's canonical
 `position` and nested `origin` aggregates. Both assignments compile identically
 to the four scalar stores, preserving the 71.67% score and all 13 references.
 
+Direct initializer fields now use the canonical flat `projectile_t::fields`
+view as well. The nested `pos.tail.vy` view remains available for the update
+loops whose native cursors genuinely begin at interior position or velocity
+members, but it is not source shape for a record indexed from its base here.
+The semantic `owner_id`, travel budget, type, timers, velocity, damage, and
+radius names compile byte-for-byte identically at 114/126 instructions,
+71.67%, and 13/0/0 references.
+
 The recovered legacy `oldtypes.h` independently spells the source lineage as
 `ShootBullet(vec2_t from, ...)`. A direct by-value reconstruction with the
 available vector class changes VC6 alias analysis and regresses this target to

@@ -6,12 +6,12 @@ extern "C" void projectile_pool_global_init(void)
     projectile_t *entry = projectile_pool;
 
     do {
-        entry->pos.tail.vy.owner_id = -1;
+        entry->fields.owner_id = -1;
         entry->active = 0;
-        entry->pos.tail.vy.type_id = PROJECTILE_TYPE_PISTOL;
-        entry->pos.tail.vy.speed_scale = 1.0f;
-        entry->pos.tail.vy.hit_radius = 0.0f;
-        entry->pos.tail.vy.travel_budget = 1.0f;
+        entry->fields.type_id = PROJECTILE_TYPE_PISTOL;
+        entry->fields.speed_scale = 1.0f;
+        entry->fields.hit_radius = 0.0f;
+        entry->fields.travel_budget = 1.0f;
         ++entry;
     } while (--remaining != 0);
 }

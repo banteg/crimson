@@ -36,3 +36,9 @@ The allocated record now receives that value through
 `secondary_projectile_t::position`, and seeker targeting passes the canonical
 `player_state_t::aim` vector directly. Both aggregate recoveries remove scalar
 aliases/casts while preserving the exact body.
+
+The allocator's record-base pointer now uses the flat semantic secondary
+projectile view for velocity, type, trail timer, and seeker target fields. The
+nested mixed-type view remains limited to update/render induction cursors that
+are genuinely anchored inside the record. This cleaner source view preserves
+the exact 65/65 instructions and 13/0/0 references.

@@ -14,3 +14,9 @@ loops likewise stay within the fields through `type_id`; and session reset
 only clears `active`. No instruction references the first field address at
 `0x00495b00`. The Python and Zig ports therefore correctly omit this
 constructor-only storage.
+
+The canonical secondary-projectile type now also exposes a flat semantic view
+for record-base code. This constructor consequently names `type_id`,
+`trail_timer`, and `unused_0x28` directly; the nested view remains for native
+loops whose induction cursor begins at `pos_y` or `vel_y`. The source change is
+byte-neutral at the exact 12/12 instructions and 1/0/0 references.

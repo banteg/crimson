@@ -31,22 +31,22 @@ found:
     projectile->life_timer = 2.0f;
 
     vel_x = (float)cos(angle - 1.57079637f);
-    projectile->pos.vx.vel_x = vel_x * 90.0f;
+    projectile->fields.vel_x = vel_x * 90.0f;
 
     vel_y = (float)sin(angle - 1.57079637f);
-    projectile->pos.vx.vy.vel_y = vel_y * 90.0f;
+    projectile->fields.vel_y = vel_y * 90.0f;
     projectile->angle = angle;
-    projectile->pos.vx.vy.trail_timer = 0.0f;
-    projectile->pos.vx.vy.type_id = type_id;
+    projectile->fields.trail_timer = 0.0f;
+    projectile->fields.type_id = type_id;
 
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
-        projectile->pos.vx.vy.target_id =
+        projectile->fields.target_id =
             creature_find_nearest(
                 &player_state_table[render_overlay_player_index].aim,
                 -1,
                 0.0f);
-        projectile->pos.vx.vel_x = vel_x * 190.0f;
-        projectile->pos.vx.vy.vel_y = vel_y * 190.0f;
+        projectile->fields.vel_x = vel_x * 190.0f;
+        projectile->fields.vel_y = vel_y * 190.0f;
     }
 
     return index;

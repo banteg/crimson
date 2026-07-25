@@ -856,6 +856,16 @@ typedef struct secondary_projectile_t {
             // mixed-type fields.
             secondary_projectile_pos_y_block_t pos;
         };
+        struct {
+            float pos_x;
+            float pos_y;
+            float vel_x;
+            float vel_y;
+            secondary_projectile_type_id_t type_id;
+            float trail_timer;
+            int target_id;
+            unsigned int unused_0x28;
+        } fields;
         vec2f_t position;
     };
 } secondary_projectile_t;
