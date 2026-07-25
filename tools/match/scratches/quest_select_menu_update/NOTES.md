@@ -39,9 +39,9 @@ match.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 782 normalized instructions against 803 native,
-scores 71.17%, and audits 222 references as resolved, zero as unresolved, and
-14 as mismatched inside nonmatching instruction regions. The broad behavior
+The verified VC6 build is 784 normalized instructions against 803 native,
+scores 71.08%, and audits 221 references as resolved, zero as unresolved, and
+16 as mismatched inside nonmatching instruction regions. The broad behavior
 and static-constructor sequence are recovered, but the natural reconstruction
 uses a 56-byte frame while native uses 48 bytes. Native also keeps icon Y and
 row/control constants in a different EBX/EBP/ESI allocation and lays out the
@@ -51,5 +51,12 @@ row labels reduced the match substantially, so those code-generation residuals
 are recorded rather than hidden with match-only shaping.
 
 The panel geometry now uses the recovered UI element and vertex position
-aggregates. This keeps the evidenced 782/803 instruction build, 71.17% score,
-and 222/0/14 reference audit unchanged.
+aggregates.
+
+The successful start path also retains the native selected-row dependency.
+Disassembly at `0x00448a72..0x00448a8f` reloads
+`quest_select_stage_minor_index`, increments that value, and stores it to
+`quest_stage_minor`; it does not use only the equivalent local validation
+copy. Expressing that dependency adds two honest candidate instructions and
+slightly lowers the aggregate similarity, but recovers the native data flow
+instead of preserving a scorer-friendlier local substitution.

@@ -447,7 +447,7 @@ validate_selected:
         sfx_mute_all(music_track_shortie_monk_id);
         sfx_mute_all(music_track_extra_0);
         quest_stage_major = quest_select_stage_major;
-        quest_stage_minor = selected_minor + 1;
+        quest_stage_minor = quest_select_stage_minor_index + 1;
         screen_fade_ramp_flag = 1;
         sfx_play(sfx_ui_buttonclick, 1.0f);
         return;
