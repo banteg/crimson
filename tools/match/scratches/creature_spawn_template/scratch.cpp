@@ -577,8 +577,11 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 2.4f;
                     creature->reward_value = 125.0f;
                     creature->tint_a = 1.0f;
-                    RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.5f);
-                    creature->tint_g = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x28) * 0.01f + 0.5f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
                     creature->tint_b = 1.0f;
                     creature->contact_damage = 5.0f;
                 } else if (template_id == SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B) {
@@ -589,8 +592,11 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 2.4f;
                     creature->reward_value = 125.0f;
                     creature->tint_a = 1.0f;
-                    RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.5f);
-                    creature->tint_g = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x28) * 0.01f + 0.5f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
                     creature->tint_b = 1.0f;
                     creature->contact_damage = 5.0f;
                 } else if (template_id == SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C) {
@@ -601,8 +607,11 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 2.4f;
                     creature->reward_value = 125.0f;
                     creature->tint_a = 1.0f;
-                    RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.5f);
-                    creature->tint_g = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x28) * 0.01f + 0.5f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
                     creature->tint_b = 1.0f;
                     creature->contact_damage = 5.0f;
                 } else if (template_id == SPAWN_ID_ZOMBIE_RANDOM_41) {
@@ -614,9 +623,12 @@ extern "C" creature_t *creature_spawn_template(
                     creature->tint_a = 1.0f;
                     creature->move_speed = random_size * 0.0025f + 0.9f;
                     creature->reward_value = random_size + random_size + 50.0f;
-                    RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.6f);
-                    creature->tint_g = creature->tint_r;
-                    creature->tint_b = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x28) * 0.01f + 0.6f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
+                    creature->tint_b = random_tint_scalar;
                     RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);
                 } else if (template_id == SPAWN_ID_LIZARD_RANDOM_31) {
                     creature->type_id = CREATURE_TYPE_LIZARD;
@@ -628,8 +640,11 @@ extern "C" creature_t *creature_spawn_template(
                     RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);
                     creature->reward_value = creature->size + creature->size + 50.0f;
                     creature->tint_b = 0.38f;
-                    RAND_FIELD(creature->tint_r, 0x1e, 0.01f, 0.6f);
-                    creature->tint_g = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x1e) * 0.01f + 0.6f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
                     creature->contact_damage = creature->size * 0.14f + 4.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_32) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
@@ -640,9 +655,12 @@ extern "C" creature_t *creature_spawn_template(
                     creature->tint_a = 1.0f;
                     RAND_FIELD(creature->move_speed, 0x11, 0.1f, 1.1f);
                     creature->reward_value = creature->size + creature->size + 50.0f;
-                    RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.6f);
-                    creature->tint_g = creature->tint_r;
-                    creature->tint_b = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x28) * 0.01f + 0.6f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
+                    creature->tint_b = random_tint_scalar;
                     creature->contact_damage = creature->size * 0.14f + 4.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_RED_33) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
@@ -872,9 +890,12 @@ extern "C" creature_t *creature_spawn_template(
                     creature->move_speed = 2.6f;
                     creature->reward_value = 120.0f;
                     creature->tint_a = 1.0f;
-                    RAND_FIELD(creature->tint_r, 0x14, 0.01f, 0.8f);
-                    creature->tint_b = creature->tint_r;
-                    creature->tint_g = creature->tint_r;
+                    random_heading_roll = crt_rand();
+                    float random_tint_scalar =
+                        (float)(random_heading_roll % 0x14) * 0.01f + 0.8f;
+                    creature->tint_r = random_tint_scalar;
+                    creature->tint_b = random_tint_scalar;
+                    creature->tint_g = random_tint_scalar;
                     RAND_FIELD_INT_BASE(creature->size, 7, 0x2d);
                     creature->contact_damage = creature->size * 0.22f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_WHITE_FAST_3E) {

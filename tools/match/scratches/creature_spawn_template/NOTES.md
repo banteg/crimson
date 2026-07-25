@@ -397,3 +397,10 @@ Frame/prefix notes:
   instructions. The coherent four-case recovery raises the score to `82.50%`
   with 3,132 candidate instructions and gains 19 fuzzy-weighted bytes, again
   preserving the frame, prefix, and reference audit.
+- Templates `0x1a`, `0x1b`, `0x1c`, `0x31`, `0x32`, `0x3d`, and `0x41`
+  each derive multiple color channels from one random tint scalar. Native keeps
+  that value on x87 across the adjacent component stores rather than reloading
+  a creature field and copying its integer bits. Recovering the seven
+  short-lived values removes six candidate instructions, raises the score to
+  `82.93%` with 3,126 candidate instructions, and gains 60 fuzzy-weighted bytes
+  without changing the frame, prefix, or `351/0/1` reference audit.
