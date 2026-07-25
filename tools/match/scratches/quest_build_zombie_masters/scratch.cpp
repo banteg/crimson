@@ -1,48 +1,39 @@
 #include "crimsonland_gameplay.h"
 
-struct quest_vec2_t {
-    float x;
-    float y;
+inline void set_position(
+    quest_spawn_entry_t *entry, float x_value, float y_value)
+{
+    entry->pos_x = x_value;
+    entry->pos_y = y_value;
+}
 
-    void set(float x_value, float y_value) {
-        x = x_value;
-        y = y_value;
-    }
-};
-
-struct quest_entry_original_t {
-    quest_vec2_t pos;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
-
-    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms) {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-    }
-};
+inline void set_spawn(
+    quest_spawn_entry_t *entry,
+    int spawn_template_id,
+    int spawn_trigger_time_ms)
+{
+    entry->template_id = spawn_template_id;
+    entry->trigger_time_ms = spawn_trigger_time_ms;
+}
 
 extern "C" void quest_build_zombie_masters(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    set_position(&entries[0], 256.0f, 256.0f);
+    set_spawn(&entries[0], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 1000);
+    entries[0].count = config_blob.player_count;
 
-    spawns[0].pos.set(256.0f, 256.0f);
-    spawns[0].set_spawn(SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 1000);
-    spawns[0].count = config_blob.player_count;
+    set_position(&entries[1], 512.0f, 256.0f);
+    set_spawn(&entries[1], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 6000);
+    entries[1].count = 1;
 
-    spawns[1].pos.set(512.0f, 256.0f);
-    spawns[1].set_spawn(SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 6000);
-    spawns[1].count = 1;
+    set_position(&entries[2], 768.0f, 256.0f);
+    set_spawn(&entries[2], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 14000);
+    entries[2].count = config_blob.player_count;
 
-    spawns[2].pos.set(768.0f, 256.0f);
-    spawns[2].set_spawn(SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 14000);
-    spawns[2].count = config_blob.player_count;
-
-    spawns[3].pos.set(768.0f, 768.0f);
-    spawns[3].set_spawn(SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 18000);
-    spawns[3].count = 1;
+    set_position(&entries[3], 768.0f, 768.0f);
+    set_spawn(&entries[3], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 18000);
+    entries[3].count = 1;
 
     *count = 4;
 }
