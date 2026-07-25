@@ -525,6 +525,21 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "creature_t * creature_spawn_template("
         "int template_id, const vec2f_t *pos, float heading)"
     )
+    assert signatures_by_name["vec2_sub"] == (
+        "float * __thiscall vec2_sub("
+        "vec2f_t *self, float *dst, const vec2f_t *rhs)"
+    )
+    assert signatures_by_name["vec2_add"] == (
+        "int vec2_add(vec2f_t *dst, const vec2f_t *delta)"
+    )
+    assert signatures_by_name["vec2_add_out"] == (
+        "float * __thiscall vec2_add_out("
+        "vec2f_t *self, float *dst, const vec2f_t *rhs)"
+    )
+    assert signatures_by_name["vec2_normalize_dispatch"] == (
+        "vec2f_t * __stdcall vec2_normalize_dispatch("
+        "vec2f_t *dst, const vec2f_t *src)"
+    )
     assert signatures_by_name["wav_parse_into_entry"] == (
         "unsigned char wav_parse_into_entry("
         "sfx_entry_t *entry, void *data, unsigned int size)"

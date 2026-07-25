@@ -1501,8 +1501,8 @@
     "program": "crimsonland.exe",
     "address": "0x00417640",
     "name": "vec2_sub",
-    "signature": "float * vec2_sub(float *arg1, float *arg2, float *arg3)",
-    "comment": "[binja] float* __thiscall sub_417640(float* arg1, float* arg2, float* arg3)"
+    "signature": "float * __thiscall vec2_sub(vec2f_t *self, float *dst, const vec2f_t *rhs)",
+    "comment": "writes self - rhs into dst and returns dst; native decorated symbol retains the lowered float-pointer destination"
   },
   {
     "program": "crimsonland.exe",
@@ -2099,7 +2099,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041e270",
     "name": "vec2_add",
-    "signature": "int vec2_add(float *dst, float *delta)",
+    "signature": "int vec2_add(vec2f_t *dst, const vec2f_t *delta)",
     "comment": "adds delta xy into dst and returns 0"
   },
   {
@@ -4433,8 +4433,8 @@
     "program": "crimsonland.exe",
     "address": "0x0044ecf0",
     "name": "vec2_add_out",
-    "signature": "float * vec2_add_out(float *dst, float *lhs)",
-    "comment": "writes this + lhs into dst and returns dst"
+    "signature": "float * __thiscall vec2_add_out(vec2f_t *self, float *dst, const vec2f_t *rhs)",
+    "comment": "writes self + rhs into dst and returns dst; native decorated symbol retains the lowered float-pointer destination"
   },
   {
     "program": "crimsonland.exe",
@@ -4620,14 +4620,14 @@
     "program": "crimsonland.exe",
     "address": "0x00452f1d",
     "name": "vec2_normalize_dispatch_init",
-    "signature": "float * vec2_normalize_dispatch_init(float *dst, float *src)",
+    "signature": "vec2f_t * __stdcall vec2_normalize_dispatch_init(vec2f_t *dst, const vec2f_t *src)",
     "comment": "dispatch initializer: calls renderer_select_backend(1), then tail-jumps via DAT_00479658; runtime trace (2026-02-18) showed first-call retarget 0x00452f1d -> 0x00455587 and vec2 length ~180.918 -> ~1.0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00452f2a",
     "name": "vec2_normalize_dispatch",
-    "signature": "float * vec2_normalize_dispatch(float *dst, float *src)",
+    "signature": "vec2f_t * __stdcall vec2_normalize_dispatch(vec2f_t *dst, const vec2f_t *src)",
     "comment": "hot-path thunk: jmp [DAT_00479658] after lazy init; used by player_update, projectile_update, and creature_update_all callsites"
   },
   {
@@ -4837,7 +4837,7 @@
     "program": "crimsonland.exe",
     "address": "0x00455587",
     "name": "vec2_normalize_safe",
-    "signature": "float * vec2_normalize_safe(float *dst, float *src)",
+    "signature": "vec2f_t * __stdcall vec2_normalize_safe(vec2f_t *dst, const vec2f_t *src)",
     "comment": "normalizes src into dst, preserves near-unit vectors, and writes zero vector when length <= FLT_MIN; observed as DAT_00479658 target after vec2_normalize_dispatch_init (2026-02-18 capture)"
   },
   {
