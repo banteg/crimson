@@ -12,3 +12,10 @@ The exact offset disproves IDA's field guess here: native clears offset `0x44`
 (`flags`), not offset `0x45` (`hardcore_marker`). Naming the dword at offset
 `0x38` as `random_tag` also removes a raw reserved-byte cast from the already
 exact `gameplay_run_state_init`, which remains 44/44 after the type refinement.
+
+The Binary Ninja importer now treats this recovered record as authoritative.
+Its older database copy described bytes `0x38..0x3f` as one eight-byte
+`reserved0` span, causing the proven tag store to render as
+`reserved0[0].d`. Replaying the map replaces that stale layout with
+`random_tag` at `0x38` followed by the actual four reserved bytes, while
+preserving the evidenced `0x48` record size.

@@ -14,7 +14,10 @@ match=91.38% prefix=80/116 target_insns=116 candidate_insns=116 refs=47/0/0
 - The function clears the spawn count/timeline/banner, both FX queues, and all
   active high-score run fields except the player name and sentinels. It seeds
   the record tag with `crt_rand() & 0x0fee050f` before any quest terrain or
-  builder RNG work.
+  builder RNG work. The authoritative Binary Ninja record layout now renders
+  that store as `random_tag` at `0x38` and the preceding mode byte as
+  `hardcore_marker`, replacing the stale `reserved0[0].d` and
+  `full_version_marker` labels from the database's older type copy.
 - A local two-float position is filled from half the integer terrain width and
   height, then copied into player zero. This aggregate-copy shape reproduces
   the native eight-byte stack frame and x87 spill/copy schedule.

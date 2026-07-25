@@ -231,6 +231,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "highscore_record_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "player_input_config_t",
         object(),
         object(),
