@@ -390,3 +390,10 @@ Frame/prefix notes:
   removes one candidate instruction, raises the score to `82.36%` with 3,135
   candidate instructions, and gains 20 fuzzy-weighted bytes without changing
   the exact frame, prefix, or `351/0/1` reference audit.
+- The adjacent random-stat templates `0x31..0x34` use the same short-lived size
+  value to derive health. Native stores size with a non-popping x87 write at
+  `0x0043258c`, `0x00432632`, `0x004326e0`, and `0x004327a5`; retaining the
+  scalar across each following health expression removes three more candidate
+  instructions. The coherent four-case recovery raises the score to `82.50%`
+  with 3,132 candidate instructions and gains 19 fuzzy-weighted bytes, again
+  preserving the frame, prefix, and reference audit.
