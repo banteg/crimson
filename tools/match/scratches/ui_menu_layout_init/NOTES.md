@@ -53,3 +53,15 @@ shows the constructor's clear as one 0xa4-byte table operation and its
 population as indexed array stores rather than pointer arithmetic relative to
 slot zero. This is a presentation-only type recovery and does not change the
 matching result.
+
+Binary Ninja still discarded that pointee type at seven repeated indexed
+reloads in the two menu-text atlas branches, rendering the eight UV stores as
+`void *` plus raw offsets `+0x138..+0x190`. The name-map importer now supports
+narrow `local_types` annotations keyed by the defining instruction address.
+Replaying the map types those seven reload variables as `ui_element_t *`, so
+live HLIL names every write as `overlay_vertices[0..3].u/v`. The importer also
+walks database-path ancestors when locating the repository, allowing a direct
+`bn py exec --script scripts/binja_import_maps.py` replay from
+`analysis/binary_ninja/crimsonland.exe.bndb`. This remains a presentation-only
+recovery; the matcher stays at **55.43%**, 1,302/1,422 instructions, prefix 1,
+and **305/0/48** references.

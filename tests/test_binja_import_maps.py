@@ -61,6 +61,23 @@ class _FakeTypeView:
         self.types[str(name)] = type_obj
 
 
+def test_find_repo_root_walks_database_ancestors(tmp_path):
+    importer = _load_importer()
+    repo_root = tmp_path / "repo"
+    database_dir = repo_root / "analysis" / "binary_ninja"
+    (repo_root / "analysis" / "ghidra" / "maps").mkdir(parents=True)
+    database_dir.mkdir(parents=True)
+    database_path = database_dir / "crimsonland.exe.bndb"
+    view = SimpleNamespace(
+        file=SimpleNamespace(
+            original_filename=str(database_path),
+            filename=str(database_path),
+        ),
+    )
+
+    assert importer._find_repo_root(view) == repo_root
+
+
 def test_resolve_creates_direct_jump_target_without_create_flag(monkeypatch):
     importer = _load_importer()
     wrapper = SimpleNamespace(start=0x1000)
@@ -409,6 +426,77 @@ def test_resolve_data_type_accepts_array_typedef(monkeypatch):
         view,
         "bonus_hud_slot_table_t",
     ) is array_type
+
+
+def test_written_variable_at_resolves_unique_ssa_definition():
+    importer = _load_importer()
+    variable = object()
+    instruction = SimpleNamespace(
+        address=0x4502F1,
+        vars_written=[SimpleNamespace(var=variable)],
+    )
+    function = SimpleNamespace(
+        mlil=SimpleNamespace(ssa_form=[[instruction]]),
+    )
+
+    assert importer._written_variable_at(function, 0x4502F1) is variable
+
+
+def test_written_variable_at_rejects_missing_definition():
+    importer = _load_importer()
+    function = SimpleNamespace(
+        mlil=SimpleNamespace(ssa_form=[]),
+    )
+
+    with pytest.raises(LookupError, match="expected one written variable"):
+        importer._written_variable_at(function, 0x4502F1)
+
+
+def test_apply_function_local_types_is_idempotent(monkeypatch):
+    importer = _load_importer()
+    local_type = object()
+    variable = SimpleNamespace(
+        name="menu_item_vertex0_element",
+        type=local_type,
+    )
+    instruction = SimpleNamespace(
+        address=0x4502F1,
+        vars_written=[SimpleNamespace(var=variable)],
+    )
+
+    class FakeFunction:
+        mlil = SimpleNamespace(ssa_form=[[instruction]])
+
+        def __init__(self):
+            self.created = []
+
+        def is_var_user_defined(self, _var):
+            return True
+
+        def create_user_var(self, var, var_type, name):
+            self.created.append((var, var_type, name))
+
+    function = FakeFunction()
+    monkeypatch.setattr(
+        importer,
+        "_resolve_data_type",
+        lambda _bv, _type_text: local_type,
+    )
+
+    count = importer._apply_function_local_types(
+        object(),
+        function,
+        [
+            {
+                "address": "0x004502f1",
+                "name": "menu_item_vertex0_element",
+                "type": "ui_element_t *",
+            },
+        ],
+    )
+
+    assert count == 1
+    assert function.created == []
 
 
 def test_name_map_preserves_recovered_core_pointer_signatures():

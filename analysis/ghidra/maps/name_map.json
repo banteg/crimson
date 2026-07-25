@@ -4396,7 +4396,44 @@
     "address": "0x0044fcb0",
     "name": "ui_menu_layout_init",
     "signature": "void ui_menu_layout_init(void)",
-    "comment": "initializes menu UI element layout and text textures"
+    "comment": "initializes menu UI element layout and text textures",
+    "local_types": [
+      {
+        "address": "0x004502f1",
+        "name": "menu_item_vertex0_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00450328",
+        "name": "menu_item_vertex1_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00450342",
+        "name": "menu_item_vertex2_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x00450377",
+        "name": "menu_item_vertex3_element",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x004503ba",
+        "name": "menu_item_vertex0_element_alt",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x004503f1",
+        "name": "menu_item_vertex1_element_alt",
+        "type": "ui_element_t *"
+      },
+      {
+        "address": "0x0045040b",
+        "name": "menu_item_vertex2_element_alt",
+        "type": "ui_element_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",

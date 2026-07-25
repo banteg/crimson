@@ -5,6 +5,11 @@ Usage:
   - In Binary Ninja: open the binary and run this script (Tools -> Run Script).
   - Or from the console: import binja_import_maps as m; m.apply_maps(bv)
 
+Name-map rows may include ``local_types`` entries keyed by the address of an
+instruction that defines exactly one SSA variable. This preserves narrow
+presentation annotations when Binary Ninja loses a recovered pointee type
+across a compiler-generated reload.
+
 Environment overrides:
   - CRIMSON_NAME_MAP: path to name_map.json / .csv
   - CRIMSON_DATA_MAP: path to data_map.json / .csv
@@ -187,26 +192,32 @@ def _require_platform(bv):
 
 
 def _candidate_roots(bv=None) -> list[Path]:
-    roots: list[Path] = []
-    if "__file__" in globals():
-        try:
-            script_path = Path(__file__).resolve()
-            roots.append(script_path.parent)
-            if len(script_path.parents) >= 2:
-                roots.append(script_path.parents[1])
-        except Exception:
-            pass
+    bases: list[Path] = []
     if bv is not None:
         for value in (bv.file.original_filename, bv.file.filename):
             if value:
                 try:
-                    roots.append(Path(value).resolve().parent)
+                    bases.append(Path(value).resolve().parent)
                 except Exception:
                     pass
+    if "__file__" in globals():
+        try:
+            script_path = Path(__file__).resolve()
+            bases.append(script_path.parent)
+            if len(script_path.parents) >= 2:
+                bases.append(script_path.parents[1])
+        except Exception:
+            pass
     try:
-        roots.append(Path.cwd())
+        bases.append(Path.cwd())
     except Exception:
         pass
+
+    roots: list[Path] = []
+    for base in bases:
+        for candidate in (base, *base.parents):
+            if candidate not in roots:
+                roots.append(candidate)
     return roots
 
 
@@ -785,6 +796,52 @@ def _apply_function_signature(bv, func, signature: str) -> None:
     func.set_user_type(func_type)
 
 
+def _written_variable_at(func, addr: int):
+    """Resolve the single SSA variable defined by an instruction address."""
+    candidates = []
+    for block in func.mlil.ssa_form:
+        for instruction in block:
+            if instruction.address != addr:
+                continue
+            for ssa_var in instruction.vars_written:
+                var = getattr(ssa_var, "var", ssa_var)
+                if var not in candidates:
+                    candidates.append(var)
+
+    if len(candidates) != 1:
+        raise LookupError(
+            f"expected one written variable at 0x{addr:x}, found {len(candidates)}",
+        )
+    return candidates[0]
+
+
+def _apply_function_local_types(bv, func, entries: list[dict]) -> int:
+    applied = 0
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise TypeError(f"unsupported local type entry: {entry!r}")
+        addr = _parse_address(entry.get("address"))
+        if addr is None:
+            raise ValueError(f"invalid local type address: {entry!r}")
+        type_text = entry.get("type") or ""
+        name = entry.get("name") or ""
+        if not type_text or not name:
+            raise ValueError(f"local type entry needs type and name: {entry!r}")
+
+        var = _written_variable_at(func, addr)
+        local_type = _resolve_data_type(bv, type_text)
+        if (
+            func.is_var_user_defined(var)
+            and var.name == name
+            and str(var.type) == str(local_type)
+        ):
+            applied += 1
+            continue
+        func.create_user_var(var, local_type, name)
+        applied += 1
+    return applied
+
+
 def _set_function_comment(func, comment: str) -> None:
     func.comment = comment
 
@@ -884,11 +941,13 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "applied": 0,
         "renamed": 0,
         "signatures": 0,
+        "local_types": 0,
         "comments": 0,
         "created": 0,
         "missing": 0,
         "skipped": 0,
     }
+    pending_local_types = []
 
     for row in rows:
         if not isinstance(row, dict):
@@ -934,15 +993,39 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
             stats["comments"] += 1
             changed = True
 
+        local_types = row.get("local_types") or []
+        if local_types:
+            if not isinstance(local_types, list):
+                raise TypeError(
+                    f"local_types must be a list for {_entry_label(row, addr)}",
+                )
+            pending_local_types.append((func, local_types, row, addr))
+            changed = True
+
         if changed:
             stats["applied"] += 1
 
     if stats["applied"]:
         _update_analysis(bv)
 
+    for func, entries, row, addr in pending_local_types:
+        try:
+            stats["local_types"] += _apply_function_local_types(
+                bv,
+                func,
+                entries,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"local type apply failed for {_entry_label(row, addr)}",
+            ) from exc
+
+    if stats["local_types"]:
+        _update_analysis(bv)
+
     _log_info(f"Applied name map: {map_path}")
     _log_info(
-        "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, comments {comments})".format(
+        "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, local types {local_types}, comments {comments})".format(
             **stats,
         ),
     )
