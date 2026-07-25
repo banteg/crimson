@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289996/676681** code bytes (**42.9%**).
+Fuzzy-weighted alignment is **290020/676681** code bytes (**42.9%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260420/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260445/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **260420/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **260445/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -104,7 +104,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | survival_spawn_creature | 0x00407510 | 1973 | 1973/1973 | 0 | 517/517 | 100.00% | 517/517 | 85/0/0 |  | survival-random-creature-stats-and-rare-variants |
 | wip | survival_update | 0x00407cd0 | 2102 | 2064/2102 | 38 | 504/504 | 98.21% | 102/504 | 139/0/0 |  | survival-handouts-milestones-and-edge-wave-spawns |
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 1084/1084 | 0 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
-| wip | tutorial_timeline_update | 0x00408990 | 2907 | 1853/2907 | 1054 | 701/695 | 63.75% | 6/695 | 153/0/4 |  | tutorial-script-prompts-hints-and-spawns |
+| wip | tutorial_timeline_update | 0x00408990 | 2907 | 1878/2907 | 1029 | 692/695 | 64.60% | 6/695 | 153/0/4 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 910/910 | 0 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 2693/2693 | 0 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 416/416 | 0 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |

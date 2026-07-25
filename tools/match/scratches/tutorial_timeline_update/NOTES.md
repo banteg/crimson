@@ -38,7 +38,7 @@ and player-key bounds retain the native signed pointer comparisons. The three
 stage-one point bonuses also preserve the otherwise easy-to-miss reload of
 bonus zero's `time_left` into bonuses one and two's `time_max` fields.
 
-The current honest VC6.5 result is 63.75%: 695 target instructions versus 701
+The current honest VC6.5 result is 64.60%: 695 target instructions versus 692
 candidate instructions, with references `153/0/4`. The stack frame is the
 native `0x5c` bytes. Remaining differences are dominated by prompt-alpha
 default-store placement, register scheduling after the stage-one point-bonus
@@ -68,4 +68,12 @@ The global carrier handle at `0x004808ac` is now persisted as `creature_t *`.
 That type is proven by the two assignments from `creature_spawn_template` and
 the subsequent active, health, flags, and packed link-index accesses. Applying
 it removes all raw `+0x24`, `+0x78`, `+0x7a`, and `+0x8c` expressions from this
-native function without changing the honest 63.75% matching result.
+native function.
+
+Stages two, five, and seven now express their 16-slot bonus-pool emptiness test
+as an indexed loop. VC6 strength-reduces the typed index into the native
+record pointer while retaining the count in a separate register, reproducing
+all three native scan CFGs. The former hand-written pointer loop hoisted slot
+zero out of each loop and emitted nine extra instructions overall; replacing
+it raises the honest total from 63.75% to 64.60% while preserving behavior,
+the native frame, and the reference audit.

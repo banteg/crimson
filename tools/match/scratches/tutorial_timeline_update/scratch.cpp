@@ -274,14 +274,10 @@ extern "C" void tutorial_timeline_update(void)
 
     if (stage == 2) {
         int bonus_count = 0;
-        bonus_entry_t *bonus = bonus_pool;
-        do {
-            if (bonus->bonus_id != BONUS_ID_NONE) {
-                break;
-            }
-            ++bonus;
+        while (bonus_count < 0x10
+            && bonus_pool[bonus_count].bonus_id == BONUS_ID_NONE) {
             ++bonus_count;
-        } while ((int)bonus < (int)&bonus_pool[0x10]);
+        }
         if (bonus_count == 0x10 && tutorial_stage_transition_timer == -1) {
             tutorial_stage_transition_timer = -1000;
             sfx_play(sfx_ui_levelup, 1.0f);
@@ -348,14 +344,10 @@ extern "C" void tutorial_timeline_update(void)
 
     if (stage == 5) {
         int bonus_count = 0;
-        bonus_entry_t *bonus = bonus_pool;
-        do {
-            if (bonus->bonus_id != BONUS_ID_NONE) {
-                break;
-            }
-            ++bonus;
+        while (bonus_count < 0x10
+            && bonus_pool[bonus_count].bonus_id == BONUS_ID_NONE) {
             ++bonus_count;
-        } while ((int)bonus < (int)&bonus_pool[0x10]);
+        }
         if (bonus_count == 0x10 && creatures_none_active()) {
             ++tutorial_repeat_spawn_count;
             if (tutorial_repeat_spawn_count > 7) {
@@ -494,14 +486,10 @@ extern "C" void tutorial_timeline_update(void)
 
     if (stage == 7) {
         int bonus_count = 0;
-        bonus_entry_t *bonus = bonus_pool;
-        do {
-            if (bonus->bonus_id != BONUS_ID_NONE) {
-                break;
-            }
-            ++bonus;
+        while (bonus_count < 0x10
+            && bonus_pool[bonus_count].bonus_id == BONUS_ID_NONE) {
             ++bonus_count;
-        } while ((int)bonus < (int)&bonus_pool[0x10]);
+        }
         if (bonus_count == 0x10
             && creatures_none_active()
             && tutorial_stage_transition_timer == -1) {
