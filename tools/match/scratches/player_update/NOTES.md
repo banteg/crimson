@@ -428,3 +428,10 @@ retain their previous instruction counts, scores, and reference audits. Custom
 C++ vector wrappers still reinterpret the named `position` object where their
 operator lowering is required, but no consumer reconstructs it from
 `&pos_x`.
+
+The native weapon row is now represented by canonical
+`weapon_storage_entry_t`: its ammo-class dword precedes the shifted public
+`weapon_stats_t` view in each `0x7c`-byte row. Both player ammo-class tests
+therefore use `weapon_ammo_class[player->weapon_id].ammo_class` instead of a
+manual 31-dword stride. This is source-shape recovery only; validation remains
+4,019/4,206 instructions at 54.8085% with `736/0/11` references.

@@ -234,3 +234,8 @@ them with anonymous union overlays makes its HLIL regress to `__offset(...)`.
 Its particle and sprite-effect records safely use direct named aggregates
 instead, also correcting `particle_t::style_id` and
 `sprite_effect_t::active` from stale 32-bit interpretations to bytes.
+
+The projectile weapon-class gate now reads the canonical native weapon row as
+`weapon_ammo_class[type_id].ammo_class`. This removes the decompiler-derived
+31-dword stride without changing code generation: the candidate remains
+2,137/2,203 instructions at 46.9124% with `336/0/29` references.

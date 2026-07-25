@@ -44,7 +44,7 @@ extern cvar_float_t *cv_padAimDistMul;
 extern int frame_dt_ms;
 extern int player_alt_weapon_swap_cooldown_ms;
 extern unsigned char survival_reward_fire_seen;
-extern int weapon_ammo_class[];
+extern weapon_storage_entry_t weapon_ammo_class[];
 extern int sfx_bloodspill_01;
 extern int sfx_explosion_small;
 extern int fire_bullets_primary_shot_sfx_id;
@@ -1079,7 +1079,7 @@ extern "C" void player_update(void)
 
         if (!normal_fire_ready) {
             if (perk_count_get(perk_id_regression_bullets) != 0) {
-                if (weapon_ammo_class[player->weapon_id * 31] == 1) {
+                if (weapon_ammo_class[player->weapon_id].ammo_class == 1) {
                     player->experience = player->experience
                         - weapon_table[player->weapon_id].reload_time * 4.0f;
                 } else {
@@ -1089,7 +1089,7 @@ extern "C" void player_update(void)
             } else if (perk_count_get(perk_id_ammunition_within) != 0) {
                 player_take_damage(
                     render_overlay_player_index,
-                    weapon_ammo_class[player->weapon_id * 31] == 1
+                    weapon_ammo_class[player->weapon_id].ammo_class == 1
                         ? 0.15f
                         : 1.0f);
             }

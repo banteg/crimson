@@ -52,7 +52,7 @@ extern int ui_clock_table_texture;
 extern int ui_clock_pointer_texture;
 extern int ui_text_level_complete_texture;
 
-extern int weapon_ammo_class[];
+extern weapon_storage_entry_t weapon_ammo_class[];
 extern int quest_spawn_timeline;
 extern int quest_stage_banner_timer_ms;
 extern char quest_stage_label_buffer[];
@@ -271,7 +271,7 @@ extern "C" void ui_render_hud(float transition_alpha)
              ++render_overlay_player_index) {
             int weapon_id =
                 player_state_table[render_overlay_player_index].weapon_id;
-            int ammo_class = weapon_ammo_class[weapon_id * 31];
+            int ammo_class = weapon_ammo_class[weapon_id].ammo_class;
             if (ammo_class == 1) {
                 grim_interface_ptr->grim_bind_texture(
                     grim_interface_ptr->grim_get_texture_handle(

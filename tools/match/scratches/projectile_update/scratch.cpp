@@ -11,7 +11,7 @@ extern int highscore_record_shots_hit;
 extern unsigned char music_playlist_randomized_latch;
 extern int music_track_extra_0;
 extern int sfx_bullet_hit_01;
-extern int weapon_ammo_class[];
+extern weapon_storage_entry_t weapon_ammo_class[];
 extern int config_detail_preset;
 extern creature_type_table_t creature_type_table;
 
@@ -665,8 +665,8 @@ extern "C" void projectile_update(void)
                                             music_track_extra_0);
                                     } else {
                                         int hit_sfx = sfx_shock_hit_01;
-                                        if (weapon_ammo_class[type_id * 31]
-                                            != 4) {
+                                        if (weapon_ammo_class[type_id]
+                                                .ammo_class != 4) {
                                             hit_sfx = crt_rand() % 6
                                                 + sfx_bullet_hit_01;
                                         }

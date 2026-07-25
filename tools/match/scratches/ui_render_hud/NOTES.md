@@ -28,3 +28,9 @@ coloring, and a few equivalent control-flow layouts. In particular, the
 reconstruction deliberately keeps the native ammo-class, XP smoothing, quest
 fade, and popup timer branches in their evidenced source shape rather than
 adding inert match-only scaffolding.
+
+The HUD ammo-class lookup now names the canonical
+`weapon_storage_entry_t::ammo_class` field instead of multiplying the weapon
+id by a raw 31-dword row stride. The source-only type correction is
+byte-neutral: validation remains 1,824/1,824 instructions at 84.5943% with
+`381/0/3` references.
