@@ -519,6 +519,8 @@ extern "C" creature_t *creature_spawn_template(
                 } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_RING_24_0E) {
                     INIT_ALIEN_SPAWNER(1.5f, 0x40, 1.05f, SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,
                                        32.0f, 50.0f, 2.8f, 5000.0f, 0.9f, 0.8f, 0.4f);
+                    chain_position.set(0.0f, 0.0f);
+                    child_tint.set(1.0f, 0.3f, 0.3f, 1.0f);
                     ring_member_idx = 0;
                     do {
                         child_slot_idx = creature_alloc_slot();
@@ -532,15 +534,11 @@ extern "C" creature_t *creature_spawn_template(
                         creature->target_offset_y = (float)sin(angle) * 100.0f;
                         creature->pos_x = pos->x;
                         creature->pos_y = pos->y;
-                        creature->vel_x = 0.0f;
-                        creature->vel_y = 0.0f;
+                        *(creature_spawn_vec2_t *)&creature->velocity = chain_position;
                         creature->collision_flag = 0;
-                        creature->tint_r = 1.0f;
                         creature->health = 40.0f;
                         creature->max_health = 40.0f;
-                        creature->tint_g = 0.3f;
-                        ring_member_idx = ring_member_idx + 1;
-                        creature->tint_b = 0.3f;
+                        *(creature_tint_t *)&creature->color = child_tint;
                         creature->collision_timer = 0.0f;
                         creature->active = 1;
                         creature->state_flag = 1;
@@ -549,9 +547,9 @@ extern "C" creature_t *creature_spawn_template(
                         creature->type_id = CREATURE_TYPE_ALIEN;
                         creature->move_speed = 4.0f;
                         creature->reward_value = 350.0f;
-                        creature->tint_a = 1.0f;
                         creature->size = 35.0f;
                         creature->contact_damage = 30.0f;
+                        ring_member_idx = ring_member_idx + 1;
                     } while (ring_member_idx < 0x18);
                 } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_31_FAST_0C) {
                     INIT_ALIEN_SPAWNER(1.5f, 100, 2.0f, SPAWN_ID_LIZARD_RANDOM_31,

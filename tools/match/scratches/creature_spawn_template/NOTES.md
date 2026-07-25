@@ -445,3 +445,13 @@ Frame/prefix notes:
   bytes in template `0x12` and is byte-neutral in template `0x19`; the latter
   is retained because it compiles identically and removes the misleading
   mid-body update from the recovered source.
+- The `0x0e` spawner ring constructs reusable zero velocity at
+  `[esp+0x28..0x2c]` and RGBA at `[esp+0x48..0x54]` before its 24-child loop,
+  then copies both complete values into each creature. Recovering those typed
+  values, placing the tint copy after health/max-health, and moving the loop
+  increment to the bottom adds 11 native-shaped instructions, raises the score
+  from `84.90%` to `85.73%`, and gains 118 fuzzy-weighted bytes. Velocity-only
+  and tint-only probes both disturbed more resolved references and scored
+  lower; the coherent pair leaves the audit at `352/0/1`, one aligned
+  reference below the previous scratch, while materially improving the proven
+  object and loop shape.
