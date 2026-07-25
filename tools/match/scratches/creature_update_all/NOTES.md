@@ -210,3 +210,12 @@ Every direct player-position access in the sweep now also uses
 established for the active creature cursor and alternate-player value without
 mislabeling either interior pointer. A whole-function shadow compile is
 byte-neutral at 1,290/1,338 instructions, 49.09%, and `207/0/4` references.
+
+The two linked-target AI arms now read the canonical
+`creature_t::target_offset` components directly. This is byte-neutral at the
+same 1,290/1,338 instructions, 49.09%, and `207/0/4` references. Applying the
+same spelling-only cleanup to the navigation-target or velocity components
+regresses the body to 48.78% and `203/0/4`: VC6 changes its alias/lifetime
+choices even though the offsets are identical. Those arithmetic-heavy fields
+therefore retain their scalar aliases here as an evidenced compiler-shape
+constraint rather than forcing a prettier aggregate view.

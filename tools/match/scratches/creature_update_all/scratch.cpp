@@ -269,10 +269,10 @@ extern "C" void creature_update_all(void)
                             if (creature_pool[linked_index].health > 0.0f) {
                                 creature_pool[creature_index].target_x =
                                     creature_pool[linked_index].pos_x
-                                    + creature_pool[creature_index].target_offset_x;
+                                    + creature_pool[creature_index].target_offset.x;
                                 creature_pool[creature_index].target_y =
                                     creature_pool[linked_index].pos_y
-                                    + creature_pool[creature_index].target_offset_y;
+                                    + creature_pool[creature_index].target_offset.y;
                             } else {
                                 creature_pool[creature_index].ai_mode =
                                     CREATURE_AI_ORBIT_PLAYER;
@@ -282,10 +282,10 @@ extern "C" void creature_update_all(void)
                             if (creature_pool[linked_index].health > 0.0f) {
                                 creature_pool[creature_index].target_x =
                                     creature_pool[linked_index].pos_x
-                                    + creature_pool[creature_index].target_offset_x;
+                                    + creature_pool[creature_index].target_offset.x;
                                 creature_pool[creature_index].target_y =
                                     creature_pool[linked_index].pos_y
-                                    + creature_pool[creature_index].target_offset_y;
+                                    + creature_pool[creature_index].target_offset.y;
                                 dx = creature_pool[creature_index].target_x - position->x;
                                 target_delta_y =
                                     creature_pool[creature_index].target_y - position->y;
