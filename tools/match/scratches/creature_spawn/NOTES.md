@@ -21,8 +21,11 @@ The legacy `oldtypes.h` declaration `SpawnCreatureEx(vec2_t spot, color_t col,
 int)` proves the two caller aggregates. The lowered matching boundary now uses
 `const vec2f_t *pos` and `const effect_color_t *tint`; source and saved Binary
 Ninja types expose `x`/`y` and `r`/`g`/`b`/`a` instead of six raw float
-indexes. Binary Ninja also types the embedded destination beginning at
-`creature_t::tint_r` as `effect_color_t *creature_tint`.
+indexes. The destination position is likewise copied through the canonical
+`creature_t::position` aggregate instead of two provisional scalar aliases.
+That source-shape recovery is byte-neutral. Binary Ninja also types the
+embedded destination beginning at `creature_t::tint_r` as
+`effect_color_t *creature_tint`.
 
 The candidate has the exact 79-instruction length, resolves all 27 audited
 references, and scores 86.08% with a seven-instruction exact prefix. Its

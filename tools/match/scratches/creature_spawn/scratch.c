@@ -15,8 +15,7 @@ int creature_spawn(
     int slot_id = creature_alloc_slot();
     creature_spawn_locals_t locals = {{0, 0}};
 
-    creature_pool[slot_id].pos_x = pos->x;
-    creature_pool[slot_id].pos_y = pos->y;
+    creature_pool[slot_id].position = *pos;
     creature_pool[slot_id].type_id = type_id;
     creature_pool[slot_id].ai_mode = 0;
     creature_pool[slot_id].collision_flag = 0;
