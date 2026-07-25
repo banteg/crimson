@@ -420,17 +420,16 @@ extern "C" unsigned char game_frame_update(void)
     crt_rand();
     audio_update();
 
-    if (grim_interface_ptr->grim_was_key_pressed(1)) {
-        game_state_id_t pause_state = game_state_id;
-        if ((render_pass_mode || pause_state == GAME_STATE_PLUGIN_RUNTIME)
-            && (pause_state == GAME_STATE_GAMEPLAY
-                || pause_state == GAME_STATE_PLUGIN_RUNTIME
-                || pause_state == GAME_STATE_TYPO_GAMEPLAY)) {
-            ui_transition_direction = 0;
-            game_state_pending = GAME_STATE_PAUSE_MENU;
-            if (plugin_interface_ptr != 0) {
-                plugin_interface_ptr->parms.fields.onPause = 1;
-            }
+    if (grim_interface_ptr->grim_was_key_pressed(1)
+        && (render_pass_mode
+            || game_state_id == GAME_STATE_PLUGIN_RUNTIME)
+        && (game_state_id == GAME_STATE_GAMEPLAY
+            || game_state_id == GAME_STATE_PLUGIN_RUNTIME
+            || game_state_id == GAME_STATE_TYPO_GAMEPLAY)) {
+        ui_transition_direction = 0;
+        game_state_pending = GAME_STATE_PAUSE_MENU;
+        if (plugin_interface_ptr != 0) {
+            plugin_interface_ptr->parms.fields.onPause = 1;
         }
     }
 
@@ -482,10 +481,11 @@ extern "C" unsigned char game_frame_update(void)
     if (demo_mode_active && game_state_pending == GAME_STATE_MAIN_MENU) {
         int max_timeline = ui_elements_max_timeline();
         float fade;
-        if (max_timeline != 0) {
-            fade = 1.0f - (float)ui_elements_timeline / max_timeline;
-        } else {
+        if (max_timeline == 0) {
             fade = 1.0f;
+        } else {
+            fade = 1.0f
+                - (float)ui_elements_timeline / (float)max_timeline;
         }
             fade *= fade;
         if (game_state_prev == GAME_STATE_DEMO_UPSELL_GAMEPLAY) {
@@ -504,10 +504,11 @@ extern "C" unsigned char game_frame_update(void)
     if (game_state_pending == GAME_STATE_QUIT_TRANSITION) {
         int max_timeline = ui_elements_max_timeline();
         float fade;
-        if (max_timeline != 0) {
-            fade = 1.0f - (float)ui_elements_timeline / max_timeline;
-        } else {
+        if (max_timeline == 0) {
             fade = 1.0f;
+        } else {
+            fade = 1.0f
+                - (float)ui_elements_timeline / (float)max_timeline;
         }
         if (game_state_prev == GAME_STATE_PLUGIN_RUNTIME) {
             fade = 1.0f - fade;

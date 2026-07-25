@@ -56,9 +56,20 @@ case even after a field-reference override and reanalysis; that is a
 decompiler presentation limitation, not an unresolved layout. The union
 layout and generated code are unchanged.
 
-Current honest MSVC result: `93.92%`, exact prefix `363/905`, candidate
-`903/905` instructions, and masked references `314/0/0`. Remaining differences
-are local load/store scheduling in the two-player aim copy, old-VC6 byte-load
-selection in the pause gate, and equivalent x87 division/block layouts. No
-known native behavior is omitted. The candidate uses no volatile, dead-code,
-register, assembly, or layout constraints.
+Both transition fades test the zero-timeline case first, leaving the constant
+`1.0f` result on the native fallthrough and putting the calculated division in
+the alternate arm. This source-level inversion improved the score from
+`93.92%` to `94.14%`. The pause request is one key-first short-circuit
+expression over render mode and the accepted gameplay states; avoiding a
+cached state local restores the native byte/state load order and raises the
+final score to `96.08%`.
+
+Current honest MSVC result: `96.08%`, exact prefix `363/905`, candidate
+`904/905` instructions, and masked references `317/0/0`. Remaining differences
+are local load/store scheduling in the two-player aim copy and an equivalent
+x87 integer-division form that accounts for the one-instruction count
+difference. Aggregate vector assignment and the natural `set(x, y)` helper
+were tested, but regressed the exact prefix to `345` and the score to `87.38%`
+and `90.82%`; the scalar source is retained. No known native behavior is
+omitted. The candidate uses no volatile, dead-code, register, assembly, or
+layout constraints.
