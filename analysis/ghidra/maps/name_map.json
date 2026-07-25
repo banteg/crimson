@@ -458,6 +458,40 @@
     "address": "0x004055e0",
     "name": "perk_apply",
     "signature": "void perk_apply(int perk_id)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x0040571b",
+        "name": "sacrifice_health_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x0040573e",
+        "source_name": "i_4",
+        "name": "creature_lifecycle_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x0040583e",
+        "name": "player_weapon_id_cursor",
+        "type": "int *"
+      },
+      {
+        "address": "0x0040588c",
+        "name": "death_clock_health_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x004058bf",
+        "name": "bandage_health_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x00405925",
+        "name": "clip_size_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "applies perk effects and increments perk counter"
   },
   {
@@ -570,6 +604,7 @@
     "address": "0x00406b40",
     "name": "perks_update_effects",
     "signature": "void perks_update_effects(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "updates perk timers/effects (regen, shields, evil eyes, jinxed, bonus timers)"
   },
   {
@@ -591,6 +626,7 @@
     "address": "0x00407510",
     "name": "survival_spawn_creature",
     "signature": "void survival_spawn_creature(const vec2f_t *pos)",
+    "analysis_skip_override": "never_skip",
     "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
   },
   {
@@ -619,6 +655,7 @@
     "address": "0x00409500",
     "name": "camera_update",
     "signature": "void camera_update(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "updates camera offsets and screen shake"
   },
   {
@@ -1272,6 +1309,7 @@
     "address": "0x004120b0",
     "name": "gameplay_run_state_init",
     "signature": "int gameplay_run_state_init(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "initializes highscore_active_record defaults and resets run/quest runtime counters before gameplay"
   },
   {
@@ -1334,6 +1372,7 @@
     "address": "0x00412230",
     "name": "bonus_pool_global_init",
     "signature": "void bonus_pool_global_init(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "marks every entry in the 16-slot bonus pool inactive"
   },
   {
@@ -1362,6 +1401,7 @@
     "address": "0x004122a0",
     "name": "game_status_global_init",
     "signature": "void game_status_global_init(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "zeros persisted status counters and seeds the four reserved tail words"
   },
   {
@@ -1369,6 +1409,7 @@
     "address": "0x00412360",
     "name": "highscore_init_sentinels",
     "signature": "int highscore_init_sentinels(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "[binja] int32_t sub_412360()"
   },
   {
@@ -1425,6 +1466,7 @@
     "address": "0x00412470",
     "name": "bonus_pick_random_type",
     "signature": "bonus_id_t bonus_pick_random_type(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "rolls a bonus id while respecting timers, perks, quest stage, and enabled flags"
   },
   {
@@ -1481,6 +1523,7 @@
     "address": "0x00413430",
     "name": "player_start_reload",
     "signature": "void player_start_reload(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "starts reload for the active player, sets timers, and plays SFX. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned id is 35 (15/20)."
   },
   {
@@ -1488,6 +1531,7 @@
     "address": "0x00413540",
     "name": "player_heading_approach_target",
     "signature": "float player_heading_approach_target(float target_heading)",
+    "analysis_skip_override": "never_skip",
     "comment": "wraps heading to [0,2pi], turns toward target_heading, and returns shortest angular distance"
   },
   {
@@ -2338,6 +2382,24 @@
     "address": "0x00420b90",
     "name": "projectile_update",
     "signature": "void projectile_update(void)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00421a0d",
+        "name": "secondary_vel_y_cursor",
+        "type": "secondary_projectile_vel_y_block_t *"
+      },
+      {
+        "address": "0x00421ab1",
+        "name": "creature_pos_y_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x004224f0",
+        "name": "particle_vel_y_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "updates projectile movement, collisions, and hit effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned cluster is 54/51/53/55/52/50."
   },
   {
@@ -2851,6 +2913,7 @@
     "address": "0x00430af0",
     "name": "creature_spawn_template",
     "signature": "creature_t * creature_spawn_template(int template_id, const vec2f_t *pos, float heading)",
+    "analysis_skip_override": "never_skip",
     "comment": "spawns creature(s) from template id; heading -100 uses a random heading"
   },
   {

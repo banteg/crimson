@@ -455,3 +455,18 @@ Frame/prefix notes:
   lower; the coherent pair leaves the audit at `352/0/1`, one aligned
   reference below the previous scratch, while materially improving the proven
   object and loop shape.
+
+## Binary Ninja control-flow recovery
+
+The default analysis-time limit had discarded all IL for this 14,099-byte
+game-core function. Its name-map row now requests `never_skip` analysis.
+Reanalysis completes in about four seconds and recovers 260 basic blocks with
+LLIL, MLIL, and HLIL. The resulting decompilation uses one typed
+`creature_t *result` throughout the template dispatcher and contains no
+`field_0xNN` or `__offset` placeholders. The few temporary tint pointers are
+honest addresses of the `tint_r` member used by MSVC's four-byte copy lowering,
+so they are not mislabeled as owning creature pointers.
+
+This database-only control-flow recovery does not change code generation:
+the scratch remains 85.73% with 3,149/3,159 instructions and `352/0/1`
+references.

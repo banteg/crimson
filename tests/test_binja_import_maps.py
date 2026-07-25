@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -470,6 +471,63 @@ def test_written_variable_at_rejects_missing_definition():
         importer._written_variable_at(function, 0x4502F1)
 
 
+def test_written_variable_at_uses_source_name_for_ambiguous_address():
+    importer = _load_importer()
+    induction_cursor = SimpleNamespace(name="i_4")
+    unrelated_phi = SimpleNamespace(name="i_3")
+    instruction = SimpleNamespace(
+        address=0x40573E,
+        vars_written=[
+            SimpleNamespace(var=unrelated_phi),
+            SimpleNamespace(var=induction_cursor),
+        ],
+    )
+    function = SimpleNamespace(
+        mlil=SimpleNamespace(ssa_form=[[instruction]]),
+    )
+
+    assert importer._written_variable_at(
+        function,
+        0x40573E,
+        frozenset({"i_4", "creature_lifecycle_cursor"}),
+    ) is induction_cursor
+
+
+def test_analysis_skip_override_is_idempotent():
+    importer = _load_importer()
+
+    class AnalysisOverride(Enum):
+        DefaultFunctionAnalysis = 0
+        NeverSkipFunctionAnalysis = 1
+
+    class FakeFunction:
+        def __init__(self):
+            self.analysis_skip_override = (
+                AnalysisOverride.DefaultFunctionAnalysis
+            )
+            self.reanalysis_count = 0
+
+        def reanalyze(self):
+            self.reanalysis_count += 1
+
+    function = FakeFunction()
+
+    assert importer._apply_analysis_skip_override(
+        function,
+        "never_skip",
+    )
+    assert function.reanalysis_count == 1
+    assert (
+        function.analysis_skip_override
+        == AnalysisOverride.NeverSkipFunctionAnalysis
+    )
+    assert not importer._apply_analysis_skip_override(
+        function,
+        "never_skip",
+    )
+    assert function.reanalysis_count == 1
+
+
 def test_apply_function_local_types_is_idempotent(monkeypatch):
     importer = _load_importer()
     local_type = object()
@@ -578,6 +636,66 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "unsigned char wav_parse_into_entry("
         "sfx_entry_t *entry, void *data, unsigned int size)"
     )
+
+
+def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text())
+    rows_by_name = {
+        row["name"]: row
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+    never_skip = {
+        name
+        for name, row in rows_by_name.items()
+        if row.get("analysis_skip_override") == "never_skip"
+    }
+
+    assert {
+        "perk_apply",
+        "perks_update_effects",
+        "survival_spawn_creature",
+        "camera_update",
+        "gameplay_run_state_init",
+        "bonus_pool_global_init",
+        "game_status_global_init",
+        "highscore_init_sentinels",
+        "bonus_pick_random_type",
+        "player_start_reload",
+        "player_heading_approach_target",
+        "projectile_update",
+        "creature_spawn_template",
+    } <= never_skip
+    assert rows_by_name["projectile_update"]["local_types"] == [
+        {
+            "address": "0x00421a0d",
+            "name": "secondary_vel_y_cursor",
+            "type": "secondary_projectile_vel_y_block_t *",
+        },
+        {
+            "address": "0x00421ab1",
+            "name": "creature_pos_y_cursor",
+            "type": "float *",
+        },
+        {
+            "address": "0x004224f0",
+            "name": "particle_vel_y_cursor",
+            "type": "float *",
+        },
+    ]
+    assert rows_by_name["perk_apply"]["local_types"][1] == {
+        "address": "0x0040573e",
+        "source_name": "i_4",
+        "name": "creature_lifecycle_cursor",
+        "type": "float *",
+    }
 
 
 def test_name_map_preserves_creature_death_pointer_local():

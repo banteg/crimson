@@ -6,9 +6,14 @@ Usage:
   - Or from the console: import binja_import_maps as m; m.apply_maps(bv)
 
 Name-map rows may include ``local_types`` entries keyed by the address of an
-instruction that defines exactly one SSA variable. This preserves narrow
-presentation annotations when Binary Ninja loses a recovered pointee type
-across a compiler-generated reload.
+instruction that defines an SSA variable. Ambiguous addresses may select the
+original variable with ``source_name``. This preserves narrow presentation
+annotations when Binary Ninja loses a recovered pointee type across a
+compiler-generated reload.
+
+Large recovered functions may also set ``analysis_skip_override`` to
+``never_skip``. This makes Binary Ninja retain their LLIL, MLIL, and HLIL even
+when the default analysis-time heuristic would otherwise discard them.
 
 Environment overrides:
   - CRIMSON_NAME_MAP: path to name_map.json / .csv
@@ -801,8 +806,12 @@ def _apply_function_signature(bv, func, signature: str) -> None:
     func.set_user_type(func_type)
 
 
-def _written_variable_at(func, addr: int):
-    """Resolve the single SSA variable defined by an instruction address."""
+def _written_variable_at(
+    func,
+    addr: int,
+    source_names: frozenset[str] = frozenset(),
+):
+    """Resolve one SSA variable defined by an instruction address."""
     candidates = []
     for block in func.mlil.ssa_form:
         for instruction in block:
@@ -813,9 +822,18 @@ def _written_variable_at(func, addr: int):
                 if var not in candidates:
                     candidates.append(var)
 
+    if source_names:
+        candidates = [
+            var for var in candidates if var.name in source_names
+        ]
+
     if len(candidates) != 1:
+        selector = (
+            f" matching {sorted(source_names)!r}" if source_names else ""
+        )
         raise LookupError(
-            f"expected one written variable at 0x{addr:x}, found {len(candidates)}",
+            f"expected one written variable at 0x{addr:x}{selector}, "
+            f"found {len(candidates)}",
         )
     return candidates[0]
 
@@ -833,7 +851,11 @@ def _apply_function_local_types(bv, func, entries: list[dict]) -> int:
         if not type_text or not name:
             raise ValueError(f"local type entry needs type and name: {entry!r}")
 
-        var = _written_variable_at(func, addr)
+        source_name = entry.get("source_name") or ""
+        source_names = (
+            frozenset((source_name, name)) if source_name else frozenset()
+        )
+        var = _written_variable_at(func, addr, source_names)
         local_type = _resolve_data_type(bv, type_text)
         if (
             func.is_var_user_defined(var)
@@ -869,6 +891,19 @@ def _entry_label(row: dict, addr: int | None = None) -> str:
 
 def _update_analysis(bv) -> None:
     bv.update_analysis_and_wait()
+
+
+def _apply_analysis_skip_override(func, policy: str) -> bool:
+    if policy != "never_skip":
+        raise ValueError(f"unsupported analysis_skip_override: {policy!r}")
+
+    current = func.analysis_skip_override
+    desired = type(current).NeverSkipFunctionAnalysis
+    if current == desired:
+        return False
+    func.analysis_skip_override = desired
+    func.reanalyze()
+    return True
 
 
 def _read_instruction_info(bv, func):
@@ -947,6 +982,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
         "renamed": 0,
         "signatures": 0,
         "local_types": 0,
+        "analysis_overrides": 0,
         "comments": 0,
         "created": 0,
         "missing": 0,
@@ -998,6 +1034,21 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
             stats["comments"] += 1
             changed = True
 
+        analysis_policy = row.get("analysis_skip_override") or ""
+        if analysis_policy:
+            try:
+                override_changed = _apply_analysis_skip_override(
+                    func,
+                    analysis_policy,
+                )
+            except Exception as exc:
+                raise RuntimeError(
+                    f"analysis override failed for {_entry_label(row, addr)}",
+                ) from exc
+            if override_changed:
+                stats["analysis_overrides"] += 1
+                changed = True
+
         local_types = row.get("local_types") or []
         if local_types:
             if not isinstance(local_types, list):
@@ -1030,7 +1081,9 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
     _log_info(f"Applied name map: {map_path}")
     _log_info(
-        "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, local types {local_types}, comments {comments})".format(
+        "Updated entries: {applied} (renamed {renamed}, signatures {signatures}, "
+        "local types {local_types}, analysis overrides {analysis_overrides}, "
+        "comments {comments})".format(
             **stats,
         ),
     )

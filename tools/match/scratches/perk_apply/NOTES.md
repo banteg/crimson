@@ -49,3 +49,19 @@ shape is intentionally rejected. C and C++ modes,
 the available VC6-family backends, `/GB` and `/G6`, standalone-global aliases,
 and natural variable-lifetime spellings were checked. None recovers the native
 allocation without artificial source, so the honest semantic WIP is retained.
+
+## Binary Ninja cursor recovery
+
+This function was also being discarded by Binary Ninja's default analysis-time
+heuristic. The name map now retains its complete IL and gives the compiler-
+generated member cursors their semantic roles: sacrifice, Death Clock, and
+Bandage health; configured-player weapon id; My Favourite Weapon clip size;
+and the active-creature lifecycle walk. The lifecycle definition shares an
+address with loop phi nodes, so the importer now supports a narrow
+`source_name` selector rather than applying a type to an unrelated variable.
+
+The negative subscripts that remain are truthful interior-pointer arithmetic:
+for example, Bandage reaches player position from the health cursor, while
+Breathing Room reaches the creature active byte from the lifecycle cursor.
+No owning record type is forced onto either pointer. The candidate remains
+63.07%, 241/241 instructions, and exact `63/0/0` references.

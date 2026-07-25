@@ -243,3 +243,20 @@ The projectile weapon-class gate now reads the canonical native weapon row as
 `weapon_ammo_class[type_id].ammo_class`. This removes the decompiler-derived
 31-dword stride without changing code generation: the candidate remains
 2,137/2,203 instructions at 46.9124% with `336/0/29` references.
+
+## Binary Ninja control-flow recovery
+
+The saved database had stopped analysis at the default time limit, leaving this
+2,203-instruction function without LLIL, MLIL, or HLIL. Its name-map row now
+sets the narrow `never_skip` analysis policy; a forced reanalysis completes in
+about four seconds and restores the full primary-projectile, secondary-
+projectile, sprite-effect, and particle control flow.
+
+The recovered HLIL confirms one owning `projectile_t *projectile` cursor. The
+secondary-projectile walk is genuinely anchored at `vel_y`, and the creature
+and particle walks are genuinely anchored at `pos_y` and `vel_y`; the importer
+therefore gives those interior cursors descriptive names without pretending
+that their pointer values are owning-record bases. The sprite-effect cursor is
+left automatic because its register is reused for unrelated return values later
+in the function. This presentation-only recovery preserves 46.91%,
+2,137/2,203 instructions, and `336/0/29` references.
