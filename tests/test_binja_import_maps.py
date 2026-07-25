@@ -661,6 +661,20 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "ui_menu_item_subtemplate_block_t *element, "
         "float width, float height, float *offset)"
     )
+    assert signatures_by_name["highscore_compare_survival_score_desc"] == (
+        "int highscore_compare_survival_score_desc("
+        "const highscore_record_t *a, const highscore_record_t *b)"
+    )
+    assert signatures_by_name["highscore_compare_rush_field32_desc"] == (
+        "int highscore_compare_rush_field32_desc("
+        "const highscore_record_t *a, const highscore_record_t *b)"
+    )
+    assert signatures_by_name[
+        "highscore_compare_quest_field32_asc_nonzero_first"
+    ] == (
+        "int highscore_compare_quest_field32_asc_nonzero_first("
+        "const highscore_record_t *a, const highscore_record_t *b)"
+    )
 
 
 def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():

@@ -7,3 +7,8 @@ Nonzero values use signed comparisons.
 
 The Python Quest key `(value == 0, value)` implements the same ordering and is
 covered by the existing mode/highscore tests.
+
+The Binary Ninja presentation signature uses `const highscore_record_t *`
+arguments, so the zero-last control flow now names
+`survival_elapsed_ms` instead of loading anonymous offset `0x20`. The exact
+compiler-facing qsort callback remains `const void *` with explicit casts.

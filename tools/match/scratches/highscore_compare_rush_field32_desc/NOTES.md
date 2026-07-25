@@ -6,3 +6,8 @@ three-way descending comparator shape as Survival, but it reads
 highscore sorting.
 
 The Python Rush table already sorts elapsed time descending.
+
+The Binary Ninja presentation signature uses `const highscore_record_t *`
+arguments, recovering both offset-`0x20` loads as named
+`survival_elapsed_ms` fields. The exact source keeps the standard qsort
+`const void *` callback signature and explicit casts.

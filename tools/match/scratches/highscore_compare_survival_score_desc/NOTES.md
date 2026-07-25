@@ -7,3 +7,8 @@ Survival table comparator.
 
 The Python default highscore ordering is already descending by `score_xp`.
 Valid scores do not cross the signed boundary, so no port change is required.
+
+The Binary Ninja presentation signature uses `const highscore_record_t *`
+arguments, so the same two native loads render as `a->score_xp` and
+`b->score_xp`. The exact compiler-facing qsort callback deliberately retains
+its standard `const void *` parameters and explicit casts.
