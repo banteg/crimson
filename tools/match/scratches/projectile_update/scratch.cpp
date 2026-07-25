@@ -487,7 +487,7 @@ extern "C" void projectile_update(void)
                                             cos(projectile->angle - 1.5707964f)
                                             * projectile->pos.tail.vy
                                                 .speed_scale);
-                                        float impulse[2] = {
+                                        vec2f_t impulse = {
                                             impulse_axis,
                                             impulse_axis,
                                         };
@@ -498,7 +498,7 @@ extern "C" void projectile_update(void)
                                                 hit_id,
                                                 damage,
                                                 1,
-                                                (const vec2f_t *)impulse);
+                                                &impulse);
                                             if (projectile->pos.tail.vy
                                                     .life_timer
                                                 != 0.25f) {
@@ -511,7 +511,7 @@ extern "C" void projectile_update(void)
                                                 projectile->pos.tail.vy
                                                     .damage_pool,
                                                 1,
-                                                (const vec2f_t *)impulse);
+                                                &impulse);
                                             projectile->pos.tail.vy.damage_pool -=
                                                 creature_pool[hit_id].health;
                                         }
@@ -1034,8 +1034,7 @@ extern "C" void projectile_update(void)
                             int count = 8;
                             do {
                                 effect_spawn_freeze_shard(
-                                    (const vec2f_t *)
-                                        &creature_pool[hit_id].pos_x,
+                                    &creature_pool[hit_id].position,
                                     (float)(crt_rand() % 612) * 0.01f);
                                 --count;
                             } while (count != 0);
@@ -1146,8 +1145,7 @@ extern "C" void projectile_update(void)
                             .sfx_bank_a[crt_rand() % 3];
                         sfx_play_panned(
                             sfx_id,
-                            (const vec2f_t *)
-                                &creature_pool[target_id].pos_x,
+                            &creature_pool[target_id].position,
                             1.0f);
                     }
                     creature_handle_death(target_id, 0);

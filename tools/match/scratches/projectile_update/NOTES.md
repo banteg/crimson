@@ -70,6 +70,8 @@ to 45.40% and aligns 307 references.
 The native damage impulse deliberately writes both vector components from the
 same cosine term. The source retains that oddity because the disassembly and
 the existing runtime parity implementation independently agree on it.
+The local is now represented as a canonical `vec2f_t` and passed directly,
+removing two array casts with identical codegen.
 
 The primary penetration damage calculation is split across the weapon-specific
 impact switch. Native keeps the clamped travel distance on x87, calculates and
@@ -197,6 +199,8 @@ plays it at the creature position, then calls `creature_handle_death(target,
 false)`. The target id remains stored in the now-inactive particle. Both ports
 now preserve that order and stale-position/target state; Python no longer adds
 an HP guard that suppressed native active-corpse death re-entry.
+Both that audio call and the Rocket Minigun freeze-shard burst now take
+`creature_t::position` directly instead of casting from `pos_x`.
 
 ## Remaining work
 
