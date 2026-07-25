@@ -2872,7 +2872,34 @@
     "address": "0x00434480",
     "name": "quest_build_nagolipoli",
     "signature": "void quest_build_nagolipoli(quest_spawn_entry_t *entries, int *count)",
-    "comment": "quest builder for Tier 5 Quest 9 (Nagolipoli)"
+    "comment": "quest builder for Tier 5 Quest 9 (Nagolipoli)",
+    "local_types": [
+      {
+        "address": "0x004345aa",
+        "name": "corner_spawn_cursor",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x0043476d",
+        "name": "tail_spawner_top",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x004347bd",
+        "name": "tail_spawner_bottom",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x004347ed",
+        "name": "tail_lizard_bottom",
+        "type": "quest_spawn_entry_t *"
+      },
+      {
+        "address": "0x0043482d",
+        "name": "tail_lizard_top",
+        "type": "quest_spawn_entry_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",

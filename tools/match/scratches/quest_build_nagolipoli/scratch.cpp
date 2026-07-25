@@ -6,6 +6,12 @@ struct quest_vec2_t {
     float x;
     float y;
 
+    void set(float x_value, float y_value)
+    {
+        x = x_value;
+        y = y_value;
+    }
+
     void add(float value)
     {
         x += value;
@@ -48,8 +54,9 @@ extern "C" void quest_build_nagolipoli(
 
     while (builder.count < 8) {
         float angle = (float)builder.count * 0.785398185f;
-        spawn->pos.x = (float)cos(angle) * 128.0f;
-        spawn->pos.y = (float)sin(angle) * 128.0f;
+        spawn->pos.set(
+            (float)cos(angle) * 128.0f,
+            (float)sin(angle) * 128.0f);
         spawn->pos.add(512.0f);
         spawn->heading = angle;
         spawn->set_spawn(
@@ -65,24 +72,25 @@ extern "C" void quest_build_nagolipoli(
     builder.count += 12;
     while (ring_index < 12) {
         float angle = (float)ring_index * 0.52359879f;
-        spawn->pos.x = (float)cos(angle) * 178.0f;
-        spawn->pos.y = (float)sin(angle) * 178.0f;
+        spawn->pos.set(
+            (float)cos(angle) * 178.0f,
+            (float)sin(angle) * 178.0f);
         spawn->pos.add(512.0f);
         spawn->heading = angle;
         spawn->set_spawn(
             SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
             8000,
             1);
-        ++ring_index;
         ++spawn;
+        ++ring_index;
     }
 
-    quest_vec2_t top_right;
-    top_right.x = 1088.0f;
-    top_right.y = -64.0f;
     quest_vec2_t top_left;
     top_left.x = -64.0f;
     top_left.y = -64.0f;
+    quest_vec2_t top_right;
+    top_right.x = 1088.0f;
+    top_right.y = -64.0f;
     quest_vec2_t bottom_left;
     bottom_left.x = -64.0f;
     bottom_left.y = 1088.0f;
@@ -144,11 +152,11 @@ extern "C" void quest_build_nagolipoli(
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
-        spawn->heading = 0.0f;
         spawn->set_spawn(
             SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
             trigger_time_ms,
             1);
+        spawn->heading = 0.0f;
         ++line_index;
         ++spawn;
         trigger_time_ms += 100;
@@ -162,11 +170,11 @@ extern "C" void quest_build_nagolipoli(
     while (line_index < 6) {
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
-        spawn->heading = 0.0f;
         spawn->set_spawn(
             SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
             trigger_time_ms,
             1);
+        spawn->heading = 0.0f;
         ++line_index;
         ++spawn;
         trigger_time_ms += 100;

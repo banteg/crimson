@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **289947/676681** code bytes (**42.8%**).
+Fuzzy-weighted alignment is **289996/676681** code bytes (**42.9%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260371/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260420/386756 | 67.3% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **260371/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **260420/386756** fuzzy-weighted bytes (**67.3%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -411,7 +411,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | wip | quest_build_fallback | 0x004343e0 | 150 | 131/150 | 19 | 32/32 | 87.50% | 12/32 | 7/0/0 |  | quest-fallback-builder |
-| wip | quest_build_nagolipoli | 0x00434480 | 983 | 541/983 | 442 | 247/258 | 55.05% | 7/258 | 10/0/0 |  | quest-nagolipoli-rings-waves-lines |
+| wip | quest_build_nagolipoli | 0x00434480 | 983 | 590/983 | 393 | 255/258 | 60.04% | 7/258 | 12/0/0 |  | quest-nagolipoli-rings-waves-lines |
 | wip | quest_build_monster_blues | 0x00434860 | 348 | 286/348 | 62 | 95/95 | 82.11% | 9/95 | 2/0/0 |  | quest-monster-blues-modulo-wave-selector |
 | wip | quest_build_the_gathering | 0x004349c0 | 725 | 649/725 | 76 | 134/134 | 89.55% | 12/134 | 0/0/0 |  | quest-the-gathering-fixed-table |
 | wip | quest_build_army_of_three | 0x00434ca0 | 608 | 524/608 | 84 | 116/116 | 86.21% | 10/116 | 0/0/0 |  | quest-army-of-three-fixed-formations |
