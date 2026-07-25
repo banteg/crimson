@@ -108,7 +108,7 @@ extern "C" void perks_update_effects(void)
         || player_state_table[0].perk_counts[perk_id_evil_eyes] > 0) {
         player_state_table[0].evil_eyes_target_creature = -1;
         int creature_id = creature_find_in_radius(
-            (const vec2f_t *)&player_state_table[0].aim_x,
+            &player_state_table[0].aim,
             12.0f,
             0);
         if (creature_id != -1) {

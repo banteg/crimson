@@ -28,6 +28,8 @@ Final Revenge's embedded player position and zero force are now recovered as
 four remaining raw indexes in the exact source. Binary Ninja independently
 shows the impulse aggregate, and its position cursor is saved with the same
 read-only vector type. All 267 instructions and 73 references remain exact.
+The ordinary death and pain audio branches likewise pass
+`player_state_t::position` directly instead of casting from `pos_x`.
 
 Every perk query is a call to the global `perk_count_get`; unlike the indexed
 health, shield, reload, position, and timer fields, it always reads player 1.

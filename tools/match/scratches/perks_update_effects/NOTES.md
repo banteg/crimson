@@ -66,3 +66,5 @@ The recovered effect boundaries now carry position aggregates end to end:
 Pyrokinetic's aim is a `vec2f_t`, the Jinxed creature cursor is a
 `const vec2f_t *`, and the panned sound takes that same typed position. These
 changes preserve the exact 352/352 instruction match and all 136 references.
+The radius query now receives `player_state_t::aim` directly, eliminating its
+last interior-field cast without changing codegen.

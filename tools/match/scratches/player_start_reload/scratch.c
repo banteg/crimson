@@ -9,8 +9,7 @@ void player_start_reload(void)
         if (!player_state_table[render_overlay_player_index].reload_active) {
             int weapon_id = player_state_table[render_overlay_player_index].weapon_id;
             const vec2f_t *pos =
-                (const vec2f_t *)
-                    &player_state_table[render_overlay_player_index].pos_x;
+                &player_state_table[render_overlay_player_index].position;
             sfx_play_panned(weapon_table[weapon_id].reload_sfx_id, pos, 1.0f);
             player_index = render_overlay_player_index;
             player_state_table[render_overlay_player_index].reload_active = 1;

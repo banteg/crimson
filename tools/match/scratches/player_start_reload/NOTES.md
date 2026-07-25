@@ -22,3 +22,5 @@ The helper's local position cursor is now a `const vec2f_t *` pointing at the
 player aggregate before the panned reload call. This removes the raw member
 offset boundary without changing the exact 67/67 instruction, 28-reference
 match.
+It now takes `player_state_t::position` directly rather than casting from the
+first scalar component.
