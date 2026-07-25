@@ -15,3 +15,5 @@ The spawn position is recovered as a read-only `vec2f_t` in both source and
 Binary Ninja, replacing `pos[0]`/`pos[1]` without changing the exact match.
 The destination uses the canonical `particle_t::position` aggregate directly;
 that assignment is also byte-for-byte exact.
+The recovered byte-sized `particle_t::style_id` is also assigned directly,
+removing the stale byte-pointer cast with unchanged codegen.

@@ -41,7 +41,7 @@ found:
     particle_pool[index].angle = angle;
     particle_pool[index].spin = (float)(crt_rand() % 0x274) * 0.01f;
     particle_pool[index].render_flag = 1;
-    *(unsigned char *)&particle_pool[index].style_id = 8;
+    particle_pool[index].style_id = 8;
     particle_pool[index].target_id = -1;
 
     return index;
