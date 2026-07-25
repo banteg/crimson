@@ -44,3 +44,8 @@ The remaining creature/player distance operand now names both canonical
 position aggregates. This complements the already-typed Final Revenge
 arguments and remains byte-for-byte exact at 267/267 instructions and 73/0/0
 references.
+
+Both components of the owning creature record now use
+`creature_t::position` directly; no compatibility scalar alias remains in the
+damage-radius calculation. The function stays exact at 267/267 instructions
+and 73/0/0 references.

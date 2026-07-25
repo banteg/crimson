@@ -17,3 +17,7 @@ The destination uses the canonical `particle_t::position` aggregate directly;
 that assignment is also byte-for-byte exact.
 The recovered byte-sized `particle_t::style_id` is also assigned directly,
 removing the stale byte-pointer cast with unchanged codegen.
+
+The destination velocity stores now use the canonical `particle_t::velocity`
+components as well. The constructor remains exact at 67/67 instructions and
+19/0/0 references.

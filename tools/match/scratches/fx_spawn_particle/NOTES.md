@@ -20,3 +20,7 @@ Callsite evidence also identifies the otherwise-unused third argument as a
 read-only movement vector: player fire-cough passes the embedded move delta,
 while Pyrokinetic passes a temporary zero vector. Source and the saved Binary
 Ninja prototype now preserve that type without changing code generation.
+
+The destination velocity stores now use the canonical `particle_t::velocity`
+components as well. The constructor remains exact at 67/67 instructions and
+18/0/0 references.

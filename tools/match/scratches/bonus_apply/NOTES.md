@@ -67,3 +67,8 @@ Discarded variants:
   from `creature_t::pos_x`. Retyping either interior address as its enclosing
   struct would shift every field and be false, so those offsets remain
   explicitly identified rather than hidden behind an invalid type.
+
+The Pyrokinetic radius test is different: it indexes owning creature and bonus
+records, so its direct operands now use `creature_t::position` and
+`bonus_entry_t::time.position`. This stronger source shape remains exact at
+668/668 instructions and 216/0/0 references.

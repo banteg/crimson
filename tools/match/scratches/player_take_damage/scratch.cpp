@@ -78,10 +78,10 @@ post_damage:
             do {
                 if (creature_pool[creature_index].active) {
                     abs_delta = abs_bits(
-                        creature_pool[creature_index].pos_x - player_pos->x);
+                        creature_pool[creature_index].position.x - player_pos->x);
                     if (abs_delta <= 512.0f) {
                         abs_delta = abs_bits(
-                            creature_pool[creature_index].pos_y - player_state_table[player_index].position.y
+                            creature_pool[creature_index].position.y - player_state_table[player_index].position.y
                         );
                         if (abs_delta <= 512.0f) {
                             float blast = 512.0f - vec2_distance(

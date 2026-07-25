@@ -251,9 +251,9 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         do {
             if (creature_pool[creature_iter].active) {
                 abs_delta = abs_bits(
-                    creature_pool[creature_iter].pos_x - bonus_pos->x);
+                    creature_pool[creature_iter].position.x - bonus_pos->x);
                 if (abs_delta <= 256.0f) {
-                    abs_delta = abs_bits(creature_pool[creature_iter].pos_y - bonus_entry->time.pos_y);
+                    abs_delta = abs_bits(creature_pool[creature_iter].position.y - bonus_entry->time.position.y);
                     if (abs_delta <= 256.0f) {
                         float damage = 256.0f - vec2_distance(
                             &creature_pool[creature_iter].position,

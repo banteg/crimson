@@ -36,8 +36,8 @@ found:
 
     particle_pool[index].active = 1;
     particle_pool[index].position = *pos;
-    particle_pool[index].vel_x = (float)cos(angle) * 90.0f;
-    particle_pool[index].vel_y = (float)sin(angle) * 90.0f;
+    particle_pool[index].velocity.x = (float)cos(angle) * 90.0f;
+    particle_pool[index].velocity.y = (float)sin(angle) * 90.0f;
     particle_pool[index].intensity = intensity;
     *(particle_scale_t *)&particle_pool[index].scale_x = scale;
     particle_pool[index].angle = angle;
