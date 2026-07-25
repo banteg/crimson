@@ -49,12 +49,6 @@ panel/text capture; writes resolution-scoped JSONL):
 frida -n crimsonland.exe -l scripts\frida\panel_state_resolution_sweep.js
 ```
 
-Just shortcut (Windows VM):
-
-```text
-just frida-panel-state-resolution-sweep
-```
-
 Comprehensive gameplay/state capture (automatic snapshots + write tracing, JSONL to
 `gameplay_state_capture.jsonl`):
 
@@ -67,15 +61,17 @@ a raw `gameplay_diff_capture.jsonl` that the capture host finalizes into per-run
 `gameplay_diff_capture.<mode>.run<k>.cdt` traces plus matching `.crd` replays):
 
 ```text
-just frida-gameplay-diff-capture
+uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py \
+  --process crimsonland.exe \
+  --script scripts\frida\gameplay_diff_capture.js \
+  --output-dir C:\share\frida
 ```
 
 The host attaches, captures until Ctrl+C / game exit, then finalizes and deletes
 the raw JSONL (pass `--keep-raw` to keep it). To finalize a leftover raw file
 without the game running: `uv run --with frida==17.15.4 python
 scripts/frida/gameplay_diff_capture_host.py --finalize-only --raw-path <jsonl>`.
-Pass host flags through the `just` recipe after `--`, for example
-`just frida-gameplay-diff-capture -- --keep-raw`.
+Pass host flags directly to `gameplay_diff_capture_host.py`.
 
 Survival autoplay sidecar (manual-run helper that pins control scheme config only;
 default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
@@ -84,16 +80,12 @@ default is static movement + computer aim, JSONL to `survival_autoplay.jsonl`):
 frida -n crimsonland.exe -l scripts\frida\survival_autoplay.js
 ```
 
-Shortcut: `just frida-survival-autoplay`
-
 AlienZooKeeper no-unlock verifier (forces state `0x1a`, resets timer to `0x2580`, auto-solves board,
 and logs a final `verdict` event to `azk_verify_no_unlock.jsonl`):
 
 ```text
 frida -n crimsonland.exe -l scripts\frida\azk_verify_no_unlock.js
 ```
-
-Shortcut: `just frida-azk-verify`
 
 The UI render trace auto-inserts `auto_mark` events when it detects a screen/panel change.
 You can disable or tune it via:
@@ -120,13 +112,9 @@ FX queue bake trace (corpse shadow/color passes into terrain RT, JSONL to `fx_qu
 frida -n crimsonland.exe -l scripts\frida\fx_queue_render_trace.js
 ```
 
-Just shortcut (Windows VM):
-
-```text
-just frida-attach scripts\\frida\\crimsonland_probe.js
-```
-
-Optional overrides: a second positional arg for the process name, `CRIMSON_FRIDA_DIR`, and (for scripts with hardcoded addresses) `CRIMSON_FRIDA_ADDRS` / `CRIMSON_FRIDA_LINK_BASE` / `CRIMSON_FRIDA_MODULE`.
+Optional overrides include `CRIMSON_FRIDA_DIR` and, for scripts with hardcoded
+addresses, `CRIMSON_FRIDA_ADDRS`, `CRIMSON_FRIDA_LINK_BASE`, and
+`CRIMSON_FRIDA_MODULE`.
 
 Default logs written by the scripts:
 

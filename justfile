@@ -94,6 +94,15 @@ analysis-check program="crimsonland.exe" binja_live="false":
 binja-sync program="crimsonland.exe":
     bn py exec --target "{{program}}.bndb" --script scripts/binja_import_maps.py --format text --no-spill
 
+# IDA (macOS)
+[macos]
+ida-export-exe:
+    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/crimsonland.exe analysis/ida/raw/crimsonland.exe
+
+[macos]
+ida-export-grim:
+    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
+
 entrypoint-trace:
     uv run scripts/entrypoint_trace.py --depth 2 --skip-external
 
@@ -170,74 +179,9 @@ windbg-client:
 windbg-tail:
     uv run scripts/windbg_tail.py
 
-# Frida
-[windows]
-frida-attach script="scripts\\frida\\crimsonland_probe.js" process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "{{script}}"
-
-[windows]
-frida-unlock-secrets process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\unlock_secrets.js"
-
-[windows]
-frida-quest-spanking-count process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\quest_spanking_count.js"
-
-[windows]
-frida-azk-verify process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\azk_verify_no_unlock.js"
-
-[windows]
-frida-quest-build-dump process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\quest_build_dump.js"
-
-[windows]
-frida-demo-trial-overlay process="crimsonland.exe" addrs="" link_base="" module="":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }; if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }; if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\demo_trial_overlay_trace.js"
-
-[windows]
-frida-demo-idle-threshold process="crimsonland.exe" addrs="" link_base="" module="":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; if ("{{addrs}}" -ne "") { $env:CRIMSON_FRIDA_ADDRS = "{{addrs}}" } else { Remove-Item Env:CRIMSON_FRIDA_ADDRS -ErrorAction SilentlyContinue }; if ("{{link_base}}" -ne "") { $env:CRIMSON_FRIDA_LINK_BASE = "{{link_base}}" } else { Remove-Item Env:CRIMSON_FRIDA_LINK_BASE -ErrorAction SilentlyContinue }; if ("{{module}}" -ne "") { $env:CRIMSON_FRIDA_MODULE = "{{module}}" } else { Remove-Item Env:CRIMSON_FRIDA_MODULE -ErrorAction SilentlyContinue }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\demo_idle_threshold_trace.js"
-
-[windows]
-frida-game-over-panel-trace process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\game_over_panel_trace.js"
-
-[windows]
-frida-gameplay-state-capture process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\gameplay_state_capture.js"
-
-[windows]
-frida-gameplay-diff-capture *host_args:
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py {{host_args}}
-
-[windows]
-frida-survival-autoplay process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\survival_autoplay.js"
-
-[windows]
-frida-panel-state-resolution-sweep process="crimsonland.exe":
-    @if (-not $env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR = "C:\share\frida" }; New-Item -ItemType Directory -Force -Path "$env:CRIMSON_FRIDA_DIR" | Out-Null; frida -n "{{process}}" -l "scripts\frida\panel_state_resolution_sweep.js"
-
 [windows]
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
-
-[windows]
-ida-export-exe:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; $LOG_FILE=Join-Path $env:TEMP "crimson-ida-exe.log"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$LOG_FILE" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\crimsonland.exe"
-
-[windows]
-ida-export-grim:
-    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; $NAME_MAP=(Resolve-Path analysis\\ghidra\\maps\\name_map.json).Path; $DATA_MAP=(Resolve-Path analysis\\ghidra\\maps\\data_map.json).Path; $LOG_FILE=Join-Path $env:TEMP "crimson-ida-grim.log"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$LOG_FILE" -S"scripts\\ida_export.py $OUT_DIR $NAME_MAP $DATA_MAP" "{{game_dir}}\\grim.dll"
-
-[unix]
-ida-export-exe:
-    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/crimsonland.exe analysis/ida/raw/crimsonland.exe
-
-[unix]
-ida-export-grim:
-    ./analysis/ida/tooling/ida-export.sh {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
 
 [unix]
 frida-copy-share:

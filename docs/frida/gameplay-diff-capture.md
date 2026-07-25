@@ -31,12 +31,8 @@ uv run --with frida==17.15.4 python scripts/frida/gameplay_diff_capture_host.py 
   --output-dir C:\share\frida
 ```
 
-`just frida-gameplay-diff-capture` wraps the same command. Pass host arguments
-after `--`, for example:
-
-```text
-just frida-gameplay-diff-capture -- --keep-raw
-```
+Pass host options directly, for example add `--keep-raw` to retain the
+intermediate JSONL after finalization.
 
 Terminal gameplay transitions close the active run before the game-over or
 quest-results screen. A clean stream may end immediately after `run_end`;

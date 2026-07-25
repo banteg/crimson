@@ -43,12 +43,6 @@ Attach command:
 frida -n crimsonland.exe -l C:\share\frida\panel_state_resolution_sweep.js
 ```
 
-Just shortcut (Windows VM):
-
-```text
-just frida-panel-state-resolution-sweep
-```
-
 ## Output
 
 Default directory: `C:\share\frida` (override with `CRIMSON_FRIDA_DIR`).

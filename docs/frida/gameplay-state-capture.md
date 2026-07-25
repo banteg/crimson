@@ -39,12 +39,6 @@ Attach:
 frida -n crimsonland.exe -l C:\share\frida\gameplay_state_capture.js
 ```
 
-Just shortcut (Windows VM):
-
-```text
-just frida-gameplay-state-capture
-```
-
 Reduce the capture into compact summaries:
 
 ```text
