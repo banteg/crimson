@@ -50,7 +50,7 @@ extern "C" void quest_build_the_random_factor(
             spawn->pos.x = (float)(terrain_texture_width / 2);
             spawn->pos.y = 1088.0f;
             ++builder.count;
-            spawn->template_id = SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29;
+            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;
             spawn->trigger_time_ms = trigger_time_ms;
             spawn->count = config_blob.player_count;
         }

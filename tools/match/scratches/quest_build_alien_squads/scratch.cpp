@@ -52,14 +52,14 @@ extern "C" void quest_build_alien_squads(
     while (trigger_time_ms < 83000) {
         spawns[entry_count].pos.x = -64.0f;
         spawns[entry_count].pos.y = -64.0f;
-        spawns[entry_count].template_id = SPAWN_ID_ALIEN_CONST_PALE_GREEN_26;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
         spawns[entry_count].trigger_time_ms = trigger_time_ms - 400;
         spawns[entry_count].count = 1;
         ++entry_count;
 
         spawns[entry_count].pos.x = 1088.0f;
         spawns[entry_count].pos.y = 1088.0f;
-        spawns[entry_count].template_id = SPAWN_ID_ALIEN_CONST_PALE_GREEN_26;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 1;
         ++entry_count;

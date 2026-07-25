@@ -25,8 +25,8 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
     for entry in entries:
         spawn_id = entry.spawn_id
         count = int(entry.count)
-        if count > 1 and spawn_id != SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C:
-            if spawn_id == SpawnId.ALIEN_CONST_RED_FAST_2B:
+        if count > 1 and spawn_id != SpawnId.SPIDER_PLASMA_SHOOTER_3C:
+            if spawn_id == SpawnId.ALIEN_DEADLY_FAST_2B:
                 count += 2
             else:
                 count += 8

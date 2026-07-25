@@ -90,7 +90,7 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f - 258.0f);
             spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_CONST_GREY_42,
+                SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 0x514,
                 1);
             ++entry_count;
@@ -101,7 +101,7 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f + 258.0f);
             spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_CONST_GREY_42,
+                SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 300,
                 1);
             ++entry_count;

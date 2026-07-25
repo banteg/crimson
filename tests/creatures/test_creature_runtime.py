@@ -188,7 +188,7 @@ def test_hardcore_runtime_spawn_clears_shared_quest_retry_count() -> None:
     pool = CreaturePool(env=env)
 
     pool.spawn_template(
-        SpawnId.ALIEN_CONST_PURPLE_GHOST_21,
+        SpawnId.ALIEN_HIDDEN_1_21,
         Vec2(100.0, 200.0),
         0.0,
         Crand(0xBEEF),
@@ -353,7 +353,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
             count=0,
             limit=1,
             interval=1.0,
-            child_template_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+            child_template_id=SpawnId.ALIEN_BIG_GRAY_29,
         ),
     )
 

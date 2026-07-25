@@ -2,7 +2,7 @@
 
 Native target: `crimsonland.exe` at `0x00436120` (213 bytes).
 
-Live Binary Ninja evidence recovers the opening shock boss at
+Live Binary Ninja evidence recovers the opening SpiderBoss at
 `(terrain_texture_width - 256, terrain_texture_width / 2)`, template `0x3a`,
 1000 ms, count 1. It is followed by four-corner waves at `-25` and `1049`,
 using template `0x3d`. Triggers run from 6000 while below 36800 in steps of

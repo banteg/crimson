@@ -19,7 +19,7 @@ extern "C" void quest_build_alien_dens(
     quest_spawn_entry_t *entries, int *count)
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
-    int spawn_template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_SLOW_08;
+    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;
     int one = 1;
     int trigger_time_ms = 1500;
 

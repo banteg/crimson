@@ -37,8 +37,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = (float)(offset / 10 + 200);
         spawn->set_spawn(
             (entry_count & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -56,8 +56,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = 824.0f;
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -70,7 +70,7 @@ extern "C" void quest_build_the_unblitzkrieg(
     spawn->pos.x = 512.0f;
     spawn->pos.y = 512.0f;
     spawn->set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+        SPAWN_ID_DEN_ALIEN_BASIC_07,
         trigger_time_ms,
         1);
     ++entry_count;
@@ -84,8 +84,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = (float)(0x338 - offset / 10);
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -103,8 +103,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = 200.0f;
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -122,8 +122,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = (float)(offset / 10 + 200);
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -141,8 +141,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = 824.0f;
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -160,8 +160,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = (float)(0x338 - offset / 10);
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;
@@ -179,8 +179,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->pos.y = 200.0f;
         spawn->set_spawn(
             (toggle & 1)
-                ? SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D
-                : SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
+                : SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
         offset += 0x270;

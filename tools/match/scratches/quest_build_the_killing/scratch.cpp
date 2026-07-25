@@ -68,7 +68,7 @@ extern "C" void quest_build_the_killing(
         } else if (layout == 4) {
             builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
             builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
-            builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
+            builder.cursor->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 3;
             ++builder.count;
@@ -76,7 +76,7 @@ extern "C" void quest_build_the_killing(
 
             builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
             builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
-            builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
+            builder.cursor->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
             builder.cursor->trigger_time_ms = trigger_time_ms + 1000;
             builder.cursor->count = 3;
             ++builder.count;
@@ -84,7 +84,7 @@ extern "C" void quest_build_the_killing(
 
             builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
             builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
-            builder.cursor->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
+            builder.cursor->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
             builder.cursor->trigger_time_ms = trigger_time_ms + 2000;
             builder.cursor->count = 3;
             ++builder.count;

@@ -18,7 +18,7 @@ extern "C" void quest_build_8_legged_terror(
 
     cursor->pos_x = (float)(terrain_texture_width - 256);
     cursor->pos_y = (float)(terrain_texture_width / 2);
-    cursor->template_id = SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A;
+    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;
     cursor->trigger_time_ms = 1000;
     cursor->count = 1;
     ++cursor;

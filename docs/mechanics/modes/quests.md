@@ -81,7 +81,7 @@ Four small waves of aliens from edges and corners.
 #### 1.2. Minor Alien Breach
 
 Unlocks Shotgun.
-Escalating alien stream from the right. A brute alien appears mid-quest.
+Escalating alien stream from the right. A big gray alien appears mid-quest.
 
 #### 1.3. Target Practice
 
@@ -93,7 +93,7 @@ tempo. Randomized layout.
 
 Unlocks Flamethrower.
 Steady bottom-edge stream, adds corners over time. Blue-tinted aliens
-mid-quest. Two brutes from the sides at wave 10.
+mid-quest. Two big gray aliens arrive from the sides at wave 10.
 
 #### 1.5. Alien Dens
 
@@ -104,7 +104,7 @@ player count.
 #### 1.6. The Random Factor
 
 Unlocks Submachine Gun.
-Alternating left/right waves of random alien types. Brutes appear
+Alternating left/right waves of random alien types. Big gray aliens appear
 randomly (~20% chance per wave). Randomized layout.
 
 #### 1.7. Spider Wave Syndrome
@@ -128,7 +128,7 @@ ending with tougher alien variants.
 #### 1.10. 8-legged Terror
 
 Unlocks Rocket Launcher.
-Opens with a shock boss spider. Random spider packs from all four
+Opens with a Spider Boss. Random spider packs from all four
 corners for the rest of the quest.
 
 ### Tier 2
@@ -185,7 +185,7 @@ each quadrant.
 #### 2.9. Ghost Patrols
 
 Unlocks [Veins of Poison](../perks.md#36-veins-of-poison).
-Fast red aliens, then alternating left/right ring formations of 5
+Deadly Fast aliens, then alternating left/right ring formations of 5
 aliens. Ends with a grid formation.
 
 #### 2.10. Spideroids
@@ -201,7 +201,7 @@ Introduces ghosts, lizard enemy types, and mixed-species quests.
 #### 3.1. The Blighting
 
 Unlocks [Toxic Avenger](../perks.md#37-toxic-avenger).
-Fast red aliens plus spawner nests in all four corners. Alternating
+Deadly Fast aliens plus spawner nests in all four corners. Alternating
 alien and lizard waves from rotating edges.
 
 #### 3.2. Lizard Kings
@@ -289,7 +289,7 @@ left, zombies top. Escalating counts per wave.
 #### 4.5. The Massacre
 
 Unlocks [Reflex Boosted](../perks.md#44-reflex-boosted).
-Zombie stream from the right. Fast red aliens join on even waves.
+Zombie stream from the right. Deadly Fast aliens join on even waves.
 
 #### 4.6. The Unblitzkrieg
 
@@ -312,13 +312,13 @@ pattern). Multiple waves with pseudorandom placement.
 #### 4.9. The Annihilation
 
 Unlocks [Breathing Room](../perks.md#46-breathing-room).
-Fast red aliens plus two phases of spawner nests in staggered columns.
+Deadly Fast aliens plus two phases of spawner nests in staggered columns.
 
 #### 4.10. The End of All
 
 Unlocks Ion Cannon.
-Ranged spider bosses in all four corners, spawner ring at center, more
-ranged spiders from the sides, a second spawner ring. Nuke and Freeze
+Plasma Shooter spiders in all four corners, spawner ring at center, more
+Plasma Shooter spiders from the sides, a second spawner ring. Nuke and Freeze
 bonuses suppressed.
 
 ### Tier 5
@@ -329,13 +329,13 @@ use. All 8 minutes long.
 #### 5.1. The Beating
 
 Unlocks Ion Shotgun.
-Weapon bonus alien first, then brutes, green alien floods from both
-sides, brown transparent aliens, and ring formations from below.
+A Bonus Carrier alien first, then big gray aliens, green alien floods from both
+sides, Ghost aliens, and ring formations from below.
 
 #### 5.2. The Spanking Of The Dead
 
 Unlocks [Death Clock](../perks.md#47-death-clock).
-Two weapon bonus aliens, then 130 zombies spawning in a tightening
+Two Bonus Carrier aliens, then 130 zombies spawning in a tightening
 spiral around the center, followed by grey zombie waves from both
 sides.
 
@@ -362,8 +362,8 @@ simultaneous streams.
 #### 5.6. Cross Fire
 
 Unlocks [Angry Reloader](../perks.md#50-angry-reloader).
-Blue spiders, escalating ranged spider bosses, splitter spiders in
-the center, and more blue spiders from top and bottom.
+Small Blue spiders, escalating Plasma Shooter spiders, splitter spiders in
+the center, and more Small Blue spiders from top and bottom.
 
 #### 5.7. Army of Three
 
@@ -388,6 +388,6 @@ spawners at center.
 #### 5.10. The Gathering
 
 Unlocks Plasma Cannon.
-Boss parade: splitter spiders, shock boss spiders, zombie boss
-spawners, ranged spider bosses from all corners, more shock bosses,
+Boss parade: splitter spiders, Spider Bosses, zombie boss
+spawners, Plasma Shooter spiders from all corners, more Spider Bosses,
 and a final splitter wave. Nuke suppressed.

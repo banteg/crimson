@@ -46,7 +46,7 @@ extern "C" void quest_build_spider_wave_syndrome(
         spawn->pos.y = (float)(terrain_texture_width / 2);
         ++builder.count;
         spawn->set_spawn(
-            SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+            SPAWN_ID_SPIDER_SMALL_BLUE_40,
             trigger_time_ms);
         spawn->count = config_blob.player_count * 2 + 6;
     }

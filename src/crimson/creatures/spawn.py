@@ -104,7 +104,7 @@ class AlienSpawnerSpec(msgspec.Struct, frozen=True):
 
 
 ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
-    SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07: AlienSpawnerSpec(
+    SpawnId.DEN_ALIEN_BASIC_07: AlienSpawnerSpec(
         timer=1.0,
         limit=100,
         interval=2.2,
@@ -115,7 +115,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=3000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08: AlienSpawnerSpec(
+    SpawnId.DEN_ALIEN_BASIC_SLOWER_08: AlienSpawnerSpec(
         timer=1.0,
         limit=100,
         interval=2.8,
@@ -126,7 +126,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=3000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09: AlienSpawnerSpec(
+    SpawnId.DEN_ALIEN_WEAK_SMALL_09: AlienSpawnerSpec(
         timer=1.0,
         limit=16,
         interval=2.0,
@@ -137,7 +137,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=1000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: AlienSpawnerSpec(
+    SpawnId.DEN_SPIDER_BASIC_0A: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=5.0,
@@ -148,18 +148,18 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=3000.0,
         tint=(0.8, 0.7, 0.4, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B: AlienSpawnerSpec(
+    SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=6.0,
-        child_template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        child_template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
         size=65.0,
         health=3500.0,
         move_speed=1.5,
         reward_value=5000.0,
         tint=(0.9, 0.1, 0.1, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C: AlienSpawnerSpec(
+    SpawnId.DEN_LIZARD_WEAK_0C: AlienSpawnerSpec(
         timer=1.5,
         limit=100,
         interval=2.0,
@@ -170,7 +170,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=1000.0,
         tint=(0.9, 0.8, 0.4, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D: AlienSpawnerSpec(
+    SpawnId.DEN_LIZARD_WEAK_SLOWER_0D: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=6.0,
@@ -181,7 +181,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[SpawnId, AlienSpawnerSpec] = {
         reward_value=1000.0,
         tint=(0.9, 0.8, 0.4, 1.0),
     ),
-    SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10: AlienSpawnerSpec(
+    SpawnId.DEN_SPIDER_WEAK_10: AlienSpawnerSpec(
         timer=1.5,
         limit=100,
         interval=2.3,
@@ -258,7 +258,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         contact_damage=17.0,
         flags=CreatureFlags.SPLIT_ON_DEATH,
     ),
-    SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F: ConstantSpawnSpec(
+    SpawnId.ALIEN_GHOST_0F: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=20.0,
         move_speed=2.9,
@@ -267,7 +267,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=50.0,
         contact_damage=35.0,
     ),
-    SpawnId.ALIEN_CONST_PURPLE_GHOST_21: ConstantSpawnSpec(
+    SpawnId.ALIEN_HIDDEN_1_21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=53.0,
         move_speed=1.7,
@@ -276,7 +276,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=55.0,
         contact_damage=8.0,
     ),
-    SpawnId.ALIEN_CONST_GREEN_GHOST_22: ConstantSpawnSpec(
+    SpawnId.ALIEN_HIDDEN_2_22: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=25.0,
         move_speed=1.7,
@@ -285,7 +285,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=50.0,
         contact_damage=8.0,
     ),
-    SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23: ConstantSpawnSpec(
+    SpawnId.ALIEN_HIDDEN_3_23: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=5.0,
         move_speed=1.7,
@@ -303,7 +303,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=50.0,
         contact_damage=4.0,
     ),
-    SpawnId.ALIEN_CONST_GREEN_SMALL_25: ConstantSpawnSpec(
+    SpawnId.ALIEN_SMALL_GREEN_MAN_25: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=25.0,
         move_speed=2.5,
@@ -312,7 +312,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=30.0,
         contact_damage=3.0,
     ),
-    SpawnId.ALIEN_CONST_PALE_GREEN_26: ConstantSpawnSpec(
+    SpawnId.ALIEN_SMALL_GRAY_26: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=2.2,
@@ -321,7 +321,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=10.0,
     ),
-    SpawnId.ALIEN_CONST_WEAPON_BONUS_27: ConstantSpawnSpec(
+    SpawnId.ALIEN_BONUS_CARRIER_27: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=2.1,
@@ -342,7 +342,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=55.0,
         contact_damage=8.0,
     ),
-    SpawnId.ALIEN_CONST_GREY_BRUTE_29: ConstantSpawnSpec(
+    SpawnId.ALIEN_BIG_GRAY_29: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=800.0,
         move_speed=2.5,
@@ -360,7 +360,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=60.0,
         contact_damage=8.0,
     ),
-    SpawnId.ALIEN_CONST_RED_FAST_2B: ConstantSpawnSpec(
+    SpawnId.ALIEN_DEADLY_FAST_2B: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=30.0,
         move_speed=3.6,
@@ -406,7 +406,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=65.0,
         contact_damage=10.0,
     ),
-    SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A: ConstantSpawnSpec(
+    SpawnId.SPIDER_BOSS_3A: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=4500.0,
         move_speed=2.0,
@@ -427,7 +427,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=70.0,
         contact_damage=20.0,
     ),
-    SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C: ConstantSpawnSpec(
+    SpawnId.SPIDER_PLASMA_SHOOTER_3C: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=200.0,
         move_speed=2.0,
@@ -458,7 +458,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=35.0,
         contact_damage=20.0,
     ),
-    SpawnId.SPIDER_SP1_CONST_BLUE_40: ConstantSpawnSpec(
+    SpawnId.SPIDER_SMALL_BLUE_40: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=70.0,
         move_speed=2.2,
@@ -467,7 +467,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[SpawnId, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=5.0,
     ),
-    SpawnId.ZOMBIE_CONST_GREY_42: ConstantSpawnSpec(
+    SpawnId.ZOMBIE_SMALL_WHITE_42: ConstantSpawnSpec(
         type_id=CreatureTypeId.ZOMBIE,
         health=200.0,
         move_speed=1.7,
@@ -1495,7 +1495,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
-                        template_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                        template_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                         pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
                         heading=heading,
                     ),
@@ -1530,7 +1530,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 6
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
+                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
                 ),
             )
             continue
@@ -1563,7 +1563,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                         pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
                         heading=heading,
                     ),
@@ -1571,7 +1571,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                         pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
                         heading=heading,
                     ),
@@ -1584,18 +1584,18 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 10
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
+                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
                 ),
             )
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading,
+                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading,
                 ),
             )
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                         pos=Vec2(float(i) * 64.0 + 384.0, -64.0),
                         heading=heading,
                     ),
@@ -1603,7 +1603,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             for i in range(4):
                 spawns.append(
                     SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                         pos=Vec2(float(i) * 64.0 + 384.0, 1088.0),
                         heading=heading,
                     ),
@@ -1703,7 +1703,7 @@ def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:
     heading = float(math.pi)
     return (
         SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(-164.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(-184.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(-184.0, 512.0), heading=heading),
         SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(-154.0, 612.0), heading=heading),
     )
 
@@ -1713,7 +1713,7 @@ def build_tutorial_stage4_clear_spawns() -> tuple[SpawnTemplateCall, ...]:
     heading = float(math.pi)
     return (
         SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(1208.0, 512.0), heading=heading),
         SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading),
     )
 
@@ -1740,14 +1740,14 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
         if n < 6:
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(1056.0, 1056.0), heading=heading,
+                    template_id=SpawnId.ALIEN_BONUS_CARRIER_27, pos=Vec2(1056.0, 1056.0), heading=heading,
                 ),
             )
         spawns.append(
             SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading),
         )
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=Vec2(1208.0, 512.0), heading=heading),
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(1208.0, 512.0), heading=heading),
         )
         spawns.append(
             SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading),
@@ -1755,7 +1755,7 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
         if n == 4:
             spawns.append(
                 SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading,
+                    template_id=SpawnId.SPIDER_SMALL_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading,
                 ),
             )
         return tuple(spawns)
@@ -1763,7 +1763,7 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
     # Odd: left-side spawn pack.
     if n < 6:
         spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=Vec2(-32.0, 1056.0), heading=heading),
+            SpawnTemplateCall(template_id=SpawnId.ALIEN_BONUS_CARRIER_27, pos=Vec2(-32.0, 1056.0), heading=heading),
         )
     spawns.extend(build_tutorial_stage3_fire_spawns())
     return tuple(spawns)

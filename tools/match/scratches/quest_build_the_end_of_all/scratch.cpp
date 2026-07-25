@@ -37,7 +37,7 @@ extern "C" void quest_build_the_end_of_all(
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
     int one = 1;
     int corner_template_id =
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C;
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
 
     spawns[0].pos.set(128.0f, 128.0f);
     spawns[0].set_spawn(
@@ -72,7 +72,7 @@ extern "C" void quest_build_the_end_of_all(
             (float)cos(angle) * 80.0f + 512.0f,
             (float)sin(angle) * 80.0f + 512.0f);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             one);
         ++spawn;
@@ -83,7 +83,7 @@ extern "C" void quest_build_the_end_of_all(
     spawns[10].pos.x = 512.0f;
     spawns[10].pos.y = 512.0f;
     spawns[10].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
         ring_index * 300 + 13000,
         one);
 
@@ -99,7 +99,7 @@ extern "C" void quest_build_the_end_of_all(
             spawn->pos.x = -128.0f;
         }
         spawn->pos.y = (float)edge_y;
-        spawn->template_id = SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C;
+        spawn->template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
         spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = spawn_count;
         ++spawn;
@@ -119,7 +119,7 @@ extern "C" void quest_build_the_end_of_all(
             (float)cos(angle) * 80.0f + 512.0f,
             (float)sin(angle) * 80.0f + 512.0f);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             one);
         ++spawn;
@@ -139,7 +139,7 @@ extern "C" void quest_build_the_end_of_all(
                 (float)cos(angle) * 180.0f + 512.0f,
                 (float)sin(angle) * 180.0f + 512.0f);
             spawn->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                SPAWN_ID_DEN_ALIEN_BASIC_07,
                 trigger_time_ms,
                 one);
             ++spawn;
@@ -160,7 +160,7 @@ extern "C" void quest_build_the_end_of_all(
             spawn->pos.x = -128.0f;
         }
         spawn->pos.y = (float)edge_y;
-        spawn->template_id = SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C;
+        spawn->template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
         spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = spawn_count;
         ++spawn;

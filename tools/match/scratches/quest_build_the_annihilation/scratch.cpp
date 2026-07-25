@@ -34,7 +34,7 @@ extern "C" void quest_build_the_annihilation(
     int index = 0;
     int y_offset = 0;
     quest_entry_original_t *spawn = &spawns[1];
-    spawns[0].template_id = SPAWN_ID_ALIEN_CONST_RED_FAST_2B;
+    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
     spawns[0].trigger_time_ms = trigger_time_ms;
     spawns[0].count = 2;
 
@@ -46,7 +46,7 @@ extern "C" void quest_build_the_annihilation(
             spawn->pos.x = 832.0f;
         }
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
 
@@ -68,7 +68,7 @@ extern "C" void quest_build_the_annihilation(
             spawn->pos.x = 896.0f;
         }
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            SPAWN_ID_DEN_ALIEN_BASIC_07,
             trigger_time_ms,
             1);
 

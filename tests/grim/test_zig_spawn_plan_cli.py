@@ -18,9 +18,9 @@ def test_zig_spawn_plan_json_matches_python_summary() -> None:
         quest_fail_retry_count=0,
     )
     cases = (
-        SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+        SpawnId.DEN_ALIEN_BASIC_07,
         SpawnId.FORMATION_RING_ALIEN_8_12,
-        SpawnId.ALIEN_CONST_WEAPON_BONUS_27,
+        SpawnId.ALIEN_BONUS_CARRIER_27,
     )
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)

@@ -105,7 +105,7 @@ def tutorial_post_step(ctx) -> None:
         _ = mapping
         if primary is None or actions.stage5_bonus_carrier_drop is None:
             continue
-        if int(call.template_id) != int(SpawnId.ALIEN_CONST_WEAPON_BONUS_27):
+        if int(call.template_id) != int(SpawnId.ALIEN_BONUS_CARRIER_27):
             continue
         drop_id, drop_amount = actions.stage5_bonus_carrier_drop
         tutorial.hint_bonus_creature_ref = int(primary)

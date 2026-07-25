@@ -124,7 +124,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
                 spawn(
                     Vec2(356.0, float(idx * 0xB4 + 0x100)),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                    spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
                     trigger_ms=trigger,
                     count=idx + 1,
                 ),
@@ -133,7 +133,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
                 spawn(
                     Vec2(356.0, float(idx * 0xB4 + 0x180)),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                    spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
                     trigger_ms=trigger,
                     count=idx + 2,
                 ),
@@ -226,7 +226,7 @@ def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: b
                 spawn_at(
                     edges_wide.right,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                    spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                     trigger_ms=trigger,
                     count=wave + 1,
                 ),
@@ -245,7 +245,7 @@ def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: b
 )
 def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> SpawnId:
-        return SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D if toggle else SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07
+        return SpawnId.DEN_LIZARD_WEAK_SLOWER_0D if toggle else SpawnId.DEN_ALIEN_BASIC_07
 
     entries: list[SpawnEntry] = []
     trigger = 500
@@ -286,7 +286,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_versio
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
             trigger_ms=trigger,
             count=1,
         ),
@@ -417,7 +417,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -473,7 +473,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -506,7 +506,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: 
                     spawn(
                         Vec2(float(x), float(y)),
                         heading=0.0,
-                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                        spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                         trigger_ms=trigger,
                         count=1,
                     ),
@@ -533,7 +533,7 @@ def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_versio
         spawn(
             Vec2(128.0, float(half_w)),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
             trigger_ms=500,
             count=2,
         ),
@@ -548,7 +548,7 @@ def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_versio
             spawn(
                 Vec2(x, y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -566,7 +566,7 @@ def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_versio
             spawn(
                 Vec2(x, y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -589,28 +589,28 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         spawn(
             Vec2(128.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=3000,
             count=1,
         ),
         spawn(
             Vec2(896.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=6000,
             count=1,
         ),
         spawn(
             Vec2(128.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=9000,
             count=1,
         ),
         spawn(
             Vec2(896.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=12000,
             count=1,
         ),
@@ -624,7 +624,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
             spawn(
                 pos,
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -635,7 +635,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+            spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
             trigger_ms=trigger,
             count=1,
         ),
@@ -650,7 +650,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
             spawn(
                 Vec2(x, float(y)),
                 heading=0.0,
-                spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                 trigger_ms=trigger,
                 count=2,
             ),
@@ -665,7 +665,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
             spawn(
                 pos,
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -681,7 +681,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                    spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -697,7 +697,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version
             spawn(
                 Vec2(x, float(y)),
                 heading=0.0,
-                spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
                 trigger_ms=trigger,
                 count=2,
             ),

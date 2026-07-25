@@ -52,7 +52,7 @@ extern "C" void quest_build_deja_vu(
                 quest_vec2_t(
                     offset.x + 512.0f,
                     offset.y + 512.0f),
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_time_ms,
                 1);
             ++wave_entry;

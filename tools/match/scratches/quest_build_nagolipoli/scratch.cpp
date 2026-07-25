@@ -60,7 +60,7 @@ extern "C" void quest_build_nagolipoli(
         spawn->pos.add(512.0f);
         spawn->heading = angle;
         spawn->set_spawn(
-            SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+            SPAWN_ID_SPIDER_SMALL_BLUE_40,
             2000,
             1);
         ++builder.count;
@@ -78,7 +78,7 @@ extern "C" void quest_build_nagolipoli(
         spawn->pos.add(512.0f);
         spawn->heading = angle;
         spawn->set_spawn(
-            SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+            SPAWN_ID_SPIDER_SMALL_BLUE_40,
             8000,
             1);
         ++spawn;
@@ -153,7 +153,7 @@ extern "C" void quest_build_nagolipoli(
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+            SPAWN_ID_DEN_SPIDER_BASIC_0A,
             trigger_time_ms,
             1);
         spawn->heading = 0.0f;
@@ -171,7 +171,7 @@ extern "C" void quest_build_nagolipoli(
         bottom_left.y = (float)line_index * 85.3333359f + 256.0f;
         spawn->pos = bottom_left;
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+            SPAWN_ID_DEN_SPIDER_BASIC_0A,
             trigger_time_ms,
             1);
         spawn->heading = 0.0f;
@@ -189,7 +189,7 @@ extern "C" void quest_build_nagolipoli(
     spawn->pos = tail_pos;
     spawn->heading = 3.14159274f;
     spawn->set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
         trigger_time_ms,
         1);
     ++builder.count;
@@ -200,7 +200,7 @@ extern "C" void quest_build_nagolipoli(
     spawn->pos = tail_pos;
     spawn->heading = 3.14159274f;
     spawn->set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B,
         trigger_time_ms,
         1);
     ++builder.count;

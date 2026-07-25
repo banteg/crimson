@@ -6,7 +6,7 @@ Live Binary Ninja evidence recovers waves 2 through 21. Every wave emits a
 bottom-center alien at `(terrain_width / 2, 1088)`. Waves 2-4 use template
 `0x26`, waves 5-9 use `0x1a`, and later waves return to `0x26`. Waves above
 four add a template `0x26` alien at `(-64, -64)`; waves above ten also add one
-at `(1088, -64)`. Wave ten uniquely adds two template `0x29` brutes at the
+at `(1088, -64)`. Wave ten uniquely adds two template `0x29` AlienBigGray creatures at the
 right and left edge midpoints. All counts are one.
 
 Each wave trigger is `wave * step - 5000`. The step starts at 2500, decreases
@@ -30,7 +30,7 @@ distinct fake template values are not used to preserve the native control-flow
 spelling.
 
 An address-keyed Binary Ninja local type now preserves the second wave-ten
-cursor after VC6 advances it. Both midpoint brutes render as named
+cursor after VC6 advances it. Both midpoint AlienBigGray creatures render as named
 `quest_spawn_entry_t` fields; the remaining negative trigger/count access is a
 real induction-pointer artifact, not an unknown structure member.
 

@@ -37,7 +37,7 @@ fn build501TheBeating(
         len,
         .{ .x = 256.0, .y = 256.0 },
         0.0,
-        common.SpawnId.alien_const_weapon_bonus_27,
+        common.SpawnId.alien_bonus_carrier_27,
         500,
         1,
     );
@@ -46,7 +46,7 @@ fn build501TheBeating(
         len,
         .{ .x = ctx.width + 32.0, .y = half_height },
         0.0,
-        common.SpawnId.alien_const_grey_brute_29,
+        common.SpawnId.alien_big_gray_29,
         8000,
         3,
     );
@@ -63,7 +63,7 @@ fn build501TheBeating(
                 .y = half_height,
             },
             0.0,
-            common.SpawnId.alien_const_green_small_25,
+            common.SpawnId.alien_small_green_man_25,
             trigger,
             8,
         );
@@ -76,7 +76,7 @@ fn build501TheBeating(
         len,
         .{ .x = -32.0, .y = half_height },
         0.0,
-        common.SpawnId.alien_const_grey_brute_29,
+        common.SpawnId.alien_big_gray_29,
         18_000,
         3,
     );
@@ -90,7 +90,7 @@ fn build501TheBeating(
             len,
             .{ .x = @as(f32, @floatFromInt(x)), .y = half_height },
             0.0,
-            common.SpawnId.alien_const_green_small_25,
+            common.SpawnId.alien_small_green_man_25,
             trigger,
             8,
         );
@@ -107,7 +107,7 @@ fn build501TheBeating(
             len,
             .{ .x = half_width, .y = @as(f32, @floatFromInt(y)) },
             0.0,
-            common.SpawnId.alien_const_brown_transparent_0f,
+            common.SpawnId.alien_ghost_0f,
             trigger,
             4,
         );
@@ -147,7 +147,7 @@ fn build502TheSpankingOfTheDead(
         len,
         .{ .x = 256.0, .y = 512.0 },
         0.0,
-        common.SpawnId.alien_const_weapon_bonus_27,
+        common.SpawnId.alien_bonus_carrier_27,
         500,
         1,
     );
@@ -156,7 +156,7 @@ fn build502TheSpankingOfTheDead(
         len,
         .{ .x = 768.0, .y = 512.0 },
         0.0,
-        common.SpawnId.alien_const_weapon_bonus_27,
+        common.SpawnId.alien_bonus_carrier_27,
         500,
         1,
     );
@@ -189,7 +189,7 @@ fn build502TheSpankingOfTheDead(
         len,
         .{ .x = 1280.0, .y = 512.0 },
         0.0,
-        common.SpawnId.zombie_const_grey_42,
+        common.SpawnId.zombie_small_white_42,
         offset + 10_000,
         16,
     );
@@ -198,7 +198,7 @@ fn build502TheSpankingOfTheDead(
         len,
         .{ .x = -256.0, .y = 512.0 },
         0.0,
-        common.SpawnId.zombie_const_grey_42,
+        common.SpawnId.zombie_small_white_42,
         offset + 20_000,
         16,
     );
@@ -219,7 +219,7 @@ fn build503TheFortress(
         len,
         .{ .x = -50.0, .y = half_height },
         0.0,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         100,
         6,
     );
@@ -233,7 +233,7 @@ fn build503TheFortress(
             len,
             .{ .x = 768.0, .y = y },
             0.0,
-            common.SpawnId.alien_spawner_child_1d_limited_09,
+            common.SpawnId.den_alien_weak_small_09,
             trigger,
             1,
         );
@@ -257,7 +257,7 @@ fn build503TheFortress(
                     len,
                     .{ .x = x, .y = y },
                     0.0,
-                    common.SpawnId.alien_spawner_child_32_slow_0a,
+                    common.SpawnId.den_spider_basic_0a,
                     trigger,
                     1,
                 );
@@ -423,7 +423,7 @@ fn build505KneeDeepInTheDead(
                 len,
                 .{ .x = -50.0, .y = mid_y - 258.0 },
                 0.0,
-                common.SpawnId.zombie_const_grey_42,
+                common.SpawnId.zombie_small_white_42,
                 trigger + 0x514,
                 1,
             );
@@ -434,7 +434,7 @@ fn build505KneeDeepInTheDead(
                 len,
                 .{ .x = -50.0, .y = mid_y + 258.0 },
                 0.0,
-                common.SpawnId.zombie_const_grey_42,
+                common.SpawnId.zombie_small_white_42,
                 trigger + 300,
                 1,
             );
@@ -460,7 +460,7 @@ fn build506CrossFire(
         len,
         .{ .x = 1074.0, .y = mid_y },
         0.0,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         100,
         6,
     );
@@ -469,7 +469,7 @@ fn build506CrossFire(
         len,
         .{ .x = -40.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         5500,
         4,
     );
@@ -478,7 +478,7 @@ fn build506CrossFire(
         len,
         .{ .x = -40.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         15_500,
         6,
     );
@@ -496,7 +496,7 @@ fn build506CrossFire(
         len,
         .{ .x = -100.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         25_500,
         8,
     );
@@ -505,7 +505,7 @@ fn build506CrossFire(
         len,
         .{ .x = 512.0, .y = 1152.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         26_000,
         6,
     );
@@ -514,7 +514,7 @@ fn build506CrossFire(
         len,
         .{ .x = 512.0, .y = -128.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         26_000,
         6,
     );
@@ -719,7 +719,7 @@ fn build509Nagolipoli(
         0.7853982,
         0.0,
         .angle,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         2000,
         0,
         1,
@@ -733,7 +733,7 @@ fn build509Nagolipoli(
         0.5235988,
         0.0,
         .angle,
-        common.SpawnId.spider_sp1_const_blue_40,
+        common.SpawnId.spider_small_blue_40,
         8000,
         0,
         1,
@@ -798,7 +798,7 @@ fn build509Nagolipoli(
             len,
             pos,
             0.0,
-            common.SpawnId.alien_spawner_child_32_slow_0a,
+            common.SpawnId.den_spider_basic_0a,
             base_left,
             1,
         );
@@ -814,7 +814,7 @@ fn build509Nagolipoli(
             len,
             pos,
             0.0,
-            common.SpawnId.alien_spawner_child_32_slow_0a,
+            common.SpawnId.den_spider_basic_0a,
             base_right,
             1,
         );
@@ -827,7 +827,7 @@ fn build509Nagolipoli(
         len,
         .{ .x = 512.0, .y = 256.0 },
         std.math.pi,
-        common.SpawnId.alien_spawner_child_3c_slow_0b,
+        common.SpawnId.den_spider_plasma_shooters_0b,
         base_mid,
         1,
     );
@@ -836,7 +836,7 @@ fn build509Nagolipoli(
         len,
         .{ .x = 512.0, .y = 768.0 },
         std.math.pi,
-        common.SpawnId.alien_spawner_child_3c_slow_0b,
+        common.SpawnId.den_spider_plasma_shooters_0b,
         base_mid,
         1,
     );
@@ -891,7 +891,7 @@ fn build510TheGathering(
         len,
         .{ .x = 256.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_shock_boss_3a,
+        common.SpawnId.spider_boss_3a,
         15_500,
         2,
     );
@@ -900,7 +900,7 @@ fn build510TheGathering(
         len,
         .{ .x = 768.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_shock_boss_3a,
+        common.SpawnId.spider_boss_3a,
         24_500,
         2,
     );
@@ -927,7 +927,7 @@ fn build510TheGathering(
         len,
         .{ .x = 64.0, .y = 64.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         54_500,
         2,
     );
@@ -936,7 +936,7 @@ fn build510TheGathering(
         len,
         .{ .x = 960.0, .y = 64.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         54_500,
         1,
     );
@@ -945,7 +945,7 @@ fn build510TheGathering(
         len,
         .{ .x = 64.0, .y = 960.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         54_500,
         2,
     );
@@ -954,7 +954,7 @@ fn build510TheGathering(
         len,
         .{ .x = 960.0, .y = 960.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         54_500,
         1,
     );
@@ -963,7 +963,7 @@ fn build510TheGathering(
         len,
         .{ .x = -128.0, .y = 512.0 },
         0.0,
-        common.SpawnId.spider_sp1_const_shock_boss_3a,
+        common.SpawnId.spider_boss_3a,
         90_500,
         6,
     );

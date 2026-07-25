@@ -30,10 +30,10 @@ def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: b
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=500, count=1),
-        spawn_at(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=2500, count=2),
-        spawn_at(top_left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=6500, count=3),
-        spawn_at(top_right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=11500, count=4),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=500, count=1),
+        spawn_at(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=2500, count=2),
+        spawn_at(top_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=6500, count=3),
+        spawn_at(top_right, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=11500, count=4),
     ]
 
 
@@ -51,14 +51,14 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
         spawn(
             Vec2(256.0, 256.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+            spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
             trigger_ms=1000,
             count=2,
         ),
         spawn(
             Vec2(256.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+            spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
             trigger_ms=1700,
             count=2,
         ),
@@ -69,7 +69,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -79,7 +79,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
                 spawn(
                     Vec2(edges.right.x, center.y - 256.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -89,7 +89,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
                 spawn_at(
                     edges.bottom,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+                    spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=39600,
                     count=1,
                 ),
@@ -99,7 +99,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
                 spawn(
                     Vec2(edges.left.x, center.y + 256.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -171,11 +171,11 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
     step = 2500
     for i in range(2, 22):
         if i < 5:
-            spawn_id = SpawnId.ALIEN_CONST_PALE_GREEN_26
+            spawn_id = SpawnId.ALIEN_SMALL_GRAY_26
         elif i < 10:
             spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
         else:
-            spawn_id = SpawnId.ALIEN_CONST_PALE_GREEN_26
+            spawn_id = SpawnId.ALIEN_SMALL_GRAY_26
         trigger = i * step - 5000
         entries.append(
             spawn_at(
@@ -191,7 +191,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
                 spawn_at(
                     top_left,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -201,7 +201,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
                 spawn_at(
                     top_right,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -212,7 +212,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
                 spawn_at(
                     edges.right,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+                    spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=burst_trigger,
                     count=1,
                 ),
@@ -221,7 +221,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
                 spawn_at(
                     edges.left,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+                    spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=burst_trigger,
                     count=1,
                 ),
@@ -242,35 +242,35 @@ def build_1_5_alien_dens(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         spawn(
             Vec2(256.0, 256.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
             Vec2(768.0, 768.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=23500,
             count=ctx.player_count,
         ),
         spawn(
             Vec2(256.0, 768.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=38500,
             count=1,
         ),
         spawn(
             Vec2(768.0, 256.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=38500,
             count=1,
         ),
@@ -315,7 +315,7 @@ def build_1_6_the_random_factor(
         )
         if (
             int(
-                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_BRUTE_GATE)
+                rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_ALIEN_BIG_GRAY_GATE)
                 % 5,
             )
             == 3
@@ -324,7 +324,7 @@ def build_1_6_the_random_factor(
                 spawn(
                     Vec2(center.x, edges.bottom.y),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+                    spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=trigger,
                     count=ctx.player_count,
                 ),
@@ -349,7 +349,7 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_ve
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+                spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
                 trigger_ms=trigger,
                 count=ctx.player_count * 2 + 6,
             ),
@@ -430,7 +430,7 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
             spawn(
                 Vec2(-64.0, -64.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                 trigger_ms=trigger - 400,
                 count=1,
             ),
@@ -439,7 +439,7 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
             spawn(
                 Vec2(1088.0, 1088.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -469,21 +469,21 @@ def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version
         spawn(
             Vec2(256.0, 256.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=8000,
             count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=13000,
             count=1,
         ),
         spawn(
             Vec2(768.0, 768.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=18000,
             count=1,
         ),
@@ -504,28 +504,28 @@ def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version
         spawn(
             Vec2(384.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=41100,
             count=1,
         ),
         spawn(
             Vec2(640.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=42100,
             count=1,
         ),
         spawn(
             Vec2(512.0, 640.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+            spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
             trigger_ms=43100,
             count=1,
         ),
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
             trigger_ms=44100,
             count=1,
         ),
@@ -559,7 +559,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
         spawn(
             Vec2(float(ctx.width - 256), float(ctx.width // 2)),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=1000,
             count=1,
         ),

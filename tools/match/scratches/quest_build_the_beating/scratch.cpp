@@ -32,7 +32,7 @@ extern "C" void quest_build_the_beating(
 
     spawns[0].pos = quest_vec2_t(256.0f, 256.0f);
     spawns[0].set_spawn(
-        SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27,
+        SPAWN_ID_ALIEN_BONUS_CARRIER_27,
         500,
         1);
 
@@ -40,7 +40,7 @@ extern "C" void quest_build_the_beating(
         (float)(terrain_texture_width + 32),
         (float)(terrain_texture_height / 2));
     spawns[1].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29,
+        SPAWN_ID_ALIEN_BIG_GRAY_29,
         8000,
         3);
 
@@ -53,7 +53,7 @@ extern "C" void quest_build_the_beating(
             (float)(terrain_texture_width + x_offset),
             (float)(terrain_texture_height / 2));
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_CONST_GREEN_SMALL_25,
+            SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
             trigger_time_ms,
             8);
         ++spawn;
@@ -66,7 +66,7 @@ extern "C" void quest_build_the_beating(
         -32.0f,
         (float)(terrain_texture_height / 2));
     spawns[10].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29,
+        SPAWN_ID_ALIEN_BIG_GRAY_29,
         18000,
         3);
 
@@ -78,7 +78,7 @@ extern "C" void quest_build_the_beating(
             (float)x,
             (float)(terrain_texture_height / 2));
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_CONST_GREEN_SMALL_25,
+            SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
             trigger_time_ms,
             8);
         ++spawn;
@@ -94,7 +94,7 @@ extern "C" void quest_build_the_beating(
             (float)(terrain_texture_width / 2),
             (float)y);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_CONST_BROWN_TRANSPARENT_0F,
+            SPAWN_ID_ALIEN_GHOST_0F,
             trigger_time_ms,
             4);
         ++spawn;

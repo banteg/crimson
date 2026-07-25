@@ -41,7 +41,7 @@ extern "C" void quest_build_arachnoid_farm(
                 (float)top_index * 102.4f + 256.0f,
                 256.0f);
             spawns[spawn_count].set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                SPAWN_ID_DEN_SPIDER_BASIC_0A,
                 trigger_time_ms,
                 1);
             ++spawn_count;
@@ -58,7 +58,7 @@ extern "C" void quest_build_arachnoid_farm(
                 (float)bottom_index * 102.4f + 256.0f,
                 768.0f);
             spawns[spawn_count].set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                SPAWN_ID_DEN_SPIDER_BASIC_0A,
                 trigger_time_ms,
                 1);
             ++spawn_count;
@@ -75,7 +75,7 @@ extern "C" void quest_build_arachnoid_farm(
                 (float)middle_index * 64.0f + 256.0f,
                 512.0f);
             spawns[spawn_count].set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+                SPAWN_ID_DEN_SPIDER_WEAK_10,
                 trigger_time_ms,
                 1);
             ++spawn_count;

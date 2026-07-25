@@ -611,7 +611,7 @@ class DemoView:
                         + 64,
                     ),
                 )
-                self._spawn(SpawnId.ALIEN_CONST_GREEN_SMALL_25, spawn_pos, heading=0.0)
+                self._spawn(SpawnId.ALIEN_SMALL_GREEN_MAN_25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
         if self.state.demo_enabled:

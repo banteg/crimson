@@ -103,28 +103,28 @@ def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike, full_version: 
         spawn(
             Vec2(128.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
             Vec2(896.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
             Vec2(896.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=1500,
             count=1,
         ),
         spawn(
             Vec2(128.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=1500,
             count=1,
         ),
@@ -138,21 +138,21 @@ def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike, full_version: 
         spawn(
             Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+            spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
             trigger_ms=18000,
             count=1,
         ),
         spawn(
             Vec2(448.0, 448.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=20500,
             count=1,
         ),
         spawn(
             Vec2(576.0, 448.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=26000,
             count=1,
         ),
@@ -166,14 +166,14 @@ def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike, full_version: 
         spawn(
             Vec2(576.0, 576.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=31500,
             count=1,
         ),
         spawn(
             Vec2(448.0, 576.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+            spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
             trigger_ms=22000,
             count=1,
         ),
@@ -196,7 +196,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -208,7 +208,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -221,7 +221,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+                    spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -267,7 +267,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
                 spawn(
                     Vec2(256.0, 256.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -276,7 +276,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
                 spawn(
                     Vec2(768.0, 768.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                    spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -287,7 +287,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
                 spawn(
                     Vec2(768.0, 256.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                    spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -296,7 +296,7 @@ def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: boo
                 spawn(
                     Vec2(256.0, 768.0),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                    spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
                     trigger_ms=trigger,
                     count=1,
                 ),
@@ -428,7 +428,7 @@ def build_2_7_survival_of_the_fastest(
     trigger = 500
     idx = 0
     for x in range(0x100, 0x2B0, 0x48):
-        set_entry(idx, Vec2(float(x), 256.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 256.0), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -436,7 +436,7 @@ def build_2_7_survival_of_the_fastest(
     trigger = 5900
     idx = 6
     for y in range(0x100, 0x2B0, 0x48):
-        set_entry(idx, Vec2(688.0, float(y)), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(688.0, float(y)), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -444,7 +444,7 @@ def build_2_7_survival_of_the_fastest(
     trigger = 11300
     idx = 12
     for x in (0x2B0, 0x268, 0x220, 0x1D8):
-        set_entry(idx, Vec2(float(x), 688.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 688.0), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -452,7 +452,7 @@ def build_2_7_survival_of_the_fastest(
     trigger = 14900
     idx = 16
     for y in (0x2B0, 0x268, 0x220, 0x1D8):
-        set_entry(idx, Vec2(400.0, float(y)), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(400.0, float(y)), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
         idx += 1
 
@@ -460,15 +460,15 @@ def build_2_7_survival_of_the_fastest(
     trigger = 18500
     idx = 20
     for x in range(400, 0x220, 0x48):
-        set_entry(idx, Vec2(float(x), 400.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, trigger, 1)
+        set_entry(idx, Vec2(float(x), 400.0), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
         idx += 1
 
     # Final fixed entries
-    set_entry(22, Vec2(128.0, 128.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 22300, 1)
-    set_entry(23, Vec2(896.0, 128.0), SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 22300, 1)
-    set_entry(24, Vec2(128.0, 896.0), SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, 24300, 1)
-    set_entry(25, Vec2(896.0, 896.0), SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10, 24300, 1)
+    set_entry(22, Vec2(128.0, 128.0), SpawnId.DEN_SPIDER_WEAK_10, 22300, 1)
+    set_entry(23, Vec2(896.0, 128.0), SpawnId.DEN_ALIEN_BASIC_07, 22300, 1)
+    set_entry(24, Vec2(128.0, 896.0), SpawnId.DEN_ALIEN_BASIC_07, 24300, 1)
+    set_entry(25, Vec2(896.0, 896.0), SpawnId.DEN_SPIDER_WEAK_10, 24300, 1)
 
     return [entry for entry in entries if entry is not None]
 
@@ -524,7 +524,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: 
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height, offset=128.0)
     entries.append(
-        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
+        spawn_at(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
     )
     trigger = 2500
     for i in range(12):
@@ -544,7 +544,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: 
         spawn(
             Vec2(-264.0, edges.left.y),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
             trigger_ms=(loop_count - 1) * 2500,
             count=1,
         ),

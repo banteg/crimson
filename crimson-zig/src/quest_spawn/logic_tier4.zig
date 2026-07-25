@@ -121,7 +121,7 @@ fn build_403_lizard_zombie_pact(
                     .y = @floatFromInt(idx * 0xB4 + 0x100),
                 },
                 0.0,
-                common.SpawnId.alien_spawner_child_31_fast_0c,
+                common.SpawnId.den_lizard_weak_0c,
                 trigger,
                 idx + 1,
             );
@@ -133,7 +133,7 @@ fn build_403_lizard_zombie_pact(
                     .y = @floatFromInt(idx * 0xB4 + 0x180),
                 },
                 0.0,
-                common.SpawnId.alien_spawner_child_31_fast_0c,
+                common.SpawnId.den_lizard_weak_0c,
                 trigger,
                 idx + 2,
             );
@@ -222,7 +222,7 @@ fn build_405_the_massacre(
                 len,
                 edges_wide.right,
                 0.0,
-                common.SpawnId.alien_const_red_fast_2b,
+                common.SpawnId.alien_deadly_fast_2b,
                 trigger,
                 wave + 1,
             );
@@ -291,7 +291,7 @@ fn build_406_the_unblitzkrieg(
         len,
         .{ .x = 512.0, .y = 512.0 },
         0.0,
-        common.SpawnId.alien_spawner_child_1d_fast_07,
+        common.SpawnId.den_alien_basic_07,
         trigger,
         1,
     );
@@ -326,7 +326,7 @@ fn build_407_gauntlet(
             step,
             0.0,
             .zero,
-            common.SpawnId.alien_spawner_child_32_slow_0a,
+            common.SpawnId.den_spider_basic_0a,
             0,
             200,
             1,
@@ -362,7 +362,7 @@ fn build_407_gauntlet(
             step,
             0.0,
             .zero,
-            common.SpawnId.alien_spawner_child_32_slow_0a,
+            common.SpawnId.den_spider_basic_0a,
             42_500,
             500,
             1,
@@ -399,7 +399,7 @@ fn build_408_syntax_terror(
                         .y = @floatFromInt(y),
                     },
                     0.0,
-                    common.SpawnId.alien_spawner_child_1d_fast_07,
+                    common.SpawnId.den_alien_basic_07,
                     trigger,
                     1,
                 );
@@ -425,7 +425,7 @@ fn build_409_the_annihilation(
         len,
         .{ .x = 128.0, .y = half_w },
         0.0,
-        common.SpawnId.alien_const_red_fast_2b,
+        common.SpawnId.alien_deadly_fast_2b,
         500,
         2,
     );
@@ -441,7 +441,7 @@ fn build_409_the_annihilation(
             len,
             .{ .x = x, .y = y },
             0.0,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
+            common.SpawnId.den_alien_basic_07,
             trigger,
             1,
         );
@@ -461,7 +461,7 @@ fn build_409_the_annihilation(
             len,
             .{ .x = x, .y = y },
             0.0,
-            common.SpawnId.alien_spawner_child_1d_fast_07,
+            common.SpawnId.den_alien_basic_07,
             trigger,
             1,
         );
@@ -486,7 +486,7 @@ fn appendEndOfAllAlternatingEdgeSpiders(
             len,
             .{ .x = x, .y = @floatFromInt(y) },
             0.0,
-            common.SpawnId.spider_sp1_const_ranged_variant_3c,
+            common.SpawnId.spider_plasma_shooter_3c,
             trigger,
             2,
         );
@@ -512,7 +512,7 @@ fn build_410_the_end_of_all(
         len,
         corners.top_left,
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         3000,
         1,
     );
@@ -521,7 +521,7 @@ fn build_410_the_end_of_all(
         len,
         corners.top_right,
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         6000,
         1,
     );
@@ -530,7 +530,7 @@ fn build_410_the_end_of_all(
         len,
         corners.bottom_left,
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         9000,
         1,
     );
@@ -539,7 +539,7 @@ fn build_410_the_end_of_all(
         len,
         corners.bottom_right,
         0.0,
-        common.SpawnId.spider_sp1_const_ranged_variant_3c,
+        common.SpawnId.spider_plasma_shooter_3c,
         12_000,
         1,
     );
@@ -555,7 +555,7 @@ fn build_410_the_end_of_all(
         1.0471976,
         0.0,
         .zero,
-        common.SpawnId.alien_spawner_child_1d_fast_07,
+        common.SpawnId.den_alien_basic_07,
         13_000,
         300,
         1,
@@ -566,7 +566,7 @@ fn build_410_the_end_of_all(
         len,
         .{ .x = 512.0, .y = 512.0 },
         0.0,
-        common.SpawnId.alien_spawner_child_3c_slow_0b,
+        common.SpawnId.den_spider_plasma_shooters_0b,
         14_800,
         1,
     );
@@ -582,7 +582,7 @@ fn build_410_the_end_of_all(
         1.0471976,
         0.5235988,
         .zero,
-        common.SpawnId.alien_spawner_child_1d_fast_07,
+        common.SpawnId.den_alien_basic_07,
         43_000,
         300,
         1,
@@ -598,7 +598,7 @@ fn build_410_the_end_of_all(
                 len,
                 common.ringPoint(center, 180.0, angle),
                 0.0,
-                common.SpawnId.alien_spawner_child_1d_fast_07,
+                common.SpawnId.den_alien_basic_07,
                 trigger,
                 1,
             );
@@ -611,7 +611,7 @@ fn build_410_the_end_of_all(
 
 fn unblitzkrieg_spawn_id_for(toggle: bool) common.SpawnId {
     return if (toggle)
-        common.SpawnId.alien_spawner_child_31_slow_0d
+        common.SpawnId.den_lizard_weak_slower_0d
     else
-        common.SpawnId.alien_spawner_child_1d_fast_07;
+        common.SpawnId.den_alien_basic_07;
 }

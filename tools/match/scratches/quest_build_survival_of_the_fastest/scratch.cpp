@@ -43,7 +43,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     while (x < 688) {
         spawn->pos = quest_vec2_t((float)x, 256.0f);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+            SPAWN_ID_DEN_SPIDER_WEAK_10,
             trigger_time_ms,
             1);
         ++builder.count;
@@ -59,7 +59,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     while (y < 688) {
         spawn->pos = quest_vec2_t(688.0f, (float)y);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+            SPAWN_ID_DEN_SPIDER_WEAK_10,
             trigger_time_ms,
             1);
         ++builder.count;
@@ -76,7 +76,7 @@ extern "C" void quest_build_survival_of_the_fastest(
         quest_entry_original_t *spawn = &builder.spawns[entry_count];
         spawn->pos = quest_vec2_t((float)x, 688.0f);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+            SPAWN_ID_DEN_SPIDER_WEAK_10,
             trigger_time_ms,
             1);
         ++entry_count;
@@ -89,7 +89,7 @@ extern "C" void quest_build_survival_of_the_fastest(
         quest_entry_original_t *spawn = &builder.spawns[entry_count];
         spawn->pos = quest_vec2_t(400.0f, (float)y);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+            SPAWN_ID_DEN_SPIDER_WEAK_10,
             trigger_time_ms,
             1);
         ++entry_count;
@@ -102,7 +102,7 @@ extern "C" void quest_build_survival_of_the_fastest(
         quest_entry_original_t *spawn = &builder.spawns[entry_count];
         spawn->pos = quest_vec2_t((float)x, 400.0f);
         spawn->set_spawn(
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10,
+            SPAWN_ID_DEN_SPIDER_WEAK_10,
             trigger_time_ms,
             1);
         ++entry_count;
@@ -113,7 +113,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].pos.x = 128.0f;
     builder.spawns[entry_count].pos.y = 128.0f;
     builder.spawns[entry_count].template_id =
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10;
+        SPAWN_ID_DEN_SPIDER_WEAK_10;
     builder.spawns[entry_count].trigger_time_ms = first_corner_trigger_ms;
     builder.spawns[entry_count].count = 1;
     ++entry_count;
@@ -121,7 +121,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].pos.x = 896.0f;
     builder.spawns[entry_count].pos.y = 128.0f;
     builder.spawns[entry_count].template_id =
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
+        SPAWN_ID_DEN_ALIEN_BASIC_07;
     builder.spawns[entry_count].trigger_time_ms = first_corner_trigger_ms;
     builder.spawns[entry_count].count = 1;
     ++entry_count;
@@ -130,7 +130,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].pos.x = 128.0f;
     builder.spawns[entry_count].pos.y = 896.0f;
     builder.spawns[entry_count].template_id =
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07;
+        SPAWN_ID_DEN_ALIEN_BASIC_07;
     builder.spawns[entry_count].trigger_time_ms = second_corner_trigger_ms;
     builder.spawns[entry_count].count = 1;
     ++entry_count;
@@ -138,7 +138,7 @@ extern "C" void quest_build_survival_of_the_fastest(
     builder.spawns[entry_count].pos.x = 896.0f;
     builder.spawns[entry_count].pos.y = 896.0f;
     builder.spawns[entry_count].template_id =
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10;
+        SPAWN_ID_DEN_SPIDER_WEAK_10;
     builder.spawns[entry_count].trigger_time_ms = second_corner_trigger_ms;
     builder.spawns[entry_count].count = 1;
     ++entry_count;

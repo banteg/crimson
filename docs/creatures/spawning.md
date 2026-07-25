@@ -15,6 +15,46 @@ shared tail modifiers (difficulty/hardcore, demo gating, etc).
 
 For the pure, unit-testable model we use while porting templates, see: [`spawn_plan.md`](spawn_plan.md).
 
+## Spawn id name provenance
+
+The canonical spawn-id names combine the Windows `template_id` values with developer-facing creature
+names recovered from the PS4 1.00 remake's `data/creatures/creature-variants.xml`.
+
+The remake's `legacy_variant_index` is not the Windows spawn id. We cross-mapped fixed creatures by
+type and the exact health, speed, reward, damage, and size fingerprint (`remake scale * 64`), then
+retained the native Windows value as each identifier's hexadecimal suffix:
+
+| Windows id | Canonical name | Remake variant |
+| --- | --- | --- |
+| `0x0f` | `ALIEN_GHOST_0F` | `AlienGhost` |
+| `0x21` | `ALIEN_HIDDEN_1_21` | `AlienHidden1` |
+| `0x22` | `ALIEN_HIDDEN_2_22` | `AlienHidden2` |
+| `0x23` | `ALIEN_HIDDEN_3_23` | `AlienHidden3` |
+| `0x25` | `ALIEN_SMALL_GREEN_MAN_25` | `AlienSmallGreenMan` |
+| `0x26` | `ALIEN_SMALL_GRAY_26` | `AlienSmallGray` |
+| `0x27` | `ALIEN_BONUS_CARRIER_27` | `AlienBonusCarrier` |
+| `0x29` | `ALIEN_BIG_GRAY_29` | `AlienBigGray` |
+| `0x2b` | `ALIEN_DEADLY_FAST_2B` | `AlienDeadlyFast` |
+| `0x3a` | `SPIDER_BOSS_3A` | `SpiderBoss` |
+| `0x3c` | `SPIDER_PLASMA_SHOOTER_3C` | `SpiderPlasmaShooter` |
+| `0x40` | `SPIDER_SMALL_BLUE_40` | `SpiderSmallBlue` |
+| `0x42` | `ZOMBIE_SMALL_WHITE_42` | `ZombieSmallWhite` |
+
+Spawner names are cross-mapped by their den family, child variant, spawn interval, and surviving stat
+fingerprints. Some balance fields changed in the remake, so these are semantic names rather than a
+claim that the records are byte-for-byte identical:
+
+| Windows id | Canonical name | Remake variant |
+| --- | --- | --- |
+| `0x07` | `DEN_ALIEN_BASIC_07` | `DenAlienBasic` |
+| `0x08` | `DEN_ALIEN_BASIC_SLOWER_08` | `DenAlienBasicSlower` |
+| `0x09` | `DEN_ALIEN_WEAK_SMALL_09` | `DenAlienWeakSmall` |
+| `0x0a` | `DEN_SPIDER_BASIC_0A` | `DenSpiderBasic` |
+| `0x0b` | `DEN_SPIDER_PLASMA_SHOOTERS_0B` | `DenSpiderPlasmaShooters` |
+| `0x0c` | `DEN_LIZARD_WEAK_0C` | `DenLizardWeak` |
+| `0x0d` | `DEN_LIZARD_WEAK_SLOWER_0D` | `DenLizardWeakSlower` |
+| `0x10` | `DEN_SPIDER_WEAK_10` | `DenSpiderWeak` |
+
 ## Inputs
 
 - `template_id` (aka `param_1`): spawn id used by quest tables and other spawners.

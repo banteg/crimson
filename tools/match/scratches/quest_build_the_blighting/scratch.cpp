@@ -41,27 +41,27 @@ extern "C" void quest_build_the_blighting(
 
     spawns[0].pos.x = (float)(terrain_texture_width + 128);
     spawns[0].pos.y = (float)(terrain_texture_width / 2);
-    spawns[0].set_spawn(SPAWN_ID_ALIEN_CONST_RED_FAST_2B, 1500, 2);
+    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
 
     spawns[1].pos.x = -128.0f;
     spawns[1].pos.y = (float)(terrain_texture_width / 2);
-    spawns[1].set_spawn(SPAWN_ID_ALIEN_CONST_RED_FAST_2B, 1500, 2);
+    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
 
     spawns[2].pos.y = 128.0f;
     spawns[2].pos.x = 896.0f;
-    spawns[2].set_spawn(SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07, 2000, 1);
+    spawns[2].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
 
     spawns[3].pos.y = 128.0f;
     spawns[3].pos.x = 128.0f;
-    spawns[3].set_spawn(SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07, 2000, 1);
+    spawns[3].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
 
     spawns[4].pos.y = 896.0f;
     spawns[4].pos.x = 128.0f;
-    spawns[4].set_spawn(SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07, 2000, 1);
+    spawns[4].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
 
     spawns[5].pos.y = 896.0f;
     spawns[5].pos.x = 896.0f;
-    spawns[5].set_spawn(SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07, 2000, 1);
+    spawns[5].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, 1);
 
     int wave = 0;
     quest_spawn_builder_t builder(&spawns[6], 6);
@@ -73,7 +73,7 @@ extern "C" void quest_build_the_blighting(
             builder.cursor->pos.x = -128.0f;
             builder.cursor->pos.y = (float)(terrain_texture_width / 2);
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 trigger_time_ms,
                 4);
             ++builder.count;
@@ -84,7 +84,7 @@ extern "C" void quest_build_the_blighting(
             builder.cursor->pos.x = 1152.0f;
             builder.cursor->pos.y = (float)(terrain_texture_width / 2);
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 trigger_time_ms,
                 4);
             ++builder.count;

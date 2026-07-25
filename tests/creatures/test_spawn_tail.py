@@ -103,7 +103,7 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_retry_count(retry_count
         hardcore=False,
         quest_fail_retry_count=retry_count,
     )
-    plan = build_spawn_plan(SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(SpawnId.DEN_ALIEN_BASIC_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
     assert_float_close(plan.spawn_slots[0].interval, 2.2 + 0.2 + expected_extra)
@@ -117,7 +117,7 @@ def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
         hardcore=True,
         quest_fail_retry_count=9,
     )
-    plan = build_spawn_plan(SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
+    plan = build_spawn_plan(SpawnId.DEN_ALIEN_BASIC_07, Vec2(100.0, 200.0), 0.0, Crand(0), env)
 
     assert len(plan.spawn_slots) == 1
     assert_float_close(plan.spawn_slots[0].interval, 2.2 - 0.2)

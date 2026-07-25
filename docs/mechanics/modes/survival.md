@@ -51,12 +51,12 @@ At certain player levels, scripted waves spawn immediately:
 | 5 | 13,125 | Two 8-alien rings from left and right |
 | 9 | 43,224 | Red boss |
 | 11 | 64,095 | 12-spider pack |
-| 13 | 88,604 | 4 fast red aliens |
+| 13 | 88,604 | 4 Deadly Fast aliens |
 | 15 | 116,619 | 8 spiders, 4 per side |
-| 17 | 148,033 | Red ranged spider boss |
+| 17 | 148,033 | Spider Boss |
 | 19 | 182,756 | Splitter spider pack |
 | 21 | 220,712 | Two splitter packs from opposite corners |
-| 26 | 329,315 | 8 ranged spider bosses, 4 per side |
+| 26 | 329,315 | 8 Plasma Shooter spiders, 4 per side |
 | 32+ | 484,560 | Shock-capable spider bosses and ranged columns |
 
 ## Secret weapon handouts

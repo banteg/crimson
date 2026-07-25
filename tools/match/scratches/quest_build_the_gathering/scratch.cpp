@@ -46,13 +46,13 @@ extern "C" void quest_build_the_gathering(
 
     spawns[2].set(
         quest_vec2_t(256.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+        SPAWN_ID_SPIDER_BOSS_3A,
         15500,
         2);
 
     spawns[3].set(
         quest_vec2_t(768.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+        SPAWN_ID_SPIDER_BOSS_3A,
         24500,
         2);
 
@@ -70,31 +70,31 @@ extern "C" void quest_build_the_gathering(
 
     spawns[6].set(
         quest_vec2_t(64.0f, 64.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
         54500,
         2);
 
     spawns[7].set(
         quest_vec2_t(960.0f, 64.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
         54500,
         1);
 
     spawns[8].set(
         quest_vec2_t(64.0f, 960.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
         54500,
         2);
 
     spawns[9].set(
         quest_vec2_t(960.0f, 960.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
         54500,
         1);
 
     spawns[10].set(
         quest_vec2_t(-128.0f, 512.0f),
-        SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+        SPAWN_ID_SPIDER_BOSS_3A,
         90500,
         6);
 

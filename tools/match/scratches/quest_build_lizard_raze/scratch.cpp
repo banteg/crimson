@@ -56,7 +56,7 @@ extern "C" void quest_build_lizard_raze(
         trigger_time_ms += 6000;
     }
 
-    int spawner_template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_31_FAST_0C;
+    int spawner_template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;
     int spawner_trigger_time_ms = 10000;
     int one = 1;
 

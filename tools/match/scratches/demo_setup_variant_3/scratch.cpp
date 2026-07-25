@@ -31,7 +31,7 @@ extern "C" void demo_setup_variant_3(void)
             small_pos.x = small_x;
             small_pos.y = small_y;
             creature_spawn_template(
-                SPAWN_ID_ALIEN_CONST_GREEN_SMALL_25,
+                SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
                 &small_pos,
                 0.0f);
         }

@@ -70,7 +70,7 @@ SPAWN_TEMPLATES = [
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+        spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -80,7 +80,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+        spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -90,7 +90,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -100,7 +100,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+        spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -110,7 +110,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.5,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+        spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -120,7 +120,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.5,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+        spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -130,7 +130,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+        spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -150,7 +150,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F,
+        spawn_id=SpawnId.ALIEN_GHOST_0F,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -160,7 +160,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.9,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
+        spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -282,21 +282,21 @@ SPAWN_TEMPLATES = [
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21,
+        spawn_id=SpawnId.ALIEN_HIDDEN_1_21,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22,
+        spawn_id=SpawnId.ALIEN_HIDDEN_2_22,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
+        spawn_id=SpawnId.ALIEN_HIDDEN_3_23,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -313,7 +313,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
+        spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -323,7 +323,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.5,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+        spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -333,7 +333,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.2,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27,
+        spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.BONUS_ON_DEATH,
         creature="alien",
@@ -353,7 +353,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.7,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+        spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -373,7 +373,7 @@ SPAWN_TEMPLATES = [
         move_speed=3.1,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+        spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -496,7 +496,7 @@ SPAWN_TEMPLATES = [
         move_speed=4.8,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+        spawn_id=SpawnId.SPIDER_BOSS_3A,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         creature="spider_sp1",
@@ -516,7 +516,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+        spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp1",
@@ -555,7 +555,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.3,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+        spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -573,7 +573,7 @@ SPAWN_TEMPLATES = [
         tint=(None, None, None, 1.0),
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
+        spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
         type_id=CreatureTypeId.ZOMBIE,
         flags=None,
         creature="zombie",

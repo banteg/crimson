@@ -13,4 +13,4 @@ native base-plus-scaled-index addressing and register allocation instead of
 VC6 strength-reducing the loop to a cursor. The candidate has the same 74
 instructions and scores 90.54%. Residuals are independent template/trigger
 stores moving around `pos.y` conversions and analogous scheduling in the
-optional brute entry. No ordering-only dependency is added.
+optional AlienBigGray entry. No ordering-only dependency is added.

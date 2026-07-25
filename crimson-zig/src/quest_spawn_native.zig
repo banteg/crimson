@@ -487,7 +487,7 @@ test "quest plan summary counts template allocations" {
         .{
             .pos = .{ .x = 512.0, .y = 512.0 },
             .heading = 0.0,
-            .spawn_id = .alien_spawner_child_1d_fast_07,
+            .spawn_id = .den_alien_basic_07,
             .trigger_ms = 100,
             .count = 3,
         },

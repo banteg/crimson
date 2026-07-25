@@ -5,12 +5,12 @@ Native target: `crimsonland.exe` at `0x00435610` (649 bytes).
 Live Binary Ninja evidence recovers 31 entries in seven phases:
 
 - one template `0x27` bonus at (256, 256), trigger 500 ms, count 1;
-- one template `0x29` brute at `(width + 32, height / 2)`, trigger 8000 ms,
+- one template `0x29` AlienBigGray at `(width + 32, height / 2)`, trigger 8000 ms,
   count 3;
 - eight template `0x25` waves at `(width + x, height / 2)`, where `x` starts
   at 64 and advances by 32, triggers start at 10000 ms and advance by 100 ms,
   and every count is 8;
-- one template `0x29` brute at `(-32, height / 2)`, trigger 18000 ms, count 3;
+- one template `0x29` AlienBigGray at `(-32, height / 2)`, trigger 18000 ms, count 3;
 - eight template `0x25` waves at `(x, height / 2)`, where `x` runs from -64
   through -288 by -32, triggers start at 20000 ms and advance by 100 ms, and
   every count is 8;

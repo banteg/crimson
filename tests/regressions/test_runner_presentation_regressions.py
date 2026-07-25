@@ -109,7 +109,7 @@ def test_runner_path_projectile_hits_enqueue_decals() -> None:
     player = world.sim_world.players[0]
     target = player.pos.offset(dx=48.0)
     world.sim_world.creatures.spawn_template(
-        SpawnId.ZOMBIE_CONST_GREY_42,
+        SpawnId.ZOMBIE_SMALL_WHITE_42,
         target,
         3.14,
         world.sim_world.state.rng,

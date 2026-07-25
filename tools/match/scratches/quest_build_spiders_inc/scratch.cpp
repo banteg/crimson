@@ -59,7 +59,7 @@ extern "C" void quest_build_spiders_inc(
     spawn->pos.y = -64.0f;
     spawn->pos.x = (float)(terrain_texture_width / 2);
     spawn->set_spawn(
-        SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+        SPAWN_ID_SPIDER_SMALL_BLUE_40,
         initial_trigger_time_ms,
         4);
 

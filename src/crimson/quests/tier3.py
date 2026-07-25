@@ -34,36 +34,36 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
         spawn_at(
             edges_wide.right,
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
             trigger_ms=1500,
             count=2,
         ),
-        spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
+        spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
         spawn(
             Vec2(896.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
             trigger_ms=2000,
             count=1,
         ),
         spawn(
             Vec2(128.0, 128.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
             trigger_ms=2000,
             count=1,
         ),
         spawn(
             Vec2(128.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
             trigger_ms=2000,
             count=1,
         ),
         spawn(
             Vec2(896.0, 896.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+            spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
             trigger_ms=2000,
             count=1,
         ),
@@ -76,7 +76,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
                 spawn_at(
                     edges_wide.left,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                    spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
                 ),
@@ -86,7 +86,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
                 spawn_at(
                     Vec2(1152.0, edges_wide.right.y),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                    spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
                 ),
@@ -200,7 +200,7 @@ def _the_killing_random_spawner(
     return spawn(
         Vec2(x, y),
         heading=0.0,
-        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
+        spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
         trigger_ms=trigger_ms,
         count=3,
     )
@@ -317,23 +317,23 @@ def build_3_3_the_killing(
 def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21, trigger_ms=500, count=50),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=15000, count=30),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_1_21, trigger_ms=500, count=50),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=15000, count=30),
         spawn_at(
             edges.bottom,
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
+            spawn_id=SpawnId.ALIEN_HIDDEN_3_23,
             trigger_ms=25000,
             count=20,
         ),
         spawn_at(
             edges.bottom,
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
+            spawn_id=SpawnId.ALIEN_HIDDEN_3_23,
             trigger_ms=30000,
             count=30,
         ),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=35000, count=30),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=35000, count=30),
     ]
 
 
@@ -357,7 +357,7 @@ def build_3_5_surrounded_by_reptiles(
             spawn(
                 Vec2(256.0, pos.y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -366,7 +366,7 @@ def build_3_5_surrounded_by_reptiles(
             spawn(
                 Vec2(768.0, pos.y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -379,7 +379,7 @@ def build_3_5_surrounded_by_reptiles(
             spawn(
                 Vec2(pos.x, 256.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -388,7 +388,7 @@ def build_3_5_surrounded_by_reptiles(
             spawn(
                 Vec2(pos.x, 768.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -433,7 +433,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
                 spawn(
                     Vec2(ctx.width + 128.0, edges.right.y),
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+                    spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                     trigger_ms=1500,
                     count=2,
                 ),
@@ -461,7 +461,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             trigger_ms=500,
             count=1,
         ),
-        spawn_at(edges.top, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=500, count=4),
+        spawn_at(edges.top, heading=0.0, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=500, count=4),
     ]
 
     trigger = 17000
@@ -527,21 +527,21 @@ def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             spawn(
                 Vec2(128.0, 256.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
                 trigger_ms=10000,
                 count=1,
             ),
             spawn(
                 Vec2(128.0, 384.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
                 trigger_ms=10000,
                 count=1,
             ),
             spawn(
                 Vec2(128.0, 512.0),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
                 trigger_ms=10000,
                 count=1,
             ),
@@ -580,7 +580,7 @@ def build_3_9_deja_vu(
                 spawn(
                     pos,
                     heading=0.0,
-                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
+                    spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
                     trigger_ms=trigger,
                     count=1,
                 ),

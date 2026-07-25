@@ -124,7 +124,7 @@ pub fn postStep(
 
         try creatures.spawnTemplateCallWithRuntimeContext(call, &state.rng, state, world_size);
         if (!result.actions.stage5_bonus_carrier_drop_active) continue;
-        if (call.template_id != @intFromEnum(spawn_mod.SpawnId.alien_const_weapon_bonus_27)) continue;
+        if (call.template_id != @intFromEnum(spawn_mod.SpawnId.alien_bonus_carrier_27)) continue;
 
         for (&creatures.entries, 0..) |*entry, idx| {
             if (active_before[idx] or !entry.active) continue;

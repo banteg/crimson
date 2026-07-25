@@ -27,10 +27,10 @@ fn build_1_1_land_hostile(
     const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
     const corners = common.cornerPoints(ctx.width, ctx.height, default_edge_offset);
 
-    try common.appendSpawn(out_entries, len, edges.bottom, 0.0, common.SpawnId.alien_const_pale_green_26, 500, 1);
-    try common.appendSpawn(out_entries, len, corners.bottom_left, 0.0, common.SpawnId.alien_const_pale_green_26, 2500, 2);
-    try common.appendSpawn(out_entries, len, corners.top_left, 0.0, common.SpawnId.alien_const_pale_green_26, 6500, 3);
-    try common.appendSpawn(out_entries, len, corners.top_right, 0.0, common.SpawnId.alien_const_pale_green_26, 11500, 4);
+    try common.appendSpawn(out_entries, len, edges.bottom, 0.0, common.SpawnId.alien_small_gray_26, 500, 1);
+    try common.appendSpawn(out_entries, len, corners.bottom_left, 0.0, common.SpawnId.alien_small_gray_26, 2500, 2);
+    try common.appendSpawn(out_entries, len, corners.top_left, 0.0, common.SpawnId.alien_small_gray_26, 6500, 3);
+    try common.appendSpawn(out_entries, len, corners.top_right, 0.0, common.SpawnId.alien_small_gray_26, 11500, 4);
 }
 
 fn build_1_2_minor_alien_breach(
@@ -43,8 +43,8 @@ fn build_1_2_minor_alien_breach(
     const center = common.centerPoint(ctx.width, ctx.height);
     const edges = common.edgeMidpoints(ctx.width, ctx.height, default_edge_offset);
 
-    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.alien_const_pale_green_26, 1000, 2);
-    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 128.0 }, 0.0, common.SpawnId.alien_const_pale_green_26, 1700, 2);
+    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.alien_small_gray_26, 1000, 2);
+    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 128.0 }, 0.0, common.SpawnId.alien_small_gray_26, 1700, 2);
 
     for (2..18) |i_usize| {
         const i: i32 = @intCast(i_usize);
@@ -55,7 +55,7 @@ fn build_1_2_minor_alien_breach(
             len,
             edges.right,
             0.0,
-            common.SpawnId.alien_const_pale_green_26,
+            common.SpawnId.alien_small_gray_26,
             trigger,
             1,
         );
@@ -66,7 +66,7 @@ fn build_1_2_minor_alien_breach(
                 len,
                 .{ .x = edges.right.x, .y = center.y - 256.0 },
                 0.0,
-                common.SpawnId.alien_const_pale_green_26,
+                common.SpawnId.alien_small_gray_26,
                 trigger,
                 1,
             );
@@ -78,7 +78,7 @@ fn build_1_2_minor_alien_breach(
                 len,
                 edges.bottom,
                 0.0,
-                common.SpawnId.alien_const_grey_brute_29,
+                common.SpawnId.alien_big_gray_29,
                 39600,
                 1,
             );
@@ -90,7 +90,7 @@ fn build_1_2_minor_alien_breach(
                 len,
                 .{ .x = edges.left.x, .y = center.y + 256.0 },
                 0.0,
-                common.SpawnId.alien_const_pale_green_26,
+                common.SpawnId.alien_small_gray_26,
                 trigger,
                 1,
             );
@@ -144,11 +144,11 @@ fn build_1_4_frontline_assault(
     for (2..22) |i_usize| {
         const i: i32 = @intCast(i_usize);
         const spawn_id = if (i < 5)
-            common.SpawnId.alien_const_pale_green_26
+            common.SpawnId.alien_small_gray_26
         else if (i < 10)
             common.SpawnId.ai1_alien_blue_tint_1a
         else
-            common.SpawnId.alien_const_pale_green_26;
+            common.SpawnId.alien_small_gray_26;
         const trigger = i * step - 5000;
 
         try common.appendSpawn(out_entries, len, edges.bottom, 0.0, spawn_id, trigger, 1);
@@ -159,7 +159,7 @@ fn build_1_4_frontline_assault(
                 len,
                 corners.top_left,
                 0.0,
-                common.SpawnId.alien_const_pale_green_26,
+                common.SpawnId.alien_small_gray_26,
                 trigger,
                 1,
             );
@@ -171,7 +171,7 @@ fn build_1_4_frontline_assault(
                 len,
                 corners.top_right,
                 0.0,
-                common.SpawnId.alien_const_pale_green_26,
+                common.SpawnId.alien_small_gray_26,
                 trigger,
                 1,
             );
@@ -184,7 +184,7 @@ fn build_1_4_frontline_assault(
                 len,
                 edges.right,
                 0.0,
-                common.SpawnId.alien_const_grey_brute_29,
+                common.SpawnId.alien_big_gray_29,
                 burst_trigger,
                 1,
             );
@@ -193,7 +193,7 @@ fn build_1_4_frontline_assault(
                 len,
                 edges.left,
                 0.0,
-                common.SpawnId.alien_const_grey_brute_29,
+                common.SpawnId.alien_big_gray_29,
                 burst_trigger,
                 1,
             );
@@ -210,19 +210,19 @@ fn build_1_5_alien_dens(
     len: *usize,
 ) common.QuestSpawnBuildError!void {
     _ = rng;
-    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_slow_08, 1500, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 768.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_slow_08, 1500, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.den_alien_basic_slower_08, 1500, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 768.0 }, 0.0, common.SpawnId.den_alien_basic_slower_08, 1500, 1);
     try common.appendSpawn(
         out_entries,
         len,
         .{ .x = 512.0, .y = 512.0 },
         0.0,
-        common.SpawnId.alien_spawner_child_1d_slow_08,
+        common.SpawnId.den_alien_basic_slower_08,
         23500,
         ctx.player_count,
     );
-    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 768.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_slow_08, 38500, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 256.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_slow_08, 38500, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 768.0 }, 0.0, common.SpawnId.den_alien_basic_slower_08, 38500, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 256.0 }, 0.0, common.SpawnId.den_alien_basic_slower_08, 38500, 1);
 }
 
 fn build_1_6_the_random_factor(
@@ -261,7 +261,7 @@ fn build_1_6_the_random_factor(
                 len,
                 .{ .x = center.x, .y = edges.bottom.y },
                 0.0,
-                common.SpawnId.alien_const_grey_brute_29,
+                common.SpawnId.alien_big_gray_29,
                 trigger,
                 ctx.player_count,
             );
@@ -287,7 +287,7 @@ fn build_1_7_spider_wave_syndrome(
             len,
             edges.left,
             0.0,
-            common.SpawnId.spider_sp1_const_blue_40,
+            common.SpawnId.spider_small_blue_40,
             trigger,
             ctx.player_count * 2 + 6,
         );
@@ -318,7 +318,7 @@ fn build_1_8_alien_squads(
             len,
             .{ .x = -64.0, .y = -64.0 },
             0.0,
-            common.SpawnId.alien_const_pale_green_26,
+            common.SpawnId.alien_small_gray_26,
             trigger - 400,
             1,
         );
@@ -327,7 +327,7 @@ fn build_1_8_alien_squads(
             len,
             .{ .x = 1088.0, .y = 1088.0 },
             0.0,
-            common.SpawnId.alien_const_pale_green_26,
+            common.SpawnId.alien_small_gray_26,
             trigger,
             1,
         );
@@ -354,9 +354,9 @@ fn build_1_9_nesting_grounds(
         1500,
         ctx.player_count * 2 + 6,
     );
-    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 8000, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 512.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 13000, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 768.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 18000, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 256.0, .y = 256.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 8000, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 512.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 13000, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 768.0, .y = 768.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 18000, 1);
     try common.appendSpawn(
         out_entries,
         len,
@@ -375,10 +375,10 @@ fn build_1_9_nesting_grounds(
         39000,
         ctx.player_count * 3 + 3,
     );
-    try common.appendSpawn(out_entries, len, .{ .x = 384.0, .y = 512.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 41100, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 640.0, .y = 512.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 42100, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 640.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_limited_09, 43100, 1);
-    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 512.0 }, 0.0, common.SpawnId.alien_spawner_child_1d_slow_08, 44100, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 384.0, .y = 512.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 41100, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 640.0, .y = 512.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 42100, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 640.0 }, 0.0, common.SpawnId.den_alien_weak_small_09, 43100, 1);
+    try common.appendSpawn(out_entries, len, .{ .x = 512.0, .y = 512.0 }, 0.0, common.SpawnId.den_alien_basic_slower_08, 44100, 1);
     try common.appendSpawn(
         out_entries,
         len,
@@ -411,7 +411,7 @@ fn build_1_10_8_legged_terror(
         len,
         .{ .x = ctx.width - 256.0, .y = @floor(ctx.height / 2.0) },
         0.0,
-        common.SpawnId.spider_sp1_const_shock_boss_3a,
+        common.SpawnId.spider_boss_3a,
         1000,
         1,
     );

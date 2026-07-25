@@ -481,7 +481,7 @@ extern "C" creature_t *creature_spawn_template(
                                    1.0f, 1.0f, 1.0f, 1500.0f, 2.0f, 64.0f);
                     SPAWN_GRID(CREATURE_AI_LINK_GUARD, CREATURE_TYPE_LIZARD, 40.0f,
                                0.4f, 0.7f, 0.11f, 2.0f, 1.0f, 60.0f, 4.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_BROWN_TRANSPARENT_0F) {
+                } else if (template_id == SPAWN_ID_ALIEN_GHOST_0F) {
                     creature->type_id = CREATURE_TYPE_ALIEN;
                     creature->position.x = pos->x;
                     creature->position.y = pos->y;
@@ -509,13 +509,13 @@ extern "C" creature_t *creature_spawn_template(
                     creature->color.g = 0.7f;
                     creature->color.b = 0.4f;
                     creature->contact_damage = 17.0f;
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A) {
+                } else if (template_id == SPAWN_ID_DEN_SPIDER_BASIC_0A) {
                     INIT_ALIEN_SPAWNER(2.0f, 100, 5.0f, SPAWN_ID_SPIDER_SP1_RANDOM_32,
                                        55.0f, 1000.0f, 1.5f, 3000.0f, 0.8f, 0.7f, 0.4f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_3C_SLOW_0B) {
-                    INIT_ALIEN_SPAWNER(2.0f, 100, 6.0f, SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                } else if (template_id == SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B) {
+                    INIT_ALIEN_SPAWNER(2.0f, 100, 6.0f, SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
                                        65.0f, 3500.0f, 1.5f, 5000.0f, 0.9f, 0.1f, 0.1f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_32_FAST_10) {
+                } else if (template_id == SPAWN_ID_DEN_SPIDER_WEAK_10) {
                     INIT_ALIEN_SPAWNER(1.5f, 100, 2.3f, SPAWN_ID_SPIDER_SP1_RANDOM_32,
                                        32.0f, 50.0f, 2.8f, 800.0f, 0.9f, 0.8f, 0.4f);
                 } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_RING_24_0E) {
@@ -553,19 +553,19 @@ extern "C" creature_t *creature_spawn_template(
                         creature->contact_damage = 30.0f;
                         ring_member_idx = ring_member_idx + 1;
                     } while (ring_member_idx < 0x18);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_31_FAST_0C) {
+                } else if (template_id == SPAWN_ID_DEN_LIZARD_WEAK_0C) {
                     INIT_ALIEN_SPAWNER(1.5f, 100, 2.0f, SPAWN_ID_LIZARD_RANDOM_31,
                                        32.0f, 50.0f, 2.8f, 1000.0f, 0.9f, 0.8f, 0.4f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D) {
+                } else if (template_id == SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D) {
                     INIT_ALIEN_SPAWNER(2.0f, 100, 6.0f, SPAWN_ID_LIZARD_RANDOM_31,
                                        32.0f, 50.0f, 1.3f, 1000.0f, 0.9f, 0.8f, 0.4f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09) {
+                } else if (template_id == SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09) {
                     INIT_ALIEN_SPAWNER(1.0f, 0x10, 2.0f, SPAWN_ID_ALIEN_RANDOM_1D,
                                        40.0f, 450.0f, 2.0f, 1000.0f, 1.0f, 1.0f, 1.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07) {
+                } else if (template_id == SPAWN_ID_DEN_ALIEN_BASIC_07) {
                     INIT_ALIEN_SPAWNER(1.0f, 100, 2.2f, SPAWN_ID_ALIEN_RANDOM_1D,
                                        50.0f, 1000.0f, 2.0f, 3000.0f, 1.0f, 1.0f, 1.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_SLOW_08) {
+                } else if (template_id == SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08) {
                     INIT_ALIEN_SPAWNER(1.0f, 100, 2.8f, SPAWN_ID_ALIEN_RANDOM_1D,
                                        50.0f, 1000.0f, 2.0f, 3000.0f, 1.0f, 1.0f, 1.0f);
                 } else if (template_id == SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A) {
@@ -827,13 +827,13 @@ extern "C" creature_t *creature_spawn_template(
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_24) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 20.0f, 2.0f, 110.0f,
                                              0.1f, 0.7f, 0.11f, 1.0f, 50.0f, 4.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_SMALL_25) {
+                } else if (template_id == SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 25.0f, 2.5f, 125.0f,
                                              0.1f, 0.8f, 0.11f, 1.0f, 30.0f, 3.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_PALE_GREEN_26) {
+                } else if (template_id == SPAWN_ID_ALIEN_SMALL_GRAY_26) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.2f, 125.0f,
                                              0.6f, 0.8f, 0.6f, 1.0f, 45.0f, 10.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27) {
+                } else if (template_id == SPAWN_ID_ALIEN_BONUS_CARRIER_27) {
                     creature->type_id = CREATURE_TYPE_ALIEN;
                     creature->health = 50.0f;
                     creature->move_speed = 2.1f;
@@ -847,13 +847,13 @@ extern "C" creature_t *creature_spawn_template(
                     bonus_args->duration_override = 5;
                     creature->size = 45.0f;
                     creature->contact_damage = 10.0f;
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21) {
+                } else if (template_id == SPAWN_ID_ALIEN_HIDDEN_1_21) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 53.0f, 1.7f, 120.0f,
                                              0.7f, 0.1f, 0.51f, 0.5f, 55.0f, 8.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_GHOST_22) {
+                } else if (template_id == SPAWN_ID_ALIEN_HIDDEN_2_22) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 25.0f, 1.7f, 150.0f,
                                              0.1f, 0.7f, 0.51f, 0.05f, 50.0f, 8.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_GREEN_GHOST_SMALL_23) {
+                } else if (template_id == SPAWN_ID_ALIEN_HIDDEN_3_23) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 5.0f, 1.7f, 180.0f,
                                              0.1f, 0.7f, 0.51f, 0.04f, 45.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {
@@ -865,13 +865,13 @@ extern "C" creature_t *creature_spawn_template(
                     *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = 55.0f;
                     creature->contact_damage = 8.0f;
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29) {
+                } else if (template_id == SPAWN_ID_ALIEN_BIG_GRAY_29) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 800.0f, 2.5f, 450.0f,
                                              0.8f, 0.8f, 0.8f, 1.0f, 70.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREY_FAST_2A) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 3.1f, 300.0f,
                                              0.3f, 0.3f, 0.3f, 1.0f, 60.0f, 8.0f);
-                } else if (template_id == SPAWN_ID_ALIEN_CONST_RED_FAST_2B) {
+                } else if (template_id == SPAWN_ID_ALIEN_DEADLY_FAST_2B) {
                     creature->type_id = CREATURE_TYPE_ALIEN;
                     creature->health = 30.0f;
                     child_tint.set(1.0f, 0.3f, 0.3f, 1.0f);
@@ -896,7 +896,7 @@ extern "C" creature_t *creature_spawn_template(
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_RED_BOSS_3B) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 1200.0f, 2.0f, 4000.0f,
                                              0.9f, 0.0f, 0.0f, 1.0f, 70.0f, 20.0f);
-                } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C) {
+                } else if (template_id == SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
                     creature->orbit_angle = 0.4f;
@@ -979,7 +979,7 @@ extern "C" creature_t *creature_spawn_template(
                     *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = (float)(crt_rand() % 4 + 0x1a);
                     creature->contact_damage = 10.0f;
-                } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A) {
+                } else if (template_id == SPAWN_ID_SPIDER_BOSS_3A) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_SHOCK;
                     creature->orbit_angle = 0.9f;
@@ -1000,10 +1000,10 @@ extern "C" creature_t *creature_spawn_template(
                     *(creature_tint_t *)&creature->color = child_tint;
                     creature->size = 35.0f;
                     creature->contact_damage = 20.0f;
-                } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_BLUE_40) {
+                } else if (template_id == SPAWN_ID_SPIDER_SMALL_BLUE_40) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 70.0f, 2.2f, 160.0f,
                                              0.5f, 0.6f, 0.9f, 1.0f, 45.0f, 5.0f);
-                } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREY_42) {
+                } else if (template_id == SPAWN_ID_ZOMBIE_SMALL_WHITE_42) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ZOMBIE, 200.0f, 1.7f, 160.0f,
                                              0.9f, 0.9f, 0.9f, 1.0f, 45.0f, 15.0f);
                 } else if (template_id == SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43) {

@@ -33,28 +33,28 @@ extern "C" void quest_build_cross_fire(
     spawns[0].pos = quest_vec2_t(
         1074.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[0].set_spawn(SPAWN_ID_SPIDER_SP1_CONST_BLUE_40, 100, 6);
+    spawns[0].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 100, 6);
 
     spawns[1].pos = quest_vec2_t(-40.0f, 512.0f);
     spawns[1].set_spawn(
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C, 5500, 4);
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 5500, 4);
 
     spawns[2].pos = quest_vec2_t(-40.0f, 512.0f);
     spawns[2].set_spawn(
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C, 15500, 6);
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 15500, 6);
 
     spawns[3].pos = quest_vec2_t(512.0f, 512.0f);
     spawns[3].set_spawn(SPAWN_ID_SPIDER_SP2_SPLITTER_01, 18500, 2);
 
     spawns[4].pos = quest_vec2_t(-100.0f, 512.0f);
     spawns[4].set_spawn(
-        SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C, 25500, 8);
+        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 25500, 8);
 
     spawns[5].pos = quest_vec2_t(512.0f, 1152.0f);
-    spawns[5].set_spawn(SPAWN_ID_SPIDER_SP1_CONST_BLUE_40, 26000, 6);
+    spawns[5].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 26000, 6);
 
     spawns[6].pos = quest_vec2_t(512.0f, -128.0f);
-    spawns[6].set_spawn(SPAWN_ID_SPIDER_SP1_CONST_BLUE_40, 26000, 6);
+    spawns[6].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 26000, 6);
 
     *count = 7;
 }

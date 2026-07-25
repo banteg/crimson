@@ -3,7 +3,7 @@
 Native target: `crimsonland.exe` at `0x00436c10` (339 bytes).
 
 Live Binary Ninja evidence recovers four deterministic batches of template
-`0x07` alien spawner children. Each batch contains `player_count + 9` entries,
+`0x07` DenAlienBasic spawners. Each batch contains `player_count + 9` entries,
 or four additional entries in hardcore mode; the native temporarily adds four
 to the global player count and restores it before returning. Batch triggers
 start at 1500 ms and advance by 30000 ms, while each entry advances by 300 ms.

@@ -152,14 +152,14 @@ pub fn tutorialStage5BonusCarrierConfig(repeat_spawn_count: i32) ?struct { bonus
 fn buildTutorialStage3FireSpawns(actions: *TutorialFrameActions) void {
     const heading = std.math.pi;
     actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = -164.0, .y = 412.0 }, .heading = heading });
-    actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = -184.0, .y = 512.0 }, .heading = heading });
+    actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_small_gray_26), .pos = .{ .x = -184.0, .y = 512.0 }, .heading = heading });
     actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = -154.0, .y = 612.0 }, .heading = heading });
 }
 
 fn buildTutorialStage4ClearSpawns(actions: *TutorialFrameActions) void {
     const heading = std.math.pi;
     actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 1188.0, .y = 412.0 }, .heading = heading });
-    actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = 1208.0, .y = 512.0 }, .heading = heading });
+    actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_small_gray_26), .pos = .{ .x = 1208.0, .y = 512.0 }, .heading = heading });
     actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 1178.0, .y = 612.0 }, .heading = heading });
 }
 
@@ -168,19 +168,19 @@ fn buildTutorialStage5RepeatSpawns(actions: *TutorialFrameActions, repeat_spawn_
     const heading = std.math.pi;
     if ((repeat_spawn_count & 1) == 0) {
         if (repeat_spawn_count < 6) {
-            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_weapon_bonus_27), .pos = .{ .x = 1056.0, .y = 1056.0 }, .heading = heading });
+            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_bonus_carrier_27), .pos = .{ .x = 1056.0, .y = 1056.0 }, .heading = heading });
         }
         actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 1188.0, .y = 1136.0 }, .heading = heading });
-        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = 1208.0, .y = 512.0 }, .heading = heading });
+        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_small_gray_26), .pos = .{ .x = 1208.0, .y = 512.0 }, .heading = heading });
         actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 1178.0, .y = 612.0 }, .heading = heading });
         if (repeat_spawn_count == 4) {
-            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_blue_40), .pos = .{ .x = 512.0, .y = 1056.0 }, .heading = heading });
+            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.spider_small_blue_40), .pos = .{ .x = 512.0, .y = 1056.0 }, .heading = heading });
         }
         return;
     }
 
     if (repeat_spawn_count < 6) {
-        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_weapon_bonus_27), .pos = .{ .x = -32.0, .y = 1056.0 }, .heading = heading });
+        actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_bonus_carrier_27), .pos = .{ .x = -32.0, .y = 1056.0 }, .heading = heading });
     }
     buildTutorialStage3FireSpawns(actions);
 }
@@ -204,7 +204,7 @@ fn tickHint(
             state.hint_fade_in = true;
             state.hint_index += 1;
             actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_green_24), .pos = .{ .x = 128.0, .y = 128.0 }, .heading = std.math.pi });
-            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_pale_green_26), .pos = .{ .x = 152.0, .y = 160.0 }, .heading = std.math.pi });
+            actions.appendSpawnTemplate(.{ .template_id = @intFromEnum(spawn_mod.SpawnId.alien_small_gray_26), .pos = .{ .x = 152.0, .y = 160.0 }, .heading = std.math.pi });
         }
         state.hint_alpha -= delta;
     } else {

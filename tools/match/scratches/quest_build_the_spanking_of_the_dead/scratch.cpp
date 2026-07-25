@@ -34,10 +34,10 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
 
     spawns[0].pos = quest_vec2_t(256.0f, 512.0f);
-    spawns[0].set_spawn(SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27, 500, 1);
+    spawns[0].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);
 
     spawns[1].pos = quest_vec2_t(768.0f, 512.0f);
-    spawns[1].set_spawn(SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27, 500, 1);
+    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);
 
     int trigger_time_ms = 5000;
     int step_index = 0;
@@ -62,13 +62,13 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     int trigger_offset_ms = step_index * 300;
     spawns[130].pos = quest_vec2_t(1280.0f, 512.0f);
     spawns[130].set_spawn(
-        SPAWN_ID_ZOMBIE_CONST_GREY_42,
+        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 10000,
         16);
 
     spawns[131].pos = quest_vec2_t(-256.0f, 512.0f);
     spawns[131].set_spawn(
-        SPAWN_ID_ZOMBIE_CONST_GREY_42,
+        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 20000,
         16);
 

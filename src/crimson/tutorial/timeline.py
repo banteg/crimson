@@ -158,7 +158,7 @@ def _tick_hint(
             (
                 SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(128.0, 128.0), heading=3.1415927),
                 SpawnTemplateCall(
-                    template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
+                    template_id=SpawnId.ALIEN_SMALL_GRAY_26,
                     pos=Vec2(152.0, 160.0),
                     heading=3.1415927,
                 ),

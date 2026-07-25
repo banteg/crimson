@@ -98,14 +98,14 @@ def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> No
         SpawnEntry(
             pos=Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
+            spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
             trigger_ms=500,
             count=1,
         ),
         SpawnEntry(
             pos=Vec2(512.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=600,
             count=1,
         ),
@@ -120,7 +120,7 @@ def test_tick_quest_spawn_timeline_fires_only_one_trigger_group_per_tick() -> No
     )
 
     assert [e.count for e in updated] == [0, 0, 1]
-    assert [s.template_id for s in spawns] == [SpawnId.FORMATION_RING_ALIEN_8_12, SpawnId.ALIEN_CONST_RED_FAST_2B]
+    assert [s.template_id for s in spawns] == [SpawnId.FORMATION_RING_ALIEN_8_12, SpawnId.ALIEN_DEADLY_FAST_2B]
 
 
 def test_tick_quest_spawn_timeline_force_fires_after_idle_timeout() -> None:

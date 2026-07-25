@@ -24,7 +24,7 @@ extern "C" void quest_build_surrounded_by_reptiles(
         builder.cursor->pos_x = 256.0f;
         builder.cursor->pos_y = axis;
         builder.cursor->template_id =
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
+            SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
         builder.cursor->count = 1;
         ++builder.cursor;
@@ -33,7 +33,7 @@ extern "C" void quest_build_surrounded_by_reptiles(
         builder.cursor->pos_x = 768.0f;
         builder.cursor->pos_y = axis;
         builder.cursor->template_id =
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
+            SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
         builder.cursor->count = 1;
         ++builder.count;
@@ -51,7 +51,7 @@ extern "C" void quest_build_surrounded_by_reptiles(
         builder.cursor->pos_y = 256.0f;
         builder.cursor->pos_x = axis;
         builder.cursor->template_id =
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
+            SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
         builder.cursor->count = 1;
         ++builder.cursor;
@@ -60,7 +60,7 @@ extern "C" void quest_build_surrounded_by_reptiles(
         builder.cursor->pos_y = 768.0f;
         builder.cursor->pos_x = axis;
         builder.cursor->template_id =
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
+            SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
         builder.cursor->count = 1;
         ++builder.count;

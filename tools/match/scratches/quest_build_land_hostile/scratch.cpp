@@ -36,22 +36,22 @@ extern "C" void quest_build_land_hostile(
         quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)(terrain_texture_height + 64)),
-        SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+        SPAWN_ID_ALIEN_SMALL_GRAY_26,
         500,
         1);
     spawns[1].set(
         quest_vec2_t(-64.0f, 1088.0f),
-        SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+        SPAWN_ID_ALIEN_SMALL_GRAY_26,
         2500,
         2);
     spawns[2].set(
         quest_vec2_t(-64.0f, -64.0f),
-        SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+        SPAWN_ID_ALIEN_SMALL_GRAY_26,
         6500,
         3);
     spawns[3].set(
         quest_vec2_t(1088.0f, -64.0f),
-        SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+        SPAWN_ID_ALIEN_SMALL_GRAY_26,
         11500,
         4);
 

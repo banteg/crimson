@@ -54,7 +54,7 @@ extern "C" void quest_build_the_massacre(
             builder.cursor->pos.y = (float)(terrain_texture_width / 2);
             ++builder.count;
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 trigger_time_ms,
                 next_wave);
             ++builder.cursor;

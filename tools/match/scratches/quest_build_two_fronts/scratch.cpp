@@ -61,7 +61,7 @@ extern "C" void quest_build_two_fronts(
 
             builder.cursor->pos = quest_vec2_t(256.0f, 256.0f);
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                SPAWN_ID_DEN_SPIDER_BASIC_0A,
                 trigger_time_ms);
             builder.cursor->count = 1;
             ++builder.cursor;
@@ -69,7 +69,7 @@ extern "C" void quest_build_two_fronts(
             builder.cursor->pos = quest_vec2_t(768.0f, 768.0f);
             ++builder.count;
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                SPAWN_ID_DEN_ALIEN_BASIC_07,
                 trigger_time_ms);
             builder.cursor->count = 1;
             ++builder.count;
@@ -79,7 +79,7 @@ extern "C" void quest_build_two_fronts(
         if (wave == 30) {
             builder.cursor->pos = quest_vec2_t(768.0f, 256.0f);
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                SPAWN_ID_DEN_SPIDER_BASIC_0A,
                 62500);
             builder.cursor->count = 1;
             ++builder.count;
@@ -87,7 +87,7 @@ extern "C" void quest_build_two_fronts(
 
             builder.cursor->pos = quest_vec2_t(256.0f, 768.0f);
             builder.cursor->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                SPAWN_ID_DEN_ALIEN_BASIC_07,
                 62500);
             builder.cursor->count = 1;
             ++builder.count;

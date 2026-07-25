@@ -35,7 +35,7 @@ extern "C" void quest_build_the_fortress(
         (float)terrain_texture_height * 0.5f);
     int y_seed = 0x200;
     spawns[0].set_spawn(
-        SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+        SPAWN_ID_SPIDER_SMALL_BLUE_40,
         100,
         6);
 
@@ -47,7 +47,7 @@ extern "C" void quest_build_the_fortress(
             768.0f,
             (float)y_seed * 0.125f + 256.0f);
         spawns[spawn_index].template_id =
-            SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09;
+            SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;
         spawns[spawn_index].trigger_time_ms = trigger_time_ms;
         spawns[spawn_index].count = 1;
         ++spawn_index;
@@ -71,7 +71,7 @@ extern "C" void quest_build_the_fortress(
                     (float)x_seed * 0.166666672f + 256.0f,
                     512.0f - (float)(row * 0x180) * 0.166666672f);
                 spawns[entry_count].template_id =
-                    SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A;
+                    SPAWN_ID_DEN_SPIDER_BASIC_0A;
                 spawns[entry_count].trigger_time_ms = trigger_time_ms;
                 spawns[entry_count].count = 1;
                 trigger_time_ms += 600;

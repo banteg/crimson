@@ -56,7 +56,7 @@ static __inline creature_t *tutorial_spawn_bonus_carrier(
 {
     pos->set(x, y);
     return creature_spawn_template(
-        SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27,
+        SPAWN_ID_ALIEN_BONUS_CARRIER_27,
         (const vec2f_t *)pos,
         3.14159274f);
 }
@@ -178,7 +178,7 @@ extern "C" void tutorial_timeline_update(void)
                 128.0f,
                 128.0f);
             tutorial_spawn_creature(
-                SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                SPAWN_ID_ALIEN_SMALL_GRAY_26,
                 &hint_spawn_pos,
                 152.0f,
                 160.0f);
@@ -304,7 +304,7 @@ extern "C" void tutorial_timeline_update(void)
                     -164.0f,
                     412.0f);
                 tutorial_spawn_creature(
-                    SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                    SPAWN_ID_ALIEN_SMALL_GRAY_26,
                     &stage3_pos1,
                     -184.0f,
                     512.0f);
@@ -334,7 +334,7 @@ extern "C" void tutorial_timeline_update(void)
                 1188.0f,
                 412.0f);
             tutorial_spawn_creature(
-                SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                SPAWN_ID_ALIEN_SMALL_GRAY_26,
                 &spawn_pos,
                 1208.0f,
                 512.0f);
@@ -379,7 +379,7 @@ extern "C" void tutorial_timeline_update(void)
                     -164.0f,
                     412.0f);
                 tutorial_spawn_creature(
-                    SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                    SPAWN_ID_ALIEN_SMALL_GRAY_26,
                     &spawn_pos,
                     -184.0f,
                     512.0f);
@@ -397,7 +397,7 @@ extern "C" void tutorial_timeline_update(void)
                     1188.0f,
                     1136.0f);
                 tutorial_spawn_creature(
-                    SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                    SPAWN_ID_ALIEN_SMALL_GRAY_26,
                     &spawn_pos,
                     1208.0f,
                     512.0f);
@@ -409,7 +409,7 @@ extern "C" void tutorial_timeline_update(void)
                 3.14159274f);
             if (tutorial_repeat_spawn_count == 4) {
                 tutorial_spawn_creature(
-                    SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
+                    SPAWN_ID_SPIDER_SMALL_BLUE_40,
                     &spawn_pos,
                     512.0f,
                     1056.0f);
@@ -458,7 +458,7 @@ extern "C" void tutorial_timeline_update(void)
                 -164.0f,
                 412.0f);
             tutorial_spawn_creature(
-                SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                SPAWN_ID_ALIEN_SMALL_GRAY_26,
                 &spawn_pos,
                 -184.0f,
                 512.0f);
@@ -478,7 +478,7 @@ extern "C" void tutorial_timeline_update(void)
                 1188.0f,
                 412.0f);
             tutorial_spawn_creature(
-                SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
+                SPAWN_ID_ALIEN_SMALL_GRAY_26,
                 &spawn_pos,
                 1208.0f,
                 512.0f);

@@ -66,7 +66,7 @@ extern "C" void quest_build_lizard_zombie_pact(
             spawn->pos.y = (float)(y_offset + 256);
             ++builder.count;
             spawn->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                SPAWN_ID_DEN_LIZARD_WEAK_0C,
                 trigger_time_ms,
                 group + 1);
 
@@ -75,7 +75,7 @@ extern "C" void quest_build_lizard_zombie_pact(
             spawn->pos.y = (float)(y_offset + 384);
             ++builder.count;
             spawn->set_spawn(
-                SPAWN_ID_ALIEN_SPAWNER_CHILD_31_FAST_0C,
+                SPAWN_ID_DEN_LIZARD_WEAK_0C,
                 trigger_time_ms,
                 group + 2);
         }

@@ -34,7 +34,7 @@ extern "C" void quest_build_hidden_evil(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
     spawns[0].set_spawn(
-        SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21,
+        SPAWN_ID_ALIEN_HIDDEN_1_21,
         500,
         50);
 
@@ -42,7 +42,7 @@ extern "C" void quest_build_hidden_evil(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
     spawns[1].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREEN_GHOST_22,
+        SPAWN_ID_ALIEN_HIDDEN_2_22,
         15000,
         30);
 
@@ -50,7 +50,7 @@ extern "C" void quest_build_hidden_evil(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
     spawns[2].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREEN_GHOST_SMALL_23,
+        SPAWN_ID_ALIEN_HIDDEN_3_23,
         25000,
         20);
 
@@ -58,7 +58,7 @@ extern "C" void quest_build_hidden_evil(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
     spawns[3].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREEN_GHOST_SMALL_23,
+        SPAWN_ID_ALIEN_HIDDEN_3_23,
         30000,
         30);
 
@@ -66,7 +66,7 @@ extern "C" void quest_build_hidden_evil(
         (float)(terrain_texture_width / 2),
         (float)(terrain_texture_height + 64));
     spawns[4].set_spawn(
-        SPAWN_ID_ALIEN_CONST_GREEN_GHOST_22,
+        SPAWN_ID_ALIEN_HIDDEN_2_22,
         35000,
         30);
 

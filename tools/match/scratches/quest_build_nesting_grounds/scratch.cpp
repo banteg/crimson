@@ -31,21 +31,21 @@ extern "C" void quest_build_nesting_grounds(
     spawns[1].pos.x = 256.0f;
     spawns[1].pos.y = 256.0f;
     spawns[1].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         8000);
     spawns[1].count = 1;
 
     spawns[2].pos.x = 512.0f;
     spawns[2].pos.y = 512.0f;
     spawns[2].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         13000);
     spawns[2].count = 1;
 
     spawns[3].pos.x = 768.0f;
     spawns[3].pos.y = 768.0f;
     spawns[3].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         18000);
     spawns[3].count = 1;
 
@@ -62,28 +62,28 @@ extern "C" void quest_build_nesting_grounds(
     spawns[6].pos.x = 384.0f;
     spawns[6].pos.y = 512.0f;
     spawns[6].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         41100);
     spawns[6].count = 1;
 
     spawns[7].pos.x = 640.0f;
     spawns[7].pos.y = 512.0f;
     spawns[7].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         42100);
     spawns[7].count = 1;
 
     spawns[8].pos.x = 512.0f;
     spawns[8].pos.y = 640.0f;
     spawns[8].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         43100);
     spawns[8].count = 1;
 
     spawns[9].pos.x = 512.0f;
     spawns[9].pos.y = 512.0f;
     spawns[9].set_spawn(
-        SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_SLOW_08,
+        SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08,
         44100);
     spawns[9].count = 1;
 

@@ -63,7 +63,7 @@ extern "C" void quest_build_syntax_terror(
                               outer_index) %
                          0x380) + 0x40));
                 spawn->set_spawn(
-                    SPAWN_ID_ALIEN_SPAWNER_CHILD_1D_FAST_07,
+                    SPAWN_ID_DEN_ALIEN_BASIC_07,
                     trigger_time_ms,
                     1);
                 ++entry_count;

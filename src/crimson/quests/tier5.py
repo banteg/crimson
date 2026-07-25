@@ -27,11 +27,11 @@ from .types import QuestContext, SpawnEntry
 )
 def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
+        spawn(Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
         spawn(
             Vec2(ctx.width + 32.0, float(ctx.height // 2)),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+            spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
             trigger_ms=8000,
             count=3,
         ),
@@ -44,7 +44,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             spawn(
                 Vec2(float(ctx.width + x_offset), float(ctx.height // 2)),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
+                spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
                 trigger_ms=trigger,
                 count=8,
             ),
@@ -56,7 +56,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
         spawn(
             Vec2(-32.0, float(ctx.height // 2)),
             heading=0.0,
-            spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
+            spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
             trigger_ms=18000,
             count=3,
         ),
@@ -69,7 +69,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             spawn(
                 Vec2(float(x), float(ctx.height // 2)),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
+                spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
                 trigger_ms=trigger,
                 count=8,
             ),
@@ -84,7 +84,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
             spawn(
                 Vec2(float(ctx.width // 2), float(y)),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F,
+                spawn_id=SpawnId.ALIEN_GHOST_0F,
                 trigger_ms=trigger,
                 count=4,
             ),
@@ -124,8 +124,8 @@ def build_5_2_the_spanking_of_the_dead(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
-        spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
+        spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
+        spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
     ]
 
     trigger = 5000
@@ -151,7 +151,7 @@ def build_5_2_the_spanking_of_the_dead(
         spawn(
             Vec2(1280.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
+            spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
             trigger_ms=offset + 10000,
             count=16,
         ),
@@ -160,7 +160,7 @@ def build_5_2_the_spanking_of_the_dead(
         spawn(
             Vec2(-256.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
+            spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
             trigger_ms=offset + 20000,
             count=16,
         ),
@@ -181,7 +181,7 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
         spawn_exact(
             Vec2(-50.0, half_height),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
             trigger_ms=100,
             count=6,
         ),
@@ -195,7 +195,7 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
             spawn_exact(
                 Vec2(768.0, float(y)),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
+                spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
                 trigger_ms=trigger,
                 count=1,
             ),
@@ -216,7 +216,7 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
                     spawn_exact(
                         Vec2(float(x), float(y)),
                         heading=0.0,
-                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                        spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                         trigger_ms=trigger,
                         count=1,
                     ),
@@ -373,7 +373,7 @@ def build_5_5_knee_deep_in_the_dead(
                 spawn(
                     Vec2(-50.0, float(ctx.height * 0.5 - 258.0)),
                     heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
+                    spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
                     trigger_ms=trigger + 0x514,
                     count=1,
                 ),
@@ -383,7 +383,7 @@ def build_5_5_knee_deep_in_the_dead(
                 spawn(
                     Vec2(-50.0, float(ctx.height * 0.5 + 258.0)),
                     heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
+                    spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
                     trigger_ms=trigger + 300,
                     count=1,
                 ),
@@ -406,21 +406,21 @@ def build_5_6_cross_fire(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         spawn(
             Vec2(1074.0, float(ctx.height * 0.5)),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
             trigger_ms=100,
             count=6,
         ),
         spawn(
             Vec2(-40.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=5500,
             count=4,
         ),
         spawn(
             Vec2(-40.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=15500,
             count=6,
         ),
@@ -434,21 +434,21 @@ def build_5_6_cross_fire(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         spawn(
             Vec2(-100.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=25500,
             count=8,
         ),
         spawn(
             Vec2(512.0, 1152.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
             trigger_ms=26000,
             count=6,
         ),
         spawn(
             Vec2(512.0, -128.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
+            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
             trigger_ms=26000,
             count=6,
         ),
@@ -610,10 +610,10 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
 
     center = Vec2(512.0, 512.0)
     for pos, angle in ring_points(center, 128.0, 8, step=0.7853982):
-        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
+        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=2000, count=1))
 
     for pos, angle in ring_points(center, 178.0, 12, step=0.5235988):
-        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1))
+        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=8000, count=1))
 
     trigger = 13000
     wave = 0
@@ -662,7 +662,7 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
             spawn(
                 Vec2(64.0, y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                 trigger_ms=base_left,
                 count=1,
             ),
@@ -676,7 +676,7 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
             spawn(
                 Vec2(960.0, y),
                 heading=0.0,
-                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
+                spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
                 trigger_ms=base_right,
                 count=1,
             ),
@@ -688,7 +688,7 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         spawn(
             Vec2(512.0, 256.0),
             heading=math.pi,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+            spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
             trigger_ms=base_mid,
             count=1,
         ),
@@ -697,7 +697,7 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike, full_version: boo
         spawn(
             Vec2(512.0, 768.0),
             heading=math.pi,
-            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
+            spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
             trigger_ms=base_mid,
             count=1,
         ),
@@ -739,14 +739,14 @@ def build_5_10_the_gathering(ctx: QuestContext, *, rng: CrandLike, full_version:
         spawn(
             Vec2(256.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=15500,
             count=2,
         ),
         spawn(
             Vec2(768.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=24500,
             count=2,
         ),
@@ -767,35 +767,35 @@ def build_5_10_the_gathering(ctx: QuestContext, *, rng: CrandLike, full_version:
         spawn(
             Vec2(64.0, 64.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=54500,
             count=2,
         ),
         spawn(
             Vec2(960.0, 64.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=54500,
             count=1,
         ),
         spawn(
             Vec2(64.0, 960.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=54500,
             count=2,
         ),
         spawn(
             Vec2(960.0, 960.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
             trigger_ms=54500,
             count=1,
         ),
         spawn(
             Vec2(-128.0, 512.0),
             heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=90500,
             count=6,
         ),

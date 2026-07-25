@@ -56,7 +56,7 @@ extern "C" void quest_build_the_lizquidation(
             spawn->pos.y = (float)(terrain_texture_width / 2);
             ++builder.count;
             spawn->set_spawn(
-                SPAWN_ID_ALIEN_CONST_RED_FAST_2B, 1500, 2);
+                SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
         }
     }
 

@@ -51,7 +51,7 @@ extern "C" void quest_build_gauntlet(
                     (float)(config_blob.player_count + 9)) *
                     158.0f +
                 512.0f;
-            spawn->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A;
+            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
             spawn->trigger_time_ms = trigger_time_ms;
             spawn->count = 1;
             ++entry_count;
@@ -122,7 +122,7 @@ extern "C" void quest_build_gauntlet(
                     (float)(config_blob.player_count + 17)) *
                     258.0f +
                 512.0f;
-            spawn->template_id = SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A;
+            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
             spawn->trigger_time_ms = trigger_time_ms;
             spawn->count = 1;
             ++entry_count;

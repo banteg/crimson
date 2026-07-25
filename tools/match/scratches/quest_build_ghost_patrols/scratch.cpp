@@ -32,7 +32,7 @@ extern "C" void quest_build_ghost_patrols(
     spawns[0].pos.x = (float)(terrain_texture_width + 128);
     spawns[0].pos.y = (float)(terrain_texture_width / 2);
     spawns[0].set_spawn(
-        SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+        SPAWN_ID_ALIEN_DEADLY_FAST_2B,
         1500,
         2);
 
@@ -59,7 +59,7 @@ extern "C" void quest_build_ghost_patrols(
     spawns[13].pos.x = -264.0f;
     spawns[13].pos.y = (float)(terrain_texture_width / 2);
     spawns[13].set_spawn(
-        SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+        SPAWN_ID_ALIEN_DEADLY_FAST_2B,
         (wave - 1) * 2500,
         one);
 

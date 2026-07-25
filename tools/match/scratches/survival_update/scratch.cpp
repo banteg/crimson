@@ -143,7 +143,7 @@ extern "C" void survival_update(void)
             pos.x = 1088.0f;
             pos.y = (float)i1 * 64.0f + 384.0f;
             creature_spawn_template(
-                SPAWN_ID_ALIEN_CONST_RED_FAST_2B,
+                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
                 &pos,
                 3.14159274f
             );
@@ -185,7 +185,7 @@ extern "C" void survival_update(void)
         pos.x = 1088.0f;
         pos.y = 512.0f;
         creature_spawn_template(
-            SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            SPAWN_ID_SPIDER_BOSS_3A,
             &pos,
             3.14159274f
         );
@@ -236,7 +236,7 @@ extern "C" void survival_update(void)
             pos.x = 1088.0f;
             pos.y = (float)i4 * 64.0f + 384.0f;
             creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
                 &pos,
                 3.14159274f
             );
@@ -245,7 +245,7 @@ extern "C" void survival_update(void)
             pos.x = -64.0f;
             pos.y = (float)i5 * 64.0f + 384.0f;
             creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
                 &pos,
                 3.14159274f
             );
@@ -259,14 +259,14 @@ extern "C" void survival_update(void)
         pos.x = 1088.0f;
         pos.y = 512.0f;
         creature_spawn_template(
-            SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            SPAWN_ID_SPIDER_BOSS_3A,
             &pos,
             3.14159274f
         );
         pos.x = -64.0f;
         pos.y = 512.0f;
         creature_spawn_template(
-            SPAWN_ID_SPIDER_SP1_CONST_SHOCK_BOSS_3A,
+            SPAWN_ID_SPIDER_BOSS_3A,
             &pos,
             3.14159274f
         );
@@ -274,7 +274,7 @@ extern "C" void survival_update(void)
             pos.x = (float)i6 * 64.0f + 384.0f;
             pos.y = -64.0f;
             creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
                 &pos,
                 3.14159274f
             );
@@ -283,7 +283,7 @@ extern "C" void survival_update(void)
             pos.x = (float)i7 * 64.0f + 384.0f;
             pos.y = 1088.0f;
             creature_spawn_template(
-                SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C,
+                SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,
                 &pos,
                 3.14159274f
             );

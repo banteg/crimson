@@ -1460,7 +1460,7 @@ pub const CreaturePool = struct {
                 }
                 applyUnhandledCreatureTypeFallback(&self.entries[last_idx]);
             },
-            @intFromEnum(spawn_mod.SpawnId.alien_const_red_fast_2b) => {
+            @intFromEnum(spawn_mod.SpawnId.alien_deadly_fast_2b) => {
                 _ = self.spawnFromStats(
                     rng,
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1640,7 +1640,7 @@ pub const CreaturePool = struct {
                 );
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
             },
-            @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_shock_boss_3a) => {
+            @intFromEnum(spawn_mod.SpawnId.spider_boss_3a) => {
                 const idx = self.spawnFromStatsWithFlags(
                     rng,
                     .{ .x = narrowF32(call.pos.x), .y = narrowF32(call.pos.y) },
@@ -1681,7 +1681,7 @@ pub const CreaturePool = struct {
                 _ = rng.randTagged(rng_callers.creature_spawn_template_base_heading) % 314;
                 applySpiderSp1Ai7Tail(&self.entries[idx]);
             },
-            @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_ranged_variant_3c) => {
+            @intFromEnum(spawn_mod.SpawnId.spider_plasma_shooter_3c) => {
                 const prelude = drawSpawnTemplatePrelude(rng, call.heading);
                 const idx = self.spawnInit(.{
                     .origin_template_id = -1,
@@ -5219,21 +5219,21 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = @intFromEnum(spawn_mod.SpawnId.alien_const_red_fast_2b),
+            .template_id = @intFromEnum(spawn_mod.SpawnId.alien_deadly_fast_2b),
             .pos = .{ .x = 10.0, .y = 20.0 },
             .heading = 1.23,
         },
         &rng,
     );
-    const red_fast_entry = pool.entries[0];
-    try std.testing.expect(red_fast_entry.active);
-    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), red_fast_entry.type_id);
-    try std.testing.expectEqual(@as(u32, 0), red_fast_entry.flags);
-    try expectFloatClose(30.0, red_fast_entry.hp);
-    try expectFloatClose(3.6, red_fast_entry.move_speed);
-    try expectFloatClose(450.0, red_fast_entry.reward_value);
-    try expectFloatClose(35.0, red_fast_entry.size);
-    try expectFloatClose(20.0, red_fast_entry.contact_damage);
+    const deadly_fast_entry = pool.entries[0];
+    try std.testing.expect(deadly_fast_entry.active);
+    try std.testing.expectEqual(@as(i32, @intFromEnum(spawn_mod.CreatureTypeId.alien)), deadly_fast_entry.type_id);
+    try std.testing.expectEqual(@as(u32, 0), deadly_fast_entry.flags);
+    try expectFloatClose(30.0, deadly_fast_entry.hp);
+    try expectFloatClose(3.6, deadly_fast_entry.move_speed);
+    try expectFloatClose(450.0, deadly_fast_entry.reward_value);
+    try expectFloatClose(35.0, deadly_fast_entry.size);
+    try expectFloatClose(20.0, deadly_fast_entry.contact_damage);
 
     try pool.spawnTemplateCall(
         .{
@@ -5273,7 +5273,7 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_shock_boss_3a),
+            .template_id = @intFromEnum(spawn_mod.SpawnId.spider_boss_3a),
             .pos = .{ .x = 30.0, .y = 40.0 },
             .heading = 2.34,
         },
@@ -5293,7 +5293,7 @@ test "template spawn supports survival late-stage templates" {
 
     try pool.spawnTemplateCall(
         .{
-            .template_id = @intFromEnum(spawn_mod.SpawnId.spider_sp1_const_ranged_variant_3c),
+            .template_id = @intFromEnum(spawn_mod.SpawnId.spider_plasma_shooter_3c),
             .pos = .{ .x = 50.0, .y = 60.0 },
             .heading = 3.45,
         },

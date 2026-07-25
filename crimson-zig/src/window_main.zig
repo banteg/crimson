@@ -5006,7 +5006,7 @@ fn setupDemoAttractVariant3(runner: *live_runner.LiveRunner) !void {
         if (@mod(idx, 3) != 0) {
             const x2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_small_x) % 30)) + 32.0;
             const y2 = @as(f32, @floatFromInt(runner.session.state.rng.randTagged(rng_callers.demo_setup_variant_3_alien_small_y) % 899)) + 64.0;
-            try spawnDemoAttractCreature(runner, .alien_const_green_small_25, .{ .x = x2, .y = y2 }, false);
+            try spawnDemoAttractCreature(runner, .alien_small_green_man_25, .{ .x = x2, .y = y2 }, false);
         }
     }
 }
