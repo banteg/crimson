@@ -495,3 +495,8 @@ The remaining direct aim and point-control target fields now use the canonical
 the same 4,019/4,206 instructions, 54.86% score, seven-instruction prefix, and
 `736/0/11` reference audit, so the stronger types do not steer the unresolved
 whole-function allocation.
+
+The Fire Cough smoke template now writes its two size components through
+`effect_template_t::half_extent`, completing the already-recovered velocity
+and color aggregate boundary. This is byte-neutral at the same 4,019/4,206
+instructions, 54.86%, and `736/0/11` references.

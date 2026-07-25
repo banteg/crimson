@@ -226,8 +226,8 @@ extern "C" void projectile_update(void)
                                     effect_template.flags = 0x59;
                                     effect_template.lifetime = 0.35f;
                                     effect_template.age = 0.0f;
-                                    effect_template.half_width = 4.0f;
-                                    effect_template.half_height = 4.0f;
+                                    effect_template.half_extent.x = 4.0f;
+                                    effect_template.half_extent.y = 4.0f;
 
                                     if (!config_violence_disabled) {
                                         if (perk_count_get(

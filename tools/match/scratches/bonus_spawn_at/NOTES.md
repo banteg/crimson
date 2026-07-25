@@ -34,3 +34,7 @@ Both ports now tag those 64 draws explicitly. Zig also restores the native
 clamp, no-spacing allocation, `duration_override == -1` test, corpse mutation,
 and forced 16-particle burst. Focused regressions cover an out-of-bounds death,
 the exact first-particle caller sequence, and the clamp-before-Rush behavior.
+
+The pickup burst writes its dimensions through
+`effect_template_t::half_extent`. The stronger aggregate spelling remains
+exact at 128/128 instructions and 28/0/0 references.

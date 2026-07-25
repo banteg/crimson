@@ -1123,8 +1123,8 @@ extern "C" void player_update(void)
             effect_template.age = 0.0f;
             move_delta.x = (float)cos(angle_step) * scalar;
             move_delta.y = (float)sin(angle_step) * scalar;
-            effect_template.half_width = 2.0f;
-            effect_template.half_height = 2.0f;
+            effect_template.half_extent.x = 2.0f;
+            effect_template.half_extent.y = 2.0f;
             effect_template.rotation =
                 (float)((crt_rand() & 0x3f) - 0x20) * 0.1f;
             effect_template.velocity.x = move_delta.x * 100.0f;

@@ -16,11 +16,11 @@ extern "C" void effect_spawn_shrinkifier_hit(const vec2f_t *pos)
     effect_template.color = core_color;
     effect_template.age = 0.0f;
     effect_template.lifetime = 0.3f;
-    effect_template.half_width = 36.0f;
-    effect_template.half_height = 36.0f;
+    effect_template.half_extent.x = 36.0f;
+    effect_template.half_extent.y = 36.0f;
     effect_template.rotation = 0.0f;
-    effect_template.vel_x = 0.0f;
-    effect_template.vel_y = 0.0f;
+    effect_template.velocity.x = 0.0f;
+    effect_template.velocity.y = 0.0f;
     effect_template.scale_step = -4.0f;
     effect_spawn(1, pos);
 
@@ -29,8 +29,8 @@ extern "C" void effect_spawn_shrinkifier_hit(const vec2f_t *pos)
     effect_template.color = debris_color;
     effect_template.age = 0.0f;
     effect_template.lifetime = 0.3f;
-    effect_template.half_width = 32.0f;
-    effect_template.half_height = 32.0f;
+    effect_template.half_extent.x = 32.0f;
+    effect_template.half_extent.y = 32.0f;
 
     int count = effect_detail_count(4);
 
@@ -38,9 +38,9 @@ extern "C" void effect_spawn_shrinkifier_hit(const vec2f_t *pos)
         do {
             effect_template.rotation =
                 (float)(crt_rand() & 127) * 0.0490873866f;
-            effect_template.vel_x =
+            effect_template.velocity.x =
                 (float)((crt_rand() & 127) - 64) * 1.4f;
-            effect_template.vel_y =
+            effect_template.velocity.y =
                 (float)((crt_rand() & 127) - 64) * 1.4f;
             effect_template.scale_step =
                 (float)(crt_rand() % 100) * 0.01f + 0.1f;

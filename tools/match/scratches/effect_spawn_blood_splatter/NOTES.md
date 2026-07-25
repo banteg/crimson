@@ -17,3 +17,7 @@ native `fld st(0)` pair.
 The original particle API passes positions as `vec2_t`; the lowered matching
 boundary and saved Binary Ninja prototype therefore use `const vec2f_t *`.
 This type-only recovery preserves all 82 instructions and 27 references.
+
+The emitter now writes the shared template through its canonical `velocity`
+and `half_extent` aggregates. This remains exact at 82/82 instructions and
+27/0/0 references.

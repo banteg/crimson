@@ -16,12 +16,12 @@ extern "C" void effect_spawn_freeze_shatter(
 
     for (int index = 0; index < 4; ++index) {
         effect_template.rotation = angle + (float)index * 1.57079637f;
-        effect_template.vel_x = (float)cos(effect_template.rotation) * 42.0f;
-        effect_template.vel_y = (float)sin(effect_template.rotation) * 42.0f;
+        effect_template.velocity.x = (float)cos(effect_template.rotation) * 42.0f;
+        effect_template.velocity.y = (float)sin(effect_template.rotation) * 42.0f;
 
         float half_extent = (float)(crt_rand() % 10 + 18);
-        effect_template.half_width = half_extent;
-        effect_template.half_height = half_extent;
+        effect_template.half_extent.x = half_extent;
+        effect_template.half_extent.y = half_extent;
         effect_template.rotation_step =
             ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 1.9f;
         effect_spawn(14, pos);

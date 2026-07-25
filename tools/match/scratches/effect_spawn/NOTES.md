@@ -49,3 +49,8 @@ The allocated effect now copies its input through
 `effect_entry_t::position`. This completes the record-base aggregate recovery
 alongside the existing template/velocity copy and remains exact at 350/350
 instructions with 90/0/0 references.
+
+All four atlas-size paths now read the template through
+`effect_template_t::half_extent` rather than its compatibility scalar aliases.
+The complete allocator remains exact at 350/350 instructions and 90/0/0
+references.

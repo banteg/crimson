@@ -17,3 +17,7 @@ that policy boundary preserves native's common positive-count guard.
 The original particle API passes explosion positions as `vec2_t`; the lowered
 shared declaration, matching source, and saved Binary Ninja prototype now use
 `const vec2f_t *`. The exact 182/182 code and all 75 references are unchanged.
+
+Both shockwave and debris phases now write the shared template through its
+canonical `velocity` and `half_extent` aggregates. The source remains exact at
+182/182 instructions and 75/0/0 references.

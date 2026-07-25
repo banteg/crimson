@@ -41,8 +41,8 @@ extern "C" bonus_entry_t *bonus_spawn_at(
         effect_template.flags = 0x1d;
         effect_template.color = color;
         effect_template.lifetime = 0.5f;
-        effect_template.half_width = 32.0f;
-        effect_template.half_height = 32.0f;
+        effect_template.half_extent.x = 32.0f;
+        effect_template.half_extent.y = 32.0f;
     }
 
     count = 16;

@@ -13,3 +13,7 @@ The source, shared gameplay declaration, and saved Binary Ninja prototype now
 carry that position as `const vec2f_t *`. All native callers pass embedded
 two-float positions through the same aggregate boundary; the exact 61/61 code
 and 21 references are unchanged.
+
+The particle loop now writes the shared template through its canonical
+`velocity` and `half_extent` aggregates. The exact 61/61 instructions and
+21/0/0 references are unchanged.

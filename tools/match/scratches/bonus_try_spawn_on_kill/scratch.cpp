@@ -98,8 +98,8 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
         effect_template.flags = 0x1d;
         effect_template.color = color;
         effect_template.lifetime = 0.5f;
-        effect_template.half_width = 32.0f;
-        effect_template.half_height = 32.0f;
+        effect_template.half_extent.x = 32.0f;
+        effect_template.half_extent.y = 32.0f;
 
         count = 16;
         do {

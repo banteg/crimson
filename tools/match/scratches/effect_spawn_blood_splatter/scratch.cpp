@@ -29,12 +29,12 @@ extern "C" void effect_spawn_blood_splatter(
             angle + (float)((crt_rand() & 63) - 32) * 0.1f;
 
         float half_extent = (float)((crt_rand() & 7) + 1);
-        effect_template.half_width = half_extent;
-        effect_template.half_height = half_extent;
+        effect_template.half_extent.x = half_extent;
+        effect_template.half_extent.y = half_extent;
 
-        effect_template.vel_x =
+        effect_template.velocity.x =
             direction_cos * (float)((crt_rand() & 63) + 100);
-        effect_template.vel_y =
+        effect_template.velocity.y =
             direction_sin * (float)((crt_rand() & 63) + 100);
         effect_template.rotation_step = 0.0f;
         effect_template.scale_step =

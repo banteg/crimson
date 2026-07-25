@@ -30,25 +30,25 @@ extern float effect_uv_step_16;
             *(const effect_spawn_vec2_t *)&(uv_table)[frame];              \
         *(effect_spawn_vec2_t *)&entry->vertices[0].pos =                  \
             effect_spawn_vec2_t(                                           \
-            -effect_template.half_width, -effect_template.half_height);     \
+            -effect_template.half_extent.x, -effect_template.half_extent.y);     \
         *(effect_spawn_vec2_t *)&entry->vertices[1].tex =                  \
             *(const effect_spawn_vec2_t *)&(uv_table)[frame]               \
                 + effect_spawn_vec2_t((uv_step), 0.0f);                    \
         *(effect_spawn_vec2_t *)&entry->vertices[1].pos =                  \
             effect_spawn_vec2_t(                                           \
-            effect_template.half_width, -effect_template.half_height);      \
+            effect_template.half_extent.x, -effect_template.half_extent.y);      \
         *(effect_spawn_vec2_t *)&entry->vertices[2].tex =                  \
             *(const effect_spawn_vec2_t *)&(uv_table)[frame]               \
                 + effect_spawn_vec2_t((uv_step), (uv_step));               \
         *(effect_spawn_vec2_t *)&entry->vertices[2].pos =                  \
             effect_spawn_vec2_t(                                           \
-            effect_template.half_width, effect_template.half_height);       \
+            effect_template.half_extent.x, effect_template.half_extent.y);       \
         *(effect_spawn_vec2_t *)&entry->vertices[3].tex =                  \
             *(const effect_spawn_vec2_t *)&(uv_table)[frame]               \
                 + effect_spawn_vec2_t(0.0f, (uv_step));                    \
         *(effect_spawn_vec2_t *)&entry->vertices[3].pos =                  \
             effect_spawn_vec2_t(                                           \
-            -effect_template.half_width, effect_template.half_height);      \
+            -effect_template.half_extent.x, effect_template.half_extent.y);      \
     } while (0)
 
 extern "C" effect_entry_t *effect_spawn(

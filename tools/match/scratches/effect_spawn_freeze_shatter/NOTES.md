@@ -15,3 +15,7 @@ in place, exactly as native; a named local adds a spill/reload pair.
 The original `PART_SpawnIceBurstBig(vec2_t pos, float angle)` declaration
 confirms the aggregate input. Its lowered shared declaration, source, and
 Binary Ninja prototype now use `const vec2f_t *`, preserving the exact match.
+
+The primary shard loop now writes its canonical `velocity` and `half_extent`
+components directly. This remains exact at 79/79 instructions and 27/0/0
+references.

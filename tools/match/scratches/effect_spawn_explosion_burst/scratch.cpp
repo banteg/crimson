@@ -21,11 +21,11 @@ extern "C" void effect_spawn_explosion_burst(
     effect_template.color = core_color;
     effect_template.lifetime = 0.35f;
     effect_template.age = -0.1f;
-    effect_template.half_width = 32.0f;
-    effect_template.half_height = 32.0f;
+    effect_template.half_extent.x = 32.0f;
+    effect_template.half_extent.y = 32.0f;
     effect_template.rotation = 0.0f;
-    effect_template.vel_x = 0.0f;
-    effect_template.vel_y = 0.0f;
+    effect_template.velocity.x = 0.0f;
+    effect_template.velocity.y = 0.0f;
     effect_template.scale_step = scale * 25.0f;
     effect_spawn(1, pos);
 
@@ -33,14 +33,14 @@ extern "C" void effect_spawn_explosion_burst(
     effect_template.flags = 0x5d;
     effect_template.color = shockwave_color;
     effect_template.rotation = 0.0f;
-    effect_template.vel_x = 0.0f;
-    effect_template.vel_y = 0.0f;
+    effect_template.velocity.x = 0.0f;
+    effect_template.velocity.y = 0.0f;
 
     if (config_blob.detail_preset > 3) {
         float shockwave_scale_step = scale * 5.0f;
         for (int index = 0; index < 2; ++index) {
-            effect_template.half_width = 32.0f;
-            effect_template.half_height = 32.0f;
+            effect_template.half_extent.x = 32.0f;
+            effect_template.half_extent.y = 32.0f;
             float time_offset = (float)index * 0.2f;
             effect_template.age = time_offset - 0.5f;
             effect_template.lifetime = time_offset + 0.6f;
@@ -57,11 +57,11 @@ extern "C" void effect_spawn_explosion_burst(
     effect_template.color = flash_color;
     effect_template.age = 0.0f;
     effect_template.lifetime = 0.3f;
-    effect_template.half_width = 32.0f;
-    effect_template.half_height = 32.0f;
+    effect_template.half_extent.x = 32.0f;
+    effect_template.half_extent.y = 32.0f;
     effect_template.rotation = 0.0f;
-    effect_template.vel_x = 0.0f;
-    effect_template.vel_y = 0.0f;
+    effect_template.velocity.x = 0.0f;
+    effect_template.velocity.y = 0.0f;
     effect_template.scale_step = scale * 45.0f;
     effect_spawn(0, pos);
 
@@ -70,8 +70,8 @@ extern "C" void effect_spawn_explosion_burst(
     effect_template.color = debris_color;
     effect_template.lifetime = 0.7f;
     effect_template.age = 0.0f;
-    effect_template.half_width = 32.0f;
-    effect_template.half_height = 32.0f;
+    effect_template.half_extent.x = 32.0f;
+    effect_template.half_extent.y = 32.0f;
 
     int detail = config_blob.detail_preset;
     int count = explosion_debris_count(detail);
@@ -80,9 +80,9 @@ extern "C" void effect_spawn_explosion_burst(
         do {
             effect_template.rotation =
                 (float)(crt_rand() % 314) * 0.02f;
-            effect_template.vel_x =
+            effect_template.velocity.x =
                 (float)((crt_rand() & 63) * 2 - 64);
-            effect_template.vel_y =
+            effect_template.velocity.y =
                 (float)((crt_rand() & 63) * 2 - 64);
             effect_template.scale_step =
                 (float)((crt_rand() - 3) & 7) * scale;

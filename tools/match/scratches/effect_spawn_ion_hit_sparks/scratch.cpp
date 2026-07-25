@@ -24,8 +24,8 @@ extern "C" void effect_spawn_ion_hit_sparks(
         effect_template.lifetime = 1.1f;
     }
 
-    effect_template.half_width = scale * 32.0f;
-    effect_template.half_height = scale * 32.0f;
+    effect_template.half_extent.x = scale * 32.0f;
+    effect_template.half_extent.y = scale * 32.0f;
 
     int count = effect_detail_count((int)(scale * 5.0f));
     if (count <= 0) {
@@ -36,9 +36,9 @@ extern "C" void effect_spawn_ion_hit_sparks(
     do {
         effect_template.rotation =
             (float)(crt_rand() & 127) * 0.0490873866f;
-        effect_template.vel_x =
+        effect_template.velocity.x =
             (float)((crt_rand() & 127) - 64) * scale * 1.4f;
-        effect_template.vel_y =
+        effect_template.velocity.y =
             (float)((crt_rand() & 127) - 64) * scale * 1.4f;
         effect_template.scale_step =
             ((float)(crt_rand() % 100) * 0.01f + 0.1f) * scale;

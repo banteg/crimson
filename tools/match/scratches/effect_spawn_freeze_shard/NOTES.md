@@ -15,3 +15,7 @@ the integer-to-float conversion exactly as native.
 The original `PART_SpawnIceBurst(vec2_t pos, float angle)` declaration confirms
 the aggregate input. Its lowered shared declaration, source, and Binary Ninja
 prototype now use `const vec2f_t *`, preserving the exact match.
+
+The shard template now writes its canonical `velocity` and `half_extent`
+components directly. This preserves the exact 81/81 instructions and 33/0/0
+references, including the decisive lifetime/extent store schedule above.

@@ -13,19 +13,19 @@ extern "C" void effect_spawn_freeze_shard(
     effect_template.lifetime =
         (float)(crt_rand() & 15) * 0.01f + 0.2f;
     effect_template.age = 0.0f;
-    effect_template.half_width = 8.0f;
-    effect_template.half_height = 8.0f;
+    effect_template.half_extent.x = 8.0f;
+    effect_template.half_extent.y = 8.0f;
 
     angle += 3.14159274f;
     effect_template.rotation =
         angle + (float)(crt_rand() % 100) * 0.01f;
 
     float half_extent = (float)(crt_rand() % 5 + 7);
-    effect_template.half_width = half_extent;
-    effect_template.half_height = half_extent;
+    effect_template.half_extent.x = half_extent;
+    effect_template.half_extent.y = half_extent;
 
-    effect_template.vel_x = (float)cos(angle) * 114.0f;
-    effect_template.vel_y = (float)sin(angle) * 114.0f;
+    effect_template.velocity.x = (float)cos(angle) * 114.0f;
+    effect_template.velocity.y = (float)sin(angle) * 114.0f;
     effect_template.rotation_step =
         ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 4.0f;
     effect_template.scale_step =

@@ -51,3 +51,7 @@ register forcing is retained.
 The distance gate now reads player zero through
 `player_state_t::position.x/y`. The record-base aggregate view compiles
 identically, preserving the exact 207/207 instructions and 47/0/0 references.
+
+The corresponding pickup burst now writes its dimensions through
+`effect_template_t::half_extent`, also preserving the exact 207/207
+instructions and 47/0/0 references.

@@ -267,3 +267,8 @@ primary and secondary projectile paths retain their nested views because their
 native induction cursors genuinely begin inside those records. This targeted
 type recovery is byte-neutral at 46.91%, 2,137/2,203 instructions, and
 `336/0/29` references.
+
+The plasma projectile effect now writes its size through
+`effect_template_t::half_extent`, completing the template aggregate boundary
+already used for velocity and color. This is byte-neutral at the same 46.91%,
+2,137/2,203 instructions, and `336/0/29` references.

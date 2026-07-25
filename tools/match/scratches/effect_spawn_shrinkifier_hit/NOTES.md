@@ -15,3 +15,7 @@ native positive-count guard before entering the debris loop.
 The original `PART_SpawnShrinkFx(vec2_t pos)` declaration confirms the
 aggregate input. Its lowered source and Binary Ninja boundary now use
 `const vec2f_t *`, preserving all 92 instructions and 38 references.
+
+Both shrink shockwave and debris paths now write the shared template through
+its canonical `velocity` and `half_extent` aggregates. The exact 92/92
+instructions and 38/0/0 references are unchanged.
