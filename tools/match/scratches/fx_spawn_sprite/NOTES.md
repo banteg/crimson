@@ -8,3 +8,7 @@ The fixed-pool constructor takes read-only position and velocity vectors.
 Matching source and saved Binary Ninja prototypes now expose both pairs through
 `x`/`y`, replacing four raw float indexes while preserving every native byte
 and reference.
+
+The destination record now receives both values through its canonical
+`sprite_effect_t::position` and `sprite_effect_t::velocity` aggregates. These
+two aggregate assignments remain byte-for-byte exact.

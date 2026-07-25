@@ -33,8 +33,7 @@ found:
     scale.age = 0.0f;
 
     particle_pool[index].active = 1;
-    particle_pool[index].pos_x = pos->x;
-    particle_pool[index].pos_y = pos->y;
+    particle_pool[index].position = *pos;
     particle_pool[index].vel_x = (float)cos(angle) * 30.0f;
     particle_pool[index].vel_y = (float)sin(angle) * 30.0f;
     particle_pool[index].intensity = 1.0f;

@@ -13,3 +13,5 @@ also canonicalizes the Python spawn inputs and spin multiplication as f32.
 
 The spawn position is recovered as a read-only `vec2f_t` in both source and
 Binary Ninja, replacing `pos[0]`/`pos[1]` without changing the exact match.
+The destination uses the canonical `particle_t::position` aggregate directly;
+that assignment is also byte-for-byte exact.

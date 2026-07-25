@@ -21,10 +21,8 @@ allocated:
     sprite_effect_pool[index].color_g = 1.0f;
     sprite_effect_pool[index].color_r = 1.0f;
     sprite_effect_pool[index].color_a = 1.0f;
-    sprite_effect_pool[index].pos_x = pos->x;
-    sprite_effect_pool[index].pos_y = pos->y;
-    sprite_effect_pool[index].vel_x = vel->x;
-    sprite_effect_pool[index].vel_y = vel->y;
+    sprite_effect_pool[index].position = *pos;
+    sprite_effect_pool[index].velocity = *vel;
     sprite_effect_pool[index].scale = scale;
     sprite_effect_pool[index].rotation = (float)(crt_rand() % 0x274) * 0.01f;
     return index;
