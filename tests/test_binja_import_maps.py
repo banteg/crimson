@@ -799,6 +799,48 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
             "type": "int *",
         },
     ]
+    assert rows_by_name["highscore_screen_update"]["local_types"] == [
+        {
+            "address": "0x00442b63",
+            "name": "score_count",
+            "type": "int",
+        },
+        {
+            "address": "0x00442b6b",
+            "name": "score_line_item_cursor",
+            "type": "char **",
+        },
+        {
+            "address": "0x00442b76",
+            "name": "record_flags_cursor",
+            "type": "uint8_t *",
+        },
+        {
+            "address": "0x00442b7b",
+            "name": "score_line_buffer_cursor",
+            "type": "char (*)[164]",
+        },
+        {
+            "address": "0x00442b9a",
+            "name": "prefix_length",
+            "type": "int",
+        },
+        {
+            "address": "0x00442bd6",
+            "name": "record_name",
+            "type": "char *",
+        },
+        {
+            "address": "0x00442c04",
+            "name": "record_name",
+            "type": "char *",
+        },
+        {
+            "address": "0x00442c33",
+            "name": "record_name",
+            "type": "char *",
+        },
+    ]
 
 
 def test_name_map_preserves_creature_death_pointer_local():

@@ -76,3 +76,20 @@ bytes, and improves the reference audit from `581/0/8` to `583/0/7`.
 Reading the already-copied panel components directly was also isolated, but
 lost 8 fuzzy bytes and one aligned reference; keeping the live `position`
 assignments preserves the native lifetime implied by the copy.
+
+The native score-row loop carries three distinct induction pointers: a
+`char **` cursor through the ten item slots, a `uint8_t *` cursor anchored at
+`highscore_record_t::flags`, and a `char (*)[164]` cursor through the row
+buffers. Binary Ninja now retains those names and types, along with the
+row count, escape-prefix length, and three branch-local player-name pointers.
+The record cursor deliberately remains an interior byte pointer: previewing it
+as `highscore_record_t *` mislabeled `flags` as `player_name[0]`, because the
+native register contains `&record->flags`, not the owning record base. The
+remaining negative offsets are therefore honest evidence of VC6's interior
+induction variable rather than missing owner-type recovery.
+
+The stack slots holding score number and selected row are coalesced with
+unrelated render coordinates and later item pointers. Split-local type
+previews polluted those other lifetimes, so they are intentionally left
+unannotated until Binary Ninja can represent the compiler's stack-slot
+lifetime splits without widening the user type across the whole function.

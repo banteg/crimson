@@ -4213,6 +4213,48 @@
     "name": "highscore_screen_update",
     "signature": "void highscore_screen_update(void)",
     "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00442b63",
+        "name": "score_count",
+        "type": "int"
+      },
+      {
+        "address": "0x00442b6b",
+        "name": "score_line_item_cursor",
+        "type": "char **"
+      },
+      {
+        "address": "0x00442b76",
+        "name": "record_flags_cursor",
+        "type": "uint8_t *"
+      },
+      {
+        "address": "0x00442b7b",
+        "name": "score_line_buffer_cursor",
+        "type": "char (*)[164]"
+      },
+      {
+        "address": "0x00442b9a",
+        "name": "prefix_length",
+        "type": "int"
+      },
+      {
+        "address": "0x00442bd6",
+        "name": "record_name",
+        "type": "char *"
+      },
+      {
+        "address": "0x00442c04",
+        "name": "record_name",
+        "type": "char *"
+      },
+      {
+        "address": "0x00442c33",
+        "name": "record_name",
+        "type": "char *"
+      }
+    ],
     "comment": "high scores screen callback for GAME_STATE_HIGHSCORES: list filters, profile list, and online score actions"
   },
   {
