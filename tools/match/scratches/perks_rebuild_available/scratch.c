@@ -34,13 +34,21 @@ void perks_rebuild_available(void)
             {
                 int unlock_count = quest_unlock_index;
                 int index = 0;
-                int *unlock_perk_id = &quest_selected_meta[0].unlock_perk_id;
-                while (index < unlock_count
-                       && (int)unlock_perk_id < (int)&quest_selected_meta[50].unlock_perk_id) {
-                    int perk_id = *unlock_perk_id;
-                    ++index;
-                    unlock_perk_id += sizeof(quest_meta_t) / sizeof(int);
-                    perk_meta_table[perk_id].available = one;
+                if (unlock_count > 0) {
+                    int *unlock_perk_id =
+                        &quest_selected_meta[0].unlock_perk_id;
+                    do {
+                        int perk_id;
+                        if ((int)unlock_perk_id
+                            >= (int)&quest_selected_meta[50].unlock_perk_id) {
+                            break;
+                        }
+                        perk_id = *unlock_perk_id;
+                        ++index;
+                        unlock_perk_id +=
+                            sizeof(quest_meta_t) / sizeof(int);
+                        perk_meta_table[perk_id].available = one;
+                    } while (index < unlock_count);
                 }
             }
         }

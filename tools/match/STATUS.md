@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **290698/676681** code bytes (**43.0%**).
+Fuzzy-weighted alignment is **290723/676681** code bytes (**43.0%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261122/386756 | 67.5% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261147/386756 | 67.5% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **261122/386756** fuzzy-weighted bytes (**67.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **261147/386756** fuzzy-weighted bytes (**67.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -400,7 +400,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | match | perk_meta_table_destroy | 0x0042faf0 | 23 | 23/23 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-destruction |
 | match | perk_can_offer | 0x0042fb10 | 185 | 185/185 | 0 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
 | match | perk_select_random | 0x0042fbd0 | 89 | 89/89 | 0 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
-| wip | perks_rebuild_available | 0x0042fc30 | 181 | 132/181 | 49 | 52/52 | 73.08% | 9/52 | 16/0/0 |  | gameplay-perk-unlocks |
+| wip | perks_rebuild_available | 0x0042fc30 | 181 | 157/181 | 24 | 52/52 | 86.54% | 9/52 | 17/0/0 |  | gameplay-perk-unlocks |
 | match | perk_count_get | 0x0042fcf0 | 12 | 12/12 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | wip | wrap_text_to_width_alloc | 0x0042fd00 | 143 | 117/143 | 26 | 60/62 | 81.97% | 0/62 | 2/0/0 |  | text-wrap-allocation |
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |

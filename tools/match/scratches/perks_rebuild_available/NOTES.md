@@ -3,7 +3,7 @@
 Current best local score:
 
 ```txt
-match=73.08% prefix=9/52 target_insns=52 candidate_insns=52 refs=16/0/0
+match=86.54% prefix=9/52 target_insns=52 candidate_insns=52 refs=17/0/0
 ```
 
 The recovered source preserves the native full-table clear, base perk range,
@@ -24,15 +24,19 @@ injected availability bits to survive. Native rebuilds on every call; the port
 now does the same, with a regression test that dirties the table at the cached
 index before rebuilding.
 
-The quest scan is a conjunctive `while`: `index < unlock_count` guards the
-cursor-bound check, and the count backedge returns to that bound check after
-each availability write. This source shape accounts for native's initial count
-test, initial cursor comparison, and split loop latch without a body-level
-break.
+The quest scan first guards the zero-count case, then enters a bounded `do`
+loop. This is the source shape exposed by the native CFG: the count is tested
+before the quest cursor is materialized, the cursor and index occupy the
+native `EDX` and `ECX` registers, and the count backedge follows each
+availability write. Recovering that outer guard raises the candidate from
+73.08% to 86.54% and aligns one additional reference without changing behavior
+or instruction count.
 
-The remaining mismatch is register allocation and instruction scheduling. The
-candidate moves the index initialization and count test through the preceding
-always-available stores and assigns the index/cursor lifetimes to the opposite
-registers. Writing unrelated global loads inside the base-range loop would
-only steer scheduling and is not plausible source, so the clean WIP remains
-preferable.
+The remaining mismatch is confined to two compiler choices. VC6 assigns the
+initial Antiperk id load to `ECX` instead of native `EAX`, and proves the
+initial quest cursor is below the fixed table end, rotating that bound check to
+the loop latch. Function-scope and block-scope index/cursor declarations compile
+identically; an outer-guarded conjunctive `while` loses the recovered register
+assignment and reference. Writing unrelated global loads inside the base-range
+loop would only steer scheduling and is not plausible source, so the clean WIP
+remains preferable.
