@@ -688,10 +688,28 @@ typedef struct projectile_t {
     unsigned char _pad0[3];
     float angle;
     union {
+        // The anonymous nested view preserves native interior-pointer codegen.
+        // Direct indexed gameplay code uses `fields` for the same flat record.
         struct {
             float pos_x;
             projectile_pos_y_block_t pos;
         };
+        struct {
+            float pos_x;
+            float pos_y;
+            float origin_x;
+            float origin_y;
+            float vel_x;
+            float vel_y;
+            projectile_type_id_t type_id;
+            float life_timer;
+            float reserved;
+            float speed_scale;
+            float damage_pool;
+            float hit_radius;
+            float travel_budget;
+            int owner_id;
+        } fields;
         vec2f_t position;
     };
 } projectile_t;

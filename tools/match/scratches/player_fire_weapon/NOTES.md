@@ -43,6 +43,11 @@ Those two stack values now use canonical `vec2f_t` storage directly, and the
 repeated player-position cursor points at `player_state_t::position`. This
 removes five layout casts without changing the honest WIP result.
 
+The shotgun pellet update now names the flat projectile
+`fields.speed_scale` member instead of traversing the matching-only
+`pos.tail.vy` cursor overlay. This source cleanup is byte-neutral: the
+candidate remains 378/378 instructions at 86.77% with all 141 references.
+
 The player-state accesses now also use the recovered `movement`, `aim`, and
 `position` vector members, and the muzzle sprites use their recovered color
 aggregate. These are source-shape improvements rather than score claims: VC6

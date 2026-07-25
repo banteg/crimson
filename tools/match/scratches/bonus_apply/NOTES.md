@@ -31,6 +31,11 @@ Recovered source shape:
   `vec2f_t` pointers, and the Nuke force temporary is a `vec2f_t` value. Named
   `x`/`y` fields replace the last seven raw component indexes without changing
   the exact 668/668 code or any of the 216 aligned references.
+- Nuke's direct indexed projectile update uses the flat
+  `projectile_t::fields.speed_scale` view. The compiler-facing record retains
+  its nested interior-cursor overlay for scan-heavy functions, but ordinary
+  gameplay source no longer spells this field as `pos.tail.vy.speed_scale`.
+  The exact 668/668 result is byte-identical.
 - Shock Chain sets `bonus_spawn_guard` at `0x00409da4` and unconditionally
   clears it at `0x00409e34`; Fireblast does the same at `0x00409e53` and
   `0x00409eb3`. These are literal resets rather than restoration of an incoming

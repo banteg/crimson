@@ -1346,7 +1346,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_JACKHAMMER) {
@@ -1372,7 +1372,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_SAWED_OFF_SHOTGUN) {
@@ -1409,7 +1409,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_FLAMETHROWER) {
@@ -1595,7 +1595,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {
@@ -1641,7 +1641,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_GAUSS_GUN) {
@@ -1795,7 +1795,7 @@ extern "C" void player_update(void)
                         owner_id);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {

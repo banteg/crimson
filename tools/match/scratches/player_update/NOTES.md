@@ -461,3 +461,10 @@ The native weapon row is now represented by canonical
 therefore use `weapon_ammo_class[player->weapon_id].ammo_class` instead of a
 manual 31-dword stride. This is source-shape recovery only; validation remains
 4,019/4,206 instructions at 54.8085% with `736/0/11` references.
+
+All six direct projectile speed writes now use the flat
+`projectile_t::fields.speed_scale` view. The nested `pos.tail.vy` overlay
+remains available only where an evidenced interior pointer is needed to
+reproduce native induction. This removes matching-layout plumbing from the
+weapon cases without changing the 4,019/4,206 instruction count, 54.81% score,
+or `736/0/11` reference audit.

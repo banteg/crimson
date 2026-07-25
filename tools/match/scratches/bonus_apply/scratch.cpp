@@ -225,7 +225,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
                 PROJECTILE_TYPE_PISTOL,
                 -100);
             if (projectile_index != -1) {
-                projectile_pool[projectile_index].pos.tail.vy.speed_scale *=
+                projectile_pool[projectile_index].fields.speed_scale *=
                     (float)(crt_rand() % 50) * 0.01f + 0.5f;
             }
         }

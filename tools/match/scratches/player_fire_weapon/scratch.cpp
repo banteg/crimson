@@ -198,7 +198,7 @@ extern "C" void player_fire_weapon(
                         -100);
                     --pellet_count;
                     projectile_pool[projectile_index]
-                        .pos.tail.vy.speed_scale =
+                        .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
                 } while (pellet_count != 0);
             }
