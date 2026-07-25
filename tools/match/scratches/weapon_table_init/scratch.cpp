@@ -2,28 +2,8 @@
 
 #include "crimsonland_gameplay.h"
 
-typedef struct weapon_native_entry_t {
-    int ammo_class;
-    char name[0x40];
-    unsigned char unlocked;
-    unsigned char _pad0[3];
-    int clip_size;
-    float shot_cooldown;
-    float reload_time;
-    float spread_heat;
-    unsigned char _pad1[4];
-    int shot_sfx_base_id;
-    int shot_sfx_variant_count;
-    int reload_sfx_id;
-    int hud_icon_id;
-    int flags;
-    float travel_budget;
-    float damage_scale;
-    int pellet_count;
-} weapon_native_entry_t;
-
 extern "C" {
-extern weapon_native_entry_t weapon_ammo_class[];
+extern weapon_storage_entry_t weapon_ammo_class[];
 
 extern int sfx_pistol_fire;
 extern int sfx_pistol_reload;

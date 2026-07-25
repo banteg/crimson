@@ -9706,6 +9706,7 @@
       "address": "0x004d7a28",
       "comment": "Weapon table ammo class/HUD indicator (weapon_table - 0x04, stride 0x7c).",
       "name": "weapon_ammo_class",
+      "type": "weapon_storage_entry_t[64]",
       "program": "crimsonland.exe"
     },
     {

@@ -173,6 +173,16 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "weapon_storage_entry_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "weapon_storage_table_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "mod_interface_t",
         object(),
         object(),

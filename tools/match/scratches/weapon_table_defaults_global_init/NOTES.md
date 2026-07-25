@@ -21,3 +21,9 @@ Defining the rows as a real C++ global array reproduces the compiler-generated
 initializer exactly, including VC6's induction pointer at `damage_scale` and
 the inlined `strcpy` schedule. This is stronger source-shape evidence than a
 handwritten loop with the same assignments.
+
+The C++ constructor view now derives from the shared
+`weapon_storage_entry_t`. That canonical record starts at the ammo-class word
+and explains the native 0x7c construction stride alongside the shifted public
+`weapon_stats_t` view. The initializer remains exact at 47/47 with both
+references.

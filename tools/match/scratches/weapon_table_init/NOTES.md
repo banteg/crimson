@@ -23,3 +23,10 @@ No disassembly-shaped copies or synthetic references are used.
 
 Verified with MSVC 6.5 `/O2 /GB`: 1000/1000 instructions, 4885 bytes, and all
 477 masked references audited.
+
+The complete initializer now uses the canonical `weapon_storage_entry_t`
+instead of privately redeclaring the ammo-class-first 0x7c row. The data map
+types `weapon_ammo_class` as the corresponding 64-row storage array while
+retaining the overlapping public `weapon_stats_t[64]` symbol four bytes later.
+This source/type recovery is byte-neutral: 1000/1000 instructions and all 477
+references remain exact.

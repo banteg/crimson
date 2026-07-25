@@ -46,6 +46,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # The status initializer writes the reserved tail as four independent
         # random dwords; retain both that word view and the raw byte span.
         "game_status_t",
+        # The construction base precedes the shifted public weapon_stats_t view
+        # by one dword and owns the ammo class at the start of every row.
+        "weapon_storage_entry_t",
+        "weapon_storage_table_t",
         # Use the equivalent flat parameters view so onPause and request_exit
         # survive anonymous-union lowering as named fields.
         "mod_interface_t",

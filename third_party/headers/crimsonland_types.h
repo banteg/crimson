@@ -97,6 +97,32 @@ typedef struct weapon_stats_t {
     unsigned char _pad3[4];
 } weapon_stats_t;
 
+// Native construction/storage view beginning four bytes before weapon_table.
+// Each 0x7c-byte row owns its ammo class followed by the public weapon fields;
+// the shifted weapon_stats_t consumer view sees the next row's ammo class as
+// its four-byte trailing pad.
+typedef struct weapon_storage_entry_t {
+    int ammo_class;
+    char name[0x40];
+    unsigned char unlocked;
+    unsigned char _pad0[3];
+    int clip_size;
+    float shot_cooldown;
+    float reload_time;
+    float spread_heat;
+    unsigned char _pad1[4];
+    int shot_sfx_base_id;
+    int shot_sfx_variant_count;
+    int reload_sfx_id;
+    int hud_icon_id;
+    int flags;
+    float travel_budget;
+    float damage_scale;
+    int pellet_count;
+} weapon_storage_entry_t;
+
+typedef weapon_storage_entry_t weapon_storage_table_t[0x40];
+
 typedef struct audio_entry_t {
     unsigned short format_tag;
     unsigned short channels;
