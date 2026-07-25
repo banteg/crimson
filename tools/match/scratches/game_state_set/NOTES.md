@@ -48,3 +48,13 @@ Both main-menu width checks now use the recovered
 first byte of the returned value object. The source shape matches the already
 exact UI layout caller and leaves the `85.35%`, `166/399` prefix, and
 `161/1/0` reference audit unchanged.
+
+Binary Ninja now receives an equivalent union-free `ui_element_binja_t`
+presentation record for this analysis path. It verifies the full `0x318` size
+and exposes the texture store as `overlay_texture_handle` instead of the
+misleading `layers[1].texture_handle` union alias. The optimizer still splits
+the four UV destinations into transient `void *` SSA register values, so their
+remaining `+0x138`, `+0x154`, `+0x170`, and `+0x18c` renderings are decompiler
+artifacts, not unrecovered fields. Temporarily wrapping the object in another
+aggregate does not preserve those register types. The matching result remains
+unchanged.

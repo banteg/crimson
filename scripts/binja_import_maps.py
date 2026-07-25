@@ -70,6 +70,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # This layout is shared by three ui_element_t rendering layers. Keep
         # the recovered z/rhw/color/u/v members in sync with the canonical
         # header instead of preserving older field_0xNN database members.
+        "ui_element_vertex_t",
+        "ui_element_vertex_binja_t",
+        "ui_element_t",
+        "ui_element_binja_t",
         "ui_menu_item_subtemplate_slot_t",
         "ui_menu_item_subtemplate_slot_binja_t",
         # HUD reset loops carry an interior slide cursor. Keep the canonical
@@ -88,6 +92,8 @@ _REPO_TYPE_VIEW_OVERRIDES = {
     "creature_t": "creature_binja_t",
     "particle_t": "particle_binja_t",
     "fx_queue_entry_t": "fx_queue_entry_binja_t",
+    "ui_element_vertex_t": "ui_element_vertex_binja_t",
+    "ui_element_t": "ui_element_binja_t",
     "ui_menu_item_subtemplate_slot_t": (
         "ui_menu_item_subtemplate_slot_binja_t"
     ),

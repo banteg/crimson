@@ -46,6 +46,15 @@ compiled to 510 instructions and regressed to 82.25%, so it is not retained.
 The typed form preserves 515/521 instructions, 83.3977%, and `59/0/0`
 references exactly.
 
+The same union-free Binary Ninja presentation record now exposes all three
+physical vertex banks, their texture handles, and the trailing render state
+directly. Live analysis verifies its `0x318` size and converts the former layer
+alias into `vertices`, `overlay_vertices`, `enabled_overlay_vertices`, and
+`overlay_texture_handle` accesses. Two `__offset` expressions remain where the
+native alpha loops carry an interior `color_a` induction cursor backward into
+the owning record; those are optimizer cursor artifacts rather than anonymous
+structure fields.
+
 The small residual is code-generation shape: VC6 keeps a temporary for the
 seven-pixel Y coordinate in each offset-shadow submission and schedules
 otherwise equivalent vertex-call arguments differently. Introducing an
