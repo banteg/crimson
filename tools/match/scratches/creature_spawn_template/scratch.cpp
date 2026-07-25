@@ -311,7 +311,7 @@ extern "C" creature_t *creature_spawn_template(
         creature_spawn_vec2_t child_velocity;
         ring_member_idx = 0;
         child_velocity.set(0.0f, 0.0f);
-        child_tint.set(0.7125f, 0.41250002f, 0.2775f, 0.6f);
+        tint.set(0.7125f, 0.41250002f, 0.2775f, 0.6f);
         do {
             child_slot_idx = creature_alloc_slot();
             creature = &creature_pool[child_slot_idx];
@@ -320,16 +320,16 @@ extern "C" creature_t *creature_spawn_template(
             creature->link_index = root_slot_idx;
             creature->target_offset_x = (float)cos(angle) * 110.0f;
             creature->target_offset_y = (float)sin(angle) * 110.0f;
-            creature->pos_x = creature->target_offset_x + pos->x;
-            creature->pos_y = creature->target_offset_y + pos->y;
+            chain_position.set(
+                creature->target_offset_x + pos->x,
+                creature->target_offset_y + pos->y);
+            *(creature_spawn_vec2_t *)&creature->position = chain_position;
             *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;
             creature->health = 220.0f;
+            *(creature_tint_t *)&creature->color = tint;
             creature->max_health = 220.0f;
-            creature->tint_r = child_tint.r;
             ring_member_idx = ring_member_idx + 1;
-            creature->tint_g = child_tint.g;
             creature->collision_flag = 0;
-            creature->tint_b = child_tint.b;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -338,7 +338,6 @@ extern "C" creature_t *creature_spawn_template(
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 3.8f;
             creature->reward_value = 60.0f;
-            creature->tint_a = child_tint.a;
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
         } while (ring_member_idx < 5);

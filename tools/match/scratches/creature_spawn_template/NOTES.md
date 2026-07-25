@@ -427,3 +427,14 @@ Frame/prefix notes:
   reference counts. Copy placements after speed, reward, and size were
   machine-code equivalent, so the earliest health-before-copy spelling again
   preserves the strongest common source shape.
+- Native template `0x19` reuses the root tint's `[esp+0x38..0x44]` RGBA
+  value for the child loop and builds each child's final position in the
+  shared two-float position temporary before copying it. Reusing `tint`
+  instead of a separate child color, assigning the complete typed value after
+  health, and routing the summed orbit coordinates through `chain_position`
+  recover those two object lifetimes. The coherent change adds 13
+  native-shaped instructions, resolves two more references, raises the score
+  from `83.55%` to `84.87%`, and gains 186 fuzzy-weighted bytes. An explicit
+  extra position local exceeded the native frame and failed to compile; a
+  separate child tint and scalar component copies both scored lower and did
+  not explain the proven shared stack slot.
