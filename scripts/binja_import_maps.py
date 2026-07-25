@@ -86,6 +86,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         "mod_interface_t",
         # Quest builders write an array through their first-element pointer.
         # Keep both the element and table presentation layouts authoritative.
+        "quest_spawn_entry_next_block_t",
+        "quest_spawn_entry_position_block_t",
+        "quest_spawn_entry_trigger_cursor_t",
+        "quest_spawn_entry_template_cursor_t",
         "quest_spawn_entry_t",
         "quest_spawn_pair_binja_t",
         "quest_spawn_entries_binja_t",

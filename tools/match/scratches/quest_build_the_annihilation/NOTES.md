@@ -22,3 +22,10 @@ metadata-only setter emits the same best result, while moving the loop-local
 lifetimes earlier degrades register initialization. `msvc6.5pp` is identical.
 The 74.03% candidate remains an honest WIP rather than encoding the optimizer's
 negative-field cursor into the source.
+
+Binary Ninja now gives those two evidenced native induction values a
+layout-equivalent `quest_spawn_entry_template_cursor_t` presentation type.
+Each cursor exposes the current `template_id`, `trigger_time_ms`, and `count`,
+plus the next entry's position block, while retaining the actual 0x18-byte
+stride. This recovers the optimized loop shape without pretending that the
+compiler-facing source declared a negative-field cursor.

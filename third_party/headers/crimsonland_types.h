@@ -1417,6 +1417,23 @@ typedef struct quest_spawn_entry_trigger_cursor_t {
     quest_spawn_entry_next_block_t next;
 } quest_spawn_entry_trigger_cursor_t;
 
+typedef struct quest_spawn_entry_position_block_t {
+    float pos_x;
+    float pos_y;
+    float heading;
+} quest_spawn_entry_position_block_t;
+
+// Binary Ninja presentation view for optimized loops whose induction pointer
+// is anchored at the current entry's template_id. The trailing block is the
+// position and heading of the next entry, making the 0x18-byte cursor stride
+// explicit without changing compiler-facing quest source.
+typedef struct quest_spawn_entry_template_cursor_t {
+    int template_id;
+    int trigger_time_ms;
+    int count;
+    quest_spawn_entry_position_block_t next;
+} quest_spawn_entry_template_cursor_t;
+
 typedef struct quest_spawn_entry_t {
     float pos_x;
     float pos_y;

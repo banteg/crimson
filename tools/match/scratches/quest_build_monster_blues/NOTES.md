@@ -19,6 +19,12 @@ constant position registers, pointer stride, loop bound, and epilogue. That
 64-entry loop matches exactly. The full candidate has the same 95 instructions,
 all two references, a nine-instruction prefix, and scores 82.11%.
 
+Binary Ninja now types the native loop's template-anchored induction value as
+`quest_spawn_entry_template_cursor_t *`. The 0x18-byte view exposes the
+current `template_id` and `trigger_time_ms` fields, keeps the record-sized
+advance explicit, and leaves the compiler-facing source on the canonical
+`quest_spawn_entry_t` array.
+
 The residual is independent VC6 scheduling in the four fixed entries. Native
 pushes long-lived loop registers between the first x87 conversion and metadata
 stores, while the candidate completes more entry stores before those pushes;

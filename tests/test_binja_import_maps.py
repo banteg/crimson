@@ -266,6 +266,11 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "quest_spawn_entry_template_cursor_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "quest_spawn_pair_binja_t",
         object(),
         object(),
@@ -983,6 +988,32 @@ def test_name_map_preserves_quest_spawn_cursor_local_views():
             "type": "quest_spawn_entry_t *",
         },
     ]
+    assert rows_by_name["quest_build_the_annihilation"]["local_types"] == [
+        {
+            "address": "0x004382ea",
+            "name": "first_column_cursor",
+            "type": "quest_spawn_entry_template_cursor_t *",
+        },
+        {
+            "address": "0x00438364",
+            "name": "second_column_cursor",
+            "type": "quest_spawn_entry_template_cursor_t *",
+        },
+    ]
+    template_cursor_sites = {
+        "quest_build_monster_blues": [
+            ("0x00434959", "random_wave_cursor"),
+        ],
+    }
+    for name, sites in template_cursor_sites.items():
+        assert rows_by_name[name]["local_types"] == [
+            {
+                "address": address,
+                "name": cursor_name,
+                "type": "quest_spawn_entry_template_cursor_t *",
+            }
+            for address, cursor_name in sites
+        ]
     nagolipoli_types = rows_by_name["quest_build_nagolipoli"]["local_types"]
     assert nagolipoli_types[:4] == [
         {

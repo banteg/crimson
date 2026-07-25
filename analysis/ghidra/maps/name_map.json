@@ -3159,6 +3159,13 @@
     "address": "0x00434860",
     "name": "quest_build_monster_blues",
     "signature": "void quest_build_monster_blues(quest_spawn_entry_t *entries, int *count)",
+    "local_types": [
+      {
+        "address": "0x00434959",
+        "name": "random_wave_cursor",
+        "type": "quest_spawn_entry_template_cursor_t *"
+      }
+    ],
     "comment": "quest builder for Tier 5 Quest 8 (Monster Blues)"
   },
   {
@@ -3512,6 +3519,18 @@
     "address": "0x004382c0",
     "name": "quest_build_the_annihilation",
     "signature": "void quest_build_the_annihilation(quest_spawn_entry_t *entries, int *count)",
+    "local_types": [
+      {
+        "address": "0x004382ea",
+        "name": "first_column_cursor",
+        "type": "quest_spawn_entry_template_cursor_t *"
+      },
+      {
+        "address": "0x00438364",
+        "name": "second_column_cursor",
+        "type": "quest_spawn_entry_template_cursor_t *"
+      }
+    ],
     "comment": "quest builder for Tier 4 Quest 9 (The Annihilation)"
   },
   {
