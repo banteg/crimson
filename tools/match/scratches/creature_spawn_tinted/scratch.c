@@ -7,13 +7,6 @@ typedef union creature_spawn_tinted_locals_t {
     float f[2];
 } creature_spawn_tinted_locals_t;
 
-typedef struct creature_spawn_tinted_color_t {
-    float r;
-    float g;
-    float b;
-    float a;
-} creature_spawn_tinted_color_t;
-
 int creature_spawn_tinted(
     const vec2f_t *pos,
     const effect_color_t *color,
@@ -22,8 +15,7 @@ int creature_spawn_tinted(
     int slot_id = creature_alloc_slot();
     creature_spawn_tinted_locals_t locals = {{0, 0}};
 
-    creature_pool[slot_id].pos_x = pos->x;
-    creature_pool[slot_id].pos_y = pos->y;
+    creature_pool[slot_id].position = *pos;
     creature_pool[slot_id].active = 1;
     creature_pool[slot_id].state_flag = 1;
     creature_pool[slot_id].vel_x = locals.f[0];
@@ -42,8 +34,7 @@ int creature_spawn_tinted(
         creature_pool[slot_id].attack_cooldown = 0.0f;
         creature_pool[slot_id].heading = (float)(heading_roll % 314) * 0.01f;
     }
-    *(creature_spawn_tinted_color_t *)&creature_pool[slot_id].color =
-        *(const creature_spawn_tinted_color_t *)color;
+    creature_pool[slot_id].color = *color;
     {
         int size_roll = crt_rand();
         int size_offset = size_roll % 20;

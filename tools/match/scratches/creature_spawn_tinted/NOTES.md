@@ -32,3 +32,8 @@ now carries the same types, so its exact Typ-o caller passes the canonical
 vector/color aggregates directly. Its one layout-equivalent local C++ vector
 class keeps a narrow cast at that type boundary rather than degrading the
 callee prototype to unrelated `float *` pointers.
+
+The initializer now also copies those values through the canonical embedded
+`creature_t::position` and `creature_t::color` aggregates. Both assignments
+remain byte-for-byte exact, and the color copy no longer needs a duplicate
+layout-only structure or pointer casts.
