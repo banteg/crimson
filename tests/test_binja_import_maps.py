@@ -1025,6 +1025,15 @@ def test_name_map_preserves_quest_spawn_cursor_local_views():
             "type": "quest_spawn_entry_template_cursor_t *",
         },
     ]
+    assert rows_by_name["quest_build_surrounded_by_reptiles"][
+        "local_types"
+    ] == [
+        {
+            "address": "0x004389c5",
+            "name": "second_line_cursor",
+            "type": "quest_spawn_entry_t *",
+        },
+    ]
     assert rows_by_name["quest_build_the_annihilation"]["local_types"] == [
         {
             "address": "0x004382ea",

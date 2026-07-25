@@ -3587,6 +3587,13 @@
     "address": "0x00438940",
     "name": "quest_build_surrounded_by_reptiles",
     "signature": "void quest_build_surrounded_by_reptiles(quest_spawn_entry_t *entries, int *count)",
+    "local_types": [
+      {
+        "address": "0x004389c5",
+        "name": "second_line_cursor",
+        "type": "quest_spawn_entry_t *"
+      }
+    ],
     "comment": "quest builder for Tier 3 Quest 5 (Surrounded By Reptiles)"
   },
   {

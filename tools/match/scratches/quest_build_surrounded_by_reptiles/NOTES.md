@@ -19,3 +19,12 @@ lifetimes. The VC6 candidate matches all 68 instructions exactly.
 The cursor/count builder and its reconstructed second-loop base now share the
 canonical `quest_spawn_entry_t` type. Flattening only the position member names
 is byte-neutral and retains the exact 68-instruction result.
+
+The second loop's reconstructed `&entries[count]` base was still inferred as
+`void *` in Binary Ninja, leaving every access as an untyped dereference. Its
+authoritative local view is now a `quest_spawn_entry_t *second_line_cursor`.
+A live replay recovers `pos_y`, the two-entry `0x18` stride, and the cursor's
+record identity while retaining the raw negative displacements caused by VC6's
+pre-increment. A pair overlay was rejected because Binary Ninja rendered the
+last count as an impossible `0xaaaaaaaaaaaaaaa` array index; the canonical
+entry cursor is the honest presentation.
