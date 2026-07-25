@@ -8,6 +8,7 @@ import re
 import shlex
 import struct
 from collections import Counter
+from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -28,6 +29,9 @@ DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
 DEFAULT_MATCH_SCOPE = "port"
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
 CACHE_VERSION = 1
+SHARD_SCHEMA = 1
+SHARD_PLAN_KIND = "crimson-match-shard-plan"
+WORKER_CLAIM_KIND = "crimson-match-worker-claim"
 
 IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
@@ -2316,6 +2320,49 @@ def _paths_for_image(image: str) -> tuple[Path, Path, Path]:
     return default_image_path(image), default_functions_path(image), default_metadata_path(image)
 
 
+def find_scratch_configs_for_target(
+    match_root: Path,
+    *,
+    image: str,
+    address: int,
+    scope: str = DEFAULT_MATCH_SCOPE,
+) -> list[ScratchConfig]:
+    _, functions_path, metadata_path = _paths_for_image(image)
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=image,
+        scope=scope,
+    )
+    matches: list[ScratchConfig] = []
+    for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
+        try:
+            config = load_scratch_config(conf_path.parent)
+            if config.image != image:
+                continue
+            symbol, _, _ = resolve_function(
+                manifest,
+                config.function,
+                end_override=config.end_va,
+            )
+        except (OSError, ValueError):
+            continue
+        if symbol.address == address:
+            matches.append(config)
+    return matches
+
+
+def _scratch_has_unconfigured_files(directory: Path) -> bool:
+    for child in directory.iterdir():
+        if child.name == "build":
+            continue
+        if child.is_file():
+            return True
+        if child.is_dir() and any(path.is_file() for path in child.rglob("*")):
+            return True
+    return False
+
+
 def validate_matching_workspace(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
@@ -2324,6 +2371,14 @@ def validate_matching_workspace(
     """Return configuration and ownership errors without compiling scratches."""
     errors: list[str] = []
     manifests: dict[str, FunctionManifest] = {}
+    targets: dict[tuple[str, int], list[ScratchConfig]] = {}
+    for scratch_directory in sorted((match_root.resolve() / "scratches").glob("*")):
+        if (
+            scratch_directory.is_dir()
+            and not (scratch_directory / "scratch.conf").exists()
+            and _scratch_has_unconfigured_files(scratch_directory)
+        ):
+            errors.append(f"{scratch_directory.name}: scratch files require scratch.conf")
     for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
         try:
             config = load_scratch_config(conf_path.parent)
@@ -2335,13 +2390,19 @@ def validate_matching_workspace(
                     image_name=config.image,
                     scope=scope,
                 )
-            resolve_function(
+            symbol, _, _ = resolve_function(
                 manifests[config.image],
                 config.function,
                 end_override=config.end_va,
             )
+            targets.setdefault((config.image, symbol.address), []).append(config)
         except Exception as exc:
             errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
+    for (image, address), configs in sorted(targets.items()):
+        if len(configs) < 2:
+            continue
+        directories = ", ".join(config.directory.name for config in configs)
+        errors.append(f"duplicate target {image}:0x{address:08x}: {directories}")
     return errors
 
 
@@ -2661,13 +2722,21 @@ def collect_scratch_statuses(
     cflags: str | None = None,
     jobs: int = DEFAULT_MATCH_JOBS,
     scope: str | None = None,
+    directories: Collection[Path] | None = None,
 ) -> list[ScratchStatus]:
     if jobs < 1:
         raise ValueError("jobs must be positive")
     match_root = match_root.resolve()
+    selected_directories = (
+        {directory.resolve() for directory in directories}
+        if directories is not None
+        else None
+    )
 
     configs: list[ScratchConfig] = []
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
+        if selected_directories is not None and conf_path.parent.resolve() not in selected_directories:
+            continue
         config = load_scratch_config(conf_path.parent)
         if compiler is not None or cflags is not None:
             config = replace(config, compiler=compiler or config.compiler, cflags=cflags or config.cflags)
@@ -2967,6 +3036,338 @@ def collect_triage_rows(
                 ),
             )
     return rows
+
+
+def _safe_scratch_name(function: str) -> str:
+    name = re.sub(r"[^A-Za-z0-9_]+", "_", function).strip("_")
+    return name or "target"
+
+
+def build_match_shard_plan(
+    rows: Collection[TriageRow],
+    *,
+    workers: int,
+    scope: str,
+    base_commit: str,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    filters: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Deterministically balance independent targets by fuzzy-gap bytes."""
+    if workers < 1:
+        raise ValueError("workers must be positive")
+    match_root = match_root.resolve()
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            -row.fuzzy_gap_bytes,
+            -row.target_size,
+            row.image,
+            row.address,
+            row.function,
+        ),
+    )
+    width = max(2, len(str(workers)))
+    assignments = [
+        {
+            "worker": f"worker-{index + 1:0{width}d}",
+            "claim": f"worker-{index + 1:0{width}d}.json",
+            "estimated_gap_bytes": 0.0,
+            "targets": [],
+        }
+        for index in range(workers)
+    ]
+    used_scratches = {
+        str(row.best_status.config.directory.resolve().relative_to(match_root))
+        for row in ranked
+        if row.best_status is not None
+    }
+    for row in ranked:
+        assignment = min(
+            enumerate(assignments),
+            key=lambda item: (
+                item[1]["estimated_gap_bytes"],
+                len(item[1]["targets"]),
+                item[0],
+            ),
+        )[1]
+        if row.best_status is not None:
+            scratch = str(row.best_status.config.directory.resolve().relative_to(match_root))
+        else:
+            scratch = f"scratches/{_safe_scratch_name(row.function)}"
+            if scratch in used_scratches:
+                scratch = f"{scratch}_{row.address:08x}"
+            used_scratches.add(scratch)
+        assignment["targets"].append(
+            {
+                "image": row.image,
+                "function": row.function,
+                "address": row.address,
+                "target_bytes": row.target_size,
+                "state": row.state,
+                "fuzzy_gap_bytes": row.fuzzy_gap_bytes,
+                "scratch": scratch,
+            },
+        )
+        assignment["estimated_gap_bytes"] += row.fuzzy_gap_bytes
+    return {
+        "schema": SHARD_SCHEMA,
+        "kind": SHARD_PLAN_KIND,
+        "scope": scope,
+        "base_commit": base_commit,
+        "workers": workers,
+        "target_count": len(ranked),
+        "filters": filters or {},
+        "assignments": assignments,
+    }
+
+
+def write_match_json(path: Path, payload: dict[str, Any]) -> None:
+    _write_text_atomic(
+        path,
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+    )
+
+
+def write_match_shard_plan(
+    plan: dict[str, Any],
+    output_directory: Path,
+) -> tuple[Path, list[Path]]:
+    output_directory.mkdir(parents=True, exist_ok=True)
+    plan_path = output_directory / "plan.json"
+    claim_paths: list[Path] = []
+    expected_claim_names = {
+        str(assignment["claim"])
+        for assignment in plan["assignments"]
+    }
+    for stale_claim in output_directory.glob("worker-*.json"):
+        if stale_claim.is_file() and stale_claim.name not in expected_claim_names:
+            stale_claim.unlink()
+    for assignment in plan["assignments"]:
+        claim_path = output_directory / str(assignment["claim"])
+        write_match_json(
+            claim_path,
+            {
+                "schema": SHARD_SCHEMA,
+                "kind": WORKER_CLAIM_KIND,
+                "scope": plan["scope"],
+                "base_commit": plan["base_commit"],
+                "worker": assignment["worker"],
+                "targets": assignment["targets"],
+            },
+        )
+        claim_paths.append(claim_path)
+    write_match_json(plan_path, plan)
+    return plan_path, claim_paths
+
+
+def load_match_claim(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError(f"{path}: expected an object")
+    return payload
+
+
+def match_claim_targets(payload: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+    kind = payload.get("kind")
+    if kind == WORKER_CLAIM_KIND:
+        worker = str(payload.get("worker", ""))
+        targets = payload.get("targets", [])
+        if not isinstance(targets, list):
+            raise TypeError("worker claim targets must be a list")
+        if any(not isinstance(target, dict) for target in targets):
+            raise TypeError(f"{worker or '<unnamed>'} targets must contain objects")
+        return [(worker, target) for target in targets]
+    if kind == SHARD_PLAN_KIND:
+        assignments = payload.get("assignments", [])
+        if not isinstance(assignments, list):
+            raise TypeError("shard plan assignments must be a list")
+        targets: list[tuple[str, dict[str, Any]]] = []
+        for assignment in assignments:
+            if not isinstance(assignment, dict):
+                raise TypeError("shard plan assignments must contain objects")
+            worker = str(assignment.get("worker", ""))
+            worker_targets = assignment.get("targets", [])
+            if not isinstance(worker_targets, list):
+                raise TypeError(f"{worker or '<unnamed>'} targets must be a list")
+            if any(not isinstance(target, dict) for target in worker_targets):
+                raise TypeError(f"{worker or '<unnamed>'} targets must contain objects")
+            targets.extend((worker, target) for target in worker_targets)
+        return targets
+    raise ValueError(f"unsupported claim kind {kind!r}")
+
+
+def validate_match_claim(
+    payload: dict[str, Any],
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    scope: str | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    if payload.get("schema") != SHARD_SCHEMA:
+        errors.append(f"unsupported claim schema {payload.get('schema')!r}")
+    claim_scope = str(payload.get("scope", ""))
+    if scope is not None and claim_scope != scope:
+        errors.append(f"claim scope {claim_scope!r} does not match checkpoint scope {scope!r}")
+    base_commit = payload.get("base_commit")
+    if not isinstance(base_commit, str) or re.fullmatch(r"[0-9a-f]{40,64}", base_commit) is None:
+        errors.append("claim requires a full lowercase hexadecimal base_commit")
+    if payload.get("kind") == SHARD_PLAN_KIND:
+        assignments = payload.get("assignments", [])
+        if isinstance(assignments, list):
+            if payload.get("workers") != len(assignments):
+                errors.append("plan worker count does not match assignments")
+            worker_ids = [
+                str(assignment.get("worker", ""))
+                for assignment in assignments
+                if isinstance(assignment, dict)
+            ]
+            if (
+                len(worker_ids) != len(assignments)
+                or any(not worker for worker in worker_ids)
+                or len(set(worker_ids)) != len(worker_ids)
+            ):
+                errors.append("plan worker identifiers must be unique and non-empty")
+    elif payload.get("kind") == WORKER_CLAIM_KIND and not str(payload.get("worker", "")):
+        errors.append("worker claim requires a non-empty worker identifier")
+    try:
+        claimed = match_claim_targets(payload)
+    except (TypeError, ValueError) as exc:
+        return [*errors, str(exc)]
+    if payload.get("kind") == SHARD_PLAN_KIND and payload.get("target_count") != len(claimed):
+        errors.append("plan target count does not match assignments")
+
+    target_owners: dict[tuple[str, int], str] = {}
+    scratch_owners: dict[str, str] = {}
+    manifests: dict[str, FunctionManifest] = {}
+    match_root = match_root.resolve()
+    for worker, target in claimed:
+        try:
+            image = str(target["image"])
+            function = str(target["function"])
+            address = int(target["address"])
+            scratch = str(target["scratch"])
+        except (KeyError, TypeError, ValueError) as exc:
+            errors.append(f"{worker or '<unnamed>'}: malformed target: {exc}")
+            continue
+        if not worker:
+            errors.append(f"{image}:0x{address:08x}: empty worker identifier")
+        scratch_parts = Path(scratch).parts
+        if (
+            Path(scratch).is_absolute()
+            or len(scratch_parts) != 2
+            or scratch_parts[0] != "scratches"
+            or scratch_parts[1] in {".", ".."}
+        ):
+            errors.append(
+                f"{worker or '<unnamed>'}: invalid scratch claim {scratch!r}; "
+                "expected scratches/<directory>",
+            )
+            continue
+        key = (image, address)
+        if owner := target_owners.get(key):
+            errors.append(
+                f"duplicate claim {image}:0x{address:08x}: {owner}, {worker}",
+            )
+        else:
+            target_owners[key] = worker
+        if owner := scratch_owners.get(scratch):
+            errors.append(f"duplicate scratch claim {scratch}: {owner}, {worker}")
+        else:
+            scratch_owners[scratch] = worker
+        try:
+            if image not in manifests:
+                _, functions_path, metadata_path = _paths_for_image(image)
+                manifests[image] = load_function_manifest(
+                    functions_path,
+                    metadata_path=metadata_path,
+                    image_name=image,
+                    scope=claim_scope,
+                )
+            symbol, _, _ = resolve_function(manifests[image], f"0x{address:08x}")
+            if symbol.name != function:
+                errors.append(
+                    f"{worker}: target drift at {image}:0x{address:08x}: "
+                    f"{function!r} != {symbol.name!r}",
+                )
+            scratch_directory = match_root / scratch
+            config_path = scratch_directory / "scratch.conf"
+            if (
+                scratch_directory.is_dir()
+                and not config_path.exists()
+                and _scratch_has_unconfigured_files(scratch_directory)
+            ):
+                errors.append(f"{worker}: {scratch} contains files but no scratch.conf")
+            elif config_path.exists():
+                config = load_scratch_config(scratch_directory)
+                if config.image != image:
+                    errors.append(
+                        f"{worker}: {scratch} resolves to "
+                        f"{config.image}, expected {image}:0x{address:08x}",
+                    )
+                else:
+                    resolved, _, _ = resolve_function(
+                        manifests[config.image],
+                        config.function,
+                        end_override=config.end_va,
+                    )
+                    if resolved.address != address:
+                        errors.append(
+                            f"{worker}: {scratch} resolves to "
+                            f"{config.image}:0x{resolved.address:08x}, expected "
+                            f"{image}:0x{address:08x}",
+                        )
+        except Exception as exc:
+            errors.append(f"{worker}: {image}:0x{address:08x}: {str(exc).splitlines()[0]}")
+    return errors
+
+
+def claimed_scratch_paths(payload: dict[str, Any]) -> set[str]:
+    return {
+        str(target["scratch"])
+        for _worker, target in match_claim_targets(payload)
+        if target.get("scratch")
+    }
+
+
+def validate_claimed_changes(
+    payload: dict[str, Any],
+    changed_paths: Collection[str],
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    allowed_paths: Collection[str] = (),
+) -> list[str]:
+    expected = claimed_scratch_paths(payload)
+    try:
+        prefix = match_root.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        prefix = None
+    allowed = {Path(path).as_posix().removeprefix("./") for path in allowed_paths}
+    changed_scratches: set[str] = set()
+    outside_paths: set[str] = set()
+    for raw_path in changed_paths:
+        normalized = Path(raw_path).as_posix().removeprefix("./")
+        if normalized in allowed:
+            continue
+        if prefix is not None:
+            match_prefix = f"{prefix}/"
+            if not normalized.startswith(match_prefix):
+                outside_paths.add(normalized)
+                continue
+            path = normalized.removeprefix(match_prefix)
+        else:
+            path = normalized
+        parts = Path(path).parts
+        if len(parts) >= 2 and parts[0] == "scratches":
+            changed_scratches.add(f"scratches/{parts[1]}")
+        else:
+            outside_paths.add(normalized)
+    return [
+        f"scratch change outside claims: {scratch}"
+        for scratch in sorted(changed_scratches - expected)
+    ] + [
+        f"change outside claims: {path}"
+        for path in sorted(outside_paths)
+    ]
 
 
 def sort_scratch_statuses(statuses: list[ScratchStatus], *, sort_by: str = "address") -> list[ScratchStatus]:

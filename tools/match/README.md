@@ -134,10 +134,76 @@ uv run crimson match inspect player_update
 uv run crimson match inspect tools/match/scratches/player_update --binja-live
 ```
 
-The inspection starts with exact Binary Ninja commands and can save a bounded
-live evidence bundle under the ignored `tools/match/.cache/evidence/` tree.
-It then reports the address-matched IDA and Ghidra snapshots, the best scratch,
-recovery metadata, and a bounded first mismatch region.
+Inspection resolves and evaluates only the selected target's scratch
+directories; it does not compile the full corpus. It starts with exact Binary
+Ninja commands and can save a bounded live evidence bundle under the ignored
+`tools/match/.cache/evidence/` tree. It then reports the address-matched IDA
+and Ghidra snapshots, the best scratch, recovery metadata, and a bounded first
+mismatch region.
+
+## Parallel Matching Batches
+
+The coordinator evaluates the corpus once, ranks the requested targets by
+remaining fuzzy gap, and creates deterministic disjoint claims:
+
+```sh
+batch_dir=/tmp/crimson-match-batch
+uv run crimson match shard --workers 4 --state missing,wip \
+  --min-bytes 32 --limit 24 --out "$batch_dir"
+```
+
+Sharding requires a clean repository so pre-existing edits cannot be mistaken
+for worker output.
+
+`plan.json` pins the batch's starting commit. Each `worker-NN.json` assigns
+targets and their only permitted `scratches/<directory>` paths. Existing
+scratches retain their current directory; missing targets receive a stable
+directory name. Claims are balanced by estimated fuzzy-gap bytes rather than
+only target count.
+
+Give every worker a separate worktree based on the pinned commit and its one
+claim file:
+
+```sh
+git worktree add --detach ../crimson-worker-01 HEAD
+cd ../crimson-worker-01
+uv run crimson match inspect <claimed-function> --binja-live
+uv run crimson match scratch tools/match/scratches/<claimed-directory> --regions
+uv run crimson match worker-check "$batch_dir/worker-01.json" \
+  --out "$batch_dir/worker-01-report.json"
+```
+
+Workers may edit only the scratch directories in their claim. They must not
+regenerate `STATUS.md` or edit shared matcher headers, analysis maps, or
+tooling. `worker-check` checks both commits and dirty files since the pinned
+base, rejects every path outside the claim, evaluates only claimed scratches
+that exist, and emits JSON without touching the dashboard. Add
+`--require-handled` when every claimed target is expected to have a scratch
+before handoff.
+
+Keep final integration coordinator-owned. A worker can export an uncommitted
+patch, including newly created scratches, with:
+
+```sh
+git add -N tools/match/scratches
+git diff --binary -- tools/match/scratches > "$batch_dir/worker-01.patch"
+```
+
+The coordinator applies the worker patches, performs the only global corpus
+evaluation, and creates the batch commit:
+
+```sh
+git apply "$batch_dir"/worker-*.patch
+uv run crimson match checkpoint --claims "$batch_dir/plan.json"
+git add tools/match/scratches tools/match/STATUS.md
+git commit -m "feat(match): recover claimed gameplay functions"
+```
+
+Checkpoint rejects duplicate scratch targets, a stale or malformed plan,
+scratch changes outside all claims, evaluation failures, and whitespace
+errors. Because ownership is measured from the pinned base commit, the same
+check also covers worker commits if a coordinator chooses to integrate them
+directly.
 
 Regenerate and validate the dashboard:
 
@@ -145,10 +211,10 @@ Regenerate and validate the dashboard:
 uv run crimson match checkpoint -j 8
 ```
 
-The checkpoint rejects scratch configs outside the port scope, evaluates the
-corpus, rewrites `tools/match/STATUS.md`, runs `git diff --check`, and reports
-the current scratch change count. Both staged and unstaged diffs are checked.
-`just match-checkpoint` is the short form.
+The checkpoint rejects duplicate scratch targets and configs outside the port
+scope, evaluates the corpus, rewrites `tools/match/STATUS.md`, runs
+`git diff --check`, and reports the current scratch change count. Both staged
+and unstaged diffs are checked. `just match-checkpoint` is the short form.
 
 Each status row includes fuzzy-weighted bytes and its remaining fuzzy gap in
 addition to exact-match state. Keep the canonical Markdown board complete, but

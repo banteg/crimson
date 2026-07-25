@@ -91,8 +91,14 @@ analysis-function query program="crimsonland.exe":
 analysis-check program="crimsonland.exe" binja_live="false":
     uv run scripts/analysis_view.py check --program "{{program}}" {{ if binja_live == "true" { "--binja-live" } else { "" } }}
 
-match-checkpoint:
-    uv run crimson match checkpoint -j 8
+match-checkpoint *args:
+    uv run crimson match checkpoint -j 8 {{args}}
+
+match-shard workers="4" *args:
+    uv run crimson match shard --workers {{workers}} {{args}}
+
+match-worker-check claim *args:
+    uv run crimson match worker-check "{{claim}}" {{args}}
 
 binja-sync program="crimsonland.exe":
     bn py exec --target "{{program}}.bndb" --script scripts/binja_import_maps.py --format text --no-spill

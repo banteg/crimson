@@ -6,7 +6,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import typer
 
@@ -26,6 +26,82 @@ def _parse_csv(value: str | None) -> set[str] | None:
         return None
     parsed = {item.strip() for item in value.split(",") if item.strip()}
     return parsed or None
+
+
+def _git_executable() -> str:
+    git = shutil.which("git")
+    if git is None:
+        raise RuntimeError("git not found")
+    return git
+
+
+def _git_head() -> str:
+    return subprocess.run(
+        [_git_executable(), "rev-parse", "HEAD"],
+        cwd=matchlib.REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+
+def _git_changed_paths(pathspec: str) -> list[str]:
+    result = subprocess.run(
+        [
+            _git_executable(),
+            "status",
+            "--short",
+            "--no-renames",
+            "--untracked-files=all",
+            "--",
+            pathspec,
+        ],
+        cwd=matchlib.REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    paths: list[str] = []
+    for line in result.stdout.splitlines():
+        path = line[3:]
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[1]
+        paths.append(path)
+    return paths
+
+
+def _git_changed_paths_since(revision: str, pathspec: str) -> list[str]:
+    result = subprocess.run(
+        [
+            _git_executable(),
+            "diff",
+            "--no-renames",
+            "--name-only",
+            f"{revision}...HEAD",
+            "--",
+            pathspec,
+        ],
+        cwd=matchlib.REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.splitlines()
+
+
+def _matching_changed_paths(match_root: Path, *, base_commit: str | None = None) -> list[str]:
+    pathspec = str(match_root / "scratches")
+    paths = set(_git_changed_paths(pathspec))
+    if base_commit is not None:
+        paths.update(_git_changed_paths_since(base_commit, pathspec))
+    return sorted(paths)
+
+
+def _batch_changed_paths(*, base_commit: str | None = None) -> list[str]:
+    paths = set(_git_changed_paths("."))
+    if base_commit is not None:
+        paths.update(_git_changed_paths_since(base_commit, "."))
+    return sorted(paths)
 
 
 def _echo_result(result: matchlib.MatchResult) -> None:
@@ -525,6 +601,90 @@ def cmd_match_triage(
         raise typer.Exit(code=1)
 
 
+@match_app.command("shard")
+def cmd_match_shard(
+    workers: int = typer.Option(..., "--workers", min=1, help="number of disjoint worker claims"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel status jobs"),
+    image: str | None = typer.Option(None, "--image", help="restrict targets to one image"),
+    state: str = typer.Option("missing,wip", "--state", help="comma-separated target states"),
+    min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum targets to assign"),
+    output_directory: Path | None = typer.Option(None, "--out", help="ignored plan/claim directory"),
+    as_json: bool = typer.Option(False, "--json", help="emit the complete plan"),
+) -> None:
+    """Create deterministic, disjoint target claims for a worker batch."""
+    states = _parse_csv(state) or set()
+    unknown_states = states - {"match", "audit", "wip", "error", "missing"}
+    if unknown_states:
+        raise typer.BadParameter(
+            f"unknown states: {', '.join(sorted(unknown_states))}",
+            param_hint="--state",
+        )
+    errors = matchlib.validate_matching_workspace(match_root, scope=scope)
+    if errors:
+        for error in errors:
+            typer.echo(error, err=True)
+        raise typer.Exit(code=1)
+    changed_paths = _batch_changed_paths()
+    if changed_paths:
+        typer.echo("shard requires a clean repository:", err=True)
+        for path in changed_paths[:20]:
+            typer.echo(f"  {path}", err=True)
+        raise typer.Exit(code=1)
+    statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
+    rows = matchlib.collect_triage_rows(
+        statuses,
+        images=(image,) if image is not None else None,
+        scope=scope,
+    )
+    rows = [
+        row
+        for row in rows
+        if row.state in states and row.target_size >= min_bytes
+    ]
+    rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
+    if limit is not None:
+        rows = rows[:limit]
+    plan = matchlib.build_match_shard_plan(
+        rows,
+        workers=workers,
+        scope=scope,
+        base_commit=_git_head(),
+        match_root=match_root,
+        filters={
+            "image": image,
+            "states": sorted(states),
+            "min_bytes": min_bytes,
+            "limit": limit,
+        },
+    )
+    output_directory = output_directory or match_root / ".cache" / "shards"
+    claim_errors = matchlib.validate_match_claim(plan, match_root=match_root, scope=scope)
+    if claim_errors:
+        for error in claim_errors:
+            typer.echo(error, err=True)
+        raise typer.Exit(code=1)
+    plan_path, claim_paths = matchlib.write_match_shard_plan(plan, output_directory.resolve())
+    if as_json:
+        typer.echo(json.dumps(plan, indent=2, sort_keys=True))
+        return
+    typer.echo(
+        f"scope={scope} targets={plan['target_count']} workers={workers} "
+        f"plan={plan_path}",
+    )
+    for assignment, claim_path in zip(plan["assignments"], claim_paths, strict=True):
+        typer.echo(
+            f"{assignment['worker']}: targets={len(assignment['targets'])} "
+            f"gap={assignment['estimated_gap_bytes']:.0f} claim={claim_path}",
+        )
+
+
 @match_app.command("inspect")
 def cmd_match_inspect(
     query: str = typer.Argument(..., help="function name, alias, address, or scratch directory/name"),
@@ -542,7 +702,24 @@ def cmd_match_inspect(
 ) -> None:
     """Join matcher state with Binary Ninja, IDA, and Ghidra evidence."""
     try:
-        statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
+        target = matchlib.inspect_match_function(
+            query,
+            image=image,
+            scope=scope,
+            match_root=match_root,
+        )
+        configs = matchlib.find_scratch_configs_for_target(
+            match_root,
+            image=str(target["image"]),
+            address=int(target["address"]),
+            scope=scope,
+        )
+        statuses = matchlib.collect_scratch_statuses(
+            match_root,
+            jobs=jobs,
+            scope=scope,
+            directories=[config.directory for config in configs],
+        )
         payload = matchlib.inspect_match_function(
             query,
             image=image,
@@ -657,6 +834,142 @@ def cmd_match_inspect(
             )
 
 
+@match_app.command("worker-check")
+def cmd_match_worker_check(
+    claim: Path = typer.Argument(..., help="worker claim JSON from `match shard`"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel target jobs"),
+    output: Path | None = typer.Option(None, "--out", help="ignored worker report path"),
+    require_handled: bool = typer.Option(
+        False,
+        "--require-handled",
+        help="fail if any claimed target still has no scratch",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit the complete report"),
+) -> None:
+    """Validate only one worker's claimed scratches without touching STATUS.md."""
+    try:
+        claim_payload = matchlib.load_match_claim(claim.resolve())
+        if claim_payload.get("kind") != matchlib.WORKER_CLAIM_KIND:
+            raise ValueError("worker-check requires a worker claim, not a shard plan")
+        scope = str(claim_payload.get("scope", ""))
+        errors = matchlib.validate_match_claim(
+            claim_payload,
+            match_root=match_root,
+            scope=scope,
+        )
+        expected_scratches = matchlib.claimed_scratch_paths(claim_payload)
+        changed_paths: list[str] = []
+        if not errors:
+            changed_paths = _batch_changed_paths(
+                base_commit=str(claim_payload["base_commit"]),
+            )
+            errors.extend(
+                matchlib.validate_claimed_changes(
+                    claim_payload,
+                    changed_paths,
+                    match_root=match_root,
+                ),
+            )
+
+        existing_directories = (
+            [
+                match_root / scratch
+                for scratch in sorted(expected_scratches)
+                if (match_root / scratch / "scratch.conf").exists()
+            ]
+            if not errors
+            else []
+        )
+        statuses = (
+            []
+            if errors
+            else matchlib.collect_scratch_statuses(
+                match_root,
+                jobs=jobs,
+                scope=scope,
+                directories=existing_directories,
+            )
+        )
+        statuses_by_directory = {
+            str(status.config.directory.resolve().relative_to(match_root.resolve())): status
+            for status in statuses
+        }
+        targets: list[dict[str, Any]] = []
+        for _worker, target in matchlib.match_claim_targets(claim_payload):
+            scratch = str(target["scratch"])
+            status = statuses_by_directory.get(scratch)
+            targets.append(
+                {
+                    **target,
+                    "handled": status is not None,
+                    "status": (
+                        matchlib.scratch_status_payload(status)
+                        if status is not None
+                        else None
+                    ),
+                },
+            )
+        state_counts = {
+            state: sum(
+                target["status"] is not None
+                and target["status"]["state"] == state
+                for target in targets
+            )
+            for state in ("match", "audit", "wip", "error")
+        }
+        unhandled = sum(not bool(target["handled"]) for target in targets)
+        report: dict[str, Any] = {
+            "schema": matchlib.SHARD_SCHEMA,
+            "kind": "crimson-match-worker-report",
+            "scope": scope,
+            "worker": claim_payload["worker"],
+            "claim": str(claim.resolve()),
+            "summary": {
+                "targets": len(targets),
+                "handled": len(targets) - unhandled,
+                "unhandled": unhandled,
+                "states": state_counts,
+                "errors": len(errors),
+            },
+            "changed_paths": changed_paths,
+            "errors": errors,
+            "targets": targets,
+        }
+        output = output or (
+            match_root
+            / ".cache"
+            / "reports"
+            / f"{claim_payload['worker']}.json"
+        )
+        matchlib.write_match_json(output.resolve(), report)
+    except Exception as exc:
+        typer.echo(f"worker check failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if as_json:
+        typer.echo(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        typer.echo(
+            f"worker={report['worker']} targets={len(targets)} "
+            f"handled={len(targets) - unhandled} unhandled={unhandled} "
+            f"errors={len(errors)} report={output.resolve()}",
+        )
+        typer.echo(
+            "states="
+            + "/".join(
+                f"{state}:{count}"
+                for state, count in state_counts.items()
+            ),
+        )
+        for error in report["errors"]:
+            typer.echo(str(error), err=True)
+    if errors or state_counts["error"]:
+        raise typer.Exit(code=1)
+    if require_handled and unhandled:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("checkpoint")
 def cmd_match_checkpoint(
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
@@ -671,9 +984,47 @@ def cmd_match_checkpoint(
         "--write",
         help="write canonical markdown status",
     ),
+    claims: Path | None = typer.Option(
+        None,
+        "--claims",
+        help="shard plan whose ownership must cover scratch changes",
+    ),
 ) -> None:
     """Validate scope, refresh status, and run repository diff checks."""
     errors = matchlib.validate_matching_workspace(match_root, scope=scope)
+    scratch_changed_paths = _matching_changed_paths(match_root)
+    changed_paths = scratch_changed_paths
+    claim_errors: list[str] = []
+    if claims is not None:
+        try:
+            claim_payload = matchlib.load_match_claim(claims.resolve())
+            if claim_payload.get("kind") != matchlib.SHARD_PLAN_KIND:
+                raise ValueError("checkpoint requires a shard plan, not a worker claim")
+            claim_errors.extend(
+                matchlib.validate_match_claim(
+                    claim_payload,
+                    match_root=match_root,
+                    scope=scope,
+                ),
+            )
+            if not claim_errors:
+                changed_paths = _batch_changed_paths(
+                    base_commit=str(claim_payload["base_commit"]),
+                )
+                try:
+                    status_path = write.resolve().relative_to(matchlib.REPO_ROOT).as_posix()
+                except ValueError:
+                    status_path = str(write.resolve())
+                claim_errors.extend(
+                    matchlib.validate_claimed_changes(
+                        claim_payload,
+                        changed_paths,
+                        match_root=match_root,
+                        allowed_paths=[status_path],
+                    ),
+                )
+        except Exception as exc:
+            claim_errors.append(str(exc).splitlines()[0])
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     totals = matchlib.collect_image_totals(statuses, scope=scope)
     write.parent.mkdir(parents=True, exist_ok=True)
@@ -682,10 +1033,7 @@ def cmd_match_checkpoint(
         encoding="utf-8",
     )
 
-    git = shutil.which("git")
-    if git is None:
-        typer.echo("checkpoint failed: git not found", err=True)
-        raise typer.Exit(code=2)
+    git = _git_executable()
     diff_checks = [
         subprocess.run(
             [git, "diff", *arguments, "--check"],
@@ -696,28 +1044,33 @@ def cmd_match_checkpoint(
         )
         for arguments in ([], ["--cached"])
     ]
-    changed = subprocess.run(
-        [git, "status", "--short", "--", "tools/match/scratches"],
-        cwd=matchlib.REPO_ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.splitlines()
     evaluation_errors = [status for status in statuses if status.state == "error"]
 
     typer.echo(f"scope={scope}")
     typer.echo(matchlib.render_status_summary(totals))
     typer.echo(f"status={write}")
-    typer.echo(f"changed_scratch_files={len(changed)}")
-    typer.echo(f"scope_errors={len(errors)} evaluation_errors={len(evaluation_errors)}")
+    typer.echo(f"changed_scratch_files={len(scratch_changed_paths)}")
+    if claims is not None:
+        typer.echo(f"changed_batch_files={len(changed_paths)}")
+    typer.echo(
+        f"scope_errors={len(errors)} claim_errors={len(claim_errors)} "
+        f"evaluation_errors={len(evaluation_errors)}",
+    )
     for error in errors[:20]:
+        typer.echo(f"  {error}", err=True)
+    for error in claim_errors[:20]:
         typer.echo(f"  {error}", err=True)
     for diff_check in diff_checks:
         if diff_check.stdout:
             typer.echo(diff_check.stdout.rstrip(), err=True)
         if diff_check.stderr:
             typer.echo(diff_check.stderr.rstrip(), err=True)
-    if errors or evaluation_errors or any(diff_check.returncode for diff_check in diff_checks):
+    if (
+        errors
+        or claim_errors
+        or evaluation_errors
+        or any(diff_check.returncode for diff_check in diff_checks)
+    ):
         raise typer.Exit(code=1)
 
 

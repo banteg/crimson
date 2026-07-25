@@ -12,8 +12,10 @@ from typer.testing import CliRunner
 from crimson.cli.match import match_app
 from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
+    SHARD_PLAN_KIND,
     VC6_LOCAL_JUMP_TABLE_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
+    WORKER_CLAIM_KIND,
     CoffObject,
     CoffRelocation,
     CoffSection,
@@ -38,6 +40,8 @@ from crimson.match import (
     _region_hints,
     _scratch_build_key,
     _ScratchIncludeResolver,
+    build_match_shard_plan,
+    claimed_scratch_paths,
     collect_image_totals,
     collect_scratch_statuses,
     collect_triage_rows,
@@ -69,8 +73,11 @@ from crimson.match import (
     sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
+    validate_claimed_changes,
+    validate_match_claim,
     validate_matching_workspace,
     validate_scratch_source,
+    write_match_shard_plan,
 )
 
 
@@ -1559,3 +1566,343 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
     assert statuses[0].state == "match"
     assert cached_statuses[0].state == "match"
     assert observed == {"compiler": "msvc6.5", "cflags": "/O2", "calls": 1}
+
+
+def test_collect_status_can_limit_evaluation_to_selected_directories(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    selected = tmp_path / "scratches" / "selected"
+    ignored = tmp_path / "scratches" / "ignored"
+    for scratch, function in ((selected, "selected"), (ignored, "ignored")):
+        scratch.mkdir(parents=True)
+        (scratch / "scratch.conf").write_text(f"FUNCTION={function}\n", encoding="utf-8")
+        (scratch / "scratch.cpp").write_text(
+            f'extern "C" void {function}() {{}}\n',
+            encoding="utf-8",
+        )
+
+    manifest = FunctionManifest(
+        image_name="crimsonland.exe",
+        image_base=0x401000,
+        functions=(
+            FunctionSymbol(name="selected", address=0x401000, end=0x401001, size=1),
+            FunctionSymbol(name="ignored", address=0x401001, end=0x401002, size=1),
+        ),
+    )
+    compiled: list[str] = []
+
+    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr(
+        "crimson.match.load_image",
+        lambda *args, **kwargs: LoadedImage(
+            mapped=b"\xc3\xc3",
+            image_base=0x401000,
+            size_of_image=2,
+        ),
+    )
+
+    def fake_compile(
+        config: ScratchConfig,
+        match_root: Path,
+        *,
+        include_resolver: _ScratchIncludeResolver | None = None,
+    ) -> Path:
+        compiled.append(config.function)
+        return config.directory / "scratch.obj"
+
+    monkeypatch.setattr("crimson.match.compile_scratch", fake_compile)
+    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+    monkeypatch.setattr(
+        "crimson.match.extract_object_function",
+        lambda obj, symbol: ObjectFunction(name="selected", data=b"\xc3", relocation_offsets=frozenset()),
+    )
+    monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
+
+    statuses = collect_scratch_statuses(
+        tmp_path,
+        jobs=1,
+        directories=[selected],
+    )
+
+    assert [status.config.function for status in statuses] == ["selected"]
+    assert compiled == ["selected"]
+
+
+def test_inspect_command_evaluates_only_target_scratches(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "target"
+    config = ScratchConfig(
+        directory=scratch,
+        function="game_is_full_version",
+        image="crimsonland.exe",
+        compiler="msvc6.5",
+        cflags="/O2",
+        source="scratch.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    observed_directories: list[Path] = []
+
+    def fake_inspect(*args: object, **kwargs: object) -> dict[str, object]:
+        return {
+            "image": "crimsonland.exe",
+            "address": 0x0041DF40,
+            "scratches": [],
+        }
+
+    def fake_collect(*args: object, **kwargs: object) -> list[ScratchStatus]:
+        directories = kwargs["directories"]
+        assert isinstance(directories, list)
+        observed_directories.extend(
+            directory
+            for directory in directories
+            if isinstance(directory, Path)
+        )
+        return []
+
+    monkeypatch.setattr("crimson.cli.match.matchlib.inspect_match_function", fake_inspect)
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.find_scratch_configs_for_target",
+        lambda *args, **kwargs: [config],
+    )
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["inspect", "game_is_full_version", "--match-root", str(tmp_path), "--max-regions", "0", "--json"],
+    )
+
+    assert completed.exit_code == 0
+    assert observed_directories == [scratch]
+
+
+def test_match_shard_plan_is_deterministic_balanced_and_disjoint(tmp_path: Path) -> None:
+    rows = [
+        TriageRow(
+            image="crimsonland.exe",
+            function=f"target_{index}",
+            address=0x401000 + index * 0x10,
+            target_size=size,
+            state="missing",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=0.0,
+            candidate_bytes=0,
+            scratch_count=0,
+        )
+        for index, size in enumerate((100, 80, 30, 20))
+    ]
+
+    plan = build_match_shard_plan(
+        rows,
+        workers=2,
+        scope="port",
+        base_commit="a" * 40,
+        match_root=tmp_path,
+    )
+    repeated = build_match_shard_plan(
+        list(reversed(rows)),
+        workers=2,
+        scope="port",
+        base_commit="a" * 40,
+        match_root=tmp_path,
+    )
+    targets = [
+        target
+        for assignment in plan["assignments"]
+        for target in assignment["targets"]
+    ]
+
+    assert plan == repeated
+    assert [assignment["estimated_gap_bytes"] for assignment in plan["assignments"]] == [120.0, 110.0]
+    assert len({(target["image"], target["address"]) for target in targets}) == 4
+    assert len({target["scratch"] for target in targets}) == 4
+
+
+def test_match_shard_plan_writes_worker_claims(tmp_path: Path) -> None:
+    row = TriageRow(
+        image="crimsonland.exe",
+        function="game_is_full_version",
+        address=0x0041DF40,
+        target_size=6,
+        state="missing",
+        exact_bytes=0,
+        fuzzy_weighted_bytes=0.0,
+        candidate_bytes=0,
+        scratch_count=0,
+    )
+    plan = build_match_shard_plan(
+        [row],
+        workers=2,
+        scope="port",
+        base_commit="a" * 40,
+        match_root=tmp_path,
+    )
+
+    output_directory = tmp_path / ".cache" / "shards"
+    output_directory.mkdir(parents=True)
+    stale_claim = output_directory / "worker-99.json"
+    stale_claim.write_text("{}\n", encoding="utf-8")
+    unrelated = output_directory / "notes.json"
+    unrelated.write_text("{}\n", encoding="utf-8")
+
+    plan_path, claim_paths = write_match_shard_plan(plan, output_directory)
+
+    assert json.loads(plan_path.read_text(encoding="utf-8")) == plan
+    assert len(claim_paths) == 2
+    assert json.loads(claim_paths[0].read_text(encoding="utf-8"))["kind"] == WORKER_CLAIM_KIND
+    assert json.loads(claim_paths[1].read_text(encoding="utf-8"))["targets"] == []
+    assert not stale_claim.exists()
+    assert unrelated.exists()
+    assert validate_match_claim(plan, match_root=tmp_path, scope="port") == []
+
+
+def test_match_claim_rejects_duplicate_targets(tmp_path: Path) -> None:
+    target = {
+        "image": "crimsonland.exe",
+        "function": "game_is_full_version",
+        "address": 0x0041DF40,
+        "target_bytes": 6,
+        "state": "missing",
+        "fuzzy_gap_bytes": 6.0,
+    }
+    plan = {
+        "schema": 1,
+        "kind": SHARD_PLAN_KIND,
+        "scope": "port",
+        "base_commit": "a" * 40,
+        "workers": 2,
+        "target_count": 2,
+        "filters": {},
+        "assignments": [
+            {
+                "worker": "worker-01",
+                "claim": "worker-01.json",
+                "estimated_gap_bytes": 6.0,
+                "targets": [{**target, "scratch": "scratches/one"}],
+            },
+            {
+                "worker": "worker-02",
+                "claim": "worker-02.json",
+                "estimated_gap_bytes": 6.0,
+                "targets": [{**target, "scratch": "scratches/two"}],
+            },
+        ],
+    }
+
+    errors = validate_match_claim(plan, match_root=tmp_path, scope="port")
+
+    assert errors == [
+        "duplicate claim crimsonland.exe:0x0041df40: worker-01, worker-02",
+    ]
+
+
+def test_claimed_scratch_changes_reject_out_of_claim_edits(tmp_path: Path) -> None:
+    claim = {
+        "schema": 1,
+        "kind": WORKER_CLAIM_KIND,
+        "scope": "port",
+        "base_commit": "a" * 40,
+        "worker": "worker-01",
+        "targets": [
+            {
+                "image": "crimsonland.exe",
+                "function": "game_is_full_version",
+                "address": 0x0041DF40,
+                "scratch": "scratches/allowed",
+            },
+        ],
+    }
+
+    assert claimed_scratch_paths(claim) == {"scratches/allowed"}
+    assert validate_claimed_changes(
+        claim,
+        [
+            "scratches/allowed/scratch.cpp",
+            "scratches/not-allowed/scratch.cpp",
+            "src/crimson/match.py",
+        ],
+        match_root=tmp_path,
+    ) == [
+        "scratch change outside claims: scratches/not-allowed",
+        "change outside claims: src/crimson/match.py",
+    ]
+    assert validate_claimed_changes(
+        claim,
+        ["STATUS.md"],
+        match_root=tmp_path,
+        allowed_paths=["STATUS.md"],
+    ) == []
+
+
+def test_matching_workspace_rejects_duplicate_target_directories(tmp_path: Path) -> None:
+    for name in ("one", "two"):
+        scratch = tmp_path / "scratches" / name
+        scratch.mkdir(parents=True)
+        (scratch / "scratch.conf").write_text(
+            "FUNCTION=game_is_full_version\n",
+            encoding="utf-8",
+        )
+
+    assert validate_matching_workspace(tmp_path, scope="port") == [
+        "duplicate target crimsonland.exe:0x0041df40: one, two",
+    ]
+
+
+def test_matching_workspace_rejects_scratch_files_without_config(tmp_path: Path) -> None:
+    scratch = tmp_path / "scratches" / "orphan"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.cpp").write_text("void orphan() {}\n", encoding="utf-8")
+
+    assert validate_matching_workspace(tmp_path, scope="port") == [
+        "orphan: scratch files require scratch.conf",
+    ]
+
+
+def test_worker_check_writes_ignored_report_without_status(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    claim_path = tmp_path / "worker-01.json"
+    claim_path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": WORKER_CLAIM_KIND,
+                "scope": "port",
+                "base_commit": "a" * 40,
+                "worker": "worker-01",
+                "targets": [
+                    {
+                        "image": "crimsonland.exe",
+                        "function": "game_is_full_version",
+                        "address": 0x0041DF40,
+                        "target_bytes": 6,
+                        "state": "missing",
+                        "fuzzy_gap_bytes": 6.0,
+                        "scratch": "scratches/game_is_full_version",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "crimson.cli.match._batch_changed_paths",
+        lambda base_commit=None: [],
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["worker-check", str(claim_path), "--match-root", str(tmp_path), "--json"],
+    )
+
+    assert completed.exit_code == 0
+    report = json.loads(completed.output)
+    assert report["summary"]["unhandled"] == 1
+    assert report["targets"][0]["handled"] is False
+    assert not (tmp_path / "STATUS.md").exists()
+    assert (tmp_path / ".cache" / "reports" / "worker-01.json").exists()

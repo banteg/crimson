@@ -24,7 +24,8 @@ The matching-aware command prints exact `bn decompile`, `bn il`, `bn disasm`,
 and `bn bundle function` invocations for the preferred live view, then joins
 the same address to IDA, Ghidra, and any matching scratch. Add `--binja-live`
 to save a bounded current Binary Ninja bundle under
-`tools/match/.cache/evidence/`.
+`tools/match/.cache/evidence/`. Scratch evaluation is target-local, so this
+consultation does not rebuild the full matching corpus.
 
 `just analysis-function` remains a lightweight curated-map view when matcher
 state is not needed.
