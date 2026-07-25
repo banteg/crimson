@@ -438,3 +438,10 @@ Frame/prefix notes:
   extra position local exceeded the native frame and failed to compile; a
   separate child tint and scalar component copies both scored lower and did
   not explain the proven shared stack slot.
+- Both ring formations express their induction update at the bottom of the
+  child body. This agrees with native's increment/compare loop edges while
+  allowing VC6 to delay the index spill until the surrounding initialization
+  permits it. Restoring that ordinary loop shape gains four fuzzy-weighted
+  bytes in template `0x12` and is byte-neutral in template `0x19`; the latter
+  is retained because it compiles identically and removes the misleading
+  mid-body update from the recovered source.

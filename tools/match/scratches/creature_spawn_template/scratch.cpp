@@ -283,7 +283,6 @@ extern "C" creature_t *creature_spawn_template(
             creature->health = 40.0f;
             *(creature_tint_t *)&creature->color = tint;
             creature->max_health = 40.0f;
-            ring_member_idx = ring_member_idx + 1;
             creature->collision_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
@@ -294,6 +293,7 @@ extern "C" creature_t *creature_spawn_template(
             creature->reward_value = 60.0f;
             creature->size = 50.0f;
             creature->contact_damage = 4.0f;
+            ring_member_idx = ring_member_idx + 1;
         } while (ring_member_idx < 8);
     }
 
@@ -328,7 +328,6 @@ extern "C" creature_t *creature_spawn_template(
             creature->health = 220.0f;
             *(creature_tint_t *)&creature->color = tint;
             creature->max_health = 220.0f;
-            ring_member_idx = ring_member_idx + 1;
             creature->collision_flag = 0;
             creature->collision_timer = 0.0f;
             creature->active = 1;
@@ -340,6 +339,7 @@ extern "C" creature_t *creature_spawn_template(
             creature->reward_value = 60.0f;
             creature->size = 50.0f;
             creature->contact_damage = 35.0f;
+            ring_member_idx = ring_member_idx + 1;
         } while (ring_member_idx < 5);
     }
 
