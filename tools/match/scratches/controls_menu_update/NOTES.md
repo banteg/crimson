@@ -24,6 +24,13 @@ distinct X/Y-ordered `player_input_t`. This source/type recovery is
 matcher-neutral at 4,488/5,421 instructions and keeps the `863/2/34`
 reference audit unchanged.
 
+The native loop initially materializes `config_p1_move_forward + 0x30`, the
+`axis_move_x` field of the first persisted row, before incrementing the cursor
+and reading the preceding row through negative displacements. Binary Ninja
+therefore records the instruction-defined value at `0x004492a1` honestly as
+an `int *` named `binding_axis_move_x_cursor`, rather than mis-typing that
+interior cursor as the owning `crimson_cfg_t *`.
+
 The point-and-click movement gate now uses the shared `cvar_float_t::value`
 field. The matching map and live Binary Ninja database carry the same cvar
 pointer type, replacing the former provisional byte-pointer-plus-`0x0c`

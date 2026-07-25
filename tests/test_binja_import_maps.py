@@ -649,6 +649,18 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "unsigned char wav_parse_into_entry("
         "sfx_entry_t *entry, void *data, unsigned int size)"
     )
+    assert signatures_by_name["ui_render_loading"] == (
+        "void ui_render_loading(void)"
+    )
+    assert signatures_by_name["credits_secret_match3_find"] == (
+        "unsigned char credits_secret_match3_find("
+        "int *board, int *out_idx, unsigned char *out_dir)"
+    )
+    assert signatures_by_name["ui_element_set_rect"] == (
+        "void ui_element_set_rect("
+        "ui_menu_item_subtemplate_block_t *element, "
+        "float width, float height, float *offset)"
+    )
 
 
 def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
@@ -689,6 +701,20 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "creature_render_type",
         "creature_render_all",
         "projectile_render",
+        "ui_render_loading",
+        "input_key_name",
+        "tutorial_prompt_dialog",
+        "credits_secret_match3_find",
+        "game_mode_label",
+        "ui_draw_textured_quad",
+        "terrain_render",
+        "ui_element_set_rect",
+        "ui_cursor_render",
+        "ui_render_aim_enhancement",
+        "ui_draw_progress_bar",
+        "bonus_hud_slot_activate",
+        "highscore_screen_update",
+        "controls_menu_update",
     } <= never_skip
     assert rows_by_name["projectile_update"]["local_types"] == [
         {
@@ -757,6 +783,20 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
             "address": "0x00424184",
             "name": "projectile_origin_y_cursor",
             "type": "projectile_tail_t *",
+        },
+    ]
+    assert rows_by_name["ui_element_set_rect"]["local_types"] == [
+        {
+            "address": "0x00419bdc",
+            "name": "vertex_y_cursor",
+            "type": "float *",
+        },
+    ]
+    assert rows_by_name["controls_menu_update"]["local_types"] == [
+        {
+            "address": "0x004492a1",
+            "name": "binding_axis_move_x_cursor",
+            "type": "int *",
         },
     ]
 

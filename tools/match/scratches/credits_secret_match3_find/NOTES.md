@@ -18,3 +18,7 @@ cursor by twelve cells and emit one extra instruction.
 The recovered row-stride cursor and increment expression produce an exact
 MSVC 6.5 `/O2 /GB` match: 96/96 instructions, 100.00%, with the full function
 as the exact prefix.
+
+The native success result is the one-byte boolean emitted by this exact source,
+not a four-byte `uint`. The matching map now preserves the recovered
+`unsigned char` return type for callers and decompilation.

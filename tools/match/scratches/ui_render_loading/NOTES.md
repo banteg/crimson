@@ -14,5 +14,10 @@ The panel position and color are ordinary constructed two- and four-float
 values. Reusing the position through its inlined `set` method explains both the
 native stack slot reuse and VC6 evaluation order.
 
+The recovered function returns `void`. Its final renderer call happens to
+leave a value in EAX, but all native callers discard it and the exact-matched
+source declaration is `void`; the matching map no longer promotes that
+incidental residue to an `int` return.
+
 No inline assembly, volatile state, dummy references, or dead expressions are
 used.

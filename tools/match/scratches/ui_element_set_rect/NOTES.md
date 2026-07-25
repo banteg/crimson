@@ -13,7 +13,10 @@ against 91 native instructions, with 43.72% similarity and masked references
 - The first argument is the `0xe8` quad payload also accepted by
   `ui_element_load`, not the much larger runtime `ui_element_t` inferred by
   the old decompiler type. Eleven native callers pass menu/sign template
-  blocks with this layout.
+  blocks with this layout. The matching map now records the owning
+  `ui_menu_item_subtemplate_block_t *` type, so Binary Ninja presents the
+  first slot through its named fields instead of unrelated runtime-element
+  offsets.
 - Each `0x1c` slot is a transformed vertex: XY position, adjacent Z/RHW
   floats, packed color, and UV. Grouping Z/RHW as a two-float aggregate is
   supported independently by the effect and Grim2D vertex surfaces and
@@ -43,3 +46,8 @@ state.
 No inline assembly, volatile state, dummy reference, forced address, or
 layout-only arithmetic is used. The scratch remains WIP until the allocator
 residual can be explained by plausible source.
+
+The loop induction value defined at `0x00419bdc` is the address of the first
+vertex Y coordinate. Binary Ninja keeps that exact `float *` value as
+`vertex_y_cursor`; the name is instruction-anchored and does not pretend that
+the interior cursor owns the surrounding quad.

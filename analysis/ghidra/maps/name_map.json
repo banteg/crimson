@@ -331,8 +331,9 @@
     "program": "crimsonland.exe",
     "address": "0x00402d50",
     "name": "ui_render_loading",
-    "signature": "int ui_render_loading(void)",
-    "comment": "[binja] int32_t sub_402d50()"
+    "signature": "void ui_render_loading(void)",
+    "analysis_skip_override": "never_skip",
+    "comment": "renders the centered loading panel and marks the loading frame as presented"
   },
   {
     "program": "crimsonland.exe",
@@ -409,6 +410,7 @@
     "address": "0x004036d0",
     "name": "input_key_name",
     "signature": "char * input_key_name(int key_code)",
+    "analysis_skip_override": "never_skip",
     "comment": "maps key codes (DIK/virtual) to display labels"
   },
   {
@@ -641,6 +643,7 @@
     "address": "0x00408530",
     "name": "tutorial_prompt_dialog",
     "signature": "void tutorial_prompt_dialog(char *text, float alpha, char tutorial_complete)",
+    "analysis_skip_override": "never_skip",
     "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
   },
   {
@@ -1153,7 +1156,8 @@
     "program": "crimsonland.exe",
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
-    "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
+    "signature": "unsigned char credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
+    "analysis_skip_override": "never_skip",
     "comment": "scans a 6x6 board for a 3-in-a-row match; writes start index (row-major; leftmost/topmost) + orientation (0=vertical, 1=horizontal)"
   },
   {
@@ -1488,6 +1492,7 @@
     "address": "0x00412960",
     "name": "game_mode_label",
     "signature": "char * game_mode_label(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "returns a display label for the current game mode"
   },
   {
@@ -1618,6 +1623,7 @@
     "address": "0x00417ae0",
     "name": "ui_draw_textured_quad",
     "signature": "void ui_draw_textured_quad(int x, int y, int w, int h, int texture_id)",
+    "analysis_skip_override": "never_skip",
     "comment": "binds a texture and draws a screen-space quad"
   },
   {
@@ -1657,6 +1663,7 @@
     "address": "0x004188a0",
     "name": "terrain_render",
     "signature": "void terrain_render(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "renders the terrain layer from terrain_render_target (ground RT) with UV scrolling; honors cv_terrainFilter (point filter when value==2.0); tiles fallback when texture missing"
   },
   {
@@ -1713,7 +1720,15 @@
     "program": "crimsonland.exe",
     "address": "0x00419ba0",
     "name": "ui_element_set_rect",
-    "signature": "void ui_element_set_rect(ui_element_t *element, float width, float height, float *offset)",
+    "signature": "void ui_element_set_rect(ui_menu_item_subtemplate_block_t *element, float width, float height, float *offset)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x00419bdc",
+        "name": "vertex_y_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "sets element quad vertices/UVs for a size and offset"
   },
   {
@@ -1736,6 +1751,7 @@
     "name": "ui_cursor_render",
     "include_library": true,
     "signature": "void ui_cursor_render(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "renders the in-game cursor/crosshair sprites"
   },
   {
@@ -1743,6 +1759,7 @@
     "address": "0x0041a320",
     "name": "ui_render_aim_enhancement",
     "signature": "void ui_render_aim_enhancement(float *xy)",
+    "analysis_skip_override": "never_skip",
     "comment": "renders the aim enhancement overlay (cv_aimEnhancementFade-driven)"
   },
   {
@@ -1757,6 +1774,7 @@
     "address": "0x0041a6d0",
     "name": "ui_draw_progress_bar",
     "signature": "void ui_draw_progress_bar(float *xy, float width, float ratio, float *rgba)",
+    "analysis_skip_override": "never_skip",
     "comment": "draws a filled progress bar with a tinted background"
   },
   {
@@ -1778,6 +1796,7 @@
     "address": "0x0041a810",
     "name": "bonus_hud_slot_activate",
     "signature": "void bonus_hud_slot_activate(char *label, int icon_id, float *timer_ptr, float *alt_timer_ptr)",
+    "analysis_skip_override": "never_skip",
     "comment": "allocates a free bonus HUD slot and binds timer pointers + icon/label metadata"
   },
   {
@@ -4193,6 +4212,7 @@
     "address": "0x004423d0",
     "name": "highscore_screen_update",
     "signature": "void highscore_screen_update(void)",
+    "analysis_skip_override": "never_skip",
     "comment": "high scores screen callback for GAME_STATE_HIGHSCORES: list filters, profile list, and online score actions"
   },
   {
@@ -4636,6 +4656,14 @@
     "address": "0x00448cd0",
     "name": "controls_menu_update",
     "signature": "void controls_menu_update(void)",
+    "analysis_skip_override": "never_skip",
+    "local_types": [
+      {
+        "address": "0x004492a1",
+        "name": "binding_axis_move_x_cursor",
+        "type": "int *"
+      }
+    ],
     "comment": "controls/config menu callback for GAME_STATE_CONTROLS_MENU: device profile, aiming/movement scheme, and key/axis rebinding",
     "create": true
   },
