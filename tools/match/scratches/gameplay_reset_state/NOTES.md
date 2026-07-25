@@ -32,6 +32,16 @@ conservatively: the initialized creature-type count, a write-only auxiliary
 Survival handout flag, and a write-only float in the gameplay timer block. Each
 write-only name is explicitly limited to its sole Binary Ninja xref.
 
+The remaining anonymous structure members are now characterized without
+inventing semantics. `creature_type_t::unused_value` is written to `1.0f` for
+the five animated creature records and has no native reads. The HUD slot's
+`unused_one` and `unused_five` members are likewise constructor/reset-only.
+A layout-equivalent flat Binary Ninja HUD view and authoritative creature
+metadata types remove every `field_0xNN` and `__offset` node from this
+function. Binary Ninja still strength-reduces the HUD loop to a float cursor
+at `slide_x`, so its `i[-1]` active-byte store is an optimizer back-reference,
+not an unknown object layout; the compiler-facing source remains fully typed.
+
 The recovered local-index `for` loops are important source evidence. VC6
 strength-reduces the 16-entry HUD loop to a pointer based at `slide_x`, so its
 end comparison needs no rebase. The 384-entry creature loop keeps the integer

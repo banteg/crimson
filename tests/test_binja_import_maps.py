@@ -188,6 +188,16 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "creature_type_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "creature_type_table_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "game_status_t",
         object(),
         object(),
@@ -219,6 +229,21 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
     )
     assert importer._should_replace_repo_type(
         "ui_menu_item_subtemplate_slot_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "bonus_hud_slot_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "bonus_hud_slot_table_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "bonus_hud_slot_binja_t",
         object(),
         object(),
     )
@@ -264,6 +289,12 @@ def test_repo_type_view_overrides_use_flat_decompiler_records():
     assert importer._REPO_TYPE_VIEW_OVERRIDES[
         "ui_menu_item_subtemplate_slot_t"
     ] == ("ui_menu_item_subtemplate_slot_binja_t")
+    assert importer._REPO_TYPE_VIEW_OVERRIDES["bonus_hud_slot_t"] == (
+        "bonus_hud_slot_binja_t"
+    )
+    assert importer._REPO_TYPE_ARRAY_VIEW_OVERRIDES[
+        "bonus_hud_slot_table_t"
+    ] == ("bonus_hud_slot_binja_t", 0x10)
 
 
 def test_quest_builder_signature_uses_array_presentation_view():

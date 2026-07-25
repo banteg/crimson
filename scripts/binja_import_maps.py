@@ -49,6 +49,10 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # member to float explicitly before using it as an orbit phase.
         "creature_t",
         "creature_binja_t",
+        # Creature metadata still carried an older field_0x20 member in the
+        # database after the write-only slot was characterized.
+        "creature_type_t",
+        "creature_type_table_t",
         # The status initializer writes the reserved tail as four independent
         # random dwords; retain both that word view and the raw byte span.
         "game_status_t",
@@ -68,6 +72,11 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # header instead of preserving older field_0xNN database members.
         "ui_menu_item_subtemplate_slot_t",
         "ui_menu_item_subtemplate_slot_binja_t",
+        # HUD reset loops carry an interior slide cursor. Keep the canonical
+        # compiler shape while presenting one flat owning record in HLIL.
+        "bonus_hud_slot_t",
+        "bonus_hud_slot_table_t",
+        "bonus_hud_slot_binja_t",
     },
 )
 
@@ -82,10 +91,12 @@ _REPO_TYPE_VIEW_OVERRIDES = {
     "ui_menu_item_subtemplate_slot_t": (
         "ui_menu_item_subtemplate_slot_binja_t"
     ),
+    "bonus_hud_slot_t": "bonus_hud_slot_binja_t",
 }
 
 _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
     "projectile_pool_t": ("projectile_binja_t", 0x60),
+    "bonus_hud_slot_table_t": ("bonus_hud_slot_binja_t", 0x10),
 }
 
 # These builders advance an entry cursor through a loop. Keeping the canonical

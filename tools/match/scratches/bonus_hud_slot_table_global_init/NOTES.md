@@ -12,3 +12,8 @@ The constructor view now derives from the canonical `bonus_hud_slot_t` instead
 of duplicating its active byte, padding, and slide block. This preserves the
 original C++ construction boundary and remains exact at 13/13 instructions
 with both references.
+
+The two otherwise anonymous scalar members are write-only in the native
+program: one is initialized to `1.0f`, the other to `5.0f`, and neither has a
+runtime read. They are therefore named conservatively as `unused_one` and
+`unused_five` rather than assigning unsupported gameplay semantics.

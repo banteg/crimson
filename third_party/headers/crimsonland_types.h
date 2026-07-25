@@ -343,7 +343,8 @@ typedef struct creature_type_t {
     int sfx_bank_a[4];
     int sfx_bank_b[2];
     unsigned char _pad0[4];
-    float field_0x20;
+    // Initialized to 1.0 for the five animated creature types, but never read.
+    float unused_value;
     unsigned char _pad1[0x10];
     float anim_rate;
     int base_frame;
@@ -1333,12 +1334,13 @@ typedef struct effect_template_t {
 
 typedef struct bonus_hud_slot_slide_x_block_t {
     float slide_x;
-    float field_0x08;
+    // Constructor-only values with no native runtime reads.
+    float unused_one;
     float *timer_ptr;
     float *alt_timer_ptr;
     char *label;
     int icon_id;
-    float field_0x1c;
+    float unused_five;
 } bonus_hud_slot_slide_x_block_t;
 
 typedef struct bonus_hud_slot_t {
@@ -1348,6 +1350,21 @@ typedef struct bonus_hud_slot_t {
 } bonus_hud_slot_t;
 
 typedef bonus_hud_slot_t bonus_hud_slot_table_t[0x10];
+
+// Layout-equivalent flat presentation view for Binary Ninja. Optimized loops
+// carry a cursor across the slide block and otherwise lose the owning active
+// byte behind negative pointer offsets.
+typedef struct bonus_hud_slot_binja_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float slide_x;
+    float unused_one;
+    float *timer_ptr;
+    float *alt_timer_ptr;
+    char *label;
+    int icon_id;
+    float unused_five;
+} bonus_hud_slot_binja_t;
 
 typedef struct mod_info_t {
     char name[0x20];
