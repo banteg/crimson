@@ -161,14 +161,14 @@ extern "C" unsigned char game_frame_update(void)
     }
 
     if (!main_menu_full_version_layout_latch && game_is_full_version()) {
-        ui_element_slot_01_main_menu_aux.pos_y += 60.0f;
+        ui_element_slot_01_main_menu_aux.pos.y += 60.0f;
         ui_element_slot_01_main_menu_aux.timeline_end_ms =
             ui_element_slot_02_main_menu_primary.timeline_end_ms;
         ui_element_slot_01_main_menu_aux.timeline_start_ms =
             ui_element_slot_02_main_menu_primary.timeline_start_ms;
         main_menu_full_version_layout_latch = 1;
         ui_element_slot_02_main_menu_primary.active = 0;
-        ui_element_slot_01_main_menu_aux.pos_x -= 20.0f;
+        ui_element_slot_01_main_menu_aux.pos.x -= 20.0f;
     }
 
     if (!audio_suspend_flag) {

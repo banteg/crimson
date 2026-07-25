@@ -79,3 +79,8 @@ stores, and the natural `set(x, y)` helper were tested, but regressed the score
 or reference audit; the scalar pointer source is retained. No known native
 behavior is omitted. The candidate uses no volatile, dead-code, register,
 assembly, or layout constraints.
+
+The one-time full-version menu adjustment now addresses the owning UI element
+through `ui_element_t::pos.x/y` rather than its compatibility scalar aliases.
+This is byte-neutral at the same 99.45%, 905/905 instructions, 363-instruction
+prefix, and `317/0/0` references.
