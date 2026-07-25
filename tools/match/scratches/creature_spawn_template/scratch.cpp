@@ -607,11 +607,13 @@ extern "C" creature_t *creature_spawn_template(
                     creature->contact_damage = 5.0f;
                 } else if (template_id == SPAWN_ID_ZOMBIE_RANDOM_41) {
                     creature->type_id = CREATURE_TYPE_ZOMBIE;
-                    RAND_FIELD_INT_BASE(creature->size, 0x1e, 0x28);
-                    creature->health = creature->size * 1.1428572f + 10.0f;
+                    random_heading_roll = crt_rand();
+                    float random_size = (float)(random_heading_roll % 0x1e + 0x28);
+                    creature->size = random_size;
+                    creature->health = random_size * 1.1428572f + 10.0f;
                     creature->tint_a = 1.0f;
-                    creature->move_speed = creature->size * 0.0025f + 0.9f;
-                    creature->reward_value = creature->size + creature->size + 50.0f;
+                    creature->move_speed = random_size * 0.0025f + 0.9f;
+                    creature->reward_value = random_size + random_size + 50.0f;
                     RAND_FIELD(creature->tint_r, 0x28, 0.01f, 0.6f);
                     creature->tint_g = creature->tint_r;
                     creature->tint_b = creature->tint_r;

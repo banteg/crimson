@@ -384,3 +384,9 @@ Frame/prefix notes:
   leaves the honest combined score at `82.22%` with 3,136 candidate
   instructions; it is retained because the native stack construction and
   paired member loads prove the source object shape.
+- Template `0x41` keeps its randomized size value live on x87 while deriving
+  health, speed, and reward at `0x004324c8..0x00432514`. Recovering that
+  short-lived scalar instead of reloading `creature->size` for each expression
+  removes one candidate instruction, raises the score to `82.36%` with 3,135
+  candidate instructions, and gains 20 fuzzy-weighted bytes without changing
+  the exact frame, prefix, or `351/0/1` reference audit.
