@@ -49,6 +49,13 @@ screen static scrollbars. In the live Binary Ninja database this replaces
 its two-field construction raises the honest MSVC score from `54.05%` to
 `55.01%` with the same `59/0/0` reference agreement.
 
+The visible-row loop now carries a typed `char **item` cursor instead of
+reconstructing each item through a byte offset and cast. Native HLIL proves
+that the loop advances both the selected index and an independent four-byte
+item displacement. VC6 lowers the typed cursor to that same induction
+variable, preserving the 470-instruction candidate, 55.0053% score, and
+`59/0/0` reference audit exactly.
+
 ## Remaining mismatch
 
 MSVC allocates a `0x54`-byte frame for the recovered typed source versus the

@@ -198,7 +198,7 @@ extern "C" void ui_scrollbar_update(
     }
 
     int item_index = first_item;
-    int item_offset = first_item * 4;
+    char **item = state->items + first_item;
     do {
         if (row >= item_count) {
             return;
@@ -219,7 +219,7 @@ extern "C" void ui_scrollbar_update(
             }
         }
 
-        char *text = *(char **)((char *)state->items + item_offset);
+        char *text = *item;
         if (text[0] == '\\' && text[1] == 'g') {
             grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);
             text += 2;
@@ -254,7 +254,7 @@ extern "C" void ui_scrollbar_update(
 
         row_position.y += 16.0f;
         ++row;
-        item_offset += 4;
+        ++item;
         ++item_index;
     } while (row < visible_rows);
 }
