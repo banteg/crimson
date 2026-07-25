@@ -13,14 +13,6 @@ struct quest_timeline_vec2_t {
     }
 };
 
-struct quest_timeline_entry_t {
-    quest_timeline_vec2_t pos;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
-};
-
 extern "C" int frame_dt_ms;
 extern "C" int quest_spawn_timeline;
 extern "C" int quest_spawn_stall_timer_ms;
@@ -60,8 +52,7 @@ extern "C" void quest_spawn_timeline_update(void)
 
 spawn_entries:
     quest_timeline_vec2_t zero_offset(0.0f, 0.0f);
-    quest_timeline_entry_t *entry =
-        (quest_timeline_entry_t *)&quest_spawn_table[entry_index];
+    quest_spawn_entry_t *entry = &quest_spawn_table[entry_index];
     do {
         quest_timeline_vec2_t offset = zero_offset;
         int spawn_index = 0;
@@ -71,8 +62,8 @@ spawn_entries:
 
             spread = 0;
             do {
-                if (entry->pos.x < 0.0f
-                    || (float)terrain_texture_width < entry->pos.x) {
+                if (entry->pos_x < 0.0f
+                    || (float)terrain_texture_width < entry->pos_x) {
                     offset.y = (float)spread;
                     if (spawn_index & 1) {
                         offset.y = -offset.y;
@@ -84,7 +75,9 @@ spawn_entries:
                     }
                 }
 
-                quest_timeline_vec2_t pos = offset + entry->pos;
+                quest_timeline_vec2_t pos(
+                    offset.x + entry->pos_x,
+                    offset.y + entry->pos_y);
                 creature_spawn_template(
                     *template_id,
                     (const vec2f_t *)&pos,

@@ -34,6 +34,12 @@ match=91.23% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
   still starts from `trigger_time_ms` because the native loop is an evidenced
   six-int interior cursor, but ordinary builder decompilation no longer pays
   for that cursor-specific presentation.
+- The dispatch loop now also uses `quest_spawn_entry_t` directly instead of a
+  private layout duplicate. Its position, heading, template, trigger, and count
+  accesses therefore share the canonical quest type while preserving identical
+  codegen. The live Binary Ninja split `ESI` cursor was independently retyped
+  to the same pointer type, replacing raw float-array indexing throughout the
+  spawn and group-consumption loop.
 
 The first 51 instructions, complete scan/fail-safe policy, 28-byte frame, x87
 spread loop, group-consumption tail, and all 13 masked references agree.
