@@ -163,6 +163,21 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
+        "particle_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "fx_queue_entry_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
+        "fx_queue_entry_binja_t",
+        object(),
+        object(),
+    )
+    assert importer._should_replace_repo_type(
         "creature_t",
         object(),
         object(),
@@ -234,6 +249,12 @@ def test_repo_type_view_overrides_use_flat_decompiler_records():
     )
     assert importer._REPO_TYPE_VIEW_OVERRIDES["creature_t"] == (
         "creature_binja_t"
+    )
+    assert importer._REPO_TYPE_VIEW_OVERRIDES["particle_t"] == (
+        "particle_binja_t"
+    )
+    assert importer._REPO_TYPE_VIEW_OVERRIDES["fx_queue_entry_t"] == (
+        "fx_queue_entry_binja_t"
     )
 
 

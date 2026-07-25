@@ -650,6 +650,29 @@ typedef struct particle_t {
     int target_id;
 } particle_t;
 
+// Binary Ninja presentation view for the same 0x38-byte record. Particle
+// rendering deliberately overlays scale/age with RGBA in matching source; the
+// flat initializer-oriented view keeps pool induction accesses named.
+typedef struct particle_binja_t {
+    unsigned char active;
+    unsigned char render_flag;
+    unsigned char _pad0[2];
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale_x;
+    float scale_y;
+    float scale_z;
+    float age;
+    float intensity;
+    float angle;
+    float spin;
+    unsigned char style_id;
+    unsigned char _pad1[3];
+    int target_id;
+} particle_binja_t;
+
 // Canonical secondary projectile type ids used by `secondary_projectile_t.type_id`.
 typedef enum secondary_projectile_type_id_t {
     SECONDARY_PROJECTILE_TYPE_NONE = 0x00,
@@ -722,6 +745,22 @@ typedef struct fx_queue_entry_t {
     };
     effect_color_t color;
 } fx_queue_entry_t;
+
+// Binary Ninja presentation view for the same 0x28-byte queue entry. The
+// compiler-facing type keeps vector/color aggregate assignments; this view
+// names each field after the optimizer carries an interior induction cursor.
+typedef struct fx_queue_entry_binja_t {
+    int effect_id;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float height;
+    float width;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+} fx_queue_entry_binja_t;
 
 typedef struct sprite_effect_t {
     unsigned char active;

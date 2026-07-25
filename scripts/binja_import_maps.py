@@ -39,6 +39,11 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # Particle render styles reinterpret the four-float scale block as
         # RGBA, intensity as progress, and spin as rotation.
         "particle_t",
+        "particle_binja_t",
+        # The FX constructor carries interior cursors through vector and color
+        # aggregates; use a flat view for readable induction-variable HLIL.
+        "fx_queue_entry_t",
+        "fx_queue_entry_binja_t",
         # The database's older creature layout typed phase_seed as float even
         # though allocation stores masked rand() integers and AI converts the
         # member to float explicitly before using it as an orbit phase.
@@ -71,6 +76,8 @@ _REPO_TYPE_VIEW_OVERRIDES = {
     # Binary Ninja the equivalent flat record so ordinary IL uses field names.
     "projectile_t": "projectile_binja_t",
     "creature_t": "creature_binja_t",
+    "particle_t": "particle_binja_t",
+    "fx_queue_entry_t": "fx_queue_entry_binja_t",
 }
 
 _REPO_TYPE_ARRAY_VIEW_OVERRIDES = {
