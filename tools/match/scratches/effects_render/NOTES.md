@@ -23,6 +23,11 @@ masked references `38/0/0`, using Microsoft Visual C++ 6.5 with
   `grim_submit_vertices_transform_color` with the entry's four vertices.
 - Grim config slots `0x13` and `0x14`, the particle texture bind, both batch
   boundaries, and the final slot-`0x14` restoration all agree exactly.
+- Each render pass keeps an interior `float *` induction register anchored at
+  `effect_entry_t::color.g`. The two instruction-scoped cursor types are
+  persisted separately, replacing anonymous structure offsets with stable
+  field-relative indices without pretending either interior address is an
+  `effect_entry_t *`.
 
 ## Remaining compiler residue
 

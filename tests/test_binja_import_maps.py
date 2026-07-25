@@ -775,6 +775,25 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
             "type": "vec2f_t *",
         },
     ]
+    assert rows_by_name["effects_update"]["local_types"] == [
+        {
+            "address": "0x0042e714",
+            "name": "effect_age_cursor",
+            "type": "float *",
+        },
+    ]
+    assert rows_by_name["effects_render"]["local_types"] == [
+        {
+            "address": "0x0042e879",
+            "name": "background_effect_color_g_cursor",
+            "type": "float *",
+        },
+        {
+            "address": "0x0042e9c3",
+            "name": "foreground_effect_color_g_cursor",
+            "type": "float *",
+        },
+    ]
     assert rows_by_name["terrain_generate"]["local_types"] == [
         {
             "address": "0x00417d11",

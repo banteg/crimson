@@ -21,6 +21,10 @@ normalized instructions, full prefix, and masked references `10/0/0`.
   `dt` and two-component movement aggregate reproduce the native single load,
   x87 duplication, and two rounded position stores. Bits `0x4`, `0x8`, and
   `0x10` enable rotation, scale, and alpha updates respectively.
+- The native induction register is persisted in the replay map as the
+  `float *effect_age_cursor` it actually contains. This replaces anonymous
+  `i - 0x24` structure syntax with explicit field-relative float indices while
+  retaining the evidenced `0xbc`-byte stride.
 
 Binary Ninja confirms calls to `fx_queue_add` at `0x0042e77e` and
 `effect_free` at `0x0042e78a`, plus callers at `0x0040ac0e` and `0x004459ff`.

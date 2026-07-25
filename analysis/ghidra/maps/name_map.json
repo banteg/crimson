@@ -2877,6 +2877,13 @@
     "address": "0x0042e710",
     "name": "effects_update",
     "signature": "void effects_update(void)",
+    "local_types": [
+      {
+        "address": "0x0042e714",
+        "name": "effect_age_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "ticks active effects and frees expired entries"
   },
   {
@@ -2884,6 +2891,18 @@
     "address": "0x0042e820",
     "name": "effects_render",
     "signature": "void effects_render(void)",
+    "local_types": [
+      {
+        "address": "0x0042e879",
+        "name": "background_effect_color_g_cursor",
+        "type": "float *"
+      },
+      {
+        "address": "0x0042e9c3",
+        "name": "foreground_effect_color_g_cursor",
+        "type": "float *"
+      }
+    ],
     "comment": "renders active effects (rotated quads)"
   },
   {
