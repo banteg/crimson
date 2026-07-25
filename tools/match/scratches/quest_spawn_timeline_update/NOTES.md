@@ -30,10 +30,11 @@ match=91.23% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
   the quest builders. Adding the alternating offset through its inlined vector
   operator reproduces the native x87 construction and right-to-left call-
   argument schedule for the temporary passed to `creature_spawn_template`.
-- The canonical entry itself now exposes flat semantic fields. This scratch
-  still starts from `trigger_time_ms` because the native loop is an evidenced
-  six-int interior cursor, but ordinary builder decompilation no longer pays
-  for that cursor-specific presentation.
+- The canonical entry now exposes its first two floats both as the legacy
+  `pos_x`/`pos_y` scalars and as a `vec2f_t position` aggregate. This scratch
+  uses `entry->position.x/y` in the ordinary dispatch path, while still
+  starting the scan from `trigger_time_ms` because the native loop is an
+  evidenced six-int interior cursor.
 - The dispatch loop now also uses `quest_spawn_entry_t` directly instead of a
   private layout duplicate. Its position, heading, template, trigger, and count
   accesses therefore share the canonical quest type while preserving identical
@@ -66,6 +67,11 @@ instructions; their byte-length shift also changes local branch-label tokens in
 the normalized diff. Recovering the typed position and vector addition raises
 the honest score from `88.60%` to `91.23%` without changing the exact prefix,
 instruction count delta, frame, or reference audit.
+
+Adding the canonical position aggregate and using its components is
+byte-neutral: the candidate remains `113/115` instructions at `91.23%`, with
+the same 51-instruction prefix and `13/0/0` reference audit. The exact
+`quest_build_evil_zombies_at_large` consumer also remains `81/81`.
 
 MSVC 6.0 and 6.6 produce the same best body, 6.5pp is slightly worse, and 7.0
 adds its aligned-frame prologue. `/Og-` broadly deoptimizes the function. No

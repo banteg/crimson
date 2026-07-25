@@ -62,8 +62,8 @@ spawn_entries:
 
             spread = 0;
             do {
-                if (entry->pos_x < 0.0f
-                    || (float)terrain_texture_width < entry->pos_x) {
+                if (entry->position.x < 0.0f
+                    || (float)terrain_texture_width < entry->position.x) {
                     offset.y = (float)spread;
                     if (spawn_index & 1) {
                         offset.y = -offset.y;
@@ -76,8 +76,8 @@ spawn_entries:
                 }
 
                 quest_timeline_vec2_t pos(
-                    offset.x + entry->pos_x,
-                    offset.y + entry->pos_y);
+                    offset.x + entry->position.x,
+                    offset.y + entry->position.y);
                 creature_spawn_template(
                     *template_id,
                     (const vec2f_t *)&pos,

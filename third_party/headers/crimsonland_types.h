@@ -1479,8 +1479,13 @@ typedef struct quest_spawn_entry_template_cursor_t {
 } quest_spawn_entry_template_cursor_t;
 
 typedef struct quest_spawn_entry_t {
-    float pos_x;
-    float pos_y;
+    union {
+        struct {
+            float pos_x;
+            float pos_y;
+        };
+        vec2f_t position;
+    };
     float heading;
     int template_id;
     int trigger_time_ms;
