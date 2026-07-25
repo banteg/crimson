@@ -590,7 +590,7 @@
     "program": "crimsonland.exe",
     "address": "0x00407510",
     "name": "survival_spawn_creature",
-    "signature": "void survival_spawn_creature(float *pos)",
+    "signature": "void survival_spawn_creature(const vec2f_t *pos)",
     "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
   },
   {
@@ -1494,7 +1494,7 @@
     "program": "crimsonland.exe",
     "address": "0x00417660",
     "name": "vec2_length",
-    "signature": "float vec2_length(float *v)",
+    "signature": "float vec2_length(const vec2f_t *v)",
     "comment": "returns sqrt(x*x + y*y) for a 2-float vector"
   },
   {
@@ -2092,14 +2092,14 @@
     "program": "crimsonland.exe",
     "address": "0x0041e290",
     "name": "player_apply_move_with_spawn_avoidance",
-    "signature": "int player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)",
+    "signature": "int player_apply_move_with_spawn_avoidance(int player_index, vec2f_t *pos, vec2f_t *delta)",
     "comment": "applies movement delta (scaled by alternate-weapon perk), resolves collisions with creature spawn slots, and returns 0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041e400",
     "name": "vec2_add_inplace",
-    "signature": "int vec2_add_inplace(int entity_index, float *pos, float *delta)",
+    "signature": "int vec2_add_inplace(int entity_index, vec2f_t *pos, const vec2f_t *delta)",
     "comment": "adds delta XY into pos and returns 0; entity_index is accepted but unused"
   },
   {
@@ -2197,28 +2197,28 @@
     "program": "crimsonland.exe",
     "address": "0x0041f5b0",
     "name": "bonus_spawn_at",
-    "signature": "bonus_entry_t * bonus_spawn_at(float *pos, bonus_id_t bonus_id, int duration_override)",
+    "signature": "bonus_entry_t * bonus_spawn_at(vec2f_t *pos, bonus_id_t bonus_id, int duration_override)",
     "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041f790",
     "name": "bonus_spawn_at_pos",
-    "signature": "bonus_entry_t * bonus_spawn_at_pos(float *pos)",
+    "signature": "bonus_entry_t * bonus_spawn_at_pos(const vec2f_t *pos)",
     "comment": "allocates a bonus slot near pos, enforces spacing/edges, picks bonus type + amount"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041f8d0",
     "name": "bonus_try_spawn_on_kill",
-    "signature": "void bonus_try_spawn_on_kill(float *pos)",
+    "signature": "void bonus_try_spawn_on_kill(const vec2f_t *pos)",
     "comment": "decides whether to drop a bonus on kill (mode/perk rules) and spawns pickup burst"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041fbb0",
     "name": "fx_spawn_sprite",
-    "signature": "int fx_spawn_sprite(float *pos, float *vel, float scale)",
+    "signature": "int fx_spawn_sprite(const vec2f_t *pos, const vec2f_t *vel, float scale)",
     "comment": "spawns a sprite effect entry in DAT_00496820"
   },
   {
@@ -2246,35 +2246,35 @@
     "program": "crimsonland.exe",
     "address": "0x00420040",
     "name": "creature_find_nearest",
-    "signature": "int creature_find_nearest(float *pos, int exclude_id, float min_dist)",
+    "signature": "int creature_find_nearest(const vec2f_t *pos, int exclude_id, float min_dist)",
     "comment": "returns nearest creature index; uses lifecycle-stage sentinel when exclude_id == -1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420130",
     "name": "fx_spawn_particle",
-    "signature": "int fx_spawn_particle(float *pos, float angle, void *unused, float intensity)",
+    "signature": "int fx_spawn_particle(const vec2f_t *pos, float angle, const vec2f_t *unused, float intensity)",
     "comment": "spawns a fast particle entry in DAT_00493eb8"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420240",
     "name": "fx_spawn_particle_slow",
-    "signature": "int fx_spawn_particle_slow(float *pos, float angle)",
+    "signature": "int fx_spawn_particle_slow(const vec2f_t *pos, float angle)",
     "comment": "spawns a slow particle entry in DAT_00493eb8"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420360",
     "name": "fx_spawn_secondary_projectile",
-    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, secondary_projectile_type_id_t type_id)",
+    "signature": "int fx_spawn_secondary_projectile(const vec2f_t *pos, float angle, secondary_projectile_type_id_t type_id)",
     "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
-    "signature": "int projectile_spawn(float *pos, float angle, projectile_type_id_t type_id, int owner_id)",
+    "signature": "int projectile_spawn(const vec2f_t *pos, float angle, projectile_type_id_t type_id, int owner_id)",
     "comment": "allocates a projectile slot, initializes fields, and returns the index (overrides to type 0x2d when Fire Bullets is active)"
   },
   {
@@ -2288,21 +2288,21 @@
     "program": "crimsonland.exe",
     "address": "0x00420600",
     "name": "creatures_apply_radius_damage",
-    "signature": "void creatures_apply_radius_damage(float *pos, float radius, float damage, int damage_type)",
+    "signature": "void creatures_apply_radius_damage(const vec2f_t *pos, float radius, float damage, int damage_type)",
     "comment": "applies damage to creatures within radius using FUN_004207c0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004206a0",
     "name": "creature_find_in_radius",
-    "signature": "int creature_find_in_radius(float *pos, float radius, int start_index)",
+    "signature": "int creature_find_in_radius(const vec2f_t *pos, float radius, int start_index)",
     "comment": "returns the first creature index in range, or -1"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00420730",
     "name": "player_find_in_radius",
-    "signature": "int player_find_in_radius(int owner_id, float *pos, float radius)",
+    "signature": "int player_find_in_radius(int owner_id, const vec2f_t *pos, float radius)",
     "comment": "returns a player index in range, skipping owner_id (-1/-2/-3 -> player 0/1/2)"
   },
   {
@@ -2403,7 +2403,7 @@
     "program": "crimsonland.exe",
     "address": "0x00428240",
     "name": "creature_spawn",
-    "signature": "int creature_spawn(float *pos, float *tint_rgba, int type_id)",
+    "signature": "int creature_spawn(const vec2f_t *pos, const effect_color_t *tint, int type_id)",
     "comment": "allocates a creature slot and seeds position, type, and tint defaults"
   },
   {
@@ -2609,7 +2609,7 @@
     "program": "crimsonland.exe",
     "address": "0x0042de80",
     "name": "effect_init_entry",
-    "signature": "void effect_init_entry(void *entry)",
+    "signature": "void effect_init_entry(effect_entry_t *entry)",
     "comment": "initializes an effect entry to default values"
   },
   {
@@ -2623,7 +2623,7 @@
     "program": "crimsonland.exe",
     "address": "0x0042e080",
     "name": "effect_free",
-    "signature": "void effect_free(void *entry)",
+    "signature": "void effect_free(effect_entry_t *entry)",
     "comment": "returns an effect entry to the free list"
   },
   {
@@ -2637,7 +2637,7 @@
     "program": "crimsonland.exe",
     "address": "0x0042e120",
     "name": "effect_spawn",
-    "signature": "void * effect_spawn(int effect_id, float *pos)",
+    "signature": "effect_entry_t * effect_spawn(int effect_id, const vec2f_t *pos)",
     "comment": "allocates an effect entry and assigns quad UVs"
   },
   {
@@ -2658,70 +2658,70 @@
     "program": "crimsonland.exe",
     "address": "0x0042eb10",
     "name": "effect_spawn_blood_splatter",
-    "signature": "void effect_spawn_blood_splatter(float *pos, float angle, float age)",
+    "signature": "void effect_spawn_blood_splatter(const vec2f_t *pos, float angle, float age)",
     "comment": "spawns blood splatter particles (effect id 7)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042ec80",
     "name": "effect_spawn_freeze_shard",
-    "signature": "void effect_spawn_freeze_shard(float *pos, float angle)",
+    "signature": "void effect_spawn_freeze_shard(const vec2f_t *pos, float angle)",
     "comment": "spawns a random freeze shard effect (ids 8..10) around the given angle"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042ee00",
     "name": "effect_spawn_freeze_shatter",
-    "signature": "void effect_spawn_freeze_shatter(float *pos, float angle)",
+    "signature": "void effect_spawn_freeze_shatter(const vec2f_t *pos, float angle)",
     "comment": "four-way shatter burst (id 0xe) plus extra freeze shards"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042ef60",
     "name": "effect_spawn_burst",
-    "signature": "void effect_spawn_burst(float *pos, int count)",
+    "signature": "void effect_spawn_burst(const vec2f_t *pos, int count)",
     "comment": "generic burst loop for effect id 0"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f080",
     "name": "effect_spawn_shrinkifier_hit",
-    "signature": "void effect_spawn_shrinkifier_hit(float *pos)",
+    "signature": "void effect_spawn_shrinkifier_hit(const vec2f_t *pos)",
     "comment": "spawns shrinkifier impact effects: one core pulse (effect id 1) plus detail-scaled debris (effect id 0)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f270",
     "name": "effect_spawn_ion_hit_core",
-    "signature": "void * effect_spawn_ion_hit_core(float *pos, float scale_step, float lifetime)",
+    "signature": "void effect_spawn_ion_hit_core(const vec2f_t *pos, float scale_step, float lifetime)",
     "comment": "spawns the ion hit core pulse (effect id 1); used by ion minigun/rifle/cannon impacts"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f330",
     "name": "effect_spawn_plasma_hit_core",
-    "signature": "void * effect_spawn_plasma_hit_core(float *pos, float scale_step, float lifetime)",
+    "signature": "void effect_spawn_plasma_hit_core(const vec2f_t *pos, float scale_step, float lifetime)",
     "comment": "spawns the plasma cannon hit core pulse (effect id 1) with custom lifetime/age"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f3f0",
     "name": "effect_spawn_splitter_hit_burst",
-    "signature": "void effect_spawn_splitter_hit_burst(float *pos, float radius, int count)",
+    "signature": "void effect_spawn_splitter_hit_burst(const vec2f_t *pos, float radius, int count)",
     "comment": "Exact-matched radial effect-id-0 burst around splitter-gun impacts"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f540",
     "name": "effect_spawn_ion_hit_sparks",
-    "signature": "void effect_spawn_ion_hit_sparks(float *pos, float scale)",
+    "signature": "void effect_spawn_ion_hit_sparks(const vec2f_t *pos, float scale)",
     "comment": "spawns detail-scaled ion impact sparks (effect id 0) around the hit position; low detail halves the positive spark count"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042f6c0",
     "name": "effect_spawn_explosion_burst",
-    "signature": "void effect_spawn_explosion_burst(float *pos, float scale)",
+    "signature": "void effect_spawn_explosion_burst(const vec2f_t *pos, float scale)",
     "comment": "spawns explosion burst and shockwave particles"
   },
   {
@@ -2822,7 +2822,7 @@
     "program": "crimsonland.exe",
     "address": "0x00430af0",
     "name": "creature_spawn_template",
-    "signature": "void * creature_spawn_template(int template_id, float *pos, float heading)",
+    "signature": "creature_t * creature_spawn_template(int template_id, const vec2f_t *pos, float heading)",
     "comment": "spawns creature(s) from template id; heading -100 uses a random heading"
   },
   {
@@ -3451,98 +3451,98 @@
     "program": "crimsonland.exe",
     "address": "0x0043bcf0",
     "name": "sfx_entry_load_ogg",
-    "signature": "int sfx_entry_load_ogg(void *entry, byte *path)",
+    "signature": "unsigned char sfx_entry_load_ogg(sfx_entry_t *entry, char *path)",
     "comment": "loads an OGG sample into an sfx entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043be20",
     "name": "sfx_entry_seek",
-    "signature": "void sfx_entry_seek(int entry, int sample_offset)",
+    "signature": "void sfx_entry_seek(sfx_entry_t *entry, unsigned int sample_offset)",
     "comment": "seeks streaming sfx data and resets playback cursors"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043be60",
     "name": "sfx_entry_start_playback",
-    "signature": "int sfx_entry_start_playback(int entry)",
+    "signature": "int sfx_entry_start_playback(sfx_entry_t *entry)",
     "comment": "selects a voice/buffer and starts playback"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043bf40",
     "name": "sfx_entry_resume",
-    "signature": "void sfx_entry_resume(int entry)",
+    "signature": "void sfx_entry_resume(sfx_entry_t *entry)",
     "comment": "restarts playback for a streaming entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043bf60",
     "name": "sfx_entry_stop",
-    "signature": "void sfx_entry_stop(int entry)",
+    "signature": "void sfx_entry_stop(sfx_entry_t *entry)",
     "comment": "stops playback for all voices"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043bfa0",
     "name": "sfx_entry_set_volume",
-    "signature": "void sfx_entry_set_volume(int entry, float volume)",
+    "signature": "void sfx_entry_set_volume(sfx_entry_t *entry, float volume)",
     "comment": "sets the volume for active voices"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c020",
     "name": "sfx_entry_load_wav",
-    "signature": "int sfx_entry_load_wav(void *entry, byte *path)",
+    "signature": "unsigned char sfx_entry_load_wav(sfx_entry_t *entry, char *path)",
     "comment": "loads a WAV sample into an sfx entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c090",
     "name": "sfx_release_entry",
-    "signature": "void sfx_release_entry(int entry)",
+    "signature": "void sfx_release_entry(sfx_entry_t *entry)",
     "comment": "frees a sound entry (sample/voices)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c110",
     "name": "wav_parse_into_entry",
-    "signature": "int wav_parse_into_entry(void *entry, void *data, int size)",
+    "signature": "unsigned char wav_parse_into_entry(sfx_entry_t *entry, void *data, unsigned int size)",
     "comment": "parses WAV data into an entry and copies PCM"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c230",
     "name": "sfx_entry_upload_buffer",
-    "signature": "int sfx_entry_upload_buffer(int entry)",
+    "signature": "unsigned char sfx_entry_upload_buffer(sfx_entry_t *entry)",
     "comment": "uploads PCM data into a DirectSound buffer"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c2b0",
     "name": "sfx_entry_create_buffers",
-    "signature": "int sfx_entry_create_buffers(int entry)",
+    "signature": "unsigned char sfx_entry_create_buffers(sfx_entry_t *entry)",
     "comment": "creates DirectSound buffers for an sfx entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c3a0",
     "name": "music_entry_load_ogg",
-    "signature": "int music_entry_load_ogg(void *entry, byte *path)",
+    "signature": "unsigned char music_entry_load_ogg(music_entry_t *entry, char *path)",
     "comment": "loads an OGG stream into a music entry"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c520",
     "name": "music_stream_update",
-    "signature": "void music_stream_update(int entry)",
+    "signature": "void music_stream_update(music_entry_t *entry)",
     "comment": "updates streaming cursor and refills if needed"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043c590",
     "name": "music_stream_fill",
-    "signature": "int music_stream_fill(int entry)",
+    "signature": "unsigned char music_stream_fill(music_entry_t *entry)",
     "comment": "decodes and writes the next music stream chunk"
   },
   {
@@ -3675,7 +3675,7 @@
     "program": "crimsonland.exe",
     "address": "0x0043d260",
     "name": "sfx_play_panned",
-    "signature": "int sfx_play_panned(int sfx_id, float *pos, float volume)",
+    "signature": "int sfx_play_panned(int sfx_id, const vec2f_t *pos, float volume)",
     "comment": "plays a sound effect with computed pan"
   },
   {
@@ -3976,7 +3976,7 @@
     "program": "crimsonland.exe",
     "address": "0x00444810",
     "name": "creature_spawn_tinted",
-    "signature": "int creature_spawn_tinted(float *pos, float *rgba, int type_id)",
+    "signature": "int creature_spawn_tinted(const vec2f_t *pos, const effect_color_t *color, int type_id)",
     "comment": "spawns a creature with tint and default stats"
   },
   {

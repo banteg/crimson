@@ -63,3 +63,9 @@ those timer arms removes the candidate's artificial `1000.0 * 0.001`
 conversion, drops one instruction, and raises the score from `63.71%` to
 `63.75%`. VC6 still sinks the native default store later than the candidate;
 forcing that final placement would require source-level control-flow steering.
+
+The global carrier handle at `0x004808ac` is now persisted as `creature_t *`.
+That type is proven by the two assignments from `creature_spawn_template` and
+the subsequent active, health, flags, and packed link-index accesses. Applying
+it removes all raw `+0x24`, `+0x78`, `+0x7a`, and `+0x8c` expressions from this
+native function without changing the honest 63.75% matching result.

@@ -2356,7 +2356,8 @@
       "address": "0x004808ac",
       "comment": "Current tutorial bonus object pointer used for hint overlay checks.",
       "name": "tutorial_hint_bonus_ptr",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "creature_t *"
     },
     {
       "address": "0x004808b0",
@@ -7403,9 +7404,10 @@
     },
     {
       "address": "0x004c2b30",
-      "comment": "Effect pool free list head pointer",
+      "comment": "Typed head pointer for the effect-entry free list.",
       "name": "effect_free_list_head",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "effect_entry_t *"
     },
     {
       "address": "0x004c2b34",

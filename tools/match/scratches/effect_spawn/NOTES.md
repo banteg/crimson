@@ -36,3 +36,11 @@ entry graph. A small local C++ vector view remains only where the original
 source-level constructors and `operator+` explain VC6's UV arithmetic. This
 type recovery is byte-neutral: the scratch remains exact at 350/350 with all
 90 references.
+
+The persisted decompiler map also types `effect_free_list_head` as
+`effect_entry_t *`. This is necessary independently of the function prototype:
+without it, Binary Ninja re-infers the allocated entry as `float *` from the
+global and renders the complete allocator and four atlas paths as numeric
+indices. With the pointer type applied, the native HLIL exposes `next_free`,
+`position`, `velocity`, `effect_id`, and every named vertex member. No native
+bytes or matching source changed.

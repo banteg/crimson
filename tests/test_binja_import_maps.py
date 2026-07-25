@@ -356,3 +356,37 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["perk_meta_table"] == "perk_meta_t[128]"
     assert types_by_name["music_entry_table"] == "music_entry_t[128]"
     assert types_by_name["sfx_entry_table"] == "sfx_entry_t[128]"
+    assert types_by_name["effect_free_list_head"] == "effect_entry_t *"
+    assert types_by_name["tutorial_hint_bonus_ptr"] == "creature_t *"
+
+
+def test_name_map_preserves_recovered_core_pointer_signatures():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text())
+    signatures_by_name = {
+        row["name"]: row.get("signature")
+        for row in rows
+        if row.get("program") == "crimsonland.exe" and row.get("name")
+    }
+
+    assert signatures_by_name["effect_init_entry"] == (
+        "void effect_init_entry(effect_entry_t *entry)"
+    )
+    assert signatures_by_name["effect_spawn"] == (
+        "effect_entry_t * effect_spawn("
+        "int effect_id, const vec2f_t *pos)"
+    )
+    assert signatures_by_name["creature_spawn_template"] == (
+        "creature_t * creature_spawn_template("
+        "int template_id, const vec2f_t *pos, float heading)"
+    )
+    assert signatures_by_name["wav_parse_into_entry"] == (
+        "unsigned char wav_parse_into_entry("
+        "sfx_entry_t *entry, void *data, unsigned int size)"
+    )
