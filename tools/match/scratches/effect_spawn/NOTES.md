@@ -28,3 +28,11 @@ The standalone exact reconstruction now names that two-float class `vec2f_t`
 through the effect vertices, UV tables, constructor expressions, and spawn
 parameter. This removes the effect-only vector alias while preserving the
 350/350 instruction match and all 90 references.
+
+The allocator and atlas builder now use the canonical `effect_entry_t`,
+`effect_template_t`, `effect_id_entry_t`, and vertex records from the shared
+gameplay header instead of maintaining private copies of the complete 0xbc-byte
+entry graph. A small local C++ vector view remains only where the original
+source-level constructors and `operator+` explain VC6's UV arithmetic. This
+type recovery is byte-neutral: the scratch remains exact at 350/350 with all
+90 references.
