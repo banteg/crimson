@@ -493,3 +493,14 @@ so they are not mislabeled as owning creature pointers.
 This database-only control-flow recovery does not change code generation.
 After the later source-order recoveries above, the scratch remains 86.46% with
 3,161/3,159 instructions and `352/0/1` references.
+
+## Creature aggregate member recovery
+
+All record-base position, target-offset, and tint accesses now name the
+canonical `creature_t::position`, `target_offset`, and `color` components.
+This removes the remaining flattened compatibility aliases from the
+3,161-instruction switch while preserving 86.46%, the 26-instruction prefix,
+and `352/0/1` references byte-for-byte. Combining the six paired position
+stores into whole-vector assignments was also measured, but added one
+instruction and lost 6.39 fuzzy-weighted bytes, so the evidenced independent
+stores remain.
