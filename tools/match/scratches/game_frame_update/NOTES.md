@@ -65,12 +65,17 @@ expression over render mode and the accepted gameplay states; avoiding a
 cached state local restores the native byte/state load order and raises the
 final score to `96.08%`.
 
-Current honest MSVC result: `96.08%`, exact prefix `363/905`, candidate
-`904/905` instructions, and masked references `317/0/0`. Remaining differences
-are local load/store scheduling in the two-player aim copy and an equivalent
-x87 integer-division form that accounts for the one-instruction count
-difference. Aggregate vector assignment and the natural `set(x, y)` helper
-were tested, but regressed the exact prefix to `345` and the score to `87.38%`
-and `90.82%`; the scalar source is retained. No known native behavior is
-omitted. The candidate uses no volatile, dead-code, register, assembly, or
-layout constraints.
+The shareware progress ratio first converts both the elapsed sequence id and
+the trial limit to named floating-point values, then divides them. That natural
+expression split reproduces native's `fild`/`fild`/`fdivp` sequence instead of
+VC6 folding the denominator into `fidiv`. It restores the missing instruction
+and raises the score from `96.08%` to `99.45%`.
+
+Current honest MSVC result: `99.45%`, exact prefix `363/905`, candidate
+`905/905` instructions, and masked references `317/0/0`. Remaining differences
+are local load/store scheduling in the two-player aim copy and three equivalent
+interface-call schedules. Aggregate vector assignment, direct indexed aim
+stores, and the natural `set(x, y)` helper were tested, but regressed the score
+or reference audit; the scalar pointer source is retained. No known native
+behavior is omitted. The candidate uses no volatile, dead-code, register,
+assembly, or layout constraints.

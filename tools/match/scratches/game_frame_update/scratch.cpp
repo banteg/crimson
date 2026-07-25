@@ -449,7 +449,9 @@ extern "C" unsigned char game_frame_update(void)
 
     if (!game_is_full_version() && !demo_mode_active) {
         int time_limit_ms = demo_trial_time_limit_ms();
-        float ratio = (float)(int)game_sequence_id / (float)time_limit_ms;
+        float ratio = (float)(int)game_sequence_id;
+        float time_limit = (float)time_limit_ms;
+        ratio /= time_limit;
         if (ratio > 1.0f) {
             ratio = 1.0f;
         }

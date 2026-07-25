@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **290512/676681** code bytes (**42.9%**).
+Fuzzy-weighted alignment is **290633/676681** code bytes (**42.9%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 260936/386756 | 67.5% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261057/386756 | 67.5% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **260936/386756** fuzzy-weighted bytes (**67.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **261057/386756** fuzzy-weighted bytes (**67.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -118,7 +118,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | demo_purchase_screen_update | 0x0040b740 | 2642 | 2330/2642 | 312 | 697/691 | 88.18% | 1/691 | 187/0/0 |  | demo-purchase-screen-complete-flow |
 | match | demo_purchase_purchase_button_destroy | 0x0040c1a0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-purchase-button-empty-destructor |
 | match | demo_purchase_maybe_later_button_destroy | 0x0040c1b0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | demo-purchase-maybe-later-button-empty-destructor |
-| wip | game_frame_update | 0x0040c1c0 | 3588 | 3447/3588 | 141 | 904/905 | 96.08% | 363/905 | 317/0/0 |  | core-frame-timing-input-and-state-dispatch |
+| wip | game_frame_update | 0x0040c1c0 | 3588 | 3568/3588 | 20 | 905/905 | 99.45% | 363/905 | 317/0/0 |  | core-frame-timing-input-and-state-dispatch |
 | match | credits_line_table_global_init_thunk | 0x0040cfd0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | credits-line-table-global-initialization-thunk |
 | match | credits_line_table_global_init | 0x0040cfe0 | 24 | 24/24 | 0 | 9/9 | 100.00% | 9/9 | 1/0/0 |  | credits-line-table-global-initialization |
 | match | credits_line_set | 0x0040d000 | 64 | 64/64 | 0 | 18/18 | 100.00% | 18/18 | 6/0/0 |  | credits-line-storage |
