@@ -9,3 +9,7 @@ attract-mode limit.
 
 The recovered loop and whole-vector player assignment match all 78 native
 instructions, full prefix, with all thirteen references aligned.
+
+The large- and small-alien spawn positions are now recovered as ordinary
+`vec2f_t` locals rather than raw two-float arrays. Named components and direct
+vector arguments preserve the exact body and reference audit.

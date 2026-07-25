@@ -9,3 +9,7 @@ seeded to 15 seconds for the 5-second encounter.
 
 The recovered loop and whole-vector player assignments match all 88 native
 instructions, full prefix, with all seventeen references aligned.
+
+The large- and small-spider spawn positions are now recovered as ordinary
+`vec2f_t` locals rather than raw two-float arrays. Named components and direct
+vector arguments preserve the exact body and reference audit.

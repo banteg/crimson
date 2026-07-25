@@ -11,28 +11,28 @@ extern "C" void demo_setup_variant_1(void)
 
     float large_x;
     float large_y;
-    float large_pos[2];
+    vec2f_t large_pos;
     float small_x;
     float small_y;
-    float small_pos[2];
+    vec2f_t small_pos;
     for (int index = 0; index < 20; ++index) {
         large_x = (float)(crt_rand() % 200 + 32);
         large_y = (float)(crt_rand() % 899 + 64);
-        large_pos[0] = large_x;
-        large_pos[1] = large_y;
+        large_pos.x = large_x;
+        large_pos.y = large_y;
         creature_spawn_template(
             SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34,
-            (const vec2f_t *)large_pos,
+            &large_pos,
             -100.0f);
 
         if (index % 3 != 0) {
             small_x = (float)(crt_rand() % 30 + 32);
             small_y = (float)(crt_rand() % 899 + 64);
-            small_pos[0] = small_x;
-            small_pos[1] = small_y;
+            small_pos.x = small_x;
+            small_pos.y = small_y;
             creature_spawn_template(
                 SPAWN_ID_SPIDER_SP2_RANDOM_35,
-                (const vec2f_t *)small_pos,
+                &small_pos,
                 -100.0f);
         }
     }
