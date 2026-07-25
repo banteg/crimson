@@ -88,10 +88,21 @@ layout-only gotos.
 Current local score:
 
 ```txt
-match=54.81% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=736/0/11
+match=54.86% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=736/0/11
 first_target=jne L3f7a
-first_candidate=jne L3d5a
+first_candidate=jne L3d52
 ```
+
+The Fire Cough muzzle sprite at `0x00413c0b..0x00413c38` writes the four
+adjacent color components only after `fx_spawn_sprite` returns. Naming the
+existing `effect_color_t` subobject at that point preserves that natural
+aggregate source boundary and raises the whole-function score from `54.81%`
+to `54.86%` without changing the exact `0x48` frame, instruction count, or
+reference audit. Copying a separately initialized color value instead grows
+the frame to `0x50`, adds ten candidate instructions, and falls to `48.60%`;
+re-indexing the player table through additional scoped pointers likewise grows
+the frame or perturbs unrelated allocation, so neither compiler-shaped probe
+is retained.
 
 ## Binary Ninja control-flow retention
 

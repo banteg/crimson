@@ -292,10 +292,12 @@ extern "C" void player_update(void)
             move_delta.x = (float)cos(aim_heading) * 25.0f;
             move_delta.y = (float)sin(aim_heading) * 25.0f;
             int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);
-            sprite_effect_pool[effect_index].color_r = 0.5f;
-            sprite_effect_pool[effect_index].color_g = 0.5f;
-            sprite_effect_pool[effect_index].color_b = 0.5f;
-            sprite_effect_pool[effect_index].color_a = 0.413f;
+            effect_color_t &effect_color =
+                sprite_effect_pool[effect_index].color;
+            effect_color.r = 0.5f;
+            effect_color.g = 0.5f;
+            effect_color.b = 0.5f;
+            effect_color.a = 0.413f;
 
             player->fire_cough_timer =
                 player->fire_cough_timer - perk_fire_cough_trigger_interval_s;
