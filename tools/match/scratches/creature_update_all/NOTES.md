@@ -9,6 +9,16 @@ modes, movement and spawner roots, animation, ranged and contact attacks,
 perk interactions, infection, death motion, corpse effects, blood bursts, and
 final body culling.
 
+## Binary Ninja control-flow retention
+
+The saved database retained 197 native disassembly basic blocks but had
+released LLIL, MLIL, and HLIL for this central simulation sweep. Its name-map
+row now requests `never_skip` analysis. Together with the importer's explicit
+advanced-analysis retention request, replaying the row restores the complete
+creature AI, attack, infection, death, and corpse control flow before applying
+the two recovered position cursor types. This is presentation-only recovery:
+the matcher remains the honest 49.09% WIP described below.
+
 ## Recovered source shape
 
 - The two-player retarget path indexes the other player directly as

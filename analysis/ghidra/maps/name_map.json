@@ -2559,6 +2559,7 @@
     "address": "0x00426220",
     "name": "creature_update_all",
     "signature": "void creature_update_all(void)",
+    "analysis_skip_override": "never_skip",
     "local_types": [
       {
         "address": "0x00426403",

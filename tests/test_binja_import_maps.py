@@ -737,6 +737,7 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
         "player_heading_approach_target",
         "player_update",
         "projectile_update",
+        "creature_update_all",
         "creature_spawn_template",
         "terrain_generate",
         "creature_render_type",
