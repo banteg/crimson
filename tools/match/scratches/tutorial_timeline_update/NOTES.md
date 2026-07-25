@@ -39,14 +39,14 @@ and player-key bounds retain the native signed pointer comparisons. The three
 stage-one point bonuses also preserve the otherwise easy-to-miss reload of
 bonus zero's `time_left` into bonuses one and two's `time_max` fields.
 
-The current honest VC6.5 result is 64.60%: 695 target instructions versus 692
-candidate instructions, with references `153/0/4`. The stack frame is the
-native `0x5c` bytes. Remaining differences are dominated by prompt-alpha
-default-store placement, register scheduling after the stage-one point-bonus
-stores, reusable vector stack-slot assignment, and switch-case block placement. The
-structured source keeps exact runtime behavior; no volatile qualifiers, dummy
-references, fake externals, artificial dependencies, inline assembly, or
-register constraints are used to hide those residuals.
+The current honest VC6.5 result is 66.57%: 695 target instructions versus 693
+candidate instructions, with references `154/0/4`. The stack frame remains the
+native `0x5c` bytes. Remaining differences are dominated by prompt-alpha block
+placement, register scheduling after the stage-one point-bonus stores, branch
+stack-slot coalescing, and switch-case block placement. The structured source
+keeps exact runtime behavior; no volatile qualifiers, dummy references, fake
+externals, artificial dependencies, inline assembly, or register constraints
+are used to hide those residuals.
 
 At entry, native VC6 loads and stores `tutorial_stage_timer` first while
 keeping `quest_spawn_timeline` live across construction of the two local text
@@ -59,11 +59,21 @@ fourth is the stage-five local jump table.
 
 The neutral prompt-transition state (`-1`) uses alpha `1.0` directly in the
 native CFG, while positive and earlier negative transitions scale milliseconds
-by `0.001`. Initializing the source value to `1.0` and overriding it only for
-those timer arms removes the candidate's artificial `1000.0 * 0.001`
-conversion, drops one instruction, and raises the score from `63.71%` to
-`63.75%`. VC6 still sinks the native default store later than the candidate;
-forcing that final placement would require source-level control-flow steering.
+by `0.001`. Giving all three branches their value directly removes the
+unsupported eager `1.0` store from the candidate. Keeping the negative cases
+together is the best honest expression found: a positive-first equivalent
+regressed to 64.46%, while this form raises the prior 64.60% baseline to
+65.71%. VC6 still places the native positive fallthrough differently; forcing
+that final block order would require source-level control-flow steering.
+
+The creature-spawn workspace has separate source lifetimes in stages three,
+four, five, and six. Naming a local vector in each branch lets VC6 coalesce
+those non-overlapping values while retaining the native frame, and raises the
+result again from 65.71% to 66.57% with one additional aligned reference.
+Keeping a single function-wide vector obscured those lifetimes; a function-wide
+three-vector array forced 8-byte stack alignment and an EBP frame, while three
+function-wide vector locals enlarged the frame to `0x64`. Both alternatives
+were rejected.
 
 The global carrier handle at `0x004808ac` is now persisted as `creature_t *`.
 That type is proven by the two assignments from `creature_spawn_template` and

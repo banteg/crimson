@@ -123,12 +123,16 @@ extern "C" void tutorial_timeline_update(void)
     {
         int prompt_transition = tutorial_stage_transition_timer;
         int stage_timer = tutorial_stage_timer;
-        float prompt_alpha = 1.0f;
-        if (prompt_transition >= 0) {
+        float prompt_alpha;
+        if (prompt_transition < 0) {
+            if (prompt_transition < -1) {
+                prompt_alpha = (float)-prompt_transition * 0.001f;
+            } else {
+                prompt_alpha = 1.0f;
+            }
+        } else {
             prompt_alpha =
                 (float)tutorial_stage_transition_timer * 0.001f;
-        } else if (prompt_transition < -1) {
-            prompt_alpha = (float)-prompt_transition * 0.001f;
         }
 
         stage = tutorial_stage_index;
@@ -154,7 +158,6 @@ extern "C" void tutorial_timeline_update(void)
         }
     }
 
-    tutorial_vec2_t stage3_pos2;
     transition = tutorial_stage_transition_timer;
     stage = tutorial_stage_index;
     if (!tutorial_hint_bonus_consumed_latch) {
@@ -288,6 +291,7 @@ extern "C" void tutorial_timeline_update(void)
     if (stage == 3) {
         tutorial_vec2_t stage3_pos0;
         tutorial_vec2_t stage3_pos1;
+        tutorial_vec2_t stage3_pos2;
         int *fire_key = &player_state_table[0].input.fire_key;
         do {
             if (grim_interface_ptr->grim_is_key_active(*fire_key)
@@ -317,6 +321,7 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     if (stage == 4) {
+        tutorial_vec2_t spawn_pos;
         if (creatures_none_active()
             && tutorial_stage_transition_timer == -1) {
             tutorial_stage_timer = 1000;
@@ -325,17 +330,17 @@ extern "C" void tutorial_timeline_update(void)
             tutorial_repeat_spawn_count = 0;
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 1188.0f,
                 412.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
-                &stage3_pos2,
+                &spawn_pos,
                 1208.0f,
                 512.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 1178.0f,
                 612.0f);
         }
@@ -343,6 +348,7 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     if (stage == 5) {
+        tutorial_vec2_t spawn_pos;
         int bonus_count = 0;
         while (bonus_count < 0x10
             && bonus_pool[bonus_count].bonus_id == BONUS_ID_NONE) {
@@ -363,48 +369,48 @@ extern "C" void tutorial_timeline_update(void)
             if (tutorial_repeat_spawn_count & 1) {
                 if (tutorial_repeat_spawn_count < 6) {
                     tutorial_hint_bonus_ptr = tutorial_spawn_bonus_carrier(
-                        &stage3_pos2,
+                        &spawn_pos,
                         -32.0f,
                         1056.0f);
                 }
                 tutorial_spawn_creature(
                     SPAWN_ID_ALIEN_CONST_GREEN_24,
-                    &stage3_pos2,
+                    &spawn_pos,
                     -164.0f,
                     412.0f);
                 tutorial_spawn_creature(
                     SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
-                    &stage3_pos2,
+                    &spawn_pos,
                     -184.0f,
                     512.0f);
-                stage3_pos2.set(-154.0f, 612.0f);
+                spawn_pos.set(-154.0f, 612.0f);
             } else {
                 if (tutorial_repeat_spawn_count < 6) {
                     tutorial_hint_bonus_ptr = tutorial_spawn_bonus_carrier(
-                        &stage3_pos2,
+                        &spawn_pos,
                         1056.0f,
                         1056.0f);
                 }
                 tutorial_spawn_creature(
                     SPAWN_ID_ALIEN_CONST_GREEN_24,
-                    &stage3_pos2,
+                    &spawn_pos,
                     1188.0f,
                     1136.0f);
                 tutorial_spawn_creature(
                     SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
-                    &stage3_pos2,
+                    &spawn_pos,
                     1208.0f,
                     512.0f);
-                stage3_pos2.set(1178.0f, 612.0f);
+                spawn_pos.set(1178.0f, 612.0f);
             }
             creature_spawn_template(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                (const vec2f_t *)&stage3_pos2,
+                (const vec2f_t *)&spawn_pos,
                 3.14159274f);
             if (tutorial_repeat_spawn_count == 4) {
                 tutorial_spawn_creature(
                     SPAWN_ID_SPIDER_SP1_CONST_BLUE_40,
-                    &stage3_pos2,
+                    &spawn_pos,
                     512.0f,
                     1056.0f);
             }
@@ -443,41 +449,42 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     if (stage == 6) {
+        tutorial_vec2_t spawn_pos;
         if (perk_pending_count <= 0 && transition == -1) {
             tutorial_stage_transition_timer = -1000;
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 -164.0f,
                 412.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
-                &stage3_pos2,
+                &spawn_pos,
                 -184.0f,
                 512.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 -154.0f,
                 612.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_PURPLE_28,
-                &stage3_pos2,
+                &spawn_pos,
                 -32.0f,
                 -32.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 1188.0f,
                 412.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_PALE_GREEN_26,
-                &stage3_pos2,
+                &spawn_pos,
                 1208.0f,
                 512.0f);
             tutorial_spawn_creature(
                 SPAWN_ID_ALIEN_CONST_GREEN_24,
-                &stage3_pos2,
+                &spawn_pos,
                 1178.0f,
                 612.0f);
         }
