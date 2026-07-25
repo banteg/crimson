@@ -85,6 +85,16 @@ This scratch is intentionally an honest partial reconstruction. It does not
 use volatile state, dead expressions, dummy references, inline assembly, or
 layout-only gotos.
 
+The remaining scalar creature-position aliases in target validation, demo
+movement, and smoothed auto-aim now use the canonical
+`creature_t::position` aggregate. The final Y bounds tests likewise keep their
+evidenced direct player-record access while naming `player_state_t::position`,
+and the Fire Cough smoke velocity uses `effect_template_t::velocity`. A
+whole-function shadow compile is byte-neutral at 4,019/4,206 instructions,
+54.86%, a seven-instruction prefix, and `736/0/11` references. This is type
+recovery only; it does not claim to explain the remaining VC6 allocation
+delta.
+
 Current local score:
 
 ```txt

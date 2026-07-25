@@ -377,12 +377,14 @@ extern "C" void player_update(void)
             nearest_distance = 100000.0f;
         } else {
             nearest_distance = (float)sqrt(
-                (player_position->y - creature_pool[target_index].pos_y)
+                (player_position->y
+                    - creature_pool[target_index].position.y)
                         * (player_position->y
-                            - creature_pool[target_index].pos_y)
-                    + (player_position->x - creature_pool[target_index].pos_x)
+                            - creature_pool[target_index].position.y)
+                    + (player_position->x
+                        - creature_pool[target_index].position.x)
                         * (player_position->x
-                            - creature_pool[target_index].pos_x));
+                            - creature_pool[target_index].position.x));
         }
 
         int creature_index = 0;
@@ -390,10 +392,10 @@ extern "C" void player_update(void)
         do {
             if (candidate->active && candidate->health > 0.0f) {
                 float distance = (float)sqrt(
-                    (player_position->y - candidate->pos_y)
-                            * (player_position->y - candidate->pos_y)
-                        + (player_position->x - candidate->pos_x)
-                            * (player_position->x - candidate->pos_x));
+                    (player_position->y - candidate->position.y)
+                            * (player_position->y - candidate->position.y)
+                        + (player_position->x - candidate->position.x)
+                            * (player_position->x - candidate->position.x));
                 if (distance < nearest_distance - 64.0f) {
                     player->auto_target = creature_index;
                     nearest_distance = distance;
@@ -744,9 +746,9 @@ extern "C" void player_update(void)
                             * (player_position->x - 512.0f))
                 <= 300.0f) {
                 scratch_pos.y = player_position->y
-                    - creature_pool[player->auto_target].pos_y;
+                    - creature_pool[player->auto_target].position.y;
                 scratch_pos.x = player_position->x
-                    - creature_pool[player->auto_target].pos_x;
+                    - creature_pool[player->auto_target].position.x;
             } else {
                 scratch_pos.y = player_position->y - 512.0f;
                 scratch_pos.x = player_position->x - 512.0f;
@@ -988,9 +990,9 @@ extern "C" void player_update(void)
     } else {
         int target_index = player->auto_target;
         movement_input.y =
-            creature_pool[target_index].pos_y - player->aim_y;
+            creature_pool[target_index].position.y - player->aim_y;
         movement_input.x =
-            creature_pool[target_index].pos_x - player->aim_x;
+            creature_pool[target_index].position.x - player->aim_x;
         scalar = (float)sqrt(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
@@ -1001,8 +1003,8 @@ extern "C" void player_update(void)
             player->aim_x = player->aim_x + move_delta.x;
             player->aim_y = player->aim_y + movement_input.y * angle_step;
         } else {
-            player->aim_x = creature_pool[target_index].pos_x;
-            player->aim_y = creature_pool[target_index].pos_y;
+            player->aim_x = creature_pool[target_index].position.x;
+            player->aim_y = creature_pool[target_index].position.y;
         }
         if (scalar < 128.0f && creature_pool[target_index].health > 0.0f) {
             auto_fire = true;
@@ -1125,8 +1127,8 @@ extern "C" void player_update(void)
             effect_template.half_height = 2.0f;
             effect_template.rotation =
                 (float)((crt_rand() & 0x3f) - 0x20) * 0.1f;
-            effect_template.vel_x = move_delta.x * 100.0f;
-            effect_template.vel_y = move_delta.y * 100.0f;
+            effect_template.velocity.x = move_delta.x * 100.0f;
+            effect_template.velocity.y = move_delta.y * 100.0f;
             effect_template.scale_step = 0.0f;
             effect_template.rotation_step =
                 ((float)(crt_rand() % 20) * 0.1f - 1.0f) * 14.0f;
@@ -1866,11 +1868,11 @@ extern "C" void player_update(void)
     if ((float)terrain_texture_width - scalar < player_position->x) {
         player_position->x = (float)terrain_texture_width - scalar;
     }
-    if (player->pos_y < scalar) {
-        player->pos_y = scalar;
+    if (player->position.y < scalar) {
+        player->position.y = scalar;
     }
-    if ((float)terrain_texture_height - scalar < player->pos_y) {
-        player->pos_y = (float)terrain_texture_height - scalar;
+    if ((float)terrain_texture_height - scalar < player->position.y) {
+        player->position.y = (float)terrain_texture_height - scalar;
     }
     if (*muzzle_flash_alpha > 0.8f) {
         *muzzle_flash_alpha = 0.8f;
