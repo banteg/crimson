@@ -25,7 +25,6 @@ extern int bonus_texture;
 extern int ui_weapon_icons_texture;
 extern float camera_offset_x;
 extern float camera_offset_y;
-extern float player_aim_x[];
 extern int config_player_count;
 extern int config_screen_width;
 extern unsigned char config_fx_detail_flag1;
@@ -227,33 +226,34 @@ extern "C" void bonus_render(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 
     int *hover_timer = telekinetic_bonus_hover_timer_ms;
-    vec2f_t *player_aim = (vec2f_t *)player_aim_x;
+    vec2f_t *player_aim = &player_state_table[0].aim;
     int nearby_bonus_index;
-    if (config_player_count > 0) {
+    if (player_index < config_player_count) {
         while (1) {
             player_state_t *player = (player_state_t *)(
                 (char *)player_aim - offsetof(player_state_t, aim_x));
             if (player->health > 0.0f) {
                 nearby_bonus_index = 0;
                 bonus_entry_t *nearby_bonus = bonus_pool;
+                int nearby_bonus_found = 0;
                 while (1) {
                     if (nearby_bonus->bonus_id != BONUS_ID_NONE
                         && bonus_render_distance(
                                player_aim,
                                &nearby_bonus->time.position)
                             < 24.0f) {
+                        nearby_bonus_found = 1;
                         break;
                     }
                     ++nearby_bonus;
                     ++nearby_bonus_index;
-                    if ((int)nearby_bonus
-                        >= (int)&bonus_pool[16]) {
+                    if (nearby_bonus >= &bonus_pool[16]) {
                         *hover_timer = 0;
-                        goto telekinetic_threshold;
+                        break;
                     }
                 }
 
-                {
+                if (nearby_bonus_found) {
                     if (game_state_id == GAME_STATE_GAMEPLAY) {
                         *hover_timer += frame_dt_ms;
                     }
@@ -276,7 +276,6 @@ extern "C" void bonus_render(void)
                         label_x, label_y, label);
                 }
 
-telekinetic_threshold:
                 if (*hover_timer > 650
                     && perk_count_get(perk_id_telekinetic)
                     && bonus_pool[nearby_bonus_index].state == 0) {

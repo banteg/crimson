@@ -35,6 +35,14 @@ alias, while aim and bonus positions use named vector components. A shadow
 probe verified byte-for-byte identical candidate output and unchanged
 reference agreement.
 
+The nearby-bonus search now uses a natural `nearby_bonus_found` flag instead of
+a reconstruction-only `goto`. VC6 optimizes the flag away and emits
+byte-for-byte identical code: search exhaustion resets the current hover timer,
+the found path owns label rendering, and both paths share the Telekinetic
+threshold test. The induction pointer now starts directly at
+`player_state_table[0].aim`, and the outer guard retains the existing player
+index; both type-safe expressions are likewise matcher-neutral.
+
 The three particle render passes now use the canonical `particle_t` directly
 instead of a scratch-local 0x38-byte record with two padding regions. Static
 analysis shows that particle styles reinterpret the four floats at
