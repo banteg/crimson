@@ -21,3 +21,9 @@ formerly opaque 16-byte tail has a `reserved_seed_words[4]` overlay, grounded
 by the four independent `crt_rand() % 345354345` dword stores, so neither the
 scratch nor Binary Ninja needs a private status layout. The result remains
 exact at 45/45 instructions with all 18 references.
+
+Binary Ninja now imports a layout-equivalent flat `game_status_binja_t` view
+for the canonical persisted type. This preserves the same 0x268-byte layout
+while rendering all four tail stores as `reserved_seed_words[0..3]` instead of
+splitting the final three dwords into anonymous `reserved0.__offset(...)`
+halfword writes.

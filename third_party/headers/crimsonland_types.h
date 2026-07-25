@@ -1398,6 +1398,22 @@ typedef struct game_status_t {
     };
 } game_status_t;
 
+// Layout-equivalent Binary Ninja view of the persisted status blob. Native
+// initialization writes the tail as four dwords; flattening that proven view
+// prevents the anonymous union from degrading them to reserved0 offsets.
+typedef struct game_status_binja_t {
+    unsigned short quest_unlock_index;
+    unsigned short quest_unlock_index_full;
+    unsigned int weapon_usage_counts[53];
+    unsigned int quest_play_counts[91];
+    unsigned int mode_play_survival;
+    unsigned int mode_play_rush;
+    unsigned int mode_play_typo;
+    unsigned int mode_play_other;
+    unsigned int game_sequence_id;
+    unsigned int reserved_seed_words[4];
+} game_status_binja_t;
+
 // Sliding cursor view used by some quest builder loops.
 //
 // A common pattern is to iterate with a pointer to `entries[i].trigger_time_ms` and then use

@@ -68,6 +68,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # The status initializer writes the reserved tail as four independent
         # random dwords; retain both that word view and the raw byte span.
         "game_status_t",
+        "game_status_binja_t",
         # The older database treated the random tag at 0x38 as part of an
         # eight-byte reserved span. Record construction, packing, checksums,
         # and the standalone data symbol prove a uint32_t random_tag followed
@@ -112,6 +113,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
 
 _REPO_TYPE_VIEW_OVERRIDES = {
     "mod_interface_t": "mod_interface_binja_t",
+    "game_status_t": "game_status_binja_t",
     # Keep the cursor-oriented compiler view in the matching header, but give
     # Binary Ninja the equivalent flat record so ordinary IL uses field names.
     "projectile_t": "projectile_binja_t",
