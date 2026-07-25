@@ -504,9 +504,17 @@ extern "C" creature_t *creature_spawn_template(
     }
 
     if (template_id == SPAWN_ID_SPIDER_SP2_SPLITTER_01) {
-                    SET_ROOT_STATS(CREATURE_TYPE_SPIDER_SP2, 400.0f, 2.0f, 1000.0f,
-                                   0.8f, 0.7f, 0.4f, 1.0f, 80.0f, 17.0f);
+                    creature->type_id = CREATURE_TYPE_SPIDER_SP2;
                     creature->flags = CREATURE_FLAG_SPLIT_ON_DEATH;
+                    creature->size = 80.0f;
+                    creature->health = 400.0f;
+                    creature->move_speed = 2.0f;
+                    creature->reward_value = 1000.0f;
+                    creature->tint_a = 1.0f;
+                    creature->tint_r = 0.8f;
+                    creature->tint_g = 0.7f;
+                    creature->tint_b = 0.4f;
+                    creature->contact_damage = 17.0f;
                 } else if (template_id == SPAWN_ID_ALIEN_SPAWNER_CHILD_32_SLOW_0A) {
                     INIT_ALIEN_SPAWNER(2.0f, 100, 5.0f, SPAWN_ID_SPIDER_SP1_RANDOM_32,
                                        55.0f, 1000.0f, 1.5f, 3000.0f, 0.8f, 0.7f, 0.4f);
@@ -832,13 +840,19 @@ extern "C" creature_t *creature_spawn_template(
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.2f, 125.0f,
                                              0.6f, 0.8f, 0.6f, 1.0f, 45.0f, 10.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_WEAPON_BONUS_27) {
-                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 2.1f, 125.0f,
-                                             1.0f, 0.8f, 0.1f, 1.0f, 45.0f, 10.0f);
+                    creature->type_id = CREATURE_TYPE_ALIEN;
+                    creature->health = 50.0f;
+                    creature->move_speed = 2.1f;
+                    child_tint.set(1.0f, 0.8f, 0.1f, 1.0f);
                     creature->flags = CREATURE_FLAG_BONUS_ON_DEATH;
+                    creature->reward_value = 125.0f;
+                    *(creature_tint_t *)&creature->color = child_tint;
                     creature_bonus_args_t *bonus_args =
                         &creature->bonus_args;
                     bonus_args->bonus_id = 3;
                     bonus_args->duration_override = 5;
+                    creature->size = 45.0f;
+                    creature->contact_damage = 10.0f;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 53.0f, 1.7f, 120.0f,
                                              0.7f, 0.1f, 0.51f, 0.5f, 55.0f, 8.0f);
@@ -849,8 +863,14 @@ extern "C" creature_t *creature_spawn_template(
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 5.0f, 1.7f, 180.0f,
                                              0.1f, 0.7f, 0.51f, 0.04f, 45.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {
-                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 1.7f, 150.0f,
-                                             0.7f, 0.1f, 0.51f, 1.0f, 55.0f, 8.0f);
+                    creature->type_id = CREATURE_TYPE_ALIEN;
+                    creature->health = 50.0f;
+                    child_tint.set(0.7f, 0.1f, 0.51f, 1.0f);
+                    creature->move_speed = 1.7f;
+                    creature->reward_value = 150.0f;
+                    *(creature_tint_t *)&creature->color = child_tint;
+                    creature->size = 55.0f;
+                    creature->contact_damage = 8.0f;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_GREY_BRUTE_29) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 800.0f, 2.5f, 450.0f,
                                              0.8f, 0.8f, 0.8f, 1.0f, 70.0f, 20.0f);
@@ -858,8 +878,14 @@ extern "C" creature_t *creature_spawn_template(
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 3.1f, 300.0f,
                                              0.3f, 0.3f, 0.3f, 1.0f, 60.0f, 8.0f);
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_RED_FAST_2B) {
-                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 30.0f, 3.6f, 450.0f,
-                                             1.0f, 0.3f, 0.3f, 1.0f, 35.0f, 20.0f);
+                    creature->type_id = CREATURE_TYPE_ALIEN;
+                    creature->health = 30.0f;
+                    child_tint.set(1.0f, 0.3f, 0.3f, 1.0f);
+                    creature->move_speed = 3.6f;
+                    creature->reward_value = 450.0f;
+                    *(creature_tint_t *)&creature->color = child_tint;
+                    creature->size = 35.0f;
+                    creature->contact_damage = 20.0f;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_RED_BOSS_2C) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 3800.0f, 2.0f, 1500.0f,
                                              0.85f, 0.2f, 0.2f, 1.0f, 80.0f, 40.0f);
@@ -877,11 +903,17 @@ extern "C" creature_t *creature_spawn_template(
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 1200.0f, 2.0f, 4000.0f,
                                              0.9f, 0.0f, 0.0f, 1.0f, 70.0f, 20.0f);
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_RANGED_VARIANT_3C) {
-                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 200.0f, 2.0f, 200.0f,
-                                             0.9f, 0.1f, 0.1f, 1.0f, 40.0f, 20.0f);
+                    creature->type_id = CREATURE_TYPE_SPIDER_SP1;
                     creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
                     creature->orbit_angle = 0.4f;
                     creature->orbit_radius.projectile_type = PROJECTILE_TYPE_SPIDER_PLASMA;
+                    creature->health = 200.0f;
+                    creature->move_speed = 2.0f;
+                    creature->reward_value = 200.0f;
+                    child_tint.set(0.9f, 0.1f, 0.1f, 1.0f);
+                    *(creature_tint_t *)&creature->color = child_tint;
+                    creature->size = 40.0f;
+                    creature->contact_damage = 20.0f;
                     creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_3D) {
                     creature->type_id = CREATURE_TYPE_SPIDER_SP1;
@@ -966,8 +998,14 @@ extern "C" creature_t *creature_spawn_template(
                     creature->size = 64.0f;
                     creature->contact_damage = 50.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_BROWN_SMALL_3F) {
-                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 200.0f, 2.3f, 210.0f,
-                                             0.7f, 0.4f, 0.1f, 1.0f, 35.0f, 20.0f);
+                    creature->type_id = CREATURE_TYPE_SPIDER_SP1;
+                    creature->health = 200.0f;
+                    child_tint.set(0.7f, 0.4f, 0.1f, 1.0f);
+                    creature->move_speed = 2.3f;
+                    creature->reward_value = 210.0f;
+                    *(creature_tint_t *)&creature->color = child_tint;
+                    creature->size = 35.0f;
+                    creature->contact_damage = 20.0f;
                 } else if (template_id == SPAWN_ID_SPIDER_SP1_CONST_BLUE_40) {
                     SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_SPIDER_SP1, 70.0f, 2.2f, 160.0f,
                                              0.5f, 0.6f, 0.9f, 1.0f, 45.0f, 5.0f);

@@ -455,6 +455,20 @@ Frame/prefix notes:
   lower; the coherent pair leaves the audit at `352/0/1`, one aligned
   reference below the previous scratch, while materially improving the proven
   object and loop shape.
+- Four late template bodies still hid native source ordering behind generic
+  stat macros. Template `0x01` establishes its split flag and size before the
+  stat/tint group; `0x27` constructs tint around the bonus flag and reward,
+  then writes the packed bonus arguments before size and damage; `0x3c`
+  initializes ranged flags, orbit angle, and projectile type before its
+  ordinary stat body; and `0x3f` keeps the tint value alive across speed and
+  reward assignment. Recovering those case-specific sequences, plus the same
+  evidenced value lifetime in `0x28` and `0x2b`, raises the score from `85.73%`
+  to `86.46%`. The `0x27` and `0x3c` bodies now align instruction-for-
+  instruction aside from inherited branch labels, while the `0x3f` recovery
+  restores the native tint-copy body and leaves only VC6's opposite suffix-
+  merging decision. The exact `0x48` frame, 26-instruction prefix, and
+  `352/0/1` reference audit are unchanged; candidate length is now 3,161
+  instructions against the native 3,159.
 
 ## Binary Ninja control-flow recovery
 
