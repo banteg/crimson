@@ -16,12 +16,10 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
 {
     creature_t *creature = &creature_pool[creature_id];
     if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {
-        creature_bonus_args_t *bonus_args =
-            (creature_bonus_args_t *)&creature->link_index;
         bonus_spawn_at(
             &creature->position,
-            (bonus_id_t)bonus_args->bonus_id,
-            bonus_args->duration_override
+            (bonus_id_t)creature->bonus_args.bonus_id,
+            creature->bonus_args.duration_override
         );
     }
 

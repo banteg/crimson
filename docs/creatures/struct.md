@@ -18,6 +18,11 @@ Pool facts:
 `creature_pool` is typed as `creature_t` (0x98 bytes).
 
 ```c
+typedef struct creature_bonus_args_t {
+    short bonus_id;
+    short duration_override;
+} creature_bonus_args_t;
+
 typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
@@ -51,10 +56,13 @@ typedef struct creature_t {
     float reward_value;
     unsigned char _pad2[4];
     int type_id;
-    unsigned char target_player;
+    signed char target_player;
     unsigned char _pad_target_player[3];
     int entity_reserved_74;
-    int link_index;
+    union {
+        int link_index;
+        creature_bonus_args_t bonus_args;
+    };
     float target_offset_x;
     float target_offset_y;
     float orbit_angle;

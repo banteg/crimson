@@ -45,8 +45,9 @@ Frame/prefix notes:
   instead of repeating stale `void *` prototypes in individual scratches.
 - Template `0x27` sets `BONUS_ON_DEATH` and treats `link_index` as the packed
   `creature_bonus_args_t`: signed low/high halfwords hold bonus id `3` and
-  duration override `5`. The spawn and death scratches now share that recovered
-  overlay instead of spelling the high half as `link_index + 2`.
+  duration override `5`. The canonical creature union now exposes that overlay
+  directly; the spawn, tutorial, and death scratches share it instead of
+  reconstructing the two halfwords with casts or byte offsets.
 - Native allocates the root slot before resolving a `-100.0f` input heading,
   so the random-heading draw occurs after the allocation phase-seed draw and
   before the transient base-heading draw. The Zig runtime now preserves that

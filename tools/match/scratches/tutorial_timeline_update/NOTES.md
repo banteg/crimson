@@ -11,14 +11,15 @@ records, three point-bonus placements, creature-wave progression, perk gating,
 and completion of the tutorial timeline.
 
 The bonus-hint handoff is also explicit. A dead inactive carrier with creature
-flag `0x400` supplies two signed packed words from its link-index fields. The
-function records those as the tutorial bonus id and amount, advances the hint,
-and applies the native one-frame negative fade before subsequent frames fade
-back in. The Python port previously selected the fade direction from the newly
-set latch and therefore faded upward one frame too early; it now selects the
-direction from the entry latch and has a regression for the negative handoff
-frame. The corresponding latch is a byte-sized C++ `bool`; its two payload
-globals are mapped at `0x004712f4` and `0x004712f8`.
+flag `0x400` supplies the signed `bonus_id` and `duration_override` halfwords
+from its canonical `creature_t::bonus_args` overlay. The function records
+those as the tutorial bonus id and amount, advances the hint, and applies the
+native one-frame negative fade before subsequent frames fade back in. The
+Python port previously selected the fade direction from the newly set latch
+and therefore faded upward one frame too early; it now selects the direction
+from the entry latch and has a regression for the negative handoff frame. The
+corresponding latch is a byte-sized C++ `bool`; its two payload globals are
+mapped at `0x004712f4` and `0x004712f8`.
 
 Stage one does not call `bonus_spawn_at`. At `0x00408e26..0x00408f0c` it
 overwrites bonus slots 0, 1, and 2 directly with Points amounts 500, 1000, and
@@ -66,9 +67,11 @@ forcing that final placement would require source-level control-flow steering.
 
 The global carrier handle at `0x004808ac` is now persisted as `creature_t *`.
 That type is proven by the two assignments from `creature_spawn_template` and
-the subsequent active, health, flags, and packed link-index accesses. Applying
-it removes all raw `+0x24`, `+0x78`, `+0x7a`, and `+0x8c` expressions from this
-native function.
+the subsequent active, health, flags, and packed bonus-argument accesses.
+Applying it removes all raw `+0x24`, `+0x78`, `+0x7a`, and `+0x8c`
+expressions from this native function. The matching source now uses the same
+canonical bonus-argument union instead of recreating its two signed halfwords
+at every read and write.
 
 Stages two, five, and seven now express their 16-slot bonus-pool emptiness test
 as an indexed loop. VC6 strength-reduces the typed index into the native

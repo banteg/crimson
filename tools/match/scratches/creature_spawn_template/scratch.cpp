@@ -809,7 +809,7 @@ extern "C" creature_t *creature_spawn_template(
                                              1.0f, 0.8f, 0.1f, 1.0f, 45.0f, 10.0f);
                     creature->flags = CREATURE_FLAG_BONUS_ON_DEATH;
                     creature_bonus_args_t *bonus_args =
-                        (creature_bonus_args_t *)&creature->link_index;
+                        &creature->bonus_args;
                     bonus_args->bonus_id = 3;
                     bonus_args->duration_override = 5;
                 } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_GHOST_21) {

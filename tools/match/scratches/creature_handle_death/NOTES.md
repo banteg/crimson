@@ -7,9 +7,10 @@ Work in progress: 84.73% normalized match, 5/204-instruction exact prefix,
 
 Binary Ninja and the MSVC candidate establish:
 
-- bonus-on-death arguments are the named `creature_bonus_args_t` signed
-  halfwords packed in `link_index`, and both bonus spawning and recent-death
-  tracking run before the active guard;
+- bonus-on-death arguments use the canonical `creature_t::bonus_args` union
+  member: signed `bonus_id` and `duration_override` halfwords overlay
+  `link_index`, and both bonus spawning and recent-death tracking run before
+  the active guard;
 - the overloaded `0x04` flag clears the linked spawn-slot owner;
 - split-on-death allocates and copies two complete creature records, consumes a
   second phase-seed draw for each child, writes unwrapped `heading +/- pi/2`,

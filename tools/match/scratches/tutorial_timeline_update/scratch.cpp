@@ -163,9 +163,9 @@ extern "C" void tutorial_timeline_update(void)
             && !carrier->active
             && carrier->health <= 0.0f
             && (carrier->flags & CREATURE_FLAG_BONUS_ON_DEATH)) {
-            short *drop = (short *)&carrier->link_index;
-            tutorial_hint_bonus_id = drop[0];
-            tutorial_hint_bonus_amount = drop[1];
+            tutorial_hint_bonus_id = carrier->bonus_args.bonus_id;
+            tutorial_hint_bonus_amount =
+                carrier->bonus_args.duration_override;
             tutorial_hint_bonus_consumed_latch = true;
 
             tutorial_vec2_t hint_spawn_pos;
@@ -412,29 +412,29 @@ extern "C" void tutorial_timeline_update(void)
             if (tutorial_repeat_spawn_count < 6) {
                 switch (tutorial_repeat_spawn_count) {
                 case 1:
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[0]
-                        = BONUS_ID_SPEED;
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[1] = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.bonus_id =
+                        BONUS_ID_SPEED;
+                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
                     break;
                 case 2:
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[0]
-                        = BONUS_ID_WEAPON;
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[1] = 5;
+                    tutorial_hint_bonus_ptr->bonus_args.bonus_id =
+                        BONUS_ID_WEAPON;
+                    tutorial_hint_bonus_ptr->bonus_args.duration_override = 5;
                     break;
                 case 3:
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[0]
-                        = BONUS_ID_DOUBLE_EXPERIENCE;
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[1] = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.bonus_id =
+                        BONUS_ID_DOUBLE_EXPERIENCE;
+                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
                     break;
                 case 4:
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[0]
-                        = BONUS_ID_NUKE;
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[1] = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.bonus_id =
+                        BONUS_ID_NUKE;
+                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
                     break;
                 case 5:
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[0]
-                        = BONUS_ID_REFLEX_BOOST;
-                    ((short *)&tutorial_hint_bonus_ptr->link_index)[1] = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.bonus_id =
+                        BONUS_ID_REFLEX_BOOST;
+                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
                     break;
                 }
             }

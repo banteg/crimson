@@ -453,7 +453,10 @@ typedef struct creature_t {
     signed char target_player;
     unsigned char _pad_target_player[3];
     int entity_reserved_74;
-    int link_index;
+    union {
+        int link_index;
+        creature_bonus_args_t bonus_args;
+    };
     union {
         struct {
             float target_offset_x;
