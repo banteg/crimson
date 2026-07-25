@@ -30,6 +30,10 @@ state, dead expressions, register hints, or other match-only shaping is used.
   than one player is active, with 32-pixel rows. The single-player completed
   layout uses 28-pixel rows and conditionally exposes Typ-o-Shooter. Tutorial
   moves from the first row to the last after any relevant mode has been played.
+  Live HLIL exposes this as the direct structured condition
+  `quest_unlock_index < 40 || config_player_count > 1`; the scratch now keeps
+  that `if`/`else` shape instead of reconstruction-only labels and gotos. This
+  cleanup is byte-neutral at the score and audits reported above.
 - Four local player labels are present, but the native list deliberately exposes
   only the one- and two-player entries. Changing it reloads the high-score table;
   opening it disables the three always-visible mode buttons.

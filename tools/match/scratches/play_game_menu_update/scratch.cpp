@@ -181,15 +181,7 @@ extern "C" void play_game_menu_update(void)
             "times played:");
     }
 
-    if (quest_unlock_index < 0x28) {
-        goto wide_layout;
-    }
-    if (config_player_count <= 1) {
-        goto tight_layout;
-    }
-
-wide_layout:
-    {
+    if (quest_unlock_index < 0x28 || config_player_count > 1) {
         position.y += 32.0f;
         if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0
             && config_player_count == 1) {
@@ -235,11 +227,7 @@ wide_layout:
             }
             position.y += 32.0f;
         }
-        goto layout_done;
-    }
-
-tight_layout:
-    {
+    } else {
         position.y += 26.0f;
         if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0
             && config_player_count == 1) {
@@ -297,7 +285,6 @@ tight_layout:
         }
     }
 
-layout_done:
     char *player_count_labels[4] = {
         "1 player", "2 players", "3 players", "4 players"
     };
