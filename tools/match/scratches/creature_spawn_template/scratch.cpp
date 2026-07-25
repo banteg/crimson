@@ -43,7 +43,7 @@ typedef union creature_spawn_tint_scratch_t {
 } creature_spawn_tint_scratch_t;
 
 typedef struct creature_spawn_template_named_locals_t {
-    int scratch_head;
+    int formation_offset;
     creature_spawn_vec2_t zero_velocity;
     creature_spawn_vec2_t chain_position;
     float scaled_orbit_x;
@@ -52,23 +52,16 @@ typedef struct creature_spawn_template_named_locals_t {
     creature_tint_t child_tint;
 } creature_spawn_template_named_locals_t;
 
-typedef union creature_spawn_template_locals_t {
-    int i[15];
-    float f[15];
-    creature_spawn_template_named_locals_t named;
-} creature_spawn_template_locals_t;
+typedef creature_spawn_template_named_locals_t creature_spawn_template_locals_t;
 
-#define slot_10_i locals.i[0]
-#define slot_14_i locals.i[1]
-#define slot_18_i locals.i[2]
-#define tint locals.named.tint_scratch.tint
-#define child_tint locals.named.child_tint
-#define zero_velocity locals.named.zero_velocity
-#define chain_position locals.named.chain_position
+#define tint locals.tint_scratch.tint
+#define child_tint locals.child_tint
+#define zero_velocity locals.zero_velocity
+#define chain_position locals.chain_position
 #define lizard_chain_position zero_velocity
 #define lizard_chain_zero_velocity chain_position
-#define scaled_orbit_x locals.named.scaled_orbit_x
-#define orbit_direction locals.named.tint_scratch.orbit_direction
+#define scaled_orbit_x locals.scaled_orbit_x
+#define orbit_direction locals.tint_scratch.orbit_direction
 
 #define APPLY_UNHANDLED_TEMPLATE_FALLBACK()                                      \
     do {                                                                         \
@@ -104,7 +97,7 @@ typedef union creature_spawn_template_locals_t {
         creature->heading = 0.0f;                                                                                          \
         creature->anim_phase = 0.0f;                                                                                       \
         creature->link_index = root_slot_idx;                                                                              \
-        creature->target_offset_x = (float)slot_10_i;                                                                      \
+        creature->target_offset_x = (float)locals.formation_offset;                                                        \
         chain_position.set(pos->x + creature->target_offset_x, creature->target_offset_y + pos->y);                       \
         *(creature_spawn_vec2_t *)&creature->position = chain_position;                                                    \
         *(creature_spawn_vec2_t *)&creature->velocity = zero_velocity;                                                     \
@@ -129,15 +122,15 @@ typedef union creature_spawn_template_locals_t {
     do {                                                                                                             \
         zero_velocity.set(0.0f, 0.0f);                                                                              \
         child_tint.set((red), (green), (blue), (alpha));                                                             \
-        slot_10_i = 0;                                                                                               \
+        locals.formation_offset = 0;                                                                                 \
         do {                                                                                                         \
             grid_vertical_offset = 0x80;                                                                             \
             do {                                                                                                     \
                 INIT_GRID_CHILD((child_ai_mode), (child_type), (child_health), (red), (green), (blue),               \
                                 (child_speed), (alpha), (child_size), (damage));                                     \
             } while (grid_vertical_offset <= 0x100);                                                                 \
-            slot_10_i = slot_10_i + -0x40;                                                                           \
-        } while (-0x240 < slot_10_i);                                                                                \
+            locals.formation_offset = locals.formation_offset + -0x40;                                               \
+        } while (-0x240 < locals.formation_offset);                                                                  \
     } while (0)
 
 #define SET_ROOT_STATS(creature_type, health_value, speed_value, reward, red, green, blue, alpha, size_value, damage) \
@@ -358,7 +351,7 @@ extern "C" creature_t *creature_spawn_template(
             creature->contact_damage = 150.0f;
             creature->max_health = 1500.0f;
 
-            slot_10_i = 2;
+            locals.formation_offset = 2;
             chain_target_offset = -0x100;
             chain_link_idx = root_slot_idx;
             lizard_chain_zero_velocity.set(0.0f, 0.0f);
@@ -370,7 +363,8 @@ extern "C" creature_t *creature_spawn_template(
                 creature->ai_mode = CREATURE_AI_FOLLOW_LINK;
                 creature->link_index = chain_link_idx;
                 creature->target_offset_y = -256.0f;
-                float angle = (float)slot_10_i * 0.39269909f;
+                float angle =
+                    (float)locals.formation_offset * 0.39269909f;
                 scaled_orbit_x = (float)cos(angle);
                 orbit_direction.y = (float)sin(angle);
                 orbit_direction.x = scaled_orbit_x * 256.0f;
@@ -384,7 +378,7 @@ extern "C" creature_t *creature_spawn_template(
                 creature->reward_value = 60.0f;
                 creature->max_health = 60.0f;
                 chain_target_offset = chain_target_offset + 0x40;
-                slot_10_i = slot_10_i + 2;
+                locals.formation_offset = locals.formation_offset + 2;
                 creature->collision_flag = 0;
                 creature->collision_timer = 0.0f;
                 creature->active = 1;
@@ -1122,9 +1116,6 @@ extern "C" creature_t *creature_spawn_template(
 #undef RAND_FIELD
 #undef RAND_FIELD_INT_BASE
 #undef CLAMP_TINT_COMPONENT
-#undef slot_10_i
-#undef slot_14_i
-#undef slot_18_i
 #undef tint
 #undef child_tint
 #undef zero_velocity

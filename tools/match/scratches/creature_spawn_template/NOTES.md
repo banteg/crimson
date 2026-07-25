@@ -469,6 +469,15 @@ Frame/prefix notes:
   merging decision. The exact `0x48` frame, 26-instruction prefix, and
   `352/0/1` reference audit are unchanged; candidate length is now 3,161
   instructions against the native 3,159.
+- The compiler-facing stack overlay no longer exposes the earlier decompiler
+  fallback as parallel `int[15]` and `float[15]` arrays or addresses its first
+  word through `slot_10_i`. Every used byte now belongs to a named value:
+  `formation_offset`, zero velocity, chain position, scaled orbit X, the
+  tint/orbit-direction union, and child tint. The formation offset's two
+  observed lifetimes drive the grid X walk and the `0x13` chain angle index.
+  A shadow compile is byte-identical at 86.46%, 3,161/3,159 instructions, and
+  `352/0/1` references, so this removes scratch-era offset plumbing without
+  steering VC6 or claiming a score improvement.
 
 ## Binary Ninja control-flow recovery
 
@@ -481,6 +490,6 @@ LLIL, MLIL, and HLIL. The resulting decompilation uses one typed
 honest addresses of the `tint_r` member used by MSVC's four-byte copy lowering,
 so they are not mislabeled as owning creature pointers.
 
-This database-only control-flow recovery does not change code generation:
-the scratch remains 85.73% with 3,149/3,159 instructions and `352/0/1`
-references.
+This database-only control-flow recovery does not change code generation.
+After the later source-order recoveries above, the scratch remains 86.46% with
+3,161/3,159 instructions and `352/0/1` references.
