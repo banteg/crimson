@@ -3091,6 +3091,13 @@
     "address": "0x00434250",
     "name": "quest_spawn_timeline_update",
     "signature": "void quest_spawn_timeline_update(void)",
+    "local_types": [
+      {
+        "address": "0x004342d2",
+        "name": "spawn_batch",
+        "type": "quest_spawn_entries_binja_t *"
+      }
+    ],
     "comment": "updates quest spawn entries based on the quest timer"
   },
   {

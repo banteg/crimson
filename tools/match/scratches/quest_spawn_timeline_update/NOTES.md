@@ -40,6 +40,14 @@ match=91.23% prefix=51/115 target_insns=115 candidate_insns=113 refs=13/0/0
   codegen. The live Binary Ninja split `ESI` cursor was independently retyped
   to the same pointer type, replacing raw float-array indexing throughout the
   spawn and group-consumption loop.
+- The authoritative Binary Ninja map presents that current entry as a
+  `quest_spawn_entries_binja_t *spawn_batch`. This retains the canonical entry
+  layout while giving the lookahead a real array relationship: the trigger
+  group test now reads
+  `spawn_batch->entries[0].trigger_time_ms !=
+  spawn_batch->entries[1].trigger_time_ms`, and the cursor advance becomes
+  `spawn_batch = &spawn_batch->entries[1]`. The former raw `+0x28` access is
+  therefore fully recovered as the next entry's trigger field.
 
 The first 51 instructions, complete scan/fail-safe policy, 28-byte frame, x87
 spread loop, group-consumption tail, and all 13 masked references agree.

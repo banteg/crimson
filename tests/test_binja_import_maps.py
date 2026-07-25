@@ -980,6 +980,13 @@ def test_name_map_preserves_quest_spawn_cursor_local_views():
         if row.get("program") == "crimsonland.exe" and row.get("name")
     }
 
+    assert rows_by_name["quest_spawn_timeline_update"]["local_types"] == [
+        {
+            "address": "0x004342d2",
+            "name": "spawn_batch",
+            "type": "quest_spawn_entries_binja_t *",
+        },
+    ]
     assert rows_by_name["quest_build_alien_squads"]["local_types"] == [
         {
             "address": "0x00436037",
