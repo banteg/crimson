@@ -26,8 +26,7 @@ extern "C" bonus_entry_t *bonus_spawn_at(
 
     entry = bonus_alloc_slot();
     entry->state = 0;
-    entry->time.pos_x = pos->x;
-    entry->time.pos_y = pos->y;
+    entry->time.position = *pos;
     entry->time.time_left = 10.0f;
     entry->time.time_max = 10.0f;
     entry->bonus_id = bonus_id;

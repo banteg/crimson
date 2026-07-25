@@ -18,6 +18,8 @@ boundary therefore uses a mutable `vec2f_t *` and names both components as
 the caller-owned position. The aggregate recovery leaves the exact score and
 all references unchanged. The same prototype is saved in Binary Ninja, whose
 HLIL now renders every clamp and initialization through `pos->x`/`pos->y`.
+The initialized bonus entry now receives that value through its canonical
+`time.position` aggregate; this assignment is also byte-for-byte exact.
 
 The live xref set contains only `creature_handle_death` at `0x0041e93e`, which
 passes the address of the creature's embedded position. Disassembly confirms
