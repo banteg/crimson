@@ -14,6 +14,9 @@ firing, applies perk-dependent spread/cooldown rules, wraps the movement phase,
 and clamps the player to the terrain bounds.
 
 The signature and source are grounded in the live Binary Ninja disassembly.
+The authoritative name map now persists the leading argument as
+`const vec2f_t *`, preventing map replay from degrading the recovered
+two-float aim aggregate back to `float *`.
 The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
 `src/crimson/typo/player.py`, `src/crimson/typo/runtime.py`, and
 `crimson-zig/src/typo/player.zig`. Both now retain the native Shotgun weapon id

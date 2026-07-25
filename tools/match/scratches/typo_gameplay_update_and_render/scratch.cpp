@@ -54,7 +54,7 @@ void perks_update_effects(void);
 void creature_update_all(void);
 void projectile_update(void);
 void player_fire_weapon(
-    typo_vec2_t *aim,
+    const vec2f_t *aim,
     char fire_requested,
     char reload_requested);
 void camera_update(void);
@@ -148,7 +148,7 @@ extern "C" void typo_gameplay_update_and_render(void)
                  render_overlay_player_index < config_player_count;
                 ++render_overlay_player_index) {
                 player_fire_weapon(
-                    &target_world,
+                    (const vec2f_t *)&target_world,
                     fire_requested,
                     reload_requested);
             }
@@ -184,14 +184,14 @@ extern "C" void typo_gameplay_update_and_render(void)
         right_pos.y = (float)terrain_texture_height * 0.5f
             + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;
         typo_target_name_assign_random(
-            creature_spawn_tinted((float *)&right_pos, (float *)&color, 4));
+            creature_spawn_tinted(&right_pos, &color, 4));
 
         typo_vec2_t left_pos(
             -64.0f,
             (float)terrain_texture_height * 0.5f
                 + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);
         typo_target_name_assign_random(
-            creature_spawn_tinted((float *)&left_pos, (float *)&color, 2));
+            creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));
     }
 
     highscore_active_record.score_xp = player_state_table[0].experience;

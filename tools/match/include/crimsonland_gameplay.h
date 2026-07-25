@@ -362,7 +362,10 @@ int player_apply_move_with_spawn_avoidance(
     vec2f_t *pos,
     vec2f_t *delta);
 int creature_alloc_slot(void);
-int creature_spawn_tinted(float *pos, float *rgba, int type_id);
+int creature_spawn_tinted(
+    const vec2f_t *pos,
+    const effect_color_t *color,
+    int type_id);
 int creature_spawn_slot_alloc(void);
 creature_t *creature_spawn_template(
     int template_id,
@@ -377,7 +380,7 @@ int creature_apply_damage(
     int creature_index,
     float damage,
     int damage_type,
-    float *impulse);
+    const vec2f_t *impulse);
 void effect_spawn_burst(const vec2f_t *pos, int count);
 
 extern cvar_float_t *cv_friendlyFire;

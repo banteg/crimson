@@ -525,6 +525,22 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "creature_t * creature_spawn_template("
         "int template_id, const vec2f_t *pos, float heading)"
     )
+    assert signatures_by_name["creature_spawn_tinted"] == (
+        "int creature_spawn_tinted("
+        "const vec2f_t *pos, const effect_color_t *color, int type_id)"
+    )
+    assert signatures_by_name["creature_apply_damage"] == (
+        "int creature_apply_damage("
+        "int creature_id, float damage, int damage_type, "
+        "const vec2f_t *impulse)"
+    )
+    assert signatures_by_name["player_fire_weapon"] == (
+        "void player_fire_weapon("
+        "const vec2f_t *aim, char fire_requested, char reload_requested)"
+    )
+    assert signatures_by_name["bonus_meta_entry_release"] == (
+        "void __thiscall bonus_meta_entry_release(bonus_meta_cpp_t *entry)"
+    )
     assert signatures_by_name["vec2_sub"] == (
         "float * __thiscall vec2_sub("
         "vec2f_t *self, float *dst, const vec2f_t *rhs)"
@@ -544,3 +560,28 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "unsigned char wav_parse_into_entry("
         "sfx_entry_t *entry, void *data, unsigned int size)"
     )
+
+
+def test_name_map_preserves_creature_death_pointer_local():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text())
+    death_row = next(
+        row
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+        and row.get("name") == "creature_handle_death"
+    )
+
+    assert death_row["local_types"] == [
+        {
+            "address": "0x0041e91d",
+            "name": "creature",
+            "type": "creature_t *",
+        },
+    ]

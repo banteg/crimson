@@ -15,7 +15,6 @@ extern void fx_queue_add_random(vec2f_t *pos);
 void creature_handle_death(int creature_id, unsigned char keep_corpse)
 {
     creature_t *creature = &creature_pool[creature_id];
-
     if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {
         creature_bonus_args_t *bonus_args =
             (creature_bonus_args_t *)&creature->link_index;
@@ -28,8 +27,10 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
 
     if (survival_recent_death_count < 6) {
         if (survival_recent_death_count < 3) {
-            survival_recent_death_pos[survival_recent_death_count] =
-                creature->position;
+            survival_recent_death_pos[survival_recent_death_count].x =
+                creature->position.x;
+            survival_recent_death_pos[survival_recent_death_count].y =
+                creature->position.y;
         }
         ++survival_recent_death_count;
         if (survival_recent_death_count == 3) {

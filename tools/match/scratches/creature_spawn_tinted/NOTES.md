@@ -27,4 +27,8 @@ The recovered legacy declaration
 formerly raw pointer parameters as aggregates. The exact scratch and saved
 Binary Ninja prototype now use read-only `vec2f_t` and `effect_color_t`
 boundaries, exposing `pos->x`/`pos->y` and `color->r/g/b/a` without changing
-the 92/92 instruction or 34/0/0 reference match.
+the 92/92 instruction or 34/0/0 reference match. The shared gameplay header
+now carries the same types, so its exact Typ-o caller passes the canonical
+vector/color aggregates directly. Its one layout-equivalent local C++ vector
+class keeps a narrow cast at that type boundary rather than degrading the
+callee prototype to unrelated `float *` pointers.

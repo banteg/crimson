@@ -96,7 +96,7 @@ post_damage:
                                     creature_index,
                                     blast * 5.0f,
                                     3,
-                                    (float *)&impulse);
+                                    &impulse);
                             }
                         }
                     }

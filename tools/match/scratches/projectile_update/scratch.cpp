@@ -498,7 +498,7 @@ extern "C" void projectile_update(void)
                                                 hit_id,
                                                 damage,
                                                 1,
-                                                impulse);
+                                                (const vec2f_t *)impulse);
                                             if (projectile->pos.tail.vy
                                                     .life_timer
                                                 != 0.25f) {
@@ -511,7 +511,7 @@ extern "C" void projectile_update(void)
                                                 projectile->pos.tail.vy
                                                     .damage_pool,
                                                 1,
-                                                impulse);
+                                                (const vec2f_t *)impulse);
                                             projectile->pos.tail.vy.damage_pool -=
                                                 creature_pool[hit_id].health;
                                         }
@@ -740,7 +740,7 @@ extern "C" void projectile_update(void)
                                 frame_dt
                                     * secondary->pos.vx.vy.vel_y * 700.0f,
                                 3,
-                                &impulse.x);
+                                &impulse);
                             if (creature->health <= 0.0f) {
                                 fx_queue_add_random(
                                     &creature->position);
@@ -947,7 +947,7 @@ extern "C" void projectile_update(void)
                         hit_id,
                         damage,
                         3,
-                        &impulse.x);
+                        &impulse);
 
                     float freeze_timer = bonus_freeze_timer;
                     if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
@@ -1242,7 +1242,7 @@ extern "C" void projectile_update(void)
                                 hit_id,
                                 particle->intensity * 10.0f,
                                 4,
-                                &impulse.x);
+                                &impulse);
 
                             creature_t *hit_creature =
                                 &creature_pool[hit_id];

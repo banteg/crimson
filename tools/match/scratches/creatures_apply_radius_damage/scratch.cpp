@@ -33,7 +33,7 @@ extern "C" void creatures_apply_radius_damage(
                 creature_id,
                 damage,
                 damage_type,
-                (float *)&impulse);
+                &impulse);
         }
         ++creature_id;
     } while (creature_id < 0x180);

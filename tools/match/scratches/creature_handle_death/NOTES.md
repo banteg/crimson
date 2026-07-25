@@ -44,9 +44,15 @@ typed array candidate coalesces; their absence shifts later branch labels.
 MSVC 6.5pp, MSVC 7.0, `/G6`, and volatility experiments diverged elsewhere and
 were rejected rather than retained as matching aids.
 
-The recent-death write now assigns the complete canonical `vec2f_t` position
-aggregate. This is byte-neutral, but removes the last provisional split
-`x`/`y` source stores from the recovered death prelude.
+The recent-death write uses the canonical `vec2f_t` component names, but keeps
+the two direct global-indexed stores shown by native HLIL. This is byte-neutral:
+VC6 still coalesces the index reloads in this isolated candidate, while the
+native body reloads the mutable global for each component and the increment.
+
+An address-keyed Binary Ninja local type now preserves the `creature_t *`
+induction result at `0x0041e91d`. The native death body consequently renders
+named position, flags, size, and reward members through the scaled pool
+expression instead of raw `+0x14`, `+0x8c`, `+0x34`, and `+0x64` offsets.
 
 The XP path is also unambiguously player-zero-owned. This function receives no
 owner argument, and both Bloody Mess / Quick Learner tests plus both ordinary

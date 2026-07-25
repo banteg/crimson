@@ -41,7 +41,7 @@ int fx_spawn_sprite(
 }
 
 extern "C" void player_fire_weapon(
-    typo_fire_vec2_t *aim,
+    const vec2f_t *aim,
     char fire_requested,
     char reload_requested)
 {
@@ -80,8 +80,7 @@ extern "C" void player_fire_weapon(
     }
 
     bool normal_fire_ready = false;
-    player_state_table[render_overlay_player_index].aim =
-        *(const vec2f_t *)aim;
+    player_state_table[render_overlay_player_index].aim = *aim;
     player_state_table[render_overlay_player_index].aim_heading =
         (*(typo_fire_vec2_t *)&player_state_table[render_overlay_player_index]
               .position

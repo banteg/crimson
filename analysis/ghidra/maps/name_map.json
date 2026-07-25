@@ -1403,7 +1403,7 @@
       "??1bonus_meta_cpp_t@@QAE@XZ",
       "??1perk_meta_cpp_t@@QAE@XZ"
     ],
-    "signature": "void bonus_meta_entry_release(int *entry)",
+    "signature": "void __thiscall bonus_meta_entry_release(bonus_meta_cpp_t *entry)",
     "comment": "frees heap-owned text pointers in one bonus_meta_table entry"
   },
   {
@@ -2156,7 +2156,14 @@
     "address": "0x0041e910",
     "name": "creature_handle_death",
     "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
-    "comment": "death handler: bonus spawns, split-on-death, score, and cleanup"
+    "comment": "death handler: bonus spawns, split-on-death, score, and cleanup",
+    "local_types": [
+      {
+        "address": "0x0041e91d",
+        "name": "creature",
+        "type": "creature_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2323,7 +2330,7 @@
     "program": "crimsonland.exe",
     "address": "0x004207c0",
     "name": "creature_apply_damage",
-    "signature": "int creature_apply_damage(int creature_id, float damage, int damage_type, float *impulse)",
+    "signature": "int creature_apply_damage(int creature_id, float damage, int damage_type, const vec2f_t *impulse)",
     "comment": "applies damage + impulse, handles death side effects; returns 1 when killed"
   },
   {
@@ -4078,7 +4085,7 @@
     "program": "crimsonland.exe",
     "address": "0x00444980",
     "name": "player_fire_weapon",
-    "signature": "void player_fire_weapon(float *aim, char fire_requested, char reload_requested)",
+    "signature": "void player_fire_weapon(const vec2f_t *aim, char fire_requested, char reload_requested)",
     "comment": "runs the bespoke Typ-o Shooter player frame, aim, shotgun fire, and terrain clamp path"
   },
   {

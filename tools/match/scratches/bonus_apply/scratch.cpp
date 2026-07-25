@@ -266,7 +266,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
                                 creature_iter,
                                 damage * 5.0f,
                                 3,
-                                (float *)&impulse);
+                                &impulse);
                         }
                     }
                 }

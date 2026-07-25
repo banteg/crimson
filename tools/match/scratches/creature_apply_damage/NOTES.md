@@ -13,6 +13,9 @@ The recovered original `Crimson.h` identifies the fourth argument as a
 matching harness represents the VC6-lowered boundary as a
 `const vec2f_t *impulse`; the function source and saved Binary Ninja prototype
 now expose `impulse->x`/`impulse->y` while retaining the 89.87%, 237/237 build.
+A matching shared-header declaration and authoritative name-map signature now
+keep that vector type at every recovered caller and across Binary Ninja map
+replay instead of reverting the boundary to `float *`.
 A direct modern by-value reconstruction was also checked, but changed alias
 analysis, lost one instruction, and regressed to 87.10%, so it is not retained
 as a false claim about this compiler build.
