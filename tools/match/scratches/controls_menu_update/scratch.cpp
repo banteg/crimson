@@ -324,26 +324,27 @@ extern "C" void controls_menu_update(void)
     config_direction_arrow_flags[controls_rebind_player_index] =
         controls_direction_arrow_checkbox.checked;
 
-    int *source_axis_move_x = config_p1_move_forward + 12;
+    player_input_config_t *binding =
+        (player_input_config_t *)config_p1_move_forward;
     player_state_t *player = player_state_table;
     do {
         player_input_t &input = player->input;
-        input.move_key_forward = source_axis_move_x[-12];
-        input.move_key_backward = source_axis_move_x[-11];
-        input.turn_key_left = source_axis_move_x[-10];
-        input.turn_key_right = source_axis_move_x[-9];
-        input.fire_key = source_axis_move_x[-8];
-        input.key_reserved_0 = source_axis_move_x[-7];
-        input.key_reserved_1 = source_axis_move_x[-6];
-        input.aim_key_left = source_axis_move_x[-5];
-        input.aim_key_right = source_axis_move_x[-4];
-        input.axis_aim_y = source_axis_move_x[-3];
-        input.axis_aim_x = source_axis_move_x[-2];
-        input.axis_move_y = source_axis_move_x[-1];
-        input.axis_move_x = source_axis_move_x[0];
-        source_axis_move_x += 16;
+        input.move_key_forward = binding->move_key_forward;
+        input.move_key_backward = binding->move_key_backward;
+        input.turn_key_left = binding->turn_key_left;
+        input.turn_key_right = binding->turn_key_right;
+        input.fire_key = binding->fire_key;
+        input.key_reserved_0 = binding->key_reserved_0;
+        input.key_reserved_1 = binding->key_reserved_1;
+        input.aim_key_left = binding->aim_key_left;
+        input.aim_key_right = binding->aim_key_right;
+        input.axis_aim_y = binding->axis_aim_y;
+        input.axis_aim_x = binding->axis_aim_x;
+        input.axis_move_y = binding->axis_move_y;
+        input.axis_move_x = binding->axis_move_x;
+        ++binding;
         ++player;
-    } while (source_axis_move_x < config_p1_move_forward + 44);
+    } while (binding < (player_input_config_t *)config_p1_move_forward + 2);
 
     controls_vec2_t right_base(
         ui_element_slot_40.vertices[0].x

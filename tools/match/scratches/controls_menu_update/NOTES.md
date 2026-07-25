@@ -16,6 +16,14 @@ selects action rows from the active aim and movement schemes: keyboard torso
 aim, dual-axis aim, relative/static/digital movement, point-and-click
 movement, fire, and Player 1's level-up/reload bindings.
 
+The persisted side of that copy is now a recovered
+`player_input_config_t` record rather than a 64-dword array plus negative
+indices. Its 13 named bindings, Y/X analog-axis storage order, and three-dword
+tail account for the native 0x40-byte row stride; the destination remains the
+distinct X/Y-ordered `player_input_t`. This source/type recovery is
+matcher-neutral at 4,488/5,421 instructions and keeps the `863/2/34`
+reference audit unchanged.
+
 The point-and-click movement gate now uses the shared `cvar_float_t::value`
 field. The matching map and live Binary Ninja database carry the same cvar
 pointer type, replacing the former provisional byte-pointer-plus-`0x0c`

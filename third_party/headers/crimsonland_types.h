@@ -237,6 +237,25 @@ typedef struct player_input_t {
     int axis_move_y;
 } player_input_t;
 
+// Per-player 0x40-byte persisted binding row.  The four analog axes are
+// stored Y/X in configuration and copied into the runtime X/Y input layout.
+typedef struct player_input_config_t {
+    int move_key_forward;
+    int move_key_backward;
+    int turn_key_left;
+    int turn_key_right;
+    int fire_key;
+    int key_reserved_0;
+    int key_reserved_1;
+    int aim_key_left;
+    int aim_key_right;
+    int axis_aim_y;
+    int axis_aim_x;
+    int axis_move_y;
+    int axis_move_x;
+    int reserved[3];
+} player_input_config_t;
+
 typedef struct player_state_t {
     unsigned char entity_active;
     unsigned char _pad_entity_active[3];
