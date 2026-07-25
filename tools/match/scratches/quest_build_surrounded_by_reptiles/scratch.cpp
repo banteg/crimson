@@ -1,30 +1,17 @@
 #include "crimsonland_gameplay.h"
 
-struct quest_vec2_t {
-    float x;
-    float y;
-};
-
-struct quest_entry_original_t {
-    quest_vec2_t pos;
-    float heading;
-    int template_id;
-    int trigger_time_ms;
-    int count;
-};
-
 struct quest_spawn_builder_t {
-    quest_entry_original_t *cursor;
+    quest_spawn_entry_t *cursor;
     int count;
 
-    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)
+    quest_spawn_builder_t(quest_spawn_entry_t *spawn_entries)
         : cursor(spawn_entries), count(0) {}
 };
 
 extern "C" void quest_build_surrounded_by_reptiles(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    quest_spawn_entry_t *spawns = entries;
     quest_spawn_builder_t builder(spawns);
     int line_offset = 0;
     int trigger_time_ms;
@@ -34,8 +21,8 @@ extern "C" void quest_build_surrounded_by_reptiles(
         trigger_time_ms += 800) {
         float axis = (float)line_offset * 0.2f + 256.0f;
 
-        builder.cursor->pos.x = 256.0f;
-        builder.cursor->pos.y = axis;
+        builder.cursor->pos_x = 256.0f;
+        builder.cursor->pos_y = axis;
         builder.cursor->template_id =
             SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
@@ -43,8 +30,8 @@ extern "C" void quest_build_surrounded_by_reptiles(
         ++builder.cursor;
         ++builder.count;
 
-        builder.cursor->pos.x = 768.0f;
-        builder.cursor->pos.y = axis;
+        builder.cursor->pos_x = 768.0f;
+        builder.cursor->pos_y = axis;
         builder.cursor->template_id =
             SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
@@ -61,8 +48,8 @@ extern "C" void quest_build_surrounded_by_reptiles(
         trigger_time_ms += 800) {
         float axis = (float)line_offset * 0.2f + 256.0f;
 
-        builder.cursor->pos.y = 256.0f;
-        builder.cursor->pos.x = axis;
+        builder.cursor->pos_y = 256.0f;
+        builder.cursor->pos_x = axis;
         builder.cursor->template_id =
             SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;
@@ -70,8 +57,8 @@ extern "C" void quest_build_surrounded_by_reptiles(
         ++builder.cursor;
         ++builder.count;
 
-        builder.cursor->pos.y = 768.0f;
-        builder.cursor->pos.x = axis;
+        builder.cursor->pos_y = 768.0f;
+        builder.cursor->pos_x = axis;
         builder.cursor->template_id =
             SPAWN_ID_ALIEN_SPAWNER_CHILD_31_SLOW_0D;
         builder.cursor->trigger_time_ms = trigger_time_ms;

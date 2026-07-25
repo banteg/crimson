@@ -12,3 +12,7 @@ small builder and tests `spawn_count - 4 < 10`. That expression explains the
 native shifted induction test (`lea eax, [esi-4]` followed by `cmp eax, 10`),
 while direct integer-to-float coordinate assignments reproduce the x87 store
 schedule. The VC6 candidate matches all 81 instructions exactly.
+
+The builder cursor now uses the canonical `quest_spawn_entry_t` and its flat
+`pos_x`/`pos_y` fields directly. Removing the private layout duplicate is
+byte-neutral: the exact 81-instruction body and reference audit are unchanged.

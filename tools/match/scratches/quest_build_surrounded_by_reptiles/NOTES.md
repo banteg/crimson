@@ -15,3 +15,7 @@ after both entries, and orders the second entry's count increment before its
 cursor increment. This reproduces the shared live x87 axis value, paired
 `fst`/`fstp` stores, second-loop cursor reconstruction, and all register
 lifetimes. The VC6 candidate matches all 68 instructions exactly.
+
+The cursor/count builder and its reconstructed second-loop base now share the
+canonical `quest_spawn_entry_t` type. Flattening only the position member names
+is byte-neutral and retains the exact 68-instruction result.
