@@ -17,6 +17,13 @@ native reloads both player count and the current overlay-player index before
 continuing. After the pool pass, the function clamps the freeze and
 double-experience timers and advances the non-negative bonus phase accumulator.
 
+Binary Ninja retains two split views of the loop address: a
+`bonus_entry_time_block_t *` induction cursor at `entry + 8` and the recovered
+owning `bonus_entry_t *` base. Typing the latter exposes `bonus_id`, `state`,
+and `time.time_left` on the base-dependent stores and call argument instead of
+negative anonymous offsets. The interior time cursor and its 0x1c stride are
+kept because they are the actual native induction shape.
+
 ## Port parity
 
 The pickup gate uses the same PC24 `sqrt(dx * dx + dy * dy) < 26.0f` kernel as

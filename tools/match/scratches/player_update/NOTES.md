@@ -183,6 +183,13 @@ agreement from `594/0/32` to `667/0/16` without changing behavior or the exact
 `0x48` frame. The remaining first mismatch is local scheduling around the
 previous-position copy, not a missing simulation path.
 
+The live Binary Ninja split variable produced after the final
+`index * sizeof(player_state_t) + player_state_table` address calculation is
+now explicitly a `player_state_t *`. This replaces raw `EDI + 0x10..0x35c`
+accesses with named player fields throughout the decompilation while leaving
+the preceding strength-reduced `index * 3 * 0x120` calculation visible. `ESI`
+retains its independently evidenced `vec2f_t *` position view.
+
 That same address now has a `vec2f_t *player_position` view for field access,
 while the raw pointer remains only for legacy helper arguments whose
 declarations have not yet been widened. This replaces 174
