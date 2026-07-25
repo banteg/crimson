@@ -4,7 +4,7 @@ Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
 **720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **290825/676681** code bytes (**43.0%**).
+Fuzzy-weighted alignment is **290851/676681** code bytes (**43.0%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261249/386756 | 67.5% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261275/386756 | 67.6% | 621/997 | 319177/386756 | 82.5% | 503/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **261249/386756** fuzzy-weighted bytes (**67.5%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**503/997** functions, **108487/386756** bytes (**28.1%**), **261275/386756** fuzzy-weighted bytes (**67.6%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -449,7 +449,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 191/204 | 13 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 84/245 | 161 | 79/79 | 34.18% | 4/79 | 2/0/0 |  | quest-the-lizquidation-builder |
 | wip | quest_build_zombie_time | 0x00437d70 | 152 | 125/152 | 27 | 50/50 | 82.00% | 16/50 | 3/0/0 |  | quest-zombie-time-builder |
-| wip | quest_build_frontline_assault | 0x00437e10 | 285 | 214/285 | 71 | 81/84 | 75.15% | 10/84 | 1/0/0 |  | quest-frontline-assault-builder |
+| wip | quest_build_frontline_assault | 0x00437e10 | 285 | 240/285 | 45 | 82/84 | 84.34% | 18/84 | 1/0/0 |  | quest-frontline-assault-builder |
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 223/286 | 63 | 86/86 | 77.91% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
 | wip | quest_build_the_blighting | 0x00438050 | 624 | 591/624 | 33 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 206/278 | 72 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |

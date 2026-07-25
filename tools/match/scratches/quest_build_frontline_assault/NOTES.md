@@ -15,24 +15,26 @@ spelling `(step * 5 - 2500) * 2`. The result contains 50 entries.
 
 The candidate preserves the native cursor/count/step/wave registers, signed
 terrain halving, conditional entry policy, trigger arithmetic, clamp, and
-output count. It resolves the terrain-width reference and emits 81
-instructions against the native 84, scoring 75.15%.
+output count. Recovering the same cursor/count builder object used by adjacent
+quest constructors keeps the bottom-edge Y store beside the converted X store,
+extends the exact prefix from 10 to 18 instructions, and prevents VC6 from
+folding the two wave-ten count advances into one `+= 2`. It resolves the
+terrain-width reference and emits 82 instructions against the native 84,
+scoring 84.34%.
 
 The residual is legitimate VC6 simplification and scheduling. The candidate
-merges the pale/blue/pale template ladder into one range test, folds the two
-wave-ten count increments into `+= 2`, and schedules the constant bottom y
-store before the x87 conversion. `pos.set(x, y)` and `msvc6.5pp` do not improve
-the result. Dummy dependencies or semantically distinct fake template values
-are not used to preserve the native control-flow spelling.
+still merges the pale/blue/pale template ladder into one range test, and a few
+independent arithmetic and epilogue choices remain. `pos.set(x, y)` and
+`msvc6.5pp` do not improve the result. Dummy dependencies or semantically
+distinct fake template values are not used to preserve the native control-flow
+spelling.
 
 An address-keyed Binary Ninja local type now preserves the second wave-ten
 cursor after VC6 advances it. Both midpoint brutes render as named
 `quest_spawn_entry_t` fields; the remaining negative trigger/count access is a
 real induction-pointer artifact, not an unknown structure member.
 
-The compiler-facing builder now uses that same canonical
-`quest_spawn_entry_t` directly. Removing its private layout duplicate and
-replacing the nested position aliases with `pos_x`/`pos_y` is byte-neutral:
-the candidate remains 81/84 instructions, 75.15%, with the same reference
-audit. This makes the recovered source and Binary Ninja presentation agree on
-one evidenced entry type without steering code generation.
+The compiler-facing builder uses the canonical `quest_spawn_entry_t` directly.
+Its cursor/count aggregate now also agrees with the repeatedly evidenced quest
+builder source idiom without changing the record view or introducing a
+code-generation-only wrapper.
