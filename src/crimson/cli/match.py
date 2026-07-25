@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -174,6 +176,11 @@ def cmd_match_scratch(
     region_context: int = typer.Option(4, "--region-context", min=0, help="context for --regions"),
     max_regions: int | None = typer.Option(None, "--max-regions", min=1, help="maximum mismatch regions"),
     as_json: bool = typer.Option(False, "--json", help="emit match and region data as JSON"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
 ) -> None:
     """Compile and compare one configured scratch through the cached pipeline."""
     try:
@@ -189,6 +196,7 @@ def cmd_match_scratch(
             symbol_name=config.symbol,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
+            scope=scope,
         )
     except Exception as exc:
         typer.echo(f"match failed: {exc}", err=True)
@@ -363,10 +371,23 @@ def cmd_match_status(
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to show"),
     summary_only: bool = typer.Option(False, "--summary-only", help="print totals without scratch rows"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    recovery: str | None = typer.Option(None, "--recovery", help="comma-separated recovery states"),
+    residual: str | None = typer.Option(None, "--residual", help="comma-separated residual kinds"),
 ) -> None:
     """Compile all scratches and print their current match scores."""
-    statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs)
-    totals = matchlib.collect_image_totals(statuses)
+    statuses = matchlib.collect_scratch_statuses(
+        match_root,
+        compiler=compiler,
+        cflags=cflags,
+        jobs=jobs,
+        scope=scope,
+    )
+    totals = matchlib.collect_image_totals(statuses, scope=scope)
     selected_totals = [total for total in totals if image is None or total.image == image]
     selected_statuses = [
         status
@@ -379,6 +400,29 @@ def cmd_match_status(
         if unknown_states:
             raise typer.BadParameter(f"unknown states: {', '.join(sorted(unknown_states))}", param_hint="--state")
         selected_statuses = [status for status in selected_statuses if status.state in states]
+    recoveries = _parse_csv(recovery)
+    if recoveries is not None:
+        allowed_recoveries = {"exact", "incomplete", "semantic-complete", "unspecified"}
+        unknown_recoveries = recoveries - allowed_recoveries
+        if unknown_recoveries:
+            raise typer.BadParameter(
+                f"unknown recovery states: {', '.join(sorted(unknown_recoveries))}",
+                param_hint="--recovery",
+            )
+        selected_statuses = [
+            status for status in selected_statuses if matchlib.scratch_recovery(status) in recoveries
+        ]
+    residuals = _parse_csv(residual)
+    if residuals is not None:
+        unknown_residuals = residuals - matchlib.RESIDUAL_VALUES
+        if unknown_residuals:
+            raise typer.BadParameter(
+                f"unknown residual kinds: {', '.join(sorted(unknown_residuals))}",
+                param_hint="--residual",
+            )
+        selected_statuses = [
+            status for status in selected_statuses if residuals.intersection(status.config.residuals)
+        ]
     selected_statuses = matchlib.sort_scratch_statuses(selected_statuses, sort_by=sort_by)
     if limit is not None:
         selected_statuses = selected_statuses[:limit]
@@ -387,6 +431,7 @@ def cmd_match_status(
         typer.echo(
             json.dumps(
                 {
+                    "scope": scope,
                     "totals": [matchlib.image_totals_payload(total) for total in selected_totals],
                     "statuses": (
                         []
@@ -404,7 +449,10 @@ def cmd_match_status(
         typer.echo(matchlib.render_status_table(selected_statuses, selected_totals, sort_by=sort_by))
     if write is not None:
         write.parent.mkdir(parents=True, exist_ok=True)
-        write.write_text(matchlib.render_status_markdown(statuses, totals), encoding="utf-8")
+        write.write_text(
+            matchlib.render_status_markdown(statuses, totals, scope=scope),
+            encoding="utf-8",
+        )
     if check and any(status.state == "error" for status in statuses):
         raise typer.Exit(code=1)
 
@@ -427,10 +475,25 @@ def cmd_match_triage(
     summary_only: bool = typer.Option(False, "--summary-only", help="print aggregate coverage only"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
     check: bool = typer.Option(False, "--check", help="fail if any scratch cannot be evaluated"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
 ) -> None:
     """Rank every native function by address-keyed recovery opportunity."""
-    statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs)
-    rows = matchlib.collect_triage_rows(statuses, images=(image,) if image is not None else None)
+    statuses = matchlib.collect_scratch_statuses(
+        match_root,
+        compiler=compiler,
+        cflags=cflags,
+        jobs=jobs,
+        scope=scope,
+    )
+    rows = matchlib.collect_triage_rows(
+        statuses,
+        images=(image,) if image is not None else None,
+        scope=scope,
+    )
     states = _parse_csv(state)
     if states is not None:
         unknown_states = states - {"match", "audit", "wip", "error", "missing"}
@@ -446,6 +509,7 @@ def cmd_match_triage(
         typer.echo(
             json.dumps(
                 {
+                    "scope": scope,
                     "summary": matchlib.triage_summary_payload(rows),
                     "rows": [] if summary_only else [matchlib.triage_row_payload(row) for row in rows],
                 },
@@ -458,6 +522,202 @@ def cmd_match_triage(
     else:
         typer.echo(matchlib.render_triage_table(rows, sort_by=sort_by))
     if check and any(status.state == "error" for status in statuses):
+        raise typer.Exit(code=1)
+
+
+@match_app.command("inspect")
+def cmd_match_inspect(
+    query: str = typer.Argument(..., help="function name, alias, address, or scratch directory/name"),
+    image: str = typer.Option(matchlib.DEFAULT_IMAGE_NAME, "--image", help="target image"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
+    max_regions: int = typer.Option(1, "--max-regions", min=0, help="bounded mismatch regions"),
+    binja_live: bool = typer.Option(False, "--binja-live", help="save a bounded Binary Ninja evidence bundle"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+) -> None:
+    """Join matcher state with Binary Ninja, IDA, and Ghidra evidence."""
+    try:
+        statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
+        payload = matchlib.inspect_match_function(
+            query,
+            image=image,
+            scope=scope,
+            match_root=match_root,
+            statuses=statuses,
+        )
+        scratches = payload["scratches"]
+        if max_regions and scratches and scratches[0]["state"] != "match":
+            config = matchlib.load_scratch_config(Path(scratches[0]["scratch"]))
+            obj_path = matchlib.compile_scratch(config, match_root)
+            result = matchlib.run_match(
+                obj_path=obj_path,
+                function=config.function,
+                image_path=matchlib.default_image_path(config.image),
+                functions_path=matchlib.default_functions_path(config.image),
+                metadata_path=matchlib.default_metadata_path(config.image),
+                symbol_name=config.symbol,
+                end_va=config.end_va,
+                reference_aliases=config.reference_aliases,
+                scope=scope,
+            )
+            payload["mismatch_evidence"] = matchlib.match_result_payload(
+                result,
+                max_regions=max_regions,
+            )
+        if binja_live:
+            address = int(payload["address"])
+            program = str(payload["image"])
+            bundle_path = (
+                match_root
+                / ".cache"
+                / "evidence"
+                / program
+                / f"0x{address:08x}.json"
+            ).resolve()
+            bundle_path.parent.mkdir(parents=True, exist_ok=True)
+            command = [
+                "bn",
+                "bundle",
+                "function",
+                f"0x{address:08x}",
+                "--target",
+                f"{program}.bndb",
+                "--out",
+                str(bundle_path),
+            ]
+            subprocess.run(command, cwd=matchlib.REPO_ROOT, check=True, capture_output=True, text=True)
+            payload["binary_ninja"]["bundle_path"] = str(bundle_path)
+    except Exception as exc:
+        typer.echo(f"inspect failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if as_json:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    typer.echo(
+        f"{payload['function']} @ 0x{payload['address']:08x} "
+        f"[{payload['image']}, scope={payload['scope']}, bytes={payload['size']}]",
+    )
+    canonical = payload["canonical"]
+    if canonical:
+        if canonical.get("signature"):
+            typer.echo(f"canonical: {canonical['signature']}")
+        if canonical.get("comment"):
+            typer.echo(f"  {canonical['comment']}")
+    notes = payload["annotations"].get("notes", [])
+    if notes:
+        typer.echo("annotations:")
+        for note in notes:
+            typer.echo(f"  - {note}")
+    typer.echo("binary-ninja (preferred live view):")
+    for name, command in payload["binary_ninja"]["commands"].items():
+        typer.echo(f"  {name}: {command}")
+    if payload["binary_ninja"].get("bundle_path"):
+        typer.echo(f"  saved: {payload['binary_ninja']['bundle_path']}")
+    for tool in ("ida", "ghidra"):
+        view = payload["observed"][tool]
+        function = view["function"]
+        if function is None:
+            typer.echo(f"{tool}: missing ({view['path']})")
+            continue
+        typer.echo(f"{tool}: {function.get('name', '<unnamed>')} ({view['path']})")
+        if function.get("signature"):
+            typer.echo(f"  {function['signature']}")
+        calls = function.get("calls") or []
+        if calls:
+            typer.echo(f"  calls: {', '.join(map(str, calls[:12]))}")
+    if payload["ghidra_overlay"]:
+        typer.echo(f"ghidra overlay: {len(payload['ghidra_overlay'])} local renames")
+    if scratches:
+        typer.echo("matcher:")
+        for scratch in scratches:
+            ratio = "-" if scratch["match_ratio"] is None else f"{scratch['match_ratio']:.2%}"
+            typer.echo(
+                f"  {scratch['state']} {Path(scratch['scratch']).name} "
+                f"match={ratio} recovery={scratch['recovery']} "
+                f"residual={','.join(scratch['residuals']) or '-'}",
+            )
+    else:
+        typer.echo("matcher: missing scratch")
+    evidence = payload.get("mismatch_evidence")
+    if evidence:
+        for index, region in enumerate(evidence["regions"], start=1):
+            typer.echo(
+                f"mismatch {index}: target={region['target_instructions']['start']}:"
+                f"{region['target_instructions']['end']} "
+                f"candidate={region['candidate_instructions']['start']}:"
+                f"{region['candidate_instructions']['end']} "
+                f"hints={','.join(region['hints'])}",
+            )
+
+
+@match_app.command("checkpoint")
+def cmd_match_checkpoint(
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel scratch jobs"),
+    write: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT / "STATUS.md",
+        "--write",
+        help="write canonical markdown status",
+    ),
+) -> None:
+    """Validate scope, refresh status, and run repository diff checks."""
+    errors = matchlib.validate_matching_workspace(match_root, scope=scope)
+    statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
+    totals = matchlib.collect_image_totals(statuses, scope=scope)
+    write.parent.mkdir(parents=True, exist_ok=True)
+    write.write_text(
+        matchlib.render_status_markdown(statuses, totals, scope=scope),
+        encoding="utf-8",
+    )
+
+    git = shutil.which("git")
+    if git is None:
+        typer.echo("checkpoint failed: git not found", err=True)
+        raise typer.Exit(code=2)
+    diff_checks = [
+        subprocess.run(
+            [git, "diff", *arguments, "--check"],
+            cwd=matchlib.REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        for arguments in ([], ["--cached"])
+    ]
+    changed = subprocess.run(
+        [git, "status", "--short", "--", "tools/match/scratches"],
+        cwd=matchlib.REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.splitlines()
+    evaluation_errors = [status for status in statuses if status.state == "error"]
+
+    typer.echo(f"scope={scope}")
+    typer.echo(matchlib.render_status_summary(totals))
+    typer.echo(f"status={write}")
+    typer.echo(f"changed_scratch_files={len(changed)}")
+    typer.echo(f"scope_errors={len(errors)} evaluation_errors={len(evaluation_errors)}")
+    for error in errors[:20]:
+        typer.echo(f"  {error}", err=True)
+    for diff_check in diff_checks:
+        if diff_check.stdout:
+            typer.echo(diff_check.stdout.rstrip(), err=True)
+        if diff_check.stderr:
+            typer.echo(diff_check.stderr.rstrip(), err=True)
+    if errors or evaluation_errors or any(diff_check.returncode for diff_check in diff_checks):
         raise typer.Exit(code=1)
 
 
@@ -479,9 +739,20 @@ def cmd_match_audit(
     ),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum entries to show"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
 ) -> None:
     """Report what each normalized ADDR refers to on both sides."""
-    statuses = matchlib.collect_scratch_statuses(match_root, compiler=compiler, cflags=cflags, jobs=jobs)
+    statuses = matchlib.collect_scratch_statuses(
+        match_root,
+        compiler=compiler,
+        cflags=cflags,
+        jobs=jobs,
+        scope=scope,
+    )
     rows: list[tuple[matchlib.ScratchStatus, matchlib.MaskedOperandAuditEntry]] = []
     for scratch in statuses:
         if exact_only and scratch.ratio != 1.0:

@@ -15,14 +15,19 @@ Consult a function in this order:
 Resolve a name or address and see the state recorded by all three tools:
 
 ```bash
-just analysis-function player_update
-just analysis-function 0x004136b0
-just analysis-function grim_is_key_down grim.dll
+uv run crimson match inspect player_update
+uv run crimson match inspect 0x004136b0
+uv run crimson match inspect grim_is_key_down --image grim.dll --scope all
 ```
 
-The command prints the exact `bn decompile` invocation for the preferred live
-view. Use `bn il`, `bn disasm`, or `bn bundle function` with the same target and
-address when a different representation or reusable artifact is needed.
+The matching-aware command prints exact `bn decompile`, `bn il`, `bn disasm`,
+and `bn bundle function` invocations for the preferred live view, then joins
+the same address to IDA, Ghidra, and any matching scratch. Add `--binja-live`
+to save a bounded current Binary Ninja bundle under
+`tools/match/.cache/evidence/`.
+
+`just analysis-function` remains a lightweight curated-map view when matcher
+state is not needed.
 
 Check that the structured snapshots still agree with the curated map:
 

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "default": "port",
+  "scopes": {
+    "port": {
+      "description": "Game-owned Crimsonland logic that the port must reproduce. Grim2D and bundled library code are replaced by the port engine.",
+      "programs": {
+        "crimsonland.exe": [
+          {
+            "start": "0x00401000",
+            "end": "0x0045315A",
+            "owner": "game"
+          }
+        ],
+        "grim.dll": []
+      }
+    }
+  }
+}

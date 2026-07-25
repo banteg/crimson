@@ -91,6 +91,9 @@ analysis-function query program="crimsonland.exe":
 analysis-check program="crimsonland.exe" binja_live="false":
     uv run scripts/analysis_view.py check --program "{{program}}" {{ if binja_live == "true" { "--binja-live" } else { "" } }}
 
+match-checkpoint:
+    uv run crimson match checkpoint -j 8
+
 binja-sync program="crimsonland.exe":
     bn py exec --target "{{program}}.bndb" --script scripts/binja_import_maps.py --format text --no-spill
 

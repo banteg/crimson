@@ -13,6 +13,7 @@
 /tools/match/compilers/
 /tools/match/idioms/build/
 /tools/match/scratches/*/build/
+/tools/match/.cache/
 .venv/
 .venv-dev/
 __pycache__/

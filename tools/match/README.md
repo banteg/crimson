@@ -3,30 +3,35 @@
 This is the Crimsonland version of the Snail Mail matching-islands workflow:
 write a small C/C++ scratch for one native function, compile it with the
 original-era MSVC toolchain, then diff normalized x86 assembly against the
-function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
-`game_bins/crimsonland/1.9.93-gog/grim.dll`.
+function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe`.
 
-## Tracked Images
+## Matching Scope
 
-Track both shipped PE images in the same dashboard:
+The default `port` scope is defined in `analysis/matching_scope.json`. It
+contains game-owned `crimsonland.exe` logic before `0x0045315a`. It excludes:
 
-- `crimsonland.exe`: main game executable
-- `grim.dll`: Grim2D engine DLL
+- `grim.dll`, because the port supplies its own engine layer (likely raylib)
+- the renderer, D3DX, CRT, codec, and other bundled library code linked after
+  the game-owned executable range
 
-Every scratch has an `IMAGE`; it defaults to `crimsonland.exe`. Set
-`IMAGE=grim.dll` for Grim2D functions so the harness reads the matching
-manifest, metadata, and binary image.
+The Grim Binary Ninja database, IDA and Ghidra exports, maps, and annotations
+remain analysis references. They are not port matching work and do not count
+against progress. Pass `--scope all` only for an explicit consultation outside
+the port scope; do not add engine or library scratches to the default corpus.
+
+The address-keyed scope deliberately takes precedence over IDA's `library`
+flag, which can change between analysis versions and has produced false
+positives inside game code.
 
 ## Toolchain
 
-Current PE evidence points to a VC6-family final link for both
-`crimsonland.exe` and `grim.dll`:
+Current PE evidence points to a VC6-family final link for
+`crimsonland.exe`:
 
 - PE optional-header linker version is `6.0`.
 - Rich headers include `Linker600` and dominant `Utc12_C` / `Utc12_CPP` object
   counts.
-- `grim.dll` imports `MSVCRT.dll`, consistent with a VC6 `/MD` build.
-- both images have 2011-02-01 PE timestamps, so this looks like an old-code
+- the image has a 2011-02-01 PE timestamp, so this looks like an old-code
   toolchain used for a later packaged/relinked binary.
 
 The Rich headers also contain some VC7-era import-library/static-object records,
@@ -90,13 +95,6 @@ Minimum config:
 FUNCTION=console_cmd_argc_get
 ```
 
-DLL config:
-
-```sh
-IMAGE=grim.dll
-FUNCTION=grim_get_time_ms
-```
-
 Useful optional fields:
 
 ```sh
@@ -107,6 +105,8 @@ END=0x00401156
 COMPILER=msvc6.5
 CFLAGS="/O2 /GB /W3 /GR-"
 REFERENCE_ALIASES='$E2:widget_idle_color_destroy,$E3:widget_hover_color_destroy'
+RECOVERY=semantic-complete
+RESIDUAL=compiler
 ```
 
 `REFERENCE_ALIASES` is reserved for proven object-local compiler symbols whose
@@ -115,17 +115,40 @@ names are reused across translation units. Each comma-separated
 named native address; normal masked-reference auditing still compares the
 resolved address.
 
+`RECOVERY` can be `incomplete` or `semantic-complete`. Use the latter when the
+port behavior is understood even though byte identity is blocked.
+`RESIDUAL` is a comma-separated set of `analysis`, `compiler`, and
+`references`. These fields keep semantic recovery separate from compiler and
+reference debt; exact matches are reported as `recovery=exact` automatically.
+
 Run one scratch:
 
 ```sh
 tools/match/match.sh tools/match/scratches/<function> --regions
 ```
 
-Regenerate the dashboard:
+Inspect one target through the matching state and all three analysis views:
 
 ```sh
-uv run crimson match status --check -j 8 --write tools/match/STATUS.md
+uv run crimson match inspect player_update
+uv run crimson match inspect tools/match/scratches/player_update --binja-live
 ```
+
+The inspection starts with exact Binary Ninja commands and can save a bounded
+live evidence bundle under the ignored `tools/match/.cache/evidence/` tree.
+It then reports the address-matched IDA and Ghidra snapshots, the best scratch,
+recovery metadata, and a bounded first mismatch region.
+
+Regenerate and validate the dashboard:
+
+```sh
+uv run crimson match checkpoint -j 8
+```
+
+The checkpoint rejects scratch configs outside the port scope, evaluates the
+corpus, rewrites `tools/match/STATUS.md`, runs `git diff --check`, and reports
+the current scratch change count. Both staged and unstaged diffs are checked.
+`just match-checkpoint` is the short form.
 
 Each status row includes fuzzy-weighted bytes and its remaining fuzzy gap in
 addition to exact-match state. Keep the canonical Markdown board complete, but
@@ -136,6 +159,7 @@ uv run crimson match status --image crimsonland.exe --state wip \
   --min-bytes 64 --sort fuzzy-gap --limit 20
 uv run crimson match status --summary-only
 uv run crimson match status --image crimsonland.exe --json
+uv run crimson match status --recovery semantic-complete --residual compiler
 ```
 
 Use address-keyed triage to rank both scratch-backed and still-uncovered native
@@ -215,16 +239,16 @@ uv run crimson match status --compiler msvc7.0
 uv run crimson match status --cflags "/O2 /G6 /W3 /GR-"
 ```
 
-Target function extents come from `analysis/ida/raw/<image>/functions.json`.
+Target function extents come from `analysis/ida/raw/<image>/functions.json`,
+then are filtered through `analysis/matching_scope.json`.
 The status dashboard reports matched functions out of every manifest function,
 matched code bytes as a percentage of every manifest function extent, and then
-groups scratch rows under each tracked image. Pass `END` when the manifest
+groups scratch rows under each in-scope image. Pass `END` when the manifest
 extent includes unrelated code or misses a hand-curated boundary.
 
 Use `NOTE=smoke` for tiny plumbing checks. Treat compiler backend calibration
 as per-object evidence unless several representative functions establish a
-shared profile. For link-sensitive code, check `/MD` vs `/MT` first;
-`grim.dll`'s `MSVCRT.dll` import makes `/MD` the likely final link mode.
+shared profile. For link-sensitive code, check `/MD` vs `/MT` first.
 
 ## No Fakematching
 

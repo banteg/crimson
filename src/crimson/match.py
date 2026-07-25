@@ -24,6 +24,8 @@ DEFAULT_METADATA_PATH = REPO_ROOT / "analysis" / "ida" / "raw" / DEFAULT_IMAGE_N
 DEFAULT_IMAGE_PATH = DEFAULT_GAME_DIR / DEFAULT_IMAGE_NAME
 DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"
 DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
+DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
+DEFAULT_MATCH_SCOPE = "port"
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
 CACHE_VERSION = 1
 
@@ -82,6 +84,72 @@ class FunctionManifest:
     @property
     def by_name(self) -> dict[str, FunctionSymbol]:
         return {function.name: function for function in self.functions}
+
+
+@dataclass(frozen=True, slots=True)
+class MatchScopeRange:
+    start: int
+    end: int
+    owner: str
+
+    def contains(self, address: int) -> bool:
+        return self.start <= address < self.end
+
+
+def load_matching_scope(
+    scope: str,
+    *,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> dict[str, tuple[MatchScopeRange, ...]]:
+    """Load one stable, address-keyed ownership scope.
+
+    ``all`` is an explicit escape hatch for consulting every non-external
+    function. It is intentionally not represented by address ranges.
+    """
+    if scope == "all":
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != 1:
+        raise ValueError(f"{path}: unsupported matching scope schema")
+    try:
+        programs = payload["scopes"][scope]["programs"]
+    except KeyError as exc:
+        available = ", ".join(sorted(payload.get("scopes", {})))
+        raise ValueError(f"unknown matching scope {scope!r}; available: {available}, all") from exc
+    result: dict[str, tuple[MatchScopeRange, ...]] = {}
+    for program, rows in programs.items():
+        ranges: list[MatchScopeRange] = []
+        for row in rows:
+            start = parse_int(row["start"])
+            end = parse_int(row["end"])
+            if end <= start:
+                raise ValueError(f"{path}: invalid {program} range 0x{start:x}..0x{end:x}")
+            ranges.append(MatchScopeRange(start=start, end=end, owner=str(row["owner"])))
+        result[str(program)] = tuple(ranges)
+    return result
+
+
+def matching_scope_images(
+    scope: str | None,
+    *,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> tuple[str, ...]:
+    if scope is None or scope == "all":
+        return TRACKED_IMAGE_NAMES
+    ranges = load_matching_scope(scope, path=path)
+    return tuple(program for program in TRACKED_IMAGE_NAMES if ranges.get(program))
+
+
+def address_in_matching_scope(
+    image_name: str,
+    address: int,
+    *,
+    scope: str,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> bool:
+    if scope == "all":
+        return True
+    return any(row.contains(address) for row in load_matching_scope(scope, path=path).get(image_name, ()))
 
 
 @dataclass(frozen=True, slots=True)
@@ -234,9 +302,20 @@ def load_function_manifest(
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     image_name: str | None = None,
     name_map_path: Path | None = DEFAULT_NAME_MAP_PATH,
+    scope: str | None = None,
+    scope_path: Path = DEFAULT_MATCHING_SCOPE_PATH,
 ) -> FunctionManifest:
     rows = json.loads(Path(path).read_text(encoding="utf-8"))
     resolved_image_name = image_name or Path(path).parent.name
+    scoped_ranges = (
+        None
+        if scope is None or scope == "all"
+        else load_matching_scope(scope, path=scope_path).get(resolved_image_name, ())
+    )
+
+    def is_scoped(address: int) -> bool:
+        return scoped_ranges is None or any(row.contains(address) for row in scoped_ranges)
+
     name_overrides: dict[int, str] = {}
     included_library_addresses: set[int] = set()
     created_rows: list[dict[str, Any]] = []
@@ -254,9 +333,11 @@ def load_function_manifest(
     functions: list[FunctionSymbol] = []
     for row in rows:
         address = parse_int(row["address"])
-        if bool(row.get("external")) or (
-            bool(row.get("library")) and address not in included_library_addresses
-        ):
+        if bool(row.get("external")):
+            continue
+        if scope is None and bool(row.get("library")) and address not in included_library_addresses:
+            continue
+        if not is_scoped(address):
             continue
         end = parse_int(row["end"])
         functions.append(
@@ -270,6 +351,8 @@ def load_function_manifest(
     existing_addresses = {function.address for function in functions}
     for row in created_rows:
         address = parse_int(row["address"])
+        if not is_scoped(address):
+            continue
         if address in existing_addresses:
             continue
         end = parse_int(row["end"])
@@ -1611,8 +1694,14 @@ def run_match(
     symbol_name: str | None = None,
     end_va: int | None = None,
     reference_aliases: tuple[tuple[str, str], ...] = (),
+    scope: str | None = None,
 ) -> MatchResult:
-    manifest = load_function_manifest(functions_path, metadata_path=metadata_path, image_name=image_path.name)
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=image_path.name,
+        scope=scope,
+    )
     obj = parse_coff_object(Path(obj_path).read_bytes())
     candidate = extract_object_function(obj, symbol_name)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
@@ -1638,8 +1727,14 @@ def run_match_dump(
     metadata_path: Path | None = DEFAULT_METADATA_PATH,
     symbol_name: str | None = None,
     end_va: int | None = None,
+    scope: str | None = None,
 ) -> MatchDump:
-    manifest = load_function_manifest(functions_path, metadata_path=metadata_path, image_name=image_path.name)
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=image_path.name,
+        scope=scope,
+    )
     obj = parse_coff_object(Path(obj_path).read_bytes())
     candidate = extract_object_function(obj, symbol_name)
     _, start, end = resolve_function(manifest, function, end_override=end_va)
@@ -1668,6 +1763,8 @@ def run_match_dump(
 DEFAULT_SCRATCH_IMAGE = DEFAULT_IMAGE_NAME
 DEFAULT_SCRATCH_COMPILER = "msvc6.5"
 DEFAULT_SCRATCH_CFLAGS = "/O2 /GB /W3 /GR-"
+RECOVERY_VALUES = frozenset({"incomplete", "semantic-complete"})
+RESIDUAL_VALUES = frozenset({"analysis", "compiler", "references"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -1682,6 +1779,8 @@ class ScratchConfig:
     symbol: str | None
     note: str
     reference_aliases: tuple[tuple[str, str], ...] = ()
+    recovery: str | None = None
+    residuals: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1716,6 +1815,12 @@ class ScratchStatus:
     @property
     def fuzzy_gap_bytes(self) -> float:
         return max(0.0, self.target_size - self.fuzzy_weighted_bytes)
+
+
+def scratch_recovery(status: ScratchStatus) -> str:
+    if status.state == "match":
+        return "exact"
+    return status.config.recovery or "unspecified"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1800,6 +1905,23 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             )
         reference_aliases.append((object_symbol, target_symbol))
 
+    recovery = values.get("RECOVERY")
+    if recovery is not None and recovery not in RECOVERY_VALUES:
+        allowed = ", ".join(sorted(RECOVERY_VALUES))
+        raise ValueError(f"{directory}/scratch.conf has invalid RECOVERY={recovery!r}; use {allowed}")
+    residuals = tuple(
+        dict.fromkeys(
+            value.strip()
+            for value in values.get("RESIDUAL", "").split(",")
+            if value.strip()
+        ),
+    )
+    unknown_residuals = set(residuals) - RESIDUAL_VALUES
+    if unknown_residuals:
+        allowed = ", ".join(sorted(RESIDUAL_VALUES))
+        unknown = ", ".join(sorted(unknown_residuals))
+        raise ValueError(f"{directory}/scratch.conf has invalid RESIDUAL values {unknown}; use {allowed}")
+
     return ScratchConfig(
         directory=directory,
         function=values["FUNCTION"],
@@ -1811,6 +1933,8 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         symbol=values.get("SYMBOL"),
         note=values.get("NOTE", ""),
         reference_aliases=tuple(reference_aliases),
+        recovery=recovery,
+        residuals=residuals,
     )
 
 
@@ -2192,6 +2316,169 @@ def _paths_for_image(image: str) -> tuple[Path, Path, Path]:
     return default_image_path(image), default_functions_path(image), default_metadata_path(image)
 
 
+def validate_matching_workspace(
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    scope: str = DEFAULT_MATCH_SCOPE,
+) -> list[str]:
+    """Return configuration and ownership errors without compiling scratches."""
+    errors: list[str] = []
+    manifests: dict[str, FunctionManifest] = {}
+    for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
+        try:
+            config = load_scratch_config(conf_path.parent)
+            if config.image not in manifests:
+                _, functions_path, metadata_path = _paths_for_image(config.image)
+                manifests[config.image] = load_function_manifest(
+                    functions_path,
+                    metadata_path=metadata_path,
+                    image_name=config.image,
+                    scope=scope,
+                )
+            resolve_function(
+                manifests[config.image],
+                config.function,
+                end_override=config.end_va,
+            )
+        except Exception as exc:
+            errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
+    return errors
+
+
+def _analysis_rows(path: Path) -> list[dict[str, Any]]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        rows = payload.get("entries", payload.get("functions", []))
+        if isinstance(rows, list):
+            return rows
+    raise ValueError(f"{path}: expected function rows")
+
+
+def _analysis_row_at(path: Path, address: int) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+
+    def row_address(value: str | int) -> int:
+        if isinstance(value, int):
+            return value
+        text = value.strip()
+        return int(text, 0) if text.lower().startswith("0x") else int(text, 16)
+
+    return next(
+        (row for row in _analysis_rows(path) if row.get("address") and row_address(row["address"]) == address),
+        None,
+    )
+
+
+def _analysis_function_metadata(path: Path, image: str, function: str) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("program") != image:
+        return {}
+    metadata = payload.get("functions", {}).get(function, {})
+    return metadata if isinstance(metadata, dict) else {}
+
+
+def inspect_match_function(
+    query: str,
+    *,
+    image: str = DEFAULT_IMAGE_NAME,
+    scope: str = DEFAULT_MATCH_SCOPE,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    statuses: list[ScratchStatus] | None = None,
+) -> dict[str, Any]:
+    """Resolve one matching target and join its curated and tool-specific views."""
+    scratch_directory = Path(query)
+    if not (scratch_directory / "scratch.conf").exists():
+        scratch_directory = match_root / "scratches" / query
+    selected_config = (
+        load_scratch_config(scratch_directory.resolve())
+        if (scratch_directory / "scratch.conf").exists()
+        else None
+    )
+    if selected_config is not None:
+        image = selected_config.image
+        query = selected_config.function
+
+    _, functions_path, metadata_path = _paths_for_image(image)
+    manifest = load_function_manifest(
+        functions_path,
+        metadata_path=metadata_path,
+        image_name=image,
+        scope=scope,
+    )
+    try:
+        symbol, _, _ = resolve_function(manifest, query)
+    except ValueError:
+        name_rows = _analysis_rows(DEFAULT_NAME_MAP_PATH)
+        mapped = next(
+            (
+                row
+                for row in name_rows
+                if row.get("program") == image
+                and query in (str(row.get("name", "")), *(str(alias) for alias in row.get("aliases", [])))
+            ),
+            None,
+        )
+        if mapped is None:
+            raise
+        symbol, _, _ = resolve_function(manifest, f"0x{parse_int(mapped['address']):08x}")
+
+    address = symbol.address
+    name_row = _analysis_row_at(DEFAULT_NAME_MAP_PATH, address)
+    ida_path = default_functions_path(image)
+    ghidra_path = REPO_ROOT / "analysis" / "ghidra" / "raw" / f"{image}_functions.json"
+    observed = {
+        "ida": {"path": str(ida_path.relative_to(REPO_ROOT)), "function": _analysis_row_at(ida_path, address)},
+        "ghidra": {
+            "path": str(ghidra_path.relative_to(REPO_ROOT)),
+            "function": _analysis_row_at(ghidra_path, address),
+        },
+    }
+    matching_statuses = [
+        status
+        for status in statuses or []
+        if status.config.image == image and status.address == address
+    ]
+    matching_statuses = sorted(matching_statuses, key=_status_rank, reverse=True)
+    annotations = _analysis_function_metadata(
+        REPO_ROOT / "analysis" / "annotations" / "functions.json",
+        image,
+        symbol.name,
+    )
+    ghidra_overlay = _analysis_function_metadata(
+        REPO_ROOT / "analysis" / "overlays" / "ghidra_local_renames.json",
+        image,
+        symbol.name,
+    )
+    return {
+        "scope": scope,
+        "image": image,
+        "function": symbol.name,
+        "address": address,
+        "end": symbol.end,
+        "size": symbol.size,
+        "canonical": name_row,
+        "annotations": annotations,
+        "ghidra_overlay": ghidra_overlay,
+        "binary_ninja": {
+            "target": f"{image}.bndb",
+            "commands": {
+                "decompile": f"bn decompile 0x{address:08x} --target {image}.bndb",
+                "il": f"bn il 0x{address:08x} --target {image}.bndb",
+                "disasm": f"bn disasm 0x{address:08x} --target {image}.bndb",
+                "bundle": f"bn bundle function 0x{address:08x} --target {image}.bndb",
+            },
+        },
+        "observed": observed,
+        "scratches": [scratch_status_payload(status) for status in matching_statuses],
+        "selected_scratch": str(selected_config.directory) if selected_config is not None else None,
+    }
+
+
 def _manifest_digest(manifest: FunctionManifest) -> str:
     payload = {
         "image": manifest.image_name,
@@ -2373,6 +2660,7 @@ def collect_scratch_statuses(
     compiler: str | None = None,
     cflags: str | None = None,
     jobs: int = DEFAULT_MATCH_JOBS,
+    scope: str | None = None,
 ) -> list[ScratchStatus]:
     if jobs < 1:
         raise ValueError("jobs must be positive")
@@ -2393,6 +2681,7 @@ def collect_scratch_statuses(
             functions_path,
             metadata_path=metadata_path,
             image_name=image_name,
+            scope=scope,
         )
         catalog_cache[image_name] = load_reference_catalog(manifest_cache[image_name])
 
@@ -2550,15 +2839,20 @@ PROFILE_HEADER = (
 )
 
 
-def collect_image_totals(statuses: list[ScratchStatus]) -> list[ImageTotals]:
+def collect_image_totals(
+    statuses: list[ScratchStatus],
+    *,
+    scope: str | None = None,
+) -> list[ImageTotals]:
     totals: list[ImageTotals] = []
-    images = sorted({*TRACKED_IMAGE_NAMES, *(status.config.image for status in statuses)})
+    images = sorted(matching_scope_images(scope))
     for image_name in images:
         image_path, functions_path, metadata_path = _paths_for_image(image_name)
         manifest = load_function_manifest(
             functions_path,
             metadata_path=metadata_path,
             image_name=image_name,
+            scope=scope,
         )
         image = load_image(image_path, manifest.image_base)
         byte_total = sum(len(image.function_bytes(function.address, function.end)) for function in manifest.functions)
@@ -2613,10 +2907,11 @@ def collect_triage_rows(
     statuses: list[ScratchStatus],
     *,
     images: tuple[str, ...] | None = None,
+    scope: str | None = None,
 ) -> list[TriageRow]:
     """Join scratch coverage to native functions by image and address."""
 
-    selected_images = images or tuple(sorted({*TRACKED_IMAGE_NAMES, *(status.config.image for status in statuses)}))
+    selected_images = images or tuple(sorted(matching_scope_images(scope)))
     statuses_by_address: dict[tuple[str, int], list[ScratchStatus]] = {}
     for status in statuses:
         if status.address:
@@ -2629,6 +2924,7 @@ def collect_triage_rows(
             functions_path,
             metadata_path=metadata_path,
             image_name=image_name,
+            scope=scope,
         )
         image = load_image(image_path, manifest.image_base)
         for function in manifest.functions:
@@ -2733,6 +3029,8 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "compiler": status.config.compiler,
         "cflags": status.config.cflags,
         "scratch": str(status.config.directory),
+        "recovery": scratch_recovery(status),
+        "residuals": list(status.config.residuals),
         "note": status.config.note,
         "error": status.error,
     }
@@ -3060,12 +3358,19 @@ def render_status_table(
     return "\n".join(lines)
 
 
-def render_status_markdown(statuses: list[ScratchStatus], totals: list[ImageTotals]) -> str:
+def render_status_markdown(
+    statuses: list[ScratchStatus],
+    totals: list[ImageTotals],
+    *,
+    scope: str = DEFAULT_MATCH_SCOPE,
+) -> str:
     overall = _overall_totals(totals)
     lines = [
         "# Matching Status",
         "",
-        "Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.",
+        f"Scope: `{scope}` from `analysis/matching_scope.json`.",
+        "",
+        "Regenerate with `uv run crimson match checkpoint`.",
         "",
         f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly, "
         f"**{overall.matched_bytes}/{overall.byte_total}** code bytes "

@@ -49,8 +49,10 @@ from crimson.match import (
     evaluate_profile_matrix,
     evaluate_source_probe,
     extract_object_function,
+    inspect_match_function,
     load_function_manifest,
     load_reference_catalog,
+    load_scratch_config,
     match_function,
     match_result_payload,
     normalize_function,
@@ -67,6 +69,7 @@ from crimson.match import (
     sort_profile_statuses,
     sort_triage_rows,
     triage_row_payload,
+    validate_matching_workspace,
     validate_scratch_source,
 )
 
@@ -224,6 +227,58 @@ def test_load_manifest_can_include_curated_library_false_positive(tmp_path: Path
     assert function.name == "console_global_init"
     assert start == 0x00401170
     assert end == 0x0040117A
+
+
+def test_port_scope_uses_stable_ownership_boundary() -> None:
+    manifest = load_function_manifest(DEFAULT_FUNCTIONS_PATH, scope="port")
+
+    assert resolve_function(manifest, "game_is_full_version")[0].address == 0x0041DF40
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(manifest, "FUN_0045315a")
+
+    grim_manifest = load_function_manifest(
+        Path("analysis/ida/raw/grim.dll/functions.json"),
+        metadata_path=Path("analysis/ida/raw/grim.dll/metadata.json"),
+        image_name="grim.dll",
+        scope="port",
+    )
+    assert grim_manifest.functions == ()
+
+
+def test_matching_workspace_stays_inside_port_scope() -> None:
+    assert validate_matching_workspace(scope="port") == []
+
+
+def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
+    (tmp_path / "scratch.conf").write_text(
+        "FUNCTION=foo RECOVERY=semantic-complete RESIDUAL=compiler,references\n",
+        encoding="utf-8",
+    )
+
+    config = load_scratch_config(tmp_path)
+
+    assert config.recovery == "semantic-complete"
+    assert config.residuals == ("compiler", "references")
+
+
+def test_inspect_joins_scoped_tool_views() -> None:
+    payload = inspect_match_function("game_is_full_version", statuses=[])
+
+    assert payload["scope"] == "port"
+    assert payload["address"] == 0x0041DF40
+    assert payload["observed"]["ida"]["function"]["library"] is True
+    assert payload["observed"]["ghidra"]["function"]["name"] == "game_is_full_version"
+    assert payload["binary_ninja"]["commands"]["decompile"].startswith(
+        "bn decompile 0x0041df40",
+    )
+
+    grim = inspect_match_function(
+        "grim_is_key_down",
+        image="grim.dll",
+        scope="all",
+        statuses=[],
+    )
+    assert grim["observed"]["ghidra"]["function"]["name"] == "grim_is_key_down"
 
 
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
