@@ -33,3 +33,10 @@ entry count account for the strong shape. Residuals are four unconstrained
 placements of the independent entry-count/x-seed initializations and final
 grid count/trigger increments. Explicit cursor and post-increment pointer
 forms regress the register allocation and were rejected.
+
+All six natural declaration orders for `spawn_index`, `trigger_time_ms`, and
+`entry_count` were also compiled. They are fuzzy-byte neutral at 96.08%;
+putting either count or index first shortens the exact prefix from 21 to 20,
+while both trigger-first variants reproduce the retained result. The residual
+initialization swaps therefore cannot be resolved by ordinary scalar source
+order.

@@ -16,3 +16,11 @@ schedule. The VC6 candidate matches all 81 instructions exactly.
 The builder cursor now uses the canonical `quest_spawn_entry_t` and its flat
 `pos_x`/`pos_y` fields directly. Removing the private layout duplicate is
 byte-neutral: the exact 81-instruction body and reference audit are unchanged.
+
+Binary Ninja strength-reduces the exact four-entry loop to a pointer advanced
+by `0x60` before the stores, leaving nineteen negative offsets in HLIL. An
+honest one-past `quest_spawn_entry_t[4]` presentation type was tested live:
+it preserved the stride but did not normalize those stores and produced a
+misleading huge array index for the final count. The annotation was reverted;
+the canonical entry pointer plus raw negative induction offsets is the more
+truthful decompilation.
