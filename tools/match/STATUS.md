@@ -2,9 +2,9 @@
 
 Regenerate with `uv run crimson match status --write tools/match/STATUS.md`.
 
-**720/2173** functions matched exactly, **135174/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
+**721/2173** functions matched exactly, **135358/676681** code bytes (**20.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **290851/676681** code bytes (**43.0%**).
+Fuzzy-weighted alignment is **290872/676681** code bytes (**43.0%**).
 
 Compilable source candidates cover **846/2173** functions and **349547/676681** code bytes (**51.7%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -12,12 +12,12 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 503/997 | 108487/386756 | 28.1% | 261275/386756 | 67.6% | 621/997 | 319177/386756 | 82.5% | 503/621 |
+| crimsonland.exe | 504/997 | 108671/386756 | 28.1% | 261296/386756 | 67.6% | 621/997 | 319177/386756 | 82.5% | 504/621 |
 | grim.dll | 217/1176 | 26687/289925 | 9.2% | 29576/289925 | 10.2% | 225/1176 | 30370/289925 | 10.5% | 217/225 |
 
 ## crimsonland.exe
 
-**503/997** functions, **108487/386756** bytes (**28.1%**), **261275/386756** fuzzy-weighted bytes (**67.6%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **503/621** scratches verified.
+**504/997** functions, **108671/386756** bytes (**28.1%**), **261296/386756** fuzzy-weighted bytes (**67.6%**), **621/997** source candidates covering **319177/386756** bytes (**82.5%**), **504/621** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -453,7 +453,7 @@ Compilable source candidates cover **846/2173** functions and **349547/676681** 
 | wip | quest_build_the_collaboration | 0x00437f30 | 286 | 223/286 | 63 | 86/86 | 77.91% | 22/86 | 7/0/0 |  | quest-the-collaboration-builder |
 | wip | quest_build_the_blighting | 0x00438050 | 624 | 591/624 | 33 | 190/190 | 94.74% | 17/190 | 11/0/0 |  | quest-the-blighting-fixed-spawners |
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 206/278 | 72 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
-| wip | quest_build_the_massacre | 0x004383e0 | 184 | 163/184 | 21 | 61/61 | 88.52% | 16/61 | 4/0/0 |  | quest-the-massacre-builder |
+| match | quest_build_the_massacre | 0x004383e0 | 184 | 184/184 | 0 | 61/61 | 100.00% | 61/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | quest_build_the_killing | 0x004384a0 | 602 | 602/602 | 0 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
 | wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 177/311 | 134 | 95/95 | 56.84% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 201/254 | 53 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
