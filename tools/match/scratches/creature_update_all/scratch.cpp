@@ -151,8 +151,8 @@ extern "C" void creature_update_all(void)
                     if (creature_update_tick % 70 != 0) {
                         if (config_player_count == 2) {
                             if (player_state_table[1 - current_player].health > 0.0f) {
-                                vec2f_t *alternate_pos = (vec2f_t *)
-                                    &player_state_table[1 - current_player].pos_x;
+                                vec2f_t *alternate_pos =
+                                    &player_state_table[1 - current_player].position;
                                 dx = alternate_pos->x - position->x;
                                 dy = alternate_pos->y - position->y;
                                 alternate_distance = (float)sqrt(dx * dx + dy * dy);
