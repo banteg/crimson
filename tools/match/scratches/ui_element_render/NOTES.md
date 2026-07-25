@@ -50,10 +50,13 @@ The same union-free Binary Ninja presentation record now exposes all three
 physical vertex banks, their texture handles, and the trailing render state
 directly. Live analysis verifies its `0x318` size and converts the former layer
 alias into `vertices`, `overlay_vertices`, `enabled_overlay_vertices`, and
-`overlay_texture_handle` accesses. Two `__offset` expressions remain where the
-native alpha loops carry an interior `color_a` induction cursor backward into
-the owning record; those are optimizer cursor artifacts rather than anonymous
-structure fields.
+`overlay_texture_handle` accesses. The callback-less alpha walk now has a
+shifted `ui_element_vertex_alpha_cursor_t` presentation view: its live HLIL
+uses the named `color_a` field and preserves the native 0x1c stride. One
+`__offset` expression remains in the adjacent hover walk because native
+preincrements that same interior cursor before storing through the prior
+record; it is an optimizer cursor artifact rather than an anonymous structure
+field.
 
 The small residual is code-generation shape: VC6 keeps a temporary for the
 seven-pixel Y coordinate in each offset-shadow submission and schedules

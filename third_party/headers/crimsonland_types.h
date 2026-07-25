@@ -919,6 +919,13 @@ typedef struct ui_element_vertex_binja_t {
     float v;
 } ui_element_vertex_binja_t;
 
+// Shifted view used by UI render loops that carry a pointer to the packed
+// alpha byte rather than to the start of each 0x1c-byte vertex.
+typedef struct ui_element_vertex_alpha_cursor_t {
+    unsigned char color_a;
+    unsigned char _vertex_tail[0x1b];
+} ui_element_vertex_alpha_cursor_t;
+
 // 0x1c-stride record copied/transformed in ui_menu_assets_init when building
 // ui_menu_item_subtemplate_block_01..06.
 typedef struct ui_menu_item_subtemplate_slot_t {

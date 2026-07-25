@@ -661,6 +661,36 @@ def test_name_map_preserves_quest_spawn_cursor_local_views():
     ]
 
 
+def test_name_map_preserves_ui_alpha_cursor_local_views():
+    map_path = (
+        Path(__file__).parents[1]
+        / "analysis"
+        / "ghidra"
+        / "maps"
+        / "name_map.json"
+    )
+    rows = json.loads(map_path.read_text())
+    render_row = next(
+        row
+        for row in rows
+        if row.get("program") == "crimsonland.exe"
+        and row.get("name") == "ui_element_render"
+    )
+
+    assert render_row["local_types"] == [
+        {
+            "address": "0x00446d2c",
+            "name": "static_alpha_cursor",
+            "type": "ui_element_vertex_alpha_cursor_t *",
+        },
+        {
+            "address": "0x00446d42",
+            "name": "hover_alpha_cursor",
+            "type": "ui_element_vertex_alpha_cursor_t *",
+        },
+    ]
+
+
 def test_data_map_preserves_tutorial_bonus_carrier_overlay():
     map_path = (
         Path(__file__).parents[1]

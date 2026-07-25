@@ -4283,7 +4283,19 @@
     "address": "0x00446c40",
     "name": "ui_element_render",
     "signature": "void ui_element_render(ui_element_t *element)",
-    "comment": "updates focus/click handling and renders a UI element"
+    "comment": "updates focus/click handling and renders a UI element",
+    "local_types": [
+      {
+        "address": "0x00446d2c",
+        "name": "static_alpha_cursor",
+        "type": "ui_element_vertex_alpha_cursor_t *"
+      },
+      {
+        "address": "0x00446d42",
+        "name": "hover_alpha_cursor",
+        "type": "ui_element_vertex_alpha_cursor_t *"
+      }
+    ]
   },
   {
     "program": "crimsonland.exe",
