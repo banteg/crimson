@@ -10775,6 +10775,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003a990",
+    "name": "grim_jpeg_memory_src",
+    "signature": "void grim_jpeg_memory_src(void *context, unsigned char *data, unsigned int size)",
+    "comment": "D3DX8 custom libjpeg source manager for an in-memory buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003ab10",
+    "name": "jpeg_std_error",
+    "signature": "void *jpeg_std_error(void *error_manager)",
+    "comment": "IJG libjpeg 6a standard error-manager initializer linked inside D3DX8"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1003d0d0",
     "name": "FUN_1003d0d0",
     "signature": "char* FUN_1003d0d0(int arg1)",

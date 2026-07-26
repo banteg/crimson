@@ -5,7 +5,7 @@ Native target: `grim.dll` at `0x10004b70..0x10004e81` (785 bytes).
 This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
 Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 252 normalized
 instructions, the same count as the native function, with a 32-instruction
-prefix, 86.51% similarity, and masked references `16/5/0`.
+prefix, 86.51% similarity, and masked references `18/3/0`.
 
 ## Recovered source shape
 
@@ -23,6 +23,12 @@ prefix, 86.51% similarity, and masked references `16/5/0`.
   `0x1a8` bytes and the custom error object combines a `0xc4`-byte error
   manager with a 64-byte `jmp_buf`. `setjmp` protects the complete JPEG decode
   and the custom `error_exit` longjmps back into this function.
+- The helpers at `0x1003ab10` and `0x1003a990` are now identified as
+  `jpeg_std_error` and the D3DX8 in-memory source adapter
+  `grim_jpeg_memory_src`. The former installs the standard five IJG error
+  callbacks and version-6a message table; the latter allocates and initializes
+  a `jpeg_source_mgr` with the supplied buffer and size. Naming them resolves
+  two previously unknown call references without changing source code.
 - The decoder allocates an 18-byte TGA header plus one 32-bit pixel per output
   sample. JPEG RGB rows are copied bottom-up into BGRA pixels with alpha 255.
   A zero-width guard around a `do/while` reproduces the native single pre-test,
@@ -53,3 +59,5 @@ equivalent regions differently from the native function:
 No inline assembly, volatile state, dummy reference, forced address, or
 layout-only arithmetic is used. The scratch remains WIP until those residuals
 can be explained by plausible source rather than forced code generation.
+The three remaining unresolved references are compiler-private exception or
+stack-local labels rather than unidentified external functions or data.
