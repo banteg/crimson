@@ -1,0 +1,297 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "id": "crimsonland.exe",
+      "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
+      "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "size": 532480,
+      "components": [
+        {
+          "id": "d3dx8",
+          "version": "DirectX 8.1 SDK; exact D3DX archive revision pending",
+          "linkage": "static",
+          "confidence": "family-confirmed",
+          "ranges": [
+            {
+              "start": "0x00452EF0",
+              "end": "0x00460CB8"
+            }
+          ],
+          "fingerprints": [
+            {
+              "address": "0x0046F838",
+              "encoding": "ascii",
+              "value": "Software\\Microsoft\\Direct3D"
+            },
+            {
+              "address": "0x0046F864",
+              "encoding": "ascii",
+              "value": "DisableD3DXPSGP"
+            }
+          ],
+          "imports": [
+            {
+              "module": "d3d8",
+              "symbols": [
+                "Direct3DCreate8"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "msvc6-crt",
+          "version": "Visual C++ 6.0-family static CRT; exact archive pending",
+          "linkage": "static",
+          "confidence": "family-confirmed",
+          "ranges": [
+            {
+              "start": "0x00460CB8",
+              "end": "0x0046E920"
+            }
+          ]
+        },
+        {
+          "id": "libvorbisfile",
+          "version": "1.0 release set",
+          "linkage": "dynamic",
+          "confidence": "release-confirmed",
+          "imports": [
+            {
+              "module": "vorbisfile",
+              "symbols": [
+                "ov_clear",
+                "ov_info",
+                "ov_open_callbacks",
+                "ov_pcm_seek",
+                "ov_pcm_total",
+                "ov_read"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grim.dll",
+      "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
+      "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+      "size": 581632,
+      "components": [
+        {
+          "id": "d3dx8",
+          "version": "DirectX 8.1 SDK; exact D3DX archive revision pending",
+          "linkage": "static",
+          "confidence": "family-confirmed",
+          "ranges": [
+            {
+              "start": "0x1000AAA6",
+              "end": "0x1004B5B0"
+            }
+          ],
+          "fingerprints": [
+            {
+              "address": "0x1004CE00",
+              "encoding": "ascii",
+              "value": "Software\\Microsoft\\Direct3D"
+            },
+            {
+              "address": "0x1004CE38",
+              "encoding": "ascii",
+              "value": "DisableD3DXPSGP"
+            },
+            {
+              "address": "0x10053A60",
+              "encoding": "ascii",
+              "value": "D3D: Could not init DirectX 8.1, (re)install it."
+            }
+          ],
+          "imports": [
+            {
+              "module": "d3d8",
+              "symbols": [
+                "Direct3DCreate8"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "libjpeg",
+          "version": "IJG 6a",
+          "linkage": "static-inside-d3dx8",
+          "confidence": "version-confirmed",
+          "source": "https://www.ijg.org/files/jpegsrc.v6a.tar.gz",
+          "fingerprints": [
+            {
+              "address": "0x1004D724",
+              "encoding": "ascii",
+              "value": "6a  7-Feb-96"
+            },
+            {
+              "address": "0x1004D734",
+              "encoding": "ascii",
+              "value": "Copyright (C) 1996, Thomas G. Lane"
+            },
+            {
+              "address": "0x10057754",
+              "encoding": "ascii",
+              "value": "6a  7-Feb-96"
+            }
+          ]
+        },
+        {
+          "id": "libpng",
+          "version": "1.0.5",
+          "linkage": "static-inside-d3dx8",
+          "confidence": "version-confirmed",
+          "fingerprints": [
+            {
+              "address": "0x1004E1C0",
+              "encoding": "ascii",
+              "value": "0123456789ABCDEF1.0.5"
+            }
+          ]
+        },
+        {
+          "id": "zlib",
+          "version": "1.1.3",
+          "linkage": "static-inside-d3dx8",
+          "confidence": "version-confirmed",
+          "source": "https://zlib.net/fossils/zlib-1.1.3.tar.gz",
+          "fingerprints": [
+            {
+              "address": "0x1004E288",
+              "encoding": "ascii",
+              "value": "1.1.3"
+            },
+            {
+              "address": "0x10050971",
+              "encoding": "ascii",
+              "value": "deflate 1.1.3"
+            },
+            {
+              "address": "0x100514A1",
+              "encoding": "ascii",
+              "value": "inflate 1.1.3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ogg.dll",
+      "path": "game_bins/crimsonland/1.9.93-gog/ogg.dll",
+      "sha256": "308540dbd488f3bceca2dbadefe02cf29d10a27c4ac096bb3da053e3e0b923ea",
+      "size": 49152,
+      "components": [
+        {
+          "id": "libogg",
+          "version": "1.0 release set",
+          "linkage": "dynamic",
+          "confidence": "release-set-confirmed",
+          "source": "https://downloads.xiph.org/releases/ogg/libogg-1.0.tar.gz"
+        }
+      ]
+    },
+    {
+      "id": "vorbis.dll",
+      "path": "game_bins/crimsonland/1.9.93-gog/vorbis.dll",
+      "sha256": "b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b",
+      "size": 974848,
+      "components": [
+        {
+          "id": "libvorbis",
+          "version": "1.0",
+          "linkage": "dynamic",
+          "confidence": "version-confirmed",
+          "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
+          "fingerprints": [
+            {
+              "file_offset": "0x14460",
+              "encoding": "ascii",
+              "value": "Xiph.Org libVorbis I 20020717"
+            }
+          ],
+          "imports": [
+            {
+              "module": "ogg",
+              "symbols": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vorbisfile.dll",
+      "path": "game_bins/crimsonland/1.9.93-gog/vorbisfile.dll",
+      "sha256": "f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2",
+      "size": 28672,
+      "components": [
+        {
+          "id": "libvorbisfile",
+          "version": "1.0 release set",
+          "linkage": "dynamic",
+          "confidence": "release-set-confirmed",
+          "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
+          "imports": [
+            {
+              "module": "ogg",
+              "symbols": []
+            },
+            {
+              "module": "vorbis",
+              "symbols": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cross_image_matches": [
+    {
+      "component": "d3dx8",
+      "left": {
+        "artifact": "crimsonland.exe",
+        "name": "float_near_equal",
+        "start": "0x00452EF0",
+        "end": "0x00452F1D"
+      },
+      "right": {
+        "artifact": "grim.dll",
+        "name": "float_near_equal",
+        "start": "0x1000CBFF",
+        "end": "0x1000CC2C"
+      }
+    },
+    {
+      "component": "d3dx8",
+      "left": {
+        "artifact": "crimsonland.exe",
+        "name": "renderer_select_backend",
+        "start": "0x004566D3",
+        "end": "0x004567B0"
+      },
+      "right": {
+        "artifact": "grim.dll",
+        "name": "grim_select_renderer_backend",
+        "start": "0x1001C188",
+        "end": "0x1001C265"
+      }
+    },
+    {
+      "component": "d3dx8",
+      "left": {
+        "artifact": "crimsonland.exe",
+        "name": "mat4_invert",
+        "start": "0x0045E40A",
+        "end": "0x0045E73E"
+      },
+      "right": {
+        "artifact": "grim.dll",
+        "name": "sub_1002CE9A",
+        "start": "0x1002CE9A",
+        "end": "0x1002D1CE"
+      }
+    }
+  ]
+}

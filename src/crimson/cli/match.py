@@ -10,6 +10,7 @@ from typing import Any, Literal
 
 import typer
 
+from .. import library_provenance as provenance
 from .. import match as matchlib
 
 match_app = typer.Typer(add_completion=False)
@@ -340,6 +341,30 @@ def cmd_match_validate(source: Path = typer.Argument(..., help="scratch source f
     typer.echo("ok")
 
 
+@match_app.command("provenance")
+def cmd_match_provenance(
+    manifest: Path = typer.Option(
+        provenance.DEFAULT_PROVENANCE_PATH,
+        "--manifest",
+        help="library provenance manifest",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when any provenance check fails"),
+) -> None:
+    """Verify embedded and dynamically linked library provenance."""
+    try:
+        report = provenance.validate_library_provenance(manifest)
+    except Exception as exc:
+        typer.echo(f"provenance failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+    if as_json:
+        typer.echo(json.dumps(provenance.provenance_report_payload(report), indent=2, sort_keys=True))
+    else:
+        typer.echo(provenance.render_provenance_report(report))
+    if check and not report.ok:
+        raise typer.Exit(code=1)
+
+
 @match_app.command("probe")
 def cmd_match_probe(
     directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
@@ -485,9 +510,7 @@ def cmd_match_status(
                 f"unknown recovery states: {', '.join(sorted(unknown_recoveries))}",
                 param_hint="--recovery",
             )
-        selected_statuses = [
-            status for status in selected_statuses if matchlib.scratch_recovery(status) in recoveries
-        ]
+        selected_statuses = [status for status in selected_statuses if matchlib.scratch_recovery(status) in recoveries]
     residuals = _parse_csv(residual)
     if residuals is not None:
         unknown_residuals = residuals - matchlib.RESIDUAL_VALUES
@@ -496,9 +519,7 @@ def cmd_match_status(
                 f"unknown residual kinds: {', '.join(sorted(unknown_residuals))}",
                 param_hint="--residual",
             )
-        selected_statuses = [
-            status for status in selected_statuses if residuals.intersection(status.config.residuals)
-        ]
+        selected_statuses = [status for status in selected_statuses if residuals.intersection(status.config.residuals)]
     selected_statuses = matchlib.sort_scratch_statuses(selected_statuses, sort_by=sort_by)
     if limit is not None:
         selected_statuses = selected_statuses[:limit]
@@ -643,11 +664,7 @@ def cmd_match_shard(
         images=(image,) if image is not None else None,
         scope=scope,
     )
-    rows = [
-        row
-        for row in rows
-        if row.state in states and row.target_size >= min_bytes
-    ]
+    rows = [row for row in rows if row.state in states and row.target_size >= min_bytes]
     rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
     if limit is not None:
         rows = rows[:limit]
@@ -749,13 +766,7 @@ def cmd_match_inspect(
         if binja_live:
             address = int(payload["address"])
             program = str(payload["image"])
-            bundle_path = (
-                match_root
-                / ".cache"
-                / "evidence"
-                / program
-                / f"0x{address:08x}.json"
-            ).resolve()
+            bundle_path = (match_root / ".cache" / "evidence" / program / f"0x{address:08x}.json").resolve()
             bundle_path.parent.mkdir(parents=True, exist_ok=True)
             command = [
                 "bn",
@@ -892,8 +903,7 @@ def cmd_match_worker_check(
             )
         )
         statuses_by_directory = {
-            str(status.config.directory.resolve().relative_to(match_root.resolve())): status
-            for status in statuses
+            str(status.config.directory.resolve().relative_to(match_root.resolve())): status for status in statuses
         }
         targets: list[dict[str, Any]] = []
         for _worker, target in matchlib.match_claim_targets(claim_payload):
@@ -903,19 +913,11 @@ def cmd_match_worker_check(
                 {
                     **target,
                     "handled": status is not None,
-                    "status": (
-                        matchlib.scratch_status_payload(status)
-                        if status is not None
-                        else None
-                    ),
+                    "status": (matchlib.scratch_status_payload(status) if status is not None else None),
                 },
             )
         state_counts = {
-            state: sum(
-                target["status"] is not None
-                and target["status"]["state"] == state
-                for target in targets
-            )
+            state: sum(target["status"] is not None and target["status"]["state"] == state for target in targets)
             for state in ("match", "audit", "wip", "error")
         }
         unhandled = sum(not bool(target["handled"]) for target in targets)
@@ -936,12 +938,7 @@ def cmd_match_worker_check(
             "errors": errors,
             "targets": targets,
         }
-        output = output or (
-            match_root
-            / ".cache"
-            / "reports"
-            / f"{claim_payload['worker']}.json"
-        )
+        output = output or (match_root / ".cache" / "reports" / f"{claim_payload['worker']}.json")
         matchlib.write_match_json(output.resolve(), report)
     except Exception as exc:
         typer.echo(f"worker check failed: {str(exc).splitlines()[0]}", err=True)
@@ -956,11 +953,7 @@ def cmd_match_worker_check(
             f"errors={len(errors)} report={output.resolve()}",
         )
         typer.echo(
-            "states="
-            + "/".join(
-                f"{state}:{count}"
-                for state, count in state_counts.items()
-            ),
+            "states=" + "/".join(f"{state}:{count}" for state, count in state_counts.items()),
         )
         for error in report["errors"]:
             typer.echo(str(error), err=True)

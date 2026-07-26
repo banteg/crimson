@@ -4,10 +4,34 @@ This page tracks third-party libraries referenced by the Crimsonland binaries
 and our current analysis status. The goal is to pin versions so we can align
 headers and types with the actual runtime behavior.
 
-Evidence is listed inline with file paths and line numbers from our Ghidra
-outputs.
+`analysis/library_provenance.json` is the machine-readable source of truth for
+artifact hashes, embedded ranges, imports, and version fingerprints. Verify it
+against the checked-in binaries with:
+
+```sh
+uv run crimson match provenance --check
+```
+
+Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
 
 ## Bundled/embedded libraries (from the game binaries)
+
+### D3DX8 (DirectX 8.1 SDK; exact archive revision pending)
+
+- Evidence: both images import `Direct3DCreate8`, but contain D3DX entry points,
+  image codecs, math routines, and processor-specific dispatch code internally.
+
+- Evidence: the EXE range `0x00452ef0..0x00460cb8` and the Grim range
+  `0x1000aaa6..0x1004b5b0` share large runs of instruction-identical functions
+  after image addresses and relocations are normalized.
+
+- Evidence: `float_near_equal`, the 221-byte renderer backend selector, and the
+  820-byte matrix inversion routine are independently checked across both
+  images by `crimson match provenance`.
+
+- Status: D3DX8 family and DirectX 8.1 API version confirmed. The exact
+  historical `d3dx8.lib` revision still needs to be selected by archive-member
+  matching.
 
 ### libpng (version 1.0.5)
 - Evidence: Grim function `FUN_100103d6` at `0x100103d6` calls
@@ -27,17 +51,18 @@ outputs.
   `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
 
 - Status: headers imported (`third_party/headers/zlib.h`, `third_party/headers/zconf.h`).
-- Status: mapped core inflate entry points (inflateInit_/inflateInit2_/inflate/inflateReset/inflateEnd).
+- Status: mapped core inflate entry points
+  (`inflateInit_`/`inflateInit2_`/`inflate`/`inflateReset`/`inflateEnd`).
 
-### libjpeg (binary version unknown; headers are IJG 6b)
-- Evidence: multiple JPEG/JFIF error strings embedded in grim.dll, e.g.
-  `analysis/ghidra/raw/grim.dll_strings.txt:11` through `:121`.
+### libjpeg (IJG 6a)
 
-- Evidence (headers): `JPEG_LIB_VERSION 62` (IJG 6b) in
-  `third_party/headers/jpeglib.h:33`.
+- Evidence: `grim.dll` contains the release string `6a  7-Feb-96` at
+  `0x1004d724` and again at `0x10057754`, followed by the IJG 1996 copyright
+  string.
 
-- Evidence (binary): no explicit version string found in grim.dll.
-- Status: headers imported (`third_party/headers/jpeg_all.h`).
+- Status: version is confirmed, correcting the previous 6b-header assumption.
+  The currently imported `JPEG_LIB_VERSION 62` headers are 6b and must be
+  replaced with the exact 6a release before type/signature synchronization.
 - Status: no signature mapping yet.
 
 ### libvorbisfile / libvorbis / libogg (version 1.0; headers match vorbis v1.0.0 tag)
@@ -74,10 +99,11 @@ outputs.
 
 - Status: no signature mapping yet.
 
-## Platform/SDK dependencies (import table)
+## Platform/SDK dependencies
 
-Versions are not pinned yet; we need to match SDKs/headers by interface GUIDs
-and vtable shapes. Evidence comes from Ghidra import discovery.
+Imported API versions can be checked from interfaces and call constants.
+Statically linked SDK utility code is tracked above and requires archive-member
+matching.
 
 ### DirectX SDK version (likely 8.1)
 - Evidence: Grim functions including `FUN_10003090` at `0x10003090` call
@@ -106,7 +132,10 @@ and vtable shapes. Evidence comes from Ghidra import discovery.
 - Evidence: `analysis/ghidra/raw/ghidra_analysis.log:28923` through `:28973`.
 
 ## Next evidence to capture
-- Optional: verify the exact DirectX 8.1 SDK build by matching interface GUIDs
-  and vtable sizes (D3D8/DInput8/DSound).
 
-- Identify MSVCRT version by import names and CRT string signatures.
+- Match candidate DirectX 8.0b/8.1 `d3dx8.lib` members against both embedded
+  D3DX8 ranges and record the exact archive hash.
+- Match the EXE range `0x00460cb8..0x0046e920` against the exact VC6 CRT
+  archive.
+- Replace the imported IJG 6b headers with 6a and map the duplicated codec
+  object boundaries.
