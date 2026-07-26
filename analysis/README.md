@@ -43,7 +43,8 @@ Pass `true` as the second argument to include an open Binary Ninja session:
 just analysis-check crimsonland.exe true
 ```
 
-Refresh each tool from the shared maps:
+Refresh each tool from the shared maps. All three tools reuse local persistent
+analysis databases by default:
 
 ```bash
 just binja-sync
@@ -55,9 +56,28 @@ just ida-export-grim
 just ghidra-grim
 ```
 
-`binja-sync` operates on an already-open Binary Ninja database. IDA and Ghidra
-analyze a temporary copy of the binary and replace only their structured
-snapshots.
+`binja-sync` operates on an already-open Binary Ninja database. IDA reopens the
+gitignored database under `analysis/ida/databases/`; Ghidra reopens the
+gitignored project under `analysis/ghidra/projects/`. Both reapply the shared
+maps and replace their structured snapshots after analysis.
+
+Each persistent database has a provenance record containing the input binary
+hash and analysis-tool version/fingerprint. A mismatch is a hard error so a
+database cannot silently be reused for a different binary or tool build.
+
+Create a clean database explicitly when validating reproducibility or after an
+intentional input/tool change:
+
+```bash
+just ida-rebuild-exe
+just ghidra-rebuild-exe
+
+just ida-rebuild-grim
+just ghidra-rebuild-grim
+```
+
+Rebuild commands move the prior local database/project and provenance into an
+ignored `backups/` directory before starting clean.
 
 Tool-specific presentation hints live under `analysis/overlays/`. Recovered
 behavioral notes that used to exist only in editable Ghidra hotspot copies live

@@ -2,6 +2,7 @@ import json
 import os
 
 import ida_auto
+import ida_loader
 import idaapi
 import idautils
 import idc
@@ -153,23 +154,26 @@ def main():
                 data_map,
                 f"(updated {stats['updated']}, renamed {stats['renamed']}, types {stats['types']}, type errors {stats['type_errors']}, comments {stats['comments']}, skipped {stats['skipped']})",
             )
-
-        artifacts = {
-            "functions.json": collect_functions(),
-            "strings.json": collect_strings(),
-            "imports.json": collect_imports(),
-            "exports.json": collect_exports(),
-            "segments.json": collect_segments(),
-            "metadata.json": collect_metadata(file_path),
-        }
-
-        for name, payload in artifacts.items():
-            path = os.path.join(out_dir, name)
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(payload, f, indent=2, sort_keys=True)
-                f.write("\n")
     finally:
         ida_auto.enable_auto(old_auto_state)
+
+    idaapi.auto_wait()
+    artifacts = {
+        "functions.json": collect_functions(),
+        "strings.json": collect_strings(),
+        "imports.json": collect_imports(),
+        "exports.json": collect_exports(),
+        "segments.json": collect_segments(),
+        "metadata.json": collect_metadata(file_path),
+    }
+
+    for name, payload in artifacts.items():
+        path = os.path.join(out_dir, name)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, sort_keys=True)
+            f.write("\n")
+    if not ida_loader.save_database():
+        raise RuntimeError("failed to save persistent IDA database")
 
     print("IDA export complete:", out_dir)
     return 0

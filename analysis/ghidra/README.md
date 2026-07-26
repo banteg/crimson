@@ -15,14 +15,15 @@ Layout:
 External inputs:
 
 - `third_party/headers/` — header pack for type recovery.
-- `analysis/ghidra/projects/` — kept headless projects (gitignored).
+- `analysis/ghidra/projects/` — persistent headless projects and provenance
+  records (gitignored).
 
 ## Regenerating
 
 1. Re-run Ghidra analysis with headers in `third_party/headers/` added to the
    C parser include paths. We use `analysis/ghidra/scripts/ImportThirdPartyHeaders.java`
-   to parse codec headers before exporting. The default flow is wrapped by the
-   justfile shortcuts:
+   to parse codec headers before exporting. The default flow reuses the
+   persistent project and is wrapped by the justfile shortcuts:
 
    ```bash
    just ghidra-exe
@@ -33,6 +34,24 @@ External inputs:
    ```bash
    just ghidra-grim
    ```
+
+   Each run verifies the input binary hash plus the Ghidra version and
+   installation fingerprint, processes the existing program, reapplies maps,
+   and saves the updated project. The first run imports the binary and creates
+   the project. `FinalizeAnalysis.java` runs a whole-program post-map pass when
+   creating a project, then limits later refreshes to analysis queued by current
+   map changes so generated names do not drift between exports.
+
+   Use the explicit rebuild commands for a clean reproducibility baseline or
+   after intentionally changing the binary/tool:
+
+   ```bash
+   just ghidra-rebuild-exe
+   just ghidra-rebuild-grim
+   ```
+
+   Rebuilds move the previous project and provenance into
+   `analysis/ghidra/projects/backups/` before importing cleanly.
 
 ## WSL regen + Windows sync
 
@@ -71,18 +90,18 @@ with unnamed callback parameters.
    The name/data maps can be overridden via `CRIMSON_NAME_MAP` and
    `CRIMSON_DATA_MAP`.
 
-2. For faster iterations, keep the headless project around and re-run with the
-   same project name. We store these under `analysis/ghidra/projects/` (manual
-   invocation for now):
+2. For custom persistent analyses, pass `--persistent`, an explicit project
+   directory, and a stable project name:
 
    ```bash
    ./analysis/ghidra/tooling/ghidra-analyze.sh \
-     --keep-project \
+     --persistent \
      --project-dir analysis/ghidra/projects \
      --project-name crimsonland_exe \
      --script-path analysis/ghidra/scripts \
      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+     -s FinalizeAnalysis.java \
      -s ExportAll.java \
      -o analysis/ghidra/raw \
      game_bins/crimsonland/1.9.93-gog/crimsonland.exe
@@ -95,7 +114,7 @@ with unnamed callback parameters.
 
    ```bash
    ./analysis/ghidra/tooling/ghidra-analyze.sh \
-     --keep-project \
+     --persistent \
      --project-dir analysis/ghidra/projects \
      --project-name grim_dll \
      --script-path analysis/ghidra/scripts \
@@ -103,14 +122,15 @@ with unnamed callback parameters.
      -s CreateConfigDialogProc.java \
      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+     -s FinalizeAnalysis.java \
      -s ExportAll.java \
      -o analysis/ghidra/raw \
      game_bins/crimsonland/1.9.93-gog/grim.dll
    ```
 
-3. For repeated runs on the same kept project, use `-process` with the raw
-   headless analyzer so it opens the existing `grim.dll` program instead of
-   re-importing it:
+3. The wrapper automatically switches from `-import` to `-process` after the
+   project is created. If operating the raw headless analyzer directly, the
+   equivalent repeated-run command is:
 
    ```bash
    GHIDRA_OUTPUT_DIR=analysis/ghidra/raw \
@@ -122,5 +142,6 @@ with unnamed callback parameters.
      -postScript CreateConfigDialogProc.java \
      -postScript ApplyNameMap.java analysis/ghidra/maps/name_map.json \
      -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
+     -postScript FinalizeAnalysis.java \
      -postScript ExportAll.java
    ```

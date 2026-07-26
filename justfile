@@ -109,8 +109,16 @@ ida-export-exe:
     ./analysis/ida/tooling/ida-export.sh {{game_dir}}/crimsonland.exe analysis/ida/raw/crimsonland.exe
 
 [macos]
+ida-rebuild-exe:
+    ./analysis/ida/tooling/ida-export.sh --rebuild {{game_dir}}/crimsonland.exe analysis/ida/raw/crimsonland.exe
+
+[macos]
 ida-export-grim:
     ./analysis/ida/tooling/ida-export.sh {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
+
+[macos]
+ida-rebuild-grim:
+    ./analysis/ida/tooling/ida-export.sh --rebuild {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
 
 entrypoint-trace:
     uv run scripts/entrypoint_trace.py --depth 2 --skip-external
@@ -131,11 +139,31 @@ spawn-templates:
 [unix]
 ghidra-exe:
     ./analysis/ghidra/tooling/ghidra-analyze.sh \
+      --persistent \
+      --project-dir analysis/ghidra/projects \
+      --project-name crimsonland_exe \
       --script-path analysis/ghidra/scripts \
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+      -s FinalizeAnalysis.java \
+      -s ExportAll.java \
+      -o analysis/ghidra/raw \
+      {{game_dir}}/crimsonland.exe
+
+[unix]
+ghidra-rebuild-exe:
+    ./analysis/ghidra/tooling/ghidra-analyze.sh \
+      --rebuild \
+      --project-dir analysis/ghidra/projects \
+      --project-name crimsonland_exe \
+      --script-path analysis/ghidra/scripts \
+      -s ImportThirdPartyHeaders.java -a third_party/headers \
+      -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
+      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
+      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+      -s FinalizeAnalysis.java \
       -s ExportAll.java \
       -o analysis/ghidra/raw \
       {{game_dir}}/crimsonland.exe
@@ -143,6 +171,9 @@ ghidra-exe:
 [unix]
 ghidra-grim:
     ./analysis/ghidra/tooling/ghidra-analyze.sh \
+      --persistent \
+      --project-dir analysis/ghidra/projects \
+      --project-name grim_dll \
       --script-path analysis/ghidra/scripts \
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
@@ -150,6 +181,25 @@ ghidra-grim:
       -s CreateConfigDialogProc.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+      -s FinalizeAnalysis.java \
+      -s ExportAll.java \
+      -o analysis/ghidra/raw \
+      {{game_dir}}/grim.dll
+
+[unix]
+ghidra-rebuild-grim:
+    ./analysis/ghidra/tooling/ghidra-analyze.sh \
+      --rebuild \
+      --project-dir analysis/ghidra/projects \
+      --project-name grim_dll \
+      --script-path analysis/ghidra/scripts \
+      -s ImportThirdPartyHeaders.java -a third_party/headers \
+      -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
+      -s CreateGrim2DVtableFunctions.java \
+      -s CreateConfigDialogProc.java \
+      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
+      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+      -s FinalizeAnalysis.java \
       -s ExportAll.java \
       -o analysis/ghidra/raw \
       {{game_dir}}/grim.dll

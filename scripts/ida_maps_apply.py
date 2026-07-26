@@ -2,6 +2,7 @@ import json
 import os
 import re
 
+import ida_bytes
 import ida_funcs
 import ida_typeinf
 import idaapi
@@ -147,6 +148,13 @@ def set_name_or_raise(ea, name, context):
         return False
     current = idc.get_name(ea)
     if current == name:
+        return False
+    flags = ida_bytes.get_flags(ea)
+    if ida_bytes.is_tail(flags):
+        item_head = ida_bytes.get_item_head(ea)
+        print(
+            f"name skipped for {context}: address is inside the data item at 0x{item_head:08X}",
+        )
         return False
     if not idc.set_name(ea, name, idc.SN_NOWARN):
         raise RuntimeError(f"set_name failed for {context}")

@@ -26,6 +26,8 @@ Options:
   --no-analysis            Skip auto-analysis
   --timeout <seconds>      Analysis timeout per file
   --keep-project           Keep the Ghidra project after analysis
+  --persistent             Reuse an existing project or create it once
+  --rebuild                Back up and cleanly rebuild a persistent project
   --project-dir <dir>      Directory for Ghidra project (default: /tmp)
   --project-name <name>    Project name (default: auto-generated)
   -v, --verbose            Verbose output
@@ -33,6 +35,7 @@ Options:
 
 Environment:
   GHIDRA_LOG_DIR            Directory for transient analyzer logs
+  PYTHON_BIN                Python interpreter used for provenance checks
 
 Built-in Scripts (use with -s):
   ExportAll.java           Export structured functions, calls, strings, and summary
@@ -50,6 +53,10 @@ Examples:
 
   # Keep project for later use
   ghidra-analyze.sh --keep-project --project-name MyProject binary
+
+  # Reuse a persistent project
+  ghidra-analyze.sh --persistent --project-dir ./projects \
+    --project-name MyProject binary
 EOF
 }
 
@@ -63,8 +70,11 @@ CSPEC=""
 NO_ANALYSIS=""
 TIMEOUT=""
 KEEP_PROJECT=false
+PERSISTENT=false
+REBUILD=false
 PROJECT_DIR="/tmp"
 PROJECT_NAME=""
+PROJECT_NAME_SET=false
 VERBOSE=false
 BINARY=""
 
@@ -110,12 +120,24 @@ while [[ $# -gt 0 ]]; do
             KEEP_PROJECT=true
             shift
             ;;
+        --persistent)
+            PERSISTENT=true
+            KEEP_PROJECT=true
+            shift
+            ;;
+        --rebuild)
+            REBUILD=true
+            PERSISTENT=true
+            KEEP_PROJECT=true
+            shift
+            ;;
         --project-dir)
             PROJECT_DIR="$2"
             shift 2
             ;;
         --project-name)
             PROJECT_NAME="$2"
+            PROJECT_NAME_SET=true
             shift 2
             ;;
         -v|--verbose)
@@ -148,12 +170,89 @@ if [[ ! -f "$BINARY" ]]; then
     exit 1
 fi
 
+# Resolve paths before changing how the project is opened.
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+if [[ "$BINARY" != /* ]]; then
+    BINARY="$(cd "$(dirname "$BINARY")" && pwd)/$(basename "$BINARY")"
+fi
+if [[ "$PROJECT_DIR" != /* ]]; then
+    PROJECT_DIR="$PWD/$PROJECT_DIR"
+fi
+
 # Create output directory if needed
 mkdir -p "$OUTPUT_DIR"
 
 # Generate project name if not specified
 if [[ -z "$PROJECT_NAME" ]]; then
     PROJECT_NAME="ghidra_$(basename "$BINARY" | tr '.' '_')_$$"
+fi
+if [[ "$PERSISTENT" == true && "$PROJECT_NAME_SET" != true ]]; then
+    echo "Error: --persistent and --rebuild require --project-name" >&2
+    exit 2
+fi
+
+PROGRAM_NAME="$(basename "$BINARY")"
+PROJECT_FILE="$PROJECT_DIR/$PROJECT_NAME.gpr"
+PROJECT_REPOSITORY="$PROJECT_DIR/$PROJECT_NAME.rep"
+PROVENANCE_FILE="$PROJECT_DIR/$PROJECT_NAME.provenance.json"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+PROVENANCE_SCRIPT="$REPO_ROOT/scripts/analysis_db_provenance.py"
+
+GHIDRA_PROPERTIES="$GHIDRA_HOME/Ghidra/application.properties"
+if [[ ! -f "$GHIDRA_PROPERTIES" ]]; then
+    echo "Error: Ghidra application properties not found: $GHIDRA_PROPERTIES" >&2
+    exit 1
+fi
+GHIDRA_VERSION="$(
+    sed -n 's/^application\.version=//p' "$GHIDRA_PROPERTIES" | head -1
+)"
+GHIDRA_VERSION="${GHIDRA_VERSION:-unknown}"
+PROVENANCE_ARGS=(
+    --state "$PROVENANCE_FILE"
+    --tool ghidra
+    --tool-version "$GHIDRA_VERSION"
+    --tool-file "$GHIDRA_PROPERTIES"
+    --program "$PROGRAM_NAME"
+    --binary "$BINARY"
+)
+
+backup_project() {
+    local timestamp backup_dir
+    timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+    backup_dir="$PROJECT_DIR/backups/$PROJECT_NAME-$timestamp-$$"
+    mkdir -p "$backup_dir"
+    if [[ -f "$PROJECT_FILE" ]]; then
+        mv "$PROJECT_FILE" "$backup_dir/"
+    fi
+    if [[ -d "$PROJECT_REPOSITORY" ]]; then
+        mv "$PROJECT_REPOSITORY" "$backup_dir/"
+    fi
+    if [[ -f "$PROVENANCE_FILE" ]]; then
+        mv "$PROVENANCE_FILE" "$backup_dir/"
+    fi
+    echo "Backed up previous Ghidra project state to $backup_dir"
+}
+
+mkdir -p "$PROJECT_DIR"
+if [[ "$REBUILD" == true ]] \
+    && [[ -f "$PROJECT_FILE" || -d "$PROJECT_REPOSITORY" || -f "$PROVENANCE_FILE" ]]; then
+    backup_project
+fi
+
+PROCESS_EXISTING=false
+if [[ "$PERSISTENT" == true ]]; then
+    if [[ -f "$PROJECT_FILE" && -d "$PROJECT_REPOSITORY" ]]; then
+        if ! "$PYTHON_BIN" "$PROVENANCE_SCRIPT" check "${PROVENANCE_ARGS[@]}"; then
+            echo "Refusing to reuse Ghidra project $PROJECT_NAME." >&2
+            echo "Run this command again with --rebuild for a clean project." >&2
+            exit 1
+        fi
+        PROCESS_EXISTING=true
+    elif [[ -f "$PROJECT_FILE" || -d "$PROJECT_REPOSITORY" || -f "$PROVENANCE_FILE" ]]; then
+        echo "Error: Incomplete persistent Ghidra project state for $PROJECT_NAME" >&2
+        echo "Run this command again with --rebuild to archive it." >&2
+        exit 1
+    fi
 fi
 
 # Build script path including our built-in scripts
@@ -165,7 +264,29 @@ else
 fi
 
 # Build command
-CMD=("$ANALYZE_HEADLESS" "$PROJECT_DIR" "$PROJECT_NAME" -import "$BINARY")
+if [[ "$PROCESS_EXISTING" == true ]]; then
+    echo "Reusing persistent Ghidra project: $PROJECT_DIR/$PROJECT_NAME"
+    CMD=("$ANALYZE_HEADLESS" "$PROJECT_DIR" "$PROJECT_NAME" -process "$PROGRAM_NAME")
+    for script in "${SCRIPTS[@]}"; do
+        if [[ "$(basename "$script")" == "FinalizeAnalysis.java" ]]; then
+            # The finalizer runs the required analysis after current maps, so
+            # avoid doing analysis once before and once after map application.
+            CMD+=(-noanalysis)
+            break
+        fi
+    done
+else
+    if [[ "$PERSISTENT" == true ]]; then
+        echo "Creating persistent Ghidra project: $PROJECT_DIR/$PROJECT_NAME"
+    fi
+    CMD=("$ANALYZE_HEADLESS" "$PROJECT_DIR" "$PROJECT_NAME" -import "$BINARY")
+fi
+
+if [[ "$PERSISTENT" == true && "$PROCESS_EXISTING" != true ]]; then
+    export CRIMSON_GHIDRA_FINALIZE_FULL=1
+else
+    unset CRIMSON_GHIDRA_FINALIZE_FULL
+fi
 
 # Add script path
 CMD+=(-scriptPath "$FULL_SCRIPT_PATH")
@@ -189,13 +310,12 @@ done
 # Add output directory as environment variable for scripts
 export GHIDRA_OUTPUT_DIR="$OUTPUT_DIR"
 
-# Add processor if specified
-if [[ -n "$PROCESSOR" ]]; then
+# Add import-only language overrides.
+if [[ "$PROCESS_EXISTING" != true && -n "$PROCESSOR" ]]; then
     CMD+=(-processor "$PROCESSOR")
 fi
 
-# Add compiler spec if specified
-if [[ -n "$CSPEC" ]]; then
+if [[ "$PROCESS_EXISTING" != true && -n "$CSPEC" ]]; then
     CMD+=(-cspec "$CSPEC")
 fi
 
@@ -228,16 +348,22 @@ if [[ "$VERBOSE" == true ]]; then
 fi
 
 "${CMD[@]}" 2>&1 | tee "$OUTPUT_LOG"
-
 exit_code=${PIPESTATUS[0]}
 
-if [[ $exit_code -eq 0 ]]; then
-    echo ""
-    echo "Analysis complete. Output files in: $OUTPUT_DIR"
-    ls -la "$OUTPUT_DIR"
-else
+if [[ $exit_code -ne 0 ]]; then
     echo "Analysis failed with exit code: $exit_code" >&2
     echo "Check log file: $LOG_FILE" >&2
+    exit "$exit_code"
 fi
 
-exit $exit_code
+if [[ "$PERSISTENT" == true ]]; then
+    if [[ ! -f "$PROJECT_FILE" || ! -d "$PROJECT_REPOSITORY" ]]; then
+        echo "Error: Ghidra completed without a persistent project for $PROJECT_NAME" >&2
+        exit 1
+    fi
+    "$PYTHON_BIN" "$PROVENANCE_SCRIPT" write "${PROVENANCE_ARGS[@]}"
+fi
+
+echo ""
+echo "Analysis complete. Output files in: $OUTPUT_DIR"
+ls -la "$OUTPUT_DIR"
