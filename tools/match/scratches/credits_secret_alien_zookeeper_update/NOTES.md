@@ -49,3 +49,12 @@ The source uses normal C++ vector operators and direct global updates because
 those reproduce native x87 and register scheduling best. It contains no
 volatile coercions, dummy calls, dead arithmetic, inline assembly, fabricated
 reference aliases, or other fakematching devices.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output covers the timer, drawing loop, arbitrary-cell
+swap, first-match clearing, score/time award, reset reroll, and Back route;
+IDA and Ghidra corroborate the same seven-callee surface. Candidate and native
+remain exactly 638 instructions with the exact `0x54` frame and a clean
+`153/0/0` reference audit. A temporary scalar-component rewrite of the
+initial chained panel expression was rejected: it fell from 83.70% to 76.45%,
+reduced the prefix from 15 to 3, and changed the audit to `147/0/4`.

@@ -29,7 +29,7 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=82.22% prefix=26/3159 target_insns=3159 candidate_insns=3136 refs=351/0/1
+match=86.46% prefix=26/3159 target_insns=3159 candidate_insns=3161 refs=352/0/1
 first_target=mov dword [esp+0x18], esi
 first_candidate=mov dword [esp+0x10], esi
 ```
@@ -504,3 +504,14 @@ and `352/0/1` references byte-for-byte. Combining the six paired position
 stores into whole-vector assignments was also measured, but added one
 instruction and lost 6.39 fuzzy-weighted bytes, so the evidenced independent
 stores remain.
+
+## Recovery classification
+
+This scratch is `semantic-complete` with `compiler,references` residuals. A
+fresh live Binary Ninja pass retains all 260 native blocks, every template
+handler from `0x00` through `0x43` (with `0x02` taking the native fallback),
+the shared root initialization, and the complete effect, difficulty, Hardcore,
+and retry tail. The sole masked-reference mismatch is the compiler-generated
+retry jump table, whose candidate and target entries cover the same four
+cases. The first mismatch remains the evidenced root-offset/zero-vector local
+slot permutation shown above; no gameplay source is missing there.

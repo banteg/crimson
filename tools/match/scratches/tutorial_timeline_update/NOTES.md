@@ -98,3 +98,12 @@ all three native scan CFGs. The former hand-written pointer loop hoisted slot
 zero out of each loop and emitted nine extra instructions overall; replacing
 it raises the honest total from 63.75% to 64.60% while preserving behavior,
 the native frame, and the reference audit.
+
+The scratch is classified `semantic-complete` with `compiler,references`
+residuals. Fresh live Binary Ninja evidence retains every stage, prompt,
+fixed-slot bonus, bonus-carrier handoff, spawn formation, and completion
+transition. IDA and Ghidra independently report the same five-callee surface.
+The candidate remains within two instructions of native at 693/695 with the
+exact `0x5c` frame and `154/0/4` references; bounded mismatches are branch
+placement for the prompt transition and VC6 register, stack-slot, jump-table,
+and scheduling choices rather than missing behavior.

@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **635/865** functions matched exactly, **127842/361707** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **292990/361707** code bytes (**81.0%**).
+Fuzzy-weighted alignment is **293076/361707** code bytes (**81.0%**).
 
 Compilable source candidates cover **757/865** functions and **344485/361707** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -14,12 +14,12 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270850/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
+| crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270936/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
 | grim.dll | 136/186 | 19597/36799 | 53.3% | 22140/36799 | 60.2% | 141/186 | 22659/36799 | 61.6% | 136/141 |
 
 ## crimsonland.exe
 
-**499/679** functions, **108245/324908** bytes (**33.3%**), **270850/324908** fuzzy-weighted bytes (**83.4%**), **616/679** source candidates covering **321826/324908** bytes (**99.1%**), **499/616** scratches verified.
+**499/679** functions, **108245/324908** bytes (**33.3%**), **270936/324908** fuzzy-weighted bytes (**83.4%**), **616/679** source candidates covering **321826/324908** bytes (**99.1%**), **499/616** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -422,7 +422,7 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 369/424 | 55 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 412/429 | 17 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
-| wip | quest_build_the_beating | 0x00435610 | 649 | 356/649 | 293 | 166/166 | 54.82% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
+| wip | quest_build_the_beating | 0x00435610 | 649 | 442/649 | 207 | 166/166 | 68.07% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 237/391 | 154 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 395/407 | 12 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |

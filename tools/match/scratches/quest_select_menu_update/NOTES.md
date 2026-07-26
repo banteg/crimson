@@ -66,3 +66,14 @@ Disassembly at `0x00448a72..0x00448a8f` reloads
 copy. Expressing that dependency adds two honest candidate instructions and
 slightly lowers the aggregate similarity, but recovers the native data flow
 instead of preserving a scorer-friendlier local substitution.
+
+## Recovery classification
+
+This scratch is `semantic-complete` with `compiler,references` residuals. A
+fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
+locked/unlocked row, Back, quick-select, validation, and gameplay-transition
+paths, and its seven-call inventory agrees with the recovered source. All ten
+masked-reference mismatches occur inside nonmatching sequence alignments and
+resolve to source operations already present in the surrounding native flow.
+The remaining 48-byte native versus 56-byte candidate frame and register/lifetime
+differences are compiler layout, not missing menu behavior.

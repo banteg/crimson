@@ -87,3 +87,21 @@ also decompile as one record because both presentation views retain the proven
 
 The analysis/type recovery does not affect code generation: the honest match
 remains 78.45%, 757/765 instructions, prefix 25, and `136/0/5` references.
+
+## Semantic-completion audit
+
+Fresh live Binary Ninja HLIL and disassembly confirm all four native pool
+cursors and every detail, Energizer, lifecycle-retirement, spawn-owner, and
+hit-flash branch. Address-matched IDA and Ghidra snapshots independently agree
+on the two-argument signature and the only two direct callees,
+`perk_count_get` and `__ftol`. The five aligned-reference mismatches carry no
+unresolved target.
+
+Hoisting the tint pointer to function scope and replacing each pointer copy
+with a direct aggregate copy both reproduced the exact same 78.45%,
+757/765-instruction candidate and `136/0/5` reference audit. The alternate
+`msvc6.5pp` profile regressed to 59.67%. These no-op natural source variants
+and the already exact `0x3c` frame isolate the remaining eight-instruction
+delta to VC6 register allocation and aligned-reference scheduling. The scratch
+is therefore classified `semantic-complete` with `compiler,references`
+residuals.

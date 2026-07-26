@@ -26,18 +26,12 @@ native detail also corrected the Zig quest port, whose prior y coordinate used
 height and only happened to agree on square maps. Heading remains untouched.
 
 The candidate represents all 166 native instructions and resolves all seven
-audited global references, scoring 53.61% with a 22-instruction exact prefix.
-The residual is VC6 scheduling and register allocation: native keeps the entry
-base in ESI, trigger time in EBX, and the coordinate offset in EDI; advances a
-cursor before storing through negative offsets; and waits to write metadata
-until both coordinates are converted. The candidate assigns trigger time to
-EDI and the offset to EBX, hoists metadata into conversion gaps, and uses the
-direct cursor address.
-
-Direct metadata fields, a combined position-and-metadata setter, a preincrement
-cursor, and reversed local declaration order were all tested and scored worse
-or failed to improve this shape. No artificial dependencies, volatile state,
-or register-forcing constructs are used.
+audited global references. The residual is VC6 scheduling and register
+allocation: native keeps the entry base in ESI, trigger time in EBX, and the
+coordinate offset in EDI; advances a cursor before storing through negative
+offsets; and waits to write metadata until both coordinates are converted.
+No artificial dependencies, volatile state, or register-forcing constructs
+are used.
 
 The opening eight-entry walk now advances its X offset immediately after
 constructing the current position and before storing spawn metadata. Live
@@ -45,3 +39,23 @@ Binary Ninja shows the same update between the coordinate calculation and the
 template/trigger/count stores. This source order preserves offsets 64 through
 288 and triggers 10000 through 10700 while improving the exact prefix from 22
 to 37 instructions and the match from 53.61% to 54.82%.
+
+All four repeated walks now also advance the entry cursor before writing the
+current entry's metadata, then address that just-completed entry as
+`spawn[-1]`. This is the native dataflow: the first walk advances ECX at
+`0x004356b3` before coordinate stores at `0x004356de..0x004356e9` and metadata
+stores at `0x004356ec..0x004356f6`; the later walks repeat that shape at
+`0x0043577a`, `0x004357dd`, and `0x00435838`. Using direct fields after the
+cursor advance improves the match from 54.82% to 68.07%, raises weighted
+matched bytes from 356 to 442, and reduces the weighted gap from 293.2229 to
+207.2108 bytes while preserving the 37-instruction prefix, exact 166/166
+instruction count, and `7/0/0` references.
+
+The combined cursor/dataflow recovery is material: applying it only to the
+first walk reached 56.02% but temporarily aligned only six references.
+Retaining the helper call after advancing the cursor regressed to 26.19% with
+170 instructions, a one-instruction prefix, and `2/0/1` references. Introducing
+a separate current-entry pointer or reference also emitted 170 instructions
+and regressed to 43.45%, so those variants were rejected.
+
+Recovery is classified `semantic-complete` with a `compiler` residual.

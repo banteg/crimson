@@ -65,3 +65,12 @@ walks database-path ancestors when locating the repository, allowing a direct
 `analysis/binary_ninja/crimsonland.exe.bndb`. This remains a presentation-only
 recovery; the matcher stays at **55.43%**, 1,302/1,422 instructions, prefix 1,
 and **305/0/48** references.
+
+The scratch is classified `semantic-complete` with `compiler,references`
+residuals. A fresh `match inspect --binja-live` pass confirms the same six
+native callees in Binary Ninja, IDA, and Ghidra, while the recovered source
+contains the complete 41-element graph, both configuration branches, all
+three render layers, every callback and texture, and the final layout pass.
+The bounded mismatch regions start with the `0x70` versus `0x68` frame and
+then differ only in x87 lifetimes, aggregate-copy scheduling, temporary slots,
+and reference alignment; they do not expose a missing native operation.

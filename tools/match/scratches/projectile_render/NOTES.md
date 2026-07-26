@@ -124,3 +124,23 @@ instructions, with 399 proven, zero unresolved, and 16 mismatched aligned
 references. The remaining broad residuals are the already identified geometry
 temporary lifetimes and allocator scheduling; the candidate frame is now
 `0x120` bytes versus the native `0x19c` bytes.
+
+## Semantic-completion audit
+
+A fresh live Binary Ninja bundle confirms that every native primary and
+secondary projectile type arm is present, as are all five direct callees:
+`effect_select_texture`, `perk_count_get`, `vec2_normalize_dispatch`,
+`creature_find_in_radius`, and `__ftol`. Address-matched IDA and Ghidra
+snapshots independently report the same `void(float transition_alpha)`
+signature and callee set. The candidate has no unresolved static references;
+its 16 mismatches are aligned-reference consequences of the remaining
+instruction scheduling differences.
+
+An explicit player-pool cursor probe preserved the 2,854-instruction behavior
+but regressed the score from 50.96% to 50.28%, increased aligned-reference
+mismatches from 16 to 21, and raised the fuzzy gap from 6,154.797 to 6,240.250
+bytes. The alternate `msvc6.5pp` profile also regressed to 44.77% with 29
+reference mismatches. Together with the previously rejected natural geometry
+spellings, this leaves compiler allocation and aligned-reference scheduling,
+not missing behavior. The scratch is therefore classified
+`semantic-complete` with `compiler,references` residuals.

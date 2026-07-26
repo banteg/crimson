@@ -39,3 +39,19 @@ setter and direct field stores compile identically; a post-incremented spawn
 cursor regresses to 52.97%, and encoding a negative-field cursor would describe
 the optimizer rather than plausible game source. No volatile state, dummy
 dependencies, or register-forcing constructs are used.
+
+## Semantic-completion audit
+
+Fresh live Binary Ninja HLIL confirms all eight ten-entry sweeps, the inserted
+center entry, every axis formula, alternating template expression, trigger
+step, and the final count of 81. Address-matched IDA and Ghidra snapshots
+independently agree on the signature and absence of callees. Candidate and
+target remain exactly 291 instructions with no static-reference debt.
+
+Replacing the direct position stores with a natural vector constructor
+regressed from 75.26% to 61.24%, added 32 instructions, and removed the
+12-instruction exact prefix. Moving each offset increment after the metadata
+stores also regressed to 70.10% while preserving instruction count and prefix.
+The retained source is the strongest natural spelling, and the repeated
+independent-store schedule is a compiler residual. The scratch is classified
+`semantic-complete` with a `compiler` residual.

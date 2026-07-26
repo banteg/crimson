@@ -37,3 +37,12 @@ The HUD ammo-class lookup now names the canonical
 id by a raw 31-dword row stride. The source-only type correction is
 byte-neutral. With the branch-order recoveries above, final validation remains
 1,824/1,824 instructions at 85.6360% with `385/0/0` references.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja decompilation confirms the heart, weapon/ammo, Quest,
+timer, Survival XP, bonus-slot, and weapon-popup paths through the native
+`0x0041aed0..0x0041ca79` extent. IDA and Ghidra independently retain the same
+signature and six named helper calls. The first localized mismatch is only the
+native `[esp+0x1c]` versus candidate `[esp+0x18]` temporary slot; the next
+regions likewise preserve the same operations and audited references in
+different legal stack slots.

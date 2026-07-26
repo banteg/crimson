@@ -134,6 +134,18 @@ first_target=jne L3f7a
 first_candidate=jne L3d1e
 ```
 
+Recovery is classified `semantic-complete` with `compiler,references`
+residuals. The live Binary Ninja bundle retains all 485 native basic blocks,
+and the source covers every recovered phase listed above. The seven remaining
+reference mismatches are alignment/scheduling debt rather than absent
+operations: the audit pairs already-present creature-position aliases,
+movement constants, spread constants, and perk IDs at `0x00413eb2`,
+`0x0041419e`, `0x00414ed7`, `0x00414ef2`, `0x00415799`, `0x004157ab`, and
+`0x00415c78`. The candidate still resolves 758 references and emits 4,011 of
+4,206 native instructions; the residual instruction-count gap is concentrated
+in register allocation, x87 lifetime, and compiler tail-merging differences
+across already-recovered branches.
+
 The Fire Cough muzzle sprite at `0x00413c0b..0x00413c38` writes the four
 adjacent color components only after `fx_spawn_sprite` returns. Naming the
 existing `effect_color_t` subobject at that point preserves that natural

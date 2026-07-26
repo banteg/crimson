@@ -69,3 +69,12 @@ persisted as the integer `first_non_space`. The live decompiler therefore
 renders the validation loop through
 `quest_results_name_input_buffer[first_non_space]` rather than an untyped
 absolute base plus a `void *` offset. Matching remains unchanged.
+
+The scratch is classified `semantic-complete` with `compiler,references`
+residuals. Fresh live Binary Ninja output covers the four-step reveal,
+high-score qualification and name validation, unlock notices, and every exit
+route; IDA and Ghidra corroborate the same 21-callee surface. The candidate is
+within three instructions of native at 1,165/1,168 with `437/0/2`
+references. A temporary overlay that reused the panel position to chase the
+native `0x18` frame was rejected: it fell from 86.50% to 72.68%, lost 27
+aligned references, and introduced five additional reference mismatches.

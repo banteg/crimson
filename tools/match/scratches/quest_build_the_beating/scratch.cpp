@@ -53,11 +53,10 @@ extern "C" void quest_build_the_beating(
             (float)(terrain_texture_width + x_offset),
             (float)(terrain_texture_height / 2));
         x_offset += 32;
-        spawn->set_spawn(
-            SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
-            trigger_time_ms,
-            8);
         ++spawn;
+        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
+        spawn[-1].trigger_time_ms = trigger_time_ms;
+        spawn[-1].count = 8;
         trigger_time_ms += 100;
         --remaining;
     } while (remaining != 0);
@@ -77,11 +76,10 @@ extern "C" void quest_build_the_beating(
         spawn->pos = quest_vec2_t(
             (float)x,
             (float)(terrain_texture_height / 2));
-        spawn->set_spawn(
-            SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
-            trigger_time_ms,
-            8);
         ++spawn;
+        spawn[-1].template_id = SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25;
+        spawn[-1].trigger_time_ms = trigger_time_ms;
+        spawn[-1].count = 8;
         trigger_time_ms += 100;
         x -= 32;
     } while (x > -320);
@@ -93,11 +91,10 @@ extern "C" void quest_build_the_beating(
         spawn->pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)y);
-        spawn->set_spawn(
-            SPAWN_ID_ALIEN_GHOST_0F,
-            trigger_time_ms,
-            4);
         ++spawn;
+        spawn[-1].template_id = SPAWN_ID_ALIEN_GHOST_0F;
+        spawn[-1].trigger_time_ms = trigger_time_ms;
+        spawn[-1].count = 4;
         trigger_time_ms += 100;
         y -= 42;
     } while (y > -316);
@@ -109,11 +106,10 @@ extern "C" void quest_build_the_beating(
         spawn->pos = quest_vec2_t(
             (float)(terrain_texture_width / 2),
             (float)(terrain_texture_width + y_offset + 44));
-        spawn->set_spawn(
-            SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            trigger_time_ms,
-            2);
         ++spawn;
+        spawn[-1].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+        spawn[-1].trigger_time_ms = trigger_time_ms;
+        spawn[-1].count = 2;
         y_offset += 32;
         trigger_time_ms += 100;
     } while (trigger_time_ms < 40600);

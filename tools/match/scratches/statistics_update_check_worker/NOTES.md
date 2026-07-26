@@ -39,3 +39,19 @@ native cdecl varargs wrapper, and its handoff to the CRT scanning core; the
 callsite passes the recovered `Crimsonland %d.%d.%d<` format and three integer
 outputs. The alias therefore resolves the same callee rather than masking an
 unknown reference.
+
+## Semantic-completion audit
+
+Fresh live Binary Ninja HLIL confirms the request construction, bounded read
+loop, nested response parser, three-field version gate, cleanup ordering, and
+both status-transition tails. Address-matched IDA and Ghidra snapshots agree
+on the worker signature and all 18 direct callees. The retained candidate is
+reference-clean at `102/0/0`.
+
+Moving the MIME array beside the request-path slot and permuting the three
+version-output declarations were byte-identical. An explicit shared
+host/request-path buffer instead regressed from 69.95% to 66.04%, removed the
+21-instruction exact prefix, and introduced a reference mismatch. The
+remaining stack-slot order, literal lowering, tail merging, and scan-output
+allocation are therefore compiler residuals. The scratch is classified
+`semantic-complete` with a `compiler` residual.

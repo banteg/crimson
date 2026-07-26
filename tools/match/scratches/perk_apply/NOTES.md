@@ -65,3 +65,12 @@ for example, Bandage reaches player position from the health cursor, while
 Breathing Room reaches the creature active byte from the lifecycle cursor.
 No owning record type is forced onto either pointer. The candidate remains
 63.07%, 241/241 instructions, and exact `63/0/0` references.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output confirms the complete immediate dispatcher and
+each independent contract, XP, ammo, regeneration, Bandage, clip-size, and
+Plaguebearer effect through `0x004055e0..0x00405955`. IDA and Ghidra
+independently retain the same signature and six named helper calls. The first
+localized mismatch is the native saved `EBP` and resulting stack offsets;
+candidate and target still contain the same 241 instructions and exact
+`63/0/0` audited references.

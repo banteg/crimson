@@ -27,3 +27,12 @@ available compiler saves it in the prologue. Repeated color/vector temporary
 stores are also scheduled differently around the progress-bar calls. VC6.6 is
 identical; `msvc6.5pp`, MSVC 7.0, `/G6`, and an explicit shared-tail rewrite all
 regress, so no compiler override or ordering-only construct is retained.
+
+Recovery is classified `semantic-complete` with a `compiler` residual. The
+candidate preserves the native 0x18-byte frame, emits 407 instructions against
+405 native instructions, and resolves all `69/0/0` audited references at
+77.83%. Live instructions `0x0041a963..0x0041a976` perform the off-screen
+cursor advance and return before `push edi` at `0x0041a97d`; a scoped
+render-only Y-cursor alias compiled byte-identically, confirming that the
+remaining prologue delta is compiler shrink-wrapping rather than missing
+behavior.
