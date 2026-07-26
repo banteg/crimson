@@ -36,3 +36,18 @@ register-allocation gain.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 85.38%, 508/511 instructions, and
+`135/0/2` references before and after classification. Both entries are aligned
+mismatches; there are no unresolved references. They pair native reads of
+`ui_element_slot_09.render_offset_x` (`0x00489de8`) with candidate constant-pool
+adds from the differently scheduled opening and detail-panel vector
+expressions. Live Binary Ninja confirms `0x00489de8` is `+0x08` inside the
+mapped `0x318`-byte slot-09 element.
+
+The UI field and both candidate constants occur in the recovered computation;
+only their x87 ordering differs. No map or layout correction is supported, so
+the residual is compiler scheduling only and `RESIDUAL=compiler` preserves the
+two honest mismatches.

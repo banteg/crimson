@@ -74,3 +74,20 @@ three render layers, every callback and texture, and the final layout pass.
 The bounded mismatch regions start with the `0x70` versus `0x68` frame and
 then differ only in x87 lifetimes, aggregate-copy scheduling, temporary slots,
 and reference alignment; they do not expose a missing native operation.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 55.43%, 1,302/1,422 instructions,
+and `305/0/48` references before and after classification. All 48 entries are
+aligned mismatches; there are no unresolved references. Live Binary Ninja
+reports each menu slot as the evidenced `0x318`-byte `ui_element_t`, and the
+menu-item and panel templates at their existing mapped object boundaries.
+
+The mismatches cross distinct element-construction blocks rather than showing a
+shared bad offset. For example, native `0x00450c51` stores
+`controls_menu_update` into slot 14's `on_update`, while the aligned candidate
+instruction belongs to slot 11's `play_game_menu_update` assignment. Other
+pairs similarly cross slot 31/32/23/10/30 objects or different responsive
+constant operations. Changing the common UI layout would corrupt already
+resolved accesses. The residual is therefore aggregate-copy and compiler
+scheduling only, and `RESIDUAL=compiler` leaves the 48 mismatches visible.

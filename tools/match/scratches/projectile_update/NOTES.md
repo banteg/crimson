@@ -279,3 +279,22 @@ particles use their canonical `position` and `velocity` components directly;
 only native induction cursors that genuinely begin inside a projectile record
 retain the nested compatibility views. The 39-component rewrite is exactly
 byte-neutral at 46.91%, 2,137/2,203 instructions, and `336/0/29` references.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 46.91%, 2,137/2,203 instructions,
+and `336/0/29` references before and after classification. All 29 entries are
+aligned mismatches; there are no unresolved references. Several entries
+directly prove SequenceMatcher drift rather than data-layout debt: a native
+`vec2_add` call is paired with candidate `creature_find_in_radius`, and a
+native `effect_spawn_ion_hit_sparks` call is paired with candidate
+`sfx_play_panned`. The global entries similarly pair different phases or
+fields of already typed pools.
+
+Live Binary Ninja at `0x00421ca0` confirms the native creature position reads
+at `creature_pool+0x14` and `+0x18`, followed by an address calculation for
+that same position. BN reports the complete `creature_pool` as 384 typed
+`0x98`-byte records and the projectile, secondary-projectile, particle, sprite,
+and effect-template objects at their existing mapped boundaries. No offset or
+alias correction is supported. The residual is therefore compiler scheduling
+only, and `RESIDUAL=compiler` preserves all 29 honest mismatches.

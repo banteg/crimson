@@ -44,3 +44,19 @@ identically.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 82.87%, 522/523 instructions, and
+`140/0/2` references before and after classification. Both entries are aligned
+mismatches; there are no unresolved references. As in the sibling perks
+callback, they pair native reads of
+`ui_element_slot_09.render_offset_x` (`0x00489de8`) with candidate constant-pool
+adds from differently scheduled vector expressions. The native sequences at
+`0x00440171` and the perks callback's `0x004409c1` are structurally identical,
+and Binary Ninja confirms the address is `+0x08` inside the mapped
+`0x318`-byte slot-09 element.
+
+No data-map or scrollbar/UI layout correction is supported. The residual is
+compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
+without changing the two honest mismatches.

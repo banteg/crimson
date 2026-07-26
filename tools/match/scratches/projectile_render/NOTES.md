@@ -143,4 +143,23 @@ bytes. The alternate `msvc6.5pp` profile also regressed to 44.77% with 29
 reference mismatches. Together with the previously rejected natural geometry
 spellings, this leaves compiler allocation and aligned-reference scheduling,
 not missing behavior. The scratch is therefore classified
-`semantic-complete` with `compiler,references` residuals.
+`semantic-complete` with compiler residuals.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 50.96%, 2,854/3,021 instructions,
+and `399/0/16` references before and after classification. All 16 entries are
+aligned mismatches; there are no unresolved references. Live Binary Ninja
+confirms `projectile_pool` is a 96-entry, `0x40`-byte-stride array at
+`0x004926b8`, with `projectile_pos_y` at `+0x0c`, while `particle_pool` is a
+separate typed array at `0x00493eb8`. The mismatch list pairs cursor setup from
+different render passes—for example native `projectile_pos_y` against a later
+candidate `projectile_pool+0x2c`, and native particle cursors against candidate
+projectile cursors. It also pairs differently scheduled x/y camera loads and
+constant-pool operations.
+
+Those cross-pass pairs cannot be repaired by changing a field offset or data
+alias. Every candidate object resolves, and the shared pool/camera layouts are
+already correct. The residual is therefore compiler allocation and instruction
+alignment only, and `RESIDUAL=compiler` records that conclusion without hiding
+the 16 honest mismatches.

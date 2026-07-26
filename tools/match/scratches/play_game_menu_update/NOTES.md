@@ -46,3 +46,21 @@ state, dead expressions, register hints, or other match-only shaping is used.
 The strict aliases cover every static object, the shared initialization guard,
 and all seven `atexit` destructor thunks. Each destructor thunk is separately
 verified as the native one-byte `ret` function.
+
+## Reference residual re-audit
+
+A fresh corpus audit keeps the candidate at 87.44%, 776/777 instructions, and
+`275/0/28` references before and after classification. All 28 entries are
+aligned mismatches; there are no unresolved references. Live Binary Ninja at
+`0x0044f15f` confirms the native roomy-layout arm loads
+`quest_play_counts[11]` (`0x00485644`), `mode_play_survival`, and
+`mode_play_rush` in that order. The candidate contains the same three proven
+objects, but its different opening x87 schedule shifts which generic
+`mov reg, [ADDR]` instructions SequenceMatcher pairs. The remaining entries
+likewise pair different constant-pool operations or the two scheduled
+player-count-list field writes.
+
+No data-map or object-layout correction is supported: every candidate symbol
+resolves to its already audited native address. The residual is therefore
+compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
+without changing the honest mismatch count.
