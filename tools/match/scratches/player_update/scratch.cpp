@@ -581,10 +581,10 @@ extern "C" void player_update(void)
                 player_apply_move_speed_cap(player);
                 player->move_dx =
                     (float)cos(player->heading - 1.5707964f)
-                    * player->move_speed * 25.0f;
+                    * player->move_speed * scalar * 25.0f;
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
-                    * player->move_speed * 25.0f;
+                    * player->move_speed * scalar * 25.0f;
                 move_delta.x = frame_dt * player->move_dx;
                 move_delta.y = frame_dt * player->move_dy;
             } else if (grim_interface_ptr->grim_is_key_active(
@@ -596,10 +596,10 @@ extern "C" void player_update(void)
                 movement_heading = -1.0f;
                 player->move_dx =
                     (float)cos(player->heading - 1.5707964f)
-                    * player->move_speed * -25.0f;
+                    * player->move_speed * scalar * -25.0f;
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
-                    * player->move_speed * -25.0f;
+                    * player->move_speed * scalar * -25.0f;
                 move_delta.x = frame_dt * player->move_dx;
                 move_delta.y = frame_dt * player->move_dy;
             } else {
@@ -609,10 +609,10 @@ extern "C" void player_update(void)
                 player_decelerate_move_speed(player);
                 player->move_dx =
                     (float)cos(player->heading - 1.5707964f)
-                    * player->move_speed * 25.0f;
+                    * player->move_speed * scalar * 25.0f;
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
-                    * player->move_speed * 25.0f;
+                    * player->move_speed * scalar * 25.0f;
                 move_delta.x = frame_dt * player->move_dx;
                 move_delta.y = frame_dt * player->move_dy;
             }

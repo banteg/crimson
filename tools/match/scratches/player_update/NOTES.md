@@ -119,6 +119,28 @@ reduces the weighted gap from `7,271.6721` to `7,084.8627` bytes, reduces the
 candidate from 4,019 to 4,011 instructions, and improves references from
 `742/0/9` to `758/0/7`.
 
+The mode-1 displacement scale is now complete. MLIL at `0x00413dfb`
+identifies the native `[esp+0x1c]` value as the player's
+`speed_multiplier`. All three mode-1 arms multiply both heading components by
+that value before the signed `25.0f` scale: forward at
+`0x004147f8/0x00414813`, backward at `0x0041470b/0x00414726`, and
+deceleration at `0x00414636/0x00414651`. The scratch previously omitted those
+six multiplies even though the other movement modes already used the same
+scalar. Restoring them grows the candidate from 4,011 to 4,015 instructions
+and improves references from `758/0/7` to `760/0/5`. The whole-function fuzzy
+score falls from `56.4196%` to `56.2219%` because VC6 assigns the scalar to a
+different stack slot and tail-merges the adjacent trig paths; the weighted gap
+therefore grows by `32.1477` bytes, from `7,084.8627` to `7,117.0105`.
+The native-proven behavior is retained rather than optimizing the heuristic by
+leaving executable movement scaling absent.
+
+Two natural aggregate shapes were measured and rejected after that correction.
+Carrying a mode-local pointer to `move_delta` through the shared movement call
+falls to `55.7042%` with 4,016 instructions and `752/0/6` references. Carrying
+a pointer to `player->movement` through the three arms falls to `55.8677%`
+with 4,017 instructions and `750/0/5` references. Both preserve semantics but
+perturb unrelated allocation more than the direct field/aggregate source.
+
 Three adjacent source-shape probes were rejected. Nesting the readiness and
 fire-input gates exactly as the native decompile presents them was byte-neutral.
 Moving the mode-1 phase-sign initialization to its first source use was also
@@ -129,22 +151,19 @@ lowering the score to `56.20%` and the prefix from seven instructions to two.
 Current local score:
 
 ```txt
-match=56.42% prefix=7/4206 target_insns=4206 candidate_insns=4011 refs=758/0/7
+match=56.22% prefix=7/4206 target_insns=4206 candidate_insns=4015 refs=760/0/5
 first_target=jne L3f7a
-first_candidate=jne L3d1e
+first_candidate=jne L3d2e
 ```
 
 Recovery is classified `semantic-complete` with a `compiler` residual. The
 live Binary Ninja bundle retains all 485 native basic blocks,
-and the source covers every recovered phase listed above. The seven remaining
+and the source covers every recovered phase listed above. The five remaining
 reference mismatches are alignment/scheduling debt rather than absent
-operations: the audit pairs already-present creature-position aliases,
-movement constants, spread constants, and perk IDs at `0x00413eb2`,
-`0x0041419e`, `0x00414ed7`, `0x00414ef2`, `0x00415799`, `0x004157ab`, and
-`0x00415c78`. The candidate still resolves 758 references and emits 4,011 of
-4,206 native instructions; the residual instruction-count gap is concentrated
-in register allocation, x87 lifetime, and compiler tail-merging differences
-across already-recovered branches. All seven mismatches remain visible and
+operations. The candidate resolves 760 references and emits 4,015 of 4,206
+native instructions; the residual instruction-count gap is concentrated in
+register allocation, x87 lifetime, and compiler tail-merging differences
+across already-recovered branches. All five mismatches remain visible and
 unaliased, so this classification does not mask an address disagreement.
 
 The Fire Cough muzzle sprite at `0x00413c0b..0x00413c38` writes the four
