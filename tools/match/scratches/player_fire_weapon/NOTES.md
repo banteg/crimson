@@ -24,17 +24,26 @@ The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
 mode loadout.
 
 MSVC 6.5 currently produces 378 instructions against the native 378 at a
-95.24% match, with a 174-instruction exact prefix and all 141 masked references
-resolved. Declaring the perk-assisted readiness flag after aim computation but
-before the normal-readiness test reproduces the native zero-store schedule and
-raises the score from 86.77% without changing behavior or instruction count.
-The remaining delta is localized to one honest code-generation difference:
-the native reuses the same four stack floats with opposite position/velocity
-roles between its two sprite calls, while the straightforward two-vector C++
-keeps each vector in one stable slot. Separate scoped vectors grow the frame,
-while scalar locals lose the required adjacent-vector semantics, so this
-scratch intentionally does not use a layout-only array or other artificial
-constraint to improve the score.
+99.21% match, with a 245-instruction exact prefix, a 12.05-byte fuzzy gap, and
+all 142 masked references resolved. Declaring the perk-assisted readiness flag
+after aim computation but before the normal-readiness test reproduces the
+native zero-store schedule and first raised the score from 86.77% to 95.24%
+without changing behavior or instruction count.
+
+The native reuses the same four stack floats with opposite position/velocity
+roles between its two sprite calls. Expressing that reuse directly recovers the
+native argument slots. The forced-inline `typo_fire_vec_add` helper computes
+both component sums before storing the canonical `vec2f_t`, reproducing the
+native x87 staging while retaining adjacent-vector semantics. Together these
+natural source boundaries raise the result from 95.24% to 99.21%.
+
+The remaining delta is three stack-slot operands in the pellet-position loop:
+the native writes the same two component sums at `[esp+0x20]` and
+`[esp+0x24]`, while VC6 assigns the candidate `[esp+0x18]` and `[esp+0x1c]`,
+then passes that equivalent vector to the same projectile call. A separately
+scoped projectile vector regresses the frame and score, so the scratch retains
+the better semantic source rather than using a layout-only array, union,
+volatile state, or another artificial allocation constraint.
 
 The two muzzle-sprite calls expose their position and velocity arguments as
 read-only vector aggregates at the shared `fx_spawn_sprite` boundary.
