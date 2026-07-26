@@ -68,6 +68,56 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   --check
 ```
 
+### Visual C++ 6.0 SP6 runtime
+
+- Evidence: `VS6sp61.cab` from preserved Visual Studio 6 SP6 media contains
+  `vc98/lib/libcmt.lib` with SHA-256
+  `a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a`.
+
+- Evidence: exact non-relocated bytes plus COFF relocations match 299 of 366
+  functions (43,754 of 54,038 bytes) in the EXE range
+  `0x00460cb8..0x0046e920`. Of those, 254 functions (41,813 bytes) identify a
+  single `LIBCMT.LIB` symbol. The SP6 single-threaded `LIBC.LIB` matches only
+  203 functions (29,886 bytes), confirming the multithreaded static flavor.
+
+- Evidence: the same archive identifies 15 of 17 functions in Grim's
+  `0x1000a8d0..0x1000aaa6` runtime/import seam. The two substantive unique
+  matches are `dllcrt0.obj:__DllMainCRTStartup@12` and
+  `onexit.obj:_atexit`; Grim imports `MSVCRT.DLL`, so this is startup glue
+  rather than a second statically linked CRT body.
+
+- Evidence: both binaries' Rich headers contain product records 10 and 11
+  with build 9782, consistent with the common VC6 SP6 toolchain ancestry.
+
+- Status: the EXE's static CRT archive and Grim's CRT startup seam are
+  archive-confirmed. Grim engine code remains in scope through `0x1000a8d0`;
+  in particular, the JAZ/zlib helpers at `0x1000a810..0x1000a8c2` do not
+  match D3DX or the CRT archive.
+
+Reproduce the archive proof:
+
+```sh
+mkdir -p /tmp/crimson-vc6
+curl -L -o /tmp/crimson-vc6/vs6sp6.iso.zip \
+  'https://archive.org/download/vs6.iso/vs6sp6.iso.zip'
+shasum -a 256 /tmp/crimson-vc6/vs6sp6.iso.zip
+unzip -j /tmp/crimson-vc6/vs6sp6.iso.zip -d /tmp/crimson-vc6
+7z e /tmp/crimson-vc6/vs6sp6.iso VS6sp61.cab -o/tmp/crimson-vc6
+cabextract -F vc98/lib/libcmt.lib -d /tmp/crimson-vc6 \
+  /tmp/crimson-vc6/VS6sp61.cab
+
+uv run crimson match archive /tmp/crimson-vc6/vc98/lib/libcmt.lib \
+  --image game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+  --start 0x00460cb8 --end 0x0046e920 \
+  --expected-sha256 a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a \
+  --check
+uv run crimson match archive /tmp/crimson-vc6/vc98/lib/libcmt.lib \
+  --image game_bins/crimsonland/1.9.93-gog/grim.dll \
+  --start 0x1000a8d0 --end 0x1000aaa6 \
+  --expected-sha256 a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a \
+  --check
+```
+
 ### libpng (version 1.0.5)
 - Evidence: Grim function `FUN_100103d6` at `0x100103d6` calls
   `png_create_read_struct("1.0.5", ...)`.
@@ -197,7 +247,5 @@ matching.
 
 ## Next evidence to capture
 
-- Match the EXE range `0x00460cb8..0x0046e920` against the exact VC6 CRT
-  archive.
 - Apply the unique `d3dx8.lib` member symbols to the duplicated JPEG codec
   object boundaries in Grim.

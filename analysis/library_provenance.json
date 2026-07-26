@@ -17,6 +17,31 @@
       ]
     },
     {
+      "id": "visual-cpp-6-sp6-media",
+      "url": "https://archive.org/download/vs6.iso/vs6sp6.iso.zip",
+      "size": 64778841,
+      "sha256": "5e631cd838a262ef8b72f44c0d9b83fb54c0fa7f24a93c4fa672c0fe444f3cb8",
+      "sha1": "7e8318c7fc998a3a80327ba927fa7bb7748b90dc",
+      "md5": "9ac85a7640a6b428d84ee45bc54e440f",
+      "members": [
+        {
+          "path": "vs6sp6.iso",
+          "size": 72144896,
+          "sha256": "23c43165661ed5e2678300b34c516c229348d8ca9d2f2762cadad7a21a928e80"
+        },
+        {
+          "path": "vs6sp6.iso/VS6sp61.cab",
+          "size": 28712960,
+          "sha256": "0c417d0e9b0fa32934994d21bee46fc3104ffaffdfdbcaa27ee5502a02fe0cd4"
+        },
+        {
+          "path": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
+          "size": 934378,
+          "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
+        }
+      ]
+    },
+    {
       "id": "xiph-ogg-vorbis-win32sdk-1.0",
       "url": "https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip",
       "size": 1666042,
@@ -137,9 +162,11 @@
         },
         {
           "id": "msvc6-crt",
-          "version": "Visual C++ 6.0-family static CRT; exact archive pending",
+          "version": "Visual C++ 6.0 SP6 multithreaded static CRT (LIBCMT.LIB)",
           "linkage": "static",
-          "confidence": "family-confirmed",
+          "confidence": "archive-confirmed",
+          "source_artifact": "visual-cpp-6-sp6-media",
+          "archive_member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
           "ranges": [
             {
               "start": "0x00460CB8",
@@ -211,6 +238,26 @@
               "symbols": [
                 "Direct3DCreate8"
               ]
+            }
+          ]
+        },
+        {
+          "id": "msvc6-crt",
+          "version": "Visual C++ 6.0 SP6 CRT startup and import seam",
+          "linkage": "dynamic-crt-startup",
+          "confidence": "archive-confirmed",
+          "source_artifact": "visual-cpp-6-sp6-media",
+          "archive_member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
+          "ranges": [
+            {
+              "start": "0x1000A8D0",
+              "end": "0x1000AAA6"
+            }
+          ],
+          "imports": [
+            {
+              "module": "msvcrt",
+              "symbols": []
             }
           ]
         },
@@ -387,6 +434,39 @@
           "matched_bytes": 156379,
           "unique_functions": 548,
           "unique_bytes": 151687
+        }
+      ]
+    },
+    {
+      "component": "msvc6-crt",
+      "source_artifact": "visual-cpp-6-sp6-media",
+      "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
+      "sha256": "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a",
+      "archive_members": 641,
+      "coff_members": 598,
+      "object_functions": 1465,
+      "targets": [
+        {
+          "artifact": "crimsonland.exe",
+          "start": "0x00460CB8",
+          "end": "0x0046E920",
+          "target_functions": 366,
+          "target_bytes": 54038,
+          "matched_functions": 299,
+          "matched_bytes": 43754,
+          "unique_functions": 254,
+          "unique_bytes": 41813
+        },
+        {
+          "artifact": "grim.dll",
+          "start": "0x1000A8D0",
+          "end": "0x1000AAA6",
+          "target_functions": 17,
+          "target_bytes": 468,
+          "matched_functions": 15,
+          "matched_bytes": 253,
+          "unique_functions": 2,
+          "unique_bytes": 175
         }
       ]
     }

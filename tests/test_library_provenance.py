@@ -28,8 +28,13 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
     )
     assert xiph["sha256"] == "e40f25803224ce4fee102e74d97c1bf77231986a9acc33eb613232e860fee7fe"
     assert len(xiph["members"]) == 3
+    vc6 = next(source for source in payload["source_artifacts"] if source["id"] == "visual-cpp-6-sp6-media")
+    assert vc6["members"][-1]["sha256"] == "a541c95e5ffdd6d5573d1976f5e5d0038f2c4fb0bcb02975c68948bf1d6e452a"
     archive_match = payload["archive_matches"][0]
     assert [target["artifact"] for target in archive_match["targets"]] == ["crimsonland.exe", "grim.dll"]
+    crt_match = next(match for match in payload["archive_matches"] if match["component"] == "msvc6-crt")
+    assert [target["artifact"] for target in crt_match["targets"]] == ["crimsonland.exe", "grim.dll"]
+    assert crt_match["targets"][1]["start"] == "0x1000A8D0"
     assert any(check.component == "libjpeg" and check.kind == "fingerprint" and check.passed for check in report.checks)
     assert (
         sum(
