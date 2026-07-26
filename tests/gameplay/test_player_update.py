@@ -1124,6 +1124,54 @@ def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
     assert player.heading > 0.0
 
 
+@pytest.mark.parametrize(
+    ("moving_forward", "moving_backward", "speed_scale"),
+    (
+        (True, False, 25.0),
+        (False, True, -25.0),
+        (False, False, 25.0),
+    ),
+)
+def test_player_update_relative_mode_applies_speed_multiplier(
+    moving_forward: bool,
+    moving_backward: bool,
+    speed_scale: float,
+) -> None:
+    start_pos = Vec2(512.0, 512.0)
+    player = PlayerState(
+        index=0,
+        pos=start_pos,
+        heading=0.0,
+        move_speed=1.0,
+        speed_multiplier=3.0,
+    )
+    dt = f32(0.01)
+
+    player_update(
+        player,
+        PlayerInput(
+            aim=Vec2(600.0, 512.0),
+            move_mode=MovementControlType.RELATIVE,
+            move_forward_pressed=moving_forward,
+            move_backward_pressed=moving_backward,
+            turn_left_pressed=False,
+            turn_right_pressed=False,
+        ),
+        dt,
+        GameplayState(),
+    )
+
+    direction = _direction_from_heading_native(0.0)
+    move_dx = f32(direction.x * player.move_speed * player.speed_multiplier * speed_scale)
+    move_dy = f32(direction.y * player.move_speed * player.speed_multiplier * speed_scale)
+    expected_pos = Vec2(
+        f32(start_pos.x + f32(dt * move_dx)),
+        f32(start_pos.y + f32(dt * move_dy)),
+    )
+
+    assert player.pos == expected_pos
+
+
 def test_player_update_computer_aim_preserves_static_movement_mode() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, move_speed=0.0)

@@ -524,11 +524,20 @@ def _player_move_delta_from_heading(
     *,
     player: PlayerState,
     movement_dt: float,
+    speed_multiplier: float,
     speed_scale: float,
 ) -> Vec2:
     move = _direction_from_heading_native(float(player.heading))
-    move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_scale)))
-    move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_scale)))
+    move_dx = float(
+        f32(
+            float(move.x) * float(player.move_speed) * float(speed_multiplier) * float(speed_scale),
+        ),
+    )
+    move_dy = float(
+        f32(
+            float(move.y) * float(player.move_speed) * float(speed_multiplier) * float(speed_scale),
+        ),
+    )
     return Vec2(
         f32(float(movement_dt) * float(move_dx)),
         f32(float(movement_dt) * float(move_dy)),
@@ -787,6 +796,7 @@ def player_update(
                 move_delta_override = _player_move_delta_from_heading(
                     player=player,
                     movement_dt=movement_dt,
+                    speed_multiplier=speed_multiplier,
                     speed_scale=25.0,
                 )
             elif moving_backward:
@@ -795,6 +805,7 @@ def player_update(
                 move_delta_override = _player_move_delta_from_heading(
                     player=player,
                     movement_dt=movement_dt,
+                    speed_multiplier=speed_multiplier,
                     speed_scale=-25.0,
                 )
             else:
@@ -804,6 +815,7 @@ def player_update(
                 move_delta_override = _player_move_delta_from_heading(
                     player=player,
                     movement_dt=movement_dt,
+                    speed_multiplier=speed_multiplier,
                     speed_scale=25.0,
                 )
         elif move_mode == MovementControlType.STATIC:
