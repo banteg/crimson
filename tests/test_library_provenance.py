@@ -23,9 +23,15 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
     assert not report.failed
     directx = next(source for source in payload["source_artifacts"] if source["id"] == "directx-8.1-sdk-full")
     assert directx["members"][0]["sha256"] == "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+    xiph = next(
+        source for source in payload["source_artifacts"] if source["id"] == "xiph-ogg-vorbis-win32sdk-1.0"
+    )
+    assert xiph["sha256"] == "e40f25803224ce4fee102e74d97c1bf77231986a9acc33eb613232e860fee7fe"
+    assert len(xiph["members"]) == 3
     archive_match = payload["archive_matches"][0]
     assert [target["artifact"] for target in archive_match["targets"]] == ["crimsonland.exe", "grim.dll"]
     assert any(check.component == "libjpeg" and check.kind == "fingerprint" and check.passed for check in report.checks)
+    assert sum(check.kind == "source-member" and check.passed for check in report.checks) == 3
     assert sum(check.component == "d3dx8" and check.kind == "cross-image" for check in report.checks) == 3
 
 
@@ -51,6 +57,23 @@ def test_library_provenance_rejects_unknown_source_artifact(tmp_path: Path) -> N
 
     with pytest.raises(ValueError, match="unknown source artifact"):
         load_library_provenance(manifest)
+
+
+def test_library_provenance_reports_source_member_drift(tmp_path: Path) -> None:
+    payload = load_library_provenance()
+    xiph = next(
+        source for source in payload["source_artifacts"] if source["id"] == "xiph-ogg-vorbis-win32sdk-1.0"
+    )
+    xiph["members"][0]["sha256"] = "00" * 32
+    manifest = tmp_path / "library_provenance.json"
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = validate_library_provenance(manifest)
+
+    assert any(
+        check.artifact == "ogg.dll" and check.kind == "source-member" and not check.passed
+        for check in report.failed
+    )
 
 
 def test_library_provenance_cli_check() -> None:

@@ -17,6 +17,31 @@
       ]
     },
     {
+      "id": "xiph-ogg-vorbis-win32sdk-1.0",
+      "url": "https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip",
+      "size": 1666042,
+      "sha256": "e40f25803224ce4fee102e74d97c1bf77231986a9acc33eb613232e860fee7fe",
+      "sha1": "73720546e3c59581ec211788e03eef6d5187b5c8",
+      "md5": "7ac318eb6ab3551059fa7232618be2ea",
+      "members": [
+        {
+          "path": "oggvorbis-win32sdk-1.0/bin/ogg.dll",
+          "size": 49152,
+          "sha256": "308540dbd488f3bceca2dbadefe02cf29d10a27c4ac096bb3da053e3e0b923ea"
+        },
+        {
+          "path": "oggvorbis-win32sdk-1.0/bin/vorbis.dll",
+          "size": 974848,
+          "sha256": "b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b"
+        },
+        {
+          "path": "oggvorbis-win32sdk-1.0/bin/vorbisfile.dll",
+          "size": 28672,
+          "sha256": "f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2"
+        }
+      ]
+    },
+    {
       "id": "ijg-libjpeg-6a",
       "url": "https://www.ijg.org/files/jpegsrc.v6a.tar.gz",
       "size": 538910,
@@ -102,9 +127,10 @@
         },
         {
           "id": "libvorbisfile",
-          "version": "1.0 release set",
+          "version": "Ogg Vorbis Win32 SDK 1.0",
           "linkage": "dynamic",
-          "confidence": "release-confirmed",
+          "confidence": "binary-dependency-confirmed",
+          "dependency_artifact": "vorbisfile.dll",
           "imports": [
             {
               "module": "vorbisfile",
@@ -241,10 +267,11 @@
       "components": [
         {
           "id": "libogg",
-          "version": "1.0 release set",
+          "version": "Ogg Vorbis Win32 SDK 1.0",
           "linkage": "dynamic",
-          "confidence": "release-set-confirmed",
-          "source_artifact": "libogg-1.0",
+          "confidence": "binary-identical",
+          "source_artifact": "xiph-ogg-vorbis-win32sdk-1.0",
+          "source_member": "oggvorbis-win32sdk-1.0/bin/ogg.dll",
           "source": "https://downloads.xiph.org/releases/ogg/libogg-1.0.tar.gz"
         }
       ]
@@ -257,10 +284,11 @@
       "components": [
         {
           "id": "libvorbis",
-          "version": "1.0",
+          "version": "Ogg Vorbis Win32 SDK 1.0",
           "linkage": "dynamic",
-          "confidence": "version-confirmed",
-          "source_artifact": "libvorbis-1.0",
+          "confidence": "binary-identical",
+          "source_artifact": "xiph-ogg-vorbis-win32sdk-1.0",
+          "source_member": "oggvorbis-win32sdk-1.0/bin/vorbis.dll",
           "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
           "fingerprints": [
             {
@@ -286,10 +314,11 @@
       "components": [
         {
           "id": "libvorbisfile",
-          "version": "1.0 release set",
+          "version": "Ogg Vorbis Win32 SDK 1.0",
           "linkage": "dynamic",
-          "confidence": "release-set-confirmed",
-          "source_artifact": "libvorbis-1.0",
+          "confidence": "binary-identical",
+          "source_artifact": "xiph-ogg-vorbis-win32sdk-1.0",
+          "source_member": "oggvorbis-win32sdk-1.0/bin/vorbisfile.dll",
           "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
           "imports": [
             {

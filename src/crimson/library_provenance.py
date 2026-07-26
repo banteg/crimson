@@ -74,23 +74,40 @@ def load_library_provenance(path: Path = DEFAULT_PROVENANCE_PATH) -> dict[str, A
     if len(source_ids) != len(set(source_ids)):
         raise ValueError(f"{path}: duplicate source artifact id")
     known_sources = set(source_ids)
+    source_members: dict[str, set[str]] = {}
     for source in sources:
         if int(source.get("size", 0)) <= 0:
             raise ValueError(f"{path}: source artifact {source['id']!r} requires a positive size")
         if re.fullmatch(r"[0-9a-f]{64}", str(source.get("sha256", ""))) is None:
             raise ValueError(f"{path}: source artifact {source['id']!r} has invalid sha256")
-        for member in source.get("members", []):
+        members = source.get("members", [])
+        member_paths = [str(member.get("path", "")) for member in members]
+        if any(not member_path for member_path in member_paths):
+            raise ValueError(f"{path}: every source member requires a path")
+        if len(member_paths) != len(set(member_paths)):
+            raise ValueError(f"{path}: duplicate member in source artifact {source['id']!r}")
+        source_members[str(source["id"])] = set(member_paths)
+        for member in members:
             if int(member.get("size", 0)) <= 0:
                 raise ValueError(f"{path}: source member {member.get('path')!r} requires a positive size")
             if re.fullmatch(r"[0-9a-f]{64}", str(member.get("sha256", ""))) is None:
                 raise ValueError(f"{path}: source member {member.get('path')!r} has invalid sha256")
 
+    known_artifacts = set(artifact_ids)
     for artifact in artifacts:
         for component in artifact.get("components", []):
             source_id = component.get("source_artifact")
             if source_id is not None and source_id not in known_sources:
                 raise ValueError(f"{path}: unknown source artifact {source_id!r}")
-    known_artifacts = set(artifact_ids)
+            source_member = component.get("source_member")
+            if source_member is not None:
+                if source_id is None:
+                    raise ValueError(f"{path}: source member requires a source artifact")
+                if source_member not in source_members[source_id]:
+                    raise ValueError(f"{path}: unknown source member {source_member!r}")
+            dependency_id = component.get("dependency_artifact")
+            if dependency_id is not None and dependency_id not in known_artifacts:
+                raise ValueError(f"{path}: unknown dependency artifact {dependency_id!r}")
     for archive_match in payload.get("archive_matches", []):
         source_id = archive_match.get("source_artifact")
         if source_id not in known_sources:
@@ -222,10 +239,35 @@ def _check_artifact(
 def _check_component(
     artifact: _LoadedArtifact,
     component: dict[str, Any],
+    *,
+    sources: dict[str, dict[str, Any]],
 ) -> list[ProvenanceCheck]:
     component_id = str(component["id"])
     checks: list[ProvenanceCheck] = []
     imports = _pe_imports(artifact)
+
+    source_member = component.get("source_member")
+    if source_member is not None:
+        source_id = str(component["source_artifact"])
+        member = next(
+            row for row in sources[source_id].get("members", []) if row["path"] == source_member
+        )
+        expected_size = int(member["size"])
+        expected_sha256 = str(member["sha256"])
+        actual_sha256 = hashlib.sha256(artifact.data).hexdigest()
+        checks.append(
+            ProvenanceCheck(
+                artifact=artifact.artifact_id,
+                component=component_id,
+                kind="source-member",
+                passed=len(artifact.data) == expected_size and actual_sha256 == expected_sha256,
+                detail=(
+                    f"{source_id}:{source_member} "
+                    f"size={len(artifact.data)}/{expected_size} "
+                    f"sha256={actual_sha256}/{expected_sha256}"
+                ),
+            ),
+        )
 
     for range_row in component.get("ranges", []):
         start = matchlib.parse_int(range_row["start"])
@@ -331,6 +373,7 @@ def validate_library_provenance(
     payload = load_library_provenance(path)
     checks: list[ProvenanceCheck] = []
     loaded: dict[str, _LoadedArtifact] = {}
+    sources = {str(source["id"]): source for source in payload.get("source_artifacts", [])}
     for artifact_row in payload["artifacts"]:
         artifact, artifact_checks = _check_artifact(artifact_row, repo_root=repo_root)
         checks.extend(artifact_checks)
@@ -338,7 +381,7 @@ def validate_library_provenance(
             continue
         loaded[artifact.artifact_id] = artifact
         for component in artifact_row.get("components", []):
-            checks.extend(_check_component(artifact, component))
+            checks.extend(_check_component(artifact, component, sources=sources))
 
     for match_row in payload.get("cross_image_matches", []):
         checks.append(_check_cross_image_match(match_row, loaded))

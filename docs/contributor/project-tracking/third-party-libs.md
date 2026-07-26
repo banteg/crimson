@@ -107,7 +107,7 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   `jquant*.obj` match Grim functions directly.
 - Status: no signature mapping yet.
 
-### libvorbisfile / libvorbis / libogg (version 1.0; headers match vorbis v1.0.0 tag)
+### libvorbisfile / libvorbis / libogg (Ogg Vorbis Win32 SDK 1.0)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
 - Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
 - Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
@@ -136,10 +136,31 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   `game_bins/crimsonland/1.9.93-gog/VORBIS.DLL` →
   `b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b`.
 
+- Evidence: the archived official `OggVorbis-win32sdk-1.0.zip` has SHA-256
+  `e40f25803224ce4fee102e74d97c1bf77231986a9acc33eb613232e860fee7fe`.
+  Its `ogg.dll`, `vorbis.dll`, and `vorbisfile.dll` members are byte-for-byte
+  identical to all three DLLs shipped with Crimsonland.
+
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
+  They are content-identical to the SDK headers after normalizing CRLF to LF.
 
-- Status: no signature mapping yet.
+- Status: exact Windows binary release confirmed; no signature mapping yet.
+
+Reproduce the binary proof:
+
+```sh
+mkdir -p /tmp/crimson-xiph
+curl -L -o /tmp/crimson-xiph/OggVorbis-win32sdk-1.0.zip \
+  'https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip'
+shasum -a 256 /tmp/crimson-xiph/OggVorbis-win32sdk-1.0.zip
+unzip -j /tmp/crimson-xiph/OggVorbis-win32sdk-1.0.zip \
+  'oggvorbis-win32sdk-1.0/bin/*.dll' -d /tmp/crimson-xiph
+cmp game_bins/crimsonland/1.9.93-gog/ogg.dll /tmp/crimson-xiph/ogg.dll
+cmp game_bins/crimsonland/1.9.93-gog/vorbis.dll /tmp/crimson-xiph/vorbis.dll
+cmp game_bins/crimsonland/1.9.93-gog/vorbisfile.dll \
+  /tmp/crimson-xiph/vorbisfile.dll
+```
 
 ## Platform/SDK dependencies
 
@@ -177,7 +198,5 @@ matching.
 
 - Match the EXE range `0x00460cb8..0x0046e920` against the exact VC6 CRT
   archive.
-- Compare the bundled Xiph DLL hashes against the historical 1.0 Windows
-  release bundle, if an authenticated copy is available.
 - Replace the imported IJG 6b headers with 6a and map the duplicated codec
   object boundaries.
