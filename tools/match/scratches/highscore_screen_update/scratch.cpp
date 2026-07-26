@@ -1,4 +1,5 @@
 #include <process.h>
+#include <stddef.h>
 #include <string.h>
 #include <windows.h>
 
@@ -7,6 +8,9 @@
 #include "grim2d_cpp.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;
+
+#define HIGHSCORE_RECORD_FROM_FLAGS(record_flags) \
+    ((highscore_record_t *)((record_flags) - offsetof(highscore_record_t, flags)))
 
 struct highscore_vec2_t {
     float x;
@@ -349,20 +353,20 @@ extern "C" void highscore_screen_update(void)
     int selected_score = -1;
     int score_count = 0;
     char **score_line_item = score_line_items;
-    char (*score_line_buffer)[164] = score_line_buffers;
-    highscore_record_t *record = highscore_table;
     position.y += 16.0f;
     position.y += 1.0f;
+    unsigned char *record_flags = &highscore_table[0].flags;
+    char (*score_line_buffer)[164] = score_line_buffers;
     do {
         *score_line_item = *score_line_buffer;
-        memset(*score_line_buffer, 0, sizeof(*score_line_buffer));
-        if (record->survival_elapsed_ms == 0) {
+        memset(*score_line_item, 0, sizeof(*score_line_buffer));
+        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {
             break;
         }
 
         int prefix_length = 0;
-        if ((record->flags & 5) != 0
-            && ((record->flags & 2) == 0 || (record->flags & 4) != 0)) {
+        if ((*record_flags & 5) != 0
+            && ((*record_flags & 2) == 0 || (*record_flags & 4) != 0)) {
             (*score_line_buffer)[0] = '\\';
             (*score_line_buffer)[1] = 'g';
             prefix_length = 2;
@@ -374,27 +378,29 @@ extern "C" void highscore_screen_update(void)
                 *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                (int)record->survival_elapsed_ms / 1000,
-                record->player_name);
+                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
+                    ->survival_elapsed_ms / 1000,
+                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
             break;
         case GAME_MODE_QUEST:
             crt_sprintf(
                 *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                (int)record->survival_elapsed_ms / 1000,
-                record->player_name);
+                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
+                    ->survival_elapsed_ms / 1000,
+                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
             break;
         default:
             crt_sprintf(
                 *score_line_buffer + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
-                record->score_xp,
-                record->player_name);
+                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->score_xp,
+                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);
             break;
         }
-        ++record;
+        record_flags += sizeof(highscore_record_t);
         ++score_line_item;
         ++score_count;
         ++score_line_buffer;

@@ -9,7 +9,7 @@ Mods browser callback:
 - a refresh-gated `mods\*.dll` enumeration with 31 usable rows and the native
   `+ more` sentinel in slot 31;
 - parallel filename, display-name, and scrollbar-label tables;
-- the selected plugin's title, version, author, filename, description, and API
+- the selected plugin's title, version, author, filename, and API
   compatibility panel;
 - launch gating on API version 3, plugin loading, and transition to the plugin
   runtime state;

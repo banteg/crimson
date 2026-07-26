@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **502/689** functions matched exactly, **108309/325500** code bytes (**33.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **268895/325500** code bytes (**82.6%**).
+Fuzzy-weighted alignment is **270851/325500** code bytes (**83.2%**).
 
 Compilable source candidates cover **619/689** functions and **321890/325500** code bytes (**98.9%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -14,11 +14,11 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 502/689 | 108309/325500 | 33.3% | 268895/325500 | 82.6% | 619/689 | 321890/325500 | 98.9% | 502/619 |
+| crimsonland.exe | 502/689 | 108309/325500 | 33.3% | 270851/325500 | 83.2% | 619/689 | 321890/325500 | 98.9% | 502/619 |
 
 ## crimsonland.exe
 
-**502/689** functions, **108309/325500** bytes (**33.3%**), **268895/325500** fuzzy-weighted bytes (**82.6%**), **619/689** source candidates covering **321890/325500** bytes (**98.9%**), **502/619** scratches verified.
+**502/689** functions, **108309/325500** bytes (**33.3%**), **270851/325500** fuzzy-weighted bytes (**83.2%**), **619/689** source candidates covering **321890/325500** bytes (**98.9%**), **502/619** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -421,7 +421,7 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 369/424 | 55 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 412/429 | 17 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
-| wip | quest_build_the_beating | 0x00435610 | 649 | 348/649 | 301 | 166/166 | 53.61% | 22/166 | 7/0/0 |  | quest-the-beating-four-lines |
+| wip | quest_build_the_beating | 0x00435610 | 649 | 356/649 | 293 | 166/166 | 54.82% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
 | wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 237/391 | 154 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 395/407 | 12 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
@@ -562,7 +562,7 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 | match | highscore_format_date_label | 0x00441270 | 256 | 256/256 | 0 | 80/80 | 100.00% | 80/80 | 18/0/0 |  | highscore-date-label |
 | match | ui_text_input_render | 0x004413a0 | 3504 | 3504/3504 | 0 | 924/924 | 100.00% | 924/924 | 243/0/0 |  | highscore-result-card-renderer |
 | match | ui_update_notice_update | 0x00442150 | 614 | 614/614 | 0 | 156/156 | 100.00% | 156/156 | 47/0/0 |  | update-available-notice |
-| wip | highscore_screen_update | 0x004423d0 | 8026 | 6209/8026 | 1817 | 1962/2004 | 77.36% | 45/2004 | 583/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
+| wip | highscore_screen_update | 0x004423d0 | 8026 | 6213/8026 | 1813 | 1959/2004 | 77.42% | 45/2004 | 583/0/7 |  | highscore-list-filters-online-sync-and-state-routing |
 | match | highscore_game_mode_list_destroy | 0x00444330 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-game-mode-list-empty-destructor |
 | match | highscore_player_count_list_destroy | 0x00444340 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-player-count-list-empty-destructor |
 | match | highscore_date_filter_list_destroy | 0x00444350 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | highscore-date-filter-list-empty-destructor |
@@ -617,7 +617,7 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
-| wip | controls_menu_update | 0x00448cd0 | 21289 | 13778/21289 | 7511 | 4493/5421 | 64.72% | 4/5421 | 1121/3/33 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
+| wip | controls_menu_update | 0x00448cd0 | 21289 | 15721/21289 | 5568 | 5388/5421 | 73.85% | 4/5421 | 1448/4/17 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | wip | play_game_menu_update | 0x0044ed80 | 3238 | 2831/3238 | 407 | 776/777 | 87.44% | 120/777 | 275/0/28 |  | play-game-mode-buttons-player-count-and-routing |
 | match | play_game_player_count_list_destroy | 0x0044fa30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-player-count-list-empty-destructor |

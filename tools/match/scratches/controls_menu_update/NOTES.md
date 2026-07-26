@@ -49,20 +49,31 @@ for the four axis rows. That path records absolute peaks for Grim IDs
 first peak above `0.5`. Escape cancels either capture path and releases the UI
 input lock.
 
-The native function inlines the complete `input_key_name` policy three times:
-once inside the 13-row player-binding loop, once for Level Up, and once for
-Reload. The scratch shares that policy through
+The native function inlines the complete `input_key_name` policy four times:
+once inside the 13-row player-binding loop, once for the generic configured
+binding at row 13, once for Level Up, and once for Reload. Live Binary Ninja
+places the extra body after the loop at `0x0044a2c2`, assigns its label at
+`0x0044b02d`, and only then enters the Level Up body at `0x0044b045`. The
+scratch shares that policy through
 `tools/match/include/input_key_name_impl.h`; defining
 `CONTROLS_INLINE_KEY_NAME` gives VC6 the same force-inlined source body while
 the standalone scratch continues to compile it as `input_key_name`.
 
-Current MSVC 6.5 `/O2 /GB` result: **64.72%**, with a fuzzy gap of
-7,511.49 bytes, 4 exact prefix instructions, 5,421 native instructions versus
-4,493 candidate instructions, and reference audit **1,121 resolved /
-3 unresolved / 33 mismatched**. Both functions use the native `0x74`-byte
-frame. The remaining gap is dominated by register allocation across the
-enormous inlined key-label bodies and by the recovered row-render helpers
-versus the native repeated lowering. All observed widgets, labels, scheme
-branches, runtime binding copies, row updates, capture rules, and dropdown
-writes are present; no fake dependency, padding, volatile coercion, or inline
-assembly is used.
+The remaining tail now follows the native dataflow rather than helper-level
+equivalences: rebind capture writes the selected regular, Level Up, or Reload
+configuration field directly; the analog peak scan walks the six contiguous
+float slots with a pointer; dropdown selection returns the selected index;
+and list enable flags are reset and then cleared in native open-list order.
+The two capture prompts share one base Y value, as in the native branch join.
+
+Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **73.85%**, with a fuzzy gap of
+5,567.95 bytes, 4 exact prefix instructions, 5,421 native instructions versus
+5,388 candidate instructions, and reference audit **1,448 resolved /
+4 unresolved / 17 mismatched**. This improves the prior **64.72%** result
+(7,511.49-byte gap, 4,493 candidate instructions, and 1,121 / 3 / 33
+references). Both functions retain the native `0x74`-byte frame. The remaining
+gap is dominated by register allocation inside the four enormous equivalent
+inlined key-label bodies and early UI/x87 lowering. All observed widgets,
+labels, scheme branches, runtime binding copies, row updates, capture rules,
+and dropdown writes are present; no fake dependency, padding, volatile
+coercion, or inline assembly is used.

@@ -1,6 +1,6 @@
 # `unlocked_weapons_database_update`
 
-Native target: `crimsonland.exe` at `0x00440110` (2,085 bytes).
+Native target: `crimsonland.exe` at `0x00440110` (2,086 bytes).
 
 Live Binary Ninja evidence recovers the complete unlocked-weapons database
 callback:
@@ -18,9 +18,9 @@ callback:
   the ammo-class-1 `n/a` case), reload time, and clip size, including the
   narrow-screen horizontal adjustment.
 
-The natural `msvc6.5 /O2 /GB` reconstruction matches 85.74% of 523 target
+The natural `msvc6.5 /O2 /GB` reconstruction matches 82.87% of 523 target
 instructions with 522 candidate instructions, a nine-instruction exact prefix,
-the exact native `0x118`-byte frame, and `143/0/2` audited references. All
+the exact native `0x118`-byte frame, and `140/0/2` audited references. All
 object, guard, function, string, and gameplay-data references resolve. The two
 residual reference mismatches are constant-pool alignments caused by the
 remaining vector-temporary/x87 schedule difference; the corresponding native
@@ -32,6 +32,15 @@ lifetimes, the native `20 + 10`, `20 + 8`, and `16 + 4` vertical spacings remain
 separate operations, the compact-to-real-id mapping uses its native
 post-increment test, and the fire-rate branches place the RPM path before the
 ammo-class-1 `n/a` path.
+
+An older caller-local scrollbar replica typed its tab-column offsets as
+`float[8]` and scored 85.74% with `143/0/2` references. Live
+`ui_scrollbar_update` disassembly proves those fields are `int[8]`: the helper
+multiplies integer entries and the highscore caller stores raw integers 10, 30,
+and 44. Reverting to the known 85.74% result would reintroduce the incorrect
+float type. The lower correctly typed result above is intentional;
+ordinary chained, separate, and integer-literal zero initializers all compile
+identically.
 
 This remains an honest work in progress: no register hints, dead expressions,
 fake aliases, or unreachable shaping are used.

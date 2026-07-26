@@ -14,9 +14,9 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch currently matches 85.64% (1,088 target instructions,
-1,091 candidate instructions, 14-instruction exact prefix). Reference auditing
-reports 212 aligned references, no unresolved references, and 12 mismatches.
+The complete VC6 scratch currently matches 87.55% (1,088 target instructions,
+1,089 candidate instructions, 14-instruction exact prefix). Reference auditing
+reports 218 aligned references, no unresolved references, and 10 mismatches.
 The remaining reference mismatches are instruction-alignment or strength-
 reduced field-anchor differences such as `particle_style_id` versus the same
 record's `intensity` field; no reference aliases are used.
@@ -49,5 +49,12 @@ analysis shows that particle styles reinterpret the four floats at
 `+0x14..+0x20` as either scale/age or RGBA, the float at `+0x24` as
 intensity/progress, and `+0x2c` as spin/rotation. Those overlays now live in
 the shared type and are authoritative in the Binary Ninja importer. The
-refactor is byte-neutral here at 1,091 instructions, 85.64%, and
-`212/0/12`; both particle constructors remain exact at 67/67.
+canonical particle refactor was byte-neutral before the later source-shape
+improvements below; both particle constructors remain exact at 67/67.
+
+Narrowing the icon-phase and Telekinetic locals to their actual source
+lifetimes recovers the native register schedule without changing any loop
+bound or branch. In particular, the player index is initialized immediately
+before the player walk, and the nearby-bonus cursor remains scoped to the
+Telekinetic search. This raises the whole-function result from 85.64% to
+87.55% and improves the reference audit from `212/0/12` to `218/0/10`.

@@ -52,13 +52,13 @@ extern "C" void quest_build_the_beating(
         spawn->pos = quest_vec2_t(
             (float)(terrain_texture_width + x_offset),
             (float)(terrain_texture_height / 2));
+        x_offset += 32;
         spawn->set_spawn(
             SPAWN_ID_ALIEN_SMALL_GREEN_MAN_25,
             trigger_time_ms,
             8);
         ++spawn;
         trigger_time_ms += 100;
-        x_offset += 32;
         --remaining;
     } while (remaining != 0);
 

@@ -38,3 +38,10 @@ Direct metadata fields, a combined position-and-metadata setter, a preincrement
 cursor, and reversed local declaration order were all tested and scored worse
 or failed to improve this shape. No artificial dependencies, volatile state,
 or register-forcing constructs are used.
+
+The opening eight-entry walk now advances its X offset immediately after
+constructing the current position and before storing spawn metadata. Live
+Binary Ninja shows the same update between the coordinate calculation and the
+template/trigger/count stores. This source order preserves offsets 64 through
+288 and triggers 10000 through 10700 while improving the exact prefix from 22
+to 37 instructions and the match from 53.61% to 54.82%.

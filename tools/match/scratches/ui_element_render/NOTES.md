@@ -2,8 +2,9 @@
 
 Native target: `crimsonland.exe` at `0x00446c40` (1,801 bytes).
 
-Current reconstruction: **83.40%**, 515 candidate instructions versus 521
-native instructions, with all 59 emitted references resolved.
+Current reconstruction: **91.17%**, exactly 521 candidate and native
+instructions, a 145-instruction exact prefix, and all 65 emitted references
+resolved.
 
 Live Binary Ninja and IDA evidence recovers the game-owned UI element render
 state machine: optional point-filter setup, keyboard-focus activation, panel
@@ -43,8 +44,14 @@ field rather than casting `color + 3`. The enabled-overlay loop's remaining
 back-reference is expressed as one subtemplate block plus one vertex stride,
 which is the native single-cursor lowering. A direct indexed two-array loop
 compiled to 510 instructions and regressed to 82.25%, so it is not retained.
-The typed form preserves 515/521 instructions, 83.3977%, and `59/0/0`
-references exactly.
+The typed post-increment form now follows the native increment-then-store
+cursor schedule. Splitting each shadow position into the evidenced
+`position + 7` intermediate followed by the render-offset additions preserves
+the float-store order across the base window and both extra windows in
+eight-vertex mode. The enabled-alpha loop likewise keeps the native overlay
+bank write before the enabled-overlay bank write. Together these recover
+521/521 instructions, a 145-instruction prefix, 91.1708%, and `65/0/0`
+references.
 
 The same union-free Binary Ninja presentation record now exposes all three
 physical vertex banks, their texture handles, and the trailing render state
@@ -58,9 +65,7 @@ preincrements that same interior cursor before storing through the prior
 record; it is an optimizer cursor artifact rather than an anonymous structure
 field.
 
-The small residual is code-generation shape: VC6 keeps a temporary for the
-seven-pixel Y coordinate in each offset-shadow submission and schedules
-otherwise equivalent vertex-call arguments differently. Introducing an
-artificial volatile or extra aggregate reproduces the missing instruction
-count only by changing the native 0x20-byte frame and lowering the match, so
-the plausible expression form is retained.
+The remaining residual is code-generation shape: VC6 schedules otherwise
+equivalent vertex-call arguments and cursor registers differently.
+Introducing artificial volatility or extra aggregates changes the native
+frame and lowers the match, so the plausible expression form is retained.

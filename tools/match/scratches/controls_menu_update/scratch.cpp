@@ -120,25 +120,24 @@ static __forceinline void init_list(
     crt_atexit(destroy);
 }
 
-static __forceinline bool activate_list(
+static __forceinline int activate_list(
     controls_vec2_t &base,
     controls_vec2_t offset,
-    ui_list_widget_t &list,
-    int &selected)
+    ui_list_widget_t &list)
 {
     controls_vec2_t position;
-    selected = ui_list_widget_update(
+    int selected = ui_list_widget_update(
         base.vec2_add_out((float *)&position, (float *)&offset),
         &list);
-    if (selected < -1) {
-        return false;
+    if (selected <= -2) {
+        return -1;
     }
     if (!input_primary_just_pressed()
         && !grim_interface_ptr->grim_was_key_pressed(0x1c)) {
-        return false;
+        return -1;
     }
     list.open = 1 - list.open;
-    return selected >= 0;
+    return selected;
 }
 
 static __forceinline float abs_float(float value)
@@ -150,7 +149,7 @@ static __forceinline float abs_float(float value)
 static __forceinline void update_axis_peak(float &peak, int axis)
 {
     float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));
-    if (value < peak) {
+    if (peak > value) {
         value = peak;
     }
     peak = value;
@@ -301,8 +300,10 @@ extern "C" void controls_menu_update(void)
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
     grim_interface_ptr->grim_draw_text_small_fmt(
         draw_position.x, draw_position.y, "Aiming method:");
+    draw_position.y += 42.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
-        draw_position.x, draw_position.y + 42.0f, "Moving method:");
+        draw_position.x, draw_position.y, "Moving method:");
+    draw_position.y += 42.0f;
 
     if (!(controls_menu_init_flags & 0x20)) {
         controls_menu_init_flags |= 0x20;
@@ -312,10 +313,10 @@ extern "C" void controls_menu_update(void)
         controls_direction_arrow_checkbox.label = 0;
         crt_atexit(nullsub_90);
     }
+    controls_direction_arrow_checkbox.label = "Show direction arrow";
+    draw_position.y += 4.0f;
     controls_direction_arrow_checkbox.checked =
         config_direction_arrow_flags[controls_rebind_player_index];
-    controls_direction_arrow_checkbox.label = "Show direction arrow";
-    draw_position.y += 88.0f;
     ui_checkbox_update(
         (float *)&draw_position,
         &controls_direction_arrow_checkbox);
@@ -399,8 +400,8 @@ extern "C" void controls_menu_update(void)
     {
         ui_menu_item_t *item = controls_rebind_items;
         do {
-            item->activated = 0;
             item->enabled = 1;
+            item->activated = 0;
             ++item;
         } while (item < controls_rebind_items + 15);
     }
@@ -418,6 +419,12 @@ extern "C" void controls_menu_update(void)
             ++binding_base;
             ++i;
         } while (i < 13);
+        if (controls_rebind_items[i].label) {
+            crt_free(controls_rebind_items[i].label);
+        }
+        controls_rebind_items[i].label =
+            strdup_malloc(controls_key_name(
+                config_p1_move_forward[binding_base]));
         if (controls_rebind_items[i].label) {
             crt_free(controls_rebind_items[i].label);
         }
@@ -499,29 +506,29 @@ extern "C" void controls_menu_update(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);
     draw_position.x -= 27.0f;
     if (controls_rebind_slot_index != -1) {
+        float prompt_y = draw_position.y + 12.0f;
         if (controls_rebind_slot_index < 9
-            || controls_rebind_slot_index > 12) {
+            || controls_rebind_slot_index >= 13) {
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                draw_position.y + 12.0f,
+                prompt_y,
                 "Assign control (eg. press a key).");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                draw_position.y + 25.0f,
+                prompt_y + 13.0f,
                 "     (press ESCAPE to cancel)");
         } else {
-            draw_position.y += 12.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                draw_position.y,
+                prompt_y,
                 " Move joystick/pad analog controller");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                draw_position.y + 13.0f,
+                prompt_y + 13.0f,
                 "axis you want to assign the control to");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                draw_position.y + 26.0f,
+                prompt_y + 26.0f,
                 "     (press ESCAPE to cancel)");
         }
     }
@@ -537,10 +544,9 @@ extern "C" void controls_menu_update(void)
         }
     }
 
-    int key_reload = config_key_reload;
     if (controls_rebind_slot_index != -1) {
         if (controls_rebind_slot_index < 9
-            || controls_rebind_slot_index > 12) {
+            || controls_rebind_slot_index >= 13) {
             if (!input_any_key_pressed()) {
                 controls_rebind_capture_armed = 1;
             }
@@ -550,7 +556,29 @@ extern "C" void controls_menu_update(void)
                 controls_rebind_capture_armed = 0;
             } else if (controls_rebind_capture_armed) {
                 int key = 2;
-                if (controls_rebind_slot_index < 13) {
+                if (controls_rebind_slot_index >= 13) {
+                    do {
+                        if (grim_interface_ptr->grim_is_key_active(key)) {
+                            grim_interface_ptr->grim_flush_input();
+                            if (controls_rebind_slot_index == 13) {
+                                config_key_pick_perk = key;
+                            } else {
+                                config_key_reload = key;
+                            }
+                            controls_rebind_slot_index = -1;
+                            controls_rebind_capture_armed = 0;
+                        }
+                        ++key;
+                    } while (key < 0x17f);
+                    int axis = input_detect_active_analog_axis();
+                    if (axis) {
+                        if (controls_rebind_slot_index == 13) {
+                            config_key_pick_perk = axis;
+                        } else {
+                            config_key_reload = axis;
+                        }
+                    }
+                } else {
                     do {
                         if (grim_interface_ptr->grim_is_key_active(key)) {
                             grim_interface_ptr->grim_flush_input();
@@ -563,37 +591,12 @@ extern "C" void controls_menu_update(void)
                         ++key;
                     } while (key < 0x17f);
                     int axis = input_detect_active_analog_axis();
-                    key_reload = config_key_reload;
                     if (axis) {
                         config_p1_move_forward[
                             controls_rebind_player_index * 16
                             + controls_rebind_slot_index] = axis;
                         controls_rebind_slot_index = -1;
                         controls_rebind_capture_armed = 0;
-                    }
-                } else {
-                    do {
-                        if (grim_interface_ptr->grim_is_key_active(key)) {
-                            grim_interface_ptr->grim_flush_input();
-                            int selected = key;
-                            if (controls_rebind_slot_index == 13) {
-                                config_key_pick_perk = key;
-                                selected = config_key_reload;
-                            }
-                            config_key_reload = selected;
-                            controls_rebind_slot_index = -1;
-                            controls_rebind_capture_armed = 0;
-                        }
-                        ++key;
-                    } while (key < 0x17f);
-                    int axis = input_detect_active_analog_axis();
-                    key_reload = config_key_reload;
-                    if (axis) {
-                        key_reload = axis;
-                        if (controls_rebind_slot_index == 13) {
-                            config_key_pick_perk = axis;
-                            key_reload = config_key_reload;
-                        }
                     }
                 }
             }
@@ -618,12 +621,13 @@ extern "C" void controls_menu_update(void)
                 update_axis_peak(controls_rebind_axis_peak_abs_154, 0x154);
                 update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
                 float *peaks = &controls_rebind_axis_peak_abs_13f;
-                for (int i = 0; i < 6; ++i) {
-                    if (peaks[i] > 0.5f) {
+                int axis_index = 0;
+                do {
+                    if (*peaks > 0.5f) {
                         int binding =
                             controls_rebind_player_index * 16
                             + controls_rebind_slot_index;
-                        switch (i) {
+                        switch (axis_index) {
                         case 0:
                             config_p1_move_forward[binding] = 0x13f;
                             grim_interface_ptr->grim_flush_input();
@@ -653,48 +657,54 @@ extern "C" void controls_menu_update(void)
                         controls_rebind_capture_armed = 0;
                         break;
                     }
-                }
+                    ++peaks;
+                    ++axis_index;
+                } while (
+                    peaks < &controls_rebind_axis_peak_abs_13f + 6);
             }
         }
     }
-    config_key_reload = key_reload;
-
+    controls_move_method_list.enabled = 1;
+    controls_aim_method_list.enabled = 1;
+    controls_player_profile_list.enabled = 1;
     controls_direction_arrow_checkbox.disabled = 0;
-    controls_aim_method_list.enabled =
-        !controls_player_profile_list.open
-        && !controls_move_method_list.open;
-    controls_move_method_list.enabled =
-        !controls_aim_method_list.open
-        && !controls_player_profile_list.open;
-    controls_player_profile_list.enabled =
-        !controls_aim_method_list.open
-        && !controls_move_method_list.open;
+    if (controls_move_method_list.open) {
+        controls_aim_method_list.enabled = 0;
+        controls_player_profile_list.enabled = 0;
+    }
+    if (controls_player_profile_list.open) {
+        controls_aim_method_list.enabled = 0;
+        controls_move_method_list.enabled = 0;
+    }
+    if (controls_aim_method_list.open) {
+        controls_move_method_list.enabled = 0;
+        controls_player_profile_list.enabled = 0;
+    }
     if (controls_move_method_list.open || controls_aim_method_list.open) {
         controls_direction_arrow_checkbox.disabled = 1;
     }
 
-    int selected;
-    if (activate_list(
-            left_base,
-            controls_vec2_t(10.0f, 104.0f),
-            controls_move_method_list,
-            selected)) {
+    int selected = activate_list(
+        left_base,
+        controls_vec2_t(10.0f, 104.0f),
+        controls_move_method_list);
+    if (selected >= 0) {
         controls_move_method_list.selected_index = selected;
         config_player_mode_flags[controls_rebind_player_index] = selected + 1;
     }
-    if (activate_list(
-            left_base,
-            controls_vec2_t(10.0f, 62.0f),
-            controls_aim_method_list,
-            selected)) {
+    selected = activate_list(
+        left_base,
+        controls_vec2_t(10.0f, 62.0f),
+        controls_aim_method_list);
+    if (selected >= 0) {
         controls_aim_method_list.selected_index = selected;
         config_aim_scheme[controls_rebind_player_index] = selected;
     }
-    if (activate_list(
-            left_base,
-            controls_vec2_t(136.0f, 16.0f),
-            controls_player_profile_list,
-            selected)) {
+    selected = activate_list(
+        left_base,
+        controls_vec2_t(136.0f, 16.0f),
+        controls_player_profile_list);
+    if (selected >= 0) {
         controls_aim_method_list.selected_index =
             config_aim_scheme[selected];
         controls_move_method_list.selected_index =

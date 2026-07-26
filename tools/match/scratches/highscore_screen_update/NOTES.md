@@ -93,3 +93,13 @@ unrelated render coordinates and later item pointers. Split-local type
 previews polluted those other lifetimes, so they are intentionally left
 unannotated until Binary Ninja can represent the compiler's stack-slot
 lifetime splits without widening the user type across the whole function.
+
+The matching source now carries the score-record walk as the native
+`unsigned char *` cursor anchored at `highscore_record_t::flags`, advances it
+by the proven `0x48` record size, and recovers the owning record with
+`offsetof` only where the name, elapsed time, or score is needed. It also
+clears each row through the item pointer just assigned to that row, preserving
+the target's item-before-clear data flow without raw offsets. This raises the
+whole-function result from **77.36%** to **77.42%**, adds 4.70 fuzzy-weighted
+bytes, and reduces the candidate from 1,962 to 1,959 instructions while
+retaining the 45-instruction prefix and `583/0/7` reference audit.
