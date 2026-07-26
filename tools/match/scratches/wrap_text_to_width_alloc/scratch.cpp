@@ -7,8 +7,8 @@ extern IGrim2D_cpp *grim_interface_ptr;
 extern "C" char *wrap_text_to_width_alloc(char *text, int max_width_px)
 {
     char glyph[2];
-    int text_length = strlen(text);
     glyph[1] = 0;
+    int text_length = strlen(text);
     char *wrapped = new char[text_length + 1];
     strcpy(wrapped, text);
 
