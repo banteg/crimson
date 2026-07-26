@@ -26,7 +26,7 @@ extern unsigned char ui_transition_direction;
 extern int ui_element_hover_focus_index;
 extern int ui_elements_timeline;
 extern int ui_screen_phase;
-extern int game_state_reserved_zero;
+extern int data_487260;
 extern int ui_item_texts_texture;
 
 extern ui_element_t *ui_element_table_end;
@@ -320,7 +320,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
         ui_screen_phase = -1;
     } else if (state_id == GAME_STATE_GAME_OVER) {
         ui_element_slot_30.active = 1;
-        game_state_reserved_zero = 0;
+        data_487260 = 0;
         ui_screen_phase = -1;
     }
 

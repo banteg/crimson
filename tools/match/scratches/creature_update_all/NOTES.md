@@ -222,8 +222,14 @@ constraint rather than forcing a prettier aggregate view.
 
 ## Recovery classification
 
-The scratch is `semantic-complete` with `compiler,references` residuals. A
+The scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja check retains the full 5,330-byte function and the
 recovered plague, spawn-slot, ranged/contact, Energizer, infection, death, and
 corpse paths; the matcher still reports 1,290/1,338 instructions and
-`207/0/4` references.
+`207/0/4` references. Auditing each of those four aligned instructions against
+the native disassembly confirms they are all downstream sequence-alignment
+artifacts: zero versus `1000.0f`, player health versus the later shield timer,
+the preceding panned-SFX call versus the Mr Melee perk query, and Toxic Avenger
+versus the following Veins of Poison query. All referenced native objects are
+present at their separately aligned callsites, so none is independent
+reference debt; the visible mismatches remain unaliased.

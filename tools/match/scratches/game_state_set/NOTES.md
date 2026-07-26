@@ -25,7 +25,7 @@ rather than a UV-only padding view.
 
 Current MSVC 6.5 `/O2 /GB` result: **85.35%**, with an exact **166/399**
 instruction prefix, 399 native instructions versus 393 candidate instructions,
-the exact 0x50-byte frame, and reference audit **161 resolved / 1 unresolved /
+the exact 0x50-byte frame, and reference audit **162 resolved / 0 unresolved /
 0 mismatched**. Keeping the requested state in EBP and a distinct local atlas
 row reproduces the native EBP/ESI/EDI allocation and raised the match from the
 initial 46.26% switch-shaped reconstruction.
@@ -38,16 +38,18 @@ memory increments. The controls-menu Vec2 assignment also has one independent
 store-scheduling difference. No fake dependencies, volatile qualifiers, dead
 expressions, or register constraints are used to defeat those optimizations.
 
-The sole unresolved reference is the zero written at `0x00487260` on game-over
-entry. Binary Ninja finds no other code or data xrefs, so the scratch retains a
-descriptive local name without promoting an unsupported semantic name into the
-shared data map.
+The zero written at `0x00487260` on game-over entry is now represented by the
+conservative address-derived name `data_487260`. Binary Ninja finds no other
+code or data xrefs, so the shared data map records only the proven 32-bit
+location and single write, without assigning an unsupported gameplay meaning.
+That evidence closes the former unresolved reference while keeping the native
+address explicit.
 
 Both main-menu width checks now use the recovered
 `grim_config_value_t::operator bool()` instead of manually reinterpreting the
 first byte of the returned value object. The source shape matches the already
 exact UI layout caller and leaves the `85.35%`, `166/399` prefix, and
-`161/1/0` reference audit unchanged.
+`162/0/0` reference audit unchanged.
 
 Binary Ninja now receives an equivalent union-free `ui_element_binja_t`
 presentation record for this analysis path. It verifies the full `0x318` size
@@ -72,11 +74,11 @@ variables defined by those compiler-generated reloads. Binary Ninja therefore
 renders both branches as named `overlay_vertices[0..3].u/v` writes, including
 the shared fourth-vertex phi, instead of falling back to
 `void * + 0x138..0x190`. This is presentation-only type recovery; it does not
-alter the matching scratch or the **85.35%**, `166/399`, `161/1/0` result.
+alter the matching scratch or the **85.35%**, `166/399`, `162/0/0` result.
 
 The Play Game and Controls entry arms now address slot 13 through the
 canonical `ui_element_t::pos` aggregate for their initial vector copy and
 subsequent x/y adjustments. The existing local vector-class cast remains only
 at the class-assignment boundary. This source cleanup is byte-neutral at
-85.35%, 393/399 instructions, a 166-instruction prefix, and `161/1/0`
+85.35%, 393/399 instructions, a 166-instruction prefix, and `162/0/0`
 references.

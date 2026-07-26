@@ -507,11 +507,16 @@ stores remain.
 
 ## Recovery classification
 
-This scratch is `semantic-complete` with `compiler,references` residuals. A
+This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja pass retains all 260 native blocks, every template
 handler from `0x00` through `0x43` (with `0x02` taking the native fallback),
 the shared root initialization, and the complete effect, difficulty, Hardcore,
 and retry tail. The sole masked-reference mismatch is the compiler-generated
-retry jump table, whose candidate and target entries cover the same four
-cases. The first mismatch remains the evidenced root-offset/zero-vector local
-slot permutation shown above; no gameplay source is missing there.
+retry jump table, whose candidate offsets
+`0x35df/0x3611/0x3643/0x3672` and native offsets
+`0x35da/0x360c/0x363e/0x366d` cover the same four cases with a uniform
+five-byte code-layout displacement. The audited table therefore carries no
+independent source-reference debt and remains visible as `352/0/1` rather than
+being hidden behind an alias. The first mismatch remains the evidenced
+root-offset/zero-vector local slot permutation shown above; no gameplay source
+is missing there.

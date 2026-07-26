@@ -4161,6 +4161,13 @@
       "type": "char"
     },
     {
+      "address": "0x00487260",
+      "comment": "Unidentified 32-bit game-state value cleared only when entering GAME_STATE_GAME_OVER; kept address-named because no other native xrefs establish a stronger meaning.",
+      "name": "data_487260",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00487264",
       "comment": "Fullscreen fade alpha used by grim_draw_fullscreen_color.",
       "name": "screen_fade_alpha",

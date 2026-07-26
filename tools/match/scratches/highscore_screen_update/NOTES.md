@@ -104,11 +104,17 @@ whole-function result from **77.36%** to **77.42%**, adds 4.70 fuzzy-weighted
 bytes, and reduces the candidate from 1,962 to 1,959 instructions while
 retaining the 45-instruction prefix and `583/0/7` reference audit.
 
-The scratch is classified `semantic-complete` with `compiler,references`
-residuals. Fresh live Binary Ninja output covers the score rows, all filters,
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output covers the score rows, all filters,
 local-static widgets, online worker and batch state machine, notices, and
 every Play/Back/high-score-return route. IDA and Ghidra corroborate the same
 16-callee surface. The 1,959/2,004-instruction candidate keeps the native
 `0x84` frame, a 45-instruction prefix, and `583/0/7` references; the first
 bounded regions differ only in x87 ordering, coalesced stack slots, and
-instruction scheduling.
+instruction scheduling. The seven audited mismatches likewise pair adjacent
+but differently scheduled operations: the record-table flags cursor and
+score-line buffer, three consecutive music IDs, the saved minor/mode/major
+return tuple, a render-coordinate constant, and adjacent player-count widget
+fields. Binary Ninja confirms the native addresses and the matcher separately
+resolves every corresponding candidate object. They remain visible and
+unaliased at `583/0/7`, but carry no independent source-reference debt.
