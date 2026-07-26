@@ -27,16 +27,6 @@ struct creature_spawn_vec2_t {
     }
 };
 
-struct creature_spawn_root_vec2_t {
-    float x;
-    float y;
-
-    creature_spawn_root_vec2_t(float x_value, float y_value)
-        : x(x_value), y(y_value)
-    {
-    }
-};
-
 typedef union creature_spawn_tint_scratch_t {
     creature_tint_t tint;
     creature_spawn_vec2_t orbit_direction;
@@ -225,11 +215,11 @@ extern "C" creature_t *creature_spawn_template(
     }
 
     creature = &creature_pool[root_slot_idx];
+    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};
 
     creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
     *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;
-    *(creature_spawn_root_vec2_t *)&creature->velocity =
-        creature_spawn_root_vec2_t(0.0f, 0.0f);
+    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;
     creature->collision_flag = 0;
     creature->collision_timer = 0.0f;
     creature->active = 1;

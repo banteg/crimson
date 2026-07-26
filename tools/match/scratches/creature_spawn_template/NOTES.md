@@ -29,9 +29,9 @@ be low percentage until more template families are added.
 Current local score:
 
 ```txt
-match=86.46% prefix=26/3159 target_insns=3159 candidate_insns=3161 refs=352/0/1
-first_target=mov dword [esp+0x18], esi
-first_candidate=mov dword [esp+0x10], esi
+match=86.93% prefix=23/3159 target_insns=3159 candidate_insns=3161 refs=352/0/1
+first_target=mov dword [esp+0x10], 0
+first_candidate=mov dword [esp+0x14], 0
 ```
 
 Frame/prefix notes:
@@ -478,6 +478,18 @@ Frame/prefix notes:
   A shadow compile is byte-identical at 86.46%, 3,161/3,159 instructions, and
   `352/0/1` references, so this removes scratch-era offset plumbing without
   steering VC6 or claiming a score improvement.
+- The common prologue's root velocity is now a named two-float value whose
+  lifetime begins after root allocation and sentinel-heading resolution, just
+  before the root field stores. This is the native source-level aggregate
+  shape already used for formation velocities, and it gives VC6 an explicit
+  local lifetime instead of lowering an anonymous temporary.
+  The score rises from `86.46%` to `86.93%`, gaining 66.93 fuzzy-weighted
+  bytes with the same 3,161/3,159 instruction counts and `352/0/1` reference
+  audit. The matched prefix moves from 26 to 23 instructions because the
+  remaining compiler residual assigns the two zero words to the opposite pair
+  of low stack slots; declaring the value before allocation scored lower and
+  reduced the prefix to 5, while declaring it after the first root field was
+  byte-identical to the old anonymous temporary.
 
 ## Binary Ninja control-flow recovery
 
@@ -491,7 +503,7 @@ honest addresses of the `tint_r` member used by MSVC's four-byte copy lowering,
 so they are not mislabeled as owning creature pointers.
 
 This database-only control-flow recovery does not change code generation.
-After the later source-order recoveries above, the scratch remains 86.46% with
+After the later source-order recoveries above, the scratch is 86.93% with
 3,161/3,159 instructions and `352/0/1` references.
 
 ## Creature aggregate member recovery
@@ -499,7 +511,8 @@ After the later source-order recoveries above, the scratch remains 86.46% with
 All record-base position, target-offset, and tint accesses now name the
 canonical `creature_t::position`, `target_offset`, and `color` components.
 This removes the remaining flattened compatibility aliases from the
-3,161-instruction switch while preserving 86.46%, the 26-instruction prefix,
+3,161-instruction switch while preserving the then-current 86.46% score and
+26-instruction prefix,
 and `352/0/1` references byte-for-byte. Combining the six paired position
 stores into whole-vector assignments was also measured, but added one
 instruction and lost 6.39 fuzzy-weighted bytes, so the evidenced independent
