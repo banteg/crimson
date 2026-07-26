@@ -116,6 +116,15 @@ def load_library_provenance(path: Path = DEFAULT_PROVENANCE_PATH) -> dict[str, A
             artifact_id = target.get("artifact")
             if artifact_id not in known_artifacts:
                 raise ValueError(f"{path}: archive match has unknown target artifact {artifact_id!r}")
+    for synced_file in payload.get("synced_files", []):
+        source_id = synced_file.get("source_artifact")
+        if source_id not in known_sources:
+            raise ValueError(f"{path}: synced file has unknown source artifact {source_id!r}")
+        member = synced_file.get("member")
+        if member not in source_members[source_id]:
+            raise ValueError(f"{path}: synced file has unknown source member {member!r}")
+        if not synced_file.get("path"):
+            raise ValueError(f"{path}: synced file requires a path")
     return payload
 
 
@@ -318,6 +327,43 @@ def _check_component(
     return checks
 
 
+def _check_synced_file(
+    row: dict[str, Any],
+    *,
+    sources: dict[str, dict[str, Any]],
+    repo_root: Path,
+) -> ProvenanceCheck:
+    source_id = str(row["source_artifact"])
+    member_path = str(row["member"])
+    relative_path = str(row["path"])
+    path = _artifact_path(repo_root, relative_path)
+    member = next(
+        member for member in sources[source_id].get("members", []) if member["path"] == member_path
+    )
+    expected_size = int(member["size"])
+    expected_sha256 = str(member["sha256"])
+    if not path.is_file():
+        return ProvenanceCheck(
+            artifact=relative_path,
+            component=source_id,
+            kind="source-member",
+            passed=False,
+            detail=f"missing {path}",
+        )
+    data = path.read_bytes()
+    actual_sha256 = hashlib.sha256(data).hexdigest()
+    return ProvenanceCheck(
+        artifact=relative_path,
+        component=source_id,
+        kind="source-member",
+        passed=len(data) == expected_size and actual_sha256 == expected_sha256,
+        detail=(
+            f"{member_path} size={len(data)}/{expected_size} "
+            f"sha256={actual_sha256}/{expected_sha256}"
+        ),
+    )
+
+
 def _normalized_endpoint(
     artifact: _LoadedArtifact,
     endpoint: dict[str, Any],
@@ -383,6 +429,8 @@ def validate_library_provenance(
         for component in artifact_row.get("components", []):
             checks.extend(_check_component(artifact, component, sources=sources))
 
+    for row in payload.get("synced_files", []):
+        checks.append(_check_synced_file(row, sources=sources, repo_root=repo_root))
     for match_row in payload.get("cross_image_matches", []):
         checks.append(_check_cross_image_match(match_row, loaded))
     return ProvenanceReport(tuple(checks))

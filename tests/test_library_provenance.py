@@ -31,7 +31,16 @@ def test_library_provenance_manifest_validates_current_binaries() -> None:
     archive_match = payload["archive_matches"][0]
     assert [target["artifact"] for target in archive_match["targets"]] == ["crimsonland.exe", "grim.dll"]
     assert any(check.component == "libjpeg" and check.kind == "fingerprint" and check.passed for check in report.checks)
-    assert sum(check.kind == "source-member" and check.passed for check in report.checks) == 3
+    assert (
+        sum(
+            check.kind == "source-member"
+            and check.artifact in {"ogg.dll", "vorbis.dll", "vorbisfile.dll"}
+            and check.passed
+            for check in report.checks
+        )
+        == 3
+    )
+    assert sum(check.component == "ijg-libjpeg-6a" and check.passed for check in report.checks) == 4
     assert sum(check.component == "d3dx8" and check.kind == "cross-image" for check in report.checks) == 3
 
 
@@ -72,6 +81,23 @@ def test_library_provenance_reports_source_member_drift(tmp_path: Path) -> None:
 
     assert any(
         check.artifact == "ogg.dll" and check.kind == "source-member" and not check.passed
+        for check in report.failed
+    )
+
+
+def test_library_provenance_reports_synced_file_drift(tmp_path: Path) -> None:
+    payload = load_library_provenance()
+    jpeg = next(source for source in payload["source_artifacts"] if source["id"] == "ijg-libjpeg-6a")
+    jpeg["members"][0]["sha256"] = "00" * 32
+    manifest = tmp_path / "library_provenance.json"
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = validate_library_provenance(manifest)
+
+    assert any(
+        check.artifact == "third_party/headers/jpeglib.h"
+        and check.kind == "source-member"
+        and not check.passed
         for check in report.failed
     )
 

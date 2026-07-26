@@ -100,12 +100,13 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   string.
 
 - Status: version is confirmed, correcting the previous 6b-header assumption.
-  The currently imported `JPEG_LIB_VERSION 62` headers are 6b and must be
-  replaced with the exact 6a release before type/signature synchronization.
+  `jpeglib.h`, `jmorecfg.h`, `jerror.h`, and `jpegint.h` are now synced
+  byte-for-byte from the IJG 6a source archive (`JPEG_LIB_VERSION 61`).
 - Status: the exact IJG objects are present in the confirmed DirectX 8.1
   `d3dx8.lib`; member symbols such as `jdmarker.obj`, `jmemmgr.obj`, and
   `jquant*.obj` match Grim functions directly.
-- Status: no signature mapping yet.
+- Status: `grim_jaz_jpeg_error_exit` remains a 100% scratch match with the 6a
+  headers. Codec signature mapping is still pending.
 
 ### libvorbisfile / libvorbis / libogg (Ogg Vorbis Win32 SDK 1.0)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
@@ -198,5 +199,5 @@ matching.
 
 - Match the EXE range `0x00460cb8..0x0046e920` against the exact VC6 CRT
   archive.
-- Replace the imported IJG 6b headers with 6a and map the duplicated codec
-  object boundaries.
+- Apply the unique `d3dx8.lib` member symbols to the duplicated JPEG codec
+  object boundaries in Grim.

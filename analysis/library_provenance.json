@@ -45,7 +45,29 @@
       "id": "ijg-libjpeg-6a",
       "url": "https://www.ijg.org/files/jpegsrc.v6a.tar.gz",
       "size": 538910,
-      "sha256": "0e963fdd29d5049f61f3dc137bdc9437473a0ad505dbcfc8925f0fcad46c5929"
+      "sha256": "0e963fdd29d5049f61f3dc137bdc9437473a0ad505dbcfc8925f0fcad46c5929",
+      "members": [
+        {
+          "path": "jpeg-6a/jpeglib.h",
+          "size": 44388,
+          "sha256": "8d12532e685e58429e8e973f3e7d3604673750e79f5bc23598afbb8030175eae"
+        },
+        {
+          "path": "jpeg-6a/jmorecfg.h",
+          "size": 12389,
+          "sha256": "30b9ea709a75a95340ce824cb53e7d05ab2518fc4b4c03926a4239b9de2abf82"
+        },
+        {
+          "path": "jpeg-6a/jerror.h",
+          "size": 13257,
+          "sha256": "641fd75fc7d5a0d61c63c86fde46b4d76369a4311aabade55b2326d5094c2636"
+        },
+        {
+          "path": "jpeg-6a/jpegint.h",
+          "size": 15527,
+          "sha256": "089ad98da28cdcabb4cf252607cff2e0ca73268818793d0795caaa9032c2da57"
+        }
+      ]
     },
     {
       "id": "libpng-1.0.5",
@@ -367,6 +389,28 @@
           "unique_bytes": 151687
         }
       ]
+    }
+  ],
+  "synced_files": [
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jpeglib.h",
+      "path": "third_party/headers/jpeglib.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jmorecfg.h",
+      "path": "third_party/headers/jmorecfg.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jerror.h",
+      "path": "third_party/headers/jerror.h"
+    },
+    {
+      "source_artifact": "ijg-libjpeg-6a",
+      "member": "jpeg-6a/jpegint.h",
+      "path": "third_party/headers/jpegint.h"
     }
   ],
   "cross_image_matches": [
