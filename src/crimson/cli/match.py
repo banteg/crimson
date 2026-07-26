@@ -10,6 +10,7 @@ from typing import Any, Literal
 
 import typer
 
+from .. import library_match
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
@@ -362,6 +363,62 @@ def cmd_match_provenance(
     else:
         typer.echo(provenance.render_provenance_report(report))
     if check and not report.ok:
+        raise typer.Exit(code=1)
+
+
+@match_app.command("archive")
+def cmd_match_archive(
+    archive: Path = typer.Argument(..., help="candidate COFF .lib archive"),
+    image: Path = typer.Option(matchlib.DEFAULT_IMAGE_PATH, "--image", help="target PE image"),
+    functions: Path | None = typer.Option(None, "--functions", help="IDA functions manifest"),
+    metadata: Path | None = typer.Option(None, "--metadata", help="IDA metadata manifest"),
+    start: str = typer.Option(..., "--start", help="inclusive target range start VA"),
+    end: str = typer.Option(..., "--end", help="exclusive target range end VA"),
+    expected_sha256: str | None = typer.Option(
+        None,
+        "--expected-sha256",
+        help="expected archive SHA-256",
+    ),
+    show_matches: bool = typer.Option(False, "--show-matches", help="list exact function matches"),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum listed matches"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail on hash mismatch or zero matches"),
+) -> None:
+    """Match historical COFF library members directly against a linked PE range."""
+    image_name = image.name
+    try:
+        report = library_match.match_coff_archive(
+            archive,
+            image_path=image,
+            functions_path=functions or matchlib.default_functions_path(image_name),
+            metadata_path=metadata or matchlib.default_metadata_path(image_name),
+            range_start=matchlib.parse_int(start),
+            range_end=matchlib.parse_int(end),
+        )
+    except Exception as exc:
+        typer.echo(f"archive match failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    hash_ok = expected_sha256 is None or report.archive_sha256 == expected_sha256.lower()
+    if as_json:
+        payload = library_match.archive_match_payload(report)
+        payload["expected_sha256"] = expected_sha256
+        payload["hash_ok"] = hash_ok
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        typer.echo(
+            library_match.render_archive_match_report(
+                report,
+                show_matches=show_matches,
+                limit=limit,
+            ),
+        )
+        if not hash_ok:
+            typer.echo(
+                f"hash mismatch: expected={expected_sha256} actual={report.archive_sha256}",
+                err=True,
+            )
+    if check and (not hash_ok or report.matched_functions == 0):
         raise typer.Exit(code=1)
 
 
