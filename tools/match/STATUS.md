@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **502/689** functions matched exactly, **108309/325500** code bytes (**33.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **270851/325500** code bytes (**83.2%**).
+Fuzzy-weighted alignment is **270914/325500** code bytes (**83.2%**).
 
 Compilable source candidates cover **619/689** functions and **321890/325500** code bytes (**98.9%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -14,11 +14,11 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 502/689 | 108309/325500 | 33.3% | 270851/325500 | 83.2% | 619/689 | 321890/325500 | 98.9% | 502/619 |
+| crimsonland.exe | 502/689 | 108309/325500 | 33.3% | 270914/325500 | 83.2% | 619/689 | 321890/325500 | 98.9% | 502/619 |
 
 ## crimsonland.exe
 
-**502/689** functions, **108309/325500** bytes (**33.3%**), **270851/325500** fuzzy-weighted bytes (**83.2%**), **619/689** source candidates covering **321890/325500** bytes (**98.9%**), **502/619** scratches verified.
+**502/689** functions, **108309/325500** bytes (**33.3%**), **270914/325500** fuzzy-weighted bytes (**83.2%**), **619/689** source candidates covering **321890/325500** bytes (**98.9%**), **502/619** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -578,7 +578,7 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 | match | typo_word_pick_fragment | 0x00444f70 | 356 | 356/356 | 0 | 117/117 | 100.00% | 117/117 | 54/0/0 |  | typo-random-name-fragment-table |
 | match | typo_word_pick_highscore_name | 0x004451b0 | 345 | 345/345 | 0 | 123/123 | 100.00% | 123/123 | 20/0/0 |  | typo-highscore-name-cache |
 | match | typo_target_name_is_unique | 0x00445310 | 110 | 110/110 | 0 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | typo-target-uniqueness |
-| wip | typo_target_name_assign_random | 0x00445380 | 522 | 401/522 | 121 | 173/173 | 76.88% | 17/173 | 27/0/0 |  | typo-random-target-name-policy |
+| wip | typo_target_name_assign_random | 0x00445380 | 522 | 465/522 | 57 | 173/173 | 89.02% | 17/173 | 32/0/0 |  | typo-random-target-name-policy |
 | match | typo_target_find_by_name | 0x00445590 | 98 | 98/98 | 0 | 42/42 | 100.00% | 42/42 | 3/0/0 |  | typo-target-lookup |
 | match | typo_target_name_draw_labels | 0x00445600 | 434 | 434/434 | 0 | 111/111 | 100.00% | 111/111 | 20/0/0 |  | typo-active-creature-name-labels |
 | wip | typo_gameplay_update_and_render | 0x004457c0 | 2082 | 2049/2082 | 33 | 508/508 | 98.43% | 33/508 | 194/0/0 |  | typo-shooter-gameplay-loop |
