@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ring-8-child-tint-placement",
+      "find": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;",
+      "replacements": [
+        {
+          "name": "copy-after-max-health",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-collision-timer",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-active",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-lifecycle",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-attack-cooldown",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-type",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-reward",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "copy-after-size",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->health = 40.0f;\n            creature->max_health = 40.0f;\n            creature->collision_timer = 0.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->contact_damage = 4.0f;"
+        },
+        {
+          "name": "collision-pair-before-health",
+          "text": "            *(creature_spawn_vec2_t *)&creature->velocity = child_velocity;\n            creature->collision_flag = 0;\n            creature->collision_timer = 0.0f;\n            creature->health = 40.0f;\n            *(creature_tint_t *)&creature->color = tint;\n            creature->max_health = 40.0f;\n            creature->active = 1;\n            creature->state_flag = 1;\n            creature->lifecycle_stage = 16.0f;\n            creature->attack_cooldown = 0.0f;\n            creature->type_id = CREATURE_TYPE_ALIEN;\n            creature->move_speed = 2.4f;\n            creature->reward_value = 60.0f;\n            creature->size = 50.0f;\n            creature->contact_damage = 4.0f;"
+        }
+      ]
+    }
+  ]
+}

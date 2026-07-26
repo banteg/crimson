@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-add-order",
+      "find": "        x += other.x;\n        y += other.y;",
+      "replacements": [
+        {
+          "name": "self-first-both",
+          "text": "        x = x + other.x;\n        y = y + other.y;"
+        },
+        {
+          "name": "other-first-both",
+          "text": "        x = other.x + x;\n        y = other.y + y;"
+        },
+        {
+          "name": "self-first-x",
+          "text": "        x = x + other.x;\n        y = other.y + y;"
+        },
+        {
+          "name": "self-first-y",
+          "text": "        x = other.x + x;\n        y = y + other.y;"
+        },
+        {
+          "name": "two-result-temporaries",
+          "text": "        float result_x = x + other.x;\n        float result_y = y + other.y;\n        x = result_x;\n        y = result_y;"
+        }
+      ]
+    }
+  ]
+}

@@ -536,6 +536,22 @@ instead grew the frame from `0x48` to `0x4c`, erased the prefix, and regressed
 the whole function to 66.8461%. Both probes were reverted; the compact
 two-float value remains the best natural source shape.
 
+Two recorded mutation sweeps make the negative source-shape evidence
+reproducible. The six-variant root-velocity sweep in
+`prologue-mutations.json`
+(`spec_sha256=4538a9abd9fcb294441c0b2f5436963ebdf1898a10b3fd1805359261f1429b21`)
+found three split declaration/initialization spellings byte-identical to the
+86.9304% baseline. Initializing the value before allocation lost 4.46
+fuzzy-weighted bytes and reduced the prefix from 23 to 5; reusing either
+long-lived named vector local lost 3,347.69 fuzzy-weighted bytes and introduced
+another reference mismatch. A second nine-variant ring-child ordering sweep in
+`ring-child-order-mutations.json`
+(`spec_sha256=d3f9df74a23ec30c1a5a0ab021f789154ca4bd6496e62ee3ab93570ab418a761`)
+found the paired collision stores byte-neutral, while moving the typed tint
+copy to any later plausible boundary lost 58.00 to 62.46 fuzzy-weighted bytes.
+All 15 variants were evaluated with no truncation; neither sweep produced a
+winner, so the source remains unchanged.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A

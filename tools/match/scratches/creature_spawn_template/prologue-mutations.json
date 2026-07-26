@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "root-velocity-lifetime",
+      "find": "    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;",
+      "replacements": [
+        {
+          "name": "declare-before-alloc-init-before",
+          "text": "    creature_spawn_vec2_t root_velocity = {0.0f, 0.0f};\n    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;"
+        },
+        {
+          "name": "declare-before-alloc-init-after-pointer",
+          "text": "    creature_spawn_vec2_t root_velocity;\n    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n    root_velocity.set(0.0f, 0.0f);\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;"
+        },
+        {
+          "name": "declare-before-alloc-init-before-pointer",
+          "text": "    creature_spawn_vec2_t root_velocity;\n    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    root_velocity.set(0.0f, 0.0f);\n    creature = &creature_pool[root_slot_idx];\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;"
+        },
+        {
+          "name": "declare-after-pointer-split-init",
+          "text": "    creature_t *creature;\n    creature_spawn_vec2_t root_velocity;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n    root_velocity.set(0.0f, 0.0f);\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = root_velocity;"
+        },
+        {
+          "name": "reuse-named-zero-velocity",
+          "text": "    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n    zero_velocity.set(0.0f, 0.0f);\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = zero_velocity;"
+        },
+        {
+          "name": "reuse-chain-position-zero",
+          "text": "    creature_t *creature;\n\n    root_slot_idx = creature_alloc_slot();\n    if (heading == -100.0f) {\n        random_heading_roll = crt_rand();\n        heading = (float)(random_heading_roll % 0x274) * 0.01f;\n    }\n\n    creature = &creature_pool[root_slot_idx];\n    chain_position.set(0.0f, 0.0f);\n\n    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;\n    *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;\n    *(creature_spawn_vec2_t *)&creature->velocity = chain_position;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muted-volume-shape",
+      "find": "                volume = sfx_volume_table[i] - frame_dt * 0.5f;\n                sfx_volume_table[i] = volume;\n                if (volume <= 0.0f) {\n                    sfx_entry_stop(entry);\n                } else {\n                    sfx_entry_set_volume(entry, volume);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "                float muted_volume = sfx_volume_table[i] - frame_dt * 0.5f;\n                sfx_volume_table[i] = muted_volume;\n                if (muted_volume <= 0.0f) {\n                    sfx_entry_stop(entry);\n                } else {\n                    sfx_entry_set_volume(entry, muted_volume);\n                }"
+        },
+        {
+          "name": "chained-local-first",
+          "text": "                sfx_volume_table[i] =\n                    (volume = sfx_volume_table[i] - frame_dt * 0.5f);\n                if (volume <= 0.0f) {\n                    sfx_entry_stop(entry);\n                } else {\n                    sfx_entry_set_volume(entry, volume);\n                }"
+        },
+        {
+          "name": "chained-table-first",
+          "text": "                volume =\n                    (sfx_volume_table[i] = sfx_volume_table[i] - frame_dt * 0.5f);\n                if (volume <= 0.0f) {\n                    sfx_entry_stop(entry);\n                } else {\n                    sfx_entry_set_volume(entry, volume);\n                }"
+        }
+      ]
+    },
+    {
+      "name": "ramp-volume-shape",
+      "find": "            volume = sfx_volume_table[i] + frame_dt;\n            sfx_volume_table[i] = volume;\n            if (volume >= config_blob.music_volume) {\n                sfx_entry_set_volume(entry, config_blob.music_volume);\n            } else {\n                sfx_entry_set_volume(entry, volume);\n            }",
+      "replacements": [
+        {
+          "name": "branch-local",
+          "text": "            float ramp_volume = sfx_volume_table[i] + frame_dt;\n            sfx_volume_table[i] = ramp_volume;\n            if (ramp_volume >= config_blob.music_volume) {\n                sfx_entry_set_volume(entry, config_blob.music_volume);\n            } else {\n                sfx_entry_set_volume(entry, ramp_volume);\n            }"
+        },
+        {
+          "name": "chained-local-first",
+          "text": "            sfx_volume_table[i] =\n                (volume = sfx_volume_table[i] + frame_dt);\n            if (volume >= config_blob.music_volume) {\n                sfx_entry_set_volume(entry, config_blob.music_volume);\n            } else {\n                sfx_entry_set_volume(entry, volume);\n            }"
+        },
+        {
+          "name": "chained-table-first",
+          "text": "            volume =\n                (sfx_volume_table[i] = sfx_volume_table[i] + frame_dt);\n            if (volume >= config_blob.music_volume) {\n                sfx_entry_set_volume(entry, config_blob.music_volume);\n            } else {\n                sfx_entry_set_volume(entry, volume);\n            }"
+        }
+      ]
+    },
+    {
+      "name": "final-clamp-shape",
+      "find": "            sfx_entry_set_volume(\n                entry,\n                sfx_volume_table[i] = config_blob.music_volume);",
+      "replacements": [
+        {
+          "name": "shared-local-reuse",
+          "text": "            volume = config_blob.music_volume;\n            sfx_volume_table[i] = volume;\n            sfx_entry_set_volume(entry, volume);"
+        },
+        {
+          "name": "branch-local-reuse",
+          "text": "            float clamped_volume = config_blob.music_volume;\n            sfx_volume_table[i] = clamped_volume;\n            sfx_entry_set_volume(entry, clamped_volume);"
+        },
+        {
+          "name": "stored-value-reuse",
+          "text": "            sfx_volume_table[i] = config_blob.music_volume;\n            sfx_entry_set_volume(entry, sfx_volume_table[i]);"
+        }
+      ]
+    }
+  ]
+}

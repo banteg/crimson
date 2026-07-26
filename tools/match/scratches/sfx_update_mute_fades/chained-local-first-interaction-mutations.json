@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muted-volume-shape",
+      "find": "                volume = sfx_volume_table[i] - frame_dt * 0.5f;\n                sfx_volume_table[i] = volume;",
+      "replacements": [
+        {
+          "name": "chained-local-first",
+          "text": "                sfx_volume_table[i] =\n                    (volume = sfx_volume_table[i] - frame_dt * 0.5f);"
+        }
+      ]
+    },
+    {
+      "name": "ramp-volume-shape",
+      "find": "            volume = sfx_volume_table[i] + frame_dt;\n            sfx_volume_table[i] = volume;",
+      "replacements": [
+        {
+          "name": "chained-local-first",
+          "text": "            sfx_volume_table[i] =\n                (volume = sfx_volume_table[i] + frame_dt);"
+        }
+      ]
+    }
+  ]
+}

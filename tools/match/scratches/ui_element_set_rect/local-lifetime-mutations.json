@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "local-lifetime-shape",
+      "find": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    vertices[1].position = ui_vec2_t(width - 1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, height - 1.0f);\n    vertices[2].position = ui_vec2_t(width - 1.0f, height - 1.0f);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;",
+      "replacements": [
+        {
+          "name": "right-bottom-scalars",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    float bottom = height - 1.0f;\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        },
+        {
+          "name": "one-right-bottom-scalars",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float one = 1.0f;\n    float inv_width = one / width;\n    vertices[0].position = ui_vec2_t(one, one);\n\n    float inv_height = one / height;\n    float right = width - one;\n    float bottom = height - one;\n    vertices[1].position = ui_vec2_t(right, one);\n    vertices[3].position = ui_vec2_t(one, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(one - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, one - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(one - inv_width, one - inv_height);\n\n    depth.z = 0.5f;\n    depth.rhw = one;"
+        },
+        {
+          "name": "late-depth-declaration",
+          "text": "    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    vertices[1].position = ui_vec2_t(width - 1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, height - 1.0f);\n    vertices[2].position = ui_vec2_t(width - 1.0f, height - 1.0f);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    ui_vertex_t::ui_depth_t depth;\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        },
+        {
+          "name": "late-depth-aggregate-init",
+          "text": "    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    vertices[1].position = ui_vec2_t(width - 1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, height - 1.0f);\n    vertices[2].position = ui_vec2_t(width - 1.0f, height - 1.0f);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};"
+        },
+        {
+          "name": "early-depth-aggregate-init",
+          "text": "    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};\n    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    vertices[1].position = ui_vec2_t(width - 1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, height - 1.0f);\n    vertices[2].position = ui_vec2_t(width - 1.0f, height - 1.0f);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);"
+        },
+        {
+          "name": "late-depth-with-right-bottom",
+          "text": "    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    float bottom = height - 1.0f;\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    ui_vertex_t::ui_depth_t depth;\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        },
+        {
+          "name": "late-depth-aggregate-with-scalars",
+          "text": "    float one = 1.0f;\n    float inv_width = one / width;\n    vertices[0].position = ui_vec2_t(one, one);\n\n    float inv_height = one / height;\n    float right = width - one;\n    float bottom = height - one;\n    vertices[1].position = ui_vec2_t(right, one);\n    vertices[3].position = ui_vec2_t(one, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(one - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, one - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(one - inv_width, one - inv_height);\n\n    ui_vertex_t::ui_depth_t depth = {0.5f, one};"
+        },
+        {
+          "name": "compute-scalars-before-stores",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    float bottom = height - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);\n\n    vertices[0].uv = ui_vec2_t(inv_width, inv_height);\n    vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        }
+      ]
+    }
+  ]
+}
