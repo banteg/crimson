@@ -64,3 +64,24 @@ No data-map or object-layout correction is supported: every candidate symbol
 resolves to its already audited native address. The residual is therefore
 compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
 without changing the honest mismatch count.
+
+## Player-list input-gate sweep (2026-07-27)
+
+Live Binary Ninja and the current object agree on the complete local input
+sequence at native `0x0044f620..0x0044f671` and candidate-relative
+`0x89d..0x8ee`: reject list results at or below `-2`, query primary input
+first, query Enter only when primary input is false, toggle the list, and then
+apply nonnegative selections before reloading highscores. Fresh regions show
+only shifted jump destinations here from the earlier layout divergence.
+
+The recorded one-site sweep in
+`player-list-input-gate-mutations.json` tested five equivalent C++ condition
+and nesting shapes while preserving that call order. Constant-first threshold,
+explicit boolean-comparison, and nested-valid-selection forms tied the
+baseline exactly. Spelling the threshold as `selected >= -1` regressed the
+match by 0.128783 percentage points and 4.169994 weighted bytes; introducing a
+named input temporary regressed it by 0.257566 points and 8.339987 weighted
+bytes. Every variant retained 776 candidate instructions and `275/0/28`
+references. There were no positive singles, so no interaction was eligible.
+The complete sweep is recorded in `experiments.jsonl`; no source variant was
+applied.

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-vector-scale-shape",
+      "find": "        prompt_slot->x -= 300.0f;\n        prompt_slot->x *= 0.75f;\n        prompt_slot->y *= 0.75f;\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        levelup_slot->x *= 0.85f;\n        levelup_slot->y *= 0.85f;\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;",
+      "replacements": [
+        {
+          "name": "prompt-helper",
+          "text": "        prompt_slot->x -= 300.0f;\n        scale_slot(prompt_slot, 0.75f);\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        levelup_slot->x *= 0.85f;\n        levelup_slot->y *= 0.85f;\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;"
+        },
+        {
+          "name": "levelup-helper",
+          "text": "        prompt_slot->x -= 300.0f;\n        prompt_slot->x *= 0.75f;\n        prompt_slot->y *= 0.75f;\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        scale_slot(levelup_slot, 0.85f);\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;"
+        },
+        {
+          "name": "both-helpers",
+          "text": "        prompt_slot->x -= 300.0f;\n        scale_slot(prompt_slot, 0.75f);\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        scale_slot(levelup_slot, 0.85f);\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;"
+        }
+      ]
+    }
+  ]
+}

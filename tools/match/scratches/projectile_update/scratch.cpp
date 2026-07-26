@@ -28,7 +28,10 @@ int player_find_in_radius(
     int owner_id,
     const vec2f_t *pos,
     float radius);
-int vec2_add(vec2f_t *dst, const vec2f_t *delta);
+int vec2_add(
+    vec2f_t *dst,
+    const vec2f_t *delta,
+    float mode);
 int vec2_add_inplace(
     int entity_index,
     vec2f_t *pos,
@@ -147,7 +150,7 @@ extern "C" void projectile_update(void)
                                 + delta.y * delta.y);
                             if (distance >= 4.0f
                                 || step + 3 >= step_count) {
-                                vec2_add(position, &delta);
+                                vec2_add(position, &delta, 0.0f);
                                 int hit_id = creature_find_in_radius(
                                     position,
                                     projectile->pos.tail.vy.hit_radius,
@@ -762,7 +765,8 @@ extern "C" void projectile_update(void)
                 };
                 vec2_add(
                     &secondary->position,
-                    &movement);
+                    &movement,
+                    4.0f);
 
                 secondary_projectile_type_id_t type_id =
                     secondary->pos.vx.vy.type_id;
@@ -1114,7 +1118,8 @@ extern "C" void projectile_update(void)
                         };
                         vec2_add(
                             &particle->position,
-                            &movement);
+                            &movement,
+                            3.0f);
                     }
                 }
             } else {
@@ -1133,7 +1138,8 @@ extern "C" void projectile_update(void)
                     };
                     vec2_add(
                         &particle->position,
-                        &movement);
+                        &movement,
+                        3.0f);
                 }
             }
 

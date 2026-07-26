@@ -67,6 +67,41 @@ copy. Expressing that dependency adds two honest candidate instructions and
 slightly lowers the aggregate similarity, but recovers the native data flow
 instead of preserving a scorer-friendlier local substitution.
 
+## Bounded entry-order mutation evidence
+
+Fresh mismatch regions and live Binary Ninja target
+`3023:2:9499448411019345244` isolate the first residual to entry geometry and
+stack layout. Native computes both base panel-coordinate sums before saving
+EBX/EBP/ESI/EDI, spills the Y sum to `[esp+0x34]` at `0x00447d5f`, stores
+`row_hovered = false` at `0x00447d63`, and only then applies the 300-pixel X
+offset at `0x00447d68`. The candidate uses the same operands and values, but
+has a 56-byte rather than 48-byte frame, stores the flag before spilling Y,
+and colors that Y value at `[esp+0x24]`.
+
+The schema-1 `row-hovered-init-order` sweep retained both named geometry
+objects and the already-evidenced operand order. It tested only six real
+declaration/initialization placements for the long-lived hover flag. The
+persisted spec SHA-256 is
+`9b5f94ad1375f61452383330711873d0363a49fca6bb7bbb41dda1a2b19ae981`;
+the unchanged baseline source SHA-256 is
+`d18ce2f4a736ae4670edc4fb028b1dae6a38780c85c2d40cbba9a0b793de3281`.
+The complete harness ranking is:
+
+| Rank | Placement | Source SHA-256 |
+| ---: | --- | --- |
+| 1 | entry initialized | `8e578f8facc95191485ba488518f3aa1baae1c4a2cc8c90a36e327b5e26cdae4` |
+| 2 | entry declaration, assignment before panel offset | `738cddcc04efe587e270df5d7f8e37367cfb2814f9549ee8425a1e94b1d837bc` |
+| 3 | split at the current position | `c9866c59cf6d6bbad2cd3179ff819280a9eb420fa1bdf51536d5950ac9cde313` |
+| 4 | split before panel offset | `d4733a5cfc207d0b9c34b1d852109abf76c457fc3b881ce1b01618fbcc54b0e7` |
+| 5 | initialized before panel offset | `f429b80bec17c4eeef53f0da85e86b8e119404038afb9095d2879a1fd842bef8` |
+| 6 | initialized after position geometry | `7900dba61c3354a4040ae21692758eba5bf0449e83a8ebb01632aa6986400b2b` |
+
+All six are byte-neutral: `71.15869017632241%`, 2,445.012594
+fuzzy-weighted bytes, 785/803 instructions, prefix 0, `228/0/10`
+references, and first target/candidate mismatch offsets `0/0`. The record has
+`best_improves=false` and no winner. No positive single justified an
+interaction sweep, and the semantic source remains unchanged.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "transform-layers-pointer-shape",
+      "find": "static __forceinline void transform_layers(\n    ui_layout_element_t **element_ref,\n    float scale,\n    float shift_x,\n    float shift_y)\n{\n    for (int i = 0; i < 4; ++i) {\n        ui_menu_item_subtemplate_slot_t *first =\n            (&(*element_ref)->layers[0].slot_00) + i;\n        ui_menu_item_subtemplate_slot_t *third =\n            (&(*element_ref)->layers[2].slot_00) + i;\n        ui_menu_item_subtemplate_slot_t *second =\n            (&(*element_ref)->layers[1].slot_00) + i;\n\n        first->x *= scale;\n        first->y *= scale;\n        third->x *= scale;\n        third->y *= scale;\n        second->x *= scale;\n        second->y *= scale;\n\n        first->x += shift_x;\n        third->x += shift_x;\n        second->x += shift_x;\n        first->y -= shift_y;\n        third->y -= shift_y;\n        second->y -= shift_y;\n    }\n}",
+      "replacements": [
+        {
+          "name": "direct-pointer-reloads",
+          "text": "static __forceinline void transform_layers(\n    ui_layout_element_t **element_ref,\n    float scale,\n    float shift_x,\n    float shift_y)\n{\n    for (int i = 0; i < 4; ++i) {\n        (&(*element_ref)->layers[0].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[0].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].y *= scale;\n\n        (&(*element_ref)->layers[0].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[2].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[1].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[0].slot_00)[i].y -= shift_y;\n        (&(*element_ref)->layers[2].slot_00)[i].y -= shift_y;\n        (&(*element_ref)->layers[1].slot_00)[i].y -= shift_y;\n    }\n}"
+        },
+        {
+          "name": "reload-once-per-layer",
+          "text": "static __forceinline void transform_layers(\n    ui_layout_element_t **element_ref,\n    float scale,\n    float shift_x,\n    float shift_y)\n{\n    for (int i = 0; i < 4; ++i) {\n        ui_menu_item_subtemplate_slot_t *first =\n            (&(*element_ref)->layers[0].slot_00) + i;\n        first->x *= scale;\n        first->y *= scale;\n\n        ui_menu_item_subtemplate_slot_t *third =\n            (&(*element_ref)->layers[2].slot_00) + i;\n        third->x *= scale;\n        third->y *= scale;\n\n        ui_menu_item_subtemplate_slot_t *second =\n            (&(*element_ref)->layers[1].slot_00) + i;\n        second->x *= scale;\n        second->y *= scale;\n\n        first->x += shift_x;\n        third->x += shift_x;\n        second->x += shift_x;\n        first->y -= shift_y;\n        third->y -= shift_y;\n        second->y -= shift_y;\n    }\n}"
+        },
+        {
+          "name": "element-reference",
+          "text": "static __forceinline void transform_layers(\n    ui_layout_element_t **element_ref,\n    float scale,\n    float shift_x,\n    float shift_y)\n{\n    for (int i = 0; i < 4; ++i) {\n        ui_layout_element_t &element = **element_ref;\n        ui_menu_item_subtemplate_slot_t &first =\n            (&element.layers[0].slot_00)[i];\n        ui_menu_item_subtemplate_slot_t &third =\n            (&element.layers[2].slot_00)[i];\n        ui_menu_item_subtemplate_slot_t &second =\n            (&element.layers[1].slot_00)[i];\n\n        first.x *= scale;\n        first.y *= scale;\n        third.x *= scale;\n        third.y *= scale;\n        second.x *= scale;\n        second.y *= scale;\n\n        first.x += shift_x;\n        third.x += shift_x;\n        second.x += shift_x;\n        first.y -= shift_y;\n        third.y -= shift_y;\n        second.y -= shift_y;\n    }\n}"
+        },
+        {
+          "name": "direct-reloads-postincrement",
+          "text": "static __forceinline void transform_layers(\n    ui_layout_element_t **element_ref,\n    float scale,\n    float shift_x,\n    float shift_y)\n{\n    for (int i = 0; i < 4; i++) {\n        (&(*element_ref)->layers[0].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[0].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].y *= scale;\n\n        (&(*element_ref)->layers[0].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[2].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[1].slot_00)[i].x += shift_x;\n        (&(*element_ref)->layers[0].slot_00)[i].y -= shift_y;\n        (&(*element_ref)->layers[2].slot_00)[i].y -= shift_y;\n        (&(*element_ref)->layers[1].slot_00)[i].y -= shift_y;\n    }\n}"
+        }
+      ]
+    }
+  ]
+}

@@ -60,6 +60,27 @@ scored worse. A combined entry setter was codegen-equivalent for the line
 loops. No artificial dependencies, volatile state, dummy work, or
 register-forcing constructs are used.
 
+## First vertical-line advance-order sweep
+
+Fresh live Binary Ninja output from target `3023:2:9499448411019345244`
+grounds a bounded follow-up in the first six-entry vertical line at
+`0x0043465e..0x004346d1`. Native advances its interior entry cursor at loop
+entry, then finishes each iteration with the line-index increment followed by
+the 100 ms trigger-time increment. The candidate preserves those semantics but
+hoists the trigger-time increment ahead of the final position and heading
+stores.
+
+`first-line-advance-order-mutations.json` tests the five other natural
+permutations of the independent line-index, entry-cursor, and trigger-time
+advances. Its SHA-256 is
+`6a4e405d0812ecd3896fa9bba3ba6b732da85dd89c4abd6feee39606514bfc96`.
+The recorded single-change sweep evaluated all five possible variants without
+truncation. Every variant was byte-neutral: match ratio, fuzzy-weighted bytes,
+instruction count, exact prefix, and reference counts all had zero delta.
+There was no positive single, so no interaction sweep was run and
+`scratch.cpp` remains unchanged at SHA-256
+`83ac8f02a631f5f3036f15ad168eb4942d0b3b90dcf574e5fd55a4434ce55285`.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms all 164 entries and each ring, corner
 wave, vertical line, and four-entry tail. The candidate remains 255/258

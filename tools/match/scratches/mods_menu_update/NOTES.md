@@ -45,3 +45,22 @@ assembly, or fake aliases to manufacture native local layout.
 The function-local scrollbar, Main Menu button, Launch button, shared
 constructor guard, and all three `atexit` cleanup thunks are mapped. Each
 cleanup thunk is separately verified as the native one-byte `ret` function.
+
+## Scrollbar column-initialization sweep (2026-07-26)
+
+Live Binary Ninja localized one compact constructor mismatch at native
+`0x0040ec34..0x0040ec61`. The native static-scrollbar guard zeroes
+`column_offsets[0]` before `column_offsets[1]`, using a freshly cleared `ecx`;
+the current object at function-relative `0x294..0x2bf` emits the two stores in
+the opposite order and reuses the already-zero `edi`. This is downstream of
+the documented frame-size divergence and independent of the previously
+improved renderer capture.
+
+The recorded one-site sweep in
+`scrollbar-column-init-mutations.json` tested five ordinary C++ spellings:
+separate integer and floating-point stores, both reverse-chain constant types,
+and a zero-then-copy form. MSVC 6.5 canonicalized every single to the same
+matcher result as the baseline: **83.53%**, 645 candidate instructions, prefix
+0, `168/0/0` references, and exactly zero weighted-score delta. There were no
+positive singles, so no interaction was eligible. The complete sweep is
+recorded in `experiments.jsonl`; no source variant was applied.

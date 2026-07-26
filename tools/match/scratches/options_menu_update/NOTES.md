@@ -28,3 +28,23 @@ source remains the strongest result. The scratch is consequently
 mismatches pair adjacent static-widget fields, render constants, and the
 already-recovered Bloody Mess / Quick Learner name-description values after
 that scheduling divergence; none is aliased away as reference debt.
+
+## Native-grounded SFX position sweep (2026-07-26)
+
+Live Binary Ninja evidence localized the first slider-position divergence
+without changing its recovered behavior. Native `0x004478b5..0x004478e0`
+loads panel X, adds `148.0f`, stores that one x87 result first to `xy.x` and
+then to the temporary slider X, and only then loads panel Y, adds `47.0f`, and
+stores the temporary slider Y. The current object performs the same operations
+in the same semantic order at function-relative `0x2e0..0x30b`; its different
+stack slots follow the earlier frame/allocation divergence.
+
+The recorded one-site sweep in
+`sfx-slider-position-mutations.json` tested six ordinary C++ source shapes:
+two declaration placements, both chained-assignment directions, a
+slider-first copy, and a two-argument constructor. All six singles compiled to
+the same matcher result as the baseline: **69.96%**, 372 candidate
+instructions, prefix 8, `138/0/8` references, and exactly zero weighted-score
+delta. There were no positive singles, so no interaction was eligible. The
+complete sweep is recorded in `experiments.jsonl`; no source variant was
+applied.

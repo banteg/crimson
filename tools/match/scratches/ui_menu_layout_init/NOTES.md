@@ -26,16 +26,15 @@ a standalone `0xe8` subtemplate block, loads
 `ui\ui_textLevelUp.jaz`, and applies separate four-vertex prompt/text
 transforms.
 
-Current MSVC 6.5 `/O2 /GB` result: **55.80%**, with 10 exact prefix
-instructions, 1,422 native instructions versus 1,302 candidate instructions,
-and reference audit **305 resolved / 0 unresolved / 48 mismatched**. The
-candidate now has the native `0x68`-byte frame; remaining differences are
-dominated by VC6 scheduling and temporary-slot allocation across the
-aggregate position/atlas assignments, plus repeated inlined responsive-loop
-register choices. The recovered element graph, callbacks, assets, coordinates,
-atlas rows, responsive branches, and final layout pass are complete. No
-volatile qualifiers, fake dependencies, dead expressions, padding, or inline
-assembly are used to coerce the match.
+Current MSVC 6.5 `/O2 /GB` result: **84.74%**, with 10 exact prefix
+instructions, 1,422 native instructions versus 1,403 candidate instructions,
+and reference audit **437 resolved / 0 unresolved / 23 mismatched**. The
+candidate has the native `0x68`-byte frame. Remaining differences are dominated
+by VC6 scheduling and temporary-slot allocation across the aggregate
+position/atlas assignments and the prompt transform. The recovered element
+graph, callbacks, assets, coordinates, atlas rows, responsive branches, and
+final layout pass are complete. No volatile qualifiers, fake dependencies,
+dead expressions, padding, or inline assembly are used to coerce the match.
 
 The shared `ui_element_t` now exposes the three position/hover pairs as
 `vec2f_t` unions and the complete render payload as three typed
@@ -86,8 +85,8 @@ cursor lifetimes. A 20-profile matrix covered MSVC 6.0, 6.5, 6.5pp, 6.6, and
 `/O2 /GB` remains tied for best with 6.0, 6.6, and `/G5`, so no override is
 supported.
 
-The scratch is classified `semantic-complete` with `compiler,references`
-residuals. A fresh `match inspect --binja-live` pass confirms the same six
+The scratch is classified `semantic-complete` with a `compiler` residual.
+A fresh `match inspect --binja-live` pass confirms the same six
 native callees in Binary Ninja, IDA, and Ghidra, while the recovered source
 contains the complete 41-element graph, both configuration branches, all
 three render layers, every callback and texture, and the final layout pass.
@@ -110,4 +109,49 @@ instruction belongs to slot 11's `play_game_menu_update` assignment. Other
 pairs similarly cross slot 31/32/23/10/30 objects or different responsive
 constant operations. Changing the common UI layout would corrupt already
 resolved accesses. The residual is therefore aggregate-copy and compiler
-scheduling only, and `RESIDUAL=compiler` leaves the 48 mismatches visible.
+scheduling only, and `RESIDUAL=compiler` leaves the remaining mismatches
+visible.
+
+## Recorded mutation wave
+
+The mutation harness turned the repeated responsive-loop residual into a
+source-shape fix. `transform-reload-mutations.json` first showed that spelling
+the shifts as direct pointer-to-pointer dereferences restores 100 instructions,
+raising the match from 55.80% to 58.14% and improving the reference audit from
+`305/0/48` to `311/0/41`. The narrowed
+`transform-scale-pair-mutations.json` then found the actual lifetime shape:
+one slot pointer is reused for the X/Y scale pair before being reassigned to
+the next layer. That single mutation raised the match to 79.23%, added
+1,525.90 fuzzy-weighted bytes, and moved the audit to `404/0/29`.
+
+The same pair lifetime in the fused narrow-menu transform was independently
+positive in `narrow-transform-scale-pair-mutations.json`, adding another
+211.79 weighted bytes and 20 resolved references. This spelling follows live
+native disassembly: each layer base is loaded once, X is scaled, and Y is
+scaled through the retained adjacent pointer; the later shifts still reload
+the element pointer individually.
+
+Live Binary Ninja also exposed three actual recovery omissions rather than
+compiler residuals. Native initializes slot 33 with the aggregate
+`(screen_width - 350, 200)` before every responsive branch, and initializes
+slots 8 and 9 at `(-190, 122)` and `(-60, 185)` before applying their
+wide/narrow X adjustments. `right-panel-initial-position-mutations.json` and
+`responsive-base-position-mutations.json` recover those redundant but native
+stores. Together they add 15 candidate instructions, 101.93 weighted bytes,
+and seven resolved references.
+
+The final retained result is **83.56%**, 1,395/1,422 instructions, prefix 10,
+audit **431/0/25**, and a 1,189.47-byte fuzzy gap before the final prompt-origin
+pass. Native initializes that adjacent float pair through one aggregate
+temporary in both width branches. `prompt-origin-aggregate-mutations.json`
+confirmed the typed `Vec2` copy shape, adding eight instructions, 85.35
+weighted bytes, and six resolved references while removing two mismatches.
+
+The final result is therefore **84.74%**, 1,403/1,422 instructions, prefix 10,
+audit **437/0/23**, and a 1,104.12-byte fuzzy gap. Relative to the pre-wave
+55.80% baseline, the gap fell by 2,094.61 bytes. The opening-order sweep
+covered all 34 single and pair variants without changing a byte. Five prompt
+pointer variants and three force-inlined vector-helper variants were likewise
+neutral or regressive, so no prompt-transform rewrite was retained. All
+complete rankings are recorded in `experiments.jsonl`; the JSON specs capture
+the pre-application source snapshots used for each sweep.

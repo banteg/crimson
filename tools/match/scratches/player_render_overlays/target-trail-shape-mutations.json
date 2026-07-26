@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "distance_helper_parameter_passing",
+      "find": "static __inline float player_render_distance(\n    const player_render_vec2_t &from,\n    const player_render_vec2_t &to)\n{\n    float dx = to.x - from.x;\n    float dy = to.y - from.y;\n    return (float)sqrt(dy * dy + dx * dx);\n}",
+      "replacements": [
+        {
+          "name": "vectors_by_value",
+          "text": "static __inline float player_render_distance(\n    player_render_vec2_t from,\n    player_render_vec2_t to)\n{\n    float dx = to.x - from.x;\n    float dy = to.y - from.y;\n    return (float)sqrt(dy * dy + dx * dx);\n}"
+        }
+      ]
+    },
+    {
+      "name": "distance_call_field_anchor",
+      "find": "                if (player_render_distance(\n                        *(player_render_vec2_t *)&line_player->position,\n                        *(player_render_vec2_t *)&creature_pool\n                            [line_player->auto_target]\n                                .position)\n                    <= 80.0f) {",
+      "replacements": [
+        {
+          "name": "anchor_at_pos_x",
+          "text": "                if (player_render_distance(\n                        *(player_render_vec2_t *)&line_player->pos_x,\n                        *(player_render_vec2_t *)&creature_pool\n                            [line_player->auto_target]\n                                .pos_x)\n                    <= 80.0f) {"
+        },
+        {
+          "name": "named_target_index",
+          "text": "                int target_index = line_player->auto_target;\n                if (player_render_distance(\n                        *(player_render_vec2_t *)&line_player->position,\n                        *(player_render_vec2_t *)&creature_pool\n                            [target_index]\n                                .position)\n                    <= 80.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "target_trail_coordinate_operand_order",
+      "find": "                        grim_interface_ptr->grim_draw_quad(\n                            direction.x * offset + draw_origin.x,\n                            direction.y * offset + draw_origin.y,\n                            32.0f,\n                            32.0f);",
+      "replacements": [
+        {
+          "name": "offset_first",
+          "text": "                        grim_interface_ptr->grim_draw_quad(\n                            offset * direction.x + draw_origin.x,\n                            offset * direction.y + draw_origin.y,\n                            32.0f,\n                            32.0f);"
+        }
+      ]
+    }
+  ]
+}

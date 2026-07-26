@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "infection-collision-timer-shape",
+      "find": "                            float collision_timer =\n                                creature_pool[creature_index].collision_timer - frame_dt;\n                            creature_pool[creature_index].collision_timer = collision_timer;\n                            if (collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                creature_pool[creature_index].collision_timer =\n                                    collision_timer + 0.5f;",
+      "replacements": [
+        {
+          "name": "chained-field-from-local",
+          "text": "                            float collision_timer;\n                            creature_pool[creature_index].collision_timer =\n                                (collision_timer =\n                                    creature_pool[creature_index].collision_timer - frame_dt);\n                            if (collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                creature_pool[creature_index].collision_timer =\n                                    collision_timer + 0.5f;"
+        },
+        {
+          "name": "local-from-field-assignment",
+          "text": "                            float collision_timer =\n                                (creature_pool[creature_index].collision_timer =\n                                    creature_pool[creature_index].collision_timer - frame_dt);\n                            if (collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                creature_pool[creature_index].collision_timer =\n                                    collision_timer + 0.5f;"
+        },
+        {
+          "name": "inplace-then-local-reload",
+          "text": "                            creature_pool[creature_index].collision_timer -= frame_dt;\n                            float collision_timer =\n                                creature_pool[creature_index].collision_timer;\n                            if (collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                creature_pool[creature_index].collision_timer =\n                                    collision_timer + 0.5f;"
+        },
+        {
+          "name": "field-only-inplace",
+          "text": "                            creature_pool[creature_index].collision_timer -= frame_dt;\n                            if (creature_pool[creature_index].collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                creature_pool[creature_index].collision_timer += 0.5f;"
+        },
+        {
+          "name": "timer-pointer-local",
+          "text": "                            float *collision_timer_ptr =\n                                &creature_pool[creature_index].collision_timer;\n                            float collision_timer = *collision_timer_ptr - frame_dt;\n                            *collision_timer_ptr = collision_timer;\n                            if (collision_timer < 0.0f) {\n                                creature_pool[creature_index].state_flag = 1;\n                                *collision_timer_ptr = collision_timer + 0.5f;"
+        }
+      ]
+    }
+  ]
+}

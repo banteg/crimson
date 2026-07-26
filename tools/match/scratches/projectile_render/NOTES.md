@@ -184,3 +184,57 @@ alias. Every candidate object resolves, and the shared pool/camera layouts are
 already correct. The residual is therefore compiler allocation and instruction
 alignment only, and `RESIDUAL=compiler` records that conclusion without hiding
 the 16 honest mismatches.
+
+## Recorded localized mutation sweeps
+
+A fresh live Binary Ninja bundle from target
+`3023:2:9499448411019345244` has SHA-256
+`a395bc39ec795836ea1add24dea60e39dd614f54edbdaa52e121e190f772362a`.
+The first mismatch is still the honest `0x120` candidate frame against the
+native `0x19c` frame. The first large localized region begins in the
+Sharpshooter geometry at `0x00422d63`: the native code keeps the heading,
+position, half-width, screen-position, and eight output coordinates live while
+also scheduling the perk lookup. Native also tests the conventional projectile
+activity byte at `0x00423016` before loading its type at `0x00423021`. These
+observations grounded two complete schema-1, single-site mutation sweeps.
+
+The baseline source SHA-256 is
+`d0656515e7aefdd6f95fb04d269dc5e903a67d2a386f2609b1df69a1d7676716`:
+51.0638298%, 2,854/3,021 instructions, a 6,141.979-byte fuzzy gap, and
+`402/0/16` references.
+
+`localized-lifetime-mutations.json` has SHA-256
+`87ac8dd5d4accfd1db1a543f09fa42393013c5c121d5dc141cada239122555f4`.
+All five possible one-change variants were evaluated:
+
+| rank | variant | source SHA-256 | ratio | fuzzy gap | instructions | refs ok/unresolved/mismatch | result |
+| ---: | --- | --- | ---: | ---: | ---: | ---: | --- |
+| 1 | `sharpshooter_perk_load_lifetime/count_between_start_and_end_points` | `39b56a82d7ef19d56923c60972d2f8ee7e342cd246f000c1f5ccbd7388004902` | 51.0638298% | 6,141.979 | 2,854 | 402/0/16 | byte-identical |
+| 2 | `sharpshooter_perk_load_lifetime/count_after_all_points` | `c0c51dec9cf0fdd6c2f7bf42e4c671781582bb77ac69a5debb9de0236ac3793e` | 51.0638298% | 6,141.979 | 2,854 | 402/0/16 | byte-identical |
+| 3 | `secondary_sprite_type_load_lifetime/active_before_type_load` | `94c05ef356999501e07d45fa0da880cbc2735d7bca27e1e17ec514956fb30b81` | 51.0638298% | 6,141.979 | 2,854 | 402/0/16 | byte-identical |
+| 4 | `conventional_type_load_lifetime/active_before_type_load` | `5b9a8c431ce01dec3e527242788f0ea8c9d6681a31603f23d1617bf56d04542e` | 51.0638298% | 6,141.979 | 2,854 | 402/0/16 | byte-identical |
+| 5 | `sharpshooter_end_position_base/direct_player_position` | `974cd19e5204749aebb6c69fa0cc1956d0fc9977eee39ead18ab722549482e78` | 50.8595745% | 6,167.615 | 2,854 | 398/0/18 | rejected |
+
+`vector-operator-lifetime-mutations.json` has SHA-256
+`cc700d94cc6b2a276b52df3d3ccb48b4099b70f08c5431373ba21e4b18cde4ab`.
+It tested natural named-result and copy-then-mutate spellings because the native
+geometry retains many more value-object temporaries. All eight possible
+one-change variants were evaluated:
+
+| rank | variant | source SHA-256 | ratio | fuzzy gap | instructions | refs ok/unresolved/mismatch | result |
+| ---: | --- | --- | ---: | ---: | ---: | ---: | --- |
+| 1 | `scalar_subtract_result_lifetime/assign_named_result` | `91fb36c5410e16340f0db7eb3f1c3377e3e10f0f20bc2304a2cabab340357ee2` | 51.0638298% | 6,141.979 | 2,854 | 402/0/16 | byte-identical |
+| 2 | `vector_scale_result_lifetime/assign_named_result` | `9632f3559c0b6906f77bc5fd7dc1172a8e622713929ccdd39c9584c4876727b1` | 51.0464523% | 6,144.160 | 2,856 | 402/0/16 | rejected |
+| 3 | `vector_subtract_result_lifetime/assign_named_result` | `4a0f57f48020f675d874ec991f35619f5253e2f618d866aeab6f234d7810dd6a` | 50.9603944% | 6,154.961 | 2,862 | 399/0/16 | rejected |
+| 4 | `vector_add_result_lifetime/assign_named_result` | `b548d228b07937109e26d7b45d50558572377f18df22b444f682d6797885b67b` | 48.2606482% | 6,493.806 | 2,872 | 382/0/19 | rejected |
+| 5 | `vector_scale_result_lifetime/copy_then_scale` | `78acec195329b7e31341320b3cbcc3202da71b349ae280928e4802d402deb02b` | 46.7114094% | 6,688.251 | 2,939 | 368/0/17 | rejected |
+| 6 | `vector_add_result_lifetime/copy_then_add` | `799c79b5de6cf99fb213467964de0676ea6ad4675127c704ce086138b8a5cc18` | 46.4018614% | 6,727.102 | 2,996 | 368/0/19 | rejected |
+| 7 | `vector_subtract_result_lifetime/copy_then_subtract` | `cf9f547930de9ad52780e4c67536f7c0c76e737aabe61faf8a831d71865c22fc` | 45.9346186% | 6,785.746 | 2,944 | 363/0/16 | rejected |
+| 8 | `scalar_subtract_result_lifetime/copy_then_subtract` | `d8057ee6d27773793346e4ae0e16c267a51d582d96d27ee491f03f2395413545` | 43.3192210% | 7,114.005 | 2,884 | 351/0/16 | rejected |
+
+No individually positive site exists in either menu, so no interaction was
+eligible for testing. Both recorded sweeps report complete one-change coverage,
+`best_improves=false`, and zero unevaluated planned combinations. No source
+variant was retained, and no recovered runtime-port change is warranted. The
+two complete records live in `experiments.jsonl`, whose SHA-256 is
+`fde18fafd0338ab823aae8089d96c24dabd7316f6f72cb65632fdb54b7ef8a7a`.

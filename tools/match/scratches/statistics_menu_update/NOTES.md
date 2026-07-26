@@ -51,6 +51,39 @@ equivalent quotient/remainder source forms were tested and all reduced the
 match. The five reported reference mismatches occur after that scheduling
 divergence; their distinct real operands were deliberately not aliased.
 
+A fresh live Binary Ninja pass isolated one UI source-shape question outside
+that playtime divergence. After `Sleep(10)` and the default color, native loads
+`online_sync_status` once at `0x0043fb3a`, initializes the empty status text at
+`0x0043fb40`, and reuses the loaded value for the `1`, `5`, and `6`
+comparisons. The bounded `sync-status-snapshot-mutations.json` sweep tested
+four explicit local-snapshot declaration/order spellings against that observed
+schedule. All four planned singles compiled and were neutral: each remained
+at ratio `0.8882309400444115`, fuzzy weighted bytes
+`2555.440414507772`, fuzzy gap bytes `321.55958549222805`, 675 candidate
+instructions, prefix 280, and references `264/0/5`.
+
+Complete neutral ranking, including generated-source SHA-256:
+
+1. `text-before-snapshot`:
+   `c4d243f77ab1e3a1d38e5228310c8914912aa61a633730db89db4a5577674c84`
+2. `split-text-after-snapshot`:
+   `e076692b4ec53dfc1812dd2a56730491229b0618bfab547c9a356d29b6fd166b`
+3. `snapshot-before-text`:
+   `5aea060f643cc7ef27d239c6a9320eb1c09e5c81d0f42d6989a98e9c442648d8`
+4. `const-snapshot-before-text`:
+   `ea8666610f75ad0778fb38202187180c0db36ab829403b01ae89478acfd7d864`
+
+The sweep evaluated 4/4 singles without truncation. No interaction was
+eligible because no single improved and the spec has only one mutation site,
+so `scratch.cpp` remains unchanged at SHA-256
+`6f5647fe2b409cce6cb02a27ec508052d95b837b6bffc499e295f25ae35e752c`.
+The spec SHA-256 is
+`f8c254410d319948906f150a0ee4224f1375bcd1f794f9228553d87a2edce28c`;
+the recorded `experiments.jsonl` SHA-256 is
+`e077cd9cba0928383cb93400c050f6bd81de76111fd7bbc32117ee1ce4ab23d6`.
+This sweep deliberately did not repeat the already-rejected playtime
+quotient/remainder forms.
+
 No volatile state, dummy use, forced address, fake alias, inline assembly, or
 dead arithmetic is used. The callback remains WIP only for compiler scheduling,
 not for missing recovered behavior. It is therefore `semantic-complete` with

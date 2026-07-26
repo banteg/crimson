@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-panel-initial-position",
+      "find": "    float right_panel_x = (float)(config_screen_width - 350);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos.y = 200.0f;\n    if (config_screen_width <= 800) {",
+      "replacements": [
+        {
+          "name": "native-x-then-y-stores",
+          "text": "    float right_panel_x = (float)(config_screen_width - 350);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos.x = right_panel_x;\n    ui_element_slot_33.pos.y = 200.0f;\n    if (config_screen_width <= 800) {"
+        },
+        {
+          "name": "aggregate-initial-position",
+          "text": "    float right_panel_x = (float)(config_screen_width - 350);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos = ui_layout_vec2_t(right_panel_x, 200.0f);\n    if (config_screen_width <= 800) {"
+        },
+        {
+          "name": "native-y-then-x-stores",
+          "text": "    float right_panel_x = (float)(config_screen_width - 350);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos.y = 200.0f;\n    ui_element_slot_33.pos.x = right_panel_x;\n    if (config_screen_width <= 800) {"
+        },
+        {
+          "name": "compute-after-copy",
+          "text": "    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    float right_panel_x = (float)(config_screen_width - 350);\n    ui_element_slot_33.pos.x = right_panel_x;\n    ui_element_slot_33.pos.y = 200.0f;\n    if (config_screen_width <= 800) {"
+        }
+      ]
+    }
+  ]
+}

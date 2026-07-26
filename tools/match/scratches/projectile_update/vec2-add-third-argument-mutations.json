@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-add-three-argument-contract",
+      "find": "int vec2_add(vec2f_t *dst, const vec2f_t *delta);",
+      "replacements": [
+        {
+          "name": "default-zero-mode",
+          "text": "int vec2_add(\n    vec2f_t *dst,\n    const vec2f_t *delta,\n    float mode = 0.0f);"
+        }
+      ]
+    },
+    {
+      "name": "secondary-movement-mode",
+      "find": "vec2_add(\n                    &secondary->position,\n                    &movement);",
+      "replacements": [
+        {
+          "name": "mode-four",
+          "text": "vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);"
+        }
+      ]
+    },
+    {
+      "name": "style-eight-particle-movement-mode",
+      "find": "vec2_add(\n                            &particle->position,\n                            &movement);",
+      "replacements": [
+        {
+          "name": "mode-three",
+          "text": "vec2_add(\n                            &particle->position,\n                            &movement,\n                            3.0f);"
+        }
+      ]
+    },
+    {
+      "name": "other-particle-movement-mode",
+      "find": "vec2_add(\n                        &particle->position,\n                        &movement);",
+      "replacements": [
+        {
+          "name": "mode-three",
+          "text": "vec2_add(\n                        &particle->position,\n                        &movement,\n                        3.0f);"
+        }
+      ]
+    }
+  ]
+}

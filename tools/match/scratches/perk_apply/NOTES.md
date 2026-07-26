@@ -50,6 +50,30 @@ the available VC6-family backends, `/GB` and `/G6`, standalone-global aliases,
 and natural variable-lifetime spellings were checked. None recovers the native
 allocation without artificial source, so the honest semantic WIP is retained.
 
+The bounded player-loop mutation sweep records the two most direct native
+control-shape probes rather than relying on manual register guesses. At Ammo
+Maniac, `0x00405830..0x0040583e` compares the perk id, branches away, zeros the
+player index, tests the cached player count in `EBP`, and only then materializes
+the weapon-id cursor. Bandage repeats that ordering at
+`0x004058b1..0x004058bf`: perk comparison, zeroed player index, `EBP` count
+test, then the health cursor. The schema-1
+`player-loop-entry-mutations.json` plan expresses each as an ordinary nested
+condition, once with the existing semantic locals and once with block-local
+names. Its SHA-256 is
+`a8373fa8f9f44d23727ec464c07e78482aff6d55281448bfdc765e8325d692c0`.
+
+All four one-site variants were recorded. Both Bandage forms are exactly
+byte-neutral at `63.07053941908713%`, `558.1742738589212` weighted bytes,
+241/241 instructions, a two-instruction prefix, and `63/0/0` references.
+Both Ammo Maniac forms improve the prefix from two to four instructions but
+fall to `56.84647302904564%` and `503.0912863070539` weighted bytes, a
+`-55.08298755186729`-byte and `-6.224066390041494`-percentage-point
+regression; they also lose 11 audited references (`52/0/0`) while retaining
+241 instructions. No single-site variant improves the baseline, so no
+interaction sweep or source edit is justified. The current combined
+conditions therefore remain the stronger honest whole-function source even
+though the native nested ordering stays visible as allocation debt.
+
 ## Binary Ninja cursor recovery
 
 This function was also being discarded by Binary Ninja's default analysis-time

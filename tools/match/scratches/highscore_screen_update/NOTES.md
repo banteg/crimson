@@ -134,3 +134,64 @@ return tuple, a render-coordinate constant, and adjacent player-count widget
 fields. Binary Ninja confirms the native addresses and the matcher separately
 resolves every corresponding candidate object. They remain visible and
 unaliased at `584/0/7`, but carry no independent source-reference debt.
+
+## Recorded opening-lifetime mutation sweeps
+
+Fresh evidence came from live Binary Ninja target
+`3023:2:9499448411019345244`. The complete native disassembly has SHA-256
+`eb1f5ecc6d7cba3df812b4f39397d3683c2141fbec0e366e2ba6088acd86be61`;
+the corresponding decompilation has SHA-256
+`be8d6f524ac3d3906b4685f340d955843f7ad52f2c5ce8f54523baa9fc4019fd`.
+The fresh baseline source SHA-256 is
+`0bcc139286d6cb9ed4b4ee5a870324e08e1f6f994278d329507b92b844dad7c7`
+and reproduces **77.5170%**, gap `1804.4830`, 1,959/2,004 instructions,
+prefix 45, and references `584/0/7`.
+
+`opening-lifetime-mutations.json` is a schema-1, three-site specification
+covering only panel copy initialization, title-local declaration timing, and
+separator coordinate materialization. Its SHA-256 is
+`6ac4132dcc22d60944a3ac1aace3c79ca40f1dbb4e6989f1b67018389cbb1336`.
+A recorded `--max-changes 1 --max-variants 11` sweep evaluated all 11/11
+singles:
+
+| rank | source shape | match | gap | candidate/native | prefix | refs |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | panel `position-then-left-copy` | 77.5335% | 1803.1625 | 1953/2004 | 45 | `583/0/7` |
+| 2-7 | four title declarations, named separator coordinates, position declared first | 77.5170% | 1804.4830 | 1959/2004 | 45 | `584/0/7` |
+| 8 | separator component assignment, x first | 77.4161% | 1812.5839 | 1959/2004 | 45 | `583/0/7` |
+| 9 | separator component assignment, y first | 77.3152% | 1820.6848 | 1959/2004 | 45 | `582/0/7` |
+| 10-11 | panel assignment after declaration | 75.9021% | 1934.0979 | 1959/2004 | 43 | `569/0/15` |
+
+Because one single was numerically positive, a second recorded sweep used
+`--max-changes 2 --max-variants 51`. It completed 11/11 single and 40/40 pair
+coverage with no unevaluated combinations. The top pair combined
+`position-then-left-copy` with y-first separator component assignment:
+source SHA-256
+`257eb414f50dbce2feed8666577be22de99c368c665ea6859269f044cc536831`,
+**77.5840%**, gap `1799.1059`, 1,953/2,004 instructions, prefix 45, and
+`584/0/7` references. The x-first pair ranked second with identical score and
+gap, source SHA-256
+`f16f914d0b61905857e388070e2192c7d1ad7fde867170da95fc5846395c30d5`,
+but only `583/0/7` references. The single remained third. Both complete
+records are in `experiments.jsonl`, whose SHA-256 after the sweeps is
+`0b2d9db15c412e58e601dda5b1a30d1dc3342a7b98220c055dd39ab1de4e0e91`.
+
+The apparent winners are rejected by localized native evidence. At
+`0x0044249b..0x004424de`, native materializes the final panel X and Y in
+`[esp+0x64]` and `[esp+0x68]`, then copies them through EDX and EAX into the
+live `[esp+0x20]` and `[esp+0x24]` cursor. Swapping the source declarations
+makes the initial `left_panel` copy dead before its later overwrite and removes
+all six materialize/copy instructions; the provisional candidate jumps from
+the first sum directly to `[esp+0x24]`. Its whole-function score increase is
+therefore an alignment artifact opposite the native data flow.
+
+Native separator construction at `0x00442587..0x004425c6` likewise computes
+and stores X first, then loads `position.y`, adds 14, and stores Y before the
+outline call. The top interaction explicitly assigns Y first, while its
+x-first sibling still depends on the rejected panel-copy deletion. No
+numerical winner is locally evidence-backed, so neither source mutation is
+retained. The title declaration spellings and named coordinates compile
+byte-identically; the other natural spellings are decisive regressions.
+The scratch therefore keeps its original source hash and remains
+`semantic-complete` with a `compiler` residual, without volatility, fake
+arithmetic, dummy addressing, assembly, or register forcing.

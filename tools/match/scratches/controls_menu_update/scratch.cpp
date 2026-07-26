@@ -258,8 +258,9 @@ extern "C" void controls_menu_update(void)
     move_items[4] = input_scheme_label(5);
     move_items[5] = input_scheme_label(6);
     controls_move_method_list.items = move_items;
-    controls_move_method_list.item_count = 3;
-    if (cv_enableMousePointAndClickMovement->value != 0.0f) {
+    if (cv_enableMousePointAndClickMovement->value == 0.0f) {
+        controls_move_method_list.item_count = 3;
+    } else {
         controls_move_method_list.item_count = 4;
     }
 

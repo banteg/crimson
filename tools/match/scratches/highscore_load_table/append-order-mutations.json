@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "append-counter-order",
+      "find": "        highscore_table_count = count + 1;\n        highscore_table[count] = stored;\n        count++;\n",
+      "replacements": [
+        {
+          "name": "postincrement-subscript",
+          "text": "        highscore_table_count = count + 1;\n        highscore_table[count++] = stored;\n"
+        },
+        {
+          "name": "preincrement-count",
+          "text": "        highscore_table_count = ++count;\n        highscore_table[count - 1] = stored;\n"
+        },
+        {
+          "name": "copy-then-count",
+          "text": "        highscore_table[count] = stored;\n        count++;\n        highscore_table_count = count;\n"
+        },
+        {
+          "name": "postincrement-then-publish",
+          "text": "        highscore_table[count++] = stored;\n        highscore_table_count = count;\n"
+        }
+      ]
+    }
+  ]
+}

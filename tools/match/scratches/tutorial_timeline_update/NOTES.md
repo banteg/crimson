@@ -110,3 +110,27 @@ and scheduling choices rather than missing behavior. The three fixed-slot
 bonus anchors and the compiler-local stage jump table stay visible and
 unaliased; their surrounding native operations are all present, so they do not
 represent separate source-reference debt.
+
+## Stage-one movement-key cursor sweep
+
+A fresh region pass selected the stage-one input loop at
+`0x00408d6b..0x00408de6`. Native VC6 keeps `esi` at
+`player_state_table[0].input.move_key_backward`, reads the four movement keys
+as `esi[-1]`, `esi[0]`, `esi[1]`, and `esi[2]`, advances the cursor by the
+`0x360`-byte `player_state_t` stride, and compares it directly with the same
+field in the past-end player record. The current whole-player source pointer
+lets VC6 use the same interior cursor for the calls, but its source-level
+whole-record bound introduces one address correction before the loop-back
+comparison.
+
+The tracked schema-1 menu tested a literal backward-key cursor, an equivalent
+forward-key cursor, and a whole-player cursor with a matching-field bound. Both
+field-cursor variants compiled byte-identically and decisively regressed the
+whole function from `1935.207493/2907` weighted bytes at `66.570605%` to
+`1880.753602/2907` at `64.697406%`. They kept 693 instructions but changed the
+reference audit from `154/0/4` to `152/0/5`. VC6 rejected the matching-field
+bound spelling. With no positive single there is no justified interaction
+sweep, and `scratch.cpp` remains unchanged: the native interior register is
+compiler allocation evidence, not enough evidence for a stronger original
+source-lifetime claim. The complete three-variant result is recorded in
+`experiments.jsonl`.

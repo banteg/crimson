@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "narrow-scale-pair-pointer-lifetime",
+      "find": "        (&ui_element_table_end->layers[0].slot_00)[i].x *= 0.8f;\n        (&ui_element_table_end->layers[0].slot_00)[i].y *= 0.8f;\n        (&ui_element_table_end->layers[2].slot_00)[i].x *= 0.8f;\n        (&ui_element_table_end->layers[2].slot_00)[i].y *= 0.8f;\n        (&ui_element_table_end->layers[1].slot_00)[i].x *= 0.8f;\n        (&ui_element_table_end->layers[1].slot_00)[i].y *= 0.8f;",
+      "replacements": [
+        {
+          "name": "sequential-pointer-pairs",
+          "text": "        ui_menu_item_subtemplate_slot_t *slot =\n            (&ui_element_table_end->layers[0].slot_00) + i;\n        slot->x *= 0.8f;\n        slot->y *= 0.8f;\n        slot = (&ui_element_table_end->layers[2].slot_00) + i;\n        slot->x *= 0.8f;\n        slot->y *= 0.8f;\n        slot = (&ui_element_table_end->layers[1].slot_00) + i;\n        slot->x *= 0.8f;\n        slot->y *= 0.8f;"
+        },
+        {
+          "name": "successive-pointer-pairs",
+          "text": "        ui_menu_item_subtemplate_slot_t *first =\n            (&ui_element_table_end->layers[0].slot_00) + i;\n        first->x *= 0.8f;\n        first->y *= 0.8f;\n        ui_menu_item_subtemplate_slot_t *third =\n            (&ui_element_table_end->layers[2].slot_00) + i;\n        third->x *= 0.8f;\n        third->y *= 0.8f;\n        ui_menu_item_subtemplate_slot_t *second =\n            (&ui_element_table_end->layers[1].slot_00) + i;\n        second->x *= 0.8f;\n        second->y *= 0.8f;"
+        },
+        {
+          "name": "scoped-pointer-pairs",
+          "text": "        {\n            ui_menu_item_subtemplate_slot_t *first =\n                (&ui_element_table_end->layers[0].slot_00) + i;\n            first->x *= 0.8f;\n            first->y *= 0.8f;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t *third =\n                (&ui_element_table_end->layers[2].slot_00) + i;\n            third->x *= 0.8f;\n            third->y *= 0.8f;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t *second =\n                (&ui_element_table_end->layers[1].slot_00) + i;\n            second->x *= 0.8f;\n            second->y *= 0.8f;\n        }"
+        }
+      ]
+    }
+  ]
+}

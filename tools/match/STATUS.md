@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **686/808** functions matched exactly, **125859/341963** code bytes (**36.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **291330/341963** code bytes (**85.2%**).
+Fuzzy-weighted alignment is **293857/341963** code bytes (**85.9%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 556/671 | 111706/320805 | 34.8% | 271411/320805 | 84.6% | 671/671 | 320805/320805 | 100.0% | 556/671 |
+| crimsonland.exe | 556/671 | 111706/320805 | 34.8% | 273939/320805 | 85.4% | 671/671 | 320805/320805 | 100.0% | 556/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 19918/21158 | 94.1% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**556/671** functions, **111706/320805** bytes (**34.8%**), **271411/320805** fuzzy-weighted bytes (**84.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **556/671** scratches verified.
+**556/671** functions, **111706/320805** bytes (**34.8%**), **273939/320805** fuzzy-weighted bytes (**85.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **556/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -300,7 +300,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 9148/16257 | 7109 | 4015/4206 | 56.27% | 7/4206 | 762/0/5 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 9214/16257 | 7043 | 4023/4206 | 56.68% | 7/4206 | 766/0/5 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -427,7 +427,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 4034/8409 | 4375 | 2141/2203 | 47.97% | 0/2203 | 351/0/25 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 4046/8409 | 4363 | 2145/2203 | 48.11% | 0/2203 | 351/0/25 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 6409/12551 | 6142 | 2854/3021 | 51.06% | 0/3021 | 402/0/16 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
@@ -442,7 +442,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | wip | player_render_overlays | 0x00428390 | 4582 | 3843/4582 | 739 | 1141/1148 | 83.88% | 9/1148 | 326/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
-| wip | bonus_render | 0x004295f0 | 4088 | 3579/4088 | 509 | 1089/1088 | 87.55% | 14/1088 | 218/0/10 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
+| wip | bonus_render | 0x004295f0 | 4088 | 3602/4088 | 486 | 1089/1088 | 88.10% | 14/1088 | 218/0/10 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | audio_suspend_all | 0x0042a630 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | texture_get_or_load | 0x0042a670 | 133 | 133/133 | 0 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |
@@ -462,7 +462,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | wip | crimsonland_main | 0x0042c450 | 3214 | 3133/3214 | 81 | 832/832 | 97.48% | 27/832 | 392/0/2 |  | primary-game-bootstrap-and-shutdown |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1196/1970 | 774 | 519/519 | 60.69% | 19/519 | 102/0/0 |  | online-highscore-submit-receive-worker |
-| wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 954/1364 | 410 | 371/361 | 69.95% | 21/361 | 102/0/0 |  | statistics-version-update-check-worker |
+| wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 1048/1364 | 316 | 373/361 | 76.84% | 21/361 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
 | match | j_nullsub_117 | 0x0042de40 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
@@ -567,7 +567,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 53/53 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 101/101 | 0 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
-| wip | highscore_load_table | 0x0043afa0 | 1198 | 923/1198 | 275 | 344/354 | 77.08% | 67/354 | 55/0/0 |  | highscore-table-load-filter-sort |
+| wip | highscore_load_table | 0x0043afa0 | 1198 | 1154/1198 | 44 | 354/354 | 96.33% | 261/354 | 57/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 182/182 | 0 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 78/133 | 55 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
@@ -730,7 +730,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
-| wip | controls_menu_update | 0x00448cd0 | 21289 | 16306/21289 | 4983 | 5392/5421 | 76.59% | 148/5421 | 1529/4/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
+| wip | controls_menu_update | 0x00448cd0 | 21289 | 16314/21289 | 4975 | 5392/5421 | 76.63% | 162/5421 | 1530/4/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | nullsub_89 | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_90 | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
@@ -751,7 +751,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | ui_element_layout_calc | 0x0044fb50 | 288 | 278/288 | 10 | 86/86 | 96.51% | 34/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
-| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 4038/7237 | 3199 | 1302/1422 | 55.80% | 10/1422 | 305/0/48 |  | menu-element-graph-layout-and-responsive-transforms |
+| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6133/7237 | 1104 | 1403/1422 | 84.74% | 10/1422 | 437/0/23 |  | menu-element-graph-layout-and-responsive-transforms |
 | match | weapon_table_defaults_global_init_thunk | 0x00451900 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | weapon-table-default-global-initialization-thunk |
 | match | weapon_table_defaults_global_init | 0x00451910 | 150 | 150/150 | 0 | 47/47 | 100.00% | 47/47 | 2/0/0 |  | weapon-table-default-global-initialization |
 | match | weapon_table_init | 0x004519b0 | 4885 | 4885/4885 | 0 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |

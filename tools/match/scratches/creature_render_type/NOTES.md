@@ -88,6 +88,28 @@ also decompile as one record because both presentation views retain the proven
 The analysis/type recovery does not affect code generation: the honest match
 remains 78.45%, 757/765 instructions, prefix 25, and `136/0/5` references.
 
+## Flash base-frame shape sweep
+
+A fresh live Binary Ninja read from target
+`3023:2:9499448411019345244` bounds a localized violence-pass mismatch to the
+ping-pong frame join at native `0x004194eb..0x0041957d`. Native materializes
+the Grim interface and vtable alongside the type's base frame before forming
+`base_frame + reflected_frame + 16`, then joins the shared atlas-frame call.
+The candidate computes the same frame but folds the base-frame load into the
+expression and delays the interface load until that join.
+
+The schema-1 spec `flash-base-frame-mutations.json` tests five ordinary
+spellings of that base-frame lifetime and addition order. Spec SHA-256 is
+`7e5c69cfa8dc086ab187656c9f3029fa3128ea3992a82d8244a50fb90d511d98`;
+the tested source SHA-256 is
+`8764235bae69d4c6e5601f075daf937b8db7b1fcc5d0c9e2a56ecf431a04412c`.
+The recorded sweep evaluated all 5/5 one-site variants without truncation.
+Four were byte-identical to the 78.4494% baseline, 757/765 instructions,
+prefix 25, and `136/0/5` references. Hoisting the base-frame local before
+animation rounding added one instruction and regressed by 0.05151 percentage
+points and 1.46 fuzzy-weighted bytes. No single mutation improved, so no
+interaction sweep was warranted and the compact current expression remains.
+
 ## Semantic-completion audit
 
 Fresh live Binary Ninja HLIL and disassembly confirm all four native pool

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scrollbar-column-offset-initialization",
+      "find": "        column_offsets[0] = column_offsets[1] = 0.0f;",
+      "replacements": [
+        {
+          "name": "separate-int-forward",
+          "text": "        column_offsets[0] = 0;\n        column_offsets[1] = 0;"
+        },
+        {
+          "name": "separate-float-forward",
+          "text": "        column_offsets[0] = 0.0f;\n        column_offsets[1] = 0.0f;"
+        },
+        {
+          "name": "reverse-chain-int",
+          "text": "        column_offsets[1] = column_offsets[0] = 0;"
+        },
+        {
+          "name": "reverse-chain-float",
+          "text": "        column_offsets[1] = column_offsets[0] = 0.0f;"
+        },
+        {
+          "name": "zero-first-copy-second",
+          "text": "        column_offsets[0] = 0;\n        column_offsets[1] = column_offsets[0];"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-transform-pointer-shape",
+      "find": "    for (i = 0; i < 4; ++i) {\n        ui_menu_item_subtemplate_slot_t *prompt_slot =\n            (&ui_perk_prompt_element.layers[0].slot_00) + i;\n        prompt_slot->x -= 300.0f;\n        prompt_slot->x *= 0.75f;\n        prompt_slot->y *= 0.75f;\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        levelup_slot->x *= 0.85f;\n        levelup_slot->y *= 0.85f;\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;\n    }",
+      "replacements": [
+        {
+          "name": "direct-index-both",
+          "text": "    for (i = 0; i < 4; ++i) {\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].x -= 300.0f;\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].x *= 0.75f;\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].y *= 0.75f;\n\n        (&ui_perk_prompt_levelup_element.slot_00)[i].x *= 0.85f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].y *= 0.85f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].x -= 46.0f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].y -= 4.0f;\n    }"
+        },
+        {
+          "name": "cursor-pointers",
+          "text": "    ui_menu_item_subtemplate_slot_t *prompt_slot =\n        &ui_perk_prompt_element.layers[0].slot_00;\n    ui_menu_item_subtemplate_slot_t *levelup_slot =\n        &ui_perk_prompt_levelup_element.slot_00;\n    for (i = 0; i < 4; ++i, ++prompt_slot, ++levelup_slot) {\n        prompt_slot->x -= 300.0f;\n        prompt_slot->x *= 0.75f;\n        prompt_slot->y *= 0.75f;\n\n        levelup_slot->x *= 0.85f;\n        levelup_slot->y *= 0.85f;\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;\n    }"
+        },
+        {
+          "name": "reused-slot-pointer",
+          "text": "    for (i = 0; i < 4; ++i) {\n        ui_menu_item_subtemplate_slot_t *slot =\n            (&ui_perk_prompt_element.layers[0].slot_00) + i;\n        slot->x -= 300.0f;\n        slot->x *= 0.75f;\n        slot->y *= 0.75f;\n\n        slot = (&ui_perk_prompt_levelup_element.slot_00) + i;\n        slot->x *= 0.85f;\n        slot->y *= 0.85f;\n        slot->x -= 46.0f;\n        slot->y -= 4.0f;\n    }"
+        },
+        {
+          "name": "levelup-pointer-only",
+          "text": "    for (i = 0; i < 4; ++i) {\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].x -= 300.0f;\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].x *= 0.75f;\n        (&ui_perk_prompt_element.layers[0].slot_00)[i].y *= 0.75f;\n\n        ui_menu_item_subtemplate_slot_t *levelup_slot =\n            (&ui_perk_prompt_levelup_element.slot_00) + i;\n        levelup_slot->x *= 0.85f;\n        levelup_slot->y *= 0.85f;\n        levelup_slot->x -= 46.0f;\n        levelup_slot->y -= 4.0f;\n    }"
+        },
+        {
+          "name": "prompt-pointer-only",
+          "text": "    for (i = 0; i < 4; ++i) {\n        ui_menu_item_subtemplate_slot_t *prompt_slot =\n            (&ui_perk_prompt_element.layers[0].slot_00) + i;\n        prompt_slot->x -= 300.0f;\n        prompt_slot->x *= 0.75f;\n        prompt_slot->y *= 0.75f;\n\n        (&ui_perk_prompt_levelup_element.slot_00)[i].x *= 0.85f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].y *= 0.85f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].x -= 46.0f;\n        (&ui_perk_prompt_levelup_element.slot_00)[i].y -= 4.0f;\n    }"
+        }
+      ]
+    }
+  ]
+}

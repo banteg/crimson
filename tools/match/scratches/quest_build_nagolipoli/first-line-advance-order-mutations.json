@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-line-advance-order",
+      "find": "        spawn->heading = 0.0f;\n        ++line_index;\n        ++spawn;\n        trigger_time_ms += 100;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;",
+      "replacements": [
+        {
+          "name": "index-trigger-spawn",
+          "text": "        spawn->heading = 0.0f;\n        ++line_index;\n        trigger_time_ms += 100;\n        ++spawn;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;"
+        },
+        {
+          "name": "spawn-index-trigger",
+          "text": "        spawn->heading = 0.0f;\n        ++spawn;\n        ++line_index;\n        trigger_time_ms += 100;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;"
+        },
+        {
+          "name": "spawn-trigger-index",
+          "text": "        spawn->heading = 0.0f;\n        ++spawn;\n        trigger_time_ms += 100;\n        ++line_index;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;"
+        },
+        {
+          "name": "trigger-index-spawn",
+          "text": "        spawn->heading = 0.0f;\n        trigger_time_ms += 100;\n        ++line_index;\n        ++spawn;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;"
+        },
+        {
+          "name": "trigger-spawn-index",
+          "text": "        spawn->heading = 0.0f;\n        trigger_time_ms += 100;\n        ++spawn;\n        ++line_index;\n    }\n\n    line_index = 0;\n    trigger_time_ms = wave * 800 + 25000;"
+        }
+      ]
+    }
+  ]
+}

@@ -121,16 +121,9 @@ extern "C" void statistics_update_check_worker(void *)
 
     read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
     received = bytes_read;
-    while (read_ok) {
-        if ((int)(received + 0x400) > 0x8000) {
-            console_printf(
-                &console_log_queue,
-                "Warning: receiving too much data, breaking out..\n");
-            break;
-        }
-        if (bytes_read == 0) {
-            break;
-        }
+    while (read_ok
+        && (int)(received + 0x400) <= 0x8000
+        && bytes_read != 0) {
         read_ok = InternetReadFile(
             request,
             data + received,
@@ -154,6 +147,11 @@ extern "C" void statistics_update_check_worker(void *)
             &headers_length);
         console_printf(&console_log_queue, "Or: %s\n", data);
         goto cleanup;
+    }
+    if ((int)(received + 0x400) > 0x8000) {
+        console_printf(
+            &console_log_queue,
+            "Warning: receiving too much data, breaking out..\n");
     }
 
     console_printf(

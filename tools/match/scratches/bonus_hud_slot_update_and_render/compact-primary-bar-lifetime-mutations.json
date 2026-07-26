@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "compact-primary-bar-lifetime",
+      "find": "            {\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }",
+      "replacements": [
+        {
+          "name": "position-before-color",
+          "text": "            {\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "named-x-before-color",
+          "text": "            {\n                float bar_x = slot->slide.slide_x + 36.0f;\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    bar_x,\n                    *y + 21.0f - 4.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "named-timer-before-color",
+          "text": "            {\n                float *timer_ptr = slot->slide.timer_ptr;\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "named-x-and-timer-before-color",
+          "text": "            {\n                float bar_x = slot->slide.slide_x + 36.0f;\n                float *timer_ptr = slot->slide.timer_ptr;\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(\n                    bar_x,\n                    *y + 21.0f - 4.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "position-scalars-before-color",
+          "text": "            {\n                float bar_x = slot->slide.slide_x + 36.0f;\n                float bar_y = *y + 21.0f - 4.0f - 4.0f;\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos(bar_x, bar_y);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "position-and-timer-before-color",
+          "text": "            {\n                float *timer_ptr = slot->slide.timer_ptr;\n                bonus_hud_vec2_t bar_pos(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);\n                bonus_hud_color_t bar_color(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        },
+        {
+          "name": "copy-initializers",
+          "text": "            {\n                bonus_hud_color_t bar_color = bonus_hud_color_t(\n                    0.1f, 0.3f, 0.6f, panel_alpha);\n                bonus_hud_vec2_t bar_pos = bonus_hud_vec2_t(\n                    slot->slide.slide_x + 36.0f,\n                    *y + 21.0f - 4.0f - 4.0f);\n                ui_draw_progress_bar(\n                    (float *)&bar_pos,\n                    32.0f,\n                    *slot->slide.timer_ptr * 0.05f,\n                    (float *)&bar_color);\n            }"
+        }
+      ]
+    }
+  ]
+}

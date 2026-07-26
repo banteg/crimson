@@ -60,3 +60,30 @@ and Binary Ninja confirms the address is `+0x08` inside the mapped
 No data-map or scrollbar/UI layout correction is supported. The residual is
 compiler scheduling only, and `RESIDUAL=compiler` records that conclusion
 without changing the two honest mismatches.
+
+## Unlock-loop mutation audit
+
+Live disassembly bounds the two localized unlock scans. The database count at
+`0x0044026e` zeroes only `esi`, walks the unlocked byte with an `eax` cursor in
+`0x7c`-byte steps, and stops at `0x004d996c`. The hovered-row map at
+`0x00440471` loads the hovered index once into `esi`, advances the compact row
+with the native `mov ebp, edx; inc edx; cmp ebp, esi` post-increment sequence,
+and walks the weapon id and table cursor together.
+
+The recorded schema-1 sweep
+`unlock-loop-shape-mutations.json`
+(`sha256:62d22a707f69541c9629c69647bdee476df6965309bab1b8fff5b802cb8bf857`)
+tested four semantic source shapes against the fresh 82.870813% baseline:
+
+- caching the hovered index explicitly and spelling the count as a bounded
+  index `for` loop are byte-for-byte neutral;
+- an explicit count cursor falls to 79.923151%, 518/523 instructions, and
+  `126/0/5` references; and
+- an explicit hovered-row cursor falls to 79.731028%, 518/523 instructions,
+  and `127/0/5` references.
+
+No single-site mutation improves the whole-function result, so no interaction
+sweep is justified and `scratch.cpp` remains unchanged. The compiler already
+recovers the native pointer walks from the current indexed source; spelling the
+cursors explicitly perturbs broader allocation and reference alignment without
+adding native behavior.

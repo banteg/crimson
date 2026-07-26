@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "health-reveal-accumulator-shape",
+      "find": "                    quest_results_reveal_health_bonus_ms += 1000;",
+      "replacements": [
+        {
+          "name": "explicit-add-assignment",
+          "text": "                    quest_results_reveal_health_bonus_ms =\n                        quest_results_reveal_health_bonus_ms + 1000;"
+        },
+        {
+          "name": "named-accumulator",
+          "text": "                    {\n                        int reveal_health_bonus =\n                            quest_results_reveal_health_bonus_ms + 1000;\n                        quest_results_reveal_health_bonus_ms =\n                            reveal_health_bonus;\n                    }"
+        },
+        {
+          "name": "split-named-accumulator",
+          "text": "                    {\n                        int reveal_health_bonus =\n                            quest_results_reveal_health_bonus_ms;\n                        reveal_health_bonus += 1000;\n                        quest_results_reveal_health_bonus_ms =\n                            reveal_health_bonus;\n                    }"
+        }
+      ]
+    },
+    {
+      "name": "health-reveal-clink-snapshot",
+      "find": "                    quest_results_reveal_step_timer_ms = 150;\n                    sfx_play(sfx_ui_clink_01, 1.0f);",
+      "replacements": [
+        {
+          "name": "pre-timer-local",
+          "text": "                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        quest_results_reveal_step_timer_ms = 150;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "post-timer-local",
+          "text": "                    {\n                        quest_results_reveal_step_timer_ms = 150;\n                        int clink_sfx = sfx_ui_clink_01;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        }
+      ]
+    }
+  ]
+}

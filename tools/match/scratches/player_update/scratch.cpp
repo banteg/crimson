@@ -814,7 +814,8 @@ extern "C" void player_update(void)
     }
 
     scalar = 1.0f;
-    if (player_position->x == previous_pos.x && player_position->y == previous_pos.y) {
+    if (player->position.x == previous_pos.x
+        && player->position.y == previous_pos.y) {
         if (perk_count_get(perk_id_stationary_reloader) != 0) {
             scalar = 3.0f;
         }

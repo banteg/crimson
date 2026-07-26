@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scale-pair-pointer-lifetime",
+      "find": "        (&(*element_ref)->layers[0].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[0].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[2].slot_00)[i].y *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].x *= scale;\n        (&(*element_ref)->layers[1].slot_00)[i].y *= scale;",
+      "replacements": [
+        {
+          "name": "scoped-pointer-pairs",
+          "text": "        {\n            ui_menu_item_subtemplate_slot_t *first =\n                (&(*element_ref)->layers[0].slot_00) + i;\n            first->x *= scale;\n            first->y *= scale;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t *third =\n                (&(*element_ref)->layers[2].slot_00) + i;\n            third->x *= scale;\n            third->y *= scale;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t *second =\n                (&(*element_ref)->layers[1].slot_00) + i;\n            second->x *= scale;\n            second->y *= scale;\n        }"
+        },
+        {
+          "name": "sequential-pointer-pairs",
+          "text": "        ui_menu_item_subtemplate_slot_t *slot =\n            (&(*element_ref)->layers[0].slot_00) + i;\n        slot->x *= scale;\n        slot->y *= scale;\n        slot = (&(*element_ref)->layers[2].slot_00) + i;\n        slot->x *= scale;\n        slot->y *= scale;\n        slot = (&(*element_ref)->layers[1].slot_00) + i;\n        slot->x *= scale;\n        slot->y *= scale;"
+        },
+        {
+          "name": "successive-pointer-pairs",
+          "text": "        ui_menu_item_subtemplate_slot_t *first =\n            (&(*element_ref)->layers[0].slot_00) + i;\n        first->x *= scale;\n        first->y *= scale;\n        ui_menu_item_subtemplate_slot_t *third =\n            (&(*element_ref)->layers[2].slot_00) + i;\n        third->x *= scale;\n        third->y *= scale;\n        ui_menu_item_subtemplate_slot_t *second =\n            (&(*element_ref)->layers[1].slot_00) + i;\n        second->x *= scale;\n        second->y *= scale;"
+        },
+        {
+          "name": "scoped-reference-pairs",
+          "text": "        {\n            ui_menu_item_subtemplate_slot_t &first =\n                (&(*element_ref)->layers[0].slot_00)[i];\n            first.x *= scale;\n            first.y *= scale;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t &third =\n                (&(*element_ref)->layers[2].slot_00)[i];\n            third.x *= scale;\n            third.y *= scale;\n        }\n        {\n            ui_menu_item_subtemplate_slot_t &second =\n                (&(*element_ref)->layers[1].slot_00)[i];\n            second.x *= scale;\n            second.y *= scale;\n        }"
+        }
+      ]
+    }
+  ]
+}

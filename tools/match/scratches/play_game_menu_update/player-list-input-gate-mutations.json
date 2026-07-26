@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-list-input-gate",
+      "find": "    if (selected > -2\n        && (input_primary_just_pressed()\n            || grim_interface_ptr->grim_was_key_pressed(0x1c))) {\n        player_count_list.open = 1 - player_count_list.open;\n        if (selected >= 0) {\n            player_count_list.selected_index = selected;\n            config_player_count = selected + 1;\n            j_highscore_load_table();\n        }\n    }",
+      "replacements": [
+        {
+          "name": "threshold-greater-equal-negative-one",
+          "text": "    if (selected >= -1\n        && (input_primary_just_pressed()\n            || grim_interface_ptr->grim_was_key_pressed(0x1c))) {\n        player_count_list.open = 1 - player_count_list.open;\n        if (selected >= 0) {\n            player_count_list.selected_index = selected;\n            config_player_count = selected + 1;\n            j_highscore_load_table();\n        }\n    }"
+        },
+        {
+          "name": "threshold-constant-first",
+          "text": "    if (-2 < selected\n        && (input_primary_just_pressed()\n            || grim_interface_ptr->grim_was_key_pressed(0x1c))) {\n        player_count_list.open = 1 - player_count_list.open;\n        if (selected >= 0) {\n            player_count_list.selected_index = selected;\n            config_player_count = selected + 1;\n            j_highscore_load_table();\n        }\n    }"
+        },
+        {
+          "name": "explicit-bool-comparisons",
+          "text": "    if (selected > -2\n        && (input_primary_just_pressed() != false\n            || grim_interface_ptr->grim_was_key_pressed(0x1c) != false)) {\n        player_count_list.open = 1 - player_count_list.open;\n        if (selected >= 0) {\n            player_count_list.selected_index = selected;\n            config_player_count = selected + 1;\n            j_highscore_load_table();\n        }\n    }"
+        },
+        {
+          "name": "nested-valid-selection-gate",
+          "text": "    if (selected > -2) {\n        if (input_primary_just_pressed()\n            || grim_interface_ptr->grim_was_key_pressed(0x1c)) {\n            player_count_list.open = 1 - player_count_list.open;\n            if (selected >= 0) {\n                player_count_list.selected_index = selected;\n                config_player_count = selected + 1;\n                j_highscore_load_table();\n            }\n        }\n    }"
+        },
+        {
+          "name": "nested-named-input-gate",
+          "text": "    if (selected > -2) {\n        bool toggle_requested = input_primary_just_pressed();\n        if (!toggle_requested) {\n            toggle_requested =\n                grim_interface_ptr->grim_was_key_pressed(0x1c);\n        }\n        if (toggle_requested) {\n            player_count_list.open = 1 - player_count_list.open;\n            if (selected >= 0) {\n                player_count_list.selected_index = selected;\n                config_player_count = selected + 1;\n                j_highscore_load_table();\n            }\n        }\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv_end_vector_lifetime",
+      "find": "static __inline void player_render_set_uv(player_render_vec2_t *table, int frame)\n{\n    render_scratch_f0 = table[frame];\n    render_scratch_f2 =\n        table[frame] + player_render_vec2_t(0.125f, 0.125f);\n    grim_interface_ptr->grim_set_uv(\n        render_scratch_f0.x,\n        render_scratch_f0.y,\n        render_scratch_f2.x,\n        render_scratch_f2.y);\n}",
+      "replacements": [
+        {
+          "name": "named_uv_end",
+          "text": "static __inline void player_render_set_uv(player_render_vec2_t *table, int frame)\n{\n    render_scratch_f0 = table[frame];\n    player_render_vec2_t uv_end =\n        table[frame] + player_render_vec2_t(0.125f, 0.125f);\n    render_scratch_f2 = uv_end;\n    grim_interface_ptr->grim_set_uv(\n        render_scratch_f0.x,\n        render_scratch_f0.y,\n        uv_end.x,\n        uv_end.y);\n}"
+        },
+        {
+          "name": "named_uv_begin_and_end",
+          "text": "static __inline void player_render_set_uv(player_render_vec2_t *table, int frame)\n{\n    player_render_vec2_t uv_begin = table[frame];\n    render_scratch_f0 = uv_begin;\n    player_render_vec2_t uv_end =\n        table[frame] + player_render_vec2_t(0.125f, 0.125f);\n    render_scratch_f2 = uv_end;\n    grim_interface_ptr->grim_set_uv(\n        uv_begin.x,\n        uv_begin.y,\n        uv_end.x,\n        uv_end.y);\n}"
+        },
+        {
+          "name": "assigned_uv_end_components",
+          "text": "static __inline void player_render_set_uv(player_render_vec2_t *table, int frame)\n{\n    render_scratch_f0 = table[frame];\n    player_render_vec2_t uv_end;\n    uv_end.x = table[frame].x + 0.125f;\n    uv_end.y = table[frame].y + 0.125f;\n    render_scratch_f2 = uv_end;\n    grim_interface_ptr->grim_set_uv(\n        render_scratch_f0.x,\n        render_scratch_f0.y,\n        uv_end.x,\n        uv_end.y);\n}"
+        }
+      ]
+    },
+    {
+      "name": "recoil_vector_lifetime",
+      "find": "    player_render_vec2_t recoil(\n        (float)cos(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f,\n        (float)sin(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f);",
+      "replacements": [
+        {
+          "name": "assigned_components",
+          "text": "    player_render_vec2_t recoil;\n    recoil.x =\n        (float)cos(recoil_heading)\n        * player_state_table[render_overlay_player_index].muzzle_flash_alpha\n        * 12.0f;\n    recoil.y =\n        (float)sin(recoil_heading)\n        * player_state_table[render_overlay_player_index].muzzle_flash_alpha\n        * 12.0f;"
+        },
+        {
+          "name": "named_scalars_then_constructor",
+          "text": "    float recoil_x =\n        (float)cos(recoil_heading)\n        * player_state_table[render_overlay_player_index].muzzle_flash_alpha\n        * 12.0f;\n    float recoil_y =\n        (float)sin(recoil_heading)\n        * player_state_table[render_overlay_player_index].muzzle_flash_alpha\n        * 12.0f;\n    player_render_vec2_t recoil(recoil_x, recoil_y);"
+        }
+      ]
+    },
+    {
+      "name": "target_distance_guard_shape",
+      "find": "                if (player_render_distance(\n                        *(player_render_vec2_t *)&line_player->position,\n                        *(player_render_vec2_t *)&creature_pool\n                            [line_player->auto_target]\n                                .position)\n                    <= 80.0f) {",
+      "replacements": [
+        {
+          "name": "direct_named_deltas",
+          "text": "                float target_dx =\n                    creature_pool[line_player->auto_target].pos_x\n                    - line_player->pos_x;\n                float target_dy =\n                    creature_pool[line_player->auto_target].pos_y\n                    - line_player->pos_y;\n                if ((float)sqrt(\n                        target_dy * target_dy + target_dx * target_dx)\n                    <= 80.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "target_draw_origin_lifetime",
+      "find": "                    player_render_vec2_t draw_origin(\n                        camera_offset.x + line_player->pos_x - 16.0f,\n                        camera_offset.y + line_player->pos_y - 16.0f);\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, transition_alpha);\n\n                    for (float offset = 0.0f;\n                         offset < distance;\n                         offset += 8.0f) {\n                        grim_interface_ptr->grim_draw_quad(\n                            direction.x * offset + draw_origin.x,\n                            direction.y * offset + draw_origin.y,\n                            32.0f,\n                            32.0f);\n                    }",
+      "replacements": [
+        {
+          "name": "named_scalar_origin",
+          "text": "                    float draw_origin_x =\n                        camera_offset.x + line_player->pos_x - 16.0f;\n                    float draw_origin_y =\n                        camera_offset.y + line_player->pos_y - 16.0f;\n                    grim_interface_ptr->grim_set_color(\n                        0.5f, 0.6f, 1.0f, transition_alpha);\n\n                    for (float offset = 0.0f;\n                         offset < distance;\n                         offset += 8.0f) {\n                        grim_interface_ptr->grim_draw_quad(\n                            direction.x * offset + draw_origin_x,\n                            direction.y * offset + draw_origin_y,\n                            32.0f,\n                            32.0f);\n                    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sharpshooter_end_position_base",
+      "find": "            projectile_render_vec2_t end_pos =\n                player_pos\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;",
+      "replacements": [
+        {
+          "name": "direct_player_position",
+          "text": "            projectile_render_vec2_t end_pos =\n                *(projectile_render_vec2_t *)&player->position\n                + projectile_render_vec2_t(\n                      (float)cos(heading), (float)sin(heading))\n                    * 512.0f;"
+        }
+      ]
+    },
+    {
+      "name": "sharpshooter_perk_load_lifetime",
+      "find": "            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;\n\n            if (player->perk_counts[perk_id_sharpshooter] > 0) {",
+      "replacements": [
+        {
+          "name": "count_between_start_and_end_points",
+          "text": "            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            int sharpshooter_count =\n                player->perk_counts[perk_id_sharpshooter];\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;\n\n            if (sharpshooter_count > 0) {"
+        },
+        {
+          "name": "count_after_all_points",
+          "text": "            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;\n            int sharpshooter_count =\n                player->perk_counts[perk_id_sharpshooter];\n\n            if (sharpshooter_count > 0) {"
+        }
+      ]
+    },
+    {
+      "name": "conventional_type_load_lifetime",
+      "find": "        projectile_vel_y_block_t *tail = &projectile->pos.tail.vy;\n        projectile_type_id_t type_id = tail->type_id;\n        if (!projectile->active\n            || !((int)type_id <= 7\n                || type_id == PROJECTILE_TYPE_SPLITTER_GUN)) {\n            continue;\n        }",
+      "replacements": [
+        {
+          "name": "active_before_type_load",
+          "text": "        projectile_vel_y_block_t *tail = &projectile->pos.tail.vy;\n        if (!projectile->active) {\n            continue;\n        }\n        projectile_type_id_t type_id = tail->type_id;\n        if (!((int)type_id <= 7\n            || type_id == PROJECTILE_TYPE_SPLITTER_GUN)) {\n            continue;\n        }"
+        }
+      ]
+    },
+    {
+      "name": "secondary_sprite_type_load_lifetime",
+      "find": "        secondary_projectile_t *projectile =\n            &secondary_projectile_pool[secondary_index];\n        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (!projectile->active\n            || type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }",
+      "replacements": [
+        {
+          "name": "active_before_type_load",
+          "text": "        secondary_projectile_t *projectile =\n            &secondary_projectile_pool[secondary_index];\n        if (!projectile->active) {\n            continue;\n        }\n        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }"
+        }
+      ]
+    }
+  ]
+}

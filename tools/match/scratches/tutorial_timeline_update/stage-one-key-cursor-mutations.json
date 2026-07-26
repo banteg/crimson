@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "stage-one-movement-key-cursor",
+      "find": "    if (stage == 1) {\n        player_state_t *player = &player_state_table[0];\n        while ((!grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_forward)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_backward)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.turn_key_left)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.turn_key_right))\n            || tutorial_stage_transition_timer != -1) {\n            ++player;\n            if ((int)player >= (int)&player_state_table[2]) {\n                return;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "backward-key-cursor",
+          "text": "    if (stage == 1) {\n        int *move_key =\n            &player_state_table[0].input.move_key_backward;\n        while ((!grim_interface_ptr->grim_is_key_active(move_key[-1])\n                && !grim_interface_ptr->grim_is_key_active(move_key[0])\n                && !grim_interface_ptr->grim_is_key_active(move_key[1])\n                && !grim_interface_ptr->grim_is_key_active(move_key[2]))\n            || tutorial_stage_transition_timer != -1) {\n            move_key += sizeof(player_state_t) / sizeof(int);\n            if ((int)move_key\n                >= (int)&player_state_table[2].input.move_key_backward) {\n                return;\n            }\n        }\n"
+        },
+        {
+          "name": "forward-key-cursor",
+          "text": "    if (stage == 1) {\n        int *move_key =\n            &player_state_table[0].input.move_key_forward;\n        while ((!grim_interface_ptr->grim_is_key_active(move_key[0])\n                && !grim_interface_ptr->grim_is_key_active(move_key[1])\n                && !grim_interface_ptr->grim_is_key_active(move_key[2])\n                && !grim_interface_ptr->grim_is_key_active(move_key[3]))\n            || tutorial_stage_transition_timer != -1) {\n            move_key += sizeof(player_state_t) / sizeof(int);\n            if ((int)move_key\n                >= (int)&player_state_table[2].input.move_key_forward) {\n                return;\n            }\n        }\n"
+        },
+        {
+          "name": "player-pointer-matching-field-bound",
+          "text": "    if (stage == 1) {\n        player_state_t *player = &player_state_table[0];\n        while ((!grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_forward)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.move_key_backward)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.turn_key_left)\n                && !grim_interface_ptr->grim_is_key_active(\n                    player->input.turn_key_right))\n            || tutorial_stage_transition_timer != -1) {\n            ++player;\n            if ((int)&player->input.move_key_backward\n+                >= (int)&player_state_table[2].input.move_key_backward) {\n                return;\n            }\n        }\n"
+        }
+      ]
+    }
+  ]
+}

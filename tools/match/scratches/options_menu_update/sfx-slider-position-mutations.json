@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sfx-slider-position-initialization",
+      "find": "    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    xy.x = panel_position.x + 148.0f;\n    options_vec2_t slider_position;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 47.0f;",
+      "replacements": [
+        {
+          "name": "declare-before-static",
+          "text": "    options_vec2_t slider_position;\n    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    xy.x = panel_position.x + 148.0f;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 47.0f;"
+        },
+        {
+          "name": "declare-before-value",
+          "text": "    static options_slider_t sfx_volume_slider;\n    options_vec2_t slider_position;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    xy.x = panel_position.x + 148.0f;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 47.0f;"
+        },
+        {
+          "name": "chained-xy-then-slider",
+          "text": "    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    options_vec2_t slider_position;\n    slider_position.x = (xy.x = panel_position.x + 148.0f);\n    slider_position.y = panel_position.y + 47.0f;"
+        },
+        {
+          "name": "chained-slider-then-xy",
+          "text": "    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    options_vec2_t slider_position;\n    xy.x = (slider_position.x = panel_position.x + 148.0f);\n    slider_position.y = panel_position.y + 47.0f;"
+        },
+        {
+          "name": "direct-slider-then-copy",
+          "text": "    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    options_vec2_t slider_position;\n    slider_position.x = panel_position.x + 148.0f;\n    xy.x = slider_position.x;\n    slider_position.y = panel_position.y + 47.0f;"
+        },
+        {
+          "name": "xy-then-pair-constructor",
+          "text": "    static options_slider_t sfx_volume_slider;\n    sfx_volume_slider.value = (int)(config_blob.sfx_volume * 10.0f);\n    xy.x = panel_position.x + 148.0f;\n    options_vec2_t slider_position(\n        xy.x,\n        panel_position.y + 47.0f);"
+        }
+      ]
+    }
+  ]
+}

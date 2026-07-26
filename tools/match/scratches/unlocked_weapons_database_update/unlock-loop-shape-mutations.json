@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "database-count-unlock-scan",
+      "find": "    int database_count = 0;\n    int index = 1;\n    do {\n        if (weapon_table[index].unlocked != 0) {\n            ++database_count;\n        }\n        ++index;\n    } while (index < 64);",
+      "replacements": [
+        {
+          "name": "explicit-weapon-cursor",
+          "text": "    int database_count = 0;\n    weapon_stats_t *count_cursor = &weapon_table[1];\n    do {\n        if (count_cursor->unlocked != 0) {\n            ++database_count;\n        }\n        ++count_cursor;\n    } while (count_cursor < &weapon_table[64]);\n    int index;"
+        },
+        {
+          "name": "bounded-for-index",
+          "text": "    int database_count = 0;\n    for (int count_index = 1; count_index < 64; ++count_index) {\n        if (weapon_table[count_index].unlocked != 0) {\n            ++database_count;\n        }\n    }\n    int index;"
+        }
+      ]
+    },
+    {
+      "name": "hovered-row-unlock-map",
+      "find": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        do {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index < 64);\n    }",
+      "replacements": [
+        {
+          "name": "cached-hovered-index",
+          "text": "    int hovered_index = scrollbar.hovered_index;\n    if (hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        do {\n            if (weapon_table[index].unlocked != 0) {\n                if (available_index++ == hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n        } while (index < 64);\n    }"
+        },
+        {
+          "name": "explicit-weapon-cursor",
+          "text": "    if (scrollbar.hovered_index != -1) {\n        int available_index = 0;\n        index = 1;\n        weapon_stats_t *weapon_cursor = &weapon_table[1];\n        do {\n            if (weapon_cursor->unlocked != 0) {\n                if (available_index++ == scrollbar.hovered_index) {\n                    weapon_id = index;\n                    break;\n                }\n            }\n            ++index;\n            ++weapon_cursor;\n        } while (weapon_cursor < &weapon_table[64]);\n    }"
+        }
+      ]
+    }
+  ]
+}

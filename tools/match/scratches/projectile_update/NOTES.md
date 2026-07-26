@@ -11,8 +11,8 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,141 instructions against 2,203 native instructions, scores
-47.97%, and audits `351/0/25` references. The candidate's natural local frame
+It produces 2,145 instructions against 2,203 native instructions, scores
+48.11%, and audits `351/0/25` references. The candidate's natural local frame
 is `0xa8`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
@@ -333,7 +333,32 @@ with `/GB`, `/G5`, `/G6`, and `/Oy-`; extended VC6.5 probes also covered
 `/O2 /GB` remains tied for best with 6.0, 6.6, and `/G5`; no override is
 supported.
 
-The current proof point is therefore 2,141/2,203 instructions at 47.97%, with
+The current proof point is therefore 2,145/2,203 instructions at 48.11%, with
 `351/0/25` references and no unresolved static reference. The remaining
 first-region difference is stack-slot displacement from the wider native
 temporary frame, not a missing operation.
+
+## `vec2_add` caller-mode contract
+
+A fresh region pass selected the accumulator-flush span at
+`0x00420de3..0x00420e54`. The native call at `0x00420e41` pushes a third
+`0.0f` argument before the delta and destination pointers, while the former
+two-argument declaration omitted that real caller value. A live callsite audit
+of `vec2_add` at `0x0041e270` establishes the complete contract: the primary
+projectile call passes `0.0f`, the secondary movement call at `0x00421bd1`
+passes `4.0f`, and the particle calls at `0x00422586` and `0x0042265b` both
+pass `3.0f`. The helper body does not consume the float, so its standalone
+machine code cannot distinguish a two-argument declaration from this recovered
+three-argument caller contract.
+
+The tracked schema-1 mutation plan first tested all four sites independently.
+Restoring a default-zero third argument was the only compiling single and
+improved the weighted match from `4034/8409` to `4042/8409` bytes
+(`47.97%` to `48.07%`). That justified the complete four-depth interaction
+sweep. The observed `0/4/3/3` combination ties the best result at `4046/8409`
+bytes (`48.11%`); it is retained instead of the shorter tied variant because
+the native particle callsites directly prove both `3.0f` values. The final
+candidate grows from 2,141 to 2,145 instructions, reduces the rounded fuzzy
+gap from 4,375 to 4,363 bytes, and preserves the `351/0/25` reference audit.
+Both the single-site and exhaustive 15-variant interaction sweeps are recorded
+in `experiments.jsonl`.

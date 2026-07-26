@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-position-snapshot-shape",
+      "find": "    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    previous_pos.x = player_position->x;\n    previous_pos.y = player_position->y;",
+      "replacements": [
+        {
+          "name": "late-direct-aggregate",
+          "text": "    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    player_update_vec2_t previous_pos = *player_position;"
+        },
+        {
+          "name": "late-const-direct-aggregate",
+          "text": "    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    const player_update_vec2_t previous_pos = *player_position;"
+        },
+        {
+          "name": "late-brace-components",
+          "text": "    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    player_update_vec2_t previous_pos = {\n        player_position->x,\n        player_position->y,\n    };"
+        },
+        {
+          "name": "early-player-aggregate",
+          "text": "    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    player_update_vec2_t previous_pos = player->position;\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;"
+        },
+        {
+          "name": "declared-direct-aggregate",
+          "text": "    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n\n    if (console_open_flag != 0) {\n        return;\n    }\n\n    int player_index = render_overlay_player_index;\n    player_update_vec2_t *aim_screen =\n        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];\n    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;\n\n    player_state_t *player = &player_state_table[player_index];\n    vec2f_t *player_position = &player->position;\n    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    previous_pos = *player_position;"
+        }
+      ]
+    },
+    {
+      "name": "stationary-comparison-shape",
+      "find": "    if (player_position->x == previous_pos.x && player_position->y == previous_pos.y) {",
+      "replacements": [
+        {
+          "name": "snapshot-first",
+          "text": "    if (previous_pos.x == player_position->x\n        && previous_pos.y == player_position->y) {"
+        },
+        {
+          "name": "y-first",
+          "text": "    if (player_position->y == previous_pos.y\n        && player_position->x == previous_pos.x) {"
+        },
+        {
+          "name": "direct-player-field",
+          "text": "    if (player->position.x == previous_pos.x\n        && player->position.y == previous_pos.y) {"
+        }
+      ]
+    }
+  ]
+}

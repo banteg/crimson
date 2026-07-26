@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "submit-record-cursor",
+      "find": "    if (game_is_full_version()) {\n        char *write_cursor = data + payload_length;\n        for (int index = 0; index < highscore_table_count; index++) {\n            highscore_record_t *record = &highscore_table[index];\n            unsigned char flags = record->flags;\n            if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {\n                if (highscore_submit_full_version_guard(record)) {\n                    highscore_record_pack_for_submit(\n                        record,\n                        (highscore_record_t *)packed_record);\n                    memcpy(write_cursor, packed_record, sizeof(packed_record));\n                    payload_length += sizeof(packed_record);\n                    write_cursor += sizeof(packed_record);\n                    score_count++;\n                } else {\n                    console_printf(\n                        &console_log_queue,\n                        \"Detected a potential illegal score: refusing to send it online.\\n\");\n                }\n            }\n        }\n    }",
+      "replacements": [
+        {
+          "name": "record-pointer-induction",
+          "text": "    if (game_is_full_version()) {\n        char *write_cursor = data + payload_length;\n        highscore_record_t *record = highscore_table;\n        for (int index = 0; index < highscore_table_count; index++, record++) {\n            unsigned char flags = record->flags;\n            if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {\n                if (highscore_submit_full_version_guard(record)) {\n                    highscore_record_pack_for_submit(\n                        record,\n                        (highscore_record_t *)packed_record);\n                    memcpy(write_cursor, packed_record, sizeof(packed_record));\n                    payload_length += sizeof(packed_record);\n                    write_cursor += sizeof(packed_record);\n                    score_count++;\n                } else {\n                    console_printf(\n                        &console_log_queue,\n                        \"Detected a potential illegal score: refusing to send it online.\\n\");\n                }\n            }\n        }\n    }"
+        },
+        {
+          "name": "record-and-flags-induction",
+          "text": "    if (game_is_full_version()) {\n        char *write_cursor = data + payload_length;\n        highscore_record_t *record = highscore_table;\n        unsigned char *record_flags = &record->flags;\n        for (int index = 0; index < highscore_table_count; index++) {\n            unsigned char flags = *record_flags;\n            if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {\n                if (highscore_submit_full_version_guard(record)) {\n                    highscore_record_pack_for_submit(\n                        record,\n                        (highscore_record_t *)packed_record);\n                    memcpy(write_cursor, packed_record, sizeof(packed_record));\n                    payload_length += sizeof(packed_record);\n                    write_cursor += sizeof(packed_record);\n                    score_count++;\n                } else {\n                    console_printf(\n                        &console_log_queue,\n                        \"Detected a potential illegal score: refusing to send it online.\\n\");\n                }\n            }\n            record++;\n            record_flags += sizeof(highscore_record_t);\n        }\n    }"
+        },
+        {
+          "name": "branch-local-flags-pointer",
+          "text": "    if (game_is_full_version()) {\n        char *write_cursor = data + payload_length;\n        for (int index = 0; index < highscore_table_count; index++) {\n            highscore_record_t *record = &highscore_table[index];\n            unsigned char *record_flags = &record->flags;\n            unsigned char flags = *record_flags;\n            if (flags == 0 || (flags & 2) != 0 || (flags & 1) == 0) {\n                if (highscore_submit_full_version_guard(record)) {\n                    highscore_record_pack_for_submit(\n                        record,\n                        (highscore_record_t *)packed_record);\n                    memcpy(write_cursor, packed_record, sizeof(packed_record));\n                    payload_length += sizeof(packed_record);\n                    write_cursor += sizeof(packed_record);\n                    score_count++;\n                } else {\n                    console_printf(\n                        &console_log_queue,\n                        \"Detected a potential illegal score: refusing to send it online.\\n\");\n                }\n            }\n        }\n    }"
+        }
+      ]
+    },
+    {
+      "name": "received-record-destination",
+      "find": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }",
+      "replacements": [
+        {
+          "name": "pointer-before-loop",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            highscore_record_t *record = &received_record;\n            do {\n                memcpy(record, read_cursor, 0x44);\n                record->flags = 1;\n                record->hardcore_marker = hardcore_marker;\n                highscore_save_record(record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "pointer-inside-loop",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            do {\n                highscore_record_t *record = &received_record;\n                memcpy(record, read_cursor, 0x44);\n                record->flags = 1;\n                record->hardcore_marker = hardcore_marker;\n                highscore_save_record(record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "reference-before-loop",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            highscore_record_t &record = received_record;\n            do {\n                memcpy(&record, read_cursor, 0x44);\n                record.flags = 1;\n                record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "predecrement-condition",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n            } while (--remaining != 0);\n        }"
+        }
+      ]
+    }
+  ]
+}

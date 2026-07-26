@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "weapon-icon-fade-scale-lifetime",
+      "find": "        float fade = bonus_render_icon_fade(entry) * transition_alpha;\n        color.a = fade;\n        grim_interface_ptr->grim_set_color_ptr(&color.r);\n        float pulse_value = (float)sin(bonus_render_anim_phase);\n        float icon_scale =\n            ((float)pow(pulse_value, 2.0) * 0.25f + 0.75f) * fade;",
+      "replacements": [
+        {
+          "name": "in-place-compound",
+          "text": "        float icon_scale =\n            bonus_render_icon_fade(entry) * transition_alpha;\n        color.a = icon_scale;\n        grim_interface_ptr->grim_set_color_ptr(&color.r);\n        float pulse_value = (float)sin(bonus_render_anim_phase);\n        icon_scale *=\n            (float)pow(pulse_value, 2.0) * 0.25f + 0.75f;"
+        },
+        {
+          "name": "in-place-scale-left",
+          "text": "        float icon_scale =\n            bonus_render_icon_fade(entry) * transition_alpha;\n        color.a = icon_scale;\n        grim_interface_ptr->grim_set_color_ptr(&color.r);\n        float pulse_value = (float)sin(bonus_render_anim_phase);\n        icon_scale = icon_scale\n            * ((float)pow(pulse_value, 2.0) * 0.25f + 0.75f);"
+        },
+        {
+          "name": "in-place-scale-right",
+          "text": "        float icon_scale =\n            bonus_render_icon_fade(entry) * transition_alpha;\n        color.a = icon_scale;\n        grim_interface_ptr->grim_set_color_ptr(&color.r);\n        float pulse_value = (float)sin(bonus_render_anim_phase);\n        icon_scale =\n            ((float)pow(pulse_value, 2.0) * 0.25f + 0.75f)\n            * icon_scale;"
+        }
+      ]
+    }
+  ]
+}

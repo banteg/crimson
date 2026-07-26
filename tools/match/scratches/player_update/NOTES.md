@@ -170,19 +170,66 @@ Entry probes also found moving previous-position storage to a brace initializer
 and using pointer/helper aggregate copies byte-neutral; scalarizing the
 retained position preserved fuzzy bytes but degraded the audit to `731/0/14`.
 
+The recorded mutation sweeps isolate the remaining previous-position lifetime
+without retaining a codegen-only source trick. The schema-1
+`position-snapshot-mutations.json` plan has SHA-256
+`32132d6096474cda1e8ab00a5fc3a4fa8195e81b1a1e346de4d7653272f86e2c`.
+Its one-site run evaluated all `8/8` variants, and its `--max-changes 2`
+interaction run evaluated all `23/23` variants (`8/8` one-site plus `15/15`
+two-site, with no unevaluated combinations). All five declaration, aggregate,
+const, and brace-initializer snapshot shapes were exactly byte-neutral, both
+alone and in combination with the winner. Reversing either stationary
+comparison operand order ranked last at `9,143.9445` weighted bytes, a
+`-3.9550`-byte and `-0.024328`-percentage-point regression from the recorded
+baseline, with instruction and reference counts unchanged.
+
+The unique winner reads the stationary comparison through the canonical
+`player->position` fields. Live target instructions load X through the retained
+position alias at `0x0041506f` (`fld [esi]`) and Y through the player record at
+`0x00415084` (`fld [edi+0x18]`). The retained source makes VC6 select that same
+mixed native access shape: candidate offsets `0x17e0` and `0x17f5` emit
+`fld [esi]` and `fld [edi+0x18]`, respectively; only the still-unmatched frame
+slots differ (`[esp+0x48]/[esp+0x4c]` versus native
+`[esp+0x30]/[esp+0x34]`). The winner source SHA-256 is
+`7823c46d831ed2fb77432ab100bf4627595c5958fe3478c7907be8a4f2d4f227`.
+It raises weighted bytes from `9,147.899525605157` to
+`9,214.078016769960`, reduces the gap from `7,109.100474394843` to
+`7,042.921983230041`, and raises the ratio from
+`56.27052669991485%` to `56.67760359703488%`. That is
+`+66.178491164803` weighted bytes and `+0.407076897120`
+percentage points; candidate coverage grows from 4,015 to 4,023 instructions
+and references from `762/0/5` to `766/0/5`, while the seven-instruction prefix
+is unchanged.
+
+A second live-instruction control plan,
+`stationary-comparison-native-mutations.json`, has SHA-256
+`c8371651268d5ee59739fa2155058ba773cce6a0559ffcf04e8760d45f983123`
+and evaluated all `8/8` variants against the retained winner. All three honest
+pointer type/const shapes were byte-neutral. The opposite mixed access
+(`player->position.x` then `player_position->y`) lost `3.9511` weighted
+bytes; spelling the apparently native mixed access directly lost `62.2235`
+bytes, eight instructions, and four references because it changed
+whole-function allocation; aliasing both components returned exactly to the
+old `56.2705%` baseline; and the reversed/snapshot-first forms lost
+`70.1335` bytes. No variant improved, so no second interaction run or source
+change was warranted. A fresh entry region still shows native storing the
+snapshot before the health x87 comparison at `0x004136f3..0x0041370d`, while
+the candidate delays those stores across the compare; the complete neutral
+snapshot ranking leaves that residual visible rather than forcing it.
+
 Current local score:
 
 ```txt
-match=56.27% prefix=7/4206 target_insns=4206 candidate_insns=4015 refs=762/0/5
+match=56.68% prefix=7/4206 target_insns=4206 candidate_insns=4023 refs=766/0/5
 first_target=jne L3f7a
-first_candidate=jne L3d2e
+first_candidate=jne L3d4e
 ```
 
 Recovery is classified `semantic-complete` with a `compiler` residual. The
 live Binary Ninja bundle retains all 485 native basic blocks,
 and the source covers every recovered phase listed above. The five remaining
 reference mismatches are alignment/scheduling debt rather than absent
-operations. The candidate resolves 762 references and emits 4,015 of 4,206
+operations. The candidate resolves 766 references and emits 4,023 of 4,206
 native instructions; the residual instruction-count gap is concentrated in
 register allocation, x87 lifetime, and compiler tail-merging differences
 across already-recovered branches. All five mismatches remain visible and

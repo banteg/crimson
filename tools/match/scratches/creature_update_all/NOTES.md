@@ -249,3 +249,24 @@ the preceding panned-SFX call versus the Mr Melee perk query, and Toxic Avenger
 versus the following Veins of Poison query. All referenced native objects are
 present at their separately aligned callsites, so none is independent
 reference debt; the visible mismatches remain unaliased.
+
+## Infection collision-timer shape sweep
+
+A fresh live Binary Ninja read from target
+`3023:2:9499448411019345244` bounds the first infection timer block to native
+`0x00426599..0x004265d0`. Native subtracts `frame_dt`, stores the result to
+`collision_timer` with `fst` while retaining it on the x87 stack, compares that
+same result with zero, and, on the negative branch, stores the retained value
+plus `0.5f`. The current local-first source expresses exactly that data flow.
+
+The schema-1 spec `collision-timer-shape-mutations.json` records five natural
+spellings of that one block. Spec SHA-256 is
+`f2d2faac8442a4b5f085f09edffb0b4cfa6992b4a202a5c04a1efc77e46277c8`;
+the tested source SHA-256 is
+`0928e121f84ed1937daeb86a57b9b0383bd0d3b2e35e395e4a491ce4bfe2eec3`.
+The recorded sweep evaluated all 5/5 possible one-site variants without
+truncation. The pointer-local spelling was byte-neutral at the 49.0868%
+baseline, 1,290/1,338 instructions, and `207/0/4` references. The other four
+spellings regressed by 0.3044 to 0.7426 percentage points and lost four to
+seven aligned references. No single mutation improved, so no interaction
+sweep was warranted and the native-grounded current source is retained.

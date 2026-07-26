@@ -57,6 +57,37 @@ and regresses to `79.16%`, 1,827/1,824 instructions, a zero-instruction prefix,
 and `378/0/0` references, so it is rejected. The source and canonical profile
 remain unchanged.
 
+The bounded `panel-alpha-declaration-lifetime` mutation sweep isolates the
+first mismatch without changing the native expression schedule. Live Binary
+Ninja target `3023:2:9499448411019345244` shows the native `0x34`-byte frame
+calling `grim_set_rotation`, `grim_set_config_var`, and `grim_set_uv`, then
+loading `transition_alpha` at `0x0041af4d`, multiplying by `0.7f`, and storing
+the long-lived panel alpha at `[esp+0x1c]`; the baseline follows that same
+order but colors the value at `[esp+0x18]`. The schema-1 sweep therefore moved
+only the declaration point while keeping the assignment after `grim_set_uv`.
+
+The persisted spec SHA-256 is
+`78341a8c7ee6a7a17e12749a64758ab26369c83284aa855a81e1827e2660b998`;
+the unchanged baseline `scratch.cpp` SHA-256 is
+`69a68d8ed7fe1bd1dde1e2a1fe9222da0d0cb7f7f2ec0bab30fe0cfa8789ba74`.
+All five planned single-site variants were evaluated and recorded. Their
+complete harness ranking is:
+
+| Rank | Declaration placement | Source SHA-256 |
+| ---: | --- | --- |
+| 1 | post-transparency | `7eee407814f26c3d3324fad2e5eda758a34550b59d7e58b30cca4654cdea4688` |
+| 2 | post-rotation | `0a386f8f1a7dfb5df84fcdbc2af769ce2bbd912a6147558bfe7c74514ca9dbab` |
+| 3 | post-config | `2183c4e82ec65a4a1e87472350bb58d05bcbc1de33dba189a7200e747f14751e` |
+| 4 | function entry | `f12d4854bdfc77205a7a999b7a65b12fea8c49c21d2df15f630b61d9482d9b1e` |
+| 5 | adjacent split | `34e49511b4151d4fda3751237bcdca474c862a25d1eac7eb9eabbea9c5dc7bd8` |
+
+Every variant is byte-neutral against the baseline: `85.6359649122807%`,
+6,063.882675 fuzzy-weighted bytes, 1,824/1,824 instructions, prefix 42,
+`385/0/0` references, and first target/candidate mismatch offsets `143/143`.
+The record has `best_improves=false` and no winner. Because no single-site
+mutation improved, no interaction sweep was justified; the semantic source
+remains unchanged.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja decompilation confirms the heart, weapon/ammo, Quest,
 timer, Survival XP, bonus-slot, and weapon-popup paths through the native

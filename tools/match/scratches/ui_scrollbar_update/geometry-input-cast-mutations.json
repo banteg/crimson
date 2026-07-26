@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "thumb-height-item-count-cast",
+      "find": "        (float)visible_rows / (float)item_count * interior_height;",
+      "replacements": [
+        {
+          "name": "denominator-only",
+          "text": "        visible_rows / (float)item_count * interior_height;"
+        },
+        {
+          "name": "numerator-only",
+          "text": "        (float)visible_rows / item_count * interior_height;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-travel-integer-operands",
+      "find": "    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;",
+      "replacements": [
+        {
+          "name": "implicit-divisor",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "implicit-multiplier",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "implicit-both",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll * first_item\n        + 1.0f + xy->y;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-grab-item-count-cast",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "implicit-item-count",
+          "text": "                        - state->scroll_offset / item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "drag-scale-item-count-cast",
+      "find": "                / height * (float)item_count;",
+      "replacements": [
+        {
+          "name": "implicit-item-count",
+          "text": "                / height * item_count;"
+        }
+      ]
+    }
+  ]
+}

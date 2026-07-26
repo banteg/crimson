@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ammo-maniac-loop-entry",
+      "find": "    if (perk_id == perk_id_ammo_maniac && player_count > 0) {\n        weapon_cursor = &player_state_table[0].weapon_id;\n        i = 0;\n        do {\n            weapon_assign_player(i, *weapon_cursor);\n            player_count = config_player_count;\n            ++i;\n            weapon_cursor += sizeof(player_state_t) / sizeof(*weapon_cursor);\n        } while (i < player_count);\n    }",
+      "replacements": [
+        {
+          "name": "nested-shared-locals",
+          "text": "    if (perk_id == perk_id_ammo_maniac) {\n        i = 0;\n        if (player_count > 0) {\n            weapon_cursor = &player_state_table[0].weapon_id;\n            do {\n                weapon_assign_player(i, *weapon_cursor);\n                player_count = config_player_count;\n                ++i;\n                weapon_cursor += sizeof(player_state_t) / sizeof(*weapon_cursor);\n            } while (i < player_count);\n        }\n    }"
+        },
+        {
+          "name": "nested-block-locals",
+          "text": "    if (perk_id == perk_id_ammo_maniac) {\n        int player_index = 0;\n        if (player_count > 0) {\n            int *player_weapon_cursor = &player_state_table[0].weapon_id;\n            do {\n                weapon_assign_player(player_index, *player_weapon_cursor);\n                player_count = config_player_count;\n                ++player_index;\n                player_weapon_cursor +=\n                    sizeof(player_state_t) / sizeof(*player_weapon_cursor);\n            } while (player_index < player_count);\n        }\n    }"
+        }
+      ]
+    },
+    {
+      "name": "bandage-loop-entry",
+      "find": "    if (perk_id == perk_id_bandage && player_count > 0) {\n        cursor = &player_state_table[0].health;\n        i = 0;\n        do {\n            value = (float)(crt_rand() % 50) + 1.0f;\n            value *= *cursor;\n            *cursor = value;\n            if (value > 100.0f) {\n                *cursor = 100.0f;\n            }\n            player_state_t *player = (player_state_t *)(\n                (char *)cursor - offsetof(player_state_t, health));\n            effect_spawn_burst(\n                &player->position,\n                8);\n            player_count = config_player_count;\n            ++i;\n            cursor += sizeof(player_state_t) / sizeof(*cursor);\n        } while (i < player_count);\n    }",
+      "replacements": [
+        {
+          "name": "nested-shared-locals",
+          "text": "    if (perk_id == perk_id_bandage) {\n        i = 0;\n        if (player_count > 0) {\n            cursor = &player_state_table[0].health;\n            do {\n                value = (float)(crt_rand() % 50) + 1.0f;\n                value *= *cursor;\n                *cursor = value;\n                if (value > 100.0f) {\n                    *cursor = 100.0f;\n                }\n                player_state_t *player = (player_state_t *)(\n                    (char *)cursor - offsetof(player_state_t, health));\n                effect_spawn_burst(\n                    &player->position,\n                    8);\n                player_count = config_player_count;\n                ++i;\n                cursor += sizeof(player_state_t) / sizeof(*cursor);\n            } while (i < player_count);\n        }\n    }"
+        },
+        {
+          "name": "nested-block-locals",
+          "text": "    if (perk_id == perk_id_bandage) {\n        int player_index = 0;\n        if (player_count > 0) {\n            float *health_cursor = &player_state_table[0].health;\n            do {\n                value = (float)(crt_rand() % 50) + 1.0f;\n                value *= *health_cursor;\n                *health_cursor = value;\n                if (value > 100.0f) {\n                    *health_cursor = 100.0f;\n                }\n                player_state_t *player = (player_state_t *)(\n                    (char *)health_cursor - offsetof(player_state_t, health));\n                effect_spawn_burst(\n                    &player->position,\n                    8);\n                player_count = config_player_count;\n                ++player_index;\n                health_cursor +=\n                    sizeof(player_state_t) / sizeof(*health_cursor);\n            } while (player_index < player_count);\n        }\n    }"
+        }
+      ]
+    }
+  ]
+}

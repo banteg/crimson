@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-alias-type-shape",
+      "find": "    vec2f_t *player_position = &player->position;",
+      "replacements": [
+        {
+          "name": "snapshot-typedef-pointer",
+          "text": "    player_update_vec2_t *player_position = &player->position;"
+        },
+        {
+          "name": "const-pointer",
+          "text": "    vec2f_t *const player_position = &player->position;"
+        },
+        {
+          "name": "const-snapshot-typedef-pointer",
+          "text": "    player_update_vec2_t *const player_position = &player->position;"
+        }
+      ]
+    },
+    {
+      "name": "stationary-comparison-native-shape",
+      "find": "    if (player->position.x == previous_pos.x\n        && player->position.y == previous_pos.y) {",
+      "replacements": [
+        {
+          "name": "alias-x-player-y",
+          "text": "    if (player_position->x == previous_pos.x\n        && player->position.y == previous_pos.y) {"
+        },
+        {
+          "name": "player-x-alias-y",
+          "text": "    if (player->position.x == previous_pos.x\n        && player_position->y == previous_pos.y) {"
+        },
+        {
+          "name": "alias-both",
+          "text": "    if (player_position->x == previous_pos.x\n        && player_position->y == previous_pos.y) {"
+        },
+        {
+          "name": "snapshot-first",
+          "text": "    if (previous_pos.x == player_position->x\n        && previous_pos.y == player->position.y) {"
+        },
+        {
+          "name": "y-first",
+          "text": "    if (player->position.y == previous_pos.y\n        && player_position->x == previous_pos.x) {"
+        }
+      ]
+    }
+  ]
+}

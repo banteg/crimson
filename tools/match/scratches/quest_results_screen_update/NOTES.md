@@ -56,6 +56,24 @@ setup. Expressing that early exit instead of an inverted condition with an
 references, and raises the score from 85.59% without changing the frame or
 instruction count.
 
+## Health-reveal scheduling experiment
+
+Live Binary Ninja disassembly localizes one repeated-reference mismatch to the
+case-1 health-bonus reveal at `0x0041110d` through `0x00411136`. Native loads,
+adds, and stores `quest_results_reveal_health_bonus_ms` before loading
+`sfx_ui_clink_01`, then stores the 150 ms step timer immediately before the
+call. The current candidate hoists the SFX load ahead of the counter add/store
+after the wider frame changes register allocation.
+
+`health-reveal-schedule-mutations.json` exhausts five valid single-site
+variants across the counter expression and clink-id lifetime. Explicit
+assignment, named and split accumulators, and pre-/post-timer clink snapshots
+all compile to the same 1,165-instruction candidate: 4,201/4,857 fuzzy bytes,
+86.4981%, a 1/1,168 exact prefix, and `437/0/2` references. Since no single
+improved the baseline, no interaction was run and `scratch.cpp` remains
+unchanged. This records the localized scheduling delta as compiler residual
+without aliases, forced dependencies, volatile barriers, or storage overlap.
+
 The panel geometry now uses the recovered UI element and vertex position
 aggregates in native operand order. The post-record spacing remains visibly
 split into its native 78- and 6-pixel additions, and the button alpha stores

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-panel-copy-shape",
+      "find": "    highscore_vec2_t left_panel =\n        *(highscore_vec2_t *)&ui_element_slot_09.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);\n\n    highscore_vec2_t position = left_panel;",
+      "replacements": [
+        {
+          "name": "declare-position-first",
+          "text": "    highscore_vec2_t position;\n    highscore_vec2_t left_panel =\n        *(highscore_vec2_t *)&ui_element_slot_09.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);\n\n    position = left_panel;"
+        },
+        {
+          "name": "assign-left-panel",
+          "text": "    highscore_vec2_t left_panel;\n    left_panel =\n        *(highscore_vec2_t *)&ui_element_slot_09.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);\n\n    highscore_vec2_t position = left_panel;"
+        },
+        {
+          "name": "assign-both",
+          "text": "    highscore_vec2_t left_panel;\n    highscore_vec2_t position;\n    left_panel =\n        *(highscore_vec2_t *)&ui_element_slot_09.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);\n\n    position = left_panel;"
+        },
+        {
+          "name": "position-then-left-copy",
+          "text": "    highscore_vec2_t position =\n        *(highscore_vec2_t *)&ui_element_slot_09.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);\n\n    highscore_vec2_t left_panel = position;"
+        }
+      ]
+    },
+    {
+      "name": "title-local-declarations",
+      "find": "    int title_width = grim_interface_ptr->grim_measure_text_width(title_buffer);\n    int title_half_width = title_width / 2;",
+      "replacements": [
+        {
+          "name": "split-width-initialization",
+          "text": "    int title_width;\n    title_width = grim_interface_ptr->grim_measure_text_width(title_buffer);\n    int title_half_width = title_width / 2;"
+        },
+        {
+          "name": "split-half-initialization",
+          "text": "    int title_width = grim_interface_ptr->grim_measure_text_width(title_buffer);\n    int title_half_width;\n    title_half_width = title_width / 2;"
+        },
+        {
+          "name": "declare-half-first",
+          "text": "    int title_half_width;\n    int title_width = grim_interface_ptr->grim_measure_text_width(title_buffer);\n    title_half_width = title_width / 2;"
+        },
+        {
+          "name": "declare-both-first",
+          "text": "    int title_width;\n    int title_half_width;\n    title_width = grim_interface_ptr->grim_measure_text_width(title_buffer);\n    title_half_width = title_width / 2;"
+        }
+      ]
+    },
+    {
+      "name": "separator-coordinate-shape",
+      "find": "        highscore_vec2_t separator(\n            position.x + (float)(128 - title_half_width),\n            position.y + 14.0f);",
+      "replacements": [
+        {
+          "name": "named-coordinates",
+          "text": "        float separator_x =\n            position.x + (float)(128 - title_half_width);\n        float separator_y = position.y + 14.0f;\n        highscore_vec2_t separator(separator_x, separator_y);"
+        },
+        {
+          "name": "component-assignment-x-first",
+          "text": "        highscore_vec2_t separator;\n        separator.x = position.x + (float)(128 - title_half_width);\n        separator.y = position.y + 14.0f;"
+        },
+        {
+          "name": "component-assignment-y-first",
+          "text": "        highscore_vec2_t separator;\n        separator.y = position.y + 14.0f;\n        separator.x = position.x + (float)(128 - title_half_width);"
+        }
+      ]
+    }
+  ]
+}

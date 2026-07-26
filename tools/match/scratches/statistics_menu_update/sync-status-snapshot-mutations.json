@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sync-status-snapshot",
+      "find": "        char *status_text = \"\";\n        if (online_sync_status == 1) {\n            grim_interface_ptr->grim_set_color(\n                0.2f, 1.0f, 0.2f, 0.8f);\n            status_text = \"Connecting server..\";\n        } else if (online_sync_status == 5) {\n            grim_interface_ptr->grim_set_color(\n                0.4f, 1.0f, 0.4f, 0.8f);\n            status_text = \"Done..\";\n        } else if (online_sync_status == 6) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.1f, 0.1f, 0.8f);\n            status_text = \"Failed..\";\n        }",
+      "replacements": [
+        {
+          "name": "snapshot-before-text",
+          "text": "        int sync_status = online_sync_status;\n        char *status_text = \"\";\n        if (sync_status == 1) {\n            grim_interface_ptr->grim_set_color(\n                0.2f, 1.0f, 0.2f, 0.8f);\n            status_text = \"Connecting server..\";\n        } else if (sync_status == 5) {\n            grim_interface_ptr->grim_set_color(\n                0.4f, 1.0f, 0.4f, 0.8f);\n            status_text = \"Done..\";\n        } else if (sync_status == 6) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.1f, 0.1f, 0.8f);\n            status_text = \"Failed..\";\n        }"
+        },
+        {
+          "name": "split-text-after-snapshot",
+          "text": "        char *status_text;\n        int sync_status = online_sync_status;\n        status_text = \"\";\n        if (sync_status == 1) {\n            grim_interface_ptr->grim_set_color(\n                0.2f, 1.0f, 0.2f, 0.8f);\n            status_text = \"Connecting server..\";\n        } else if (sync_status == 5) {\n            grim_interface_ptr->grim_set_color(\n                0.4f, 1.0f, 0.4f, 0.8f);\n            status_text = \"Done..\";\n        } else if (sync_status == 6) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.1f, 0.1f, 0.8f);\n            status_text = \"Failed..\";\n        }"
+        },
+        {
+          "name": "text-before-snapshot",
+          "text": "        char *status_text = \"\";\n        int sync_status = online_sync_status;\n        if (sync_status == 1) {\n            grim_interface_ptr->grim_set_color(\n                0.2f, 1.0f, 0.2f, 0.8f);\n            status_text = \"Connecting server..\";\n        } else if (sync_status == 5) {\n            grim_interface_ptr->grim_set_color(\n                0.4f, 1.0f, 0.4f, 0.8f);\n            status_text = \"Done..\";\n        } else if (sync_status == 6) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.1f, 0.1f, 0.8f);\n            status_text = \"Failed..\";\n        }"
+        },
+        {
+          "name": "const-snapshot-before-text",
+          "text": "        const int sync_status = online_sync_status;\n        char *status_text = \"\";\n        if (sync_status == 1) {\n            grim_interface_ptr->grim_set_color(\n                0.2f, 1.0f, 0.2f, 0.8f);\n            status_text = \"Connecting server..\";\n        } else if (sync_status == 5) {\n            grim_interface_ptr->grim_set_color(\n                0.4f, 1.0f, 0.4f, 0.8f);\n            status_text = \"Done..\";\n        } else if (sync_status == 6) {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.1f, 0.1f, 0.8f);\n            status_text = \"Failed..\";\n        }"
+        }
+      ]
+    }
+  ]
+}

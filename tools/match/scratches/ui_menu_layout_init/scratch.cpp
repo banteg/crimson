@@ -204,38 +204,39 @@ static __forceinline void transform_layers(
     float shift_y)
 {
     for (int i = 0; i < 4; ++i) {
-        ui_menu_item_subtemplate_slot_t *first =
+        ui_menu_item_subtemplate_slot_t *slot =
             (&(*element_ref)->layers[0].slot_00) + i;
-        ui_menu_item_subtemplate_slot_t *third =
-            (&(*element_ref)->layers[2].slot_00) + i;
-        ui_menu_item_subtemplate_slot_t *second =
-            (&(*element_ref)->layers[1].slot_00) + i;
+        slot->x *= scale;
+        slot->y *= scale;
+        slot = (&(*element_ref)->layers[2].slot_00) + i;
+        slot->x *= scale;
+        slot->y *= scale;
+        slot = (&(*element_ref)->layers[1].slot_00) + i;
+        slot->x *= scale;
+        slot->y *= scale;
 
-        first->x *= scale;
-        first->y *= scale;
-        third->x *= scale;
-        third->y *= scale;
-        second->x *= scale;
-        second->y *= scale;
-
-        first->x += shift_x;
-        third->x += shift_x;
-        second->x += shift_x;
-        first->y -= shift_y;
-        third->y -= shift_y;
-        second->y -= shift_y;
+        (&(*element_ref)->layers[0].slot_00)[i].x += shift_x;
+        (&(*element_ref)->layers[2].slot_00)[i].x += shift_x;
+        (&(*element_ref)->layers[1].slot_00)[i].x += shift_x;
+        (&(*element_ref)->layers[0].slot_00)[i].y -= shift_y;
+        (&(*element_ref)->layers[2].slot_00)[i].y -= shift_y;
+        (&(*element_ref)->layers[1].slot_00)[i].y -= shift_y;
     }
 }
 
 static __forceinline void transform_narrow_main_menu(void)
 {
     for (int i = 0; i < 4; ++i) {
-        (&ui_element_table_end->layers[0].slot_00)[i].x *= 0.8f;
-        (&ui_element_table_end->layers[0].slot_00)[i].y *= 0.8f;
-        (&ui_element_table_end->layers[2].slot_00)[i].x *= 0.8f;
-        (&ui_element_table_end->layers[2].slot_00)[i].y *= 0.8f;
-        (&ui_element_table_end->layers[1].slot_00)[i].x *= 0.8f;
-        (&ui_element_table_end->layers[1].slot_00)[i].y *= 0.8f;
+        ui_menu_item_subtemplate_slot_t *slot =
+            (&ui_element_table_end->layers[0].slot_00) + i;
+        slot->x *= 0.8f;
+        slot->y *= 0.8f;
+        slot = (&ui_element_table_end->layers[2].slot_00) + i;
+        slot->x *= 0.8f;
+        slot->y *= 0.8f;
+        slot = (&ui_element_table_end->layers[1].slot_00) + i;
+        slot->x *= 0.8f;
+        slot->y *= 0.8f;
 
         (&ui_element_table_end->layers[0].slot_00)[i].x += 10.0f;
         (&ui_element_table_end->layers[2].slot_00)[i].x += 10.0f;
@@ -677,7 +678,8 @@ extern "C" void ui_menu_layout_init(void)
 
     float right_panel_x = (float)(config_screen_width - 350);
     copy_layer(ui_element_slot_33, ui_menu_panel_template);
-    ui_element_slot_33.pos.y = 200.0f;
+    ui_element_slot_33.pos =
+        ui_layout_vec2_t(right_panel_x, 200.0f);
     if (config_screen_width <= 800) {
         if (config_screen_width <= 640) {
             ui_element_slot_33.pos.x = right_panel_x + 10.0f;
@@ -690,17 +692,23 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_slot_33.use_offset_render = 1;
     ui_element_slot_33.direction_flag = 1;
 
-    ui_element_slot_08.pos.x =
-        config_screen_width <= 640 ? -215.0f : -165.0f;
-    ui_element_slot_08.pos.y = 122.0f;
+    ui_element_slot_08.pos =
+        ui_layout_vec2_t(-190.0f, 122.0f);
+    ui_element_slot_08.pos.x = -165.0f;
+    if (config_screen_width <= 640) {
+        ui_element_slot_08.pos.x = -215.0f;
+    }
     ui_element_slot_08.use_offset_render = 1;
 
     copy_layer(
         ui_element_slot_09,
         ui_menu_item_subtemplate_block_01);
-    ui_element_slot_09.pos.x =
-        config_screen_width <= 640 ? -85.0f : -35.0f;
-    ui_element_slot_09.pos.y = 185.0f;
+    ui_element_slot_09.pos =
+        ui_layout_vec2_t(-60.0f, 185.0f);
+    ui_element_slot_09.pos.x = -35.0f;
+    if (config_screen_width <= 640) {
+        ui_element_slot_09.pos.x = -85.0f;
+    }
     ui_element_slot_09.use_offset_render = 1;
     ui_element_slot_28.timeline_end_ms = 500;
 
@@ -793,11 +801,12 @@ extern "C" void ui_menu_layout_init(void)
     }
 
     if (config_screen_width == 640) {
-        perk_prompt_origin_x = 690.0f;
-        perk_prompt_origin_y = 80.0f;
+        *(ui_layout_vec2_t *)&perk_prompt_origin_x =
+            ui_layout_vec2_t(690.0f, 80.0f);
     } else {
-        perk_prompt_origin_x = (float)(config_screen_width + 50);
-        perk_prompt_origin_y = 40.0f;
+        *(ui_layout_vec2_t *)&perk_prompt_origin_x = ui_layout_vec2_t(
+            (float)(config_screen_width + 50),
+            40.0f);
     }
 
     responsive = &ui_element_table_slot_01_main_menu_aux;

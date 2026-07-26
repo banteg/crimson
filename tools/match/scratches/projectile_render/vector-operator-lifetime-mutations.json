@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector_add_result_lifetime",
+      "find": "    projectile_render_vec2_t operator+(\n        const projectile_render_vec2_t &other) const\n    {\n        return projectile_render_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "copy_then_add",
+          "text": "    projectile_render_vec2_t operator+(\n        const projectile_render_vec2_t &other) const\n    {\n        projectile_render_vec2_t result = *this;\n        result += other;\n        return result;\n    }"
+        },
+        {
+          "name": "assign_named_result",
+          "text": "    projectile_render_vec2_t operator+(\n        const projectile_render_vec2_t &other) const\n    {\n        projectile_render_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector_subtract_result_lifetime",
+      "find": "    projectile_render_vec2_t operator-(\n        const projectile_render_vec2_t &other) const\n    {\n        return projectile_render_vec2_t(x - other.x, y - other.y);\n    }",
+      "replacements": [
+        {
+          "name": "copy_then_subtract",
+          "text": "    projectile_render_vec2_t operator-(\n        const projectile_render_vec2_t &other) const\n    {\n        projectile_render_vec2_t result = *this;\n        result -= other;\n        return result;\n    }"
+        },
+        {
+          "name": "assign_named_result",
+          "text": "    projectile_render_vec2_t operator-(\n        const projectile_render_vec2_t &other) const\n    {\n        projectile_render_vec2_t result;\n        result.x = x - other.x;\n        result.y = y - other.y;\n        return result;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "scalar_subtract_result_lifetime",
+      "find": "    projectile_render_vec2_t operator-(float value) const\n    {\n        return projectile_render_vec2_t(x - value, y - value);\n    }",
+      "replacements": [
+        {
+          "name": "copy_then_subtract",
+          "text": "    projectile_render_vec2_t operator-(float value) const\n    {\n        projectile_render_vec2_t result = *this;\n        result -= value;\n        return result;\n    }"
+        },
+        {
+          "name": "assign_named_result",
+          "text": "    projectile_render_vec2_t operator-(float value) const\n    {\n        projectile_render_vec2_t result;\n        result.x = x - value;\n        result.y = y - value;\n        return result;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "vector_scale_result_lifetime",
+      "find": "    projectile_render_vec2_t operator*(float scale) const\n    {\n        return projectile_render_vec2_t(x * scale, y * scale);\n    }",
+      "replacements": [
+        {
+          "name": "copy_then_scale",
+          "text": "    projectile_render_vec2_t operator*(float scale) const\n    {\n        projectile_render_vec2_t result = *this;\n        result.x *= scale;\n        result.y *= scale;\n        return result;\n    }"
+        },
+        {
+          "name": "assign_named_result",
+          "text": "    projectile_render_vec2_t operator*(float scale) const\n    {\n        projectile_render_vec2_t result;\n        result.x = x * scale;\n        result.y = y * scale;\n        return result;\n    }"
+        }
+      ]
+    }
+  ]
+}

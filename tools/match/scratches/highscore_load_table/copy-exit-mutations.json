@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "duplicate-copy-shape",
+      "find": "        if (config_highscore_duplicate_mode == 1) {\n            replace = highscore_find_name_entry(stored.player_name, count);\n            if (replace != 0) {\n                *replace = stored;\n                continue;\n            }\n            mode = config_game_mode;\n        }\n",
+      "replacements": [
+        {
+          "name": "zero-first-if-else",
+          "text": "        if (config_highscore_duplicate_mode == 1) {\n            replace = highscore_find_name_entry(stored.player_name, count);\n            if (replace == 0) {\n                mode = config_game_mode;\n            } else {\n                *replace = stored;\n                continue;\n            }\n        }\n"
+        },
+        {
+          "name": "scoped-duplicate-pointer",
+          "text": "        if (config_highscore_duplicate_mode == 1) {\n            highscore_record_t *duplicate;\n\n            duplicate = highscore_find_name_entry(stored.player_name, count);\n            if (duplicate != 0) {\n                *duplicate = stored;\n                continue;\n            }\n            mode = config_game_mode;\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "capacity-mode-shape",
+      "find": "        if (count == 99) {\n            replace = &highscore_table[0];\n            if (mode == GAME_MODE_RUSH) {\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms <\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            }\n            if (mode == GAME_MODE_QUEST) {\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms >\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            }\n            for (index = 1; index < 100; index++) {\n                if ((int)highscore_table[index].score_xp <\n                    (int)replace->score_xp) {\n                    replace = &highscore_table[index];\n                }\n            }\n            *replace = stored;\n            continue;\n        }\n",
+      "replacements": [
+        {
+          "name": "else-if-mode-arms",
+          "text": "        if (count == 99) {\n            replace = &highscore_table[0];\n            if (mode == GAME_MODE_RUSH) {\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms <\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            } else if (mode == GAME_MODE_QUEST) {\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms >\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            } else {\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].score_xp <\n                        (int)replace->score_xp) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            }\n        }\n"
+        },
+        {
+          "name": "switch-mode-arms",
+          "text": "        if (count == 99) {\n            replace = &highscore_table[0];\n            switch (mode) {\n            case GAME_MODE_RUSH:\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms <\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            case GAME_MODE_QUEST:\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms >\n                        (int)replace->survival_elapsed_ms) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            default:\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].score_xp <\n                        (int)replace->score_xp) {\n                        replace = &highscore_table[index];\n                    }\n                }\n                *replace = stored;\n                continue;\n            }\n        }\n"
+        },
+        {
+          "name": "scoped-worst-pointers",
+          "text": "        if (count == 99) {\n            if (mode == GAME_MODE_RUSH) {\n                highscore_record_t *worst;\n\n                worst = &highscore_table[0];\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms <\n                        (int)worst->survival_elapsed_ms) {\n                        worst = &highscore_table[index];\n                    }\n                }\n                *worst = stored;\n                continue;\n            }\n            if (mode == GAME_MODE_QUEST) {\n                highscore_record_t *worst;\n\n                worst = &highscore_table[0];\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].survival_elapsed_ms >\n                        (int)worst->survival_elapsed_ms) {\n                        worst = &highscore_table[index];\n                    }\n                }\n                *worst = stored;\n                continue;\n            }\n            {\n                highscore_record_t *worst;\n\n                worst = &highscore_table[0];\n                for (index = 1; index < 100; index++) {\n                    if ((int)highscore_table[index].score_xp <\n                        (int)worst->score_xp) {\n                        worst = &highscore_table[index];\n                    }\n                }\n                *worst = stored;\n                continue;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "append-copy-shape",
+      "find": "        replace = &highscore_table[count];\n        count++;\n        highscore_table_count = count;\n        *replace = stored;\n",
+      "replacements": [
+        {
+          "name": "scoped-append-pointer",
+          "text": "        {\n            highscore_record_t *slot;\n\n            slot = &highscore_table[count];\n            count++;\n            highscore_table_count = count;\n            *slot = stored;\n        }\n"
+        },
+        {
+          "name": "direct-append-precomputed-count",
+          "text": "        highscore_table_count = count + 1;\n        highscore_table[count] = stored;\n        count++;\n"
+        }
+      ]
+    }
+  ]
+}

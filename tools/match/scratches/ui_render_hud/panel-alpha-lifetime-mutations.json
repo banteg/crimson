@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-alpha-declaration-lifetime",
+      "find": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    float panel_alpha = transition_alpha * 0.7f;",
+      "replacements": [
+        {
+          "name": "function-entry-declaration",
+          "text": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    float panel_alpha;\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    panel_alpha = transition_alpha * 0.7f;"
+        },
+        {
+          "name": "post-transparency-declaration",
+          "text": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    float panel_alpha;\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    panel_alpha = transition_alpha * 0.7f;"
+        },
+        {
+          "name": "post-rotation-declaration",
+          "text": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    float panel_alpha;\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    panel_alpha = transition_alpha * 0.7f;"
+        },
+        {
+          "name": "post-config-declaration",
+          "text": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    float panel_alpha;\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    panel_alpha = transition_alpha * 0.7f;"
+        },
+        {
+          "name": "adjacent-split-declaration",
+          "text": "extern \"C\" void ui_render_hud(float transition_alpha)\n{\n    if (cv_uiTransparency->value >= 0.0f\n        && cv_uiTransparency->value <= 1.0f) {\n        transition_alpha *= cv_uiTransparency->value;\n    }\n\n    grim_interface_ptr->grim_set_rotation(0.0f);\n    grim_interface_ptr->grim_set_config_var(0x15, 1u);\n    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);\n    float panel_alpha;\n    panel_alpha = transition_alpha * 0.7f;"
+        }
+      ]
+    }
+  ]
+}

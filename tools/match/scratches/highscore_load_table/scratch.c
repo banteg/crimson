@@ -150,10 +150,9 @@ void highscore_load_table(void)
             continue;
         }
 
-        replace = &highscore_table[count];
+        highscore_table[count] = stored;
         count++;
         highscore_table_count = count;
-        *replace = stored;
     }
 
     fclose(fp);

@@ -552,6 +552,30 @@ copy to any later plausible boundary lost 58.00 to 62.46 fuzzy-weighted bytes.
 All 15 variants were evaluated with no truncation; neither sweep produced a
 winner, so the source remains unchanged.
 
+## Spawn-slot index-order sweep
+
+A fresh live Binary Ninja read from target
+`3023:2:9499448411019345244` isolates a small scheduling difference between
+the adjacent `0x07` and `0x08` spawn-controller bodies. After the allocator
+call, native template `0x07` stores the returned slot at
+`creature+0x78` at `0x0043230e` before forming the scaled table index at
+`0x00432311`; template `0x08` performs the same two operations in the opposite
+order at `0x00432351..0x00432354`. Both then initialize the same scheduler
+fields and join the shared suffix at `0x00432377`, so this is a bounded
+compiler-scheduling question rather than missing scheduler behavior.
+
+The schema-1 spec `spawn-slot-index-order-mutations.json` tests five natural
+ways to express template `0x07`'s allocator result, creature link, block-local
+index, and scheduler pointer. Spec SHA-256 is
+`624ee1b8c7a9f68611a7a0402e4fe8c00228d6feb1c0e7844b82cf25ed280f01`;
+the tested source SHA-256 is
+`6626bda0144efc4d68ae07e57db804822991d93691d85295bbc7885000157ad0`.
+The recorded sweep evaluated all 5/5 possible one-site variants without
+truncation. Every variant was byte-identical to the 86.9304% baseline:
+3,161/3,159 instructions, a 23-instruction prefix, and `352/0/1` references.
+No single mutation improved, so no interaction sweep was warranted and the
+shared native-grounded scheduler macro remains unchanged.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A

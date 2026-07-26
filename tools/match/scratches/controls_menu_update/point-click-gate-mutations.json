@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "point-click-movement-gate",
+      "find": "    controls_move_method_list.item_count = 3;\n    if (cv_enableMousePointAndClickMovement->value != 0.0f) {\n        controls_move_method_list.item_count = 4;\n    }",
+      "replacements": [
+        {
+          "name": "staged-cvar-pointer",
+          "text": "    cvar_float_t *point_and_click_movement_cvar =\n        cv_enableMousePointAndClickMovement;\n    controls_move_method_list.item_count = 3;\n    if (point_and_click_movement_cvar->value != 0.0f) {\n        controls_move_method_list.item_count = 4;\n    }"
+        },
+        {
+          "name": "staged-cvar-value",
+          "text": "    float point_and_click_movement_value =\n        cv_enableMousePointAndClickMovement->value;\n    controls_move_method_list.item_count = 3;\n    if (point_and_click_movement_value != 0.0f) {\n        controls_move_method_list.item_count = 4;\n    }"
+        },
+        {
+          "name": "staged-nonzero-condition",
+          "text": "    bool point_and_click_movement_enabled =\n        cv_enableMousePointAndClickMovement->value != 0.0f;\n    controls_move_method_list.item_count = 3;\n    if (point_and_click_movement_enabled) {\n        controls_move_method_list.item_count = 4;\n    }"
+        },
+        {
+          "name": "explicit-zero-else",
+          "text": "    if (cv_enableMousePointAndClickMovement->value == 0.0f) {\n        controls_move_method_list.item_count = 3;\n    } else {\n        controls_move_method_list.item_count = 4;\n    }"
+        },
+        {
+          "name": "reverse-default",
+          "text": "    controls_move_method_list.item_count = 4;\n    if (cv_enableMousePointAndClickMovement->value == 0.0f) {\n        controls_move_method_list.item_count = 3;\n    }"
+        },
+        {
+          "name": "conditional-expression",
+          "text": "    controls_move_method_list.item_count =\n        cv_enableMousePointAndClickMovement->value != 0.0f ? 4 : 3;"
+        },
+        {
+          "name": "implicit-float-condition",
+          "text": "    controls_move_method_list.item_count = 3;\n    if (cv_enableMousePointAndClickMovement->value) {\n        controls_move_method_list.item_count = 4;\n    }"
+        }
+      ]
+    }
+  ]
+}
