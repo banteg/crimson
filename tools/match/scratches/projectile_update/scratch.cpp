@@ -485,13 +485,13 @@ extern "C" void projectile_update(void)
                                             cos(projectile->angle - 1.5707964f)
                                             * projectile->pos.tail.vy
                                                 .speed_scale);
-                                        vec2f_t impulse = {
-                                            impulse_axis,
-                                            impulse_axis,
-                                        };
 
                                         if (projectile->pos.tail.vy.damage_pool
                                             <= 0.0f) {
+                                            vec2f_t impulse = {
+                                                impulse_axis,
+                                                impulse_axis,
+                                            };
                                             creature_apply_damage(
                                                 hit_id,
                                                 damage,
@@ -504,6 +504,10 @@ extern "C" void projectile_update(void)
                                                     .life_timer = 0.25f;
                                             }
                                         } else {
+                                            vec2f_t impulse = {
+                                                impulse_axis,
+                                                impulse_axis,
+                                            };
                                             creature_apply_damage(
                                                 hit_id,
                                                 projectile->pos.tail.vy

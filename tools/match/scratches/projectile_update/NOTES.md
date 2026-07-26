@@ -11,9 +11,9 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,137 instructions against 2,203 native instructions, scores
-46.91%, and aligns 336 candidate references. The candidate's natural local
-frame is `0xa4`, while the native function uses `0xf4`.
+It produces 2,140 instructions against 2,203 native instructions, scores
+47.20%, and aligns 340 candidate references. The candidate's natural local
+frame is `0xa8`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
@@ -207,7 +207,7 @@ Both that audio call and the Rocket Minigun freeze-shard burst now take
 The native behavior is substantially represented, but whole-function MSVC
 scheduling still differs. In particular, the native `0xf4` frame reuses many
 long-lived vector temporaries across projectile and particle branches, whereas
-the recovered structured source naturally compiles to `0xa4`. Further work
+the recovered structured source naturally compiles to `0xa8`. Further work
 should improve original declaration/lifetime shape only when supported by
 control-flow evidence. No dummy locals, volatile expressions, forced
 references, inline assembly, or layout-only gotos are used to imitate the
@@ -298,3 +298,18 @@ that same position. BN reports the complete `creature_pool` as 384 typed
 and effect-template objects at their existing mapped boundaries. No offset or
 alias correction is supported. The residual is therefore compiler scheduling
 only, and `RESIDUAL=compiler` preserves all 29 honest mismatches.
+
+## Branch-local penetration impulse lifetimes
+
+Live Binary Ninja HLIL separates the two mutually exclusive penetration-damage
+vectors: the exhausted-pool arm materializes one at `0x0042153c`, while the
+surviving-pool arm materializes another at `0x00421573`. Keeping one source
+aggregate above the damage-pool branch hid that original lifetime distinction.
+Declaring the identical impulse in each real call arm raises the candidate from
+46.9124% to 47.2024%, from 2,137 to 2,140 instructions, and from `336/0/29` to
+`340/0/29` references. Its natural frame grows from `0xa4` to `0xa8`.
+
+The later Rocket, Seeker Rocket, and Rocket Minigun decal loops also appear in
+three different native stack slots. Hoisting three named aggregates across
+those mutually exclusive arms was tested, but VC6 emitted exactly the same
+candidate and metrics. The simpler scoped declarations remain.
