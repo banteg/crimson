@@ -86,8 +86,16 @@ uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
   `onexit.obj:_atexit`; Grim imports `MSVCRT.DLL`, so this is startup glue
   rather than a second statically linked CRT body.
 
-- Evidence: both binaries' Rich headers contain product records 10 and 11
-  with build 9782, consistent with the common VC6 SP6 toolchain ancestry.
+- Evidence: `crimsonland.exe` contains 137 product-10/build-9782 C records and
+  34 product-11/build-9782 C++ records. Controlled Processor Pack compiles emit
+  product 48 and 49 with build 9044, and a stock VC6 link preserves those
+  records; neither occurs in the EXE. This supports VC6 SP6 code-generator
+  ancestry rather than a hidden per-object Processor Pack split.
+
+- Evidence: `grim.dll` contains product-10/11 C/C++ records from both builds
+  9782 and 8047. Mixed compiler inputs are therefore proven for Grim at the
+  image level, but the aggregate Rich data does not map either build to an
+  individual engine function.
 
 - Status: the EXE's static CRT archive and Grim's CRT startup seam are
   archive-confirmed. Grim engine code remains in scope through `0x1000a8d0`;

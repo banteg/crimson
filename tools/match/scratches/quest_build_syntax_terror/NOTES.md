@@ -16,10 +16,11 @@ inner-loop count. The Python and Zig ports agree with the recovered formulas.
 The candidate preserves the native temporary hardcore mutation, nested loop
 bounds, seed and trigger recurrences, signed division, x87 conversions,
 24-byte entry layout, template/count metadata, and exact `0x1c` local frame.
-The msvc6.5pp `/O2 /GB` backend compiles to 107 instructions versus the native
-104 and scores 54.03%, improving the default msvc6.5 profile by 15.27
-fuzzy-weighted bytes (49.52% to 54.03%) while increasing audited reference
-agreement from 1/0/0 to 4/0/0.
+The default `msvc6.5 /O2 /GB` profile compiles to 106 instructions versus the
+native 104 and scores 49.52%, with one aligned audited reference. The historical
+Processor Pack experiment reached 54.03% and four references, but its absent
+product-48/49 build-9044 records rule it out as native-object provenance; that
+result remains only a source-shape search signal.
 
 The shared 24-byte `quest_spawn_entry_t` is now a flat semantic record:
 `pos_x`, `pos_y`, `heading`, `template_id`, `trigger_time_ms`, and `count`.
@@ -28,20 +29,22 @@ builder cluster instead of routing ordinary accesses through nested
 `pos_y_block.heading_block` paths. The separate trigger/count cursor types
 remain available for the two loops that genuinely walk interior fields.
 
-The residual is VC6 allocation and scheduling. Native keeps the output count
-in EBP and inner seed in EBX, computes both coordinates before storing spawn
-metadata, and restores the count through EBP. The candidate spills the count,
-assigns the induction values differently, and schedules the independent
-metadata stores before the coordinate arithmetic. Direct fields, one and two
-coordinate temporaries, pointer/count and cursor builders, post-incremented
-reservation, vector aggregate and all-fields setters were checked. A complete
-6.5/6.5pp/7.0 optimizer matrix found msvc6.5pp `/O2 /GB` to be the strongest
-profile. This remains an honest WIP without volatile state, dummy dependencies,
-or forced-register constructs.
+The unknown original source shape makes default VC6 choose different allocation
+and scheduling. Native keeps the output count in EBP and inner seed in EBX,
+computes both coordinates before storing spawn metadata, and restores the count
+through EBP. The candidate spills the count, assigns the induction values
+differently, and schedules the independent metadata stores before the
+coordinate arithmetic. Direct fields, one and two coordinate temporaries,
+pointer/count and cursor builders, post-incremented reservation, vector
+aggregate and all-fields setters were checked. A complete 6.5/6.5pp/7.0
+optimizer matrix found the alternate profile to be the strongest current-source
+score, but the canonical scratch uses the evidenced default. This remains an
+honest WIP without volatile state, dummy dependencies, or forced-register
+constructs.
 
-The scratch is classified `semantic-complete` with a `compiler` residual.
-Fresh live disassembly confirms the exact `0x1c` frame, four outer batches,
-signed cubic/modulo coordinate arithmetic, per-entry metadata, hardcore
-player-count restoration, and both output-count return paths. The remaining
-107/104 instruction delta is register assignment and scheduling; all four
-audited references are matched.
+The scratch is classified `semantic-complete` with an `analysis` residual for
+the unknown source shape. Fresh live disassembly confirms the exact `0x1c`
+frame, four outer batches, signed cubic/modulo coordinate arithmetic, per-entry
+metadata, hardcore player-count restoration, and both output-count return
+paths. The remaining 106/104 instruction delta is register assignment and
+scheduling; one audited reference is matched.

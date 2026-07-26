@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**687/808** functions matched exactly, **125999/341963** code bytes (**36.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**686/808** functions matched exactly, **125859/341963** code bytes (**36.8%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **291217/341963** code bytes (**85.2%**).
+Fuzzy-weighted alignment is **291330/341963** code bytes (**85.2%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 111846/320805 | 34.9% | 271298/320805 | 84.6% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| crimsonland.exe | 556/671 | 111706/320805 | 34.8% | 271411/320805 | 84.6% | 671/671 | 320805/320805 | 100.0% | 556/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 19918/21158 | 94.1% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **111846/320805** bytes (**34.9%**), **271298/320805** fuzzy-weighted bytes (**84.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**556/671** functions, **111706/320805** bytes (**34.8%**), **271411/320805** fuzzy-weighted bytes (**84.6%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **556/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -316,7 +316,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | terrain_render | 0x004188a0 | 693 | 693/693 | 0 | 200/200 | 100.00% | 200/200 | 32/0/0 |  | terrain-backbuffer-render |
 | wip | creature_render_type | 0x00418b60 | 2834 | 2223/2834 | 611 | 757/765 | 78.45% | 25/765 | 136/0/5 |  | creature-atlas-animation-tint-and-lifecycle-rendering |
 | match | creature_render_all | 0x00419680 | 1302 | 1302/1302 | 0 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
-| wip | ui_element_set_rect | 0x00419ba0 | 348 | 152/348 | 196 | 92/91 | 43.72% | 0/91 | 4/0/0 |  | ui-subtemplate-quad-geometry |
+| wip | ui_element_set_rect | 0x00419ba0 | 348 | 269/348 | 79 | 93/91 | 77.17% | 20/91 | 6/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 207/207 | 0 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | audit | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 64/0/2 |  | ui-menu-template-assets |
 | match | j___cfltcvt_init_3 | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
@@ -399,7 +399,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | nullsub_115 | 0x0041e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | j_nullsub_116 | 0x0041e820 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-nullsub |
 | match | nullsub_116 | 0x0041e830 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| match | fx_queue_add | 0x0041e840 | 140 | 140/140 | 0 | 39/39 | 100.00% | 39/39 | 10/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-fx-queue |
+| wip | fx_queue_add | 0x0041e840 | 140 | 136/140 | 4 | 39/39 | 97.44% | 22/39 | 9/0/0 |  | gameplay-fx-queue |
 | match | input_aim_pov_left_active | 0x0041e8d0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-left |
 | match | input_aim_pov_right_active | 0x0041e8f0 | 32 | 32/32 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | input-aim-pov-right |
 | wip | creature_handle_death | 0x0041e910 | 834 | 707/834 | 127 | 202/204 | 84.73% | 5/204 | 80/0/1 |  | creature-death-side-effects |
@@ -438,7 +438,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | fx_queue_render | 0x00427920 | 2076 | 2076/2076 | 0 | 543/543 | 100.00% | 543/543 | 162/0/0 |  | terrain-fx-and-corpse-render-passes |
 | match | creature_alloc_slot | 0x00428140 | 145 | 145/145 | 0 | 39/39 | 100.00% | 39/39 | 14/0/0 |  |  |
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
-| match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-creature-scan |
+| match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
 | wip | player_render_overlays | 0x00428390 | 4582 | 3843/4582 | 739 | 1141/1148 | 83.88% | 9/1148 | 326/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
@@ -492,8 +492,8 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | perk_meta_register_atexit | 0x0042fae0 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | perk-metadata-destructor-registration |
 | match | perk_meta_table_destroy | 0x0042faf0 | 23 | 23/23 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-destruction |
 | match | perk_can_offer | 0x0042fb10 | 185 | 185/185 | 0 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
-| match | perk_select_random | 0x0042fbd0 | 89 | 89/89 | 0 | 32/32 | 100.00% | 32/32 | 8/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-rng |
-| wip | perks_rebuild_available | 0x0042fc30 | 181 | 160/181 | 21 | 52/52 | 88.46% | 9/52 | 18/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | gameplay-perk-unlocks |
+| match | perk_select_random | 0x0042fbd0 | 89 | 89/89 | 0 | 32/32 | 100.00% | 32/32 | 8/0/0 |  | gameplay-perk-rng |
+| wip | perks_rebuild_available | 0x0042fc30 | 181 | 174/181 | 7 | 52/52 | 96.15% | 38/52 | 18/0/0 |  | gameplay-perk-unlocks |
 | match | perk_count_get | 0x0042fcf0 | 12 | 12/12 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | gameplay-perk-count |
 | match | wrap_text_to_width_alloc | 0x0042fd00 | 143 | 143/143 | 0 | 62/62 | 100.00% | 62/62 | 2/0/0 |  | text-wrap-allocation |
 | match | perks_init_database | 0x0042fd90 | 3211 | 3211/3211 | 0 | 588/588 | 100.00% | 588/588 | 443/0/0 |  | perk-id-and-metadata-database |
@@ -527,7 +527,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 170/249 | 79 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 358/382 | 24 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_gauntlet | 0x004369a0 | 614 | 493/614 | 121 | 182/182 | 80.22% | 31/182 | 25/0/0 |  | quest-gauntlet-rings-and-edges |
-| wip | quest_build_syntax_terror | 0x00436c10 | 339 | 183/339 | 156 | 107/104 | 54.03% | 2/104 | 4/0/0 | msvc6.5pp /O2 /GB /W3 /GR- | quest-syntax-terror-polynomial-spawners |
+| wip | quest_build_syntax_terror | 0x00436c10 | 339 | 168/339 | 171 | 106/104 | 49.52% | 2/104 | 1/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 320/365 | 45 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | match | quest_build_two_fronts | 0x00436ee0 | 383 | 383/383 | 0 | 112/112 | 100.00% | 112/112 | 3/0/0 |  | quest-two-fronts-cardinal-waves |
 | wip | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 534/861 | 327 | 217/228 | 62.02% | 5/228 | 0/0/0 |  | quest-survival-fastest-shared-index-path |
@@ -591,7 +591,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | resource_read_alloc | 0x0043bca0 | 75 | 75/75 | 0 | 33/33 | 100.00% | 33/33 | 5/0/0 |  | resource-owned-read |
 | wip | sfx_entry_load_ogg | 0x0043bcf0 | 304 | 298/304 | 6 | 99/99 | 97.98% | 78/99 | 10/0/0 |  | audio-ogg-resident-load |
 | match | sfx_entry_seek | 0x0043be20 | 56 | 56/56 | 0 | 24/24 | 100.00% | 24/24 | 1/0/0 |  | audio-entry-playback |
-| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 172/215 | 43 | 94/93 | 80.21% | 20/93 | 7/0/0 | msvc6.5pp /O2 /G6 /W3 /GR- | audio-entry-voice-start |
+| wip | sfx_entry_start_playback | 0x0043be60 | 215 | 166/215 | 49 | 93/93 | 77.42% | 20/93 | 7/0/0 |  | audio-entry-voice-start |
 | match | sfx_entry_resume | 0x0043bf40 | 27 | 27/27 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | audio-entry-playback |
 | match | sfx_entry_stop | 0x0043bf60 | 60 | 60/60 | 0 | 29/29 | 100.00% | 29/29 | 0/0/0 |  | audio-entry-playback |
 | wip | sfx_entry_set_volume | 0x0043bfa0 | 120 | 104/120 | 16 | 45/45 | 86.67% | 2/45 | 5/0/0 |  | audio-entry-volume |
@@ -625,7 +625,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | audio_update | 0x0043d3f0 | 102 | 102/102 | 0 | 32/32 | 100.00% | 32/32 | 10/0/0 |  | audio-frame-update |
 | match | sfx_play_exclusive | 0x0043d460 | 239 | 239/239 | 0 | 66/66 | 100.00% | 66/66 | 23/0/0 |  | audio-exclusive-music-playback |
 | match | sfx_mute_all | 0x0043d550 | 87 | 87/87 | 0 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
-| wip | sfx_update_mute_fades | 0x0043d5b0 | 374 | 316/374 | 58 | 114/118 | 84.48% | 3/118 | 26/0/0 |  | audio-mute-fade-state-machine |
+| wip | sfx_update_mute_fades | 0x0043d5b0 | 374 | 323/374 | 51 | 118/118 | 86.44% | 3/118 | 27/0/0 |  | audio-mute-fade-state-machine |
 | match | audio_suspend_channels | 0x0043d730 | 58 | 58/58 | 0 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
 | match | audio_resume_channels | 0x0043d770 | 73 | 73/73 | 0 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
 | match | sfx_is_unmuted | 0x0043d7c0 | 30 | 30/30 | 0 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |

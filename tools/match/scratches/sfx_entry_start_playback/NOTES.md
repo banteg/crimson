@@ -5,23 +5,21 @@ prefill three quarters, and loop the primary buffer. Resident entries select
 the first non-playing voice, falling back to a random voice and stopping it when
 all 16 are busy, then apply the global playback frequency and start once.
 
-The stock VC6 `/O2 /GB` result is 77.42% with a 48.55-byte fuzzy gap
-(93/93 instructions, `7/0/0` audited references). A complete compiler-profile
-matrix found one natural improvement: MSVC 6.5pp with
-`/O2 /G6 /W3 /GR-` reaches 80.21% and reduces the gap to 42.54 bytes
-(94/93 instructions, the same `7/0/0` references). The profile changes only
-result-lifetime and DirectSound vtable-call scheduling; it does not change the
-source.
+The default VC6 `/O2 /GB` result is 77.42% with a 48.55-byte fuzzy gap
+(93/93 instructions, `7/0/0` audited references). The historical Processor Pack
+`/G6` experiment reached 80.21%, but it also added an instruction and cannot be
+native-object provenance because the corresponding Rich records are absent.
+The canonical scratch therefore keeps the evidenced default profile.
 
 Live Binary Ninja decompilation confirms the restore/upload branch, three
 stream fills, looping primary-buffer start, 16-voice status scan, random
 fallback/stop, frequency update, and final non-looping start. The four
 localized profile regions contain those same operations and references.
-Moving `result = 0` into the resident arm was also probed under the improved
-profile and regressed to 78.92%, 92/93 instructions, and a 1/93 prefix, so the
-natural source lifetime is retained.
+Moving `result = 0` into the resident arm, nesting it under the streaming
+`else`, and spelling the streaming branch with explicit labels were probed under
+stock VC6 and SP6. They regress the prefix and instruction shape, so the natural
+source lifetime is retained.
 
-Recovery is classified `semantic-complete` with a `compiler` residual. The
-profile override records a measured 6.01-byte fuzzy improvement without
-volatile state, dummy dependencies, register forcing, or artificial control
-flow.
+Recovery is classified `semantic-complete` with an `analysis` residual for the
+unknown source shape. No volatile state, dummy dependencies, register forcing,
+or artificial control flow is retained.

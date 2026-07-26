@@ -1,9 +1,18 @@
 # `fx_queue_add`
 
-Exact 140-byte, 39-instruction match with MSVC 6.5 Processor Pack `/O2 /GB`;
-all ten masked references align. The Processor Pack is material here: baseline
-VC6 emits the same 39 instructions but schedules the `fx_queue_count` store
-after the remaining entry fields, producing a 97.44% near-match.
+The default VC6 profile produces a 97.44% near-match with the native 140-byte,
+39-instruction shape and nine aligned references. Its only structural
+difference is scheduling the `fx_queue_count` store after the remaining entry
+fields instead of between the final color load and store.
+
+The previous Processor Pack profile happened to schedule that store exactly,
+but Processor Pack objects would leave product-48/49 build-9044 Rich records,
+which are absent from `crimsonland.exe`. A bounded stock-compiler sweep evaluated
+143 combinations of count-increment spelling, publication order, and limit
+condition without improving the default result. Manual color-component copies,
+alpha temporaries, assignment-in-condition forms, and alternate entry-index
+expressions also regress or compile identically. The scratch is therefore kept
+as an honest source-shape WIP rather than retaining the unsupported override.
 
 The recovered function appends one 40-byte `fx_queue_entry_t`, copying position
 and a 16-byte `effect_color_t` aggregate before width, height, rotation, and

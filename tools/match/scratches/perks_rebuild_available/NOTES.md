@@ -3,12 +3,12 @@
 Current best local score:
 
 ```txt
-match=88.46% prefix=9/52 target_insns=52 candidate_insns=52 refs=18/0/0
+match=96.15% prefix=38/52 target_insns=52 candidate_insns=52 refs=18/0/0
 ```
 
 The recovered source preserves the native full-table clear, base perk range,
 four always-available perks, bounded quest-unlock scan, byte-sized availability
-writes, and final Antiperk exclusion. All 16 masked references resolve to the
+writes, and final Antiperk exclusion. All 18 masked references resolve to the
 intended ids, metadata fields, and quest table boundaries.
 
 The shared `perk_meta_t.available` field is now byte-sized with explicit
@@ -32,17 +32,22 @@ availability write. Recovering that outer guard raises the candidate from
 73.08% to 86.54% and aligns one additional reference without changing behavior
 or instruction count.
 
-The Processor Pack compiler is the stronger object-local provenance fit: it
-raises the score from 86.54% to 88.46%, reduces the fuzzy gap from 24.37 to
-20.88 bytes, and aligns all 18 references while preserving the 52-instruction
-body and nine-instruction prefix. `/G4`, `/G5`, and `/GB` are identical under
-that backend; `/G6` regresses.
+Expressing the retained Antiperk location as its native word-stride index makes
+the default VC6 and SP6 profiles load it through `EAX`, retain the scaled value
+in `EDI`, and match the first 38 instructions. This raises the score from 86.54%
+to 96.15%, reduces the fuzzy gap from 24.37 to 6.96 bytes, and aligns all 18
+references without changing behavior or instruction count.
 
-The remaining mismatch is confined to two compiler choices. The candidate
-assigns the initial Antiperk id load to `ECX` instead of native `EAX`, and
-proves the initial quest cursor is below the fixed table end, rotating that
-bound check to the loop latch. Function-scope and block-scope index/cursor
-declarations compile identically; an outer-guarded conjunctive `while` loses
-the recovered register assignment and reference. Writing unrelated global
-loads inside the base-range loop would only steer scheduling and is not
-plausible source, so the clean WIP remains preferable.
+The remaining mismatch is confined to the quest-unlock loop. The candidate
+proves the initial quest cursor is below the fixed table end and rotates that
+bound check to the loop latch; native retains it at the loop header.
+Tail-tested, pre-tested, conjunctive, pointer-bounded, struct-cursor, and
+explicit-label forms were checked under both default VC6 and SP6. The
+conjunctive form restores the native header and latch checks, but assigns the
+cursor and index to the opposite registers and loses the 38-instruction prefix;
+reusing earlier counter locals does not change that allocation. Forms that
+retain the native 38-instruction prefix rotate the initial bound check instead.
+The clean WIP remains preferable.
+
+Recovery is classified `semantic-complete` with an `analysis` residual for the
+unknown source shape.

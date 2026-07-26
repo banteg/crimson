@@ -47,13 +47,20 @@ Current PE evidence points to a VC6-family final link for
 `crimsonland.exe`:
 
 - PE optional-header linker version is `6.0`.
-- Rich headers include `Linker600` and dominant `Utc12_C` / `Utc12_CPP` object
-  counts.
+- its Rich header contains 137 product-10/build-9782 C records and 34
+  product-11/build-9782 C++ records, consistent with the VC6 SP6 code
+  generator.
+- controlled Processor Pack compiles instead stamp C and C++ objects as
+  product 48 and 49 with build 9044. A stock VC6 link preserves those distinct
+  records, and neither occurs in `crimsonland.exe`.
 - the image has a 2011-02-01 PE timestamp, so this looks like an old-code
   toolchain used for a later packaged/relinked binary.
 
 The Rich headers also contain some VC7-era import-library/static-object records,
 so treat that as mixed-library ancestry rather than the primary compiler.
+`grim.dll` separately contains C/C++ records from builds 9782 and 8047, proving
+an aggregate compiler mixture for that image. It does not establish which
+individual Grim functions came from each build.
 
 ```sh
 MSVC_VER=msvc6.5
@@ -69,14 +76,20 @@ existing exact match and makes `player_start_reload`, `perk_select_random`, and
 operations, branches, and 28 audited references. `/GB` also improves most
 larger in-progress scratches.
 
-The compiler backend can still vary by object. `bonus_label_for_entry` is exact
-with `msvc6.5` and `msvc6.6`, but not `msvc6.5pp` or `msvc7.0`; it also rejects
-`/O1`, `/Od`, and `/Oy-`, supporting speed optimization and frame-pointer
-omission. The earlier Processor Pack match for `perk_select_random` was
-source-shape dependent: separate increments on its two rejection paths are
-exact with both `msvc6.5` and `msvc6.6`, so it uses the default compiler.
-Keep evidence-backed compiler overrides in `scratch.conf` while treating
-`msvc6.5 /O2 /GB` as the global starting profile.
+Do not infer object provenance from whichever compiler gives the best score for
+one scratch. Alternate compilers change block placement and scheduling in ways
+that can compensate for an imperfect source reconstruction. For example, the
+earlier Processor Pack match for `perk_select_random` disappeared after spelling
+its two rejection-path increments explicitly; the recovered shape is exact with
+both `msvc6.5` and `msvc6.6`. A better `msvc6.5pp` score therefore identifies a
+source-shape residual, not evidence of a hidden backend split. Keep alternate
+profiles in `probe`, `mutate`, or `profiles` experiments rather than as the
+canonical compiler for `crimsonland.exe` scratches.
+
+Use `msvc6.5 /O2 /GB` as the global search profile and confirm provenance from
+PE, COFF, archive, or other build metadata. `bonus_label_for_entry` is a useful
+profile calibration point: it is exact with `msvc6.5` and `msvc6.6`, but not
+`msvc6.5pp` or `msvc7.0`, and it rejects `/O1`, `/Od`, and `/Oy-`.
 
 `tools/match/cl.sh` looks for the compiler in this order:
 
@@ -86,8 +99,8 @@ Keep evidence-backed compiler overrides in `scratch.conf` while treating
 3. a sibling Snail Mail checkout at `../snail-mail/tools/match/compilers/$MSVC_VER/`
 
 decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
-`msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`; some
-scratches carry an evidence-backed compiler override.
+`msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`;
+alternate archives remain available for controlled shape experiments.
 
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
@@ -138,8 +151,10 @@ resolved address.
 `RECOVERY` can be `incomplete` or `semantic-complete`. Use the latter when the
 port behavior is understood even though byte identity is blocked.
 `RESIDUAL` is a comma-separated set of `analysis`, `compiler`, and
-`references`. These fields keep semantic recovery separate from compiler and
-reference debt; exact matches are reported as `recovery=exact` automatically.
+`references`. Use `analysis` when the behavior is recovered but a plausible
+source shape still needs to be found. These fields keep semantic recovery
+separate from source-analysis, compiler, and reference debt; exact matches are
+reported as `recovery=exact` automatically.
 
 Run one scratch:
 
@@ -390,9 +405,10 @@ matched code bytes as a percentage of every manifest function extent, and then
 groups scratch rows under each in-scope image. Pass `END` when the manifest
 extent includes unrelated code or misses a hand-curated boundary.
 
-Use `NOTE=smoke` for tiny plumbing checks. Treat compiler backend calibration
-as per-object evidence unless several representative functions establish a
-shared profile. For link-sensitive code, check `/MD` vs `/MT` first.
+Use `NOTE=smoke` for tiny plumbing checks. Treat compiler-profile calibration as
+search evidence, not per-object provenance. Establish toolchain ancestry from
+PE/COFF records or identified archive members; for link-sensitive code, check
+`/MD` vs `/MT` first.
 
 ## No Fakematching
 

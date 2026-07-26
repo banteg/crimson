@@ -13,10 +13,11 @@ void perks_rebuild_available(void)
     }
 
     {
-        int antiperk_id = perk_id_antiperk;
+        int antiperk_index =
+            perk_id_antiperk * (sizeof(perk_meta_t) / sizeof(int));
         unsigned char *available = &perk_meta_table[1].available;
         unsigned char one = 1;
-        perk_meta_table[antiperk_id].available = 0;
+        (&perk_meta_table[0].available)[antiperk_index * sizeof(int)] = 0;
         do {
             *available = one;
             available += sizeof(perk_meta_t);
@@ -53,6 +54,6 @@ void perks_rebuild_available(void)
             }
         }
 
-        perk_meta_table[antiperk_id].available = 0;
+        (&perk_meta_table[0].available)[antiperk_index * sizeof(int)] = 0;
     }
 }
