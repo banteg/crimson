@@ -36,18 +36,25 @@ reload. It does not introduce a dummy branch, fake relocation, volatility, or
 layout-only control flow.
 
 With the target-local MSVC 6.5 `/O2 /GB /W3 /GR-` profile, the reconstruction
-now has all 832 native instructions and rises from 89.34% to 96.51%, reducing
-the fuzzy gap from 343 to about 112 weighted bytes. The 27-instruction exact
-prefix is unchanged. Resolved references rise from 356 to 387; the original
-three mismatches and four pre-existing unresolved reference uses remain.
+now has all 832 native instructions and rises from 89.34% to 97.48%, reducing
+the fuzzy gap from 343 to about 81 weighted bytes. The 27-instruction exact
+prefix is unchanged. Resolved references rise from 356 to 388; two mismatches
+and four pre-existing unresolved reference uses remain.
 The shared data map now names the nine recovered hint-pointer globals after
 live Binary Ninja confirmed each `char *` value and pointed-to string. This
 improves the audit from `378/13/3` to `387/4/3` without a local reference
 alias. The native 0x424-byte frame and `retn 0x10` WinMain ABI remain
 reproduced.
 
-The largest remaining instruction residual is the aggregate two-player input
-copy: as in `config_load_presets`, VC6 rebases the reconstructed loop to a
-different interior field than the native `axis_move_x`/`move_key_backward`
-induction pair. The other changed instructions are branch-target shifts and
-small call/register scheduling differences outside the newly exact hint block.
+Expressing the two-player binding copy directly through the source and
+destination arrays, rather than short-lived row pointers, recovers the native
+`move_key_backward` destination induction base. This reduces the loop's
+changed operands from 21 to 13, improves the score from 96.51% to 97.48%, and
+turns one former reference mismatch into a resolved reference without adding
+an alias.
+
+The largest remaining instruction residual is the same aggregate copy's
+source induction base: as in `config_load_presets`, VC6 still rebases the
+reconstructed config row to `move_key_backward` rather than the native
+`axis_move_x`. The other changed instructions are branch-target shifts and
+small call/register scheduling differences outside the exact hint block.
