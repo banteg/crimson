@@ -10,7 +10,7 @@ function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 
 The default `port` scope is defined in `analysis/matching_scope.json`. It
 contains game-owned `crimsonland.exe` logic before `0x00452ef0` and the
-Grim2D engine implementation in `grim.dll` before `0x1000a810`. It excludes:
+Grim2D engine implementation in `grim.dll` before `0x1000a8d0`. It excludes:
 
 - D3DX, CRT, codec, import-thunk, and other bundled library code linked after
   the owned ranges in either image

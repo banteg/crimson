@@ -4,18 +4,18 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**631/861** functions matched exactly, **127692/361557** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**631/865** functions matched exactly, **127692/361707** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **292840/361557** code bytes (**81.0%**).
+Fuzzy-weighted alignment is **292840/361707** code bytes (**81.0%**).
 
-Compilable source candidates cover **753/861** functions and **344335/361557** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Compilable source candidates cover **753/865** functions and **344335/361707** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Images
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270850/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
-| grim.dll | 132/182 | 19447/36649 | 53.1% | 21990/36649 | 60.0% | 137/182 | 22509/36649 | 61.4% | 132/137 |
+| grim.dll | 132/186 | 19447/36799 | 52.8% | 21990/36799 | 59.8% | 137/186 | 22509/36799 | 61.2% | 132/137 |
 
 ## crimsonland.exe
 
@@ -642,7 +642,7 @@ Compilable source candidates cover **753/861** functions and **344335/361557** c
 
 ## grim.dll
 
-**132/182** functions, **19447/36649** bytes (**53.1%**), **21990/36649** fuzzy-weighted bytes (**60.0%**), **137/182** source candidates covering **22509/36649** bytes (**61.4%**), **132/137** scratches verified.
+**132/186** functions, **19447/36799** bytes (**52.8%**), **21990/36799** fuzzy-weighted bytes (**59.8%**), **137/186** source candidates covering **22509/36799** bytes (**61.2%**), **132/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|

@@ -15,7 +15,7 @@
         "grim.dll": [
           {
             "start": "0x10001000",
-            "end": "0x1000A810",
+            "end": "0x1000A8D0",
             "owner": "grim-engine"
           }
         ]
