@@ -2404,8 +2404,6 @@ def evaluate_source_probe(
 ) -> ProbeResult:
     """Compare a temporary source overlay without modifying the scratch."""
 
-    import tempfile
-
     match_root = match_root.resolve()
     baseline_config = replace(
         config,
@@ -2413,6 +2411,30 @@ def evaluate_source_probe(
         cflags=cflags or config.cflags,
     )
     baseline = evaluate_scratch(baseline_config, match_root)
+    probe = evaluate_source_overlay(
+        baseline_config,
+        source_text,
+        match_root=match_root,
+    )
+    return ProbeResult(
+        baseline=baseline,
+        probe=probe,
+        source_sha256=hashlib.sha256(source_text.encode()).hexdigest(),
+        label=label,
+    )
+
+
+def evaluate_source_overlay(
+    config: ScratchConfig,
+    source_text: str,
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> ScratchStatus:
+    """Evaluate one temporary source overlay without touching the scratch."""
+
+    import tempfile
+
+    match_root = match_root.resolve()
     source_name = Path(config.source).name
     with tempfile.TemporaryDirectory(prefix=f"crimson-match-probe-{config.directory.name}-") as temp_name:
         shadow_directory = Path(temp_name)
@@ -2422,17 +2444,11 @@ def evaluate_source_probe(
         )
         (shadow_directory / source_name).write_text(source_text, encoding="utf-8")
         shadow_config = replace(
-            baseline_config,
+            config,
             directory=shadow_directory,
             source=source_name,
         )
-        probe = evaluate_scratch(shadow_config, match_root)
-    return ProbeResult(
-        baseline=baseline,
-        probe=probe,
-        source_sha256=hashlib.sha256(source_text.encode()).hexdigest(),
-        label=label,
-    )
+        return evaluate_scratch(shadow_config, match_root)
 
 
 def available_scratch_compilers(match_root: Path = DEFAULT_MATCH_ROOT) -> tuple[str, ...]:

@@ -282,6 +282,46 @@ Pass `--record` to append the complete result, source SHA-256, profile, label,
 and timestamp to `experiments.jsonl` in the scratch directory. Recording is
 explicit; ordinary probes leave both the scratch and repository untouched.
 
+For repeated source-shape experiments, use the bounded mutation harness. A
+JSON plan names exact, non-overlapping source spans and plausible replacements:
+
+```json
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sum-order",
+      "find": "entry.x + offset.x",
+      "replacements": [
+        {"name": "commuted", "text": "offset.x + entry.x"},
+        {"name": "parenthesized", "text": "(entry.x + offset.x)"}
+      ]
+    }
+  ]
+}
+```
+
+The default sweep changes one site at a time. Increase `--max-changes` to test
+interactions; `--max-variants` keeps the Cartesian search bounded. Sites must
+match exactly once unless they specify a one-based `"occurrence"`. Ambiguous
+or overlapping sites fail before compilation.
+
+```sh
+uv run crimson match mutate tools/match/scratches/player_update \
+  --spec /tmp/player-update-mutations.json --jobs 8 --top 20
+uv run crimson match mutate tools/match/scratches/player_update \
+  --spec /tmp/player-update-mutations.json \
+  --max-changes 2 --max-variants 128 --time-budget 120 \
+  --stop-on-improvement --json
+```
+
+Every variant builds in an isolated temporary scratch and is ranked by the
+canonical match score, exact/reference-clean state, prefix, and instruction
+shape. Time budgets are soft: the current batch finishes, then no more variants
+are scheduled. The tracked scratch is never edited.
+`--write-best /tmp/winner.cpp` writes a candidate only when it beats the
+baseline; combine it with `--require-improvement` in scripted searches.
+
 Sweep one scratch across installed compilers and one or more flag sets. Options
 are repeatable and the result is ranked with exact, reference-clean matches
 first:

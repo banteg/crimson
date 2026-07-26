@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 import typer
 
-from .. import library_match
+from .. import library_match, match_mutation
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
@@ -476,6 +476,91 @@ def cmd_match_probe(
             typer.echo(f"recorded={payload['recorded_to']}")
     if result.baseline.state == "error" or result.probe.state == "error":
         raise typer.Exit(code=2)
+
+
+@match_app.command("mutate")
+def cmd_match_mutate(
+    directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
+    spec: Path = typer.Option(..., "--spec", help="JSON mutation plan"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    compiler: str | None = typer.Option(None, "--compiler", help="profile used for baseline and variants"),
+    cflags: str | None = typer.Option(None, "--cflags", help="flags used for baseline and variants"),
+    max_changes: int = typer.Option(1, "--max-changes", min=1, help="maximum mutation sites per variant"),
+    max_variants: int = typer.Option(256, "--max-variants", min=1, help="bounded variant budget"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel variant jobs"),
+    stop_on_improvement: bool = typer.Option(
+        False,
+        "--stop-on-improvement",
+        help="stop scheduling batches after the first improving batch",
+    ),
+    time_budget: float | None = typer.Option(
+        None,
+        "--time-budget",
+        min=0.1,
+        help="soft variant wall-clock budget in seconds; running batches finish",
+    ),
+    top: int = typer.Option(20, "--top", min=1, help="maximum ranked variants to print"),
+    write_best: Path | None = typer.Option(
+        None,
+        "--write-best",
+        help="write the best source only when it improves the baseline",
+    ),
+    require_improvement: bool = typer.Option(
+        False,
+        "--require-improvement",
+        help="fail when no variant improves the baseline",
+    ),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+) -> None:
+    """Compile and rank bounded source mutations without touching the scratch."""
+    try:
+        config = matchlib.load_scratch_config(directory.resolve())
+        mutation_spec = match_mutation.load_mutation_spec(spec.resolve())
+        source_path = (config.directory / config.source).resolve()
+        if write_best is not None and write_best.resolve() == source_path:
+            raise ValueError("--write-best cannot overwrite the tracked scratch source")
+        source_text = source_path.read_text(encoding="utf-8")
+        sweep = match_mutation.evaluate_mutation_sweep(
+            config,
+            mutation_spec,
+            source_text=source_text,
+            match_root=match_root,
+            compiler=compiler,
+            cflags=cflags,
+            max_changes=max_changes,
+            max_variants=max_variants,
+            jobs=jobs,
+            stop_on_improvement=stop_on_improvement,
+            time_budget=time_budget,
+        )
+    except Exception as exc:
+        typer.echo(f"mutation sweep failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    written_to: str | None = None
+    if write_best is not None and sweep.best_improves:
+        assert sweep.best is not None
+        write_best.parent.mkdir(parents=True, exist_ok=True)
+        write_best.write_text(sweep.best.variant.source_text, encoding="utf-8")
+        written_to = str(write_best)
+
+    if as_json:
+        payload = match_mutation.mutation_sweep_payload(sweep, limit=top)
+        payload["best_source_written_to"] = written_to
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        typer.echo(match_mutation.render_mutation_sweep(sweep, limit=top))
+        if written_to is not None:
+            typer.echo(f"best_source={written_to}")
+        elif write_best is not None:
+            typer.echo("best_source=not-written (no improving variant)")
+
+    if sweep.baseline.state == "error" or all(
+        evaluation.status.state == "error" for evaluation in sweep.evaluations
+    ):
+        raise typer.Exit(code=2)
+    if (write_best is not None or require_improvement) and not sweep.best_improves:
+        raise typer.Exit(code=1)
 
 
 @match_app.command("profiles")
