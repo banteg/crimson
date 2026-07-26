@@ -609,12 +609,12 @@ extern "C" void projectile_render(float transition_alpha)
         float life = primary->vy.life_timer;
 
         if (type_id == PROJECTILE_TYPE_PULSE_GUN) {
-            grim_interface_ptr->grim_set_rotation(projectile->angle);
-            grim_interface_ptr->grim_set_atlas_frame(2, 0);
             if (primary->vy.life_timer == 0.4f) {
                 float dx = primary->vel_x;
                 float dy = primary->vy.vel_y;
                 float pulse_scale = (float)sqrt(dx * dx + dy * dy) * 0.01f;
+                grim_interface_ptr->grim_set_rotation(projectile->angle);
+                grim_interface_ptr->grim_set_atlas_frame(2, 0);
                 grim_interface_ptr->grim_set_color(
                     0.1f, 0.6f, 0.2f, transition_alpha * 0.7f);
                 grim_interface_ptr->grim_draw_quad(
@@ -626,6 +626,8 @@ extern "C" void projectile_render(float transition_alpha)
                     pulse_scale * 16.0f);
             } else {
                 float fade = projectile_render_clamp(life * 2.5f);
+                grim_interface_ptr->grim_set_rotation(projectile->angle);
+                grim_interface_ptr->grim_set_atlas_frame(2, 0);
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 1.0f, fade * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
@@ -637,8 +639,7 @@ extern "C" void projectile_render(float transition_alpha)
             continue;
         }
 
-        if (type_id == PROJECTILE_TYPE_SPLITTER_GUN
-            || type_id == PROJECTILE_TYPE_BLADE_GUN) {
+        if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
             if (primary->vy.life_timer != 0.4f) {
                 continue;
             }
@@ -648,19 +649,34 @@ extern "C" void projectile_render(float transition_alpha)
             if (size > 20.0f) {
                 size = 20.0f;
             }
-            if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
-                grim_interface_ptr->grim_set_rotation(projectile->angle);
-                grim_interface_ptr->grim_set_atlas_frame(4, 3);
-                grim_interface_ptr->grim_set_color(
-                    1.0f, 1.0f, 1.0f, transition_alpha);
-            } else {
-                grim_interface_ptr->grim_set_rotation(
-                    (float)projectile_index * 0.1f
-                    - (float)quest_spawn_timeline * 0.1f);
-                grim_interface_ptr->grim_set_atlas_frame(4, 6);
-                grim_interface_ptr->grim_set_color(
-                    0.8f, 0.8f, 0.8f, transition_alpha);
+            grim_interface_ptr->grim_set_rotation(projectile->angle);
+            grim_interface_ptr->grim_set_atlas_frame(4, 3);
+            grim_interface_ptr->grim_set_color(
+                1.0f, 1.0f, 1.0f, transition_alpha);
+            grim_interface_ptr->grim_draw_quad(
+                camera_offset_x + projectile->pos_x - size * 0.5f,
+                camera_offset_y + projectile->pos.pos_y - size * 0.5f,
+                size,
+                size);
+            continue;
+        }
+
+        if (type_id == PROJECTILE_TYPE_BLADE_GUN) {
+            if (primary->vy.life_timer != 0.4f) {
+                continue;
             }
+            float dx = primary->vel_x;
+            float dy = primary->vy.vel_y;
+            float size = (float)sqrt(dx * dx + dy * dy);
+            if (size > 20.0f) {
+                size = 20.0f;
+            }
+            grim_interface_ptr->grim_set_rotation(
+                (float)projectile_index * 0.1f
+                - (float)quest_spawn_timeline * 0.1f);
+            grim_interface_ptr->grim_set_atlas_frame(4, 6);
+            grim_interface_ptr->grim_set_color(
+                0.8f, 0.8f, 0.8f, transition_alpha);
             grim_interface_ptr->grim_draw_quad(
                 camera_offset_x + projectile->pos_x - size * 0.5f,
                 camera_offset_y + projectile->pos.pos_y - size * 0.5f,

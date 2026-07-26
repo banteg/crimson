@@ -54,3 +54,8 @@ local annotations recover them as `quest_spawn_entry_t *`, and live readback
 now renders `pos_x`, `pos_y`, `template_id`, `trigger_time_ms`, and `count`
 for every corner. This is presentation-only and leaves the 62.02% candidate
 and its reference audit unchanged.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live decompilation confirms all five routed phases plus the four fixed
+corners, including their template IDs and paired trigger times. The candidate
+remains 217/228 instructions with no static-reference debt.

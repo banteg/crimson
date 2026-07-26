@@ -25,3 +25,11 @@ VC6 candidate tail-merges equivalent aggregate assignments into a shared
 byte-neutral. The source keeps the aggregate assignments and recovered control
 flow rather than adding volatile state, byte-offset locals, or artificial
 dependencies to defeat the optimizer.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output confirms the fixed-name promotion loop, all
+mode/date filters, capacity replacement arms, three-way comparator selection,
+and both loaded-flag tails. The candidate retains the exact native `0x58`
+frame, 344/354 instructions, a 67-instruction prefix, and `55/0/0` references;
+the remaining missing instructions are the target's separately expanded
+72-byte record copies.

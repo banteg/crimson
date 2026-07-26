@@ -34,3 +34,10 @@ coordinate temporaries, pointer/count and cursor builders, post-incremented
 reservation, vector aggregate and all-fields setters, `/G6`, `msvc6.5pp`,
 `msvc6.6`, and `msvc7.0` were checked. This remains an honest WIP without
 volatile state, dummy dependencies, or forced-register constructs.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live disassembly confirms the exact `0x1c` frame, four outer batches,
+signed cubic/modulo coordinate arithmetic, per-entry metadata, hardcore
+player-count restoration, and both output-count return paths. The remaining
+106/104 instruction delta is register assignment and scheduling; its sole
+audited reference is matched.

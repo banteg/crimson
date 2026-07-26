@@ -59,3 +59,8 @@ aggregate-constructor ring assignments, and alternative line temporaries all
 scored worse. A combined entry setter was codegen-equivalent for the line
 loops. No artificial dependencies, volatile state, dummy work, or
 register-forcing constructs are used.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output confirms all 164 entries and each ring, corner
+wave, vertical line, and four-entry tail. The candidate remains 255/258
+instructions with all 12 audited references resolved and matched.

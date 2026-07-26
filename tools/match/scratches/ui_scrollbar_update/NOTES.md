@@ -64,3 +64,9 @@ and interaction semantics are present; the remaining diff is dominated by
 temporary-object lifetime and stack-slot coalescing. Alternate `msvc6.5pp` and
 `msvc7.0` profiles score worse, so the scratch stays on the evidenced MSVC 6.5
 profile without allocator-driven source distortion.
+
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live decompilation confirms the complete wheel/key, clamp, proportional
+thumb, drag, row-selection, green-marker, and tab-column paths. The 470/479
+instruction candidate resolves all 59 audited references; the first mismatch
+is the native `0x40` versus candidate `0x54` frame.

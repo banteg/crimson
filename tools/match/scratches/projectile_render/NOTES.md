@@ -104,3 +104,23 @@ These cursor and branch-layout recoveries raise the callback from 43.04% to
 candidate has 2,818 normalized instructions against 3,021 target instructions,
 with 358 proven, zero unresolved, and 22 mismatched aligned references. The
 native frame remains `0x19c` bytes versus the candidate's honest `0x118` bytes.
+
+## Independent primary projectile arms
+
+Live Binary Ninja disassembly establishes that Pulse repeats rotation and
+atlas setup in both of its life arms: the fading arm starts with those calls at
+`0x00424284`, rather than inheriting them from above the life comparison.
+Ghidra and IDA independently corroborate that ordering.
+
+The same three views show that Splitter and Blade are separate type arms, not a
+shared distance-and-clamp body with only their material setup conditionalized.
+The Splitter comparison at `0x00424348` enters its own square root, clamp, and
+draw path; the Blade comparison at `0x004243d5` enters a second square root,
+clamp, and draw path. The source now preserves those independent arms.
+
+These control-flow recoveries raise the callback from 44.84% to 50.96%. The
+candidate now has 2,854 normalized instructions against 3,021 target
+instructions, with 399 proven, zero unresolved, and 16 mismatched aligned
+references. The remaining broad residuals are the already identified geometry
+temporary lifetimes and allocator scheduling; the candidate frame is now
+`0x120` bytes versus the native `0x19c` bytes.

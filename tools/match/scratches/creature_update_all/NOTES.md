@@ -219,3 +219,11 @@ regresses the body to 48.78% and `203/0/4`: VC6 changes its alias/lifetime
 choices even though the offsets are identical. Those arithmetic-heavy fields
 therefore retain their scalar aliases here as an evidenced compiler-shape
 constraint rather than forcing a prettier aggregate view.
+
+## Recovery classification
+
+The scratch is `semantic-complete` with `compiler,references` residuals. A
+fresh live Binary Ninja check retains the full 5,330-byte function and the
+recovered plague, spawn-slot, ranged/contact, Energizer, infection, death, and
+corpse paths; the matcher still reports 1,290/1,338 instructions and
+`207/0/4` references.
