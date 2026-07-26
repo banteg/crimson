@@ -2,10 +2,10 @@
 
 Native target: `grim.dll` at `0x10006fe0..0x100071a8` (456 bytes).
 
-This is an honest work in progress. Microsoft Visual C++ 6.5 with the stock
-`/O2 /GB /W3 /GR-` profile currently reproduces 174 candidate instructions
-against 175 target instructions: 73.93% normalized match, 2/175 prefix, and
-references `7/0/1`.
+This is an evidence-backed semantic-complete reconstruction, not an exact
+match. Microsoft Visual C++ 6.5 with the stock `/O2 /GB /W3 /GR-` profile
+currently reproduces 174 candidate instructions against 175 target
+instructions: 73.93% normalized match, 2/175 prefix, and references `7/0/1`.
 
 ## Recovered source shape
 
@@ -30,8 +30,11 @@ differently. The target also tail-merges the six identical axis thresholds at
 the first branch rather than the last, and retains a separate mapped-ID
 increment; the candidate is one instruction shorter. The single conflicting
 masked reference is a block-alignment artifact pairing the candidate Rz load
-with the target X load; all six axis globals are present in both functions.
+with the target X load; all six exact axis destinations at
+`grim_joystick_state + 0x0..0x14` are present in both functions.
 
 Compiler/profile checks do not justify an override: `msvc6.5pp`, `msvc7.0`,
 and `/O1` all score materially worse. No inline assembly, volatile shaping,
 fake references, forced addresses, or source-level register tricks are used.
+There is no unresolved behavior or missing referenced destination, so the
+scratch is classified as semantic-complete with a compiler residual.

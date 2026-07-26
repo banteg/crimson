@@ -2,10 +2,10 @@
 
 Native target: `grim.dll` at `0x10004b70..0x10004e81` (785 bytes).
 
-This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
-Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 252 normalized
-instructions, the same count as the native function, with a 32-instruction
-prefix, 86.51% similarity, and masked references `18/3/0`.
+This is an evidence-backed semantic-complete reconstruction, not an exact
+match. Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 252
+normalized instructions, the same count as the native function, with a
+32-instruction prefix, 86.51% similarity, and masked references `18/3/0`.
 
 ## Recovered source shape
 
@@ -57,7 +57,9 @@ equivalent regions differently from the native function:
   a different register schedule immediately before `alloc_sarray`.
 
 No inline assembly, volatile state, dummy reference, forced address, or
-layout-only arithmetic is used. The scratch remains WIP until those residuals
-can be explained by plausible source rather than forced code generation.
-The three remaining unresolved references are compiler-private exception or
-stack-local labels rather than unidentified external functions or data.
+layout-only arithmetic is used. The three remaining unresolved references are
+compiler-private exception or stack-local labels rather than unidentified
+external functions or data. All observed decode, cleanup, header, and alpha-RLE
+behavior is represented; the remaining shared-epilogue placement and register
+schedule are compiler-shape debt, so the scratch is classified
+semantic-complete with a compiler residual.

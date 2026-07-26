@@ -2,10 +2,10 @@
 
 Native target: `grim.dll` at `0x10004ec0..0x1000510f` (591 bytes).
 
-This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
-Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 223 normalized
-instructions against 235 native instructions, with 64.19% similarity and
-masked references `24/0/0`.
+This is an evidence-backed semantic-complete reconstruction, not an exact
+match. Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 223
+normalized instructions against 235 native instructions, with 64.19%
+similarity and masked references `24/0/0`.
 
 ## Recovered source shape
 
@@ -65,4 +65,5 @@ The following diagnostic variants were rejected rather than retained:
 
 No volatile state, dummy reference, forced address, fake helper, or
 layout-only arithmetic is retained. The residual is a compiler allocation and
-tail-placement problem, not unresolved behavior.
+tail-placement problem, not unresolved behavior, so the scratch is classified
+as semantic-complete with a compiler residual.

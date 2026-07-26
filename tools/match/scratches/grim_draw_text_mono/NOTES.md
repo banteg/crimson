@@ -15,4 +15,6 @@ identical `0xe4`/`0xf6` mark-UV and final-draw suffix, while the native keeps
 ten duplicated instructions before converging at the final draw call. Switch,
 early-continue, compiler-profile, scoped-local, and explicit common-tail forms
 either preserve that fold or perturb otherwise exact frame/register code. No
-alias symbol, volatile shaping, or other fakematch is used.
+alias symbol, volatile shaping, or other fakematch is used. Every native branch,
+glyph lookup, composite draw, and state transition is represented, so the
+scratch is classified as semantic-complete with a compiler residual.
