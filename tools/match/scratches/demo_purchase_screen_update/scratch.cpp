@@ -105,8 +105,10 @@ extern "C" void demo_purchase_screen_update(void)
     static demo_purchase_button_t purchase_button;
     purchase_button.label = "Purchase";
 
-    float alpha = 1.0f;
-    float position_y = (float)quest_spawn_timeline * 0.016000001f;
+    float alpha;
+    float position_y;
+    position_y = (float)quest_spawn_timeline * 0.016000001f;
+    alpha = 1.0f;
     if (position_y < 20.0f) {
         alpha = position_y * 0.05f;
     }
@@ -119,8 +121,6 @@ extern "C" void demo_purchase_screen_update(void)
     grim_interface_ptr->grim_set_config_var(0x18, 0.8f);
 
     char *message = "";
-    demo_purchase_vec2_t position;
-    demo_purchase_color_t color;
 
     if (demo_purchase_screen_active != 0) {
         ui_pulse_timer_ms += frame_dt_ms;
@@ -188,6 +188,7 @@ extern "C" void demo_purchase_screen_update(void)
         grim_interface_ptr->grim_draw_text_small(
             text_x, position_y, "Full version features:");
 
+        demo_purchase_vec2_t position;
         position.x = text_x;
         position.y = position_y + 15.0f;
         grim_interface_ptr->grim_draw_rect_outline(
@@ -313,6 +314,8 @@ extern "C" void demo_purchase_screen_update(void)
         }
     }
 
+    demo_purchase_vec2_t position;
+    demo_purchase_color_t color;
     float message_y;
     float message_width = (float)strlen(message) * 12.8f;
     float progress_width =

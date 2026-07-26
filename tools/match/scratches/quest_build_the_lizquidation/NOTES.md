@@ -18,5 +18,6 @@ latency slots with independent metadata stores in a different order.
 Cursor-based storage, an inlined `next()` method, whole-vector and all-fields
 setters, declaration/lifetime variants, `msvc6.5pp`, `msvc6.6`, `msvc7.0`,
 `/G6`, and `/O1` were checked. None reproduced the native shape, and several
-made it materially less plausible. This remains an honest WIP rather than
-adding dummy dependencies or volatile state to steer the compiler.
+made it materially less plausible. Recovery is semantic-complete; the residual
+is compiler register allocation and scheduling rather than missing behavior.
+Dummy dependencies and volatile state are not used to steer the compiler.

@@ -29,3 +29,11 @@ absolute order pointer in `EBP`, and spills the slot index, which also changes
 the scheduling of later constant stores. C mode, the `msvc6.5pp` and MSVC 7
 backends, and `/G6` were checked and are materially worse. The semantic WIP is
 retained instead of introducing source-shaped register coercion.
+
+Live Wave 4 reinspection confirmed the two apparently mismatched stores are
+the correctly laid-out `config_blob.windowed` (`0x48050c`) and
+`config_blob.game_mode` (`0x480360`) fields. Replacing them with the overlapping
+Binary Ninja symbol aliases leaves the instruction score unchanged and worsens
+reference agreement to 63/0/4, proving that the struct-field form is the honest
+candidate. Recovery is therefore semantic-complete; the two reported reference
+mismatches remain an alignment artifact of the compiler-shaped store schedule.

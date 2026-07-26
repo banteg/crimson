@@ -108,12 +108,30 @@ score from 54.86% to 55.27%, reduce the weighted gap from 7,338.8743 to
 without changing the 4,019 candidate instructions or seven-instruction
 prefix.
 
+The mode-1 turn and movement inputs at `0x0041445e..0x00414624` test each
+`grim_is_key_active` result directly, then use the single-player alternate
+`grim_is_key_down` call as the second short-circuit operand. The previous
+scratch stored those byte-sized results in four `int` temporaries before
+testing them. Expressing the native predicates directly removes the
+unsupported zero-extension/stack lifetimes and preserves all four input
+behaviors. This raises the whole-function score from `55.27%` to `56.42%`,
+reduces the weighted gap from `7,271.6721` to `7,084.8627` bytes, reduces the
+candidate from 4,019 to 4,011 instructions, and improves references from
+`742/0/9` to `758/0/7`.
+
+Three adjacent source-shape probes were rejected. Nesting the readiness and
+fire-input gates exactly as the native decompile presents them was byte-neutral.
+Moving the mode-1 phase-sign initialization to its first source use was also
+byte-neutral. Consuming Fire Cough's `vec2_sub` return pointer directly did
+recover that local native lifetime, but perturbed the whole-function allocation,
+lowering the score to `56.20%` and the prefix from seven instructions to two.
+
 Current local score:
 
 ```txt
-match=55.27% prefix=7/4206 target_insns=4206 candidate_insns=4019 refs=742/0/9
+match=56.42% prefix=7/4206 target_insns=4206 candidate_insns=4011 refs=758/0/7
 first_target=jne L3f7a
-first_candidate=jne L3d50
+first_candidate=jne L3d1e
 ```
 
 The Fire Cough muzzle sprite at `0x00413c0b..0x00413c38` writes the four

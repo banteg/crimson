@@ -1,8 +1,8 @@
 # `demo_purchase_screen_update`
 
 High-confidence recovery of the 2,642-byte demo purchase and rotating upsell
-callback at `0x0040b740`. The current VC6 scratch matches **88.18%**
-(`697` candidate instructions versus `691` native) with all `187` references
+callback at `0x0040b740`. The current VC6 scratch matches **91.00%**
+(`698` candidate instructions versus `691` native) with all `187` references
 resolved and no unresolved or mismatched references.
 
 ## Recovered source shape
@@ -37,10 +37,14 @@ Purchase. Both thunks are tracked separately as exact one-instruction matches.
 
 ## Remaining mismatch
 
-The native function uses a `0x2c` local frame while the natural reconstruction
-uses `0x30`. Nested measurement inside the outline draw recovers the native
-vtable caching and register plan (`ebp` text origin, `esi` vtable/feature x,
-spilled message pointer), but VC6 still keeps one extra four-byte lifetime in
-the combined position/color/message-width region. The residual is retained
-rather than forcing stack overlays, volatile qualifiers, or other byte-shaping
-constructs.
+Assigning the timeline-derived y value before the independent alpha default
+recovers the native x87 store/pop/reload comparison sequence. Giving the active
+panel and the post-panel message renderer their own naturally scoped vector
+locals also recovers the native active-panel stack scheduling. Together these
+changes reduce the fuzzy gap from `312.17` to `237.76` bytes.
+
+The native function uses a `0x2c` local frame while VC6 reserves `0x34` for the
+two semantic vector lifetimes in the reconstruction. The remaining differences
+are stack-slot coloring, block placement, and instruction scheduling. They are
+retained rather than forcing stack overlays, volatile qualifiers, or other
+byte-shaping constructs.

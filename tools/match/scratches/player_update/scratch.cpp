@@ -548,44 +548,35 @@ extern "C" void player_update(void)
                 player->turn_speed = 7.0f;
             }
 
-            int turn_left = grim_interface_ptr->grim_is_key_active(
-                player->input.turn_key_left);
-            if (!turn_left && config_player_count == 1) {
-                turn_left = grim_interface_ptr->grim_is_key_down(
-                    (unsigned char)player_alt_turn_key_left);
-            }
-            if (turn_left) {
+            if (grim_interface_ptr->grim_is_key_active(
+                    player->input.turn_key_left)
+                || (config_player_count == 1
+                    && grim_interface_ptr->grim_is_key_down(
+                        (unsigned char)player_alt_turn_key_left))) {
                 player->turn_speed = player->turn_speed + frame_dt * 10.0f;
                 player->heading = player->heading
                     - player->turn_speed * frame_dt * 0.5f;
                 player->aim_heading = player->aim_heading
                     - player->turn_speed * frame_dt * 0.5f;
                 turned = true;
-            } else {
-                int turn_right = grim_interface_ptr->grim_is_key_active(
-                    player->input.turn_key_right);
-                if (!turn_right && config_player_count == 1) {
-                    turn_right = grim_interface_ptr->grim_is_key_down(
-                        (unsigned char)player_alt_turn_key_right);
-                }
-                if (turn_right) {
-                    player->turn_speed =
-                        player->turn_speed + frame_dt * 10.0f;
-                    player->heading = player->heading
-                        + player->turn_speed * frame_dt * 0.5f;
-                    player->aim_heading = player->aim_heading
-                        + player->turn_speed * frame_dt * 0.5f;
-                    turned = true;
-                }
+            } else if (grim_interface_ptr->grim_is_key_active(
+                           player->input.turn_key_right)
+                || (config_player_count == 1
+                    && grim_interface_ptr->grim_is_key_down(
+                        (unsigned char)player_alt_turn_key_right))) {
+                player->turn_speed = player->turn_speed + frame_dt * 10.0f;
+                player->heading = player->heading
+                    + player->turn_speed * frame_dt * 0.5f;
+                player->aim_heading = player->aim_heading
+                    + player->turn_speed * frame_dt * 0.5f;
+                turned = true;
             }
 
-            int move_forward = grim_interface_ptr->grim_is_key_active(
-                player->input.move_key_forward);
-            if (!move_forward && config_player_count == 1) {
-                move_forward = grim_interface_ptr->grim_is_key_down(
-                    (unsigned char)player_alt_move_key_forward);
-            }
-            if (move_forward) {
+            if (grim_interface_ptr->grim_is_key_active(
+                    player->input.move_key_forward)
+                || (config_player_count == 1
+                    && grim_interface_ptr->grim_is_key_down(
+                        (unsigned char)player_alt_move_key_forward))) {
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
                 player->move_dx =
@@ -596,38 +587,34 @@ extern "C" void player_update(void)
                     * player->move_speed * 25.0f;
                 move_delta.x = frame_dt * player->move_dx;
                 move_delta.y = frame_dt * player->move_dy;
+            } else if (grim_interface_ptr->grim_is_key_active(
+                           player->input.move_key_backward)
+                || (config_player_count == 1
+                    && grim_interface_ptr->grim_is_key_down(
+                        (unsigned char)player_alt_move_key_backward))) {
+                player_accelerate_move_speed(player);
+                movement_heading = -1.0f;
+                player->move_dx =
+                    (float)cos(player->heading - 1.5707964f)
+                    * player->move_speed * -25.0f;
+                player->move_dy =
+                    (float)sin(player->heading - 1.5707964f)
+                    * player->move_speed * -25.0f;
+                move_delta.x = frame_dt * player->move_dx;
+                move_delta.y = frame_dt * player->move_dy;
             } else {
-                int move_backward = grim_interface_ptr->grim_is_key_active(
-                    player->input.move_key_backward);
-                if (!move_backward && config_player_count == 1) {
-                    move_backward = grim_interface_ptr->grim_is_key_down(
-                        (unsigned char)player_alt_move_key_backward);
+                if (!turned) {
+                    player->turn_speed = 1.0f;
                 }
-                if (move_backward) {
-                    player_accelerate_move_speed(player);
-                    movement_heading = -1.0f;
-                    player->move_dx =
-                        (float)cos(player->heading - 1.5707964f)
-                        * player->move_speed * -25.0f;
-                    player->move_dy =
-                        (float)sin(player->heading - 1.5707964f)
-                        * player->move_speed * -25.0f;
-                    move_delta.x = frame_dt * player->move_dx;
-                    move_delta.y = frame_dt * player->move_dy;
-                } else {
-                    if (!turned) {
-                        player->turn_speed = 1.0f;
-                    }
-                    player_decelerate_move_speed(player);
-                    player->move_dx =
-                        (float)cos(player->heading - 1.5707964f)
-                        * player->move_speed * 25.0f;
-                    player->move_dy =
-                        (float)sin(player->heading - 1.5707964f)
-                        * player->move_speed * 25.0f;
-                    move_delta.x = frame_dt * player->move_dx;
-                    move_delta.y = frame_dt * player->move_dy;
-                }
+                player_decelerate_move_speed(player);
+                player->move_dx =
+                    (float)cos(player->heading - 1.5707964f)
+                    * player->move_speed * 25.0f;
+                player->move_dy =
+                    (float)sin(player->heading - 1.5707964f)
+                    * player->move_speed * 25.0f;
+                move_delta.x = frame_dt * player->move_dx;
+                move_delta.y = frame_dt * player->move_dy;
             }
 
             player_apply_move_with_spawn_avoidance(

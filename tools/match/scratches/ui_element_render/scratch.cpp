@@ -81,12 +81,11 @@ extern "C" void ui_element_render(ui_element_t *element)
                 color_alpha += sizeof(ui_element_vertex_t);
             }
         } else {
-            unsigned char *color_alpha =
-                &element->overlay_vertices[0].color_a;
+            ui_element_vertex_t *vertex_cursor =
+                &element->overlay_vertices[0];
             int remaining_vertices = 4;
             do {
-                color_alpha += sizeof(ui_element_vertex_t);
-                *(color_alpha - sizeof(ui_element_vertex_t)) =
+                (vertex_cursor++)->color_a =
                     (unsigned char)(
                         element->hover_amount * 155 / 1000 + 100);
                 --remaining_vertices;
@@ -163,29 +162,29 @@ extern "C" void ui_element_render(ui_element_t *element)
                 grim_interface_ptr->grim_begin_batch();
 
                 ui_render_vec2_t shadow_pos;
-                shadow_pos.x = element->pos_x + 7.0f
-                    + element->render_offset_x;
-                shadow_pos.y = element->pos_y + 7.0f
-                    + element->render_offset_y;
+                shadow_pos.x = element->pos_x + 7.0f;
+                shadow_pos.y = element->pos_y + 7.0f;
+                shadow_pos.x += element->render_offset_x;
+                shadow_pos.y += element->render_offset_y;
                 grim_interface_ptr->grim_submit_vertices_offset_color(
                     ui_element_quad(element, 0),
                     4,
                     &shadow_pos.x,
                     &shadow_color);
                 if (element->vertex_count == 8) {
-                    shadow_pos.x = element->pos_x + 7.0f
-                        + element->render_offset_x;
-                    shadow_pos.y = element->pos_y + 7.0f
-                        + element->render_offset_y;
+                    shadow_pos.x = element->pos_x + 7.0f;
+                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.x += element->render_offset_x;
+                    shadow_pos.y += element->render_offset_y;
                     grim_interface_ptr->grim_submit_vertices_offset_color(
                         ui_element_quad(element, 2),
                         4,
                         &shadow_pos.x,
                         &shadow_color);
-                    shadow_pos.x = element->pos_x + 7.0f
-                        + element->render_offset_x;
-                    shadow_pos.y = element->pos_y + 7.0f
-                        + element->render_offset_y;
+                    shadow_pos.x = element->pos_x + 7.0f;
+                    shadow_pos.y = element->pos_y + 7.0f;
+                    shadow_pos.x += element->render_offset_x;
+                    shadow_pos.y += element->render_offset_y;
                     grim_interface_ptr->grim_submit_vertices_offset_color(
                         ui_element_quad(element, 4),
                         4,
@@ -253,15 +252,14 @@ extern "C" void ui_element_render(ui_element_t *element)
             &element->enabled_overlay_vertices[0].color_a;
         int remaining_vertices = 4;
         do {
-            enabled_alpha += sizeof(ui_element_vertex_t);
             *(enabled_alpha
-              - sizeof(ui_menu_item_subtemplate_block_t)
-              - sizeof(ui_element_vertex_t)) = (unsigned char)(
-                255 - element->time_since_ready / 2);
-            --remaining_vertices;
-            *(enabled_alpha - sizeof(ui_element_vertex_t)) =
+              - sizeof(ui_menu_item_subtemplate_block_t)) =
                 (unsigned char)(
                     255 - element->time_since_ready / 2);
+            --remaining_vertices;
+            *enabled_alpha = (unsigned char)(
+                255 - element->time_since_ready / 2);
+            enabled_alpha += sizeof(ui_element_vertex_t);
         } while (remaining_vertices);
     }
 

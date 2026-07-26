@@ -156,15 +156,16 @@ extern "C" void bonus_render(void)
             }
             grim_interface_ptr->grim_set_color_ptr(&color.r);
 
-            float index_phase = (float)bonus_index;
             float pulse_value =
-                (float)sin(index_phase + bonus_render_anim_phase);
+                (float)sin(
+                    (float)bonus_index + bonus_render_anim_phase);
             icon_scale *=
                 (float)pow(pulse_value, 2.0) * 0.25f + 0.75f;
             grim_interface_ptr->grim_set_color_ptr(&color.r);
             grim_interface_ptr->grim_set_rotation(
                 (float)sin(
-                    index_phase - (float)survival_elapsed_ms * 0.003f)
+                    (float)bonus_index
+                    - (float)survival_elapsed_ms * 0.003f)
                 * 0.2f);
 
             if (entry->bonus_id == BONUS_ID_POINTS
@@ -185,7 +186,6 @@ extern "C" void bonus_render(void)
     }
     grim_interface_ptr->grim_end_batch();
 
-    int player_index = 0;
     grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);
     grim_interface_ptr->grim_begin_batch();
     for (bonus_index = 0; bonus_index < 16; ++bonus_index) {
@@ -222,13 +222,14 @@ extern "C" void bonus_render(void)
     }
     grim_interface_ptr->grim_end_batch();
 
+    int player_index = 0;
     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 
-    int *hover_timer = telekinetic_bonus_hover_timer_ms;
-    vec2f_t *player_aim = &player_state_table[0].aim;
-    int nearby_bonus_index;
     if (player_index < config_player_count) {
+        int *hover_timer = telekinetic_bonus_hover_timer_ms;
+        vec2f_t *player_aim = &player_state_table[0].aim;
+        int nearby_bonus_index;
         while (1) {
             player_state_t *player = (player_state_t *)(
                 (char *)player_aim - offsetof(player_state_t, aim_x));

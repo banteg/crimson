@@ -15,7 +15,7 @@ Mods browser callback:
   runtime state;
 - transposition of both players' eleven input bindings into the mod API key
   configuration, plus the pick-perk and reload bindings; and
-- Main Menu and Escape behavior, both of which rearm the DLL scan.
+- Main Menu behavior, which rearms the DLL scan.
 
 The reconstructed source preserves the native two-stage vector expression.
 Writing `position = position + offset` exposes the VC6 return temporary seen
@@ -32,7 +32,8 @@ first_target=sub esp, 0x144
 first_candidate=sub esp, 0x15c
 ```
 
-The remaining differences are compiler lifetime and scheduling residue. The
+Recovery is semantic-complete. The remaining differences are compiler lifetime
+and scheduling residue. The
 native function reuses the ended `_finddata_t` metadata area for the later
 16-byte version string and places a vector return temporary eight bytes later;
 the natural candidate retains a frame 24 bytes larger. Capturing the renderer
