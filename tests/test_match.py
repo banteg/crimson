@@ -392,6 +392,14 @@ def test_parse_and_extract_object_function() -> None:
     assert extract_object_function(obj, "bar").data == bytes.fromhex("31c0c3")
 
 
+def test_extract_object_function_prefers_exact_decorated_symbol() -> None:
+    code = bytes.fromhex("31c0c3")
+    obj = parse_coff_object(build_object(code, [("__foo", 0), ("_foo", 0)], []))
+
+    assert extract_object_function(obj, "__foo").name == "__foo"
+    assert extract_object_function(obj, "_foo").name == "_foo"
+
+
 def test_extract_object_function_collects_relocations() -> None:
     code = bytes.fromhex("a100000000c3")
     obj = parse_coff_object(build_object(code, [("_foo", 0)], [1]))

@@ -929,7 +929,8 @@ def _format_addend(addend: int) -> str:
 def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectFunction:
     candidates = [symbol for symbol in obj.symbols if _is_function_symbol(symbol)]
     if name is not None:
-        candidates = [symbol for symbol in candidates if _symbol_matches(symbol.name, name)]
+        exact = [symbol for symbol in candidates if symbol.name == name]
+        candidates = exact or [symbol for symbol in candidates if _symbol_matches(symbol.name, name)]
     if not candidates:
         raise ValueError(f"no matching function symbol (name={name!r})")
     if len(candidates) > 1 and name is not None:
