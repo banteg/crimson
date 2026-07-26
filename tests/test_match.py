@@ -241,7 +241,7 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
 
     assert resolve_function(manifest, "game_is_full_version")[0].address == 0x0041DF40
     with pytest.raises(ValueError, match="not found"):
-        resolve_function(manifest, "FUN_0045315a")
+        resolve_function(manifest, "float_near_equal")
 
     grim_manifest = load_function_manifest(
         Path("analysis/ida/raw/grim.dll/functions.json"),
@@ -249,7 +249,11 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
         image_name="grim.dll",
         scope="port",
     )
-    assert grim_manifest.functions == ()
+    assert resolve_function(grim_manifest, "grim_mouse_shutdown")[0].address == 0x1000A7D0
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(grim_manifest, "FUN_1000a810")
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(grim_manifest, "grim_format_info_lookup")
 
 
 def test_matching_workspace_stays_inside_port_scope() -> None:

@@ -4,21 +4,22 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**502/689** functions matched exactly, **108309/325500** code bytes (**33.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**631/861** functions matched exactly, **127692/361557** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **270914/325500** code bytes (**83.2%**).
+Fuzzy-weighted alignment is **292840/361557** code bytes (**81.0%**).
 
-Compilable source candidates cover **619/689** functions and **321890/325500** code bytes (**98.9%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Compilable source candidates cover **753/861** functions and **344335/361557** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Images
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 502/689 | 108309/325500 | 33.3% | 270914/325500 | 83.2% | 619/689 | 321890/325500 | 98.9% | 502/619 |
+| crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270850/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
+| grim.dll | 132/182 | 19447/36649 | 53.1% | 21990/36649 | 60.0% | 137/182 | 22509/36649 | 61.4% | 132/137 |
 
 ## crimsonland.exe
 
-**502/689** functions, **108309/325500** bytes (**33.3%**), **270914/325500** fuzzy-weighted bytes (**83.2%**), **619/689** source candidates covering **321890/325500** bytes (**98.9%**), **502/619** scratches verified.
+**499/679** functions, **108245/324908** bytes (**33.3%**), **270850/324908** fuzzy-weighted bytes (**83.4%**), **616/679** source candidates covering **321826/324908** bytes (**99.1%**), **499/616** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -638,6 +639,147 @@ Compilable source candidates cover **619/689** functions and **321890/325500** c
 | match | weapon_pick_random_available | 0x00452cd0 | 107 | 107/107 | 0 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | gameplay-weapon-rng |
 | match | weapon_assign_player | 0x00452d40 | 254 | 254/254 | 0 | 61/61 | 100.00% | 61/61 | 26/0/0 |  | gameplay-weapon-assignment |
 | match | weapon_refresh_available | 0x00452e40 | 161 | 161/161 | 0 | 48/48 | 100.00% | 48/48 | 17/0/0 |  | gameplay-weapon-unlocks |
-| match | float_near_equal | 0x00452ef0 | 45 | 45/45 | 0 | 17/17 | 100.00% | 17/17 | 2/0/0 | msvc6.5pp /O1 /GB /W3 /GR- | math-float-epsilon |
-| match | vec2_normalize_dispatch_init | 0x00452f1d | 13 | 13/13 | 0 | 3/3 | 100.00% | 3/3 | 2/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | lazy-vector-normalize-dispatch |
-| match | vec2_normalize_dispatch | 0x00452f2a | 6 | 6/6 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 | msvc6.5pp /O1 /Oi /G6 /W3 /GR- | vector-normalize-dispatch-thunk |
+
+## grim.dll
+
+**132/182** functions, **19447/36649** bytes (**53.1%**), **21990/36649** fuzzy-weighted bytes (**60.0%**), **137/182** source candidates covering **22509/36649** bytes (**61.4%**), **132/137** scratches verified.
+
+| state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
+| match | grim_window_create | 0x10002680 | 497 | 497/497 | 0 | 142/142 | 100.00% | 142/142 | 46/0/0 |  | grim-window-creation |
+| match | grim_window_destroy | 0x10002880 | 66 | 66/66 | 0 | 22/22 | 100.00% | 22/22 | 8/0/0 |  | grim-window-teardown |
+| match | grim_backup_textures | 0x100028d0 | 610 | 610/610 | 0 | 219/219 | 100.00% | 219/219 | 41/0/0 |  | grim-texture-backup |
+| match | grim_restore_textures | 0x10002b40 | 432 | 432/432 | 0 | 161/161 | 100.00% | 161/161 | 26/0/0 |  | grim-texture-restore |
+| match | grim_try_reset_device | 0x10002cf0 | 609 | 609/609 | 0 | 205/205 | 100.00% | 205/205 | 48/0/0 |  | grim-device-reset |
+| match | grim_app_cleanup | 0x10002f60 | 26 | 26/26 | 0 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | grim-app-gdi-cleanup |
+| match | grim_app_tick | 0x10002f80 | 64 | 64/64 | 0 | 29/29 | 100.00% | 29/29 | 1/0/0 |  | grim-app-30ms-tick |
+| match | grim_app_init | 0x10002fc0 | 185 | 185/185 | 0 | 54/54 | 100.00% | 54/54 | 13/0/0 |  | grim-app-runtime-init |
+| match | grim_app_shutdown | 0x10003080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | grim-app-shutdown-thunk |
+| match | grim_app_pump | 0x10003090 | 20 | 20/20 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | grim-app-30ms-pump |
+| match | grim_run_loop | 0x10003c00 | 608 | 608/608 | 0 | 174/174 | 100.00% | 174/174 | 61/0/0 |  | grim-win32-frame-loop |
+| match | grim_d3d_init | 0x10003e60 | 1046 | 1046/1046 | 0 | 323/323 | 100.00% | 323/323 | 104/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-direct3d-initialization |
+| wip | grim_d3d_shutdown | 0x10004280 | 196 | 172/196 | 24 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
+| match | grim_create_geometry_buffers | 0x10004350 | 387 | 387/387 | 0 | 107/107 | 100.00% | 107/107 | 32/0/0 |  | grim-geometry-buffer-creation |
+| match | grim_release_geometry_buffers | 0x100044e0 | 51 | 51/51 | 0 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
+| match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
+| match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
+| match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |
+| match | grim_timing_init | 0x10004920 | 74 | 74/74 | 0 | 13/13 | 100.00% | 13/13 | 10/0/0 |  | grim-frame-timing-init |
+| match | grim_timing_update | 0x10004970 | 216 | 216/216 | 0 | 53/53 | 100.00% | 53/53 | 23/0/0 |  | grim-frame-timing-update |
+| match | grim_texture_init | 0x10004a50 | 83 | 83/83 | 0 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
+| match | grim_texture_release | 0x10004ab0 | 66 | 66/66 | 0 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
+| match | grim_path_has_extension | 0x10004b00 | 99 | 99/99 | 0 | 50/50 | 100.00% | 50/50 | 0/0/0 |  | grim-texture-extension |
+| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 6/15/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
+| match | grim_jaz_jpeg_error_exit | 0x10004e90 | 41 | 41/41 | 0 | 14/14 | 100.00% | 14/14 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-jaz-jpeg-error |
+| wip | grim_texture_load_file | 0x10004ec0 | 591 | 379/591 | 212 | 223/235 | 64.19% | 0/235 | 24/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-texture-file-decode |
+| match | grim_texture_name_equals | 0x10005110 | 93 | 93/93 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
+| match | grim_find_texture_by_name | 0x10005170 | 68 | 68/68 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | grim-texture-name-lookup |
+| match | grim_find_free_texture_slot | 0x100051c0 | 28 | 28/28 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | grim-texture-slot-allocation |
+| match | grim_load_texture_internal | 0x100051e0 | 265 | 265/265 | 0 | 80/80 | 100.00% | 80/80 | 14/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim-texture-file-load |
+| match | grim_lookup_blob_load | 0x10005a40 | 146 | 146/146 | 0 | 51/51 | 100.00% | 51/51 | 15/0/0 |  | grim-lookup-blob-lifecycle |
+| match | grim_lookup_blob_find | 0x10005ae0 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-search |
+| match | grim_lookup_blob_size_for_path | 0x10005b80 | 146 | 146/146 | 0 | 66/66 | 100.00% | 66/66 | 4/0/0 |  | grim-lookup-blob-size |
+| match | grim_set_key_char_buffer | 0x10005c20 | 32 | 32/32 | 0 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | grim2d-key-char-buffer |
+| match | grim_get_key_char | 0x10005c40 | 52 | 52/52 | 0 | 22/22 | 100.00% | 22/22 | 4/0/0 |  | grim2d-key-char-fifo |
+| match | grim_release | 0x10005c80 | 8 | 8/8 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |
+| match | grim_set_paused | 0x10005c90 | 12 | 12/12 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-pause-state |
+| match | grim_get_version | 0x10005ca0 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-version |
+| match | grim_save_screenshot | 0x10005cb0 | 140 | 140/140 | 0 | 56/56 | 100.00% | 56/56 | 5/0/0 |  | grim2d-front-buffer-capture |
+| match | grim_apply_config | 0x10005d40 | 367 | 367/367 | 0 | 124/124 | 100.00% | 124/124 | 25/0/0 |  | grim2d-configuration-dialog |
+| match | grim_init_system | 0x10005eb0 | 318 | 318/318 | 0 | 93/93 | 100.00% | 93/93 | 32/0/0 |  | grim2d-system-initialization |
+| match | grim_shutdown | 0x10005ff0 | 38 | 38/38 | 0 | 8/8 | 100.00% | 8/8 | 7/0/0 |  | grim2d-system-shutdown |
+| match | grim_apply_settings | 0x10006020 | 8 | 8/8 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-run-loop-wrapper |
+| match | grim_get_config_var | 0x10006c30 | 102 | 102/102 | 0 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim2d-get-config-var |
+| match | grim_get_error_text | 0x10006ca0 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_clear_color | 0x10006cb0 | 150 | 150/150 | 0 | 45/45 | 100.00% | 45/45 | 11/0/0 |  | grim2d-device-clear |
+| match | grim_set_render_target | 0x10006d50 | 240 | 240/240 | 0 | 89/89 | 100.00% | 89/89 | 19/0/0 |  | grim2d-render-target-switch |
+| match | grim_get_time_ms | 0x10006e40 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_set_time_ms | 0x10006e50 | 12 | 12/12 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-time-state |
+| match | grim_get_frame_dt | 0x10006e60 | 33 | 33/33 | 0 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | branch-x87 |
+| match | grim_get_fps | 0x10006e90 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-fps-state |
+| match | grim_joystick_up_active | 0x10006ea0 | 78 | 78/78 | 0 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_down_active | 0x10006ef0 | 74 | 74/74 | 0 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_left_active | 0x10006f40 | 78 | 78/78 | 0 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
+| match | grim_joystick_right_active | 0x10006f90 | 74 | 74/74 | 0 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
+| wip | grim_is_key_active | 0x10006fe0 | 456 | 337/456 | 119 | 174/175 | 73.93% | 2/175 | 7/0/1 |  | grim-input-key-router |
+| match | grim_get_config_float | 0x100071b0 | 264 | 264/264 | 0 | 88/88 | 100.00% | 88/88 | 13/0/0 |  | grim-input-float-router |
+| match | grim_get_slot_float | 0x100072c0 | 14 | 14/14 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |
+| match | grim_get_slot_int | 0x100072d0 | 14 | 14/14 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |
+| match | grim_set_slot_float | 0x100072e0 | 18 | 18/18 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-slot-state |
+| match | grim_set_slot_int | 0x10007300 | 18 | 18/18 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-slot-state |
+| match | grim_is_key_down | 0x10007320 | 16 | 16/16 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-key-state |
+| match | grim_flush_input | 0x10007330 | 91 | 91/91 | 0 | 34/34 | 100.00% | 34/34 | 5/0/0 |  | grim2d-input-flush |
+| match | grim_was_key_pressed | 0x10007390 | 119 | 119/119 | 0 | 31/31 | 100.00% | 31/31 | 10/0/0 |  | grim2d-key-repeat |
+| match | grim_is_mouse_button_down | 0x10007410 | 38 | 38/38 | 0 | 11/11 | 100.00% | 11/11 | 3/0/0 |  | grim2d-mouse-button-state |
+| match | grim_was_mouse_button_pressed | 0x10007440 | 131 | 131/131 | 0 | 51/51 | 100.00% | 51/51 | 7/0/0 |  | grim2d-mouse-edge |
+| match | grim_get_mouse_dx | 0x100074d0 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-motion |
+| match | grim_get_mouse_dy | 0x100074e0 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-motion |
+| match | grim_get_mouse_dx_indexed | 0x100074f0 | 8 | 8/8 | 0 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | grim-mouse-motion-forwarder |
+| match | grim_get_mouse_dy_indexed | 0x10007500 | 8 | 8/8 | 0 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | grim-mouse-motion-forwarder |
+| match | grim_get_mouse_x | 0x10007510 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
+| match | grim_get_mouse_y | 0x10007520 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-mouse-position |
+| match | grim_set_mouse_pos | 0x10007530 | 37 | 37/37 | 0 | 9/9 | 100.00% | 9/9 | 4/0/0 |  | grim-mouse-position |
+| match | grim_get_mouse_wheel_delta | 0x10007560 | 23 | 23/23 | 0 | 7/7 | 100.00% | 7/7 | 3/0/0 |  | branch-x87 |
+| match | grim_get_joystick_x | 0x10007580 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_y | 0x10007590 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_z | 0x100075a0 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim-joystick-state |
+| match | grim_get_joystick_pov | 0x100075b0 | 14 | 14/14 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-joystick-state |
+| match | grim_is_joystick_button_down | 0x100075c0 | 16 | 16/16 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-wrapper |
+| match | grim_create_texture | 0x100075d0 | 257 | 257/257 | 0 | 81/81 | 100.00% | 81/81 | 13/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | grim2d-texture-create |
+| match | grim_load_texture | 0x100076e0 | 21 | 21/21 | 0 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | grim2d-texture-load-wrapper |
+| match | grim_destroy_texture | 0x10007700 | 64 | 64/64 | 0 | 20/20 | 100.00% | 20/20 | 6/0/0 |  | grim2d-texture-destruction |
+| match | grim_get_texture_handle | 0x10007740 | 16 | 16/16 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-texture-lookup |
+| match | grim_save_texture | 0x10007750 | 50 | 50/50 | 0 | 18/18 | 100.00% | 18/18 | 2/0/0 |  | grim2d-texture-save |
+| match | grim_recreate_texture | 0x10007790 | 157 | 157/157 | 0 | 57/57 | 100.00% | 57/57 | 8/0/0 |  | grim2d-texture-recreate |
+| match | grim_bind_texture | 0x10007830 | 58 | 58/58 | 0 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
+| match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 109/109 | 0 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
+| match | grim_draw_rect_filled | 0x100078e0 | 205 | 205/205 | 0 | 72/72 | 100.00% | 72/72 | 6/0/0 |  | grim2d-filled-rectangle |
+| match | grim_draw_fullscreen_color | 0x100079b0 | 259 | 259/259 | 0 | 83/83 | 100.00% | 83/83 | 8/0/0 |  | grim2d-fullscreen-color |
+| match | grim_begin_batch | 0x10007ac0 | 94 | 94/94 | 0 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-batch-lifecycle |
+| match | grim_end_batch | 0x10007b20 | 104 | 104/104 | 0 | 36/36 | 100.00% | 36/36 | 8/0/0 |  | grim2d-batch-lifecycle |
+| match | grim_draw_circle_filled | 0x10007b90 | 432 | 432/432 | 0 | 115/115 | 100.00% | 115/115 | 32/0/0 |  | grim2d-filled-circle |
+| match | grim_draw_circle_outline | 0x10007d40 | 462 | 462/462 | 0 | 120/120 | 100.00% | 120/120 | 31/0/0 |  | grim2d-circle-outline |
+| match | grim_set_rotation | 0x10007f30 | 85 | 85/85 | 0 | 19/19 | 100.00% | 19/19 | 11/0/0 |  | grim2d-rotation-matrix |
+| match | grim_set_color | 0x10007f90 | 166 | 166/166 | 0 | 42/42 | 100.00% | 42/42 | 16/0/0 |  | grim2d-packed-color |
+| match | grim_set_color_ptr | 0x10008040 | 104 | 104/104 | 0 | 25/25 | 100.00% | 25/25 | 12/0/0 |  | grim2d-packed-color-pointer |
+| match | grim_draw_line | 0x100080b0 | 134 | 134/134 | 0 | 40/40 | 100.00% | 40/40 | 13/0/0 |  | grim2d-line-vector |
+| match | grim_draw_line_quad | 0x10008150 | 99 | 99/99 | 0 | 42/42 | 100.00% | 42/42 | 0/0/0 |  | grim2d-line-quad |
+| match | grim_set_color_slot | 0x100081c0 | 109 | 109/109 | 0 | 27/27 | 100.00% | 27/27 | 9/0/0 |  | grim2d-packed-color-slot |
+| match | grim_set_atlas_frame | 0x10008230 | 139 | 139/139 | 0 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-frame |
+| match | grim_set_sub_rect | 0x100082c0 | 143 | 143/143 | 0 | 31/31 | 100.00% | 31/31 | 15/0/0 |  | grim2d-atlas-sub-rectangle |
+| match | grim_set_uv | 0x10008350 | 74 | 74/74 | 0 | 17/17 | 100.00% | 17/17 | 8/0/0 |  | grim2d-uv-rectangle |
+| match | grim_set_uv_point | 0x100083a0 | 29 | 29/29 | 0 | 6/6 | 100.00% | 6/6 | 2/0/0 |  | grim2d-uv-point |
+| match | grim_flush_batch | 0x100083c0 | 107 | 107/107 | 0 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | grim2d-batch-lifecycle |
+| match | grim_submit_vertices_offset_color | 0x10008430 | 168 | 168/168 | 0 | 54/54 | 100.00% | 54/54 | 9/0/0 |  | grim2d-vertex-submit-offset-color |
+| match | grim_submit_vertices_transform_color | 0x100084e0 | 218 | 218/218 | 0 | 72/72 | 100.00% | 72/72 | 10/0/0 |  | grim2d-vertex-submit-transform-color |
+| match | grim_submit_vertices_transform | 0x100085c0 | 192 | 192/192 | 0 | 64/64 | 100.00% | 64/64 | 9/0/0 |  | grim2d-vertex-submit-transform |
+| match | grim_submit_vertices_offset | 0x10008680 | 153 | 153/153 | 0 | 50/50 | 100.00% | 50/50 | 8/0/0 |  | grim2d-vertex-submit-offset |
+| match | grim_draw_quad_xy | 0x10008720 | 34 | 34/34 | 0 | 14/14 | 100.00% | 14/14 | 0/0/0 |  | grim2d-quad-xy-wrapper |
+| match | grim_draw_quad_rotated_matrix | 0x10008750 | 953 | 953/953 | 0 | 236/236 | 100.00% | 236/236 | 81/0/0 |  | grim2d-matrix-quad |
+| match | grim_draw_quad | 0x10008b10 | 800 | 800/800 | 0 | 195/195 | 100.00% | 195/195 | 68/0/0 |  | grim2d-quad-batching |
+| match | grim_submit_vertex_raw | 0x10008e30 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 9/0/0 |  | grim2d-raw-vertex-submit |
+| match | grim_submit_quad_raw | 0x10008eb0 | 91 | 91/91 | 0 | 25/25 | 100.00% | 25/25 | 7/0/0 |  | grim2d-raw-quad-submit |
+| match | grim_draw_rect_outline | 0x10008f10 | 356 | 356/356 | 0 | 125/125 | 100.00% | 125/125 | 8/0/0 |  | grim2d-outlined-rectangle |
+| match | grim_draw_quad_points | 0x10009080 | 554 | 554/554 | 0 | 130/130 | 100.00% | 130/130 | 59/0/0 |  | grim2d-quad-points |
+| wip | grim_draw_text_mono | 0x100092b0 | 1034 | 976/1034 | 58 | 298/308 | 94.39% | 6/308 | 41/0/0 |  | grim2d-mono-font-draw |
+| match | grim_measure_text_width | 0x100096c0 | 98 | 98/98 | 0 | 45/45 | 100.00% | 45/45 | 2/0/0 |  | grim2d-small-font-measurement |
+| match | grim_draw_text_small | 0x10009730 | 515 | 515/515 | 0 | 153/153 | 100.00% | 153/153 | 18/0/0 |  | grim2d-small-font-draw |
+| match | grim_draw_text_mono_fmt | 0x10009940 | 52 | 52/52 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-mono-text-format-wrapper |
+| match | grim_draw_text_small_fmt | 0x10009980 | 52 | 52/52 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
+| match | GRIM__GetInterface | 0x100099c0 | 95 | 95/95 | 0 | 28/28 | 100.00% | 28/28 | 11/0/0 |  | grim-interface-factory |
+| match | DllMain | 0x10009a20 | 38 | 38/38 | 0 | 10/10 | 100.00% | 10/10 | 3/0/0 |  | grim-dll-process-attach |
+| match | grim_joystick_enum_device | 0x1000a110 | 50 | 50/50 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim-joystick-enumeration |
+| match | grim_joystick_configure_axis | 0x1000a150 | 99 | 99/99 | 0 | 26/26 | 100.00% | 26/26 | 1/0/0 |  | grim-joystick-axis-range |
+| match | grim_joystick_init | 0x1000a1c0 | 231 | 231/231 | 0 | 90/90 | 100.00% | 90/90 | 19/0/0 |  | grim-joystick-init |
+| match | grim_joystick_poll | 0x1000a2b0 | 87 | 87/87 | 0 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim-joystick-poll |
+| match | grim_joystick_button_down | 0x1000a310 | 19 | 19/19 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-state |
+| match | grim_joystick_shutdown | 0x1000a330 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-joystick-shutdown |
+| match | grim_keyboard_key_down | 0x1000a370 | 19 | 19/19 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-keyboard-state |
+| match | grim_keyboard_init | 0x1000a390 | 272 | 272/272 | 0 | 89/89 | 100.00% | 89/89 | 18/0/0 |  | grim-keyboard-init |
+| match | grim_keyboard_poll | 0x1000a4a0 | 165 | 165/165 | 0 | 60/60 | 100.00% | 60/60 | 9/0/0 |  | grim-keyboard-poll |
+| match | grim_keyboard_shutdown | 0x1000a550 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-keyboard-shutdown |
+| match | grim_mouse_button_down | 0x1000a590 | 14 | 14/14 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-mouse-button-state |
+| match | grim_mouse_init | 0x1000a5a0 | 194 | 194/194 | 0 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
+| match | grim_mouse_poll | 0x1000a670 | 351 | 351/351 | 0 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
+| match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |

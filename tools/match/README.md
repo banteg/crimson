@@ -3,21 +3,22 @@
 This is the Crimsonland version of the Snail Mail matching-islands workflow:
 write a small C/C++ scratch for one native function, compile it with the
 original-era MSVC toolchain, then diff normalized x86 assembly against the
-function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe`.
+function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
+`grim.dll`.
 
 ## Matching Scope
 
 The default `port` scope is defined in `analysis/matching_scope.json`. It
-contains game-owned `crimsonland.exe` logic before `0x0045315a`. It excludes:
+contains game-owned `crimsonland.exe` logic before `0x00452ef0` and the
+Grim2D engine implementation in `grim.dll` before `0x1000a810`. It excludes:
 
-- `grim.dll`, because the port supplies its own engine layer (likely raylib)
-- the renderer, D3DX, CRT, codec, and other bundled library code linked after
-  the game-owned executable range
+- D3DX, CRT, codec, import-thunk, and other bundled library code linked after
+  the owned ranges in either image
 
-The Grim Binary Ninja database, IDA and Ghidra exports, maps, and annotations
-remain analysis references. They are not port matching work and do not count
-against progress. Pass `--scope all` only for an explicit consultation outside
-the port scope; do not add engine or library scratches to the default corpus.
+Both images' Binary Ninja databases, IDA and Ghidra exports, maps,
+annotations, and owned scratches are matching inputs. Pass `--scope all` only
+for an explicit consultation outside the port scope; do not add embedded
+library scratches to the default corpus.
 
 The address-keyed scope deliberately takes precedence over IDA's `library`
 flag, which can change between analysis versions and has produced false

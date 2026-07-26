@@ -17,7 +17,7 @@ Resolve a name or address and see the state recorded by all three tools:
 ```bash
 uv run crimson match inspect player_update
 uv run crimson match inspect 0x004136b0
-uv run crimson match inspect grim_is_key_down --image grim.dll --scope all
+uv run crimson match inspect grim_is_key_down --image grim.dll
 ```
 
 The matching-aware command prints exact `bn decompile`, `bn il`, `bn disasm`,
