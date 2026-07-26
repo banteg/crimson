@@ -112,6 +112,7 @@ void console_queue_t::update(void)
             return;
         }
 
+        console_input_buffer();
         grim_interface_ptr->grim_was_key_pressed(0x1c);
     } else {
         console_open_anim_t += frame_dt_copy * 3.5f;
