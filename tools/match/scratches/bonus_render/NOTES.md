@@ -59,8 +59,8 @@ before the player walk, and the nearby-bonus cursor remains scoped to the
 Telekinetic search. This raises the whole-function result from 85.64% to
 87.55% and improves the reference audit from `212/0/12` to `218/0/10`.
 
-The scratch is classified `semantic-complete` with `compiler,references`
-residuals. Fresh live Binary Ninja output confirms the ordinary and weapon
+The scratch is classified `semantic-complete` with a `compiler` residual.
+Fresh live Binary Ninja output confirms the ordinary and weapon
 bonus passes, Telekinetic hover/apply path, all three particle passes, exploding
 secondary-projectile and sprite-effect passes, and the final `effects_render`
 call through `0x004295f0..0x0042a5e8`. IDA and Ghidra independently retain the
@@ -68,4 +68,6 @@ same signature and six named helper calls. The first localized regions differ
 only in branch displacement, zero materialization (`EBX` versus literal zero),
 and x87 scheduling. All their scoped references resolve; the ten whole-function
 audit mismatches remain visible as alignment or strength-reduced field-anchor
-debt rather than being aliased away.
+effects rather than being aliased away. Each candidate cursor is an evidenced
+interior of the same player, particle, secondary-projectile, camera, or sprite
+record used by native, so none is independent source-reference debt.

@@ -69,11 +69,13 @@ instead of preserving a scorer-friendlier local substitution.
 
 ## Recovery classification
 
-This scratch is `semantic-complete` with `compiler,references` residuals. A
+This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
 paths, and its seven-call inventory agrees with the recovered source. All ten
 masked-reference mismatches occur inside nonmatching sequence alignments and
 resolve to source operations already present in the surrounding native flow.
-The remaining 48-byte native versus 56-byte candidate frame and register/lifetime
-differences are compiler layout, not missing menu behavior.
+They remain visible and unaliased rather than being classified as separate
+reference debt. The remaining 48-byte native versus 56-byte candidate frame
+and register/lifetime differences are compiler layout, not missing menu
+behavior.

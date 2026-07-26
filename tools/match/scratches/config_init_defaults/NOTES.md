@@ -36,4 +36,6 @@ the correctly laid-out `config_blob.windowed` (`0x48050c`) and
 Binary Ninja symbol aliases leaves the instruction score unchanged and worsens
 reference agreement to 63/0/4, proving that the struct-field form is the honest
 candidate. Recovery is therefore semantic-complete; the two reported reference
-mismatches remain an alignment artifact of the compiler-shaped store schedule.
+mismatches remain visible as an alignment artifact of the compiler-shaped
+store schedule. The scratch consequently carries only a `compiler` residual,
+with no independent source-reference debt and no alias masking.

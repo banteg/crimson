@@ -53,4 +53,8 @@ divergence; their distinct real operands were deliberately not aliased.
 
 No volatile state, dummy use, forced address, fake alias, inline assembly, or
 dead arithmetic is used. The callback remains WIP only for compiler scheduling,
-not for missing recovered behavior.
+not for missing recovered behavior. It is therefore `semantic-complete` with
+only a `compiler` residual. The five audit mismatches pair the three adjacent
+music IDs and their already-present mute/play calls after the playtime
+scheduling divergence; they remain visible and unaliased rather than being
+treated as independent reference debt.

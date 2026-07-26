@@ -103,5 +103,7 @@ with a direct aggregate copy both reproduced the exact same 78.45%,
 `msvc6.5pp` profile regressed to 59.67%. These no-op natural source variants
 and the already exact `0x3c` frame isolate the remaining eight-instruction
 delta to VC6 register allocation and aligned-reference scheduling. The scratch
-is therefore classified `semantic-complete` with `compiler,references`
-residuals.
+is therefore classified `semantic-complete` with a `compiler` residual. The
+five visible audit mismatches are different induction anchors within the same
+proven creature records; no address is hidden with an alias and no independent
+source-reference debt remains.

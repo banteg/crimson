@@ -23,4 +23,8 @@ native retains panel X in `edi`, later reuses that register for the detail
 maximum, and orders several independent two-float widget-position stores
 differently. The known VC6.5 point-profile, VC6.6, VC6.5pp, VC7, and `/G6`
 checks did not reproduce that allocation; the semantically direct `/GB`
-source remains the strongest result.
+source remains the strongest result. The scratch is consequently
+`semantic-complete` with a `compiler` residual. Its eight visible audit
+mismatches pair adjacent static-widget fields, render constants, and the
+already-recovered Bloody Mess / Quick Learner name-description values after
+that scheduling divergence; none is aliased away as reference debt.
