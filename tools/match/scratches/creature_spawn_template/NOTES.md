@@ -518,6 +518,24 @@ stores into whole-vector assignments was also measured, but added one
 instruction and lost 6.39 fuzzy-weighted bytes, so the evidenced independent
 stores remain.
 
+## Compiler profile and opening-region probes
+
+A fresh compiler/flags matrix keeps VC6.5 `/O2 /GB` at the top:
+86.9304%, 3,161/3,159 instructions, a 23-instruction prefix, and `352/0/1`
+references. VC6.6 emits the identical body, while VC6.0 falls slightly to
+86.8671%. `/G5`, `/TP`, and `/GX` are byte-neutral for their compiler family;
+none of the tested `/G6`, `/O1`, `/Oy-`, Processor Pack, or VC7 variants beats
+the canonical result.
+
+The first mismatch is still the native low-slot permutation: zero velocity
+occupies `[esp+0x10..0x14]` and the root byte offset `[esp+0x18]`, while VC6
+assigns the same three words differently in the candidate. Splitting the
+named velocity initialization around root-pointer formation was byte-identical.
+Splitting its aggregate copy into the visibly separated `x` and `y` stores
+instead grew the frame from `0x48` to `0x4c`, erased the prefix, and regressed
+the whole function to 66.8461%. Both probes were reverted; the compact
+two-float value remains the best natural source shape.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A

@@ -66,8 +66,9 @@ extern "C" void projectile_update(void)
 
     int projectile_index = 0;
     do {
-        projectile_t *projectile = &projectile_pool[projectile_index];
-        if (projectile->active) {
+        if (projectile_pool[projectile_index].active) {
+            projectile_t *projectile =
+                &projectile_pool[projectile_index];
             if (projectile->pos.tail.vy.life_timer <= 0.0f) {
                 projectile->active = 0;
             }

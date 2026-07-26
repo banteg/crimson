@@ -209,8 +209,9 @@ extern "C" void highscore_screen_update(void)
 
     highscore_vec2_t position = left_panel;
     position.x =
-        position.x + ui_element_slot_09.render_offset_x + 44.0f - 110.0f - 32.0f;
+        position.x + ui_element_slot_09.render_offset_x + 44.0f - 110.0f;
     position.y += 1.0f;
+    position.x -= 32.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     static char title_buffer[128];

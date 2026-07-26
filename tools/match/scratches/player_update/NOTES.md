@@ -148,10 +148,32 @@ byte-neutral. Consuming Fire Cough's `vec2_sub` return pointer directly did
 recover that local native lifetime, but perturbed the whole-function allocation,
 lowering the score to `56.20%` and the prefix from seven instructions to two.
 
+The selected aim-screen aggregate now has an ordinary destination pointer at
+the entry copy. This matches the native `0x004136c5..0x004136e3` schedule:
+VC6 forms the player-record index between the two adjacent aim-screen stores
+instead of hoisting the `ui_mouse_y` load ahead of both stores. The source
+still performs one typed two-float aggregate copy, with no scalar bit casts or
+artificial dependency. It raises the score from `56.2219%` to `56.2705%`,
+reduces the weighted gap from `7,117.0105` to `7,109.1005` bytes, and improves
+references from `760/0/5` to `762/0/5`; the 4,015/4,206 instruction counts and
+seven-instruction prefix are unchanged.
+
+A systematic codegen audit requested 59 profiles. The 45-profile compiler
+matrix covered every installed backend (`msvc6.0`, `msvc6.5`, `msvc6.5pp`,
+`msvc6.6`, and `msvc7.0`) across optimization level, `/GB`/`/G5`/`/G6`,
+inlining, frame-pointer, and exception variants. Fourteen additional VC6.5
+checks covered `/Op`, `/Oi-`, `/Ob0`, `/Os`, `/Ot`, `/Og-`, `/Gf`, `/Gy`,
+debug-info, packing, and unsigned-char toggles. VC6.0, VC6.5, and VC6.6 emit
+the same best code; patched VC6.5 falls to `48.22%`, VC7.0 to `35.11%`, and
+every non-neutral flag regresses. No `scratch.conf` override is justified.
+Entry probes also found moving previous-position storage to a brace initializer
+and using pointer/helper aggregate copies byte-neutral; scalarizing the
+retained position preserved fuzzy bytes but degraded the audit to `731/0/14`.
+
 Current local score:
 
 ```txt
-match=56.22% prefix=7/4206 target_insns=4206 candidate_insns=4015 refs=760/0/5
+match=56.27% prefix=7/4206 target_insns=4206 candidate_insns=4015 refs=762/0/5
 first_target=jne L3f7a
 first_candidate=jne L3d2e
 ```
@@ -160,7 +182,7 @@ Recovery is classified `semantic-complete` with a `compiler` residual. The
 live Binary Ninja bundle retains all 485 native basic blocks,
 and the source covers every recovered phase listed above. The five remaining
 reference mismatches are alignment/scheduling debt rather than absent
-operations. The candidate resolves 760 references and emits 4,015 of 4,206
+operations. The candidate resolves 762 references and emits 4,015 of 4,206
 native instructions; the residual instruction-count gap is concentrated in
 register allocation, x87 lifetime, and compiler tail-merging differences
 across already-recovered branches. All five mismatches remain visible and

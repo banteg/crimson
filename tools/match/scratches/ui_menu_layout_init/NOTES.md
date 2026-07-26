@@ -26,11 +26,11 @@ a standalone `0xe8` subtemplate block, loads
 `ui\ui_textLevelUp.jaz`, and applies separate four-vertex prompt/text
 transforms.
 
-Current MSVC 6.5 `/O2 /GB` result: **55.43%**, with 1 exact prefix
-instruction, 1,422 native instructions versus 1,302 candidate instructions,
+Current MSVC 6.5 `/O2 /GB` result: **55.80%**, with 10 exact prefix
+instructions, 1,422 native instructions versus 1,302 candidate instructions,
 and reference audit **305 resolved / 0 unresolved / 48 mismatched**. The
-candidate has a `0x70`-byte frame versus native `0x68`; remaining differences
-are dominated by VC6 scheduling and temporary-slot allocation across the
+candidate now has the native `0x68`-byte frame; remaining differences are
+dominated by VC6 scheduling and temporary-slot allocation across the
 aggregate position/atlas assignments, plus repeated inlined responsive-loop
 register choices. The recovered element graph, callbacks, assets, coordinates,
 atlas rows, responsive branches, and final layout pass are complete. No
@@ -63,22 +63,42 @@ live HLIL names every write as `overlay_vertices[0..3].u/v`. The importer also
 walks database-path ancestors when locating the repository, allowing a direct
 `bn py exec --script scripts/binja_import_maps.py` replay from
 `analysis/binary_ninja/crimsonland.exe.bndb`. This remains a presentation-only
-recovery; the matcher stays at **55.43%**, 1,302/1,422 instructions, prefix 1,
+recovery; the matcher stays at **55.80%**, 1,302/1,422 instructions, prefix 10,
 and **305/0/48** references.
+
+## Compiler-residual lifetime refinement
+
+The former first mismatch was the candidate's `0x70` frame versus native
+`0x68`. The level-up prompt offset is used only by its one
+`ui_element_set_rect` call. Giving that address-taken vector an explicit narrow
+scope lets VC6 reuse its slot at the native lifetime boundary: the frame
+becomes `0x68`, the exact prefix grows from 1 to 10 instructions, the score
+rises from 55.43% to 55.80%, and the rounded fuzzy gap falls from 3,225 to
+3,199 bytes. The instruction and reference audits remain 1,302/1,422 and
+`305/0/48`.
+
+Reusing the general table pointer as the initialization cursor regressed to
+55.21% with one fewer resolved reference; direct table indexing in the atlas
+loop was byte-neutral. Both are rejected in favor of the simpler existing
+cursor lifetimes. A 20-profile matrix covered MSVC 6.0, 6.5, 6.5pp, 6.6, and
+7.0 with `/GB`, `/G5`, `/G6`, and `/Oy-`; extended VC6.5 probes also covered
+`/Ob0`, `/Ob2`, `/Oi-`, `/Og-`, `/Os`, `/O1`, and `/GX`. Stock MSVC 6.5
+`/O2 /GB` remains tied for best with 6.0, 6.6, and `/G5`, so no override is
+supported.
 
 The scratch is classified `semantic-complete` with `compiler,references`
 residuals. A fresh `match inspect --binja-live` pass confirms the same six
 native callees in Binary Ninja, IDA, and Ghidra, while the recovered source
 contains the complete 41-element graph, both configuration branches, all
 three render layers, every callback and texture, and the final layout pass.
-The bounded mismatch regions start with the `0x70` versus `0x68` frame and
-then differ only in x87 lifetimes, aggregate-copy scheduling, temporary slots,
+The bounded mismatch regions now start after the exact 10-instruction prefix
+and differ only in x87 lifetimes, aggregate-copy scheduling, temporary slots,
 and reference alignment; they do not expose a missing native operation.
 
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 55.43%, 1,302/1,422 instructions,
-and `305/0/48` references before and after classification. All 48 entries are
+A fresh corpus audit keeps the candidate at 55.80%, 1,302/1,422 instructions,
+and `305/0/48` references. All 48 entries are
 aligned mismatches; there are no unresolved references. Live Binary Ninja
 reports each menu slot as the evidenced `0x318`-byte `ui_element_t`, and the
 menu-item and panel templates at their existing mapped object boundaries.

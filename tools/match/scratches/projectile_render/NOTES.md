@@ -145,10 +145,31 @@ spellings, this leaves compiler allocation and aligned-reference scheduling,
 not missing behavior. The scratch is therefore classified
 `semantic-complete` with compiler residuals.
 
+## Compiler-residual source-shape refinement
+
+The first current mismatch remains the prologue: the candidate's honest
+`0x120`-byte frame versus the native `0x19c` frame. A 20-profile matrix covered
+MSVC 6.0, 6.5, 6.5pp, 6.6, and 7.0 with `/GB`, `/G5`, `/G6`, and `/Oy-`.
+Additional VC6.5 probes covered `/Ob0`, `/Ob2`, `/Oi-`, `/Og-`, `/Os`, `/O1`,
+and `/GX`. Stock MSVC 6.5 `/O2 /GB` remains best, tied only with equivalent
+MSVC 6.6 and `/G5` output; no compiler override is justified.
+
+The native small-billboard pass tests activity and the live `0.4f` lifetime
+before loading the projectile type. Delaying the source `type_id` binding until
+after those two gates raises the candidate from 50.96% to 51.06%, reduces the
+rounded fuzzy gap from 6,155 to 6,142 bytes, and improves the reference audit
+from `399/0/16` to `402/0/16`, with the same 2,854/3,021 instructions.
+
+Named initial trail alpha, in-place Sharpshooter start-position mutation, and
+separate conventional active/type gates all compiled byte-identically. Moving
+the plasma cursor behind its active gate regressed to 50.31% with `384/0/21`
+references, while the analogous secondary and Plague gate spellings were
+neutral. Only the measured billboard lifetime improvement is retained.
+
 ## Reference residual re-audit
 
-A fresh corpus audit keeps the candidate at 50.96%, 2,854/3,021 instructions,
-and `399/0/16` references before and after classification. All 16 entries are
+A fresh corpus audit keeps the candidate at 51.06%, 2,854/3,021 instructions,
+and `402/0/16` references. All 16 mismatches are
 aligned mismatches; there are no unresolved references. Live Binary Ninja
 confirms `projectile_pool` is a 96-entry, `0x40`-byte-stride array at
 `0x004926b8`, with `projectile_pos_y` at `+0x0c`, while `particle_pool` is a

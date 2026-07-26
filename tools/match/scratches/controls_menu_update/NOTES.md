@@ -68,13 +68,17 @@ selected index; and list enable flags are reset and then cleared in native
 open-list order. The two capture prompts share one base Y value, as in the
 native branch join.
 
-The panel geometry now preserves the native x87 staging. The left base first
-combines the vertex and widget position, then applies `+300` / `+40`, and only
-then folds in the render offset. On the right, the post-heading position is
-staged as `y + 26` and `x - 8` before rebuilding the key labels, followed by
-the native `x - 14` at `0x0044cb51`. The inlined heading advances Y by 18
-before X by 8, and its tint local is populated in native R/B/G order before
-the alpha write.
+The panel geometry now uses the same inline vector-addition shape recovered in
+the neighboring menu callbacks. The left base adds the widget position and
+vertex vectors and applies `(300, 40)` before folding in the render offset.
+Live disassembly at `0x00449238` shows the corresponding right base adding
+`(50, 40)`, preserving a copy, applying `render_offset_x - 64`, and then
+adding 32 to Y and 64 to X. This replaces the formerly fused right expression,
+whose extra `+16` and `+4 - 38` did not represent the native coordinates.
+Later, the post-heading position is staged as `y + 26` and `x - 8` before
+rebuilding the key labels, followed by the native `x - 14` at `0x0044cb51`.
+The inlined heading advances Y by 18 before X by 8, and its tint local is
+populated in native R/B/G order before the alpha write.
 
 The rebinding tail now follows the native branch layout more closely. Regular
 player bindings are handled before the Level Up/Reload fields, the configured
@@ -86,14 +90,14 @@ selection-refresh block. The three dropdown updates pass their temporary
 offsets by const reference, avoiding the redundant by-value copies that do not
 exist in the native inlined call sites.
 
-Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.39%**, with a fuzzy gap of
-5,027.14 bytes, 148 exact prefix instructions, 5,421 native instructions
-versus 5,382 candidate instructions, and reference audit **1,518 resolved /
-4 unresolved / 12 mismatched**. This improves the prior **74.08%** result
-(5,519.08-byte gap, 4 exact prefix instructions, 5,395 candidate instructions,
-and 1,460 / 4 / 12 references) while retaining the native `0x74`-byte frame.
-The remaining gap is dominated by allocation and early UI/x87 lowering around
-the four enormous equivalent inlined key-label bodies. All observed widgets,
-labels, scheme branches, runtime binding copies, row updates, capture rules,
-and dropdown writes are present; no fake dependency, padding, volatile
-coercion, or inline assembly is used.
+Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.59%**, with a fuzzy gap of
+4,983.12 bytes, 148 exact prefix instructions, 5,421 native instructions
+versus 5,392 candidate instructions, and reference audit **1,529 resolved /
+4 unresolved / 9 mismatched**. This improves the prior **76.39%** result
+(5,027.14-byte gap, 148 exact prefix instructions, 5,382 candidate
+instructions, and 1,518 / 4 / 12 references) while retaining the native
+`0x74`-byte frame. The remaining gap is dominated by allocation and early
+UI/x87 lowering around the four enormous equivalent inlined key-label bodies.
+All observed widgets, labels, scheme branches, runtime binding copies, row
+updates, capture rules, and dropdown writes are present; no fake dependency,
+padding, volatile coercion, or inline assembly is used.

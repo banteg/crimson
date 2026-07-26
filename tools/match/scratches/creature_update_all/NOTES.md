@@ -220,6 +220,22 @@ choices even though the offsets are identical. Those arithmetic-heavy fields
 therefore retain their scalar aliases here as an evidenced compiler-shape
 constraint rather than forcing a prettier aggregate view.
 
+## Compiler profile and opening-region probe
+
+A fresh compiler/flags matrix finds no override above the canonical
+49.0868%, 1,290/1,338-instruction, `207/0/4` result. VC6.0, VC6.5, and VC6.6
+emit that same body under `/O2 /GB`; `/G5`, `/TP`, and `/GX` are byte-neutral.
+The Processor Pack falls to 43.8189% and VC7 to 37.2594%, while the tested
+`/G6`, `/O1`, and `/Oy-` variants do not improve the baseline.
+
+The first native region keeps the creature index in a 19-unit scaled form and
+uses it through `*8` SIB operands, while the candidate shifts that value into
+a byte offset. Narrowing the source loop-index lifetime by declaring it in the
+`for` initializer was tested against this exact region; VC6 emitted an
+identical `0x60` frame and identical whole-function metrics. The native
+`0x7c` frame and scaled-index allocation therefore remain a compiler residual,
+not a missing loop operation.
+
 ## Recovery classification
 
 The scratch is `semantic-complete` with a `compiler` residual. A

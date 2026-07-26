@@ -17,6 +17,11 @@ struct controls_vec2_t {
     {
     }
 
+    controls_vec2_t operator+(const controls_vec2_t &other) const
+    {
+        return controls_vec2_t(x + other.x, other.y + y);
+    }
+
     float *vec2_add_out(float *dst, float *rhs);
 };
 
@@ -267,15 +272,14 @@ extern "C" void controls_menu_update(void)
     controls_player_profile_list.items = player_items;
     controls_player_profile_list.item_count = 2;
 
-    controls_vec2_t left_base(
-        ui_element_slot_14.vertices[0].x
-            + ui_element_slot_14.pos_x,
-        ui_element_slot_14.vertices[0].y
-            + ui_element_slot_14.pos_y);
-    left_base.x += 300.0f;
-    left_base.y += 40.0f;
-    left_base.x +=
-        ui_element_slot_14.render_offset_x - 32.0f - 64.0f;
+    controls_vec2_t left_panel =
+        *(controls_vec2_t *)&ui_element_slot_14.pos_x
+        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x
+        + controls_vec2_t(300.0f, 40.0f);
+    controls_vec2_t left_base = left_panel;
+    left_base.x =
+        ui_element_slot_14.render_offset_x - 32.0f - 64.0f
+        + left_base.x;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     ui_draw_textured_quad(
@@ -322,20 +326,17 @@ extern "C" void controls_menu_update(void)
     config_direction_arrow_flags[controls_rebind_player_index] =
         controls_direction_arrow_checkbox.checked;
 
-    controls_vec2_t right_base(
-        ui_element_slot_40.vertices[0].x
-            + ui_element_slot_40.pos_x
-            + ui_element_slot_40.render_offset_x
-            - 64.0f
-            + 50.0f
-            + 64.0f
-            + 16.0f,
-        ui_element_slot_40.vertices[0].y
-            + ui_element_slot_40.pos_y
-            + 40.0f
-            + 32.0f
-            + 4.0f
-            - 38.0f);
+    controls_vec2_t right_base =
+        *(controls_vec2_t *)&ui_element_slot_40.pos_x
+        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x
+        + controls_vec2_t(50.0f, 40.0f);
+    controls_vec2_t right_position = right_base;
+    right_position.x =
+        ui_element_slot_40.render_offset_x - 64.0f
+        + right_position.x;
+    right_base.x = right_position.x;
+    right_base.y += 32.0f;
+    right_base.x += 64.0f;
 
     player_input_config_t *binding =
         (player_input_config_t *)config_p1_move_forward;

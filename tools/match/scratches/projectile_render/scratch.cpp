@@ -1037,10 +1037,12 @@ extern "C" void projectile_render(float transition_alpha)
          projectile_index < 0x60;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
-        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
         if (!projectile->active
-            || projectile->pos.tail.vy.life_timer != 0.4f
-            || type_id == PROJECTILE_TYPE_PLASMA_RIFLE
+            || projectile->pos.tail.vy.life_timer != 0.4f) {
+            continue;
+        }
+        projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
+        if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE
             || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN
             || type_id == PROJECTILE_TYPE_PULSE_GUN) {
             continue;

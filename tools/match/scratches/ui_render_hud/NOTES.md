@@ -38,6 +38,25 @@ id by a raw 31-dword row stride. The source-only type correction is
 byte-neutral. With the branch-order recoveries above, final validation remains
 1,824/1,824 instructions at 85.6360% with `385/0/0` references.
 
+A systematic codegen audit requested 59 profiles. The 45-profile compiler
+matrix covered every installed backend (`msvc6.0`, `msvc6.5`, `msvc6.5pp`,
+`msvc6.6`, and `msvc7.0`) across optimization level, `/GB`/`/G5`/`/G6`,
+inlining, frame-pointer, and exception variants. Fourteen additional VC6.5
+checks covered `/Op`, `/Oi-`, `/Ob0`, `/Os`, `/Ot`, `/Og-`, `/Gf`, `/Gy`,
+debug-info, packing, and unsigned-char toggles. VC6.0, VC6.5, and VC6.6 emit
+the same best result. Patched VC6.5 falls to `73.30%`; `/G6`, `/Oy-`, and
+`/GX` fall to `76.12%`, `76.93%`, and `81.14%`; VC7.0 rejects this source.
+No `scratch.conf` override is justified.
+
+Entry-region probes tested the first native `[esp+0x1c]` versus candidate
+`[esp+0x18]` slot difference without introducing dead state. Moving `hud_y`
+or the complete tail-layout local set to function scope is byte-neutral,
+showing that declaration order alone does not explain VC6's stack coloring.
+Initializing `hud_y` at entry extends a lifetime absent from the native code
+and regresses to `79.16%`, 1,827/1,824 instructions, a zero-instruction prefix,
+and `378/0/0` references, so it is rejected. The source and canonical profile
+remain unchanged.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja decompilation confirms the heart, weapon/ammo, Quest,
 timer, Survival XP, bonus-slot, and weapon-popup paths through the native

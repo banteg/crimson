@@ -768,12 +768,14 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_load(
         &ui_perk_prompt_levelup_element,
         "ui\\ui_textLevelUp.jaz");
-    ui_layout_vec2_t levelup_offset(-230.0f, -27.0f);
-    ui_element_set_rect(
-        &ui_perk_prompt_levelup_element,
-        75.0f,
-        25.0f,
-        &levelup_offset.x);
+    {
+        ui_layout_vec2_t levelup_offset(-230.0f, -27.0f);
+        ui_element_set_rect(
+            &ui_perk_prompt_levelup_element,
+            75.0f,
+            25.0f,
+            &levelup_offset.x);
+    }
 
     for (i = 0; i < 4; ++i) {
         ui_menu_item_subtemplate_slot_t *prompt_slot =

@@ -134,8 +134,9 @@ extern "C" void player_update(void)
     }
 
     int player_index = render_overlay_player_index;
-    *(player_update_vec2_t *)&player_aim_screen_x[player_index * 2] =
-        *(player_update_vec2_t *)&ui_mouse_x;
+    player_update_vec2_t *aim_screen =
+        (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];
+    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;
 
     player_state_t *player = &player_state_table[player_index];
     vec2f_t *player_position = &player->position;

@@ -104,12 +104,28 @@ whole-function result from **77.36%** to **77.42%**, adds 4.70 fuzzy-weighted
 bytes, and reduces the candidate from 1,962 to 1,959 instructions while
 retaining the 45-instruction prefix and `583/0/7` reference audit.
 
+Live disassembly at `0x004424c0..0x004424f2` further constrains the opening
+panel arithmetic. Native adds the render offset, `44`, and subtracts `110`
+from `position.x`, keeps that result on x87 while advancing `position.y` by
+one, and only then subtracts the final `32` from `x`. Splitting that final
+subtraction around the real `y` update preserves the arithmetic and all 1,959
+candidate instructions while reproducing the native operation ordering. The score rises
+from 77.4161% to 77.5170%, fuzzy gap falls from 1,812.5839 to 1,804.4830 bytes,
+and the audit improves from `583/0/7` to `584/0/7`; the `0x84` frame and
+45-instruction prefix remain exact.
+
+A fresh profile matrix found no better compiler override. VC6.5 and VC6.6
+produce the same best body under `/O2 /GB`; `/G5`, `/TP`, and `/GX` are
+byte-neutral. VC6.0 falls to 75.4156%, `/G6` to 66.5994% under VC6.5, and the
+Processor Pack to 64.5979%; the tested `/O1` and `/Oy-` variants do not improve
+the baseline.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output covers the score rows, all filters,
 local-static widgets, online worker and batch state machine, notices, and
 every Play/Back/high-score-return route. IDA and Ghidra corroborate the same
 16-callee surface. The 1,959/2,004-instruction candidate keeps the native
-`0x84` frame, a 45-instruction prefix, and `583/0/7` references; the first
+`0x84` frame, a 45-instruction prefix, and `584/0/7` references; the first
 bounded regions differ only in x87 ordering, coalesced stack slots, and
 instruction scheduling. The seven audited mismatches likewise pair adjacent
 but differently scheduled operations: the record-table flags cursor and
@@ -117,4 +133,4 @@ score-line buffer, three consecutive music IDs, the saved minor/mode/major
 return tuple, a render-coordinate constant, and adjacent player-count widget
 fields. Binary Ninja confirms the native addresses and the matcher separately
 resolves every corresponding candidate object. They remain visible and
-unaliased at `583/0/7`, but carry no independent source-reference debt.
+unaliased at `584/0/7`, but carry no independent source-reference debt.

@@ -11,9 +11,9 @@ trailing phases cover sprite-effect integration plus particle movement,
 expiry, style-specific steering, collision attachment or deflection, fire
 damage, tint decay, sprite/decal emission, and creature displacement.
 
-It produces 2,140 instructions against 2,203 native instructions, scores
-47.20%, and aligns 340 candidate references. The candidate's natural local
-frame is `0xa8`, while the native function uses `0xf4`.
+It produces 2,141 instructions against 2,203 native instructions, scores
+47.97%, and audits `351/0/25` references. The candidate's natural local frame
+is `0xa8`, while the native function uses `0xf4`.
 
 ## Binary Ninja evidence
 
@@ -313,3 +313,27 @@ The later Rocket, Seeker Rocket, and Rocket Minigun decal loops also appear in
 three different native stack slots. Hoisting three named aggregates across
 those mutually exclusive arms was tested, but VC6 emitted exactly the same
 candidate and metrics. The simpler scoped declarations remain.
+
+## Compiler-residual cursor refinement
+
+The first current mismatch is still the honest `0xa8` candidate frame versus
+the native `0xf4` frame. Past the prologue, native loads the primary entry's
+active byte through the scaled pool index and only then materializes the typed
+projectile cursor with `lea`. Binding the source pointer inside that real
+activity gate reproduces the same order. It raises the candidate from 47.20%
+to 47.97%, reduces the rounded fuzzy gap from 4,440 to 4,375 bytes, changes the
+instruction count from 2,140 to 2,141, and improves references from `340/0/29`
+to `351/0/25`.
+
+A named copy of the active byte and moving the tick increment ahead of the ion
+scale declaration both compile byte-identically, so neither cosmetic spelling
+is retained. A 20-profile matrix covered MSVC 6.0, 6.5, 6.5pp, 6.6, and 7.0
+with `/GB`, `/G5`, `/G6`, and `/Oy-`; extended VC6.5 probes also covered
+`/Ob0`, `/Ob2`, `/Oi-`, `/Og-`, `/Os`, `/O1`, and `/GX`. Stock MSVC 6.5
+`/O2 /GB` remains tied for best with 6.0, 6.6, and `/G5`; no override is
+supported.
+
+The current proof point is therefore 2,141/2,203 instructions at 47.97%, with
+`351/0/25` references and no unresolved static reference. The remaining
+first-region difference is stack-slot displacement from the wider native
+temporary frame, not a missing operation.
