@@ -35,3 +35,11 @@ reusable eight-byte stack temporary and raw pair copies reveal that the
 original entry held a C++ two-float vector, rather than two unrelated scalar
 position fields. This scratch preserves both facts instead of zero-filling the
 structure or flattening away the vector construction.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

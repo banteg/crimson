@@ -21,3 +21,11 @@ entry's source assignments, using `pos.set(x, y)`, and moving the wave increment
 to its scheduled native location all degrade the proven x87/reference shape.
 The direct 86-instruction candidate remains an honest WIP without dependencies
 added solely to fill conversion latency.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

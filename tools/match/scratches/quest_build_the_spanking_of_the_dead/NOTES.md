@@ -23,3 +23,11 @@ math, but regressed the register allocation and score to 57.45%; a local spawn
 pointer is the strongest plausible source shape. VC6.5pp and VC6.6 reproduce
 the default result, while VC7 regresses sharply, so no compiler override is
 warranted.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

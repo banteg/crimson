@@ -19,3 +19,11 @@ independent scheduling around the signed terrain-width conversion and loop
 increments; the recovered loop, constants, arithmetic, record stride, and
 output count agree. It remains a WIP, with no volatile state, dummy dependency,
 or forced register/address construct.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

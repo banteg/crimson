@@ -23,3 +23,11 @@ reuse, exact entry offsets, and epilogue. The candidate has the exact
 references in this constant-only builder. Its residual mismatches are VC6
 scheduling among independent position temporaries and neighboring metadata
 stores; no artificial dependencies or register forcing are used.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

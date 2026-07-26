@@ -23,3 +23,11 @@ metadata setter with explicit count and direct first-entry metadata produce the
 same or worse schedule; `msvc6.5pp` is identical. The exact-length
 default-profile form is retained without artificial dependencies or register
 forcing.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -14,3 +14,11 @@ VC6 strength-reducing the loop to a cursor. The candidate has the same 74
 instructions and scores 90.54%. Residuals are independent template/trigger
 stores moving around `pos.y` conversions and analogous scheduling in the
 optional AlienBigGray entry. No ordering-only dependency is added.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

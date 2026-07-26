@@ -21,3 +21,11 @@ calls, `pos.set(x, y)`, explicit local-order variants, and reversed metadata
 order were checked. They either remove the proven position temporary, swap the
 long-lived trigger/count registers, or lower the score. The 68.33% candidate is
 kept as an honest WIP without artificial dependencies.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -25,3 +25,11 @@ setters, reversed builder fields, raw pointer/count storage, `msvc6.5pp`,
 `msvc6.6`, `msvc7.0`, and `/G6` were checked. The exact-length default-profile
 candidate remains an honest WIP without volatile state, dummy dependencies, or
 forced-register constructs.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

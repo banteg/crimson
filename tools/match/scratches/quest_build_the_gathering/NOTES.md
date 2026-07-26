@@ -35,3 +35,11 @@ the epilogue in a different order. Separate position assignment followed by a
 metadata setter scored 88.06%; direct-field and statement-order variants did
 not justify artificial barriers. No volatile state, dummy dependencies, or
 register-forcing constructs are used.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

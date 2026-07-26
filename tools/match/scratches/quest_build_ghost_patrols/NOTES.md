@@ -26,3 +26,11 @@ selection, direct metadata fields, and explicit count-one lifetime were
 checked. `msvc6.5pp` and `msvc6.6` are identical; `msvc7.0` regresses to 85
 instructions. This remains an honest WIP without volatile or dependency-only
 scheduler steering.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

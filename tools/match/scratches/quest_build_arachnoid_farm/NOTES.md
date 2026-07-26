@@ -24,3 +24,11 @@ third-line bound uses `lea eax` instead of destructively adding seven to EDX.
 A per-entry pointer, post-incremented pointer, `msvc6.5pp`, `msvc7.0`, and
 `/G6` were checked and regress. The exact-length default-profile form is kept
 without forced registers or artificial dependencies.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

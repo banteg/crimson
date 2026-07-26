@@ -25,3 +25,11 @@ inlined setter remains the stronger source shape. Residuals are instruction
 scheduling around constant loads, independent metadata stores, and epilogue
 pops. VC6.5pp and VC6.6 produce the same result as the default profile, so no
 override is justified.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

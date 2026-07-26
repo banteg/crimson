@@ -39,3 +39,11 @@ Binary Ninja now types the repeated-wave cursor as a layout-equivalent
 `quest_spawn_pair_binja_t *` presentation view. The loop consequently renders
 both entries as `entries[0]` and `entries[1]`, including position, template,
 trigger, and count, instead of leaving the second wave behind raw offsets.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

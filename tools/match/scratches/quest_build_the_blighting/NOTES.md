@@ -33,3 +33,11 @@ and scores 94.74%. The complete optional-wave, parity, layout, timing, count,
 and backedge body matches. Its ten residual mismatches are independent VC6
 schedules within the fixed prefix and loop initialization; no artificial
 dependencies or register forcing are used.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

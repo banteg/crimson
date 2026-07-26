@@ -29,3 +29,11 @@ Each cursor exposes the current `template_id`, `trigger_time_ms`, and `count`,
 plus the next entry's position block, while retaining the actual 0x18-byte
 stride. This recovers the optimized loop shape without pretending that the
 compiler-facing source declared a negative-field cursor.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

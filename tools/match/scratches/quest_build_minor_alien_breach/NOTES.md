@@ -26,3 +26,11 @@ references, scoring 91.85%. Every instruction after the two opening entries
 matches. Their remaining 11 mismatches are unconstrained VC6 scheduling of
 four identical vector constants, callee-save pushes, and independent metadata
 stores; direct fields and an inlined setter produce the same opening body.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

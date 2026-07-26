@@ -15,3 +15,11 @@ x87 position sequence, and exact `fxch`/`fpatan` heading sequence. The candidate
 has the same 69 instructions and scores 89.86%. Residuals are the early
 scheduling of three independent entry metadata stores, cursor advancement, and
 one trigger-step register move. They remain unconstrained.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

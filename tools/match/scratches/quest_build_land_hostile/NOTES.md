@@ -14,3 +14,11 @@ and shared template register. The candidate has the same 53 instructions and
 scores 92.45%. The remaining differences are three independent scheduling
 choices between metadata stores for one entry and construction of the next
 entry's position. They are left unconstrained.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -25,3 +25,11 @@ eight-byte temporary and expands the function to 116 instructions, while a
 five-argument scalar setter emits the same best code. `msvc6.5pp` is identical;
 `msvc7.0` and `/G6` regress. The exact-length default-profile WIP is kept
 without artificial dependencies or forced-register constructs.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

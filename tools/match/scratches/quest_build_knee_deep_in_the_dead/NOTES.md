@@ -32,3 +32,11 @@ mismatches are scheduling of independent opening vector work, callee-save
 pushes, and the initial trigger load. `while` and `do/while` compile identically;
 the simpler decompiler-aligned `while` is retained without artificial ordering
 dependencies.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

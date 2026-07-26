@@ -23,3 +23,11 @@ view. Two consecutive pairs expose all four waves as named
 the compiler-facing builder now uses that same canonical record and its flat
 position members. The migration is byte-neutral at 68/68 instructions and
 92.65%.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -33,3 +33,11 @@ positions, a cursor loop, a local template selector, direct fixed metadata, a
 whole-entry setter, `msvc6.5pp`, `msvc7.0`, and `/G6` were checked. They remove
 the proven temporary, lose the exact loop lowering, or regress the score. This
 remains an honest exact-length WIP without dependency-only scheduler steering.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

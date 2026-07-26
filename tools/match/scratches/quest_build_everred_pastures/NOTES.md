@@ -26,3 +26,11 @@ uses ECX instead of EAX in the epilogue. A separate cursor/count, raw indexed
 entries, an indexed builder, earlier trigger lifetime, `msvc6.5pp`, `msvc7.0`,
 and `/G6` were checked. The exact-length default-profile shape is retained
 without artificial dependencies or forced-register constructs.
+
+## Recovery classification audit
+
+The preceding BN recovery accounts for the complete control-flow, call (where
+present), constant, record-store, and output-count policy. The candidate has
+the same instruction count as native and all masked references resolved; its
+localized residual is compiler scheduling/allocation only. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
