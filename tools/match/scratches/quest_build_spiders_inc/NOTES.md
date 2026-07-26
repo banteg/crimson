@@ -28,3 +28,12 @@ post-incremented and explicit builder-count forms, a raw pointer/count view,
 `msvc6.5pp`, `msvc7.0`, and `/G6` were checked. The default VC6 profile remains
 the strongest evidence-backed shape without volatile state, dummy dependencies,
 or forced-register constructs.
+
+## Recovery classification audit
+
+The live Binary Ninja body accounts for the three fixed entries, all fifteen
+paired waves, signed count formula, trigger recurrence, coordinate conversions,
+and final count. The candidate emits 106 instructions against 105 native
+instructions with `8/0/0` references. Its localized residual is entirely the
+documented register allocation and independent-store/x87 schedule, so recovery
+is `semantic-complete` with a `compiler` residual.

@@ -18,3 +18,12 @@ instructions, and all 26 references still audited.
 The remaining delta is compiler shape: native spills each newly computed
 volume to the local and table, pops the x87 value, then reloads the local
 before comparison; the plausible source keeps that value live.
+
+## Recovery classification audit
+
+Fresh Binary Ninja HLIL confirms the guard, loaded-entry scan, audible restart,
+mute fade, stop/clamp boundaries, unmute ramp, overshoot clamp, and volume
+calls. The candidate emits 114 instructions against 118 native instructions
+with `26/0/0` references. The localized regions reflect only the documented
+x87 spill/reload lifetime and resulting control-flow layout, so recovery is
+`semantic-complete` with a `compiler` residual.

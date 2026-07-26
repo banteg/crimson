@@ -89,3 +89,17 @@ loop twice. Both ports reproduce that exact owner window, global check, and
 double shot credit when `preserve_bugs` is enabled. Corrected mode remains
 owner-scoped and supports every generalized player slot. This does not alter
 the scratch candidate or its score.
+
+## Recovery classification audit
+
+Live Binary Ninja confirms the native four-byte local is initialized to
+`1.0f` at `0x00420451`, written again on the Fire Bullets override backedge at
+`0x004204a6`, and read only by the default-damage cases. The ordinary local in
+the candidate expresses that value, but calibrated VC6 folds it to constants;
+the missing 12 instructions and later offsets follow from that one backend
+choice. The allocation loop, override loop, field initialization, type
+branches, returns, and all 13 references are otherwise accounted for.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
+metadata-only change preserves the before/after result: 71.67%, prefix 0/126,
+114 candidate versus 126 target instructions, and references 13/0/0.

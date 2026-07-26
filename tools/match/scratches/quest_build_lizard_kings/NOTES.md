@@ -40,3 +40,12 @@ previous entry plus the next position was tested live, but Binary Ninja kept
 all six negative offsets instead of presenting `previous` fields. The durable
 map keeps the narrower types that improve the recovered control flow without
 claiming the remaining decompiler artifacts are source structure.
+
+## Recovery classification audit
+
+The live Binary Ninja loop and fixed prefix account for all 31 entries, ring
+constants, trigger recurrence, heading computation, and final count. The
+candidate emits 67 instructions against 66 native instructions with `6/0/0`
+references. `--regions` attributes the remaining delta to VC6's loop-invariant
+template register and related allocation/scheduling, not missing quest policy.
+Recovery is `semantic-complete` with a `compiler` residual.

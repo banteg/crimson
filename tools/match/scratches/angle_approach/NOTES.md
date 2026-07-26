@@ -32,3 +32,16 @@ orders, C89 and C++, MSVC 6.5, the Processor Pack, MSVC 7.0, and the relevant
 optimization profiles. None reproduces the branch-local scheduling without
 worsening already exact code. No volatile, aliasing, or dummy operation is
 retained to force it.
+
+## Recovery classification audit
+
+Live Binary Ninja confirms the wrap loops, both shortest-arc comparisons, the
+one-unit clamp, two direction tests, branch-local step calculations, and the
+`float` value returned from every exit. The sole focused region is the
+documented VC6 common-expression hoist: the candidate has one fewer
+instruction but preserves the same update and returned amount. All nine
+references resolve.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
+and after classification remain 90.55%, prefix 73/101, 100 candidate versus
+101 target instructions, and references 9/0/0.

@@ -42,3 +42,12 @@ array, aggregate offset initialization, an inline transform helper, and a
 combined render-preparation helper. `msvc6.5pp` regresses to 85.28% and `/G6`
 to 90.26%. None removes the allocator residue without explicitly coercing
 local layout, so this remains an honest semantic WIP rather than a fakematch.
+
+## Recovery classification audit
+
+The Binary Ninja pass partition, transforms, color conversion, vertex submits,
+and Grim state transitions are all represented. Candidate and native each have
+195 instructions, and all 38 references resolve. The six localized regions
+repeat the documented scalar/local-slot allocation and x87 scheduling choice
+in the two equivalent passes. Recovery is therefore `semantic-complete` with a
+`compiler` residual.

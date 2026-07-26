@@ -46,3 +46,16 @@ The recent-death reward distance now also reads player zero through
 `player_state_t::position`. The aggregate field spelling is byte-neutral at
 98.21%, 504/504 instructions, a 102-instruction prefix, and 139/0/0
 references.
+
+## Recovery classification audit
+
+The focused diff has the exact native 504-instruction count and confines every
+remaining mismatch to the first three scripted spawn calls. Live Binary Ninja
+identifies the same `vec2f_t` call arguments and shows native reusing the dead
+centroid slot; the natural separate-scope source uses a later stack slot, then
+realigns for all remaining stages and both random edge-spawn loops. No
+condition, formation, RNG call, coordinate, or reference is absent.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
+and after classification remain 98.21%, prefix 102/504, 504/504
+instructions, and references 139/0/0.

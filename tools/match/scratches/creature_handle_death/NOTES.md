@@ -2,7 +2,7 @@
 
 Native target: `crimsonland.exe` at `0x0041e910` (834 bytes).
 
-Work in progress: 84.73% normalized match, 5/204-instruction exact prefix,
+Current honest VC6.5 result: 84.73% normalized match, 5/204-instruction exact prefix,
 202/204 candidate instructions, and 80/0/1 reference audit.
 
 Binary Ninja and the MSVC candidate establish:
@@ -60,3 +60,23 @@ owner argument, and both Bloody Mess / Quick Learner tests plus both ordinary
 and Double Experience stores address `player_state_table[0]` directly at
 `0x0041eb43..0x0041ebb0`. Python and Zig now retain that source and destination
 in bug-preserving mode; corrected mode deliberately keeps last-hit-owner XP.
+
+## Recovery classification and reference re-audit
+
+The preceding native recovery accounts for every guard, call, RNG draw,
+constant, record mutation, XP branch, and effect path. The focused mismatch
+regions reduce to the opening register choice plus two native reloads of
+`survival_recent_death_count` that VC6 coalesces in this translation unit.
+
+The apparent reference mismatch is an alignment artifact, not unresolved
+ownership. Native stores centroid X to `survival_recent_death_pos` at
+`0x0041e958` and Y to `survival_recent_death_pos+4` at `0x0041e968`, with a
+count reload between them. The candidate object stores the same pair at
+offsets `+0x48` and `+0x52`; because it omits that reload, SequenceMatcher
+pairs native X with candidate Y and reports `80/0/1`. Both real operands are
+independently explained and correct.
+
+Classification is therefore `RECOVERY=semantic-complete`,
+`RESIDUAL=compiler`. The classification-only change is byte-neutral:
+before and after are 84.73%, prefix 5/204, 202/204 candidate instructions,
+and references 80/0/1.

@@ -17,3 +17,12 @@ candidate scores 83.20% with 62 instructions against 63. Its remaining gap is
 the optimizer's induction base (`entry` versus `entry.trigger_time_ms`) and
 the placement of independent template, trigger, and count stores. No aliasing
 or artificial dependency is added to force those choices.
+
+## Recovery classification audit
+
+The live Binary Ninja loop accounts for all 18 waves, random-angle reduction,
+four radii, translated vector construction, trigger recurrence, metadata, and
+the constant count 72. All four references resolve. The 62/63 instruction
+delta is confined to the documented induction-base and independent-store/x87
+scheduling choice, so recovery is `semantic-complete` with a `compiler`
+residual.

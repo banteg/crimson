@@ -943,6 +943,13 @@
       "type": "char *"
     },
     {
+      "address": "0x00473a30",
+      "comment": "Key-character buffer capacity (510 bytes) passed to memset and grim_set_key_char_buffer during startup.",
+      "name": "key_char_buffer_size",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x00473a34",
       "comment": "Developer-hint pointer initialized to the haxx0r message at 0x00473a8c.",
       "name": "developer_hint_haxxor",
@@ -969,6 +976,13 @@
       "name": "startup_first_frame_latch",
       "program": "crimsonland.exe",
       "type": "unsigned char"
+    },
+    {
+      "address": "0x00473a64",
+      "comment": "Startup integrity cookie written and checked by crimsonland_main before handing control to Grim.",
+      "name": "startup_integrity_cookie",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00473a8c",
@@ -7060,6 +7074,13 @@
       "address": "0x004aaed9",
       "comment": "Startup terrain-generation guard asserted around the initial terrain_generate_random call and consulted by the startup loop.",
       "name": "startup_terrain_generation_active",
+      "program": "crimsonland.exe",
+      "type": "unsigned char"
+    },
+    {
+      "address": "0x004aaeda",
+      "comment": "Runtime music-disabled byte copied from config_blob during crimsonland_main startup.",
+      "name": "music_disabled_runtime",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },

@@ -53,3 +53,12 @@ record-tag RNG call before explicit terrain generation. Python discarded the
 masked tag and later created quest score records from a fresh RNG; `fad207fb2`
 threads the native tag through completed and failed outcomes. Focused quest
 mode/replay/screen tests pass, along with Ruff, import contracts, and `ty`.
+
+## Recovery classification audit
+
+Fresh Binary Ninja HLIL confirms every reset, RNG use, terrain/builder call,
+starting weapon assignment, hardcore adjustment, and aggregate post-pass. The
+candidate and native each have 116 instructions with `47/0/0` references.
+`--regions` confines the remaining differences to the two accumulator/register
+assignments in the final pass. Recovery is classified `semantic-complete` with
+a `compiler` residual.

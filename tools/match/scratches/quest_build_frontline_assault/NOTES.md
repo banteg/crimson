@@ -38,3 +38,12 @@ The compiler-facing builder uses the canonical `quest_spawn_entry_t` directly.
 Its cursor/count aggregate now also agrees with the repeatedly evidenced quest
 builder source idiom without changing the record view or introducing a
 code-generation-only wrapper.
+
+## Recovery classification audit
+
+Fresh Binary Ninja HLIL confirms the complete wave range, template ladder,
+off-screen additions, wave-ten midpoint pair, trigger arithmetic, clamp, and
+output count. The candidate emits 82 instructions against 84 native
+instructions and its sole masked reference resolves. The localized differences
+are the documented VC6 condition folding, register allocation, and scheduling;
+recovery is `semantic-complete` with a `compiler` residual.

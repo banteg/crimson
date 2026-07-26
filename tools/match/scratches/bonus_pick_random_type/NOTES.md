@@ -30,6 +30,16 @@ The remaining mismatch is confined to control-flow layout in the quest-specific
 exclusions. Native outlines the final major-5 Nuke check after the retry and
 success blocks, while VC6 keeps the same clean nested check beside the major-4
 case. The displaced block changes downstream branch-target tokens even though
-the instruction count, conditions, and references agree. Leave this scratch WIP
-until stronger source evidence explains that cold-block placement; do not force
-it with a manual tail label, opaque boolean identities, or artificial liveness.
+the instruction count, conditions, and references agree. Retain this natural
+source unless stronger evidence explains that cold-block placement; do not
+force it with a manual tail label, opaque boolean identities, or artificial
+liveness.
+
+## Recovery classification audit
+
+Fresh Binary Ninja HLIL confirms the pool scan, bucket mapping, Energizer gate,
+retry/fallback policy, every quest exclusion, shield asymmetry, perk checks,
+weapon suppression, and metadata enable test. Candidate and native each have
+162 instructions with `20/0/0` references. The localized delta is solely VC6's
+cold-block placement and resulting branch-target layout; recovery is
+`semantic-complete` with a `compiler` residual.

@@ -44,3 +44,12 @@ Inverting the guard into a valid-position body does not induce shrink-wrapping:
 VC6 still saves both registers in the prologue and also changes the floating
 comparison forms, reducing the score to 80.40% with two fewer aligned
 references. The native-facing invalid guard remains the stronger source shape.
+
+## Recovery classification audit
+
+Live Binary Ninja HLIL accounts for all bounds, spacing, allocation, sentinel,
+initialization, random-type, weapon, jackpot, and default-amount paths. The
+candidate emits 100 instructions against 99 native instructions with `14/0/0`
+references. Its localized differences are the documented saved-register
+lifetime and dependent allocation/scheduling only, so recovery is
+`semantic-complete` with a `compiler` residual.

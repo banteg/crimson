@@ -44,3 +44,21 @@ perk-array address after clobbering `EAX`; native keeps the player offset in
 `EAX` and uses `CL`. Natural declaration, condition, and statement-order
 variants either compile identically or disturb the otherwise exact prefix. Do
 not add volatile, dead expressions, or register constraints to force it.
+
+## Recovery classification and reference re-audit
+
+The recovered reset policy accounts for every native write and both fixed
+player iterations. The focused tail delta is the documented `AL`/`CL`
+allocation and three extra address-recomputation instructions.
+
+The sole reported reference mismatch is diff alignment, not an incorrect
+global. Native writes mouse X to `ui_mouse_x` at `0x0041fe78` and mouse Y to
+`ui_mouse_x+4` at `0x0041fe82`. The candidate object writes the same pair at
+offsets `+0x1fb` and `+0x200`. The differing temporary-register schedule
+leaves the common `mov [ADDR], ecx` shape on opposite components, so
+SequenceMatcher pairs native X with candidate Y and reports 57/0/1 even
+though both real operands resolve to the correct adjacent fields.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
+classification is byte-neutral: before and after are 91.83%, prefix 94/127,
+130 candidate versus 127 target instructions, and references 57/0/1.

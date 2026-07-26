@@ -65,3 +65,16 @@ beside the other damage-type handling. Natural `if`/`else`, inverted nesting,
 and `switch` spellings were tested; none recover the native placement without
 regressing code generation. A layout-only `goto` would be a fakematch and is
 intentionally rejected.
+
+## Recovery classification audit
+
+Live Binary Ninja still places the equivalent Ion Gun Master branch at
+`0x00420ad5..0x00420afc`, after the shock-effect arm, while the natural VC6
+`else if` places the same 12-instruction block beside the other damage-type
+handling. The remaining focused regions are consequences of that block
+placement plus local register allocation; no call, condition, arithmetic
+step, store, or reference is missing.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. This is
+byte-neutral: before and after are 89.87%, prefix 11/237, 237/237
+instructions, and references 80/0/0.

@@ -27,3 +27,12 @@ that schedule.
 The callsites of `console_tokenize_line` likewise preserve the queue in `ECX`;
 recording it as a member call leaves both its own 55-instruction scratch and
 the 90-instruction `console_exec_line` scratch exact.
+
+## Recovery classification audit
+
+Live callsites and Binary Ninja control flow account for the complete animation,
+input-editing, history, completion, submission, and execution policy. The
+current candidate has 297 instructions against 296 native instructions with
+`64/0/0` audited references. Every localized mismatch is explained by the
+early/shrink-wrapped saved-register lifetime and its shifted branch labels, so
+the scratch is classified `semantic-complete` with a `compiler` residual.

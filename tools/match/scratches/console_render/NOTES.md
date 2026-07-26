@@ -33,3 +33,12 @@ regression test.
 The `msvc6.5pp` and `/G6` alternatives both regress materially. No inline
 assembly, volatile state, dummy references, dead expressions, forced register
 variables, or artificial ordering constraints are used.
+
+## Recovery classification audit
+
+The live Binary Ninja body accounts for every draw, traversal, font-mode,
+scroll, caret, and batch-state path. The candidate has the same 400
+instructions as native and `61/0/0` audited references. `--regions` isolates
+the two differences to the equivalent `add eax, -2` versus `sub eax, 2`
+spellings, so recovery is classified `semantic-complete` with a `compiler`
+residual.

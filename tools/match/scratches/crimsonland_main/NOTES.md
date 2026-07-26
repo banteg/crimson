@@ -38,8 +38,8 @@ layout-only control flow.
 With the target-local MSVC 6.5 `/O2 /GB /W3 /GR-` profile, the reconstruction
 now has all 832 native instructions and rises from 89.34% to 97.48%, reducing
 the fuzzy gap from 343 to about 81 weighted bytes. The 27-instruction exact
-prefix is unchanged. Resolved references rise from 356 to 388; two mismatches
-and four pre-existing unresolved reference uses remain.
+prefix is unchanged. Resolved references rise from 356 to 392; two
+compiler-alignment mismatches and no unresolved reference uses remain.
 The shared data map now names the nine recovered hint-pointer globals after
 live Binary Ninja confirmed each `char *` value and pointed-to string. This
 improves the audit from `378/13/3` to `387/4/3` without a local reference
@@ -58,3 +58,20 @@ source induction base: as in `config_load_presets`, VC6 still rebases the
 reconstructed config row to `move_key_backward` rather than the native
 `axis_move_x`. The other changed instructions are branch-target shifts and
 small call/register scheduling differences outside the exact hint block.
+
+## Recovery classification audit
+
+The live Binary Ninja control flow accounts for the complete startup gate,
+console/config/Grim initialization, callback and resource setup, main handoff,
+save/teardown, and deferred-update path. Candidate and native each have 832
+instructions. The two mismatched references are the documented config-copy
+induction rebasing and remain compiler debt.
+
+The four unresolved uses are genuine missing data-map identities rather than
+SequenceMatcher alignment artifacts. Binary Ninja proves native `0x00473a64`
+is the integrity-cookie store/compare pair, `0x004aaeda` is the byte copied
+from `config_blob.music_disabled`, and `0x00473a30` is the 510-byte key-input
+buffer size loaded for both initialization and registration. The shared data
+map now assigns those exact source identities, resolving all four uses without
+a local alias. The final audit is `392/0/2`, so recovery is classified
+`semantic-complete` with a `compiler` residual.

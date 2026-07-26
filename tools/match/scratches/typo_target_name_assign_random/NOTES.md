@@ -59,3 +59,12 @@ long-name retries`.
 Both ports intentionally cap duplicate retries at 200 to avoid an unbounded
 loop when the generalized dictionary cannot produce a unique name; the native
 routine has no duplicate-attempt cap.
+
+## Recovery classification audit
+
+Live Binary Ninja control flow accounts for every signed score tier, random
+gate and draw order, formatter path, active-name scan, length rule, and retry
+boundary. Candidate and native each have 173 instructions with `32/0/0`
+references. The seven localized regions are the documented name-slot address
+and temporary register allocation repeated across otherwise identical paths.
+Recovery is `semantic-complete` with a `compiler` residual.

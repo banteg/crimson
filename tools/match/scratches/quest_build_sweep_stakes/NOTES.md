@@ -23,3 +23,12 @@ view, `msvc6.5pp`, `msvc6.6`, `msvc7.0`, and `/G6` were checked. The explicit
 view recovers the offset but damages the proven x87/vector shape or frame and
 does not improve the score. This remains an honest WIP without encoding the
 optimizer's negative-field cursor into the source.
+
+## Recovery classification audit
+
+Binary Ninja confirms the complete 16-wave policy, random angle, four radii,
+heading, trigger clamp, entry metadata, and final count. The candidate emits 75
+instructions against 76 native instructions with `7/0/0` references. The
+localized regions reflect only the trigger-field induction anchor and
+independent-store/x87 schedule described above. Recovery is classified
+`semantic-complete` with a `compiler` residual.

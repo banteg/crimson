@@ -83,3 +83,13 @@ construct is retained.
 The Python and Zig quest-timeline models already implement the recovered strict
 thresholds, trigger grouping, alternating spread axis, count clearing, and
 none-active reset. No port edit is required.
+
+## Recovery classification audit
+
+Fresh Binary Ninja HLIL confirms the complete stall selection, grouped trigger
+dispatch, alternating spread, spawn arguments, count clearing, and active-flag
+policy. The candidate emits 113 instructions against 115 native instructions
+with `13/0/0` references. Its localized delta is the documented folded
+template-field interior pointer/home store plus resulting register and x87
+scheduling. The scratch is classified `semantic-complete` with a `compiler`
+residual.

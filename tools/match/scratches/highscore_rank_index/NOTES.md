@@ -17,3 +17,11 @@ An explicit record cursor compiles identically. Per-arm count snapshots instead
 coalesce the later loads and regress to 50 instructions. The VC6.0 and VC6.6
 backends retain the same register swap; VC6.5pp and VC7.0 hoist the count and
 diverge further. There is no remaining natural source or compiler-profile lead.
+
+## Recovery classification audit
+
+Live Binary Ninja HLIL confirms the three mode-select branches, signed
+comparisons, 0x48-byte scans, and count fallbacks. Candidate and native each
+have 51 instructions and all four references resolve. The one whole-body
+region is the same record-cursor/loop-bound register swap repeated in all three
+scans, so recovery is `semantic-complete` with a `compiler` residual.

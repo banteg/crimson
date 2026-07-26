@@ -1,6 +1,6 @@
-# creature_find_nearest WIP
+# `creature_find_nearest`
 
-Current best local score:
+Current honest VC6.5 result:
 
 ```txt
 match=92.74% prefix=51/89 target_insns=89 candidate_insns=90 refs=5/0/0
@@ -44,3 +44,15 @@ distances. Python and Zig now use that exact ranking, including strict bounds,
 the 384-slot limit, and the native slot-zero fallback only in bug-preserving
 mode. A two-target regression covers a case where host-double squared distance
 prefers slot 1 but native's equal stored distances retain slot 0.
+
+## Recovery classification audit
+
+Live Binary Ninja confirms both complete 384-slot scans, their distinct
+filters, strict comparisons, slot-zero fallback, and stored `fsqrt` behavior.
+The focused delta is confined to the second mode's equivalent x87
+spill/reload schedule: VC6 emits one extra instruction while preserving the
+same rounded distance and selection. All five references resolve.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
+metadata-only change preserves the before/after result: 92.74%, prefix 51/89,
+90 candidate versus 89 target instructions, and references 5/0/0.

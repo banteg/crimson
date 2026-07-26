@@ -84,3 +84,15 @@ The one-time full-version menu adjustment now addresses the owning UI element
 through `ui_element_t::pos.x/y` rather than its compatibility scalar aliases.
 This is byte-neutral at the same 99.45%, 905/905 instructions, 363-instruction
 prefix, and `317/0/0` references.
+
+## Recovery classification audit
+
+The four focused regions preserve the exact 905-instruction count and all 317
+references. Live Binary Ninja confirms the first region is the two-player
+mouse-aim copy and the others are already recovered interface calls; only
+equivalent register and load/store schedules differ. The complete timing,
+input, state-dispatch, pause, trial, and return policies are accounted for.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
+metadata-only change is byte-neutral: before and after are 99.45%, prefix
+363/905, 905/905 instructions, and references 317/0/0.

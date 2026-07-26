@@ -76,3 +76,12 @@ The static Typ-o target now initializes from
 `player_state_t::position.x/y`. The aggregate field view is byte-neutral at
 98.43%, 508/508 instructions, a 33-instruction prefix, and 194/0/0
 references.
+
+## Recovery classification audit
+
+The live Binary Ninja body and exact gameplay coordinator account for the
+complete input, shooting, spawn, simulation, scoring, death, HUD, panel, and
+caret behavior. Candidate and native each have 508 instructions with
+`194/0/0` references. `--regions` confines all remaining differences to the
+two ordinary vector-local slot assignments and their x87 loads/stores, so
+recovery is `semantic-complete` with a `compiler` residual.

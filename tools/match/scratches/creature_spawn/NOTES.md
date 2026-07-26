@@ -54,3 +54,16 @@ barriers are used.
 The Python and Zig rush-mode spawn models already preserve the native formulas,
 two RNG call sites, four-component tint, and max-health copy, so this audit did
 not reveal a port-parity correction.
+
+## Recovery classification audit
+
+The live native body still contains the same 79 instructions and complete
+initializer policy described above. Focused regions isolate only x87
+scheduling: native finishes the elapsed-health expression near its store and
+starts the final elapsed-size expression after the tint copy, while stock VC6
+keeps those values live across independent stores. All 27 masked references
+resolve to the intended globals, calls, constants, and record fields.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
+metadata-only change preserves the before/after result: 86.08%, prefix 7/79,
+79/79 instructions, and references 27/0/0.

@@ -69,3 +69,16 @@ zero). `game_state_set` runs this helper immediately before
 spawn-slot owners, and allocation preserves `target_player`. Fresh Python and
 Zig sessions now seed the same round robin before applying optional captured
 pool residue. Captured residue remains authoritative for original replays.
+
+## Recovery classification audit
+
+Focused regions confirm the exact 307-instruction count and all 213 references.
+The only residuals are the two independent schedules documented above: native
+places the perk/bonus byte stores before the weapon-usage clear and interleaves
+one move-target temporary store with the two player-auxiliary dwords. Live
+Binary Ninja exposes the same objects and values, with no missing reset phase
+or unresolved field.
+
+Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
+and after classification remain 99.02%, prefix 165/307, 307/307
+instructions, and references 213/0/0.

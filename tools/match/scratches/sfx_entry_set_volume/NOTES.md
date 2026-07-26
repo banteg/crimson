@@ -10,3 +10,12 @@ aligned, but remains an honest 86.67% WIP. The residual is register allocation:
 native keeps the entry/buffer cursor in `EDI`, while the recovered source keeps
 the entry in `ECX` before deriving `EDI`. No semantic or call difference is
 hidden, and the source is not contorted to force the schedule.
+
+## Recovery classification audit
+
+Live Binary Ninja HLIL confirms the volume mapping, cached streaming early
+return, DirectSound attenuation conversion, primary-only stream update, and
+16-voice resident loop. Candidate and native each have 45 instructions with
+`5/0/0` references. The two localized regions are allocation/control-flow
+consequences of the documented entry/cursor register choice, so recovery is
+`semantic-complete` with a `compiler` residual.
