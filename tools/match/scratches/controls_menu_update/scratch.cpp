@@ -122,7 +122,7 @@ static __forceinline void init_list(
 
 static __forceinline int activate_list(
     controls_vec2_t &base,
-    controls_vec2_t offset,
+    const controls_vec2_t &offset,
     ui_list_widget_t &list)
 {
     controls_vec2_t position;
@@ -417,8 +417,7 @@ extern "C" void controls_menu_update(void)
             }
             controls_rebind_items[i].label =
                 strdup_malloc(controls_key_name(
-                    config_p1_move_forward[binding_base]));
-            ++binding_base;
+                    config_p1_move_forward[binding_base++]));
             ++i;
         } while (i < 13);
         if (controls_rebind_items[i].label) {
@@ -536,10 +535,10 @@ extern "C" void controls_menu_update(void)
     for (int i = 0; i < 15; ++i) {
         if (controls_rebind_items[i].activated) {
             controls_rebind_capture_armed = 0;
-            bool was_idle = controls_rebind_slot_index == -1;
-            controls_rebind_slot_index = -1;
-            if (was_idle) {
+            if (controls_rebind_slot_index == -1) {
                 controls_rebind_slot_index = i;
+            } else {
+                controls_rebind_slot_index = -1;
             }
         }
     }
@@ -556,7 +555,27 @@ extern "C" void controls_menu_update(void)
                 controls_rebind_capture_armed = 0;
             } else if (controls_rebind_capture_armed) {
                 int key = 2;
-                if (controls_rebind_slot_index >= 13) {
+                if (controls_rebind_slot_index < 13) {
+                    do {
+                        if (grim_interface_ptr->grim_is_key_active(key)) {
+                            grim_interface_ptr->grim_flush_input();
+                            config_p1_move_forward[
+                                controls_rebind_player_index * 16
+                                + controls_rebind_slot_index] = key;
+                            controls_rebind_slot_index = -1;
+                            controls_rebind_capture_armed = 0;
+                        }
+                        ++key;
+                    } while (key < 0x17f);
+                    int axis = input_detect_active_analog_axis();
+                    if (axis) {
+                        config_p1_move_forward[
+                            controls_rebind_player_index * 16
+                            + controls_rebind_slot_index] = axis;
+                        controls_rebind_slot_index = -1;
+                        controls_rebind_capture_armed = 0;
+                    }
+                } else {
                     do {
                         if (grim_interface_ptr->grim_is_key_active(key)) {
                             grim_interface_ptr->grim_flush_input();
@@ -577,26 +596,6 @@ extern "C" void controls_menu_update(void)
                         } else {
                             config_key_reload = axis;
                         }
-                    }
-                } else {
-                    do {
-                        if (grim_interface_ptr->grim_is_key_active(key)) {
-                            grim_interface_ptr->grim_flush_input();
-                            config_p1_move_forward[
-                                controls_rebind_player_index * 16
-                                + controls_rebind_slot_index] = key;
-                            controls_rebind_slot_index = -1;
-                            controls_rebind_capture_armed = 0;
-                        }
-                        ++key;
-                    } while (key < 0x17f);
-                    int axis = input_detect_active_analog_axis();
-                    if (axis) {
-                        config_p1_move_forward[
-                            controls_rebind_player_index * 16
-                            + controls_rebind_slot_index] = axis;
-                        controls_rebind_slot_index = -1;
-                        controls_rebind_capture_armed = 0;
                     }
                 }
             }

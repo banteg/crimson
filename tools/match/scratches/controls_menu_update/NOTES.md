@@ -76,14 +76,24 @@ the native `x - 14` at `0x0044cb51`. The inlined heading advances Y by 18
 before X by 8, and its tint local is populated in native R/B/G order before
 the alpha write.
 
-Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **74.08%**, with a fuzzy gap of
-5,519.08 bytes, 4 exact prefix instructions, 5,421 native instructions versus
-5,395 candidate instructions, and reference audit **1,460 resolved /
-4 unresolved / 12 mismatched**. This improves the prior **73.85%** result
-(5,567.95-byte gap, 5,388 candidate instructions, and 1,448 / 4 / 17
-references) while retaining the native `0x74`-byte frame. The remaining gap
-is dominated by register allocation inside the four enormous equivalent
-inlined key-label bodies and early UI/x87 lowering. All observed widgets,
+The rebinding tail now follows the native branch layout more closely. Regular
+player bindings are handled before the Level Up/Reload fields, the configured
+binding cursor advances as its value is read, and clicking a row toggles the
+capture slot directly instead of materializing an equivalent `was_idle`
+boolean. The direct toggle also restores the native long-lived zero register,
+which extends the exact prefix through all five widget constructors and the
+selection-refresh block. The three dropdown updates pass their temporary
+offsets by const reference, avoiding the redundant by-value copies that do not
+exist in the native inlined call sites.
+
+Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.39%**, with a fuzzy gap of
+5,027.14 bytes, 148 exact prefix instructions, 5,421 native instructions
+versus 5,382 candidate instructions, and reference audit **1,518 resolved /
+4 unresolved / 12 mismatched**. This improves the prior **74.08%** result
+(5,519.08-byte gap, 4 exact prefix instructions, 5,395 candidate instructions,
+and 1,460 / 4 / 12 references) while retaining the native `0x74`-byte frame.
+The remaining gap is dominated by allocation and early UI/x87 lowering around
+the four enormous equivalent inlined key-label bodies. All observed widgets,
 labels, scheme branches, runtime binding copies, row updates, capture rules,
 and dropdown writes are present; no fake dependency, padding, volatile
 coercion, or inline assembly is used.
