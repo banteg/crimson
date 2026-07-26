@@ -887,6 +887,69 @@
       "comment": "VerQueryValueA root path \"\\\" used by win32_file_get_version_words."
     },
     {
+      "address": "0x00473a10",
+      "comment": "Developer-hint pointer initialized to the %ReDistrBuildXX% build-marker string at 0x00473e34.",
+      "name": "developer_hint_redistribution_build",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a14",
+      "comment": "Developer-hint pointer initialized to the Finnish Pikku-Reijo message at 0x00473da8.",
+      "name": "developer_hint_reijo",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a18",
+      "comment": "Developer-hint pointer initialized to the secret-weapons message at 0x00473d50.",
+      "name": "developer_hint_secret_weapons",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a1c",
+      "comment": "Developer-hint pointer initialized to the not-meant-to-see warning at 0x00473ce8.",
+      "name": "developer_hint_warning",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a20",
+      "comment": "Developer-hint pointer initialized to the Alien Zoo Keeper message at 0x00473c3c.",
+      "name": "developer_hint_alien_zookeeper",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a24",
+      "comment": "Developer-hint pointer initialized to the Secret Path credits message at 0x00473b8c.",
+      "name": "developer_hint_secret_path",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a28",
+      "comment": "Developer-hint pointer initialized to the Magic Paint message at 0x00473b38.",
+      "name": "developer_hint_magic_paint",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a2c",
+      "comment": "Developer-hint pointer initialized to the Muzzy message at 0x00473ab0.",
+      "name": "developer_hint_muzzy",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
+      "address": "0x00473a34",
+      "comment": "Developer-hint pointer initialized to the haxx0r message at 0x00473a8c.",
+      "name": "developer_hint_haxxor",
+      "program": "crimsonland.exe",
+      "type": "char *"
+    },
+    {
       "address": "0x00473a40",
       "comment": "Player weapon spread damping scalar used by player fire/update logic (clamped to 0.3..1.0).",
       "name": "player_spread_damping_scalar",

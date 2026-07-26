@@ -38,12 +38,13 @@ layout-only control flow.
 With the target-local MSVC 6.5 `/O2 /GB /W3 /GR-` profile, the reconstruction
 now has all 832 native instructions and rises from 89.34% to 96.51%, reducing
 the fuzzy gap from 343 to about 112 weighted bytes. The 27-instruction exact
-prefix is unchanged. Resolved references rise from 356 to 378; the original
-three mismatches remain, while unresolved references rise from four to
-thirteen because the nine recovered hint-pointer globals do not yet have
-authoritative names in the shared data map. This scratch deliberately records
-that honest reference debt rather than aliasing unnamed addresses locally.
-The native 0x424-byte frame and `retn 0x10` WinMain ABI remain reproduced.
+prefix is unchanged. Resolved references rise from 356 to 387; the original
+three mismatches and four pre-existing unresolved reference uses remain.
+The shared data map now names the nine recovered hint-pointer globals after
+live Binary Ninja confirmed each `char *` value and pointed-to string. This
+improves the audit from `378/13/3` to `387/4/3` without a local reference
+alias. The native 0x424-byte frame and `retn 0x10` WinMain ABI remain
+reproduced.
 
 The largest remaining instruction residual is the aggregate two-player input
 copy: as in `config_load_presets`, VC6 rebases the reconstructed loop to a
