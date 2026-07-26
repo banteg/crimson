@@ -3974,6 +3974,13 @@
       "type": "char"
     },
     {
+      "address": "0x004871b8",
+      "comment": "Reserved four-float color object initialized to (1, 0, 0, 1) during C++ startup; no other direct references are currently known.",
+      "name": "reserved_color_4871b8",
+      "program": "crimsonland.exe",
+      "type": "effect_color_t"
+    },
+    {
       "address": "0x004871ca",
       "comment": "UI focus/input lock latch; when set, keyboard focus navigation and activation paths are suppressed.",
       "name": "ui_focus_input_locked",
