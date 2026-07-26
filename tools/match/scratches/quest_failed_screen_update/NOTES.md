@@ -1,8 +1,8 @@
 # `quest_failed_screen_update`
 
 High-value recovery for the 1,261-byte quest-failure screen at `0x004107e0`.
-The current scratch reconstructs the native screen flow and remains an honest
-work in progress rather than an exact match.
+The current scratch reconstructs the complete native screen flow and retains
+an honest compiler residual rather than forcing an exact match.
 
 ## Recovered source shape
 
@@ -51,3 +51,16 @@ register or stack slot.
 
 The panel expression now uses the recovered UI element and vertex position
 aggregates. It remains a 292-instruction, 151-reference build at 99.32%.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is unchanged before and after classification:
+**99.32%**, 292/292 instructions, prefix 30, and `151/0/0` references. Its
+single region differs only in the hidden first-addition Y temporary using
+`[esp+0x10]` instead of native `[esp+0x20]`; every surrounding x87 operation
+and all six references align. The render, phase, score-entry, retry-message,
+button, transition, audio, and cursor paths are complete.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -61,3 +61,16 @@ The remaining residual is row-vector expression scheduling. Native begins
 materializing the row Y expression before loading and storing the X component;
 the current compiler schedules the same constructor's X load first. No source
 padding or semantic distortion is used to force that compiler detail.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is unchanged before and after classification:
+**99.26%**, 403/403 instructions, prefix 321, and `50/0/0` references. Its
+single region at native `0x0043f427..0x0043f464` contains the same row
+constructor, pointer hit test, and arguments; only the X/Y materialization and
+push schedule differ. Width measurement, focus navigation, drawing, hover
+selection, return values, and close policy are complete.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

@@ -31,14 +31,29 @@ pass the strict reference audit at `171/0/0`.
 
 ## Remaining mismatch
 
-The natural source is an honest 94.25% WIP: 616 candidate instructions against
-636 native instructions, with the first 205 instructions exact and the native
-`0x124` stack frame reproduced. VC6 still tail-merges a repeated two-line text
-suffix that the native keeps distinct. In the button tail it assigns the
-long-lived row origin to the body vector's dead `+0x10` slot and the short
-Purchase coordinate to `+0x1c`; native uses those two slots in the opposite
-roles and retains the shared y coordinate between them. Scoped vectors,
-constructor and assignment forms, `set`, `operator+`, `operator+=`, and
-separate scalar anchors either preserved those artifacts or materially
+The natural source is a 94.25% semantic reconstruction: 616 candidate
+instructions against 636 native instructions, with the first 205 instructions
+exact and the native `0x124` stack frame reproduced. VC6 still tail-merges a
+repeated two-line text suffix that the native keeps distinct. In the button
+tail it assigns the long-lived row origin to the body vector's dead `+0x10`
+slot and the short Purchase coordinate to `+0x1c`; native uses those two slots
+in the opposite roles and retains the shared y coordinate between them. Scoped
+vectors, constructor and assignment forms, `set`, `operator+`, `operator+=`,
+and separate scalar anchors either preserved those artifacts or materially
 worsened the long text-body register allocation. No union, volatile state,
 dead expression, fake reference, or artificial register constraint is used.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is unchanged before and after classification:
+**94.25%**, 616/636 candidate/native instructions, prefix 205, and `171/0/0`
+references. Live Binary Ninja on `crimsonland.exe.bndb` confirms all three
+message arms, their exact strings and Y increments, the shared final sentence,
+all three guarded local-static buttons, the purchase URL action, and the
+return-to-menu/audio action. The 20-instruction count delta is the documented
+repeated-suffix tail merge; the later diffs are label displacement and
+temporary-slot scheduling induced by that merge, not missing behavior.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

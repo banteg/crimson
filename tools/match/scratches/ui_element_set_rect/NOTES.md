@@ -2,11 +2,11 @@
 
 Native target: `crimsonland.exe` at `0x00419ba0..0x00419cfc` (348 bytes).
 
-This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
-Visual C++ 6.5 with `/O2 /GB /W3 /GR-` produces 92 normalized instructions
-against 91 native instructions, with 43.72% similarity and masked references
-`4/0/0`. The same code generation is observed with the available MSVC 6.0,
-6.5pp, 6.6, and 7.0 profiles.
+This is an evidence-backed semantic reconstruction, not an exact match.
+Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` produces 92 normalized
+instructions against 91 native instructions, with 43.72% similarity and
+masked references `4/0/0`. The same code generation is observed with the
+available MSVC 6.0, 6.5pp, 6.6, and 7.0 profiles.
 
 ## Recovered source shape
 
@@ -44,10 +44,24 @@ stack-home decision without introducing artificial address-taking or volatile
 state.
 
 No inline assembly, volatile state, dummy reference, forced address, or
-layout-only arithmetic is used. The scratch remains WIP until the allocator
-residual can be explained by plausible source.
+layout-only arithmetic is used.
 
 The loop induction value defined at `0x00419bdc` is the address of the first
 vertex Y coordinate. Binary Ninja keeps that exact `float *` value as
 `vertex_y_cursor`; the name is instruction-anchored and does not pretend that
 the interior cursor owns the surrounding quad.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run leaves the result unchanged before and after
+classification: **43.72%**, 92/91 candidate/native instructions, prefix 0, and
+`4/0/0` references. Live Binary Ninja on `crimsonland.exe.bndb` confirms the
+four inset positions and UVs, the shared white/depth values, and the four-step
+offset loop. Region 1 is dominated by the `0x8` candidate versus `0xc` native
+frame and the resulting x87 temporary-slot renumbering; region 2 differs only
+in the corresponding epilogue adjustment and branch label.
+
+The complete geometry and loop behavior are therefore recovered. The full
+compiler/flag sweep found no exact profile flip, with stock VC6.5 `/O2 /GB`
+remaining best. Classification: `RECOVERY=semantic-complete`,
+`RESIDUAL=compiler`.

@@ -69,3 +69,18 @@ The remaining residual is code-generation shape: VC6 schedules otherwise
 equivalent vertex-call arguments and cursor registers differently.
 Introducing artificial volatility or extra aggregates changes the native
 frame and lowers the match, so the plausible expression form is retained.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is metric-neutral before and after
+classification: **91.17%**, 521/521 instructions, prefix 145, and `65/0/0`
+references. Every localized region preserves the same call, vertex window,
+offset/matrix input, constants, and control-flow edge; the differences are
+argument-push, x87-store, and temporary-slot scheduling. The existing live
+Binary Ninja recovery accounts for both render modes, all three base-panel
+windows, both overlay banks, both alpha loops, focus activation, and the final
+update callback.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

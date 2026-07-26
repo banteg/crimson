@@ -28,5 +28,17 @@ The remaining three changed instructions are independent scheduling choices:
 the native starts the width subtraction before committing the second
 `hover_min` component and loads `direction_flag` between the two aggregate
 `hover_max` stores. Moving the width calculation or splitting the aggregate
-copy materially worsens the candidate, so the stronger typed source remains
-an honest WIP without volatile state or artificial dependencies.
+copy materially worsens the candidate, so the stronger typed source is
+retained without volatile state or artificial dependencies.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is unchanged before and after classification:
+**96.51%**, 86/86 instructions, prefix 34, and `6/0/0` references. Its two
+regions contain only the three documented store/load scheduling differences;
+all bounds translations, inset constants, skip cases, direction handling,
+vertex count, and U-coordinate swaps agree with the native routine.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.

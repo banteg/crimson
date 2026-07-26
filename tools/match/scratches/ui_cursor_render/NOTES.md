@@ -7,7 +7,7 @@ order-sensitive score, masked references `57/0/0`, and full semantics. The
 only normalized difference is instruction scheduling around the final cursor
 quad: the native computes its Y
 coordinate before pushing both size arguments, while VC6 currently hoists one
-constant push and the vtable load. This residual is kept honestly as WIP.
+constant push and the vtable load.
 
 Live Binary Ninja shows two ordinary batches. The first draws four atlas
 particles around the mouse with a sine-squared alpha pulse. The second draws
@@ -24,3 +24,16 @@ resolved rather than merely normalized.
 
 No inline assembly, volatile state, dummy references, or dead expressions are
 used.
+
+## Recovery classification audit
+
+A fresh focused `--regions` run is unchanged before and after classification:
+**98.87%**, 177/177 instructions, prefix 158, and `57/0/0` references. The
+single region at native `0x0041a2c2..0x0041a2ff` contains the same final
+32-by-32 draw call and coordinate arithmetic, differing only in one constant
+push and vtable-load schedule. Both batches, timers, texture state, four pulse
+quads, and final cursor quad are accounted for.
+
+The full compiler/flag sweep found no exact profile flip, with stock VC6.5
+`/O2 /GB` remaining best. Classification:
+`RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
