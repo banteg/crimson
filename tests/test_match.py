@@ -1174,6 +1174,128 @@ def test_triage_command_filters_and_emits_json(monkeypatch: pytest.MonkeyPatch) 
     assert payload["rows"][0]["function"] == "large_missing"
 
 
+def test_match_shard_excludes_semantic_complete_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    def make_status(function: str, recovery: str | None) -> ScratchStatus:
+        return ScratchStatus(
+            config=ScratchConfig(
+                directory=tmp_path / "scratches" / function,
+                function=function,
+                image="crimsonland.exe",
+                compiler="msvc6.5",
+                cflags="/O2",
+                source="scratch.cpp",
+                end_va=None,
+                symbol=None,
+                note="",
+                recovery=recovery,
+            ),
+            address=0x401000,
+            target_size=100,
+            ratio=0.5,
+            prefix_instructions=1,
+            target_instructions=2,
+            candidate_instructions=2,
+            error=None,
+        )
+
+    unspecified = make_status("unspecified_target", None)
+    semantic_complete = make_status("semantic_complete_target", "semantic-complete")
+    rows = [
+        TriageRow(
+            image="crimsonland.exe",
+            function="missing_target",
+            address=0x401100,
+            target_size=100,
+            state="missing",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=0.0,
+            candidate_bytes=0,
+            scratch_count=0,
+        ),
+        TriageRow(
+            image="crimsonland.exe",
+            function=unspecified.config.function,
+            address=unspecified.address,
+            target_size=unspecified.target_size,
+            state="wip",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=unspecified.fuzzy_weighted_bytes,
+            candidate_bytes=unspecified.target_size,
+            scratch_count=1,
+            best_status=unspecified,
+        ),
+        TriageRow(
+            image="crimsonland.exe",
+            function=semantic_complete.config.function,
+            address=0x401200,
+            target_size=semantic_complete.target_size,
+            state="wip",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=semantic_complete.fuzzy_weighted_bytes,
+            candidate_bytes=semantic_complete.target_size,
+            scratch_count=1,
+            best_status=semantic_complete,
+        ),
+    ]
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", list)
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match._git_head", lambda: "a" * 40)
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "shard",
+            "--workers",
+            "1",
+            "--match-root",
+            str(tmp_path),
+            "--out",
+            str(tmp_path / "default"),
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    default_targets = payload["assignments"][0]["targets"]
+    assert {target["function"] for target in default_targets} == {
+        "missing_target",
+        "unspecified_target",
+    }
+    assert payload["filters"]["recoveries"] == ["incomplete", "unspecified"]
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "shard",
+            "--workers",
+            "1",
+            "--match-root",
+            str(tmp_path),
+            "--recovery",
+            "semantic-complete",
+            "--out",
+            str(tmp_path / "explicit"),
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    explicit_targets = payload["assignments"][0]["targets"]
+    assert {target["function"] for target in explicit_targets} == {
+        "missing_target",
+        "semantic_complete_target",
+    }
+    assert payload["filters"]["recoveries"] == ["semantic-complete"]
+
+
 def test_exact_score_with_reference_debt_requires_audit() -> None:
     config = ScratchConfig(
         directory=Path("scratch"),

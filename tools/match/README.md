@@ -156,6 +156,11 @@ uv run crimson match shard --workers 4 --state missing,wip \
 Sharding requires a clean repository so pre-existing edits cannot be mistaken
 for worker output.
 
+By default, sharding includes missing targets plus scratches whose recovery is
+`incomplete` or `unspecified`. Scratches marked `semantic-complete` are omitted
+even when they retain a large compiler/reference fuzzy gap. Pass
+`--recovery semantic-complete` only for an explicit residual-audit batch.
+
 `plan.json` pins the batch's starting commit. Each `worker-NN.json` assigns
 targets and their only permitted `scratches/<directory>` paths. Existing
 scratches retain their current directory; missing targets receive a stable

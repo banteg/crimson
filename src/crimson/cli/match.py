@@ -695,6 +695,11 @@ def cmd_match_shard(
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel status jobs"),
     image: str | None = typer.Option(None, "--image", help="restrict targets to one image"),
     state: str = typer.Option("missing,wip", "--state", help="comma-separated target states"),
+    recovery: str = typer.Option(
+        "incomplete,unspecified",
+        "--recovery",
+        help="comma-separated scratch recovery states; missing targets are always eligible",
+    ),
     min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum targets to assign"),
     output_directory: Path | None = typer.Option(None, "--out", help="ignored plan/claim directory"),
@@ -707,6 +712,14 @@ def cmd_match_shard(
         raise typer.BadParameter(
             f"unknown states: {', '.join(sorted(unknown_states))}",
             param_hint="--state",
+        )
+    recoveries = _parse_csv(recovery) or set()
+    allowed_recoveries = {"incomplete", "semantic-complete", "unspecified"}
+    unknown_recoveries = recoveries - allowed_recoveries
+    if unknown_recoveries:
+        raise typer.BadParameter(
+            f"unknown recovery states: {', '.join(sorted(unknown_recoveries))}",
+            param_hint="--recovery",
         )
     errors = matchlib.validate_matching_workspace(match_root, scope=scope)
     if errors:
@@ -728,7 +741,11 @@ def cmd_match_shard(
     rows = [
         row
         for row in rows
-        if row.state in states and row.target_size >= min_bytes
+        if (
+            row.state in states
+            and row.target_size >= min_bytes
+            and (row.best_status is None or matchlib.scratch_recovery(row.best_status) in recoveries)
+        )
     ]
     rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
     if limit is not None:
@@ -742,6 +759,7 @@ def cmd_match_shard(
         filters={
             "image": image,
             "states": sorted(states),
+            "recoveries": sorted(recoveries),
             "min_bytes": min_bytes,
             "limit": limit,
         },
