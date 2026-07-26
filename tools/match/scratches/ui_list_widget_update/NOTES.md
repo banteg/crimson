@@ -2,7 +2,7 @@
 
 - Native function: `0x0043efc0` (`1420` bytes, `403` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `98.76%`, `403` candidate instructions, `50/0/0`
+- Current result: `99.26%`, `403` candidate instructions, `50/0/0`
   relocation references.
 
 ## Callers
@@ -52,7 +52,12 @@ recovers the native branch-local x87 spill. It improves the weighted gap from
 the down-key clamp directly against `item_count` also recovers the native
 register allocation without changing its bounds.
 
-The residual is the equivalent clamp control-flow lowering (`item_count - 1`
-before comparison versus decrement after comparison) plus row-vector
-expression scheduling. No source padding or semantic distortion is used to
-force those compiler details.
+Writing the down-key bound as the evidenced `active_index > item_count - 1`
+comparison recovers the native pre-comparison decrement, branch condition,
+and complete clamp region. The exact prefix consequently advances from 119
+to 321 instructions and the weighted gap falls from 17.62 to 10.57 bytes.
+
+The remaining residual is row-vector expression scheduling. Native begins
+materializing the row Y expression before loading and storing the X component;
+the current compiler schedules the same constructor's X load first. No source
+padding or semantic distortion is used to force that compiler detail.

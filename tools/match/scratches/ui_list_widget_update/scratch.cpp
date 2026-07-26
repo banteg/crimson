@@ -103,7 +103,7 @@ extern "C" int ui_list_widget_update(
                 list->open = 1;
             } else {
                 ++list->active_index;
-                if (list->active_index >= list->item_count) {
+                if (list->active_index > list->item_count - 1) {
                     list->active_index = list->item_count - 1;
                 }
             }
