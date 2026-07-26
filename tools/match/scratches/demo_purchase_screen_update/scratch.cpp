@@ -76,6 +76,49 @@ void sfx_mute_all(int sfx_id);
 void sfx_play_exclusive(int sfx_id);
 }
 
+static __forceinline void demo_purchase_render_message(
+    char *message,
+    float position_y,
+    float alpha)
+{
+    demo_purchase_vec2_t position;
+    demo_purchase_color_t color;
+    float message_y;
+    float message_width = (float)strlen(message) * 12.8f;
+    float progress_width =
+        (float)quest_spawn_timeline
+        / (float)demo_time_limit_ms
+        * message_width;
+
+    position.x = 60.0f;
+    position.y = (message_y = position_y + 50.0f) - 4.0f;
+    color.r = 0.0f;
+    color.g = 0.0f;
+    color.b = 0.0f;
+    color.a = alpha * 0.5f;
+    grim_interface_ptr->grim_draw_rect_filled(
+        (float *)&position,
+        message_width + 12.0f,
+        30.0f,
+        (float *)&color);
+
+    position.x = 64.0f;
+    position.y = position_y + 72.0f;
+    color.r = 0.5f;
+    color.g = 0.1f;
+    color.b = 0.1f;
+    color.a = alpha * 0.8f;
+    grim_interface_ptr->grim_draw_rect_filled(
+        (float *)&position,
+        progress_width,
+        3.0f,
+        (float *)&color);
+
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);
+    grim_interface_ptr->grim_draw_text_mono(
+        50.0f, message_y, message);
+}
+
 extern "C" void demo_purchase_screen_update(void)
 {
     if (ui_transition_direction != 0 && game_is_full_version()) {
@@ -314,42 +357,7 @@ extern "C" void demo_purchase_screen_update(void)
         }
     }
 
-    demo_purchase_vec2_t position;
-    demo_purchase_color_t color;
-    float message_y;
-    float message_width = (float)strlen(message) * 12.8f;
-    float progress_width =
-        (float)quest_spawn_timeline
-        / (float)demo_time_limit_ms
-        * message_width;
-
-    position.x = 60.0f;
-    position.y = (message_y = position_y + 50.0f) - 4.0f;
-    color.r = 0.0f;
-    color.g = 0.0f;
-    color.b = 0.0f;
-    color.a = alpha * 0.5f;
-    grim_interface_ptr->grim_draw_rect_filled(
-        (float *)&position,
-        message_width + 12.0f,
-        30.0f,
-        (float *)&color);
-
-    position.x = 64.0f;
-    position.y = position_y + 72.0f;
-    color.r = 0.5f;
-    color.g = 0.1f;
-    color.b = 0.1f;
-    color.a = alpha * 0.8f;
-    grim_interface_ptr->grim_draw_rect_filled(
-        (float *)&position,
-        progress_width,
-        3.0f,
-        (float *)&color);
-
-    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);
-    grim_interface_ptr->grim_draw_text_mono(
-        50.0f, message_y, message);
+    demo_purchase_render_message(message, position_y, alpha);
 
     ui_elements_update_and_render();
     ui_cursor_render();

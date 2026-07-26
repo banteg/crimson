@@ -1,9 +1,10 @@
 # `demo_purchase_screen_update`
 
 High-confidence recovery of the 2,642-byte demo purchase and rotating upsell
-callback at `0x0040b740`. The current VC6 scratch matches **91.00%**
-(`698` candidate instructions versus `691` native) with all `187` references
-resolved and no unresolved or mismatched references.
+callback at `0x0040b740`. The current VC6 scratch matches **93.30%**
+(`698` candidate instructions versus `691` native), reaches a 136-instruction
+exact prefix, and resolves all `187` references without unresolved or
+mismatched references.
 
 ## Recovered source shape
 
@@ -39,12 +40,17 @@ Purchase. Both thunks are tracked separately as exact one-instruction matches.
 
 Assigning the timeline-derived y value before the independent alpha default
 recovers the native x87 store/pop/reload comparison sequence. Giving the active
-panel and the post-panel message renderer their own naturally scoped vector
-locals also recovers the native active-panel stack scheduling. Together these
-changes reduce the fuzzy gap from `312.17` to `237.76` bytes.
+panel its own naturally scoped vector recovers the native active-panel stack
+scheduling. Those changes first reduced the fuzzy gap from `312.17` to
+`237.76` bytes.
 
-The native function uses a `0x2c` local frame while VC6 reserves `0x34` for the
-two semantic vector lifetimes in the reconstruction. The remaining differences
-are stack-slot coloring, block placement, and instruction scheduling. They are
-retained rather than forcing stack overlays, volatile qualifiers, or other
-byte-shaping constructs.
+Keeping the post-panel vector, color, and width calculations in the
+forced-inline `demo_purchase_render_message` helper then lets VC6 reuse the
+ended active-panel slots. This recovers the native `0x2c` local frame, raises
+the exact prefix from 1 to 136 instructions, and reduces the fuzzy gap again
+from `237.76` to `176.89` bytes.
+
+The remaining differences are the native cold placement of the five-message
+selection ladder, seven candidate instructions, and x87 scheduling within the
+message renderer. They are retained rather than forcing layout-only control
+flow, stack overlays, volatile qualifiers, or other byte-shaping constructs.
