@@ -40,6 +40,7 @@ from crimson.match import (
     _region_hints,
     _scratch_build_key,
     _ScratchIncludeResolver,
+    address_in_matching_scope,
     build_match_shard_plan,
     claimed_scratch_paths,
     collect_image_totals,
@@ -55,10 +56,13 @@ from crimson.match import (
     extract_object_function,
     inspect_match_function,
     load_function_manifest,
+    load_matching_scope,
+    load_matching_scope_function_dispositions,
     load_reference_catalog,
     load_scratch_config,
     match_function,
     match_result_payload,
+    matching_scope_function_disposition_payloads,
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
@@ -241,6 +245,10 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
 
     assert resolve_function(manifest, "game_is_full_version")[0].address == 0x0041DF40
     with pytest.raises(ValueError, match="not found"):
+        resolve_function(manifest, "dx_get_version_fallback_from_files")
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(manifest, "reg_read_dword_default")
+    with pytest.raises(ValueError, match="not found"):
         resolve_function(manifest, "float_near_equal")
 
     grim_manifest = load_function_manifest(
@@ -249,12 +257,168 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
         image_name="grim.dll",
         scope="port",
     )
-    assert resolve_function(grim_manifest, "grim_mouse_shutdown")[0].address == 0x1000A7D0
+    assert resolve_function(grim_manifest, "grim_config_defaults_init")[0].address == 0x10001710
+    assert resolve_function(grim_manifest, "grim_apply_render_state")[0].address == 0x10004520
     assert resolve_function(grim_manifest, "grim_jaz_decompress_payload")[0].address == 0x1000A880
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(grim_manifest, "grim_window_proc")
+    with pytest.raises(ValueError, match="not found"):
+        resolve_function(grim_manifest, "grim_keyboard_poll")
     with pytest.raises(ValueError, match="not found"):
         resolve_function(grim_manifest, "sprintf")
     with pytest.raises(ValueError, match="not found"):
         resolve_function(grim_manifest, "grim_format_info_lookup")
+
+    all_manifest = load_function_manifest(DEFAULT_FUNCTIONS_PATH, scope="all")
+    assert resolve_function(all_manifest, "dx_get_version_fallback_from_files")[0].address == 0x0041CFE0
+    all_grim_manifest = load_function_manifest(
+        Path("analysis/ida/raw/grim.dll/functions.json"),
+        metadata_path=Path("analysis/ida/raw/grim.dll/metadata.json"),
+        image_name="grim.dll",
+        scope="all",
+    )
+    assert resolve_function(all_grim_manifest, "grim_window_proc")[0].address == 0x100033B0
+
+
+def test_port_scope_has_audited_function_dispositions() -> None:
+    dispositions = matching_scope_function_disposition_payloads("port")
+    image_counts = {
+        image: sum(row["image"] == image for row in dispositions)
+        for image in ("crimsonland.exe", "grim.dll")
+    }
+
+    assert image_counts == {"crimsonland.exe": 8, "grim.dll": 40}
+    assert not address_in_matching_scope(
+        "crimsonland.exe",
+        0x0041CFE0,
+        scope="port",
+    )
+    assert not address_in_matching_scope("grim.dll", 0x100033B0, scope="port")
+    assert address_in_matching_scope("grim.dll", 0x10001710, scope="port")
+    assert address_in_matching_scope("grim.dll", 0x10004520, scope="port")
+    assert address_in_matching_scope("grim.dll", 0x100033B0, scope="all")
+    assert {
+        (row["image"], row["function"], row["disposition"])
+        for row in dispositions
+        if row["address"] in {0x0041CFE0, 0x100033B0}
+    } == {
+        (
+            "crimsonland.exe",
+            "dx_get_version_fallback_from_files",
+            "platform-replaced",
+        ),
+        ("grim.dll", "grim_window_proc", "platform-replaced"),
+    }
+
+
+def test_matching_scope_function_dispositions_are_validated(tmp_path: Path) -> None:
+    scope_path = tmp_path / "matching_scope.json"
+
+    def write_scope(rows: list[dict[str, str]]) -> None:
+        scope_path.write_text(
+            json.dumps(
+                {
+                    "schema": 2,
+                    "default": "port",
+                    "scopes": {
+                        "port": {
+                            "programs": {
+                                "test.exe": [
+                                    {
+                                        "start": "0x00401000",
+                                        "end": "0x00402000",
+                                        "owner": "game",
+                                    },
+                                ],
+                            },
+                            "function_dispositions": {"test.exe": rows},
+                        },
+                    },
+                },
+            ),
+            encoding="utf-8",
+        )
+
+    valid: dict[str, str] = {
+        "address": "0x00401100",
+        "name": "platform_probe",
+        "disposition": "platform-replaced",
+        "reason": "host backend",
+    }
+    write_scope([valid])
+    assert load_matching_scope("port", path=scope_path)["test.exe"][0].owner == "game"
+    assert load_matching_scope_function_dispositions(
+        "port",
+        path=scope_path,
+    )["test.exe"][0].name == "platform_probe"
+
+    write_scope([valid, valid])
+    with pytest.raises(ValueError, match="duplicate .* function disposition"):
+        load_matching_scope_function_dispositions("port", path=scope_path)
+
+    write_scope([{**valid, "address": "0x00403000"}])
+    with pytest.raises(ValueError, match="outside owned ranges"):
+        load_matching_scope_function_dispositions("port", path=scope_path)
+
+    write_scope([{**valid, "disposition": "guess"}])
+    with pytest.raises(ValueError, match="unknown function disposition"):
+        load_matching_scope_function_dispositions("port", path=scope_path)
+
+    write_scope([{**valid, "reason": ""}])
+    with pytest.raises(ValueError, match="needs a reason"):
+        load_matching_scope_function_dispositions("port", path=scope_path)
+
+
+def test_matching_scope_disposition_name_must_match_manifest(tmp_path: Path) -> None:
+    functions_path = tmp_path / "functions.json"
+    functions_path.write_text(
+        '[{"address":"0x00401100","end":"0x00401110",'
+        '"name":"observed_name","size":16,"external":false}]\n',
+        encoding="utf-8",
+    )
+    scope_path = tmp_path / "matching_scope.json"
+    scope_path.write_text(
+        json.dumps(
+            {
+                "schema": 2,
+                "default": "port",
+                "scopes": {
+                    "port": {
+                        "programs": {
+                            "test.exe": [
+                                {
+                                    "start": "0x00401000",
+                                    "end": "0x00402000",
+                                    "owner": "game",
+                                },
+                            ],
+                        },
+                        "function_dispositions": {
+                            "test.exe": [
+                                {
+                                    "address": "0x00401100",
+                                    "name": "stale_name",
+                                    "disposition": "platform-replaced",
+                                    "reason": "host backend",
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="does not match manifest name"):
+        load_function_manifest(
+            functions_path,
+            metadata_path=None,
+            image_name="test.exe",
+            name_map_path=None,
+            scope="port",
+            scope_path=scope_path,
+        )
 
 
 def test_matching_workspace_stays_inside_port_scope() -> None:

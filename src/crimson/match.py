@@ -27,6 +27,8 @@ DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.j
 DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
 DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
 DEFAULT_MATCH_SCOPE = "port"
+MATCH_SCOPE_SCHEMA = 2
+MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset({"platform-replaced"})
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
 CACHE_VERSION = 1
 SHARD_SCHEMA = 1
@@ -100,6 +102,93 @@ class MatchScopeRange:
         return self.start <= address < self.end
 
 
+@dataclass(frozen=True, slots=True)
+class MatchScopeFunctionDisposition:
+    address: int
+    name: str
+    disposition: str
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
+class MatchingScopeDefinition:
+    ranges: dict[str, tuple[MatchScopeRange, ...]]
+    function_dispositions: dict[str, tuple[MatchScopeFunctionDisposition, ...]]
+
+
+def _load_matching_scope_definition(
+    scope: str,
+    *,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> MatchingScopeDefinition:
+    if scope == "all":
+        return MatchingScopeDefinition(ranges={}, function_dispositions={})
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != MATCH_SCOPE_SCHEMA:
+        raise ValueError(f"{path}: unsupported matching scope schema")
+    try:
+        scope_payload = payload["scopes"][scope]
+        programs = scope_payload["programs"]
+    except KeyError as exc:
+        available = ", ".join(sorted(payload.get("scopes", {})))
+        raise ValueError(f"unknown matching scope {scope!r}; available: {available}, all") from exc
+
+    ranges_by_program: dict[str, tuple[MatchScopeRange, ...]] = {}
+    for program, rows in programs.items():
+        ranges: list[MatchScopeRange] = []
+        for row in rows:
+            start = parse_int(row["start"])
+            end = parse_int(row["end"])
+            if end <= start:
+                raise ValueError(f"{path}: invalid {program} range 0x{start:x}..0x{end:x}")
+            ranges.append(MatchScopeRange(start=start, end=end, owner=str(row["owner"])))
+        ranges_by_program[str(program)] = tuple(ranges)
+
+    dispositions_by_program: dict[str, tuple[MatchScopeFunctionDisposition, ...]] = {}
+    raw_dispositions = scope_payload.get("function_dispositions", {})
+    for raw_program, rows in raw_dispositions.items():
+        program = str(raw_program)
+        owned_ranges = ranges_by_program.get(program, ())
+        if not owned_ranges:
+            raise ValueError(f"{path}: function dispositions require an owned {program} range")
+        dispositions: list[MatchScopeFunctionDisposition] = []
+        seen_addresses: set[int] = set()
+        for row in rows:
+            address = parse_int(row["address"])
+            name = str(row.get("name", "")).strip()
+            disposition = str(row.get("disposition", "")).strip()
+            reason = str(row.get("reason", "")).strip()
+            if address in seen_addresses:
+                raise ValueError(f"{path}: duplicate {program} function disposition at 0x{address:x}")
+            if not any(owned_range.contains(address) for owned_range in owned_ranges):
+                raise ValueError(
+                    f"{path}: {program} function disposition at 0x{address:x} is outside owned ranges",
+                )
+            if not name:
+                raise ValueError(f"{path}: {program}:0x{address:x} function disposition needs a name")
+            if disposition not in MATCH_SCOPE_FUNCTION_DISPOSITIONS:
+                available = ", ".join(sorted(MATCH_SCOPE_FUNCTION_DISPOSITIONS))
+                raise ValueError(
+                    f"{path}: unknown function disposition {disposition!r}; available: {available}",
+                )
+            if not reason:
+                raise ValueError(f"{path}: {program}:{name} function disposition needs a reason")
+            seen_addresses.add(address)
+            dispositions.append(
+                MatchScopeFunctionDisposition(
+                    address=address,
+                    name=name,
+                    disposition=disposition,
+                    reason=reason,
+                ),
+            )
+        dispositions_by_program[program] = tuple(dispositions)
+    return MatchingScopeDefinition(
+        ranges=ranges_by_program,
+        function_dispositions=dispositions_by_program,
+    )
+
+
 def load_matching_scope(
     scope: str,
     *,
@@ -110,27 +199,35 @@ def load_matching_scope(
     ``all`` is an explicit escape hatch for consulting every non-external
     function. It is intentionally not represented by address ranges.
     """
-    if scope == "all":
-        return {}
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("schema") != 1:
-        raise ValueError(f"{path}: unsupported matching scope schema")
-    try:
-        programs = payload["scopes"][scope]["programs"]
-    except KeyError as exc:
-        available = ", ".join(sorted(payload.get("scopes", {})))
-        raise ValueError(f"unknown matching scope {scope!r}; available: {available}, all") from exc
-    result: dict[str, tuple[MatchScopeRange, ...]] = {}
-    for program, rows in programs.items():
-        ranges: list[MatchScopeRange] = []
-        for row in rows:
-            start = parse_int(row["start"])
-            end = parse_int(row["end"])
-            if end <= start:
-                raise ValueError(f"{path}: invalid {program} range 0x{start:x}..0x{end:x}")
-            ranges.append(MatchScopeRange(start=start, end=end, owner=str(row["owner"])))
-        result[str(program)] = tuple(ranges)
-    return result
+    return _load_matching_scope_definition(scope, path=path).ranges
+
+
+def load_matching_scope_function_dispositions(
+    scope: str,
+    *,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> dict[str, tuple[MatchScopeFunctionDisposition, ...]]:
+    """Load explicit function-level replacements omitted from one matching scope."""
+    return _load_matching_scope_definition(scope, path=path).function_dispositions
+
+
+def matching_scope_function_disposition_payloads(
+    scope: str,
+    *,
+    path: Path = DEFAULT_MATCHING_SCOPE_PATH,
+) -> list[dict[str, Any]]:
+    dispositions = load_matching_scope_function_dispositions(scope, path=path)
+    return [
+        {
+            "image": image,
+            "address": row.address,
+            "function": row.name,
+            "disposition": row.disposition,
+            "reason": row.reason,
+        }
+        for image in sorted(dispositions)
+        for row in sorted(dispositions[image], key=lambda candidate: candidate.address)
+    ]
 
 
 def matching_scope_images(
@@ -153,7 +250,13 @@ def address_in_matching_scope(
 ) -> bool:
     if scope == "all":
         return True
-    return any(row.contains(address) for row in load_matching_scope(scope, path=path).get(image_name, ()))
+    definition = _load_matching_scope_definition(scope, path=path)
+    owned = any(row.contains(address) for row in definition.ranges.get(image_name, ()))
+    dispositioned = any(
+        row.address == address
+        for row in definition.function_dispositions.get(image_name, ())
+    )
+    return owned and not dispositioned
 
 
 @dataclass(frozen=True, slots=True)
@@ -311,14 +414,22 @@ def load_function_manifest(
 ) -> FunctionManifest:
     rows = json.loads(Path(path).read_text(encoding="utf-8"))
     resolved_image_name = image_name or Path(path).parent.name
-    scoped_ranges = (
+    scope_definition = (
         None
         if scope is None or scope == "all"
-        else load_matching_scope(scope, path=scope_path).get(resolved_image_name, ())
+        else _load_matching_scope_definition(scope, path=scope_path)
     )
-
-    def is_scoped(address: int) -> bool:
-        return scoped_ranges is None or any(row.contains(address) for row in scoped_ranges)
+    scoped_ranges = (
+        None
+        if scope_definition is None
+        else scope_definition.ranges.get(resolved_image_name, ())
+    )
+    scoped_dispositions = (
+        ()
+        if scope_definition is None
+        else scope_definition.function_dispositions.get(resolved_image_name, ())
+    )
+    scoped_disposition_addresses = frozenset(row.address for row in scoped_dispositions)
 
     name_overrides: dict[int, str] = {}
     included_library_addresses: set[int] = set()
@@ -334,6 +445,37 @@ def load_function_manifest(
                 included_library_addresses.add(address)
             if bool(row.get("create")) and row.get("end") is not None:
                 created_rows.append(row)
+
+    manifest_names_by_address = {
+        parse_int(row["address"]): name_overrides.get(
+            parse_int(row["address"]),
+            str(row["name"]),
+        )
+        for row in rows
+        if not bool(row.get("external"))
+    }
+    for row in created_rows:
+        address = parse_int(row["address"])
+        manifest_names_by_address.setdefault(address, str(row["name"]))
+    for disposition in scoped_dispositions:
+        observed_name = manifest_names_by_address.get(disposition.address)
+        if observed_name is None:
+            raise ValueError(
+                f"{scope_path}: {resolved_image_name}:{disposition.name} disposition "
+                f"address 0x{disposition.address:x} is absent from the function manifest",
+            )
+        if observed_name != disposition.name:
+            raise ValueError(
+                f"{scope_path}: {resolved_image_name}:0x{disposition.address:x} disposition "
+                f"name {disposition.name!r} does not match manifest name {observed_name!r}",
+            )
+
+    def is_scoped(address: int) -> bool:
+        return scoped_ranges is None or (
+            address not in scoped_disposition_addresses
+            and any(row.contains(address) for row in scoped_ranges)
+        )
+
     functions: list[FunctionSymbol] = []
     for row in rows:
         address = parse_int(row["address"])
@@ -2365,6 +2507,48 @@ def _scratch_has_unconfigured_files(directory: Path) -> bool:
     return False
 
 
+def _filter_dispositioned_scratch_configs(
+    configs: Collection[ScratchConfig],
+    *,
+    scope: str | None,
+) -> list[ScratchConfig]:
+    """Keep archived replacement scratches out of the active scoped corpus."""
+    if scope is None or scope == "all":
+        return list(configs)
+    dispositions = load_matching_scope_function_dispositions(scope)
+    excluded_addresses = {
+        image: frozenset(row.address for row in rows)
+        for image, rows in dispositions.items()
+    }
+    manifests: dict[str, FunctionManifest] = {}
+    result: list[ScratchConfig] = []
+    for config in configs:
+        image_exclusions = excluded_addresses.get(config.image, frozenset())
+        if not image_exclusions:
+            result.append(config)
+            continue
+        if config.image not in manifests:
+            _, functions_path, metadata_path = _paths_for_image(config.image)
+            manifests[config.image] = load_function_manifest(
+                functions_path,
+                metadata_path=metadata_path,
+                image_name=config.image,
+                scope="all",
+            )
+        try:
+            address = resolve_function(
+                manifests[config.image],
+                config.function,
+                end_override=config.end_va,
+            )[0].address
+        except ValueError:
+            result.append(config)
+            continue
+        if address not in image_exclusions:
+            result.append(config)
+    return result
+
+
 def validate_matching_workspace(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
@@ -2381,9 +2565,15 @@ def validate_matching_workspace(
             and _scratch_has_unconfigured_files(scratch_directory)
         ):
             errors.append(f"{scratch_directory.name}: scratch files require scratch.conf")
+
+    configs: list[ScratchConfig] = []
     for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
         try:
-            config = load_scratch_config(conf_path.parent)
+            configs.append(load_scratch_config(conf_path.parent))
+        except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
+            errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
+    for config in _filter_dispositioned_scratch_configs(configs, scope=scope):
+        try:
             if config.image not in manifests:
                 _, functions_path, metadata_path = _paths_for_image(config.image)
                 manifests[config.image] = load_function_manifest(
@@ -2399,7 +2589,7 @@ def validate_matching_workspace(
             )
             targets.setdefault((config.image, symbol.address), []).append(config)
         except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
-            errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
+            errors.append(f"{config.directory.name}: {str(exc).splitlines()[0]}")
     for (image, address), configs in sorted(targets.items()):
         if len(configs) < 2:
             continue
@@ -2743,6 +2933,7 @@ def collect_scratch_statuses(
         if compiler is not None or cflags is not None:
             config = replace(config, compiler=compiler or config.compiler, cflags=cflags or config.cflags)
         configs.append(config)
+    configs = _filter_dispositioned_scratch_configs(configs, scope=scope)
 
     manifest_cache: dict[str, FunctionManifest] = {}
     catalog_cache: dict[str, ReferenceCatalog] = {}
@@ -3768,6 +3959,7 @@ def render_status_markdown(
     scope: str = DEFAULT_MATCH_SCOPE,
 ) -> str:
     overall = _overall_totals(totals)
+    dispositions = matching_scope_function_disposition_payloads(scope)
     lines = [
         "# Matching Status",
         "",
@@ -3789,11 +3981,36 @@ def render_status_markdown(
         f"(**{overall.candidate_byte_percentage:.1%}**). Candidate coverage includes exact "
         "matches and WIPs; it does not claim byte identity."),
         "",
-        "## Images",
-        "",
-        "| " + " | ".join(IMAGE_TOTALS_HEADER) + " |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
+    if dispositions:
+        lines.extend(
+            [
+                "## Function dispositions",
+                "",
+                (
+                    f"{len(dispositions)} audited platform-backend functions are omitted from "
+                    "this score and from default shards. Their analysis and archived scratches "
+                    "remain available with `--scope all`."
+                ),
+                "",
+                "| image | function | address | disposition | reason |",
+                "|---|---|---:|---|---|",
+            ],
+        )
+        for row in dispositions:
+            lines.append(
+                f"| {row['image']} | {row['function']} | 0x{row['address']:08x} | "
+                f"{row['disposition']} | {row['reason']} |",
+            )
+        lines.append("")
+    lines.extend(
+        [
+            "## Images",
+            "",
+            "| " + " | ".join(IMAGE_TOTALS_HEADER) + " |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ],
+    )
     for row in render_image_total_rows(totals):
         lines.append("| " + " | ".join(row) + " |")
     for total in totals:

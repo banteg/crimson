@@ -4,22 +4,77 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**635/865** functions matched exactly, **127842/361707** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**597/817** functions matched exactly, **119809/343605** code bytes (**34.9%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **293076/361707** code bytes (**81.0%**).
+Fuzzy-weighted alignment is **284872/343605** code bytes (**82.9%**).
 
-Compilable source candidates cover **757/865** functions and **344485/361707** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Compilable source candidates cover **718/817** functions and **336256/343605** code bytes (**97.9%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+
+## Function dispositions
+
+48 audited platform-backend functions are omitted from this score and from default shards. Their analysis and archived scratches remain available with `--scope all`.
+
+| image | function | address | disposition | reason |
+|---|---|---:|---|---|
+| crimsonland.exe | dx_get_version | 0x0041ccb0 | platform-replaced | Legacy DirectX version startup gate; the host renderer supplies capability checks. |
+| crimsonland.exe | dx_get_version_from_dxdiag | 0x0041cdb0 | platform-replaced | COM DxDiag probe used only by the legacy DirectX version startup gate. |
+| crimsonland.exe | dx_get_version_fallback_from_files | 0x0041cfe0 | platform-replaced | Win32 version-resource fallback used only by the legacy DirectX version startup gate. |
+| crimsonland.exe | win32_file_get_version_words | 0x0041db50 | platform-replaced | Win32 version-resource helper used only by the legacy DirectX version startup gate. |
+| crimsonland.exe | dx_version_pack_4x16 | 0x0041dc10 | platform-replaced | Version tuple helper used only by the legacy DirectX version-resource fallback. |
+| crimsonland.exe | dx_version_compare_4x16 | 0x0041dc50 | platform-replaced | Version tuple helper used only by the legacy DirectX version-resource fallback. |
+| crimsonland.exe | reg_read_dword_default | 0x0042a980 | platform-replaced | Win32 registry persistence leaf; the port owns its settings storage backend. |
+| crimsonland.exe | reg_write_dword | 0x0042a9c0 | platform-replaced | Win32 registry persistence leaf; the port owns its settings storage backend. |
+| grim.dll | grim_advanced_config_dialog_proc | 0x10001170 | platform-replaced | Win32 advanced-renderer dialog; the port supplies its own settings UI. |
+| grim.dll | grim_config_blob_save | 0x100019f0 | platform-replaced | Legacy crimson.cfg blob persistence used only by the Win32 launcher dialogs. |
+| grim.dll | grim_config_blob_load | 0x10001a30 | platform-replaced | Legacy crimson.cfg blob persistence used only by the Win32 launcher dialogs. |
+| grim.dll | grim_parental_lock_dialog_proc | 0x10001ad0 | platform-replaced | Win32 parental-lock dialog; the port supplies its own settings UI. |
+| grim.dll | grim_config_dialog_populate_display_modes | 0x10001e90 | platform-replaced | Direct3D adapter-mode population for the Win32 launcher UI. |
+| grim.dll | grim_config_dialog_proc | 0x10002120 | platform-replaced | Win32 launcher dialog; the port supplies its own settings UI. |
+| grim.dll | grim_window_create | 0x10002680 | platform-replaced | Win32 window creation and class registration; the host engine owns the window. |
+| grim.dll | grim_window_destroy | 0x10002880 | platform-replaced | Win32 window teardown; the host engine owns the window. |
+| grim.dll | grim_backup_textures | 0x100028d0 | platform-replaced | Direct3D 8 lost-device texture backup; the host renderer owns resource lifetime. |
+| grim.dll | grim_restore_textures | 0x10002b40 | platform-replaced | Direct3D 8 lost-device texture restore; the host renderer owns resource lifetime. |
+| grim.dll | grim_try_reset_device | 0x10002cf0 | platform-replaced | Direct3D 8 lost-device reset loop; the host renderer owns device recovery. |
+| grim.dll | grim_app_cleanup | 0x10002f60 | platform-replaced | Win32 application-loop cleanup adapter; the host engine owns lifecycle. |
+| grim.dll | grim_app_tick | 0x10002f80 | platform-replaced | Win32 application-loop timer adapter; the host engine owns scheduling. |
+| grim.dll | grim_app_init | 0x10002fc0 | platform-replaced | Win32 application-loop initialization adapter; the host engine owns lifecycle. |
+| grim.dll | grim_app_shutdown | 0x10003080 | platform-replaced | Win32 application-loop shutdown adapter; the host engine owns lifecycle. |
+| grim.dll | grim_app_pump | 0x10003090 | platform-replaced | Win32 application-loop pump adapter; the host engine owns scheduling. |
+| grim.dll | grim_restore_device_after_activation | 0x100030b0 | platform-replaced | Direct3D 8 reactivation recovery; the host renderer owns device recovery. |
+| grim.dll | grim_window_proc | 0x100033b0 | platform-replaced | Win32 message dispatch and device-activation adapter; the host engine owns events. |
+| grim.dll | grim_run_loop | 0x10003c00 | platform-replaced | Win32 message and Direct3D presentation loop; the host engine owns the frame loop. |
+| grim.dll | grim_d3d_init | 0x10003e60 | platform-replaced | Direct3D 8 device and window initialization; the host renderer owns startup. |
+| grim.dll | grim_d3d_shutdown | 0x10004280 | platform-replaced | Direct3D 8 device teardown; the host renderer owns resource lifetime. |
+| grim.dll | grim_create_geometry_buffers | 0x10004350 | platform-replaced | Direct3D 8 vertex and index buffer allocation; the host renderer owns geometry buffers. |
+| grim.dll | grim_release_geometry_buffers | 0x100044e0 | platform-replaced | Direct3D 8 vertex and index buffer teardown; the host renderer owns geometry buffers. |
+| grim.dll | grim_save_screenshot | 0x10005cb0 | platform-replaced | D3DX front-buffer export; the host renderer supplies screenshot capture. |
+| grim.dll | grim_apply_config | 0x10005d40 | platform-replaced | Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI. |
+| grim.dll | grim_save_texture | 0x10007750 | platform-replaced | D3DX texture export; the host renderer supplies image export. |
+| grim.dll | grim_joystick_enum_device | 0x1000a110 | platform-replaced | Raw DirectInput joystick enumeration; the host input backend owns device discovery. |
+| grim.dll | grim_joystick_configure_axis | 0x1000a150 | platform-replaced | Raw DirectInput axis setup; the host input backend owns device configuration. |
+| grim.dll | grim_joystick_init | 0x1000a1c0 | platform-replaced | Raw DirectInput joystick initialization; the host input backend owns devices. |
+| grim.dll | grim_joystick_poll | 0x1000a2b0 | platform-replaced | Raw DirectInput joystick polling; the host input backend supplies state. |
+| grim.dll | grim_joystick_button_down | 0x1000a310 | platform-replaced | Raw DirectInput joystick-state accessor; the host input backend supplies state. |
+| grim.dll | grim_joystick_shutdown | 0x1000a330 | platform-replaced | Raw DirectInput joystick teardown; the host input backend owns devices. |
+| grim.dll | grim_keyboard_key_down | 0x1000a370 | platform-replaced | Raw DirectInput keyboard-state accessor; the host input backend supplies state. |
+| grim.dll | grim_keyboard_init | 0x1000a390 | platform-replaced | Raw DirectInput keyboard initialization; the host input backend owns devices. |
+| grim.dll | grim_keyboard_poll | 0x1000a4a0 | platform-replaced | Raw DirectInput keyboard polling; the host input backend supplies state. |
+| grim.dll | grim_keyboard_shutdown | 0x1000a550 | platform-replaced | Raw DirectInput keyboard teardown; the host input backend owns devices. |
+| grim.dll | grim_mouse_button_down | 0x1000a590 | platform-replaced | Raw DirectInput mouse-state accessor; the host input backend supplies state. |
+| grim.dll | grim_mouse_init | 0x1000a5a0 | platform-replaced | Raw DirectInput mouse initialization; the host input backend owns devices. |
+| grim.dll | grim_mouse_poll | 0x1000a670 | platform-replaced | Raw DirectInput mouse polling and accumulation; the host input backend supplies state. |
+| grim.dll | grim_mouse_shutdown | 0x1000a7d0 | platform-replaced | Raw DirectInput mouse teardown; the host input backend owns devices. |
 
 ## Images
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270936/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
-| grim.dll | 136/186 | 19597/36799 | 53.3% | 22140/36799 | 60.2% | 141/186 | 22659/36799 | 61.6% | 136/141 |
+| crimsonland.exe | 492/671 | 107062/320805 | 33.4% | 269753/320805 | 84.1% | 609/671 | 320643/320805 | 99.9% | 492/609 |
+| grim.dll | 105/146 | 12747/22800 | 55.9% | 15119/22800 | 66.3% | 109/146 | 15613/22800 | 68.5% | 105/109 |
 
 ## crimsonland.exe
 
-**499/679** functions, **108245/324908** bytes (**33.3%**), **270936/324908** fuzzy-weighted bytes (**83.4%**), **616/679** source candidates covering **321826/324908** bytes (**99.1%**), **499/616** scratches verified.
+**492/671** functions, **107062/320805** bytes (**33.4%**), **269753/320805** fuzzy-weighted bytes (**84.1%**), **609/671** source candidates covering **320643/320805** bytes (**99.9%**), **492/609** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -255,11 +310,6 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | wip | ui_render_hud | 0x0041aed0 | 7081 | 6064/7081 | 1017 | 1824/1824 | 85.64% | 42/1824 | 385/0/0 |  | gameplay-hud-health-ammo-quest-xp-and-bonus-overlay |
 | match | ui_hud_progress_color_destroy | 0x0041ca80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-hud-static-progress-color-destructor |
 | match | hud_update_and_render | 0x0041ca90 | 531 | 531/531 | 0 | 126/126 | 100.00% | 126/126 | 49/0/0 |  | gameplay-hud-coordinator |
-| match | dx_get_version | 0x0041ccb0 | 251 | 251/251 | 0 | 106/106 | 100.00% | 106/106 | 7/0/0 |  | directx-version-query-and-format |
-| match | dx_get_version_from_dxdiag | 0x0041cdb0 | 556 | 556/556 | 0 | 190/190 | 100.00% | 190/190 | 12/0/0 |  | directx-dxdiag-com-version-probe |
-| match | win32_file_get_version_words | 0x0041db50 | 187 | 187/187 | 0 | 78/78 | 100.00% | 78/78 | 7/0/0 |  | win32-file-version-query |
-| match | dx_version_pack_4x16 | 0x0041dc10 | 49 | 49/49 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | directx-version-pack |
-| match | dx_version_compare_4x16 | 0x0041dc50 | 45 | 45/45 | 0 | 17/17 | 100.00% | 17/17 | 0/0/0 |  | directx-version-compare |
 | match | grim_load_interface | 0x0041dc80 | 83 | 83/83 | 0 | 36/36 | 100.00% | 36/36 | 5/0/0 |  | grim-interface-loader |
 | match | vorbis_mem_read | 0x0041dce0 | 88 | 88/88 | 0 | 37/37 | 100.00% | 37/37 | 0/0/0 |  | vorbis-memory-read-callback |
 | match | vorbis_mem_seek | 0x0041dd40 | 66 | 66/66 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | vorbis-memory-seek-callback |
@@ -365,8 +415,6 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | match | console_cmd_open_url | 0x0042a890 | 151 | 151/151 | 0 | 43/43 | 100.00% | 43/43 | 14/0/0 |  | console-open-url-command |
 | match | console_cmd_snd_freq_adjustment | 0x0042a930 | 58 | 58/58 | 0 | 16/16 | 100.00% | 16/16 | 8/0/0 |  | console-sound-frequency-toggle |
 | match | console_cmd_generate_terrain | 0x0042a970 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | console-terrain-generation-command |
-| match | reg_read_dword_default | 0x0042a980 | 58 | 58/58 | 0 | 23/23 | 100.00% | 23/23 | 1/0/0 |  | registry-dword-read |
-| match | reg_write_dword | 0x0042a9c0 | 37 | 37/37 | 0 | 14/14 | 100.00% | 14/14 | 1/0/0 |  | registry-dword-write |
 | match | init_audio_and_terrain | 0x0042a9f0 | 480 | 480/480 | 0 | 116/116 | 100.00% | 116/116 | 65/0/0 |  | audio-and-terrain-startup |
 | match | load_textures_step | 0x0042abd0 | 1203 | 1203/1203 | 0 | 252/252 | 100.00% | 252/252 | 209/0/0 |  | startup-staged-texture-loading |
 | match | game_startup_init_prelude | 0x0042b090 | 435 | 435/435 | 0 | 113/113 | 100.00% | 113/113 | 45/0/0 |  | startup-core-prelude |
@@ -642,26 +690,11 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 
 ## grim.dll
 
-**136/186** functions, **19597/36799** bytes (**53.3%**), **22140/36799** fuzzy-weighted bytes (**60.2%**), **141/186** source candidates covering **22659/36799** bytes (**61.6%**), **136/141** scratches verified.
+**105/146** functions, **12747/22800** bytes (**55.9%**), **15119/22800** fuzzy-weighted bytes (**66.3%**), **109/146** source candidates covering **15613/22800** bytes (**68.5%**), **105/109** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
-| match | grim_window_create | 0x10002680 | 497 | 497/497 | 0 | 142/142 | 100.00% | 142/142 | 46/0/0 |  | grim-window-creation |
-| match | grim_window_destroy | 0x10002880 | 66 | 66/66 | 0 | 22/22 | 100.00% | 22/22 | 8/0/0 |  | grim-window-teardown |
-| match | grim_backup_textures | 0x100028d0 | 610 | 610/610 | 0 | 219/219 | 100.00% | 219/219 | 41/0/0 |  | grim-texture-backup |
-| match | grim_restore_textures | 0x10002b40 | 432 | 432/432 | 0 | 161/161 | 100.00% | 161/161 | 26/0/0 |  | grim-texture-restore |
-| match | grim_try_reset_device | 0x10002cf0 | 609 | 609/609 | 0 | 205/205 | 100.00% | 205/205 | 48/0/0 |  | grim-device-reset |
-| match | grim_app_cleanup | 0x10002f60 | 26 | 26/26 | 0 | 10/10 | 100.00% | 10/10 | 1/0/0 |  | grim-app-gdi-cleanup |
-| match | grim_app_tick | 0x10002f80 | 64 | 64/64 | 0 | 29/29 | 100.00% | 29/29 | 1/0/0 |  | grim-app-30ms-tick |
-| match | grim_app_init | 0x10002fc0 | 185 | 185/185 | 0 | 54/54 | 100.00% | 54/54 | 13/0/0 |  | grim-app-runtime-init |
-| match | grim_app_shutdown | 0x10003080 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | grim-app-shutdown-thunk |
-| match | grim_app_pump | 0x10003090 | 20 | 20/20 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 |  | grim-app-30ms-pump |
-| match | grim_run_loop | 0x10003c00 | 608 | 608/608 | 0 | 174/174 | 100.00% | 174/174 | 61/0/0 |  | grim-win32-frame-loop |
-| match | grim_d3d_init | 0x10003e60 | 1046 | 1046/1046 | 0 | 323/323 | 100.00% | 323/323 | 104/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-direct3d-initialization |
-| wip | grim_d3d_shutdown | 0x10004280 | 196 | 172/196 | 24 | 72/72 | 87.50% | 40/72 | 15/0/0 |  | grim-d3d-resource-teardown |
-| match | grim_create_geometry_buffers | 0x10004350 | 387 | 387/387 | 0 | 107/107 | 100.00% | 107/107 | 32/0/0 |  | grim-geometry-buffer-creation |
-| match | grim_release_geometry_buffers | 0x100044e0 | 51 | 51/51 | 0 | 15/15 | 100.00% | 15/15 | 4/0/0 |  | grim-geometry-buffer-teardown |
 | match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |
@@ -685,8 +718,6 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | match | grim_release | 0x10005c80 | 8 | 8/8 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim2d-object-release |
 | match | grim_set_paused | 0x10005c90 | 12 | 12/12 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-pause-state |
 | match | grim_get_version | 0x10005ca0 | 7 | 7/7 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | grim2d-version |
-| match | grim_save_screenshot | 0x10005cb0 | 140 | 140/140 | 0 | 56/56 | 100.00% | 56/56 | 5/0/0 |  | grim2d-front-buffer-capture |
-| match | grim_apply_config | 0x10005d40 | 367 | 367/367 | 0 | 124/124 | 100.00% | 124/124 | 25/0/0 |  | grim2d-configuration-dialog |
 | match | grim_init_system | 0x10005eb0 | 318 | 318/318 | 0 | 93/93 | 100.00% | 93/93 | 32/0/0 |  | grim2d-system-initialization |
 | match | grim_shutdown | 0x10005ff0 | 38 | 38/38 | 0 | 8/8 | 100.00% | 8/8 | 7/0/0 |  | grim2d-system-shutdown |
 | match | grim_apply_settings | 0x10006020 | 8 | 8/8 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-run-loop-wrapper |
@@ -730,7 +761,6 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | match | grim_load_texture | 0x100076e0 | 21 | 21/21 | 0 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | grim2d-texture-load-wrapper |
 | match | grim_destroy_texture | 0x10007700 | 64 | 64/64 | 0 | 20/20 | 100.00% | 20/20 | 6/0/0 |  | grim2d-texture-destruction |
 | match | grim_get_texture_handle | 0x10007740 | 16 | 16/16 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim2d-texture-lookup |
-| match | grim_save_texture | 0x10007750 | 50 | 50/50 | 0 | 18/18 | 100.00% | 18/18 | 2/0/0 |  | grim2d-texture-save |
 | match | grim_recreate_texture | 0x10007790 | 157 | 157/157 | 0 | 57/57 | 100.00% | 57/57 | 8/0/0 |  | grim2d-texture-recreate |
 | match | grim_bind_texture | 0x10007830 | 58 | 58/58 | 0 | 20/20 | 100.00% | 20/20 | 3/0/0 |  | grim2d-texture-binding |
 | match | grim_draw_fullscreen_quad | 0x10007870 | 109 | 109/109 | 0 | 32/32 | 100.00% | 32/32 | 2/0/0 |  | grim2d-fullscreen-quad |
@@ -769,20 +799,6 @@ Compilable source candidates cover **757/865** functions and **344485/361707** c
 | match | grim_draw_text_small_fmt | 0x10009980 | 52 | 52/52 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim2d-small-text-format-wrapper |
 | match | GRIM__GetInterface | 0x100099c0 | 95 | 95/95 | 0 | 28/28 | 100.00% | 28/28 | 11/0/0 |  | grim-interface-factory |
 | match | DllMain | 0x10009a20 | 38 | 38/38 | 0 | 10/10 | 100.00% | 10/10 | 3/0/0 |  | grim-dll-process-attach |
-| match | grim_joystick_enum_device | 0x1000a110 | 50 | 50/50 | 0 | 16/16 | 100.00% | 16/16 | 3/0/0 |  | grim-joystick-enumeration |
-| match | grim_joystick_configure_axis | 0x1000a150 | 99 | 99/99 | 0 | 26/26 | 100.00% | 26/26 | 1/0/0 |  | grim-joystick-axis-range |
-| match | grim_joystick_init | 0x1000a1c0 | 231 | 231/231 | 0 | 90/90 | 100.00% | 90/90 | 19/0/0 |  | grim-joystick-init |
-| match | grim_joystick_poll | 0x1000a2b0 | 87 | 87/87 | 0 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim-joystick-poll |
-| match | grim_joystick_button_down | 0x1000a310 | 19 | 19/19 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-joystick-button-state |
-| match | grim_joystick_shutdown | 0x1000a330 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-joystick-shutdown |
-| match | grim_keyboard_key_down | 0x1000a370 | 19 | 19/19 | 0 | 5/5 | 100.00% | 5/5 | 1/0/0 |  | grim-keyboard-state |
-| match | grim_keyboard_init | 0x1000a390 | 272 | 272/272 | 0 | 89/89 | 100.00% | 89/89 | 18/0/0 |  | grim-keyboard-init |
-| match | grim_keyboard_poll | 0x1000a4a0 | 165 | 165/165 | 0 | 60/60 | 100.00% | 60/60 | 9/0/0 |  | grim-keyboard-poll |
-| match | grim_keyboard_shutdown | 0x1000a550 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-keyboard-shutdown |
-| match | grim_mouse_button_down | 0x1000a590 | 14 | 14/14 | 0 | 4/4 | 100.00% | 4/4 | 1/0/0 |  | grim-mouse-button-state |
-| match | grim_mouse_init | 0x1000a5a0 | 194 | 194/194 | 0 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
-| match | grim_mouse_poll | 0x1000a670 | 351 | 351/351 | 0 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
-| match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |
 | match | grim_jaz_decode_scope_init | 0x1000a810 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-decode-scope |
 | match | grim_zlib_status_is_error | 0x1000a820 | 21 | 21/21 | 0 | 11/11 | 100.00% | 11/11 | 0/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-zlib-status-classification |
 | match | grim_zlib_decompress_alloc | 0x1000a840 | 60 | 60/60 | 0 | 22/22 | 100.00% | 22/22 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-zlib-decompress-allocation |

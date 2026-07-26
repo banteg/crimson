@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "default": "port",
   "scopes": {
     "port": {
@@ -17,6 +17,300 @@
             "start": "0x10001000",
             "end": "0x1000A8D0",
             "owner": "grim-engine"
+          }
+        ]
+      },
+      "function_dispositions": {
+        "crimsonland.exe": [
+          {
+            "address": "0x0041CCB0",
+            "name": "dx_get_version",
+            "disposition": "platform-replaced",
+            "reason": "Legacy DirectX version startup gate; the host renderer supplies capability checks."
+          },
+          {
+            "address": "0x0041CDB0",
+            "name": "dx_get_version_from_dxdiag",
+            "disposition": "platform-replaced",
+            "reason": "COM DxDiag probe used only by the legacy DirectX version startup gate."
+          },
+          {
+            "address": "0x0041CFE0",
+            "name": "dx_get_version_fallback_from_files",
+            "disposition": "platform-replaced",
+            "reason": "Win32 version-resource fallback used only by the legacy DirectX version startup gate."
+          },
+          {
+            "address": "0x0041DB50",
+            "name": "win32_file_get_version_words",
+            "disposition": "platform-replaced",
+            "reason": "Win32 version-resource helper used only by the legacy DirectX version startup gate."
+          },
+          {
+            "address": "0x0041DC10",
+            "name": "dx_version_pack_4x16",
+            "disposition": "platform-replaced",
+            "reason": "Version tuple helper used only by the legacy DirectX version-resource fallback."
+          },
+          {
+            "address": "0x0041DC50",
+            "name": "dx_version_compare_4x16",
+            "disposition": "platform-replaced",
+            "reason": "Version tuple helper used only by the legacy DirectX version-resource fallback."
+          },
+          {
+            "address": "0x0042A980",
+            "name": "reg_read_dword_default",
+            "disposition": "platform-replaced",
+            "reason": "Win32 registry persistence leaf; the port owns its settings storage backend."
+          },
+          {
+            "address": "0x0042A9C0",
+            "name": "reg_write_dword",
+            "disposition": "platform-replaced",
+            "reason": "Win32 registry persistence leaf; the port owns its settings storage backend."
+          }
+        ],
+        "grim.dll": [
+          {
+            "address": "0x10001170",
+            "name": "grim_advanced_config_dialog_proc",
+            "disposition": "platform-replaced",
+            "reason": "Win32 advanced-renderer dialog; the port supplies its own settings UI."
+          },
+          {
+            "address": "0x100019F0",
+            "name": "grim_config_blob_save",
+            "disposition": "platform-replaced",
+            "reason": "Legacy crimson.cfg blob persistence used only by the Win32 launcher dialogs."
+          },
+          {
+            "address": "0x10001A30",
+            "name": "grim_config_blob_load",
+            "disposition": "platform-replaced",
+            "reason": "Legacy crimson.cfg blob persistence used only by the Win32 launcher dialogs."
+          },
+          {
+            "address": "0x10001AD0",
+            "name": "grim_parental_lock_dialog_proc",
+            "disposition": "platform-replaced",
+            "reason": "Win32 parental-lock dialog; the port supplies its own settings UI."
+          },
+          {
+            "address": "0x10001E90",
+            "name": "grim_config_dialog_populate_display_modes",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D adapter-mode population for the Win32 launcher UI."
+          },
+          {
+            "address": "0x10002120",
+            "name": "grim_config_dialog_proc",
+            "disposition": "platform-replaced",
+            "reason": "Win32 launcher dialog; the port supplies its own settings UI."
+          },
+          {
+            "address": "0x10002680",
+            "name": "grim_window_create",
+            "disposition": "platform-replaced",
+            "reason": "Win32 window creation and class registration; the host engine owns the window."
+          },
+          {
+            "address": "0x10002880",
+            "name": "grim_window_destroy",
+            "disposition": "platform-replaced",
+            "reason": "Win32 window teardown; the host engine owns the window."
+          },
+          {
+            "address": "0x100028D0",
+            "name": "grim_backup_textures",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 lost-device texture backup; the host renderer owns resource lifetime."
+          },
+          {
+            "address": "0x10002B40",
+            "name": "grim_restore_textures",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 lost-device texture restore; the host renderer owns resource lifetime."
+          },
+          {
+            "address": "0x10002CF0",
+            "name": "grim_try_reset_device",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 lost-device reset loop; the host renderer owns device recovery."
+          },
+          {
+            "address": "0x10002F60",
+            "name": "grim_app_cleanup",
+            "disposition": "platform-replaced",
+            "reason": "Win32 application-loop cleanup adapter; the host engine owns lifecycle."
+          },
+          {
+            "address": "0x10002F80",
+            "name": "grim_app_tick",
+            "disposition": "platform-replaced",
+            "reason": "Win32 application-loop timer adapter; the host engine owns scheduling."
+          },
+          {
+            "address": "0x10002FC0",
+            "name": "grim_app_init",
+            "disposition": "platform-replaced",
+            "reason": "Win32 application-loop initialization adapter; the host engine owns lifecycle."
+          },
+          {
+            "address": "0x10003080",
+            "name": "grim_app_shutdown",
+            "disposition": "platform-replaced",
+            "reason": "Win32 application-loop shutdown adapter; the host engine owns lifecycle."
+          },
+          {
+            "address": "0x10003090",
+            "name": "grim_app_pump",
+            "disposition": "platform-replaced",
+            "reason": "Win32 application-loop pump adapter; the host engine owns scheduling."
+          },
+          {
+            "address": "0x100030B0",
+            "name": "grim_restore_device_after_activation",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 reactivation recovery; the host renderer owns device recovery."
+          },
+          {
+            "address": "0x100033B0",
+            "name": "grim_window_proc",
+            "disposition": "platform-replaced",
+            "reason": "Win32 message dispatch and device-activation adapter; the host engine owns events."
+          },
+          {
+            "address": "0x10003C00",
+            "name": "grim_run_loop",
+            "disposition": "platform-replaced",
+            "reason": "Win32 message and Direct3D presentation loop; the host engine owns the frame loop."
+          },
+          {
+            "address": "0x10003E60",
+            "name": "grim_d3d_init",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 device and window initialization; the host renderer owns startup."
+          },
+          {
+            "address": "0x10004280",
+            "name": "grim_d3d_shutdown",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 device teardown; the host renderer owns resource lifetime."
+          },
+          {
+            "address": "0x10004350",
+            "name": "grim_create_geometry_buffers",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 vertex and index buffer allocation; the host renderer owns geometry buffers."
+          },
+          {
+            "address": "0x100044E0",
+            "name": "grim_release_geometry_buffers",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D 8 vertex and index buffer teardown; the host renderer owns geometry buffers."
+          },
+          {
+            "address": "0x10005CB0",
+            "name": "grim_save_screenshot",
+            "disposition": "platform-replaced",
+            "reason": "D3DX front-buffer export; the host renderer supplies screenshot capture."
+          },
+          {
+            "address": "0x10005D40",
+            "name": "grim_apply_config",
+            "disposition": "platform-replaced",
+            "reason": "Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI."
+          },
+          {
+            "address": "0x10007750",
+            "name": "grim_save_texture",
+            "disposition": "platform-replaced",
+            "reason": "D3DX texture export; the host renderer supplies image export."
+          },
+          {
+            "address": "0x1000A110",
+            "name": "grim_joystick_enum_device",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput joystick enumeration; the host input backend owns device discovery."
+          },
+          {
+            "address": "0x1000A150",
+            "name": "grim_joystick_configure_axis",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput axis setup; the host input backend owns device configuration."
+          },
+          {
+            "address": "0x1000A1C0",
+            "name": "grim_joystick_init",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput joystick initialization; the host input backend owns devices."
+          },
+          {
+            "address": "0x1000A2B0",
+            "name": "grim_joystick_poll",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput joystick polling; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A310",
+            "name": "grim_joystick_button_down",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput joystick-state accessor; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A330",
+            "name": "grim_joystick_shutdown",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput joystick teardown; the host input backend owns devices."
+          },
+          {
+            "address": "0x1000A370",
+            "name": "grim_keyboard_key_down",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput keyboard-state accessor; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A390",
+            "name": "grim_keyboard_init",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput keyboard initialization; the host input backend owns devices."
+          },
+          {
+            "address": "0x1000A4A0",
+            "name": "grim_keyboard_poll",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput keyboard polling; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A550",
+            "name": "grim_keyboard_shutdown",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput keyboard teardown; the host input backend owns devices."
+          },
+          {
+            "address": "0x1000A590",
+            "name": "grim_mouse_button_down",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput mouse-state accessor; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A5A0",
+            "name": "grim_mouse_init",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput mouse initialization; the host input backend owns devices."
+          },
+          {
+            "address": "0x1000A670",
+            "name": "grim_mouse_poll",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput mouse polling and accumulation; the host input backend supplies state."
+          },
+          {
+            "address": "0x1000A7D0",
+            "name": "grim_mouse_shutdown",
+            "disposition": "platform-replaced",
+            "reason": "Raw DirectInput mouse teardown; the host input backend owns devices."
           }
         ]
       }

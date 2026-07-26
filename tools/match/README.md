@@ -14,15 +14,28 @@ Grim2D engine implementation in `grim.dll` before `0x1000a8d0`. It excludes:
 
 - D3DX, CRT, codec, import-thunk, and other bundled library code linked after
   the owned ranges in either image
+- individually audited functions marked `platform-replaced`: legacy DirectX
+  and registry probes, the Grim Win32 launcher/window loop, Direct3D device
+  lifecycle and file-export leaves, and raw DirectInput adapters
 
 Both images' Binary Ninja databases, IDA and Ghidra exports, maps,
 annotations, and owned scratches are matching inputs. Pass `--scope all` only
-for an explicit consultation outside the port scope; do not add embedded
-library scratches to the default corpus.
+for an explicit consultation outside the port scope. Dispositioned functions
+and their existing scratches remain available there as analysis evidence, but
+are omitted from default scores, validation, triage, and worker shards.
 
 The address-keyed scope deliberately takes precedence over IDA's `library`
 flag, which can change between analysis versions and has produced false
 positives inside game code.
+
+Function dispositions are deliberately narrower than subsystem exclusions.
+Grim rendering, batching, texture behavior, timing policy, higher-level input
+semantics, configuration access, and shared game state remain in `port`.
+For example, `grim_config_defaults_init` initializes game-owned player,
+key-binding, audio, display, and gameplay defaults and therefore stays a
+matching target even though the adjacent Win32 configuration dialogs are
+`platform-replaced`. Add a disposition only when call sites and state effects
+show that a host engine backend can replace the whole function.
 
 ## Toolchain
 

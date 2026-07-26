@@ -590,6 +590,9 @@ def cmd_match_status(
             json.dumps(
                 {
                     "scope": scope,
+                    "function_dispositions": (
+                        matchlib.matching_scope_function_disposition_payloads(scope)
+                    ),
                     "totals": [matchlib.image_totals_payload(total) for total in selected_totals],
                     "statuses": (
                         []

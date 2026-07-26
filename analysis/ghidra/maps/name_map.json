@@ -6958,11 +6958,67 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10001140",
+    "name": "grim_missing_frame_callback",
+    "signature": "bool grim_missing_frame_callback(void)",
+    "comment": "default engine callback that reports a missing frame function and returns false"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10001160",
     "name": "grim_noop",
     "signature": "void grim_noop(void)",
     "comment": "debug stub and folded empty callback (no-op)",
     "aliases": ["?on_tick@MyApp@@QAEXXZ"]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001170",
+    "name": "grim_advanced_config_dialog_proc",
+    "signature": "int grim_advanced_config_dialog_proc(int hwnd, unsigned int msg, unsigned int wparam, int lparam)",
+    "comment": "Win32 advanced graphics dialog for texture format, texture scale, and renderer flags"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001700",
+    "name": "grim_config_defaults_init_thunk",
+    "signature": "int grim_config_defaults_init_thunk(void)",
+    "comment": "exported jump thunk for the game-owned config defaults initializer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001710",
+    "name": "grim_config_defaults_init",
+    "signature": "int grim_config_defaults_init(void)",
+    "comment": "initializes Crimsonland player, input, display, audio, and gameplay configuration defaults"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100019f0",
+    "name": "grim_config_blob_save",
+    "signature": "bool grim_config_blob_save(void)",
+    "comment": "writes the legacy 0x480-byte configuration blob to crimson.cfg"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001a30",
+    "name": "grim_config_blob_load",
+    "signature": "bool grim_config_blob_load(void)",
+    "comment": "loads crimson.cfg and recreates the legacy configuration blob when its size is invalid"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001ad0",
+    "name": "grim_parental_lock_dialog_proc",
+    "signature": "int grim_parental_lock_dialog_proc(int hwnd, unsigned int msg, unsigned int wparam, int lparam)",
+    "comment": "Win32 parental-lock dialog that updates the violence flag and legacy password buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001e90",
+    "name": "grim_config_dialog_populate_display_modes",
+    "signature": "int grim_config_dialog_populate_display_modes(void)",
+    "comment": "populates the Win32 launcher display-mode controls from Direct3D adapter capabilities"
   },
   {
     "program": "grim.dll",
@@ -7045,6 +7101,13 @@
     "signature": "void __fastcall grim_app_pump(void *self)",
     "comment": "dispatch the singleton's empty callback on each 30 ms app tick",
     "aliases": ["?pump@MyApp@@QAEXXZ"]
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100030b0",
+    "name": "grim_restore_device_after_activation",
+    "signature": "bool grim_restore_device_after_activation(void)",
+    "comment": "tests and resets a lost Direct3D device when the Win32 window is reactivated"
   },
   {
     "program": "grim.dll",
