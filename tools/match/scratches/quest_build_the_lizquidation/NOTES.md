@@ -10,14 +10,17 @@ result contains 21 entries.
 
 The candidate preserves the native base-plus-count record builder, integer to
 float coordinate conversions, 24-byte record stride, loop arithmetic, branch,
-and output count. It compiles to the same 79 instructions with all references
-resolved. The remaining score is a VC6 allocation and scheduling split: the
-candidate cycles the loop, trigger, and entry-pointer registers and fills x87
-latency slots with independent metadata stores in a different order.
+and output count. VC6 6.5 `/O2 /G6` compiles to the same 79 instructions with
+all three references resolved and scores 49.37%, improving the default `/GB`
+profile by 37.22 fuzzy-weighted bytes (34.18% to 49.37%). The remaining score
+is a VC6 allocation and scheduling split: the candidate cycles the loop,
+trigger, and entry-pointer registers and fills x87 latency slots with
+independent metadata stores in a different order.
 
 Cursor-based storage, an inlined `next()` method, whole-vector and all-fields
-setters, declaration/lifetime variants, `msvc6.5pp`, `msvc6.6`, `msvc7.0`,
-`/G6`, and `/O1` were checked. None reproduced the native shape, and several
-made it materially less plausible. Recovery is semantic-complete; the residual
-is compiler register allocation and scheduling rather than missing behavior.
-Dummy dependencies and volatile state are not used to steer the compiler.
+setters, and declaration/lifetime variants were checked. A complete
+6.5/6.5pp/7.0 optimizer matrix found `/G6` on VC6 6.5 to be the strongest
+profile, though it does not reproduce the native shape exactly. Recovery is
+semantic-complete; the residual is compiler register allocation and scheduling
+rather than missing behavior. Dummy dependencies and volatile state are not
+used to steer the compiler.
