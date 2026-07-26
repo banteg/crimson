@@ -24,3 +24,13 @@ constructor temporaries and current-UV stores, direct versus import-indirect
 `strdup`, and counter-versus-end-pointer forms for the atlas loops. Every
 observed state store, callback assignment, allocation/copy, and table loop is
 represented, so the recovery is marked semantic-complete rather than exact.
+
+The nine reported reference mismatches were audited as alignment artifacts in
+the single constructor/store-scheduling region. Every native destination is
+also present as an exact candidate relocation, including all four words of
+config value `0x64` (`grim_config_values + 0x640..0x64c`), the config-value
+words at offsets `0x120..0x14c`, and current-UV destinations `0x1005b294` and
+`0x1005b298`. The latter are emitted through `grim_uv_u0 + 4` and
+`grim_uv_u1`, respectively. The matcher pairs them with nearby scheduled stores
+after the instruction streams diverge, but no referenced destination is
+missing or unresolved. The residual is therefore compiler-only.
