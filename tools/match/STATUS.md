@@ -4,18 +4,18 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**631/865** functions matched exactly, **127692/361707** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
+**635/865** functions matched exactly, **127842/361707** code bytes (**35.3%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **292840/361707** code bytes (**81.0%**).
+Fuzzy-weighted alignment is **292990/361707** code bytes (**81.0%**).
 
-Compilable source candidates cover **753/865** functions and **344335/361707** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Compilable source candidates cover **757/865** functions and **344485/361707** code bytes (**95.2%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Images
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 499/679 | 108245/324908 | 33.3% | 270850/324908 | 83.4% | 616/679 | 321826/324908 | 99.1% | 499/616 |
-| grim.dll | 132/186 | 19447/36799 | 52.8% | 21990/36799 | 59.8% | 137/186 | 22509/36799 | 61.2% | 132/137 |
+| grim.dll | 136/186 | 19597/36799 | 53.3% | 22140/36799 | 60.2% | 141/186 | 22659/36799 | 61.6% | 136/141 |
 
 ## crimsonland.exe
 
@@ -642,7 +642,7 @@ Compilable source candidates cover **753/865** functions and **344335/361707** c
 
 ## grim.dll
 
-**132/186** functions, **19447/36799** bytes (**52.8%**), **21990/36799** fuzzy-weighted bytes (**59.8%**), **137/186** source candidates covering **22509/36799** bytes (**61.2%**), **132/137** scratches verified.
+**136/186** functions, **19597/36799** bytes (**53.3%**), **22140/36799** fuzzy-weighted bytes (**60.2%**), **141/186** source candidates covering **22659/36799** bytes (**61.6%**), **136/141** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -670,7 +670,7 @@ Compilable source candidates cover **753/865** functions and **344335/361707** c
 | match | grim_texture_init | 0x10004a50 | 83 | 83/83 | 0 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
 | match | grim_texture_release | 0x10004ab0 | 66 | 66/66 | 0 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
 | match | grim_path_has_extension | 0x10004b00 | 99 | 99/99 | 0 | 50/50 | 100.00% | 50/50 | 0/0/0 |  | grim-texture-extension |
-| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 6/15/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
+| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 8/13/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
 | match | grim_jaz_jpeg_error_exit | 0x10004e90 | 41 | 41/41 | 0 | 14/14 | 100.00% | 14/14 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-jaz-jpeg-error |
 | wip | grim_texture_load_file | 0x10004ec0 | 591 | 379/591 | 212 | 223/235 | 64.19% | 0/235 | 24/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-texture-file-decode |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 93/93 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
@@ -783,3 +783,7 @@ Compilable source candidates cover **753/865** functions and **344335/361707** c
 | match | grim_mouse_init | 0x1000a5a0 | 194 | 194/194 | 0 | 71/71 | 100.00% | 71/71 | 18/0/0 |  | grim-mouse-init |
 | match | grim_mouse_poll | 0x1000a670 | 351 | 351/351 | 0 | 90/90 | 100.00% | 90/90 | 42/0/0 |  | grim-mouse-poll |
 | match | grim_mouse_shutdown | 0x1000a7d0 | 62 | 62/62 | 0 | 19/19 | 100.00% | 19/19 | 5/0/0 |  | grim-mouse-shutdown |
+| match | grim_jaz_decode_scope_init | 0x1000a810 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-decode-scope |
+| match | grim_zlib_status_is_error | 0x1000a820 | 21 | 21/21 | 0 | 11/11 | 100.00% | 11/11 | 0/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-zlib-status-classification |
+| match | grim_zlib_decompress_alloc | 0x1000a840 | 60 | 60/60 | 0 | 22/22 | 100.00% | 22/22 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-zlib-decompress-allocation |
+| match | grim_jaz_decompress_payload | 0x1000a880 | 66 | 66/66 | 0 | 26/26 | 100.00% | 26/26 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-payload-decompression |

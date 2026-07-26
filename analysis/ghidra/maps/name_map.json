@@ -7976,25 +7976,48 @@
   {
     "program": "grim.dll",
     "address": "0x1000a810",
-    "name": "FUN_1000a810",
-    "signature": "int FUN_1000a810(int arg1)",
-    "comment": "[binja] int32_t __fastcall sub_1000a810(int32_t arg1) __pure",
+    "name": "grim_jaz_decode_scope_init",
+    "aliases": [
+      "FUN_1000a810",
+      "??0GrimJazDecodeScope@@QAE@XZ"
+    ],
+    "signature": "void * grim_jaz_decode_scope_init(void *this)",
+    "comment": "empty constructor for the JAZ payload-decompression scope helper",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a820",
+    "name": "grim_zlib_status_is_error",
+    "aliases": [
+      "FUN_1000a820"
+    ],
+    "signature": "bool grim_zlib_status_is_error(int status)",
+    "comment": "classifies zlib statuses 0, 1, and 2 as non-errors",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000a840",
-    "name": "FUN_1000a840",
-    "signature": "bool FUN_1000a840(int* arg1, uint arg2, int arg3, int arg4)",
-    "comment": "[binja] bool __stdcall sub_1000a840(int32_t* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
+    "name": "grim_zlib_decompress_alloc",
+    "aliases": [
+      "FUN_1000a840",
+      "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z"
+    ],
+    "signature": "bool grim_zlib_decompress_alloc(unsigned char **output, unsigned int output_size, const unsigned char *source, unsigned int source_size)",
+    "comment": "allocates the requested output buffer and expands a zlib payload into it",
     "create": false
   },
   {
     "program": "grim.dll",
     "address": "0x1000a880",
-    "name": "FUN_1000a880",
-    "signature": "char* FUN_1000a880(char* arg1, uint* arg2)",
-    "comment": "[binja] char* __stdcall sub_1000a880(char* arg1, uint32_t* arg2)",
+    "name": "grim_jaz_decompress_payload",
+    "aliases": [
+      "FUN_1000a880",
+      "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z"
+    ],
+    "signature": "unsigned char * grim_jaz_decompress_payload(unsigned char *source, unsigned int *output_size)",
+    "comment": "validates a version-1 JAZ envelope, allocates its output, and expands the zlib payload",
     "create": false
   },
   {
@@ -10663,6 +10686,17 @@
     "name": "FUN_10041b00",
     "signature": "int FUN_10041b00(void* arg1, int arg2, int* arg3, int arg4)",
     "comment": "[binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10046400",
+    "name": "zlib_uncompress",
+    "aliases": [
+      "sub_10046400"
+    ],
+    "signature": "int zlib_uncompress(unsigned char *output, unsigned long *output_size, const unsigned char *source, unsigned long source_size)",
+    "comment": "zlib 1.1.3 one-shot decompression routine embedded in d3dx8.lib",
     "create": false
   },
   {

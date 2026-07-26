@@ -15,6 +15,10 @@ prefix, 86.51% similarity, and masked references `6/15/0`.
 - A small C++ scope object calls the JAZ unpacker before decoding. The unpacked
   payload begins with a little-endian JPEG byte count followed by JPEG data;
   alpha RLE begins immediately after that JPEG segment.
+- The scope constructor, zlib status classifier, allocation/decompression
+  method, and version-1 envelope unpacker are independently exact-matched at
+  `0x1000a810..0x1000a8c2`. They are Grim-owned helpers immediately before the
+  VC6 runtime/import seam, not part of the linked D3DX archive.
 - The native libjpeg ABI is version 61. `jpeg_decompress_struct` occupies
   `0x1a8` bytes and the custom error object combines a `0xc4`-byte error
   manager with a 64-byte `jmp_buf`. `setjmp` protects the complete JPEG decode

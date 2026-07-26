@@ -250,7 +250,7 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
         scope="port",
     )
     assert resolve_function(grim_manifest, "grim_mouse_shutdown")[0].address == 0x1000A7D0
-    assert resolve_function(grim_manifest, "FUN_1000a880")[0].address == 0x1000A880
+    assert resolve_function(grim_manifest, "grim_jaz_decompress_payload")[0].address == 0x1000A880
     with pytest.raises(ValueError, match="not found"):
         resolve_function(grim_manifest, "sprintf")
     with pytest.raises(ValueError, match="not found"):
