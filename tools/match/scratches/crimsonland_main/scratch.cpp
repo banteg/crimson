@@ -30,6 +30,16 @@ extern unsigned char music_disabled_runtime;
 extern float screen_width_f;
 extern float screen_height_f;
 
+extern char *developer_hint_redistribution_build;
+extern char *developer_hint_reijo;
+extern char *developer_hint_secret_weapons;
+extern char *developer_hint_warning;
+extern char *developer_hint_alien_zookeeper;
+extern char *developer_hint_secret_path;
+extern char *developer_hint_magic_paint;
+extern char *developer_hint_muzzy;
+extern char *developer_hint_haxxor;
+
 unsigned int FUN_004623b2(void *timer);
 void crt_srand(unsigned int seed);
 char *crt_getcwd(char *buffer, int size);
@@ -221,7 +231,24 @@ extern "C" int WINAPI crimsonland_main(
             &console_log_queue,
             "...DEV dll not found, trying to find REL dll\n");
         grim_interface_ptr = grim_load_interface("grim.dll");
-        console_log_queue.flush_log("console.log");
+    }
+    console_log_queue.flush_log("console.log");
+    if (grim_interface_ptr == grim_interface_ptr + 1) {
+        console_printf(&console_log_queue, developer_hint_reijo);
+        console_printf(
+            &console_log_queue, developer_hint_secret_weapons);
+        console_printf(
+            &console_log_queue,
+            developer_hint_redistribution_build);
+        console_printf(&console_log_queue, developer_hint_warning);
+        console_printf(
+            &console_log_queue, developer_hint_alien_zookeeper);
+        console_printf(
+            &console_log_queue, developer_hint_secret_path);
+        console_printf(
+            &console_log_queue, developer_hint_magic_paint);
+        console_printf(&console_log_queue, developer_hint_haxxor);
+        console_printf(&console_log_queue, developer_hint_muzzy);
     }
     if (grim_interface_ptr == 0) {
         MessageBoxA(

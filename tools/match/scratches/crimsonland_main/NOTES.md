@@ -19,19 +19,34 @@ registry path's two-stage byte construction is also preserved: the native
 writes `Software\Sock` before the development DLL load and appends
 `etPlugins\Default\` afterward.
 
-With the target-local MSVC 6.5 `/O2 /GB /W3 /GR-` profile, the reconstruction
-matches 89.34%: 782 candidate instructions against 832 target instructions, a
-27-instruction exact prefix, and 356 resolved matching references (three
-mismatches and four unresolved data references). The native 0x424-byte frame
-and `retn 0x10` WinMain ABI are reproduced.
+The native fallback path flushes `console.log` after the conditional
+development-DLL retry, including when that first load succeeds. Moving the
+flush to that evidenced join recovers its reference and corrects the
+development-success side effect.
 
-The guarded developer hint block is intentionally omitted from the first
-candidate. Binary Ninja renders its condition as an impossible interface
-pointer comparison, and the repository evidence describes it as a debug or
-anti-tamper path rather than normal boot behavior. No dummy branch, fake
-reference, volatile state, or compiler-order constraint is introduced to
-recreate it. That omitted block accounts for the dominant 50-instruction
-residual. The other material residual is the honest aggregate two-player input
+Live Binary Ninja also resolves the former 50-instruction hole at
+`0x0042c80e..0x0042c8d1`. The native compares the loaded interface pointer
+with its one-object successor and, only for that deliberately unreachable or
+anti-tamper condition, prints nine hint strings through pointer globals at
+`0x00473a10..0x00473a34`. The strings cover the redistribution build marker,
+secret weapons, the credits secret path, Alien Zoo Keeper, Magic Paint, and
+the Muzzy/haxx0r messages. Expressing the observed pointer comparison and nine
+calls directly reproduces the entire block, including the post-call interface
+reload. It does not introduce a dummy branch, fake relocation, volatility, or
+layout-only control flow.
+
+With the target-local MSVC 6.5 `/O2 /GB /W3 /GR-` profile, the reconstruction
+now has all 832 native instructions and rises from 89.34% to 96.51%, reducing
+the fuzzy gap from 343 to about 112 weighted bytes. The 27-instruction exact
+prefix is unchanged. Resolved references rise from 356 to 378; the original
+three mismatches remain, while unresolved references rise from four to
+thirteen because the nine recovered hint-pointer globals do not yet have
+authoritative names in the shared data map. This scratch deliberately records
+that honest reference debt rather than aliasing unnamed addresses locally.
+The native 0x424-byte frame and `retn 0x10` WinMain ABI remain reproduced.
+
+The largest remaining instruction residual is the aggregate two-player input
 copy: as in `config_load_presets`, VC6 rebases the reconstructed loop to a
 different interior field than the native `axis_move_x`/`move_key_backward`
-induction pair.
+induction pair. The other changed instructions are branch-target shifts and
+small call/register scheduling differences outside the newly exact hint block.
