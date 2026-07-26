@@ -9,17 +9,17 @@ if TYPE_CHECKING:
     from .trace import TraceError, TraceReader
 
 __all__ = [
-    "FinalizeResult",
-    "FinalizedTrace",
-    "FridaFinalizeError",
-    "finalize_frida_jsonl_to_traces",
     "TRACE_FORMAT_VERSION",
     "TRACE_MAGIC",
     "TRACE_SCHEMA_VERSION",
+    "FinalizeResult",
+    "FinalizedTrace",
+    "FridaFinalizeError",
     "TickRecord",
     "TraceError",
     "TraceMeta",
     "TraceReader",
+    "finalize_frida_jsonl_to_traces",
     "load_trace",
     "load_trace_meta",
     "write_trace",

@@ -236,18 +236,14 @@ class DemoView:
             return True
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             return True
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-            return True
-        return False
+        return bool(rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT))
 
     def _purchase_screen_triggered(self) -> bool:
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             return True
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             return True
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
-            return True
-        return False
+        return bool(rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE))
 
     def _begin_purchase_screen(self, limit_ms: int, *, reset_timeline: bool) -> None:
         self._purchase_active = True

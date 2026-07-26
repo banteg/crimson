@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import crimson.modes.replay_playback_mode as replay_playback_mode
+from crimson.modes import replay_playback_mode
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 
 

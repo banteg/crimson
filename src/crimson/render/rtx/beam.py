@@ -226,7 +226,7 @@ def draw_beam_fast_stamped_body(
         return True
 
     ray = head_screen - origin_screen
-    direction_screen, ray_len = ray.normalized_with_length()
+    _direction_screen, ray_len = ray.normalized_with_length()
     if ray_len <= 1e-6:
         return True
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from grim.render_pipeline import RenderPresent, RenderSink, WindowSink
 
-__all__ = ["RenderPresent", "RenderSink", "WindowSink", "NullSink", "VideoSink", "VideoTransport"]
+__all__ = ["NullSink", "RenderPresent", "RenderSink", "VideoSink", "VideoTransport", "WindowSink"]
 
 
 class NullSink:

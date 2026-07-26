@@ -24,7 +24,7 @@ def _as_float(value: object) -> float:
     return float(cast(Any, value))
 
 
-def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -> None:
+def _apply_config_updates(cfg: CrimsonConfig, updates: Mapping[str, object]) -> None:
     from crimson.game_modes import GameMode
     from crimson.quests.level import QuestLevel
     from grim.config import HighScoreDateMode
@@ -91,9 +91,9 @@ def _apply_config_updates(cfg: "CrimsonConfig", updates: Mapping[str, object]) -
         cfg.gameplay.quest_level = QuestLevel(major=quest_major, minor=quest_minor)
 
 if TYPE_CHECKING:
-    import crimson.modes.replay_playback_mode as replay_playback_mode
     from crimson.game.types import GameState
     from crimson.game_modes import GameMode
+    from crimson.modes import replay_playback_mode
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
     from grim.audio import AudioState
@@ -176,8 +176,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple["replay_playback_mode.ReplayPlaybackMode", "ConsoleState"]:
-    import crimson.modes.replay_playback_mode as replay_playback_mode
+def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple[replay_playback_mode.ReplayPlaybackMode, ConsoleState]:
+    from crimson.modes import replay_playback_mode
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.view import ViewContext
@@ -199,12 +199,12 @@ def assets_dir() -> Path:
 
 
 @pytest.fixture
-def make_mode_config(tmp_path: Path) -> Callable[..., "CrimsonConfig"]:
+def make_mode_config(tmp_path: Path) -> Callable[..., CrimsonConfig]:
     from grim.config import ensure_crimson_cfg
 
     def _make(
         *,
-        game_mode: "GameMode | int",
+        game_mode: GameMode | int,
         base_dir: Path | None = None,
         updates: Mapping[str, object] | None = None,
     ):
@@ -221,7 +221,7 @@ def make_mode_config(tmp_path: Path) -> Callable[..., "CrimsonConfig"]:
 
 
 @pytest.fixture
-def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameState"]:
+def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., GameState]:
     from crimson.game.types import GameState
     from crimson.persistence import save_status
     from grim.config import ensure_crimson_cfg
@@ -234,8 +234,8 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameStat
         rng_seed: int = 0,
         demo_enabled: bool = False,
         preserve_bugs: bool = False,
-        status: "GameStatus | None" = None,
-        audio: "AudioState | None" = None,
+        status: GameStatus | None = None,
+        audio: AudioState | None = None,
         config_updates: Mapping[str, object] | None = None,
         session_start: float | None = None,
         **state_overrides: object,
@@ -273,12 +273,12 @@ def make_game_state(tmp_path: Path, assets_dir: Path) -> Callable[..., "GameStat
 
 
 @pytest.fixture
-def game_state(make_game_state: Callable[..., "GameState"]) -> "GameState":
+def game_state(make_game_state: Callable[..., GameState]) -> GameState:
     return make_game_state()
 
 
 @pytest.fixture
-def make_world_state() -> Callable[..., "WorldState"]:
+def make_world_state() -> Callable[..., WorldState]:
     from crimson.sim.state_types import PlayerState
     from crimson.sim.world_state import WorldState
     from grim.geom import Vec2
@@ -310,7 +310,7 @@ def make_world_state() -> Callable[..., "WorldState"]:
 
 
 @pytest.fixture
-def base_world(make_world_state: Callable[..., "WorldState"]) -> "WorldState":
+def base_world(make_world_state: Callable[..., WorldState]) -> WorldState:
     return make_world_state()
 
 
@@ -344,11 +344,11 @@ def patch_raylib_module(mocker: MockerFixture) -> Callable[..., None]:
         *,
         screen_width: int = 640,
         screen_height: int = 480,
-        mouse_pos: "rl.Vector2 | None" = None,
+        mouse_pos: rl.Vector2 | None = None,
         is_key_pressed: Callable[[object], bool] | None = None,
     ) -> None:
         target_module = importlib.import_module(module)
-        raylib_module = getattr(target_module, "rl")
+        raylib_module = target_module.rl
         default_mouse = mouse_pos if mouse_pos is not None else rl.Vector2(0.0, 0.0)
         key_handler = is_key_pressed if is_key_pressed is not None else (lambda _key: False)
 

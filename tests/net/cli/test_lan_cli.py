@@ -4,7 +4,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-import crimson.game as game
+from crimson import game
 from crimson.cli import app
 
 

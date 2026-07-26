@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import msgspec
 
 SnapshotT = TypeVar("SnapshotT")
 
 
-class RollbackSnapshotCodec(msgspec.Struct, Generic[SnapshotT]):
+class RollbackSnapshotCodec[SnapshotT](msgspec.Struct):
     """Serialize rollback snapshots as deterministic msgpack blobs."""
 
     snapshot_type: type[SnapshotT]
@@ -26,7 +26,7 @@ class RollbackSnapshotCodec(msgspec.Struct, Generic[SnapshotT]):
         return cast(SnapshotT, self._decoder.decode(blob))
 
 
-class RollbackSnapshotRing(msgspec.Struct, Generic[SnapshotT]):
+class RollbackSnapshotRing[SnapshotT](msgspec.Struct):
     """Store periodic snapshots for rollback and reconnect restore."""
 
     max_ticks: int
@@ -61,7 +61,7 @@ class RollbackSnapshotRing(msgspec.Struct, Generic[SnapshotT]):
     def restore_latest_at_or_before(self, tick_index: int) -> tuple[int, SnapshotT] | None:
         target = int(tick_index)
         candidate: int | None = None
-        for tick in self._by_tick.keys():
+        for tick in self._by_tick:
             if int(tick) <= int(target):
                 candidate = int(tick)
             else:

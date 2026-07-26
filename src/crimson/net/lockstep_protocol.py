@@ -5,7 +5,6 @@ import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import TypeAlias
 
 import msgspec
 
@@ -84,10 +83,7 @@ def builds_compatible(peer_build_id: str, host_build_id: str) -> bool:
 
     peer_ver = build_public_version(peer)
     host_ver = build_public_version(host)
-    if peer_ver is not None and host_ver is not None and peer_ver == host_ver:
-        return True
-
-    return False
+    return bool(peer_ver is not None and host_ver is not None and peer_ver == host_ver)
 
 
 @lru_cache(maxsize=1)
@@ -236,7 +232,7 @@ class Disconnect(msgspec.Struct, tag="disconnect", forbid_unknown_fields=True):
     reason: str = ""
 
 
-NetMessage: TypeAlias = (
+type NetMessage = (
     Hello
     | Welcome
     | LobbyState

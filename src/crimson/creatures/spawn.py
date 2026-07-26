@@ -53,24 +53,24 @@ _NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP = f32_from_bits(0x3EB2B8C3)
 NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
-    "CreatureAiMode",
-    "BurstEffect",
-    "CreatureFlags",
-    "CreatureInit",
-    "CreatureTypeId",
     "HAS_SPAWN_SLOT_FLAG",
     "NATIVE_SPAWN_SLOT_COUNT",
     "RANDOM_HEADING_SENTINEL",
-    "SpawnId",
     "SPAWN_ID_TO_TEMPLATE",
     "SPAWN_TEMPLATES",
+    "TYPE_ID_TO_NAME",
+    "BurstEffect",
+    "CreatureAiMode",
+    "CreatureFlags",
+    "CreatureInit",
+    "CreatureTypeId",
     "SpawnEnv",
+    "SpawnId",
     "SpawnPlan",
     "SpawnSlotInit",
     "SpawnTemplate",
     "SpawnTemplateCall",
     "UnsupportedSpawnTemplateError",
-    "TYPE_ID_TO_NAME",
     "advance_survival_spawn_stage",
     "build_rush_mode_spawn_creature",
     "build_spawn_plan",
@@ -961,7 +961,7 @@ class PlanBuilder(msgspec.Struct):
         heading: float,
         rng: CrandLike,
         env: SpawnEnv,
-    ) -> tuple["PlanBuilder", float]:
+    ) -> tuple[PlanBuilder, float]:
         # creature_alloc_slot() for the base creature, followed by the template
         # prologue's explicit force-target reset. Formation children only run
         # the allocator and therefore retain that recycled byte.

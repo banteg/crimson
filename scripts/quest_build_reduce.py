@@ -188,7 +188,7 @@ def load_expected_levels() -> dict[str, dict[str, Any]]:
     sys.path.insert(0, str(root / "src"))
     try:
         from crimson.quests import tier1, tier2, tier3, tier4, tier5
-    except Exception:
+    except ImportError:
         return {}
     quests = [*tier1.QUESTS, *tier2.QUESTS, *tier3.QUESTS, *tier4.QUESTS, *tier5.QUESTS]
     expected: dict[str, dict[str, Any]] = {}
@@ -319,8 +319,8 @@ def main() -> None:
 
     summary = QuestBuildSummary(
         source_logs=[str(path) for path in logs],
-        event_count=int(len(events)),
-        unique_keys=int(len(grouped)),
+        event_count=len(events),
+        unique_keys=len(grouped),
         missing_levels=list(missing),
         duplicates={str(key): int(value) for key, value in duplicates.items()},
         runs=rows,

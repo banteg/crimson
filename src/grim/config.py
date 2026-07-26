@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import msgspec
 from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
@@ -450,7 +450,7 @@ def _decode_saved_names(raw: bytes) -> tuple[str, str, str, str, str, str, str, 
     for idx in range(SAVED_NAME_SLOT_COUNT):
         entry = blob[idx * SAVED_NAME_ENTRY_SIZE : (idx + 1) * SAVED_NAME_ENTRY_SIZE]
         names.append(entry.split(b"\x00", 1)[0].decode("latin-1", errors="ignore"))
-    return tuple(names)  # type: ignore[return-value]
+    return cast("tuple[str, str, str, str, str, str, str, str]", tuple(names))
 
 
 def _encode_saved_names_blob(names: Sequence[str]) -> bytes:
@@ -614,7 +614,10 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
             score_date_mode=_decode_high_score_date_mode(raw["highscore_date_mode"]),
         ),
         controls=CrimsonControlsConfig(
-            players=players,  # type: ignore[arg-type]
+            players=cast(
+                "tuple[CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls]",
+                players,
+            ),
             pick_perk_code=int(raw["keybind_pick_perk"]),
             reload_code=int(raw["keybind_reload"]),
         ),

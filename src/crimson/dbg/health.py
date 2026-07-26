@@ -12,7 +12,7 @@ from .trace import TraceError, TraceReader, validate_tick_record
 
 
 def _tick_coverage(tick_indices: list[int]) -> tuple[list[BuiltinObject], list[BuiltinObject]]:
-    ordered = sorted(set(int(tick) for tick in tick_indices))
+    ordered = sorted({int(tick) for tick in tick_indices})
     if not ordered:
         return [], []
 

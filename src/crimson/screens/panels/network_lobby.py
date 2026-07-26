@@ -138,7 +138,6 @@ class NetworkLobbyPanelView(PanelMenuView):
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         _ = entry
-        return
 
     def _layout(self) -> _LobbyLayout:
         panel_scale, _local_shift = self._menu_item_scale(0)
@@ -308,7 +307,7 @@ class NetworkLobbyPanelView(PanelMenuView):
             y += 10.0 * scale
             draw_small_text(font, "Debug:", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
             y += line_h
-            draw_small_text(font, f"logs: {str(self.state.base_dir)}/logs/lan/", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
+            draw_small_text(font, f"logs: {self.state.base_dir!s}/logs/lan/", Vec2(base_pos.x, y), rl.Color(232, 197, 117, 255))
 
         button_draw(
             resources,

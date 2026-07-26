@@ -28,7 +28,7 @@ DEFAULT_MD_OUT = Path("analysis/frida/panel_state_resolution_capture_report.md")
 def _now_iso() -> str:
     import datetime as _dt
 
-    return _dt.datetime.now(tz=_dt.timezone.utc).isoformat()
+    return _dt.datetime.now(tz=_dt.UTC).isoformat()
 
 
 def _as_int(v: Any) -> int | None:
@@ -188,7 +188,7 @@ def _parse_file(path: Path) -> FileSummary:
                 continue
             try:
                 obj = json.loads(line)
-            except Exception:
+            except json.JSONDecodeError:
                 event_counts["json_error"] += 1
                 continue
 
@@ -351,7 +351,7 @@ def _state_result_overview(state_results: list[StateResult]) -> StateResultOverv
     ]
     max_unique_text = max((int(row.unique_text_count) for row in state_results), default=0)
     return StateResultOverview(
-        states_total=int(len(state_results)),
+        states_total=len(state_results),
         result_counts={k: int(v) for k, v in sorted(result_counts.items(), key=lambda kv: kv[0])},
         non_captured_states=non_captured,
         zero_signal_captured_states=zero_signal,
@@ -384,7 +384,7 @@ def _run_summary(run_id: str, files: list[FileSummary]) -> RunSummary:
     return RunSummary(
         run_id=str(run_id),
         status=str(run_status),
-        files=list(sorted(files, key=lambda x: x.path)),
+        files=sorted(files, key=lambda x: x.path),
         expected_output_files=output_files,
         resolutions=resolutions,
         primary_by_resolution={
@@ -553,8 +553,8 @@ def main(argv: list[str] | None = None) -> int:
     summary = PanelStateResolutionSummary(
         generated_at=_now_iso(),
         input_glob=str(args.glob),
-        files_scanned=int(len(summaries)),
-        runs_detected=int(len(run_summaries)),
+        files_scanned=len(summaries),
+        runs_detected=len(run_summaries),
         file_status_counts={k: int(v) for k, v in sorted(file_status_counts.items(), key=lambda kv: kv[0])},
         runs=run_summaries,
         best_by_resolution=best_by_resolution,

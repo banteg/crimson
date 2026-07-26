@@ -371,7 +371,7 @@ def test_load_checkpoints_rejects_integer_tokens_for_f32_fields(
             current = current[segment]
         else:
             assert isinstance(current, dict)
-            current = current[segment]
+            current = cast("dict[str, object]", current)[segment]
     leaf = path[-1]
     if isinstance(leaf, int):
         assert isinstance(current, list)

@@ -147,9 +147,8 @@ def _terrain_rt_blend(
     dst_factor: int,
     blend_equation: int,
 ) -> Iterator[None]:
-    with _color_mask(write_alpha=False):
-        with _blend_custom(src_factor, dst_factor, blend_equation):
-            yield
+    with _color_mask(write_alpha=False), _blend_custom(src_factor, dst_factor, blend_equation):
+        yield
 
 
 @contextmanager
@@ -244,33 +243,32 @@ class GroundRenderer(msgspec.Struct):
         # reads better in the port and still stays within current fixture tolerances.
         # Keep the ground RT alpha opaque like the original exe's XRGB-style RT.
         # The port does that by masking out alpha writes while stamping.
-        with _maybe_alpha_test():
-            with _terrain_rt_blend(
-                rd.RL_SRC_ALPHA,
-                rd.RL_ONE_MINUS_SRC_ALPHA,
-                rd.RL_FUNC_ADD,
-            ):
-                self._scatter_texture(
-                    self.texture,
-                    TERRAIN_BASE_TINT,
-                    rng,
-                    TERRAIN_DENSITY_BASE,
-                    callers=caller_sets[0],
-                )
-                self._scatter_texture(
-                    self.overlay,
-                    TERRAIN_OVERLAY_TINT,
-                    rng,
-                    TERRAIN_DENSITY_OVERLAY,
-                    callers=caller_sets[1],
-                )
-                self._scatter_texture(
-                    self.overlay_detail,
-                    TERRAIN_DETAIL_TINT,
-                    rng,
-                    TERRAIN_DENSITY_DETAIL,
-                    callers=caller_sets[2],
-                )
+        with _maybe_alpha_test(), _terrain_rt_blend(
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_FUNC_ADD,
+        ):
+            self._scatter_texture(
+                self.texture,
+                TERRAIN_BASE_TINT,
+                rng,
+                TERRAIN_DENSITY_BASE,
+                callers=caller_sets[0],
+            )
+            self._scatter_texture(
+                self.overlay,
+                TERRAIN_OVERLAY_TINT,
+                rng,
+                TERRAIN_DENSITY_OVERLAY,
+                callers=caller_sets[1],
+            )
+            self._scatter_texture(
+                self.overlay_detail,
+                TERRAIN_DETAIL_TINT,
+                rng,
+                TERRAIN_DENSITY_DETAIL,
+                callers=caller_sets[2],
+            )
         rl.end_texture_mode()
         self._render_target_ready = True
 
@@ -283,25 +281,24 @@ class GroundRenderer(msgspec.Struct):
 
         inv_scale = 1.0 / self._normalized_texture_scale()
         rl.begin_texture_mode(self.render_target)
-        with _maybe_alpha_test():
-            with _terrain_rt_blend(
-                rd.RL_SRC_ALPHA,
-                rd.RL_ONE_MINUS_SRC_ALPHA,
-                rd.RL_FUNC_ADD,
-            ):
-                for decal in decals:
-                    w = decal.width * inv_scale
-                    h = decal.height * inv_scale
-                    dst = rl.Rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
-                    origin = rl.Vector2(w * 0.5, h * 0.5)
-                    rl.draw_texture_pro(
-                        decal.texture,
-                        decal.src,
-                        dst,
-                        origin,
-                        math.degrees(decal.rotation_rad),
-                        decal.tint,
-                    )
+        with _maybe_alpha_test(), _terrain_rt_blend(
+            rd.RL_SRC_ALPHA,
+            rd.RL_ONE_MINUS_SRC_ALPHA,
+            rd.RL_FUNC_ADD,
+        ):
+            for decal in decals:
+                w = decal.width * inv_scale
+                h = decal.height * inv_scale
+                dst = rl.Rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
+                origin = rl.Vector2(w * 0.5, h * 0.5)
+                rl.draw_texture_pro(
+                    decal.texture,
+                    decal.src,
+                    dst,
+                    origin,
+                    math.degrees(decal.rotation_rad),
+                    decal.tint,
+                )
         rl.end_texture_mode()
 
         self._render_target_ready = True

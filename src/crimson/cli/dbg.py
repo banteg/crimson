@@ -129,7 +129,7 @@ def cmd_dbg_health(
     typer.echo("tick_gaps=" + json.dumps(tick_gaps_obj if isinstance(tick_gaps_obj, list) else [], sort_keys=True))
     typer.echo(
         "channels="
-        + (",".join(f"{str(key)}:{value}" for key, value in sorted(channels.items())) if channels else "(none)"),
+        + (",".join(f"{key!s}:{value}" for key, value in sorted(channels.items())) if channels else "(none)"),
     )
     metric_keys = (
         "ticks_with_dt_ms_i32",

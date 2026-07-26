@@ -135,14 +135,17 @@ class PauseMenuView:
             if self._menu_entry_enabled(entry):
                 activated_index = self._selected_index
 
-        if activated_index is None and self._hovered_index is not None:
-            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                hovered = self._hovered_index
-                entry = self._menu_entries[hovered]
-                if self._menu_entry_enabled(entry):
-                    self._selected_index = hovered
-                    self._focus_timer_ms = 1000
-                    activated_index = hovered
+        if (
+            activated_index is None
+            and self._hovered_index is not None
+            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        ):
+            hovered = self._hovered_index
+            entry = self._menu_entries[hovered]
+            if self._menu_entry_enabled(entry):
+                self._selected_index = hovered
+                self._focus_timer_ms = 1000
+                activated_index = hovered
 
         if activated_index is not None:
             self._activate_menu_entry(activated_index)

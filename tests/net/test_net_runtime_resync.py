@@ -33,7 +33,7 @@ def _started_runtime(mocker, *, role: str, slot_index: int) -> tuple[RollbackRun
     cfg_type = HostRollbackRuntimeConfig if role == "host" else JoinRollbackRuntimeConfig
     runtime = RollbackRuntime(
         cfg_type(
-            mode_id=1,
+            mode_id=GameMode.SURVIVAL,
             player_count=2,
             relay_host="127.0.0.1",
             relay_port=31993,

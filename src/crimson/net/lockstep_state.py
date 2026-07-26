@@ -77,7 +77,7 @@ class HostLockstepState(msgspec.Struct):
         self,
         *,
         now_ms: int,
-    ) -> list["HostReadyTick"]:
+    ) -> list[HostReadyTick]:
         frames: list[HostReadyTick] = []
         while self._tick_complete(int(self._next_emit_tick)):
             tick = int(self._next_emit_tick)

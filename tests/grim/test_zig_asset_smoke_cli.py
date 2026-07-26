@@ -15,8 +15,7 @@ def test_zig_asset_smoke_is_installed_by_default_build() -> None:
         cwd=dbg_record._REPO_ROOT,
         check=False,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
@@ -34,8 +33,7 @@ def test_zig_asset_extract_is_installed_by_default_build() -> None:
         cwd=dbg_record._REPO_ROOT,
         check=False,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)

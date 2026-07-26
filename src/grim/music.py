@@ -28,7 +28,7 @@ class MusicState(msgspec.Struct):
     volume: float
     tracks: dict[str, rl.Music]
     active_track: str | None
-    playbacks: dict[str, "TrackPlayback"] = msgspec.field(default_factory=dict)
+    playbacks: dict[str, TrackPlayback] = msgspec.field(default_factory=dict)
     queue: list[str] = msgspec.field(default_factory=list)
     # Mirrors the original game's "start a random game tune on first hit" gate.
     game_tune_started: bool = False

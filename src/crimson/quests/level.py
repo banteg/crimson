@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
 import msgspec
 
@@ -8,8 +8,8 @@ QUEST_STAGE_COUNT = 5
 QUESTS_PER_STAGE = 10
 QUEST_COUNT = QUEST_STAGE_COUNT * QUESTS_PER_STAGE
 
-QuestStageMajor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUEST_STAGE_COUNT)]
-QuestStageMinor: TypeAlias = Annotated[int, msgspec.Meta(ge=1, le=QUESTS_PER_STAGE)]
+type QuestStageMajor = Annotated[int, msgspec.Meta(ge=1, le=QUEST_STAGE_COUNT)]
+type QuestStageMinor = Annotated[int, msgspec.Meta(ge=1, le=QUESTS_PER_STAGE)]
 
 
 class QuestLevel(msgspec.Struct, frozen=True, forbid_unknown_fields=True):

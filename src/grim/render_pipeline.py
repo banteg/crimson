@@ -89,7 +89,7 @@ class RenderPipeline:
         except Exception:
             try:
                 self._sink.close()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - preserve the original open error during best-effort rollback
                 pass
             self._opened = False
             self._width = -1

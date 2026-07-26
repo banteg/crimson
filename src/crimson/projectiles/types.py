@@ -89,12 +89,12 @@ class SecondaryProjectile(msgspec.Struct):
 
 __all__ = [
     "MAIN_PROJECTILE_POOL_SIZE",
+    "SECONDARY_PROJECTILE_POOL_SIZE",
+    "OwnerRef",
     "Projectile",
     "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectileTemplateId",
-    "OwnerRef",
-    "SECONDARY_PROJECTILE_POOL_SIZE",
     "SecondaryProjectile",
     "SecondaryProjectileTypeId",
 ]

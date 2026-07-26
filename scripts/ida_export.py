@@ -179,5 +179,5 @@ if __name__ == "__main__":
     rc = main()
     try:
         idc.qexit(rc)
-    except Exception:
+    except Exception:  # noqa: BLE001, S110 - IDA may terminate the interpreter inside qexit
         pass

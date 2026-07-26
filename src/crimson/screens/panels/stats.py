@@ -333,7 +333,10 @@ class StatisticsMenuView:
             preserve_bugs=bool(self.state.preserve_bugs),
         ), panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale), rl.Color(255, 255, 255, int(255 * 0.8)))
 
-        if _is_orbes_volantes_day(dt.date.today()) and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL:
+        if (
+            _is_orbes_volantes_day(dt.datetime.now(tz=dt.UTC).astimezone().date())
+            and int(self.state.stats_menu_easter_egg_roll) == _STATS_EASTER_TRIGGER_ROLL
+        ):
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
             x = float(self.state.rng.rand_tagged(RngCallerStatic.REWRITE_STATS_MENU_EASTER_TEXT_X) % 64 + 16)
             draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))

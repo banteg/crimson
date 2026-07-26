@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 from collections import Counter
 from collections.abc import Iterable, Iterator
@@ -278,7 +279,7 @@ def summarize(log_path: Path) -> dict[str, Any]:
 
     dead_runs = run_length_encode(dead_uv_sequence)
     dead_increments = Counter()
-    for prev, nxt in zip(dead_runs, dead_runs[1:]):
+    for prev, nxt in itertools.pairwise(dead_runs):
         dead_increments[nxt["uv_index"] - prev["uv_index"]] += 1
 
     summary: dict[str, Any] = {

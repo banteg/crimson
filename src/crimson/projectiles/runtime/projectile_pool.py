@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import MutableSequence, Sequence
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from ...gameplay import GameplayState
     from ...sim.state_types import PlayerState
 
-ProjectileHitPresentation: TypeAlias = object
+type ProjectileHitPresentation = object
 
 
 class ProjectileHitRuntime(msgspec.Struct):
@@ -240,9 +240,7 @@ class ProjectilePool:
         def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
-            if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-                return False
-            return True
+            return creature_lifecycle_is_collidable(creature.lifecycle_stage)
 
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
 

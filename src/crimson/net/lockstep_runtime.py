@@ -5,7 +5,7 @@ import socket
 import time
 from collections import deque
 from pathlib import Path
-from typing import Literal, TypeAlias, cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -103,7 +103,7 @@ class JoinLockstepRuntimeConfig(_LockstepRuntimeConfigBase):
     role: Literal["join"] = "join"
 
 
-LockstepRuntimeConfig: TypeAlias = HostLockstepRuntimeConfig | JoinLockstepRuntimeConfig
+type LockstepRuntimeConfig = HostLockstepRuntimeConfig | JoinLockstepRuntimeConfig
 
 
 class _HostPeerLink(msgspec.Struct):
@@ -349,7 +349,7 @@ class LockstepRuntime(msgspec.Struct):
             lines.append(
                 "desyncs: "
                 f"{int(self.desync_count)} "
-                f"last={str(self.last_desync_kind or '?')}@{int(self.last_desync_tick)} "
+                f"last={self.last_desync_kind or '?'!s}@{int(self.last_desync_tick)} "
                 f"{exp}!={act}",
             )
 
@@ -434,7 +434,7 @@ class LockstepRuntime(msgspec.Struct):
         )
         pause = self.client_pause_state
         if pause is not None and bool(pause.paused):
-            lines.append(f"pause: {str(pause.reason or '')}")
+            lines.append(f"pause: {pause.reason or ''!s}")
 
         return lines
 
@@ -546,7 +546,7 @@ class LockstepRuntime(msgspec.Struct):
         chars = 0
         dropped = int(self._client_log_forward_dropped)
         if dropped > 0:
-            timestamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
+            timestamp = dt.datetime.now(dt.UTC).isoformat(timespec="milliseconds")
             drop_line = f"{timestamp} event=log_forward_drop dropped={int(dropped)}\n"
             lines.append(drop_line)
             chars += len(drop_line)
@@ -589,14 +589,14 @@ class LockstepRuntime(msgspec.Struct):
             if host_path is None:
                 return
             safe_ip = str(addr[0]).replace(":", "_").replace("/", "_")
-            timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+            timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S.%fZ")
             path = host_path.parent / f"lan-client-slot{int(slot_index)}-from{safe_ip}-{int(addr[1])}-{timestamp}.log"
             path.parent.mkdir(parents=True, exist_ok=True)
             session_id = ""
             lobby = self.host_lobby
             if lobby is not None:
                 session_id = str(lobby.session_id)
-            init_ts = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
+            init_ts = dt.datetime.now(dt.UTC).isoformat(timespec="milliseconds")
             init_line = (
                 f"{init_ts} event=remote_log_init slot_index={int(slot_index)} "
                 f"addr={addr[0]}:{int(addr[1])} session_id={session_id}\n"
@@ -939,10 +939,9 @@ class LockstepRuntime(msgspec.Struct):
         track_peer: bool = True,
     ) -> None:
         peer = self.host_peers.get(addr)
-        if peer is None:
-            if bool(track_peer):
-                peer = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
-                self.host_peers[addr] = peer
+        if peer is None and bool(track_peer):
+            peer = _HostPeerLink(addr=addr, last_seen_ms=int(now_ms))
+            self.host_peers[addr] = peer
         if peer is not None:
             packet = peer.link.build_packet(message, reliable=bool(reliable), now_ms=int(now_ms))
         else:
@@ -1174,17 +1173,20 @@ class LockstepRuntime(msgspec.Struct):
                 status_quest_unlock_index_full=int(status_unlock_full),
             )
             welcome = lobby.welcome
-            if welcome is not None and str(welcome.session_id or ""):
-                if str(message.session_id or "") != str(welcome.session_id or ""):
-                    self._set_client_error("session_id_mismatch")
-                    lan_debug_log(
-                        "net_sanity_mismatch",
-                        role="join",
-                        kind="match_start",
-                        expected_session_id=str(welcome.session_id or ""),
-                        actual_session_id=str(message.session_id or ""),
-                    )
-                    return
+            if (
+                welcome is not None
+                and str(welcome.session_id or "")
+                and str(message.session_id or "") != str(welcome.session_id or "")
+            ):
+                self._set_client_error("session_id_mismatch")
+                lan_debug_log(
+                    "net_sanity_mismatch",
+                    role="join",
+                    kind="match_start",
+                    expected_session_id=str(welcome.session_id or ""),
+                    actual_session_id=str(message.session_id or ""),
+                )
+                return
             expected_settings = session_settings_for_lockstep(
                 mode_id=self.cfg.mode_id,
                 player_count=int(self.cfg.player_count),

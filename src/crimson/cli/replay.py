@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Protocol, cast
 
@@ -680,7 +680,7 @@ def _fmt_replay_list_duration(*, ticks: int, tick_rate: int) -> str:
 
 
 def _fmt_replay_list_modified(timestamp: float) -> str:
-    return datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d %H:%M")
+    return datetime.fromtimestamp(float(timestamp), tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
 
 
 def _version_tuple(value: str) -> tuple[int, ...]:

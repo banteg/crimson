@@ -29,7 +29,7 @@ def resolve_log_level(value: str | int) -> int:
 
 def default_component_log_path(*, base_dir: Path, component: str) -> Path:
     component_name = str(component).strip().lower() or "app"
-    timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     return base_dir / "logs" / component_name / f"{component_name}-pid{os.getpid()}-{timestamp}.log"
 
 

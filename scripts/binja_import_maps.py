@@ -29,7 +29,7 @@ from pathlib import Path
 
 try:
     import binaryninja as bn
-except Exception:  # pragma: no cover - only runs inside Binary Ninja
+except Exception:  # noqa: BLE001  # pragma: no cover - Binary Ninja may fail while loading native plugins
     bn = None
 
 
@@ -221,20 +221,20 @@ def _candidate_roots(bv=None) -> list[Path]:
             if value:
                 try:
                     bases.append(Path(value).resolve().parent)
-                except Exception:
-                    pass
+                except (OSError, RuntimeError) as exc:
+                    _log_error(f"Could not resolve Binary Ninja input path {value!r}: {exc}")
     if "__file__" in globals():
         try:
             script_path = Path(__file__).resolve()
             bases.append(script_path.parent)
             if len(script_path.parents) >= 2:
                 bases.append(script_path.parents[1])
-        except Exception:
-            pass
+        except (OSError, RuntimeError) as exc:
+            _log_error(f"Could not resolve script path: {exc}")
     try:
         bases.append(Path.cwd())
-    except Exception:
-        pass
+    except OSError as exc:
+        _log_error(f"Could not resolve current directory: {exc}")
 
     roots: list[Path] = []
     for base in bases:
@@ -352,7 +352,7 @@ def _define_user_type(bv, name: str, type_obj) -> bool:
     try:
         bv.define_user_type(name, type_obj)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001 - Binary Ninja does not expose a stable exception hierarchy
         return False
 
 
@@ -360,14 +360,13 @@ def _undefine_user_type(bv, name) -> bool:
     try:
         bv.undefine_user_type(name)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001 - Binary Ninja does not expose a stable exception hierarchy
         return False
 
 
 def _define_or_replace_user_type(bv, name, type_obj) -> bool:
-    if _get_type_by_name(bv, name) is not None:
-        if not _undefine_user_type(bv, name):
-            return False
+    if _get_type_by_name(bv, name) is not None and not _undefine_user_type(bv, name):
+        return False
     return _define_user_type(bv, name, type_obj)
 
 
@@ -559,9 +558,8 @@ def _seed_repo_headers(bv) -> None:
                     )
                 type_obj = bn.Type.array(element_type, count)
             existing = _get_type_by_name(bv, name_str)
-            if existing is not None:
-                if not _should_replace_repo_type(name_str, existing, type_obj):
-                    continue
+            if existing is not None and not _should_replace_repo_type(name_str, existing, type_obj):
+                continue
             if not _define_or_replace_user_type(bv, name, type_obj):
                 raise RuntimeError(f"failed to define type {name_str} from {header_path}")
             seeded_total += 1
@@ -747,9 +745,12 @@ def _strip_param_names(signature: str) -> str:
         p = re.sub(r"\(\s*\*\s*[A-Za-z_][A-Za-z0-9_]*\s*\)", "(*)", p)
 
         ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", p)
-        if len(ids) >= 2 and ids[-1] not in keywords:
-            if not (len(ids) == 2 and ids[0] in {"struct", "union", "enum"}):
-                p = re.sub(rf"\b{re.escape(ids[-1])}\b\s*$", "", p).rstrip()
+        if (
+            len(ids) >= 2
+            and ids[-1] not in keywords
+            and not (len(ids) == 2 and ids[0] in {"struct", "union", "enum"})
+        ):
+            p = re.sub(rf"\b{re.escape(ids[-1])}\b\s*$", "", p).rstrip()
 
         new_params.append(p)
 
@@ -1043,7 +1044,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
         if signature:
             try:
                 _apply_function_signature(bv, func, signature)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - isolate one rejected Binary Ninja signature
                 _log_error(f"Signature skipped for {_entry_label(row, addr)}: {exc}")
                 stats["signature_errors"] += 1
             else:
@@ -1186,7 +1187,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         if type_text:
             try:
                 data_type = _resolve_data_type(bv, type_text)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - isolate one rejected Binary Ninja data type
                 _log_error(f"Data type skipped for {_entry_label(row, addr)} ({type_text}): {exc}")
                 stats["type_errors"] += 1
                 data_type = None
@@ -1194,7 +1195,7 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
             if data_type is not None and enclosing is None:
                 try:
                     bv.define_user_data_var(addr, data_type)
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001 - isolate one rejected Binary Ninja data variable
                     _log_error(f"Data type skipped for {_entry_label(row, addr)} ({type_text}): {exc}")
                     stats["type_errors"] += 1
                 else:

@@ -84,7 +84,7 @@ if TYPE_CHECKING:
     from .view import HighScoresView
 
 
-def _saved_score_names(view: "HighScoresView") -> list[str]:
+def _saved_score_names(view: HighScoresView) -> list[str]:
     return list(view.state.config.profile.saved_name_labels())
 
 
@@ -179,7 +179,7 @@ def _draw_dropdown(
 
 
 def draw_right_panel(
-    view: "HighScoresView",
+    view: HighScoresView,
     *,
     resources: RuntimeResources,
     font: SmallFontData,
@@ -207,7 +207,7 @@ def draw_right_panel(
 
 
 def _draw_right_panel_quest_options(
-    view: "HighScoresView",
+    view: HighScoresView,
     *,
     resources: RuntimeResources,
     font: SmallFontData,
@@ -342,7 +342,7 @@ def _draw_right_panel_quest_options(
 
 
 def _draw_right_panel_local_score(
-    view: "HighScoresView",
+    view: HighScoresView,
     *,
     resources: RuntimeResources,
     font: SmallFontData,
@@ -550,7 +550,7 @@ def _draw_wicon(
     )
 
 
-def _weapon_label_and_icon(view: "HighScoresView", weapon_id: int) -> tuple[str, int | None]:
+def _weapon_label_and_icon(view: HighScoresView, weapon_id: int) -> tuple[str, int | None]:
     from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
     weapon = WEAPON_BY_ID[WeaponId(weapon_id)]

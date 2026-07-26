@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import crimson.modes.base_gameplay_mode as base_gameplay_mode
 import crimson.world.render_resources as render_resources_module
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
 from crimson.rng_caller_static import RngCallerStatic

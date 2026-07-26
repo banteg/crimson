@@ -47,8 +47,9 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
+    "ruff>=0.16.0",
     "syrupy>=5.0.0",
-    "ty>=0.0.15",
+    "ty>=0.0.63",
     "zensical>=0.0.22",
 ]
 
@@ -57,7 +58,27 @@ line-length = 120
 
 [tool.ruff.lint]
 extend-select = ["B006", "B007", "B017", "B023", "B904", "COM812", "I001", "PGH003", "PT017", "RUF012", "RUF100", "S113", "S607", "TRY004", "UP035"]
-extend-ignore = ["E402"]
+extend-ignore = [
+    "E402",
+    # Explicit native control flow preserves NaN behavior and decompilation provenance.
+    "FURB136",
+    "PLR1730",
+    # Boundary casts document conversion points even when static types already say int.
+    "RUF046",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "crimson.creatures.spawn_ids.CreatureFlags",
+    "crimson.creatures.spawn.CreatureFlags",
+    "crimson.owner_ref.OwnerRef.from_local_player",
+    "crimson.paths.default_runtime_dir",
+    "crimson.sim.terrain_fx.TerrainFxBatch",
+    "grim.color.RGBA",
+    "grim.geom.Vec2",
+    "typer.Argument",
+    "typer.Option",
+]
 
 [tool.ty.environment]
 extra-paths = ["tests"]

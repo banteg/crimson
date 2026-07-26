@@ -1105,7 +1105,7 @@ def cmd_match_checkpoint(
                         allowed_paths=[status_path],
                     ),
                 )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - report malformed claim batches without aborting status refresh
             claim_errors.append(str(exc).splitlines()[0])
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
     totals = matchlib.collect_image_totals(statuses, scope=scope)

@@ -63,7 +63,7 @@ class _ResourcesStub:
 
 
 def _resources_stub() -> RuntimeResources:
-    return _ResourcesStub()  # type: ignore[return-value]
+    return cast("RuntimeResources", _ResourcesStub())
 
 
 def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:

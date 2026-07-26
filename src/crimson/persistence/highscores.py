@@ -263,7 +263,7 @@ class HighScoreRecord(msgspec.Struct):
         if int(self.data[0x40]) != 0:
             return
         if now is None:
-            now = dt.date.today()
+            now = dt.datetime.now(tz=dt.UTC).astimezone().date()
         self.data[0x40] = int(now.day) & 0xFF
         self.data[0x42] = int(now.month) & 0xFF
         self.data[0x43] = int(now.year - 2000) & 0xFF

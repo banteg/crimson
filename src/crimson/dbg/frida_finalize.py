@@ -1230,38 +1230,37 @@ def _write_run_evidence(
         global_tick_first=int(run.global_tick_first),
         global_tick_last=int(run.global_tick_last),
     )
-    with Path(path).open("wb") as raw_handle:
-        with zstd.ZstdCompressor(level=_EVIDENCE_ZSTD_LEVEL).stream_writer(
-            raw_handle,
-            closefd=False,
-        ) as compressed:
-            _write_framed_payload(
-                compressed,
-                _EVIDENCE_ENCODER.encode(header),
-                field="evidence header",
+    with Path(path).open("wb") as raw_handle, zstd.ZstdCompressor(level=_EVIDENCE_ZSTD_LEVEL).stream_writer(
+        raw_handle,
+        closefd=False,
+    ) as compressed:
+        _write_framed_payload(
+            compressed,
+            _EVIDENCE_ENCODER.encode(header),
+            field="evidence header",
+        )
+        copied = 0
+        with run.evidence_temp_path.open("rb") as spool:
+            for payload in _iter_framed_payloads(spool, field="evidence spool"):
+                try:
+                    row = _EVIDENCE_DECODER.decode(payload)
+                except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+                    raise FridaFinalizeError(
+                        f"invalid evidence spool payload in {run.evidence_temp_path}",
+                    ) from exc
+                if not isinstance(row, FridaEvidenceTick):
+                    raise FridaFinalizeError("evidence spool may contain only tick rows")
+                _write_framed_payload(compressed, payload, field="evidence tick")
+                copied += 1
+        if copied != int(run.tick_count) or copied != int(run.evidence_count):
+            raise FridaFinalizeError(
+                f"run {run.run_id}: evidence count {copied} does not match tick_count {run.tick_count}",
             )
-            copied = 0
-            with run.evidence_temp_path.open("rb") as spool:
-                for payload in _iter_framed_payloads(spool, field="evidence spool"):
-                    try:
-                        row = _EVIDENCE_DECODER.decode(payload)
-                    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-                        raise FridaFinalizeError(
-                            f"invalid evidence spool payload in {run.evidence_temp_path}",
-                        ) from exc
-                    if not isinstance(row, FridaEvidenceTick):
-                        raise FridaFinalizeError("evidence spool may contain only tick rows")
-                    _write_framed_payload(compressed, payload, field="evidence tick")
-                    copied += 1
-            if copied != int(run.tick_count) or copied != int(run.evidence_count):
-                raise FridaFinalizeError(
-                    f"run {run.run_id}: evidence count {copied} does not match tick_count {run.tick_count}",
-                )
-            _write_framed_payload(
-                compressed,
-                _EVIDENCE_ENCODER.encode(footer),
-                field="evidence footer",
-            )
+        _write_framed_payload(
+            compressed,
+            _EVIDENCE_ENCODER.encode(footer),
+            field="evidence footer",
+        )
 
 
 def load_frida_evidence_file(path: Path) -> FridaEvidenceBundle:
@@ -1665,12 +1664,12 @@ def _publish_staged_traces(
         for destination in reversed(committed):
             try:
                 destination.unlink(missing_ok=True)
-            except Exception as rollback_exc:
+            except OSError as rollback_exc:
                 rollback_errors.append(f"remove {destination}: {rollback_exc}")
         for backup, destination in reversed(backups):
             try:
                 backup.replace(destination)
-            except Exception as rollback_exc:
+            except OSError as rollback_exc:
                 rollback_errors.append(f"restore {destination}: {rollback_exc}")
         detail = ""
         if rollback_errors:

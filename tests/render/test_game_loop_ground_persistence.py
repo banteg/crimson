@@ -69,7 +69,6 @@ class _AdoptMenuGroundView:
 
     def update(self, dt: float) -> None:
         _ = dt
-        return None
 
     def draw(self) -> None:
         return None
@@ -87,7 +86,6 @@ class _OverlayView:
 
     def update(self, dt: float) -> None:
         _ = dt
-        return None
 
     def draw(self) -> None:
         return None

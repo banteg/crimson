@@ -27,7 +27,7 @@ def _weapon_damage_scale_map() -> dict[int, float]:
     for entry in WEAPON_TABLE:
         if int(entry.weapon_id) <= 0:
             continue
-        table[int(entry.weapon_id)] = float(cast(float, entry.damage_scale))
+        table[int(entry.weapon_id)] = float(entry.damage_scale)
     return table
 
 

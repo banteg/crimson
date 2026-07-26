@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
@@ -28,7 +30,7 @@ class _ResourcesStub:
         return _TextureStub()
 
 
-def _render_ctx_for_creatures(creatures: list[object]):
+def _render_ctx_for_creatures(creatures: Sequence[object]):
     frame = RenderFrame(
         world_size=1024.0,
         demo_mode_active=False,
@@ -37,8 +39,8 @@ def _render_ctx_for_creatures(creatures: list[object]):
         ground=None,
         state=GameplayState(),
         players=[],
-        creatures=SimpleNamespace(entries=creatures),  # type: ignore[arg-type]
-        resources=_ResourcesStub(),  # type: ignore[arg-type]
+        creatures=cast(Any, SimpleNamespace(entries=creatures)),
+        resources=cast(Any, _ResourcesStub()),
         elapsed_ms=0.0,
         bonus_anim_phase=0.0,
         lan_player_rings_enabled=False,

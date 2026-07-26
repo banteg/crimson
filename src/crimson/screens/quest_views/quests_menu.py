@@ -159,10 +159,9 @@ class QuestsMenuView:
         status = self.state.status
 
         # The original forcibly clears hardcore in the demo build.
-        if self.state.demo_enabled:
-            if config.gameplay.hardcore:
-                config.gameplay.hardcore = False
-                self._dirty = True
+        if self.state.demo_enabled and config.gameplay.hardcore:
+            config.gameplay.hardcore = False
+            self._dirty = True
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
             unlock = 49

@@ -528,9 +528,11 @@ def test_trace_reader_rejects_integer_tokens_for_wire_f32_fields(
     out_path = tmp_path / f"integer_{field}.cdt"
     _write_raw_trace(out_path, meta_raw=meta_raw, block_raw=block_raw)
 
-    with pytest.raises(TraceError, match=rf"{re.escape(field)} must be encoded as a msgpack float"):
-        with TraceReader(out_path) as reader:
-            reader.all_ticks()
+    with (
+        pytest.raises(TraceError, match=rf"{re.escape(field)} must be encoded as a msgpack float"),
+        TraceReader(out_path) as reader,
+    ):
+        reader.all_ticks()
 
     health = summarize_trace_health(out_path)
     assert health["ok_for_parity_analysis"] is False
@@ -648,9 +650,8 @@ def test_trace_reader_requires_exact_current_wire_maps(
         mutate_footer=mutate_footer,
     )
 
-    with pytest.raises(TraceError, match=error):
-        with TraceReader(out_path) as reader:
-            reader.all_ticks()
+    with pytest.raises(TraceError, match=error), TraceReader(out_path) as reader:
+        reader.all_ticks()
 
 
 @pytest.mark.parametrize(

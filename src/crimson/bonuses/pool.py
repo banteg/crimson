@@ -293,7 +293,7 @@ class BonusPool:
             force_drop_has_pistol = _native_force_drop_has_pistol(players)
 
         # Native checks player 0, plus player 1 only for an exact two-player game.
-        if force_drop_has_pistol:
+        if force_drop_has_pistol:  # noqa: SIM102 - preserve the native branch shape
             if (rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_FORCE_WEAPON) & 3) < 3:
                 entry = self.spawn_at_pos(
                     pos,

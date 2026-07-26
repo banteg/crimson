@@ -27,8 +27,11 @@ if TYPE_CHECKING:
 
 
 class SupportsXY(Protocol):
-    x: float
-    y: float
+    @property
+    def x(self) -> float: ...
+
+    @property
+    def y(self) -> float: ...
 
 
 class Vec2(msgspec.Struct, frozen=True):

@@ -21,14 +21,6 @@ class _TextureLike(Protocol):
     height: int
 
 
-class _ResourcesLike(Protocol):
-    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
-
-
-class _RendererLike(Protocol):
-    frame: object
-
-
 def _as_renderer(renderer: Any) -> WorldRenderCtx:
     return cast("WorldRenderCtx", renderer)
 

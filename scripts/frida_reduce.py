@@ -35,9 +35,8 @@ class FunctionIndex:
         if idx < 0:
             return None
         entry = self.entries[idx]
-        if idx + 1 < len(self.entries):
-            if address >= self.entries[idx + 1].start:
-                return None
+        if idx + 1 < len(self.entries) and address >= self.entries[idx + 1].start:
+            return None
         return entry
 
 
@@ -154,17 +153,25 @@ def parse_callsite(text: str | None, session: SessionInfo | None) -> Callsite | 
     if value is None:
         return None
 
-    if session and session.exe_base is not None and session.exe_size is not None:
-        if session.exe_base <= value < session.exe_base + session.exe_size:
-            offset = value - session.exe_base
-            static_addr = LINK_BASE_EXE + offset
-            return Callsite(module="crimsonland.exe", static_addr=static_addr, offset=offset, raw=text)
+    if (
+        session
+        and session.exe_base is not None
+        and session.exe_size is not None
+        and session.exe_base <= value < session.exe_base + session.exe_size
+    ):
+        offset = value - session.exe_base
+        static_addr = LINK_BASE_EXE + offset
+        return Callsite(module="crimsonland.exe", static_addr=static_addr, offset=offset, raw=text)
 
-    if session and session.grim_base is not None and session.grim_size is not None:
-        if session.grim_base <= value < session.grim_base + session.grim_size:
-            offset = value - session.grim_base
-            static_addr = LINK_BASE_GRIM + offset
-            return Callsite(module="grim.dll", static_addr=static_addr, offset=offset, raw=text)
+    if (
+        session
+        and session.grim_base is not None
+        and session.grim_size is not None
+        and session.grim_base <= value < session.grim_base + session.grim_size
+    ):
+        offset = value - session.grim_base
+        static_addr = LINK_BASE_GRIM + offset
+        return Callsite(module="grim.dll", static_addr=static_addr, offset=offset, raw=text)
 
     if LINK_BASE_EXE <= value < LINK_BASE_EXE + 0x2000000:
         return Callsite(module="crimsonland.exe", static_addr=value, offset=value - LINK_BASE_EXE, raw=text)

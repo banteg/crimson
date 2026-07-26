@@ -22,15 +22,15 @@ __all__ = [
     "heading_to_direction_f32",
     "native_fire_muzzle_pos",
     "native_shot_angle_from_jitter_draws",
-    "x87_pc24_add",
     "x87_fpatan",
+    "x87_pc24_add",
     "x87_pc24_cos_mul",
     "x87_pc24_div",
     "x87_pc24_hypot",
     "x87_pc24_mul",
     "x87_pc24_mul_chain",
-    "x87_pc24_sqrt",
     "x87_pc24_sin_mul",
+    "x87_pc24_sqrt",
     "x87_pc24_sub",
 ]
 

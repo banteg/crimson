@@ -15,8 +15,8 @@ from .timeline import (
 __all__ = [
     "BonusSpawnCall",
     "TutorialFrameActions",
-    "TutorialState",
     "TutorialOverlayState",
+    "TutorialState",
     "reset_tutorial_state",
     "tick_tutorial_timeline",
     "tutorial_stage5_bonus_carrier_config",

@@ -7,7 +7,7 @@ import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from PIL import Image, ImageChops, ImageStat
@@ -42,7 +42,7 @@ DOWNSAMPLE_FACTOR = int(os.environ.get("CRIMSON_GROUND_DUMP_DOWNSAMPLE", "4"))
 MAX_DELTA_TOL = int(os.environ.get("CRIMSON_GROUND_DUMP_MAX_DELTA", "40"))
 MEAN_DELTA_TOL = float(os.environ.get("CRIMSON_GROUND_DUMP_MEAN_DELTA", "3.0"))
 _RESAMPLING = getattr(Image, "Resampling", None)
-RESAMPLE_BOX = cast(int, getattr(_RESAMPLING, "BOX", getattr(Image, "BOX")))
+RESAMPLE_BOX = cast(int, getattr(_RESAMPLING, "BOX", cast(Any, Image).BOX))
 
 
 def _artifacts_dir() -> Path:

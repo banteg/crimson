@@ -27,7 +27,7 @@ def resolve_request(state: GameState) -> HighScoresRequest:
     return request
 
 
-def _passes_date_filter(entry: "HighScoreRecord", *, date_mode: int, now: dt.date) -> bool:
+def _passes_date_filter(entry: HighScoreRecord, *, date_mode: int, now: dt.date) -> bool:
     # Native `config_highscore_date_mode` values (see highscore_screen_update):
     #   0 = Best of all time (no filter)
     #   1 = Best of month
@@ -74,7 +74,7 @@ def load_records(state: GameState, request: HighScoresRequest) -> list[HighScore
         return []
     date_mode = int(state.config.profile.score_date_mode)
     if date_mode > 0:
-        now = dt.date.today()
+        now = dt.datetime.now(tz=dt.UTC).astimezone().date()
         records = [entry for entry in records if _passes_date_filter(entry, date_mode=date_mode, now=now)]
     return records
 

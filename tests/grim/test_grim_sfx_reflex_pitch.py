@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import grim.sfx as grim_sfx
 from grim.sfx_map import SfxId
 from tests.support.helpers import assert_float_close
@@ -18,7 +20,7 @@ def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
 
     voice = object()
     sample = _FakeSample(voice)
-    state.samples[SfxId.PISTOL_FIRE] = sample  # type: ignore[assignment]
+    state.samples[SfxId.PISTOL_FIRE] = cast(Any, sample)
 
     set_sound_pitch = mocker.patch.object(grim_sfx.rl, "set_sound_pitch", create=True)
     mocker.patch.object(grim_sfx.rl, "play_sound")

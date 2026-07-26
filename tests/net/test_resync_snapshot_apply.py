@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
@@ -115,7 +115,7 @@ def test_rush_apply_resync_snapshot_restores_mode_state(make_mode_config) -> Non
 
 def test_quest_apply_resync_snapshot_restores_authoritative_runtime(make_mode_config) -> None:
     mode = _quest_mode(config=make_mode_config(game_mode=GameMode.QUESTS))
-    mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
+    mode.apply_terrain_setup = cast(Any, lambda **_kwargs: None)
     mode.start_run(QuestLevel(1, 1), status=None)
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
@@ -205,7 +205,7 @@ def test_consume_net_runtime_recovery_applies_snapshot_and_resets_runner(make_mo
 
 def test_quest_consume_net_runtime_recovery_restores_authoritative_runtime(make_mode_config) -> None:
     mode = _quest_mode(config=make_mode_config(game_mode=GameMode.QUESTS))
-    mode.apply_terrain_setup = lambda **_kwargs: None  # type: ignore[method-assign]
+    mode.apply_terrain_setup = cast(Any, lambda **_kwargs: None)
     mode.start_run(QuestLevel(1, 1), status=None)
     mode._quest_spawn_state.spawn_entries = ()
     mode._quest_spawn_state.spawn_timeline_ms = 0.0

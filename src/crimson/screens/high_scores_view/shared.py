@@ -22,7 +22,7 @@ def format_elapsed_mm_ss(value_ms: int) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
-def format_score_date(entry: "HighScoreRecord") -> str:
+def format_score_date(entry: HighScoreRecord) -> str:
     day = int(entry.day)
     month = int(entry.month)
     year_off = int(entry.year_offset)

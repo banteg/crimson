@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from pathlib import Path
 from typing import cast
 
@@ -134,7 +135,7 @@ def _validate_wire_operations(
     value: object,
     *,
     field: str,
-    operation_types: dict[str, type[msgspec.Struct]],
+    operation_types: Mapping[str, type[msgspec.Struct]],
 ) -> None:
     if not isinstance(value, list):
         raise ReplayCodecError(f"{field} must be an array")
@@ -459,12 +460,10 @@ def _validate_header(header: ReplayHeader, *, from_load: bool) -> None:
             raise ReplayCodecError("quest replays require a valid header.quest_level")
     elif header.quest_level is not None:
         raise ReplayCodecError("non-quest replays require header.quest_level to be null")
-    if int(header.game_mode_id) == int(GameMode.TYPO):
-        if int(header.player_count) != 1:
-            raise ReplayCodecError("Typ-o replays require player_count == 1")
-    if int(header.game_mode_id) == int(GameMode.TUTORIAL):
-        if int(header.player_count) != 1:
-            raise ReplayCodecError("tutorial replays require player_count == 1")
+    if int(header.game_mode_id) == int(GameMode.TYPO) and int(header.player_count) != 1:
+        raise ReplayCodecError("Typ-o replays require player_count == 1")
+    if int(header.game_mode_id) == int(GameMode.TUTORIAL) and int(header.player_count) != 1:
+        raise ReplayCodecError("tutorial replays require player_count == 1")
 
 
 def _normalize_packed_input(

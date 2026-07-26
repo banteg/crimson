@@ -204,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 stopped_ticks = script.exports_sync.stop("host_shutdown")
                 print(f"[capture-host] agent stopped ticks={stopped_ticks}", flush=True)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - Frida RPC errors are backend-defined
                 print(f"[capture-host] agent stop unavailable: {exc}", file=sys.stderr, flush=True)
             try:
                 stats_obj = script.exports_sync.stats()
@@ -217,18 +217,18 @@ def main(argv: list[str] | None = None) -> int:
                         failure.append(
                             f"agent out_path={out_path_obj.strip()!r} does not match expected {str(raw_path)!r}",
                         )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - Frida RPC errors are backend-defined
                 print(f"[capture-host] agent stats unavailable: {exc}", file=sys.stderr, flush=True)
                 stats = {}
             time.sleep(0.15)
             try:
                 script.unload()
-            except Exception:
-                pass
+            except Exception as exc:  # noqa: BLE001 - best-effort Frida cleanup
+                print(f"[capture-host] script unload failed: {exc}", file=sys.stderr, flush=True)
             try:
                 session.detach()
-            except Exception:
-                pass
+            except Exception as exc:  # noqa: BLE001 - best-effort Frida cleanup
+                print(f"[capture-host] session detach failed: {exc}", file=sys.stderr, flush=True)
         finally:
             signal.signal(signal.SIGINT, old_sigint)
             signal.signal(signal.SIGTERM, old_sigterm)

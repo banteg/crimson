@@ -190,9 +190,13 @@ def export_all(args: argparse.Namespace) -> int:
         for direct in entry.get("direct", []):
             grid = direct.get("grid")
             idx = direct.get("index")
-            if isinstance(grid, int) and isinstance(idx, int) and grid in used_indices:
-                if idx not in used_indices[grid]:
-                    used_indices[grid].append(idx)
+            if (
+                isinstance(grid, int)
+                and isinstance(idx, int)
+                and grid in used_indices
+                and idx not in used_indices[grid]
+            ):
+                used_indices[grid].append(idx)
 
         for grid in sorted(grids):
             out_dir = output_root / rel_dir / rel_stem / f"grid{grid}"

@@ -4,7 +4,7 @@ import socket
 import time
 import uuid
 from collections import OrderedDict, deque
-from typing import Literal, TypeAlias, cast
+from typing import Literal, cast
 
 import msgspec
 
@@ -82,7 +82,7 @@ class JoinRollbackRuntimeConfig(_RollbackRuntimeConfigBase):
     role: Literal["join"] = "join"
 
 
-RollbackRuntimeConfig: TypeAlias = HostRollbackRuntimeConfig | JoinRollbackRuntimeConfig
+type RollbackRuntimeConfig = HostRollbackRuntimeConfig | JoinRollbackRuntimeConfig
 
 
 ReconnectState = Literal["idle", "waiting_for_peer_reconnect", "self_reconnecting"]
@@ -205,7 +205,7 @@ class RollbackRuntime(msgspec.Struct):
     def debug_overlay_lines(self) -> list[str]:
         mode = str(self.cfg.netcode_mode)
         lines = [
-            f"net({mode}): room={str(self.cfg.room_code or '?')} slot={int(self.local_slot_index)} started={int(self.started)}",
+            f"net({mode}): room={self.cfg.room_code or '?'!s} slot={int(self.local_slot_index)} started={int(self.started)}",
             (
                 "rb: "
                 f"rollbacks={int(self.rollback_count)} "
@@ -329,15 +329,15 @@ class RollbackRuntime(msgspec.Struct):
                 continue
             self._last_send_ms = int(now)
 
-        if self._accepted and self._joined_room and (not self.started):
-            if not self._sent_ready:
-                self._send(RoomReady(slot_index=max(0, int(self.local_slot_index)), ready=True), reliable=True, now_ms=int(now))
-                self._sent_ready = True
+        if self._accepted and self._joined_room and (not self.started) and (not self._sent_ready):
+            self._send(RoomReady(slot_index=max(0, int(self.local_slot_index)), ready=True), reliable=True, now_ms=int(now))
+            self._sent_ready = True
 
-        if self._accepted:
-            if self._last_ping_ms <= 0 or (int(now) - int(self._last_ping_ms)) >= int(PING_INTERVAL_MS):
-                self._send(Ping(stamp_ms=int(now)), reliable=False, now_ms=int(now))
-                self._last_ping_ms = int(now)
+        if self._accepted and (
+            self._last_ping_ms <= 0 or (int(now) - int(self._last_ping_ms)) >= int(PING_INTERVAL_MS)
+        ):
+            self._send(Ping(stamp_ms=int(now)), reliable=False, now_ms=int(now))
+            self._last_ping_ms = int(now)
 
         silent_ms = int(now) - int(self._last_seen_ms)
         if self._last_seen_ms > 0 and silent_ms >= int(LINK_TIMEOUT_MS):
@@ -801,7 +801,7 @@ class RollbackRuntime(msgspec.Struct):
     def _latest_snapshot_at_or_before(self, tick_index: int) -> tuple[int, bytes] | None:
         target = int(tick_index)
         selected_tick: int | None = None
-        for tick in self._local_snapshot_blobs.keys():
+        for tick in self._local_snapshot_blobs:
             if int(tick) <= int(target):
                 selected_tick = int(tick)
             else:

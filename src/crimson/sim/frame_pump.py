@@ -21,7 +21,7 @@ class TickFrameRunner(Protocol):
         start_tick: int,
         ticks_requested: int,
         tick_dt: float,
-        after_tick: Callable[["TickResult"], None] | None = None,
+        after_tick: Callable[[TickResult], None] | None = None,
     ) -> TickBatchResult: ...
 
 
@@ -44,7 +44,7 @@ def advance_tick_runner_frame(
     is_networked: bool,
     is_replay: bool,
     refund_clock: FixedStepClock | None = None,
-    after_tick: Callable[["TickResult"], None] | None = None,
+    after_tick: Callable[[TickResult], None] | None = None,
 ) -> TickFrameAdvance:
     next_frame_index = int(frame_index) + 1
     ticks_requested = max(0, int(ticks_requested))

@@ -32,8 +32,7 @@ def load_by_address(path: Path) -> dict[int, dict]:
         addr = fn.get("address", "")
         if not addr:
             continue
-        if addr.startswith("0x"):
-            addr = addr[2:]
+        addr = addr.removeprefix("0x")
         by_addr[int(addr, 16)] = fn
     return by_addr
 

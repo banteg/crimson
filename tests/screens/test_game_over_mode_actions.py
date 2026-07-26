@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import crimson.modes.base_gameplay_mode as base_gameplay_mode
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.results.game_over import PANEL_SLIDE_DURATION_MS, GameOverUi

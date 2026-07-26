@@ -4,10 +4,10 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-import crimson.game as game
 import crimson.logging as game_logging
-import crimson.net.relay_service as relay_service
+from crimson import game
 from crimson.cli import app
+from crimson.net import relay_service
 
 
 def test_net_host_command_builds_pending_network_session(mocker, tmp_path: Path) -> None:

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
+from typing import Any, cast
 
 import crimson.audio_router as audio_router_module
 import crimson.debug_views.arsenal_debug as arsenal_debug_module
 import crimson.demo as demo_module
 import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
-import crimson.modes.replay_playback_mode as replay_playback_mode
 import crimson.replay.driver.playback_driver as playback_driver_module
 import crimson.replay.driver.playback_pump as playback_pump_module
 import crimson.replay.driver.replay_benchmark as replay_benchmark_module
@@ -18,6 +18,7 @@ import crimson.sim.frame_pump as frame_pump_module
 import crimson.sim.presentation_reactions as presentation_reactions_module
 import crimson.world.standalone_tick_harness as standalone_tick_harness_module
 from crimson.game_modes import GameMode
+from crimson.modes import replay_playback_mode
 from crimson.replay import ReplayHeader, ReplayRecorder, dump_replay_file
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.frame_pump import advance_tick_runner_frame
@@ -263,7 +264,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
     )
     recorder = ReplayRecorder(header)
 
-    live_session, sim_world = make_session(seed=int(header.seed))
+    live_session, _sim_world = make_session(seed=int(header.seed))
     live_provider = LocalInputProvider(
         player_count=1,
         runtime=StaticLocalInputRuntime(inputs=tuple(input_row)),
@@ -320,16 +321,16 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
             from crimson.world.sim_world_state import SimWorldState as _SWS
 
             sw = _SWS(
-                world_size=float(kwargs.get("world_size", 1024.0)),  # type: ignore[arg-type]
+                world_size=float(cast(Any, kwargs.get("world_size", 1024.0))),
                 demo_mode_active=bool(kwargs.get("demo_mode_active", False)),
                 hardcore=bool(kwargs.get("hardcore", False)),
-                quest_fail_retry_count=int(kwargs.get("quest_fail_retry_count", 0)),  # type: ignore[arg-type]
+                quest_fail_retry_count=int(cast(Any, kwargs.get("quest_fail_retry_count", 0))),
                 preserve_bugs=bool(kwargs.get("preserve_bugs", False)),
             )
             self.sim_world = sw
             self.render_resources = RenderResources(assets_dir=_assets_dir())
             self.terrain_runtime = mocker.Mock(spec=TerrainRuntime)
-            self.audio_bridge = AudioBridge(audio_rng=kwargs.get("audio_rng", Crand(0xBEEF)))  # type: ignore[arg-type]
+            self.audio_bridge = AudioBridge(audio_rng=cast(Any, kwargs.get("audio_rng", Crand(0xBEEF))))
             self.camera = Vec2(-1.0, -1.0)
 
         def reset(self, *, seed: int, player_count: int, **_kw: object) -> None:
@@ -376,7 +377,7 @@ def test_contract_4_live_to_replay_uses_survival_session_and_matches_ticks(
 
 
 def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mocker) -> None:
-    session, sim_world = make_session()
+    session, _sim_world = make_session()
 
     provider = LocalInputProvider(
         player_count=1,
@@ -390,7 +391,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
 
     audio_bridge = AudioBridge(
         demo_mode_active=False,
-        audio=object(),  # type: ignore[arg-type]  # sentinel; play_sfx is patched
+        audio=cast(Any, object()),  # sentinel; play_sfx is patched
         audio_rng=Crand(0xBEEF),
     )
     play_sfx = mocker.patch.object(audio_router_module, "play_sfx")

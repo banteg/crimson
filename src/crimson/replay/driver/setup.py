@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 import msgspec
 
@@ -39,7 +38,7 @@ def build_damage_scale_by_type() -> dict[int, float]:
     for entry in WEAPON_TABLE:
         if entry.weapon_id <= WeaponId.NONE:
             continue
-        damage_scale_by_type[entry.weapon_id] = float(cast(float, entry.damage_scale))
+        damage_scale_by_type[entry.weapon_id] = float(entry.damage_scale)
     return damage_scale_by_type
 
 

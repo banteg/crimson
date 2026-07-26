@@ -7,9 +7,9 @@ import msgspec
 __all__ = [
     "EFFECT_ID_ATLAS_TABLE",
     "EFFECT_ID_ATLAS_TABLE_BY_ID",
-    "EffectId",
-    "EffectAtlasEntry",
     "SIZE_CODE_GRID",
+    "EffectAtlasEntry",
+    "EffectId",
     "effect_src_rect",
 ]
 

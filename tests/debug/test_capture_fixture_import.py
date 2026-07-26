@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Self
 
 import msgspec
 import pytest
@@ -70,7 +71,7 @@ def _reader_type(meta: TraceMeta, *, decoded_ticks: int = 2) -> type:
         def __init__(self, _path: Path) -> None:
             self.meta = meta
 
-        def __enter__(self) -> _Reader:
+        def __enter__(self) -> Self:
             return self
 
         def __exit__(self, *_args: object) -> None:

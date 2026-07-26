@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from typer.testing import CliRunner
 
-import crimson.runtime_resources_view as runtime_resources_view
+from crimson import runtime_resources_view
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from tests.replay.cli._helpers import build_replay, write_replay
 
 
 def test_replay_play_owns_runtime_resources_at_cli_boundary(tmp_path, mocker) -> None:
-    import crimson.assets_fetch as assets_fetch
-    import crimson.modes.replay_playback_mode as replay_playback_mode
     import grim.app as grim_app
+    from crimson import assets_fetch
+    from crimson.modes import replay_playback_mode
 
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")

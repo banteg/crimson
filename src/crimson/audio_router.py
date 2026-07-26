@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.audio import AudioState, play_sfx, trigger_game_tune
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
 from .game_modes import GameMode
@@ -33,7 +33,7 @@ class AudioRouterRuntime(msgspec.Struct):
 
 
 class AudioRouter(msgspec.Struct):
-    audio_rng: Crand
+    audio_rng: CrandLike
     audio: AudioState | None = None
     demo_mode_active: bool = False
     sfx_enabled: bool = True

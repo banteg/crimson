@@ -58,7 +58,7 @@ _ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
 _TRACE_CHUNK_TICKS = 256
 
 
-def _trace_f32(value: float | int) -> float:
+def _trace_f32(value: float) -> float:
     """Return the canonical f32 value stored by every CDT producer."""
 
     return float(f32(float(value)))

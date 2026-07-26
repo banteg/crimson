@@ -15,7 +15,7 @@ def parse_hex(value: str | None) -> int | None:
     text = value.strip()
     if not text:
         return None
-    if text.startswith("0x") or text.startswith("0X"):
+    if text.startswith(("0x", "0X")):
         text = text[2:]
     try:
         return int(text, 16)

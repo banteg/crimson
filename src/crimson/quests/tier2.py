@@ -240,7 +240,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
 def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
-    for wave in range(0, 40):
+    for wave in range(40):
         trigger_a = wave * 2000 + 1000
         trigger_b = (wave * 5 + 5) * 400
         entries.append(
@@ -426,11 +426,9 @@ def build_2_7_survival_of_the_fastest(
 
     # Loop 1: x from 256 to <688, step 72
     trigger = 500
-    idx = 0
-    for x in range(0x100, 0x2B0, 0x48):
+    for idx, x in enumerate(range(0x100, 0x2B0, 0x48)):
         set_entry(idx, Vec2(float(x), 256.0), SpawnId.DEN_SPIDER_WEAK_10, trigger, 1)
         trigger += 900
-        idx += 1
 
     # Loop 2: y from 256 to <688, step 72, starting at index 6
     trigger = 5900

@@ -5,7 +5,7 @@ from typing import cast
 
 import pytest
 
-import grim.terrain_render as terrain_render
+from grim import terrain_render
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from tests.support.helpers import assert_float_close

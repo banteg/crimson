@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -77,6 +77,6 @@ class BonusPickupEvent(msgspec.Struct, frozen=True):
 
 
 if TYPE_CHECKING:
-    from ..gameplay import GameplayState as GameplayState
+    from ..gameplay import GameplayState
 else:
-    GameplayState: TypeAlias = object
+    type GameplayState = object

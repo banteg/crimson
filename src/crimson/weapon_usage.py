@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, TypeAlias
+from typing import Annotated, Any, cast
 
 import msgspec
 
@@ -14,8 +14,8 @@ WEAPON_USAGE_SLOT_COUNT = 53
 WEAPON_USAGE_TRACKED_WEAPON_ID_MIN = int(WeaponId.PISTOL)
 WEAPON_USAGE_TRACKED_WEAPON_ID_MAX = WEAPON_USAGE_SLOT_COUNT - 1
 
-WeaponUsageCount: TypeAlias = Annotated[int, msgspec.Meta(ge=0)]
-WeaponUsageCounts: TypeAlias = Annotated[
+type WeaponUsageCount = Annotated[int, msgspec.Meta(ge=0)]
+type WeaponUsageCounts = Annotated[
     tuple[WeaponUsageCount, ...],
     msgspec.Meta(min_length=WEAPON_USAGE_SLOT_COUNT, max_length=WEAPON_USAGE_SLOT_COUNT),
 ]
@@ -37,7 +37,7 @@ def normalize_weapon_usage_counts(values: object) -> WeaponUsageCounts:
     normalized: list[int] = [0] * WEAPON_USAGE_SLOT_COUNT
     for idx, value in enumerate(values[:WEAPON_USAGE_SLOT_COUNT]):
         try:
-            normalized[idx] = int(value) & 0xFFFFFFFF
+            normalized[idx] = int(cast(Any, value)) & 0xFFFFFFFF
         except (TypeError, ValueError, OverflowError):
             normalized[idx] = 0
     return tuple(normalized)

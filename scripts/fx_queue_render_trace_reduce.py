@@ -386,18 +386,20 @@ def main() -> int:
                         },
                     )
 
-            if rot_count is not None:
-                if draws_shadow != rot_count or draws_color != rot_count:
-                    if len(mismatches) < 20:
-                        mismatches.append(
-                            {
-                                "fx_call": fx_call,
-                                "kind": "draw_count",
-                                "rot_count": rot_count,
-                                "draws_shadow": draws_shadow,
-                                "draws_color": draws_color,
-                            },
-                        )
+            if (
+                rot_count is not None
+                and (draws_shadow != rot_count or draws_color != rot_count)
+                and len(mismatches) < 20
+            ):
+                mismatches.append(
+                    {
+                        "fx_call": fx_call,
+                        "kind": "draw_count",
+                        "rot_count": rot_count,
+                        "draws_shadow": draws_shadow,
+                        "draws_color": draws_color,
+                    },
+                )
             continue
 
     summary: dict[str, Any] = {
@@ -452,4 +454,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

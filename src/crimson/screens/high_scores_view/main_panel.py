@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 def draw_main_panel(
-    view: "HighScoresView",
+    view: HighScoresView,
     *,
     resources: RuntimeResources,
     font: SmallFontData,

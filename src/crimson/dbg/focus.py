@@ -20,7 +20,7 @@ from .channel_helpers import (
 )
 from .checkpoint_diff import checkpoint_deepdiff
 from .diff import validate_comparison_identity
-from .payloads import BuiltinObject, to_builtin_object
+from .payloads import BuiltinObject, to_builtin_object, to_builtin_value
 from .schema import TickRecord
 from .trace import TraceReader
 
@@ -75,12 +75,15 @@ def focus_tick(
         diverged = bool(missing or extra or len(expected_uids) != len(candidate_uids))
         if diverged:
             entity_diverged = True
-        entity_presence[kind] = {
-            "expected_count": len(expected_uids),
-            "candidate_count": len(candidate_uids),
-            "missing_uids": missing,
-            "extra_uids": extra,
-        }
+        entity_presence[kind] = to_builtin_value(
+            {
+                "expected_count": len(expected_uids),
+                "candidate_count": len(candidate_uids),
+                "missing_uids": missing,
+                "extra_uids": extra,
+            },
+            field=f"entity_presence.{kind}",
+        )
     entity_samples_ok, entity_samples_detail = compare_entity_samples(
         entity_samples_channel_required(expected_row),
         entity_samples_channel_required(candidate_row),

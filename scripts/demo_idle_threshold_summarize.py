@@ -41,7 +41,7 @@ def _as_int(value: object | None) -> int | None:
         return int(value)
     try:
         return int(str(value).strip(), 0)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 

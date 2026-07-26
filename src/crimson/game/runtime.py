@@ -247,7 +247,7 @@ def run_game(config: GameConfig) -> None:
     crash_path = base_dir / "crash.log"
     crash_file = crash_path.open("a", encoding="utf-8", buffering=1)
     faulthandler.enable(crash_file)
-    crash_file.write(f"\n[{dt.datetime.now().isoformat()}] run_game start\n")
+    crash_file.write(f"\n[{dt.datetime.now(tz=dt.UTC).astimezone().isoformat()}] run_game start\n")
     cfg = ensure_crimson_cfg(base_dir)
     width = cfg.display.width if config.width is None else config.width
     height = cfg.display.height if config.height is None else config.height

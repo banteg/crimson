@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 import pytest
 
@@ -772,7 +772,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
         _ = state, dt, creatures, fx_queue
         seen["aim"] = players[0].aim
 
-    world_state_mod.perks_update_effects = _fake_perk_update  # type: ignore[assignment]
+    world_state_mod.perks_update_effects = cast(Any, _fake_perk_update)
     try:
         world.step(
             0.016,

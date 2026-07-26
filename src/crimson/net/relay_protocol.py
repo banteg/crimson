@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import msgspec
 
@@ -176,7 +176,7 @@ class LockstepControl(msgspec.Struct, tag="lockstep_state_control", forbid_unkno
     payload: bytes = b""
 
 
-NetMessage: TypeAlias = (
+type NetMessage = (
     ClientHello
     | ClientWelcome
     | RoomCreate
@@ -222,8 +222,8 @@ __all__ = [
     "MAX_PLAYERS",
     "PING_INTERVAL_MS",
     "PROTOCOL_VERSION",
-    "RELIABLE_RESEND_MS",
     "RECONNECT_TIMEOUT_MS",
+    "RELIABLE_RESEND_MS",
     "RESYNC_CHUNK_PAYLOAD_BYTES",
     "RESYNC_MAX_SNAPSHOT_BYTES",
     "ROLLBACK_MAX_TICKS",
@@ -236,7 +236,6 @@ __all__ = [
     "LockstepTickFrame",
     "NetMessage",
     "NetcodeMode",
-    "RelayPacket",
     "PeerDisconnect",
     "Ping",
     "Pong",
@@ -247,6 +246,7 @@ __all__ = [
     "RbResyncCommit",
     "RbResyncRequest",
     "RelayError",
+    "RelayPacket",
     "RelaySlot",
     "RoomCreate",
     "RoomJoin",

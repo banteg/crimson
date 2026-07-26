@@ -22,16 +22,6 @@ class _TextureLike(Protocol):
     height: int
 
 
-class _ResourcesLike(Protocol):
-    def texture(self, texture_id: TextureId) -> _TextureLike | None: ...
-
-
-class _RendererLike(Protocol):
-    frame: object
-
-    def _is_bullet_trail_type(self, type_id: int) -> bool: ...
-
-
 def _as_renderer(renderer: Any) -> WorldRenderCtx:
     return cast("WorldRenderCtx", renderer)
 

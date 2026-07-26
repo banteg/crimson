@@ -149,7 +149,7 @@ def cmd_quests(
     rng = Crand(seed) if seed is not None else Crand()
     entries = builder(ctx, rng=rng, full_version=True)
     if sort:
-        entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.x, e.y))
+        entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.pos.x, e.pos.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
     typer.echo("Meta: " + "; ".join(_format_meta(quest)))
 

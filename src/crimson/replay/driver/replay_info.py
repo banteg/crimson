@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Sequence
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import msgspec
 
@@ -41,7 +41,7 @@ ReplayInfoExtraEventKind = Literal[
     "typo_char",
     "typo_submit",
 ]
-ReplayInfoEventKind: TypeAlias = ReplayInfoCoreEventKind | ReplayInfoExtraEventKind
+type ReplayInfoEventKind = ReplayInfoCoreEventKind | ReplayInfoExtraEventKind
 
 _CORE_EVENT_KINDS: frozenset[ReplayInfoCoreEventKind] = frozenset(
     (

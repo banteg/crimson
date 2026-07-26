@@ -284,9 +284,13 @@ def tick_tutorial_timeline(
         if int(perk_pending_count) < 1 and state.stage_transition_timer_ms == -1:
             state.stage_transition_timer_ms = -1000
             spawn_templates.extend(build_tutorial_stage6_perks_done_spawns())
-    elif stage_index == 7:
-        if bool(bonus_pool_empty) and bool(creatures_none_active) and state.stage_transition_timer_ms == -1:
-            state.stage_transition_timer_ms = -1000
+    elif (
+        stage_index == 7
+        and bool(bonus_pool_empty)
+        and bool(creatures_none_active)
+        and state.stage_transition_timer_ms == -1
+    ):
+        state.stage_transition_timer_ms = -1000
 
     return (
         state,

@@ -48,7 +48,7 @@ def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
 def test_grim_deal_kills_player_during_perk_menu_transition(
     mocker,
     make_mode_config,
-    mode_cls: type[SurvivalMode] | type[QuestMode],
+    mode_cls: type[SurvivalMode | QuestMode],
 ) -> None:
     assets_dir = _assets_dir()
     _register_runtime_resources_stub(assets_dir)

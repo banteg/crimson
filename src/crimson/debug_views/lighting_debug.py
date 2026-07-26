@@ -723,7 +723,7 @@ void main() {
     float darkness = clamp(u_ambient_darkness * (1.0 - visibility), 0.0, 1.0);
     finalColor = vec4(0.0, 0.0, 0.0, darkness);
 }
-""" % (MAX_OCCLUDERS, MAX_LIGHTS, MAX_STEPS)
+""" % (MAX_OCCLUDERS, MAX_LIGHTS, MAX_STEPS)  # noqa: UP031 - GLSL braces make str.format error-prone
 
 _TEMPORAL_BLEND_FS_330 = """
 #version 330

@@ -145,9 +145,7 @@ class BootView:
             return True
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             return True
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
-            return True
-        return False
+        return bool(rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT))
 
     def _logo_state(self, t: float) -> tuple[TextureId, float] | None:
         if LOGO_10_IN_START <= t < LOGO_10_OUT_END:

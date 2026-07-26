@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from types import SimpleNamespace
 
@@ -19,7 +20,7 @@ class FakePlaybackDriver:
     """
 
     tick_limit: int = 0
-    on_step: object | None = None
+    on_step: Callable[[], None] | None = None
     quest_spawn_state: QuestSpawnState | None = None
     post_apply_sfx: tuple[SfxId, ...] = ()
     terrain_fx: TerrainFxBatch = TerrainFxBatch()

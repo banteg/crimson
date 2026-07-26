@@ -63,7 +63,7 @@ class _ResourcesStub:
 
 
 def _resources_for_score_card() -> RuntimeResources:
-    return _ResourcesStub()  # type: ignore[return-value]
+    return cast("RuntimeResources", _ResourcesStub())
 
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:

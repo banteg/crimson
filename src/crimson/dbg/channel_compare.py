@@ -168,18 +168,24 @@ def compare_entity_samples(
         if exp_total != act_total:
             detail[f"{kind}_count"] = {"expected": exp_total, "actual": act_total}
         if exp_dupes or act_dupes:
-            detail[f"{kind}_duplicate_uids"] = {
-                "expected": exp_dupes,
-                "actual": act_dupes,
-            }
+            detail[f"{kind}_duplicate_uids"] = to_builtin_value(
+                {
+                    "expected": exp_dupes,
+                    "actual": act_dupes,
+                },
+                field=f"entity_samples.{kind}.duplicate_uids",
+            )
 
         missing = sorted(uid for uid in exp_map if uid not in act_map)
         extra = sorted(uid for uid in act_map if uid not in exp_map)
         if missing or extra:
-            detail[f"{kind}_uids"] = {
-                "missing": missing,
-                "extra": extra,
-            }
+            detail[f"{kind}_uids"] = to_builtin_value(
+                {
+                    "missing": missing,
+                    "extra": extra,
+                },
+                field=f"entity_samples.{kind}.uids",
+            )
 
         for uid in sorted(set(exp_map) & set(act_map)):
             expected_row = exp_map[uid]
@@ -193,12 +199,15 @@ def compare_entity_samples(
             if int(diff_count) == 0:
                 continue
             row_diffs.append(
-                {
-                    "path": row_path,
-                    "diff_count": int(diff_count),
-                    "mismatches": payload,
-                    "pretty": pretty,
-                },
+                to_builtin_object(
+                    {
+                        "path": row_path,
+                        "diff_count": int(diff_count),
+                        "mismatches": payload,
+                        "pretty": pretty,
+                    },
+                    field=f"{row_path}.diff",
+                ),
             )
 
     if row_diffs:

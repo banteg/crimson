@@ -50,7 +50,7 @@ def corner_points(width: float, height: float | None = None, offset: float = 64.
 
 def iter_angles(count: int, *, step: float | None = None, start: float = 0.0) -> Iterator[float]:
     if count <= 0:
-        return iter(())
+        return
     if step is None:
         step = math.tau / float(count)
     for idx in range(count):

@@ -5,7 +5,7 @@ import json
 import struct
 from collections import Counter, defaultdict
 from collections.abc import Iterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -300,7 +300,7 @@ def summarize(log_path: Path) -> dict[str, Any]:
     return {
         "script": "scripts/frida/weapon_switch_trace.js",
         "source_log": str(log_path),
-        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "session": {
             "start": start_event,
             "duration_ms": duration_ms,

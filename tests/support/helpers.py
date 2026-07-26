@@ -127,7 +127,8 @@ class ScriptedCrand:
 
 
 class SupportsRngProgression(Protocol):
-    calls: int
+    @property
+    def calls(self) -> int: ...
 
     @property
     def state(self) -> int: ...

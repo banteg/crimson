@@ -3,11 +3,11 @@ from __future__ import annotations
 import os
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Protocol, TypeAlias, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 # Exact static caller address when known.
-CallerStatic: TypeAlias = int
-RecordedCallerStatic: TypeAlias = CallerStatic | None
+type CallerStatic = int
+type RecordedCallerStatic = CallerStatic | None
 
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011

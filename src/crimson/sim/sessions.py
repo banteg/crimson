@@ -227,11 +227,9 @@ class SessionModeRuntime(msgspec.Struct):
 
     def mid_step(self, ctx: MidStepContext) -> None:
         _ = ctx
-        return None
 
     def post_step(self, ctx: PostStepContext) -> None:
         _ = ctx
-        return None
 
 
 class SurvivalSessionRuntime(SessionModeRuntime):

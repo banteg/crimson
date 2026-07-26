@@ -12,12 +12,23 @@ import msgspec
 
 
 class _TelemetryFrameLike(Protocol):
-    tick_index_after_update: int
-    frame_ms: float
-    update_ms: float
-    draw_ms: float
-    draw_calls_total: int
-    pass_ms: dict[str, float]
+    @property
+    def tick_index_after_update(self) -> int: ...
+
+    @property
+    def frame_ms(self) -> float: ...
+
+    @property
+    def update_ms(self) -> float: ...
+
+    @property
+    def draw_ms(self) -> float: ...
+
+    @property
+    def draw_calls_total(self) -> int: ...
+
+    @property
+    def pass_ms(self) -> dict[str, float]: ...
 
 
 class _TelemetryFrame(msgspec.Struct, frozen=True):

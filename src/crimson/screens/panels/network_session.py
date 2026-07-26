@@ -192,7 +192,6 @@ class NetworkSessionPanelView(PanelMenuView):
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         _ = entry
-        return
 
     def _layout(self) -> _SessionLayout:
         panel_scale, _local_shift = self._menu_item_scale(0)

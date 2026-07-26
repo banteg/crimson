@@ -52,7 +52,7 @@ def init_lan_debug_log(
     debug_enabled: bool,
 ) -> Path:
     role_name = str(role).strip().lower() or "unknown"
-    timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+    timestamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S.%fZ")
     path = base_dir / "logs" / "lan" / f"lan-{role_name}-pid{os.getpid()}-{timestamp}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -76,7 +76,7 @@ def init_lan_debug_log(
 
 
 def lan_debug_log(event: str, **fields: object) -> None:
-    timestamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="milliseconds")
+    timestamp = dt.datetime.now(dt.UTC).isoformat(timespec="milliseconds")
     payload = _format_fields(fields)
     line = f"{timestamp} event={str(event).strip()}"
     if payload:

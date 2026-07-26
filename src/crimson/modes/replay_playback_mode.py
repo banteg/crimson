@@ -230,7 +230,7 @@ class ReplayPlaybackMode:
         if replay is None:
             return
 
-        scale, panel_x, panel_y, panel_w, panel_h, line1_y = self._replay_widget_metrics()
+        scale, panel_x, panel_y, panel_w, _panel_h, line1_y = self._replay_widget_metrics()
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
         panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
 

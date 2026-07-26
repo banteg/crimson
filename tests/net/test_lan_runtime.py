@@ -238,7 +238,7 @@ def test_client_waiting_input_sends_idle_heartbeat(mocker) -> None:
         for packet in [call.args[2] for call in send_packet.call_args_list]
         if isinstance(getattr(packet, "message", None), InputBatch)
         and not bool(getattr(packet, "reliable", False))
-        and len(getattr(getattr(packet, "message"), "samples", []) or []) == 0
+        and len(getattr(packet.message, "samples", []) or []) == 0
     ]
     assert heartbeats
     runtime.close()

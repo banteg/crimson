@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import cast
 
-import grim.music as music
+from grim import music
 from grim import paq as grim_paq
 from grim.raylib_api import rl
 

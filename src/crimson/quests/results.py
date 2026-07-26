@@ -53,7 +53,7 @@ class QuestResultsBreakdownAnim(msgspec.Struct):
     done: bool = False
 
     @classmethod
-    def start(cls) -> "QuestResultsBreakdownAnim":
+    def start(cls) -> QuestResultsBreakdownAnim:
         return cls()
 
     def set_final(self, target: QuestFinalTime) -> None:

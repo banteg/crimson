@@ -79,7 +79,4 @@ def perk_can_offer(
     if player_count == 2 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
-    if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
-        return False
-
-    return True
+    return not (meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq))

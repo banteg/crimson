@@ -30,7 +30,7 @@ from typing import Any
 def _now_iso() -> str:
     import datetime as _dt
 
-    return _dt.datetime.now(tz=_dt.timezone.utc).isoformat()
+    return _dt.datetime.now(tz=_dt.UTC).isoformat()
 
 
 def _clean_prefix(s: str | None, allowed: str) -> str | None:
@@ -461,7 +461,7 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             try:
                 obj = json.loads(line)
-            except Exception:
+            except json.JSONDecodeError:
                 counts["json_error"] += 1
                 continue
 
@@ -469,9 +469,8 @@ def main(argv: list[str] | None = None) -> int:
             counts[evt] += 1
 
             ts = obj.get("ts")
-            if isinstance(ts, str):
-                if first_ts is None:
-                    first_ts = ts
+            if isinstance(ts, str) and first_ts is None:
+                first_ts = ts
 
             run_id = obj.get("run_id")
             if isinstance(run_id, str):

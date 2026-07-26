@@ -146,7 +146,7 @@ class PlayGameMenuView(PanelMenuView):
         button_enabled = not self._player_list_open
 
         y = base_pos.y
-        entries, y_step, y_start, y_end = self._mode_entries()
+        entries, y_step, y_start, _y_end = self._mode_entries()
         y += y_start * scale
         for mode in entries:
             clicked, hovered = self._update_mode_button(

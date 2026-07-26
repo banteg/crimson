@@ -33,7 +33,7 @@ def _dummy_audio_state() -> AudioState:
 
 
 def _texture_stub() -> rl.Texture:
-    return SimpleNamespace(width=1, height=1)  # type: ignore[return-value]
+    return cast("rl.Texture", SimpleNamespace(width=1, height=1))
 
 
 def _resources_stub() -> RuntimeResources:

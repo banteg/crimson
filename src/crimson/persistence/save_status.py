@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, Final, TypeAlias
+from typing import Annotated, Final
 
 import msgspec
 from construct import Array, Bytes, Int16ul, Int32ul, Struct
@@ -26,7 +26,7 @@ QUEST_PLAY_COUNT = 91
 
 UNKNOWN_TAIL_SIZE = 0x10
 
-QuestPlayCounts: TypeAlias = Annotated[
+type QuestPlayCounts = Annotated[
     tuple[int, ...],
     msgspec.Meta(min_length=QUEST_PLAY_COUNT, max_length=QUEST_PLAY_COUNT),
 ]
@@ -329,12 +329,12 @@ __all__ = [
     "GAME_CFG_NAME",
     "GAME_CFG_STRUCT",
     "GAME_STATUS_STRUCT",
-    "GameStatus",
-    "GameStatusData",
     "QUEST_PLAY_COUNT",
-    "QuestPlayCounts",
     "UNKNOWN_TAIL_SIZE",
     "WEAPON_USAGE_COUNT",
+    "GameStatus",
+    "GameStatusData",
+    "QuestPlayCounts",
     "build_status_blob",
     "compute_checksum",
     "decode_blob",

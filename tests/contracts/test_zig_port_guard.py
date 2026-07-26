@@ -41,7 +41,7 @@ def _python_enum_values(enum_type: type[IntEnum], *, exclude: set[str] | None = 
 
 def _zig_enum_values(enum_name: str) -> dict[str, int]:
     source = ZIG_GAME_IDS.read_text()
-    match = re.search(rf"pub const {enum_name} = enum\(i32\) \{{(.*?)\n\}};", source, re.S)
+    match = re.search(rf"pub const {enum_name} = enum\(i32\) \{{(.*?)\n\}};", source, re.DOTALL)
     assert match is not None
 
     values: dict[str, int] = {}
@@ -91,7 +91,7 @@ def _zig_supported_fire_weapons() -> set[str]:
     switch_match = re.search(
         r"pub fn projectileTypeIdFromWeaponId\(weapon_id: WeaponId\) \?ProjectileTypeId \{\n\s*return switch \(weapon_id\) \{(.*?)\n\s*\};\n\}",
         weapon_data_source,
-        re.S,
+        re.DOTALL,
     )
     assert switch_match is not None
     for name, rhs in re.findall(r"\.([a-z0-9_]+)\s*=>\s*([^,\n]+)", switch_match.group(1)):
@@ -121,7 +121,7 @@ def _zig_quest_start_weapon_ids() -> dict[int, int]:
 
 def _zig_quest_titles() -> list[str]:
     source = ZIG_WINDOW_MENU_PANELS.read_text()
-    match = re.search(r"pub const quest_titles = \[_\]\[\]const u8\{(.*?)\n\};", source, re.S)
+    match = re.search(r"pub const quest_titles = \[_\]\[\]const u8\{(.*?)\n\};", source, re.DOTALL)
     assert match is not None
     return [
         bytes(value, "utf-8").decode("unicode_escape") for value in re.findall(r'"((?:[^"\\]|\\.)*)"', match.group(1))
@@ -149,7 +149,7 @@ def _normalized_python_rebind_row(row: RebindRowSpec) -> tuple[str, str, int | N
 def _zig_rebind_rows_by_name() -> dict[str, tuple[tuple[str, str, int | None, bool], ...]]:
     source = ZIG_WINDOW_OPTIONS.read_text()
     rows_by_name: dict[str, tuple[tuple[str, str, int | None, bool], ...]] = {}
-    for name, body in re.findall(r"const (controls_rows_[a-z0-9_]+) = \[_\]RebindRow\{(.*?)\n\};", source, re.S):
+    for name, body in re.findall(r"const (controls_rows_[a-z0-9_]+) = \[_\]RebindRow\{(.*?)\n\};", source, re.DOTALL):
         rows: list[tuple[str, str, int | None, bool]] = []
         for item in re.findall(r"\.\{(.*?)\},", body):
             label_match = re.search(r'\.label\s*=\s*"((?:[^"\\]|\\.)*)"', item)

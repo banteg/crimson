@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-import crimson.modes.base_gameplay_mode as base_gameplay_mode
 import crimson.modes.tutorial_mode as tutorial_mode_module
 import crimson.world.render_resources as render_resources_module
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
 from crimson.sim.sessions import DeterministicSession

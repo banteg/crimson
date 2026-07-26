@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Annotated, TypeAlias
+from typing import Annotated
 
 import msgspec
 
 ROOM_CODE_LENGTH = 4
 
-RoomCode: TypeAlias = Annotated[
+type RoomCode = Annotated[
     str,
     msgspec.Meta(
         min_length=ROOM_CODE_LENGTH,

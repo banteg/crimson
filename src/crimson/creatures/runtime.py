@@ -1366,36 +1366,35 @@ class CreaturePool:
                 if state.preserve_bugs
                 else any(perk_active(p, PerkId.RADIOACTIVE) for p in players)
             )
-            if radioactive_active:
-                if target_dist < 100.0:
-                    pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
-                    creature.collision_timer = x87_pc24_sub(
-                        float(creature.collision_timer),
-                        pulse_timer_step,
+            if radioactive_active and target_dist < 100.0:
+                pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
+                creature.collision_timer = x87_pc24_sub(
+                    float(creature.collision_timer),
+                    pulse_timer_step,
+                )
+                if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
+                    creature.collision_timer = CONTACT_DAMAGE_PERIOD
+                    pulse_damage = x87_pc24_mul(
+                        x87_pc24_sub(f32(100.0), target_dist),
+                        f32(0.3),
                     )
-                    if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
-                        creature.collision_timer = CONTACT_DAMAGE_PERIOD
-                        pulse_damage = x87_pc24_mul(
-                            x87_pc24_sub(f32(100.0), target_dist),
-                            f32(0.3),
-                        )
-                        creature.hp = x87_pc24_sub(float(creature.hp), pulse_damage)
-                        if fx_queue is not None:
-                            fx_queue.add_random(pos=creature.pos, rng=rng)
+                    creature.hp = x87_pc24_sub(float(creature.hp), pulse_damage)
+                    if fx_queue is not None:
+                        fx_queue.add_random(pos=creature.pos, rng=rng)
 
-                        if creature.hp < 0.0:
-                            if creature.type_id == CreatureTypeId.LIZARD:
-                                creature.hp = 1.0
-                            else:
-                                players[0].experience = int(
-                                    float(players[0].experience) + float(creature.reward_value),
-                                )
-                                creature.lifecycle_stage = x87_pc24_sub(
-                                    float(creature.lifecycle_stage),
-                                    float(dt),
-                                )
+                    if creature.hp < 0.0:
+                        if creature.type_id == CreatureTypeId.LIZARD:
+                            creature.hp = 1.0
+                        else:
+                            players[0].experience = int(
+                                float(players[0].experience) + float(creature.reward_value),
+                            )
+                            creature.lifecycle_stage = x87_pc24_sub(
+                                float(creature.lifecycle_stage),
+                                float(dt),
+                            )
 
-            if (not frozen_by_evil_eyes) and (
+            if (not frozen_by_evil_eyes) and (  # noqa: SIM102 - preserve the native ranged-fire branch shape
                 creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
             ):
                 # Ported from creature_update_all @ 0x00426220, around the

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from grim.audio import AudioState
-from grim.rand import Crand
+from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 
 from ..audio_router import AudioRouter, AudioRouterRuntime
@@ -12,7 +12,7 @@ class AudioBridge:
     def __init__(
         self,
         *,
-        audio_rng: Crand,
+        audio_rng: CrandLike,
         demo_mode_active: bool = False,
         runtime: AudioRouterRuntime | None = None,
         audio: AudioState | None = None,
@@ -32,7 +32,7 @@ class AudioBridge:
         self,
         *,
         audio: AudioState | None,
-        audio_rng: Crand,
+        audio_rng: CrandLike,
         demo_mode_active: bool,
     ) -> None:
         self.audio = audio

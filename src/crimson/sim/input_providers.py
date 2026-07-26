@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from enum import Enum
-from typing import Annotated, Protocol, TypeAlias
+from typing import Annotated, Protocol
 
 import msgspec
 
 from ..local_input import clear_input_edges
 from .input import PlayerInput
 
-TypoChar: TypeAlias = Annotated[str, msgspec.Meta(min_length=1, max_length=1)]
+type TypoChar = Annotated[str, msgspec.Meta(min_length=1, max_length=1)]
 
 
 class PerkMenuOpenCommand(msgspec.Struct, tag="perk_menu_open", frozen=True, forbid_unknown_fields=True):
@@ -45,13 +45,13 @@ class TypoSubmitCommand(msgspec.Struct, tag="typo_submit", frozen=True, forbid_u
     player_index: int
 
 
-GameCommand: TypeAlias = (
+type GameCommand = (
     PerkMenuOpenCommand | PerkPickCommand | TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 )
 
-ReplayPreludeOperation: TypeAlias = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
-ReplayPostludeOperation: TypeAlias = PerkMenuOpenCommand
-ReplayTickCommand: TypeAlias = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
+type ReplayPreludeOperation = GameFrameRngAdvanceOperation | PerkMenuOpenCommand | PerkPickCommand
+type ReplayPostludeOperation = PerkMenuOpenCommand
+type ReplayTickCommand = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
 
 
 class FrameContext(msgspec.Struct, frozen=True):

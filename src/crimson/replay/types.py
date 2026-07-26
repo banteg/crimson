@@ -5,7 +5,7 @@ import shutil
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import msgspec
 
@@ -77,7 +77,7 @@ def input_flags_validation_error(flags: int) -> str | None:
     return None
 
 
-InputQuantization: TypeAlias = Literal["f32"]
+type InputQuantization = Literal["f32"]
 
 _RELEASE_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -222,8 +222,8 @@ def unpack_input_mode_flags(flags: int) -> tuple[MovementControlType | None, Aim
     return move_mode, aim_scheme
 
 
-PackedPlayerInput: TypeAlias = list[float | int]
-PackedTickInputs: TypeAlias = list[PackedPlayerInput]
+type PackedPlayerInput = list[float | int]
+type PackedTickInputs = list[PackedPlayerInput]
 
 
 def unpack_packed_player_input(packed: PackedPlayerInput) -> tuple[float, float, float, float, int]:

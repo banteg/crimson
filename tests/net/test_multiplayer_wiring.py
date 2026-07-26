@@ -4,9 +4,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
-import crimson.modes.base_gameplay_mode as base_gameplay_mode
 import crimson.modes.quest_mode as quest_mode_module
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode

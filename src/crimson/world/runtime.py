@@ -5,7 +5,7 @@ from pathlib import Path
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import CrandLike
 from grim.raylib_api import rl
 
 from ..audio_router import AudioRouterRuntime
@@ -40,7 +40,7 @@ class WorldRuntime:
         hardcore: bool = False,
         preserve_bugs: bool = False,
         config: CrimsonConfig | None = None,
-        audio_rng: Crand,
+        audio_rng: CrandLike,
         audio: AudioState | None = None,
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:

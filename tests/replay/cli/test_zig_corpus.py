@@ -146,7 +146,9 @@ def test_zig_replay_corpus_list_covers_valid_and_invalid_inputs(tmp_path: Path, 
     for case, sample in valid_samples:
         row = next(row for row in rows if row["replay"] == sample.path.name)
         mode_prefix = "quest" if case.game_mode == "quests" else case.game_mode
-        assert row["mode"].startswith(mode_prefix)
+        mode = row["mode"]
+        assert isinstance(mode, str)
+        assert mode.startswith(mode_prefix)
         assert row["parse_error"] is None
     for _, sample in invalid_samples:
         row = next(row for row in rows if row["replay"] == sample.path.name)

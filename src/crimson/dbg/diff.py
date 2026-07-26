@@ -186,10 +186,13 @@ def _first_mismatch(
                 TraceMismatch(
                     kind="tick_mismatch",
                     tick_index=tick,
-                    detail={
-                        "mismatch_count": len(tick_mismatches),
-                        "mismatches": tick_mismatches,
-                    },
+                    detail=to_builtin_object(
+                        {
+                            "mismatch_count": len(tick_mismatches),
+                            "mismatches": tick_mismatches,
+                        },
+                        field=f"ticks[{tick}].mismatch",
+                    ),
                 ),
             )
 

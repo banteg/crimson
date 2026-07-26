@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 
 import crimson.screens.quest_views.end_note as end_note_module
 from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
@@ -11,7 +12,7 @@ from grim.sfx_map import SfxId
 
 
 def _texture_stub() -> rl.Texture:
-    return SimpleNamespace(width=1, height=1)  # type: ignore[return-value]
+    return cast("rl.Texture", SimpleNamespace(width=1, height=1))
 
 
 def _font_stub() -> SimpleNamespace:
@@ -20,9 +21,12 @@ def _font_stub() -> SimpleNamespace:
 
 def _resources_stub() -> RuntimeResources:
     tex = _texture_stub()
-    return SimpleNamespace(  # type: ignore[return-value]
-        texture=lambda _texture_id: tex,
-        small_font=_font_stub(),
+    return cast(
+        "RuntimeResources",
+        SimpleNamespace(
+            texture=lambda _texture_id: tex,
+            small_font=_font_stub(),
+        ),
     )
 
 

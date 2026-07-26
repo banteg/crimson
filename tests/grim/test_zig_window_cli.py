@@ -21,8 +21,7 @@ def test_zig_window_is_installed_by_default_build(window_bin: Path) -> None:
         cwd=dbg_record._REPO_ROOT,
         check=False,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
@@ -59,8 +58,7 @@ def test_zig_window_smoke_starts_direct_modes(
         cwd=dbg_record._REPO_ROOT,
         check=False,
         text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)

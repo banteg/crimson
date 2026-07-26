@@ -17,7 +17,7 @@ def _reload_submit_replay(
     dictionary_words: tuple[str, ...] = (),
     highscore_names: tuple[str, ...] = (),
 ) -> Replay:
-    header, rec = _blank_typo_replay(
+    _header, rec = _blank_typo_replay(
         ticks=0,
         seed=seed,
         typo_dictionary_words=tuple(dictionary_words),

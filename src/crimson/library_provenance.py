@@ -231,7 +231,7 @@ def _check_artifact(
     )
     try:
         pe, mapped = _load_pe(path)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - a malformed PE is a failed provenance check, not a process error
         checks.append(
             ProvenanceCheck(
                 artifact=artifact_id,

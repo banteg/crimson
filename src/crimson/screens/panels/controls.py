@@ -640,10 +640,7 @@ class ControlsMenuView(PanelMenuView):
         )
         if player_selected is not None:
             self._config_player = max(1, min(4, player_selected + 1))
-        if consumed:
-            return True
-
-        return False
+        return bool(consumed)
 
     def _draw_panel(self) -> None:
         fx_detail = self.state.config.display.fx_detail_enabled(level=0, default=False)

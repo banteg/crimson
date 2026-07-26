@@ -393,12 +393,13 @@ class HighScoresView:
             rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
             rect_h = max(float(check_tex.height) * scale, font_h)
             mouse_pos = Vec2.from_xy(rl.get_mouse_position())
-            if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos):
-                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                    self.state.config.profile.show_internet_scores = not self.state.config.profile.show_internet_scores
-                    self._dirty = True
-                    self._reload_records()
-                    return True
+            if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos) and rl.is_mouse_button_pressed(
+                rl.MouseButton.MOUSE_BUTTON_LEFT,
+            ):
+                self.state.config.profile.show_internet_scores = not self.state.config.profile.show_internet_scores
+                self._dirty = True
+                self._reload_records()
+                return True
 
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")

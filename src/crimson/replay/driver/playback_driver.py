@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TypeAlias
 
 import msgspec
 
@@ -23,7 +22,7 @@ from ...replay.input_codec import unpack_tick_inputs
 from ...rng_caller_static import RngCallerStatic
 from ...sim.bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
 from ...sim.hooks import TickResult
-from ...sim.input_providers import ResolvedTick
+from ...sim.input_providers import GameCommand, ResolvedTick
 from ...sim.session_builders import (
     build_quest_session,
     build_rush_session,
@@ -49,7 +48,7 @@ from .setup import (
     player0_shots,
 )
 
-RngTraceDraw: TypeAlias = tuple[int, int, int, RecordedCallerStatic]
+type RngTraceDraw = tuple[int, int, int, RecordedCallerStatic]
 
 
 def require_quest_level_from_replay(replay: Replay) -> QuestLevel:
@@ -409,7 +408,7 @@ class PlaybackDriver:
         inputs = unpack_tick_inputs(replay_tick.inputs)
         prelude = list(replay_tick.prelude)
         postlude = list(replay_tick.postlude)
-        commands = list(replay_tick.commands)
+        commands: list[GameCommand] = list(replay_tick.commands)
         prelude_post_apply_sfx = self.session.apply_replay_prelude(
             dt=dt_tick,
             operations=prelude,

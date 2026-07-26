@@ -464,22 +464,26 @@ class RelayServer:
 
         host_slot = room.slots[0]
         host_peer = self._peers_by_id.get(str(host_slot.peer_id))
-        if host_peer is not None and host_peer.build_id and peer.build_id:
-            if not builds_compatible(str(peer.build_id), str(host_peer.build_id)):
-                self.log.warning(
-                    "relay_room_join_rejected",
-                    reason="build_mismatch",
-                    peer_id=str(peer.peer_id),
-                    room_code=str(room.room_code),
-                    peer_build=str(peer.build_id),
-                    host_build=str(host_peer.build_id),
-                )
-                self._send_peer(peer, RelayError(reason="build_mismatch"), reliable=True, now_ms=int(now_ms))
-                return
+        if (
+            host_peer is not None
+            and host_peer.build_id
+            and peer.build_id
+            and not builds_compatible(str(peer.build_id), str(host_peer.build_id))
+        ):
+            self.log.warning(
+                "relay_room_join_rejected",
+                reason="build_mismatch",
+                peer_id=str(peer.peer_id),
+                room_code=str(room.room_code),
+                peer_build=str(peer.build_id),
+                host_build=str(host_peer.build_id),
+            )
+            self._send_peer(peer, RelayError(reason="build_mismatch"), reliable=True, now_ms=int(now_ms))
+            return
 
         slot.peer_id = str(peer.peer_id)
         slot.peer_name = str(peer.peer_name)
-        slot.ready = False if not room.started else True
+        slot.ready = bool(room.started)
         slot.disconnected_ms = 0
         if not slot.reconnect_token:
             slot.reconnect_token = uuid.uuid4().hex

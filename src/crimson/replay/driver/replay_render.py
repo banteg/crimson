@@ -14,7 +14,7 @@ from ...render.pipeline import RaylibDrawScope, RenderPipeline
 from ...render.sink import VideoSink, VideoTransport
 from ...replay import Replay
 from .playback_driver import build_verify_playback_driver
-from .progress import ReplayRenderPhase as ReplayRenderPhase
+from .progress import ReplayRenderPhase as ReplayRenderPhase  # noqa: PLC0414 - public re-export
 from .progress import ReplayRenderProgress
 from .setup import RunResult
 

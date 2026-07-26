@@ -28,7 +28,7 @@ def _now_iso() -> str:
     # Avoid importing datetime in hot paths; only used for metadata.
     import datetime as _dt
 
-    return _dt.datetime.now(tz=_dt.timezone.utc).isoformat()
+    return _dt.datetime.now(tz=_dt.UTC).isoformat()
 
 
 def _is_probably_font_texture(texture0: int | None, texture_name: str | None) -> bool:
@@ -358,7 +358,7 @@ def main() -> int:
                 continue
             try:
                 obj = json.loads(line)
-            except Exception:
+            except json.JSONDecodeError:
                 counts["json_error"] += 1
                 continue
 

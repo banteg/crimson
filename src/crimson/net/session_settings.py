@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import msgspec
 
@@ -50,7 +50,7 @@ class RelaySessionSettings(msgspec.Struct, frozen=True):
     netcode_mode: NetcodeMode = "rollback"
 
 
-SessionSettings: TypeAlias = LockstepSessionSettings | RelaySessionSettings
+type SessionSettings = LockstepSessionSettings | RelaySessionSettings
 
 
 def session_settings_from_hello(message: Hello) -> LockstepSessionSettings:

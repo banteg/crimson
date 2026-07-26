@@ -558,9 +558,8 @@ class GameLoopView:
 
         self._demo_trial_info = None
         self._tick_statistics_playtime(dt)
-        if gameplay is not None:
-            if self._update_demo_trial_overlay(dt):
-                return
+        if gameplay is not None and self._update_demo_trial_overlay(dt):
+            return
 
         self._active.update(dt)
         self._sync_gameplay_frame_telemetry_to_state()

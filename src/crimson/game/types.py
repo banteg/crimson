@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Protocol, TypeAlias, runtime_checkable
+from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 import msgspec
 
@@ -44,7 +44,7 @@ class GameConfig(msgspec.Struct, frozen=True):
     debug: bool = False
     rtx: bool = False
     preserve_bugs: bool = False
-    pending_network_session: "PendingNetworkSession | None" = None
+    pending_network_session: PendingNetworkSession | None = None
 
 
 NetworkSessionMode = Literal["survival", "rush", "quests"]
@@ -64,7 +64,7 @@ class RollbackEndpoint(msgspec.Struct, frozen=True):
     room_code: RoomCode | None = None
 
 
-NetworkEndpoint: TypeAlias = LockstepEndpoint | RollbackEndpoint
+type NetworkEndpoint = LockstepEndpoint | RollbackEndpoint
 
 
 class NetworkSessionConfig(msgspec.Struct, frozen=True):
@@ -120,11 +120,11 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
     close_requested: bool
     default_game_mode_id: GameMode
 
-    def bind_status(self, status: "GameStatus | None") -> None: ...
+    def bind_status(self, status: GameStatus | None) -> None: ...
 
-    def bind_screen_fade(self, fade: "GameState | None") -> None: ...
+    def bind_screen_fade(self, fade: GameState | None) -> None: ...
 
-    def bind_audio(self, audio: "AudioState | None", audio_rng: Crand) -> None: ...
+    def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None: ...
 
     def set_lan_runtime(
         self,
@@ -136,19 +136,19 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
         waiting_for_players: bool,
     ) -> None: ...
 
-    def bind_lan_runtime(self, runtime: "RollbackRuntime | LockstepRuntime | None") -> None: ...
+    def bind_lan_runtime(self, runtime: RollbackRuntime | LockstepRuntime | None) -> None: ...
 
     def set_lan_match_start(
         self,
         *,
         seed: int,
         start_tick: int = 0,
-        status: "GameStatusData | None" = None,
+        status: GameStatusData | None = None,
     ) -> None: ...
 
-    def steal_ground_for_menu(self) -> "GroundRenderer | None": ...
+    def steal_ground_for_menu(self) -> GroundRenderer | None: ...
 
-    def menu_ground_camera(self) -> "Vec2": ...
+    def menu_ground_camera(self) -> Vec2: ...
 
     def console_elapsed_ms(self) -> float: ...
 
@@ -185,7 +185,7 @@ class GameState(msgspec.Struct):
     stats_menu_easter_egg_roll: int = -1
     pause_background: PauseBackground | None = None
     pending_network_session: PendingNetworkSession | None = None
-    network_runtime: "RollbackRuntime | LockstepRuntime | None" = None
+    network_runtime: RollbackRuntime | LockstepRuntime | None = None
     network_in_lobby: bool = False
     network_waiting_for_players: bool = False
     network_expected_players: int = 1
@@ -211,17 +211,17 @@ class GameState(msgspec.Struct):
     presentation_apply_ms: float = 0.0
 
 __all__ = [
-    "GameplayScreen",
     "GameConfig",
     "GameState",
+    "GameplayScreen",
     "HighScoresRequest",
     "LockstepEndpoint",
     "NetcodeMode",
     "NetworkEndpoint",
     "NetworkSessionConfig",
     "NetworkSessionMode",
-    "PendingNetworkSession",
     "PauseBackground",
+    "PendingNetworkSession",
     "RollbackEndpoint",
     "Screen",
 ]

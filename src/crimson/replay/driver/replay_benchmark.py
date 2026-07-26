@@ -8,7 +8,7 @@ import statistics
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import msgspec
 from tqdm import tqdm
@@ -768,7 +768,7 @@ def _extract_hotspots(
     sort_key: ProfileSortKey,
     top: int,
 ) -> tuple[HotspotSource, list[ReplayProfileHotspot]]:
-    stats_data: Any = getattr(pstats.Stats(profile), "stats")
+    stats_data: Any = cast(Any, pstats.Stats(profile)).stats
     rows: list[ReplayProfileHotspot] = []
     for key, values in stats_data.items():
         file_name, line_number, function_name = key
@@ -799,12 +799,7 @@ def _extract_hotspots(
 def _is_project_hotspot_path(path: str) -> bool:
     text = str(path).replace("\\", "/").lower()
     return (
-        text.startswith("src/crimson/")
-        or text.startswith("src/grim/")
-        or text.startswith("crimson/")
-        or text.startswith("grim/")
-        or "/src/crimson/" in text
-        or "/src/grim/" in text
+        text.startswith(("src/crimson/", "src/grim/", "crimson/", "grim/")) or "/src/crimson/" in text or "/src/grim/" in text
     )
 
 

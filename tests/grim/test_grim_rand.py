@@ -5,7 +5,6 @@ import pytest
 from grim.rand import (
     CRT_RAND_INC,
     CRT_RAND_MULT,
-    CallerStatic,
     CrtRand,
     MissingRngCallerError,
     RecordedCallerStatic,
@@ -70,7 +69,7 @@ def test_crt_rand_advance_matches_repeated_rand(seed: int, draws: int) -> None:
 
 
 def test_crt_rand_advance_is_silent_for_trace_sink() -> None:
-    rows: list[tuple[int, int, int, CallerStatic]] = []
+    rows: list[tuple[int, int, int, RecordedCallerStatic]] = []
     rng = CrtRand(0x1234)
     rng.set_trace_sink(lambda before, after, value, caller: rows.append((before, after, value, caller)))
 

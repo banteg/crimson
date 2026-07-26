@@ -38,7 +38,6 @@ class PerkMenuRuntime(msgspec.Struct):
 
     def play_sfx(self, sfx_id: SfxId) -> None:
         _ = sfx_id
-        return None
 
 
 class PerkMenuUiContext(msgspec.Struct, frozen=True):

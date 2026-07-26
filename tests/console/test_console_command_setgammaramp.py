@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import call
 
-import crimson.game.loop_view as loop_view
+from crimson.game import loop_view
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
 

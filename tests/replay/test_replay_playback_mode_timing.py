@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from types import SimpleNamespace
 
-import crimson.modes.replay_playback_mode as replay_playback_mode
 from crimson.game_modes import GameMode
+from crimson.modes import replay_playback_mode
 from crimson.replay import Replay, ReplayHeader, ReplayTick
 from crimson.world.render_resources import RenderResources
 from crimson.world.sim_world_state import SimWorldState

@@ -25,18 +25,17 @@ def _download_file(url: str, dest: Path) -> None:
     tmp_path: Path | None = None
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "crimsonland-decompile"})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            with tempfile.NamedTemporaryFile(
-                mode="wb",
-                delete=False,
-                dir=dest.parent,
-                prefix=dest.name + ".",
-                suffix=".tmp",
-            ) as handle:
-                tmp_path = Path(handle.name)
-                shutil.copyfileobj(resp, handle)
-                handle.flush()
-                os.fsync(handle.fileno())
+        with urllib.request.urlopen(req, timeout=30) as resp, tempfile.NamedTemporaryFile(
+            mode="wb",
+            delete=False,
+            dir=dest.parent,
+            prefix=dest.name + ".",
+            suffix=".tmp",
+        ) as handle:
+            tmp_path = Path(handle.name)
+            shutil.copyfileobj(resp, handle)
+            handle.flush()
+            os.fsync(handle.fileno())
         if tmp_path is None:
             raise RuntimeError("assets: temporary file not created")
         tmp_path.replace(dest)

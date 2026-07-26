@@ -1515,9 +1515,10 @@ def _region_hints(
         hints.append("possible-missing-candidate-instructions")
     elif len(candidate_lines) > len(target_lines):
         hints.append("possible-extra-candidate-instructions")
-    if any(re.search(r"\b(?:esp|ebp)\b", line) for line in (*target_lines, *candidate_lines)):
-        if target_lines != candidate_lines:
-            hints.append("possible-stack-frame-or-lifetime")
+    if target_lines != candidate_lines and any(
+        re.search(r"\b(?:esp|ebp)\b", line) for line in (*target_lines, *candidate_lines)
+    ):
+        hints.append("possible-stack-frame-or-lifetime")
     if target_mnemonics == candidate_mnemonics and target_lines != candidate_lines:
         hints.append("possible-register-literal-or-operand-allocation")
     elif Counter(target_mnemonics) == Counter(candidate_mnemonics) and target_mnemonics != candidate_mnemonics:
@@ -2232,7 +2233,7 @@ def evaluate_scratch(
             masked_mismatches=result.masked_operand_audit.mismatch_count,
             audit=result.masked_operand_audit,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - one scratch failure must remain a reportable status
         return ScratchStatus(
             config=config,
             address=address,
@@ -2397,7 +2398,7 @@ def validate_matching_workspace(
                 end_override=config.end_va,
             )
             targets.setdefault((config.image, symbol.address), []).append(config)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - collect every invalid scratch config in one pass
             errors.append(f"{conf_path.parent.name}: {str(exc).splitlines()[0]}")
     for (image, address), configs in sorted(targets.items()):
         if len(configs) < 2:
@@ -2825,7 +2826,7 @@ def collect_scratch_statuses(
                 include_resolver=include_resolver,
             )
             return status
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - one scratch failure must not cancel the worker batch
             try:
                 address = resolve_function(manifest, config.function, end_override=config.end_va)[0].address
             except ValueError:
@@ -3068,7 +3069,7 @@ def build_match_shard_plan(
         ),
     )
     width = max(2, len(str(workers)))
-    assignments = [
+    assignments: list[dict[str, Any]] = [
         {
             "worker": f"worker-{index + 1:0{width}d}",
             "claim": f"worker-{index + 1:0{width}d}.json",
@@ -3317,7 +3318,7 @@ def validate_match_claim(
                             f"{config.image}:0x{resolved.address:08x}, expected "
                             f"{image}:0x{address:08x}",
                         )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - collect every invalid worker claim in one pass
             errors.append(f"{worker}: {image}:0x{address:08x}: {str(exc).splitlines()[0]}")
     return errors
 
@@ -3480,12 +3481,12 @@ def render_probe_result(result: ProbeResult) -> str:
         (
             status_line("baseline", result.baseline),
             status_line("probe", result.probe),
-            f"delta: match={ratio_delta} fuzzy={result.fuzzy_delta_bytes:+.0f} "
+            (f"delta: match={ratio_delta} fuzzy={result.fuzzy_delta_bytes:+.0f} "
             f"insns={result.probe.candidate_instructions - result.baseline.candidate_instructions:+d} "
             f"prefix={result.probe.prefix_instructions - result.baseline.prefix_instructions:+d} "
             f"refs={result.probe.masked_ok - result.baseline.masked_ok:+d}/"
             f"{result.probe.masked_unresolved - result.baseline.masked_unresolved:+d}/"
-            f"{result.probe.masked_mismatches - result.baseline.masked_mismatches:+d}",
+            f"{result.probe.masked_mismatches - result.baseline.masked_mismatches:+d}"),
             f"source_sha256={result.source_sha256}",
         ),
     )
@@ -3732,7 +3733,7 @@ def _image_summary(total: ImageTotals) -> str:
 def render_status_summary(totals: list[ImageTotals]) -> str:
     overall = _overall_totals(totals)
     lines = [
-        f"all images: {overall.matched_functions}/{overall.function_count} functions, "
+        (f"all images: {overall.matched_functions}/{overall.function_count} functions, "
         f"{overall.matched_bytes}/{overall.byte_total} bytes "
         f"({overall.byte_percentage:.1%}) matched; "
         f"{overall.fuzzy_weighted_bytes:.0f}/{overall.byte_total} fuzzy-weighted bytes "
@@ -3740,7 +3741,7 @@ def render_status_summary(totals: list[ImageTotals]) -> str:
         f"{overall.candidate_functions}/{overall.function_count} source candidates covering "
         f"{overall.candidate_bytes}/{overall.byte_total} bytes "
         f"({overall.candidate_byte_percentage:.1%}); "
-        f"{overall.matched_scratches}/{overall.scratch_count} scratches verified",
+        f"{overall.matched_scratches}/{overall.scratch_count} scratches verified"),
         "by image:",
         *(_image_summary(total) for total in totals),
     ]
@@ -3774,19 +3775,19 @@ def render_status_markdown(
         "",
         "Regenerate with `uv run crimson match checkpoint`.",
         "",
-        f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly, "
+        (f"**{overall.matched_functions}/{overall.function_count}** functions matched exactly, "
         f"**{overall.matched_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.byte_percentage:.1%}**). Byte totals are manifest function "
-        "extents with terminal padding trimmed.",
+        "extents with terminal padding trimmed."),
         "",
-        f"Fuzzy-weighted alignment is **{overall.fuzzy_weighted_bytes:.0f}/"
+        (f"Fuzzy-weighted alignment is **{overall.fuzzy_weighted_bytes:.0f}/"
         f"{overall.byte_total}** code bytes "
-        f"(**{overall.fuzzy_byte_percentage:.1%}**).",
+        f"(**{overall.fuzzy_byte_percentage:.1%}**)."),
         "",
-        f"Compilable source candidates cover **{overall.candidate_functions}/{overall.function_count}** "
+        (f"Compilable source candidates cover **{overall.candidate_functions}/{overall.function_count}** "
         f"functions and **{overall.candidate_bytes}/{overall.byte_total}** code bytes "
         f"(**{overall.candidate_byte_percentage:.1%}**). Candidate coverage includes exact "
-        "matches and WIPs; it does not claim byte identity.",
+        "matches and WIPs; it does not claim byte identity."),
         "",
         "## Images",
         "",
@@ -3802,7 +3803,7 @@ def render_status_markdown(
                 "",
                 f"## {total.image}",
                 "",
-                f"**{total.matched_functions}/{total.function_count}** functions, "
+                (f"**{total.matched_functions}/{total.function_count}** functions, "
                 f"**{total.matched_bytes}/{total.byte_total}** bytes "
                 f"(**{total.byte_percentage:.1%}**), "
                 f"**{total.fuzzy_weighted_bytes:.0f}/{total.byte_total}** fuzzy-weighted bytes "
@@ -3810,7 +3811,7 @@ def render_status_markdown(
                 f"**{total.candidate_functions}/{total.function_count}** source candidates covering "
                 f"**{total.candidate_bytes}/{total.byte_total}** bytes "
                 f"(**{total.candidate_byte_percentage:.1%}**), "
-                f"**{total.matched_scratches}/{total.scratch_count}** scratches verified.",
+                f"**{total.matched_scratches}/{total.scratch_count}** scratches verified."),
                 "",
                 "| state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |",
                 "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|",

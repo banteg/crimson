@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import pytest
 
-import grim.terrain_render as terrain_render
 from crimson.render.world import renderer as world_renderer
 from crimson.world import runtime as world_runtime
+from grim import terrain_render
 from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
 from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
@@ -332,9 +332,8 @@ def test_alpha_test_shader_failure_raises(mocker) -> None:
     mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
     terrain_render._get_alpha_test_shader.cache_clear()
 
-    with pytest.raises(RuntimeError, match="compile failed"):
-        with terrain_render._maybe_alpha_test():
-            pass
+    with pytest.raises(RuntimeError, match="compile failed"), terrain_render._maybe_alpha_test():
+        pass
 
 
 def test_create_render_target_recovers_after_previous_failure(mocker) -> None:

@@ -606,7 +606,7 @@ def summarize(log_path: Path, symbols: SymbolIndex, functions: FunctionIndex, to
             final_time_ms_max=quest_final_max,
         ),
         perk_timers=PerkTimersSummary(
-            samples=int(len(jinxed_vals)),
+            samples=len(jinxed_vals),
             jinxed_min=(min(jinxed_vals) if jinxed_vals else None),
             jinxed_max=(max(jinxed_vals) if jinxed_vals else None),
             lean_mean_min=(min(lean_mean_vals) if lean_mean_vals else None),

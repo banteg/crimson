@@ -31,7 +31,6 @@ class PresentationTickOutput(msgspec.Struct, frozen=True):
 class PresentationApplyRuntime(msgspec.Struct):
     def output_applied(self, output: PresentationTickOutput) -> None:
         _ = output
-        return None
 
 
 def apply_sim_metadata_tick_result(

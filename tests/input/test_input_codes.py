@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import crimson.input_codes as input_codes
+from crimson import input_codes
 from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
 
 

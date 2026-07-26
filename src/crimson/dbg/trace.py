@@ -83,7 +83,7 @@ def _validate_wire_struct(value: object, annotation: type[msgspec.Struct], *, pa
     missing = sorted(expected_keys - actual_keys)
     if missing:
         raise TraceError(f"{path} is missing field(s): {', '.join(missing)}")
-    unknown = sorted((repr(key) for key in actual_keys - expected_keys))
+    unknown = sorted(repr(key) for key in actual_keys - expected_keys)
     if unknown:
         raise TraceError(f"{path} has unknown field(s): {', '.join(unknown)}")
 
@@ -139,6 +139,9 @@ def _validate_wire_union(value: object, args: tuple[object, ...], *, path: str) 
 
 
 def _validate_wire_value(value: object, annotation: object, *, path: str) -> None:
+    if isinstance(annotation, typing.TypeAliasType):
+        _validate_wire_value(value, annotation.__value__, path=path)
+        return
     origin = typing.get_origin(annotation)
     args = typing.get_args(annotation)
     if origin is typing.Annotated:
@@ -884,7 +887,7 @@ class TraceReader:
         if not self._handle.closed:
             self._handle.close()
 
-    def __enter__(self) -> "TraceReader":
+    def __enter__(self) -> typing.Self:
         return self
 
     def __exit__(self, *_args: object) -> None:

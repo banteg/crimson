@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, cast
 
 import pytest
 
-import crimson.render.projectile_draw.primary_beam as primary_beam
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
+from crimson.render.projectile_draw import primary_beam
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
 from crimson.render.rtx.mode import RtxRenderMode
 from grim.assets import TextureId

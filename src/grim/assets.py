@@ -268,12 +268,7 @@ def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> rl.Text
         buf = io.BytesIO()
         jaz_image.composite_image().save(buf, format="PNG")
         texture = _load_texture_from_bytes(buf.getvalue(), ".png")
-    elif rel_path.lower().endswith(".tga"):
-        img = Image.open(io.BytesIO(data))
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        texture = _load_texture_from_bytes(buf.getvalue(), ".png")
-    elif rel_path.lower().endswith((".jpg", ".jpeg")):
+    elif rel_path.lower().endswith(".tga") or rel_path.lower().endswith((".jpg", ".jpeg")):
         img = Image.open(io.BytesIO(data))
         buf = io.BytesIO()
         img.save(buf, format="PNG")

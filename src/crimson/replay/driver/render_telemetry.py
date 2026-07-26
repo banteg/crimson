@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Self
 
 import msgspec
 
@@ -97,7 +97,7 @@ class RenderTelemetrySession:
         profile_hooks.set_active_sink(self._prev_sink)
         self._prev_sink = None
 
-    def __enter__(self) -> RenderTelemetrySession:
+    def __enter__(self) -> Self:
         self.start()
         return self
 

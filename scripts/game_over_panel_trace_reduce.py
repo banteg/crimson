@@ -20,7 +20,7 @@ from typing import Any
 def _now_iso() -> str:
     import datetime as _dt
 
-    return _dt.datetime.now(tz=_dt.timezone.utc).isoformat()
+    return _dt.datetime.now(tz=_dt.UTC).isoformat()
 
 
 @dataclass
@@ -138,7 +138,7 @@ def main() -> int:
                 continue
             try:
                 obj = json.loads(line)
-            except Exception:
+            except json.JSONDecodeError:
                 continue
 
             run_id = obj.get("run_id")
@@ -156,7 +156,7 @@ def main() -> int:
                 continue
             try:
                 obj = json.loads(line)
-            except Exception:
+            except json.JSONDecodeError:
                 counts["json_error"] += 1
                 continue
 

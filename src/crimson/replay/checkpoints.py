@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from pathlib import Path
+from typing import cast
 
 import msgspec
 import zstandard as zstd
@@ -80,9 +81,9 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     perk_pending: int
     players: list[ReplayPlayerCheckpoint]
     bonus_timers: dict[str, int]
-    deaths: list["ReplayDeathLedgerEntry"]
-    perk: "ReplayPerkSnapshot"
-    events: "ReplayEventSummary"
+    deaths: list[ReplayDeathLedgerEntry]
+    perk: ReplayPerkSnapshot
+    events: ReplayEventSummary
     tutorial: ReplayTutorialSnapshot | None
     typo: ReplayTypoSnapshot | None
 
@@ -176,15 +177,18 @@ def _validate_checkpoint_wire_floats(payload: bytes) -> None:
     for checkpoint_index, checkpoint in enumerate(checkpoints):
         if not isinstance(checkpoint, dict):
             continue
+        checkpoint = cast("dict[object, object]", checkpoint)
         prefix = f"checkpoints[{checkpoint_index}]"
         players = checkpoint.get("players")
         if isinstance(players, list):
             for player_index, player in enumerate(players):
                 if not isinstance(player, dict):
                     continue
+                player = cast("dict[object, object]", player)
                 player_prefix = f"{prefix}.players[{player_index}]"
                 pos = player.get("pos")
                 if isinstance(pos, dict):
+                    pos = cast("dict[object, object]", pos)
                     for axis in ("x", "y"):
                         if axis in pos:
                             _require_wire_f32(pos[axis], field=f"{player_prefix}.pos.{axis}")
@@ -195,21 +199,25 @@ def _validate_checkpoint_wire_floats(payload: bytes) -> None:
         if isinstance(deaths, list):
             for death_index, death in enumerate(deaths):
                 if isinstance(death, dict) and "reward_value" in death:
+                    death = cast("dict[object, object]", death)
                     _require_wire_f32(
                         death["reward_value"],
                         field=f"{prefix}.deaths[{death_index}].reward_value",
                     )
         events = checkpoint.get("events")
         if isinstance(events, dict):
+            events = cast("dict[object, object]", events)
             hit_head = events.get("hit_head")
             if isinstance(hit_head, list):
                 for hit_index, hit in enumerate(hit_head):
                     if not isinstance(hit, dict):
                         continue
+                    hit = cast("dict[object, object]", hit)
                     for vec_name in ("origin", "hit", "target"):
                         vec = hit.get(vec_name)
                         if not isinstance(vec, dict):
                             continue
+                        vec = cast("dict[object, object]", vec)
                         for axis in ("x", "y"):
                             if axis in vec:
                                 _require_wire_f32(
@@ -218,6 +226,7 @@ def _validate_checkpoint_wire_floats(payload: bytes) -> None:
                                 )
         tutorial = checkpoint.get("tutorial")
         if isinstance(tutorial, dict):
+            tutorial = cast("dict[object, object]", tutorial)
             for field in ("prompt_alpha", "hint_alpha_overlay"):
                 if field in tutorial:
                     _require_wire_f32(tutorial[field], field=f"{prefix}.tutorial.{field}")

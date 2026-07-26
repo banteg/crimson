@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import call
 
-import crimson.audio_router as audio_router
+from crimson import audio_router
 from crimson.audio_router import AudioRouter
 from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId

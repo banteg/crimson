@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import crimson.render.world.projectiles as world_projectiles
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.render.frame import RenderFrame
@@ -32,10 +34,10 @@ class _WorldStub:
             config=None,
             camera=Vec2(),
             ground=None,
-            state=object(),  # type: ignore[arg-type]
+            state=cast(Any, object()),
             players=[],
-            creatures=object(),  # type: ignore[arg-type]
-            resources=self.resources,  # type: ignore[arg-type]
+            creatures=cast(Any, object()),
+            resources=cast(Any, self.resources),
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
             lan_player_rings_enabled=False,

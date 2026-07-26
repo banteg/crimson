@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import Any, cast
 
 import crimson.render.world.effects as world_effects
 from crimson.effects import EffectEntry
@@ -56,10 +57,10 @@ class _WorldStub:
             config=None,
             camera=Vec2(),
             ground=None,
-            state=self.sim_world.state,  # type: ignore[arg-type]
+            state=cast(Any, self.sim_world.state),
             players=[],
-            creatures=SimpleNamespace(entries=[]),  # type: ignore[arg-type]
-            resources=self.resources,  # type: ignore[arg-type]
+            creatures=cast(Any, SimpleNamespace(entries=[])),
+            resources=cast(Any, self.resources),
             elapsed_ms=0.0,
             bonus_anim_phase=0.0,
             lan_player_rings_enabled=False,
