@@ -5,7 +5,7 @@ Native target: `grim.dll` at `0x10004b70..0x10004e81` (785 bytes).
 This is an evidence-backed WIP reconstruction, not an exact match. Microsoft
 Visual C++ 6.5 with `/O2 /GB /W3 /GR- /GX /MD` produces 252 normalized
 instructions, the same count as the native function, with a 32-instruction
-prefix, 86.51% similarity, and masked references `6/15/0`.
+prefix, 86.51% similarity, and masked references `16/5/0`.
 
 ## Recovered source shape
 

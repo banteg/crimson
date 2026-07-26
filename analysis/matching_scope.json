@@ -229,6 +229,60 @@
             "reason": "D3DX texture export; the host renderer supplies image export."
           },
           {
+            "address": "0x10009A50",
+            "name": "jpeg_CreateDecompress",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a jdapimin entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009B20",
+            "name": "jpeg_destroy_decompress",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a decompressor teardown wrapper linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009B30",
+            "name": "jpeg_read_header",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a header parser entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009BA0",
+            "name": "jpeg_consume_input",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a input-state dispatcher linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009C60",
+            "name": "default_decompress_parms",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a default output-parameter initializer linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009E00",
+            "name": "jpeg_finish_decompress",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a decompressor completion entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009EC0",
+            "name": "jpeg_start_decompress",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a output-pass startup entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x10009FA0",
+            "name": "output_pass_setup",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a output-pass helper linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
+            "address": "0x1000A070",
+            "name": "jpeg_read_scanlines",
+            "disposition": "third-party",
+            "reason": "IJG libjpeg 6a scanline decode entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib."
+          },
+          {
             "address": "0x1000A110",
             "name": "grim_joystick_enum_device",
             "disposition": "platform-replaced",

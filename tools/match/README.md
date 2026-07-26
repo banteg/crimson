@@ -14,15 +14,18 @@ Grim2D engine implementation in `grim.dll` before `0x1000a8d0`. It excludes:
 
 - D3DX, CRT, codec, import-thunk, and other bundled library code linked after
   the owned ranges in either image
-- individually audited functions marked `platform-replaced`: legacy DirectX
-  and registry probes, the Grim Win32 launcher/window loop, Direct3D device
-  lifecycle and file-export leaves, and raw DirectInput adapters
+- individually audited functions marked `third-party` when a library object is
+  interleaved inside an owned range, or `platform-replaced` when the port's host
+  backend replaces the whole function
 
 Both images' Binary Ninja databases, IDA and Ghidra exports, maps,
 annotations, and owned scratches are matching inputs. Pass `--scope all` only
 for an explicit consultation outside the port scope. Dispositioned functions
 and their existing scratches remain available there as analysis evidence, but
 are omitted from default scores, validation, triage, and worker shards.
+The IJG 6a decompressor entry cluster at `0x10009a50..0x1000a107` is the first
+`third-party` island: it sits between Grim-owned exports and input code despite
+coming from the confirmed `d3dx8.lib`.
 
 The address-keyed scope deliberately takes precedence over IDA's `library`
 flag, which can change between analysis versions and has produced false
@@ -34,8 +37,9 @@ semantics, configuration access, and shared game state remain in `port`.
 For example, `grim_config_defaults_init` initializes game-owned player,
 key-binding, audio, display, and gameplay defaults and therefore stays a
 matching target even though the adjacent Win32 configuration dialogs are
-`platform-replaced`. Add a disposition only when call sites and state effects
-show that a host engine backend can replace the whole function.
+`platform-replaced`. Add `third-party` only with concrete library provenance;
+add `platform-replaced` only when call sites and state effects show that a host
+engine backend can replace the whole function.
 
 ## Toolchain
 

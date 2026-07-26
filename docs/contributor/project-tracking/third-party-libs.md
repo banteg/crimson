@@ -155,8 +155,15 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/libcmt.lib \
 - Status: the exact IJG objects are present in the confirmed DirectX 8.1
   `d3dx8.lib`; member symbols such as `jdmarker.obj`, `jmemmgr.obj`, and
   `jquant*.obj` match Grim functions directly.
+- Status: the interleaved decompressor entry cluster at
+  `0x10009a50..0x1000a107` is mapped as `jpeg_CreateDecompress`,
+  `jpeg_destroy_decompress`, `jpeg_read_header`, `jpeg_consume_input`,
+  `default_decompress_parms`, `jpeg_finish_decompress`,
+  `jpeg_start_decompress`, `output_pass_setup`, and `jpeg_read_scanlines`.
+  These nine library functions are excluded from the default port score with
+  address-keyed `third-party` dispositions.
 - Status: `grim_jaz_jpeg_error_exit` remains a 100% scratch match with the 6a
-  headers. Codec signature mapping is still pending.
+  headers. It and the surrounding JAZ payload/RLE logic remain Grim-owned.
 
 ### libvorbisfile / libvorbis / libogg (Ogg Vorbis Win32 SDK 1.0)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
@@ -229,8 +236,9 @@ matching.
 - Evidence: error string explicitly references DirectX 8.1 at
   `analysis/ghidra/raw/grim.dll_strings.txt:435`.
 
-- Evidence: Grim function `FUN_10009a50` at `0x10009a50` and adjacent input
-  initialization paths pass version `0x0800` to `DirectInput8Create`.
+- Evidence: Grim joystick, keyboard, and mouse initialization paths at
+  `0x1000a1c0`, `0x1000a390`, and `0x1000a5a0` pass version `0x0800` to
+  `DirectInput8Create`.
 
 ### grim.dll imports
 - ADVAPI32.DLL, D3D8.DLL, DINPUT8.DLL, GDI32.DLL, KERNEL32.DLL, MSVCRT.DLL,
@@ -244,8 +252,3 @@ matching.
   WININET.DLL, WINMM.DLL.
 
 - Evidence: `analysis/ghidra/raw/ghidra_analysis.log:28923` through `:28973`.
-
-## Next evidence to capture
-
-- Apply the unique `d3dx8.lib` member symbols to the duplicated JPEG codec
-  object boundaries in Grim.

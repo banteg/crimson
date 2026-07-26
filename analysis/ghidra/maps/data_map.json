@@ -10110,6 +10110,13 @@
       "program": "grim.dll"
     },
     {
+      "address": "0x100530f4",
+      "comment": "Default callback error text used when no frame function is installed.",
+      "name": "grim_missing_frame_error_text",
+      "program": "grim.dll",
+      "type": "char[35]"
+    },
+    {
       "address": "0x10054398",
       "comment": "Neutral 32-entry dither pattern whose entries are all 0.5.",
       "name": "grim_dither_half_pattern",

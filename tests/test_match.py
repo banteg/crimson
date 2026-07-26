@@ -287,20 +287,21 @@ def test_port_scope_has_audited_function_dispositions() -> None:
         for image in ("crimsonland.exe", "grim.dll")
     }
 
-    assert image_counts == {"crimsonland.exe": 8, "grim.dll": 40}
+    assert image_counts == {"crimsonland.exe": 8, "grim.dll": 49}
     assert not address_in_matching_scope(
         "crimsonland.exe",
         0x0041CFE0,
         scope="port",
     )
     assert not address_in_matching_scope("grim.dll", 0x100033B0, scope="port")
+    assert not address_in_matching_scope("grim.dll", 0x10009A50, scope="port")
     assert address_in_matching_scope("grim.dll", 0x10001710, scope="port")
     assert address_in_matching_scope("grim.dll", 0x10004520, scope="port")
     assert address_in_matching_scope("grim.dll", 0x100033B0, scope="all")
     assert {
         (row["image"], row["function"], row["disposition"])
         for row in dispositions
-        if row["address"] in {0x0041CFE0, 0x100033B0}
+        if row["address"] in {0x0041CFE0, 0x100033B0, 0x10009A50}
     } == {
         (
             "crimsonland.exe",
@@ -308,6 +309,7 @@ def test_port_scope_has_audited_function_dispositions() -> None:
             "platform-replaced",
         ),
         ("grim.dll", "grim_window_proc", "platform-replaced"),
+        ("grim.dll", "jpeg_CreateDecompress", "third-party"),
     }
 
 
@@ -351,6 +353,15 @@ def test_matching_scope_function_dispositions_are_validated(tmp_path: Path) -> N
         "port",
         path=scope_path,
     )["test.exe"][0].name == "platform_probe"
+
+    write_scope([{**valid, "disposition": "third-party"}])
+    assert (
+        load_matching_scope_function_dispositions(
+            "port",
+            path=scope_path,
+        )["test.exe"][0].disposition
+        == "third-party"
+    )
 
     write_scope([valid, valid])
     with pytest.raises(ValueError, match="duplicate .* function disposition"):

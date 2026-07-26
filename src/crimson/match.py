@@ -28,7 +28,12 @@ DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.j
 DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
 DEFAULT_MATCH_SCOPE = "port"
 MATCH_SCOPE_SCHEMA = 2
-MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset({"platform-replaced"})
+MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
+    {
+        "platform-replaced",
+        "third-party",
+    },
+)
 DEFAULT_MATCH_JOBS = min(8, max(1, os.cpu_count() or 1))
 CACHE_VERSION = 1
 SHARD_SCHEMA = 1
@@ -207,7 +212,7 @@ def load_matching_scope_function_dispositions(
     *,
     path: Path = DEFAULT_MATCHING_SCOPE_PATH,
 ) -> dict[str, tuple[MatchScopeFunctionDisposition, ...]]:
-    """Load explicit function-level replacements omitted from one matching scope."""
+    """Load explicit function-level omissions from one matching scope."""
     return _load_matching_scope_definition(scope, path=path).function_dispositions
 
 
@@ -3983,14 +3988,19 @@ def render_status_markdown(
         "",
     ]
     if dispositions:
+        disposition_counts = Counter(row["disposition"] for row in dispositions)
+        disposition_summary = ", ".join(
+            f"{count} {disposition}"
+            for disposition, count in sorted(disposition_counts.items())
+        )
         lines.extend(
             [
                 "## Function dispositions",
                 "",
                 (
-                    f"{len(dispositions)} audited platform-backend functions are omitted from "
-                    "this score and from default shards. Their analysis and archived scratches "
-                    "remain available with `--scope all`."
+                    f"{len(dispositions)} audited functions ({disposition_summary}) are omitted "
+                    "from this score and from default shards. Their analysis and archived "
+                    "scratches remain available with `--scope all`."
                 ),
                 "",
                 "| image | function | address | disposition | reason |",

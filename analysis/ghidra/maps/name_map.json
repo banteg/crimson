@@ -6982,15 +6982,15 @@
     "program": "grim.dll",
     "address": "0x10001700",
     "name": "grim_config_defaults_init_thunk",
-    "signature": "int grim_config_defaults_init_thunk(void)",
+    "signature": "void grim_config_defaults_init_thunk(void)",
     "comment": "exported jump thunk for the game-owned config defaults initializer"
   },
   {
     "program": "grim.dll",
     "address": "0x10001710",
     "name": "grim_config_defaults_init",
-    "signature": "int grim_config_defaults_init(void)",
-    "comment": "initializes Crimsonland player, input, display, audio, and gameplay configuration defaults"
+    "signature": "void grim_config_defaults_init(void)",
+    "comment": "initializes Crimsonland player, input, display, audio, and gameplay configuration defaults; final EAX is assignment residue"
   },
   {
     "program": "grim.dll",
@@ -7937,6 +7937,69 @@
     "signature": "BOOL DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)",
     "comment": "DLL entrypoint (process attach): caches module handle and loads dialog icon",
     "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009a50",
+    "name": "jpeg_CreateDecompress",
+    "signature": "void jpeg_CreateDecompress(void *context, int version, unsigned int struct_size)",
+    "comment": "IJG libjpeg 6a jdapimin entrypoint linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009b20",
+    "name": "jpeg_destroy_decompress",
+    "signature": "void jpeg_destroy_decompress(void *context)",
+    "comment": "IJG libjpeg 6a decompressor teardown wrapper linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009b30",
+    "name": "jpeg_read_header",
+    "signature": "int jpeg_read_header(void *context, int require_image)",
+    "comment": "IJG libjpeg 6a header parser entrypoint linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009ba0",
+    "name": "jpeg_consume_input",
+    "signature": "int jpeg_consume_input(void *context)",
+    "comment": "IJG libjpeg 6a input-state dispatcher linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009c60",
+    "name": "default_decompress_parms",
+    "signature": "void default_decompress_parms(void *context)",
+    "comment": "IJG libjpeg 6a jdapimin default output-parameter initializer linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009e00",
+    "name": "jpeg_finish_decompress",
+    "signature": "int jpeg_finish_decompress(void *context)",
+    "comment": "IJG libjpeg 6a decompressor completion entrypoint linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009ec0",
+    "name": "jpeg_start_decompress",
+    "signature": "int jpeg_start_decompress(void *context)",
+    "comment": "IJG libjpeg 6a output-pass startup entrypoint linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009fa0",
+    "name": "output_pass_setup",
+    "signature": "int output_pass_setup(void *context)",
+    "comment": "IJG libjpeg 6a jdapistd output-pass helper linked from DirectX 8.1 d3dx8.lib"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a070",
+    "name": "jpeg_read_scanlines",
+    "signature": "unsigned int jpeg_read_scanlines(void *context, unsigned char **scanlines, unsigned int max_lines)",
+    "comment": "IJG libjpeg 6a scanline decode entrypoint linked from DirectX 8.1 d3dx8.lib"
   },
   {
     "program": "grim.dll",

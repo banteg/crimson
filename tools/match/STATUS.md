@@ -4,15 +4,15 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**597/817** functions matched exactly, **119809/343605** code bytes (**34.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**599/808** functions matched exactly, **119827/341963** code bytes (**35.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **284872/343605** code bytes (**82.9%**).
+Fuzzy-weighted alignment is **285460/341963** code bytes (**83.5%**).
 
-Compilable source candidates cover **718/817** functions and **336256/343605** code bytes (**97.9%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
+Compilable source candidates cover **721/808** functions and **337008/341963** code bytes (**98.6%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
 ## Function dispositions
 
-48 audited platform-backend functions are omitted from this score and from default shards. Their analysis and archived scratches remain available with `--scope all`.
+57 audited functions (48 platform-replaced, 9 third-party) are omitted from this score and from default shards. Their analysis and archived scratches remain available with `--scope all`.
 
 | image | function | address | disposition | reason |
 |---|---|---:|---|---|
@@ -50,6 +50,15 @@ Compilable source candidates cover **718/817** functions and **336256/343605** c
 | grim.dll | grim_save_screenshot | 0x10005cb0 | platform-replaced | D3DX front-buffer export; the host renderer supplies screenshot capture. |
 | grim.dll | grim_apply_config | 0x10005d40 | platform-replaced | Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI. |
 | grim.dll | grim_save_texture | 0x10007750 | platform-replaced | D3DX texture export; the host renderer supplies image export. |
+| grim.dll | jpeg_CreateDecompress | 0x10009a50 | third-party | IJG libjpeg 6a jdapimin entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_destroy_decompress | 0x10009b20 | third-party | IJG libjpeg 6a decompressor teardown wrapper linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_read_header | 0x10009b30 | third-party | IJG libjpeg 6a header parser entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_consume_input | 0x10009ba0 | third-party | IJG libjpeg 6a input-state dispatcher linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | default_decompress_parms | 0x10009c60 | third-party | IJG libjpeg 6a default output-parameter initializer linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_finish_decompress | 0x10009e00 | third-party | IJG libjpeg 6a decompressor completion entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_start_decompress | 0x10009ec0 | third-party | IJG libjpeg 6a output-pass startup entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | output_pass_setup | 0x10009fa0 | third-party | IJG libjpeg 6a output-pass helper linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_read_scanlines | 0x1000a070 | third-party | IJG libjpeg 6a scanline decode entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
 | grim.dll | grim_joystick_enum_device | 0x1000a110 | platform-replaced | Raw DirectInput joystick enumeration; the host input backend owns device discovery. |
 | grim.dll | grim_joystick_configure_axis | 0x1000a150 | platform-replaced | Raw DirectInput axis setup; the host input backend owns device configuration. |
 | grim.dll | grim_joystick_init | 0x1000a1c0 | platform-replaced | Raw DirectInput joystick initialization; the host input backend owns devices. |
@@ -70,7 +79,7 @@ Compilable source candidates cover **718/817** functions and **336256/343605** c
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | 492/671 | 107062/320805 | 33.4% | 269753/320805 | 84.1% | 609/671 | 320643/320805 | 99.9% | 492/609 |
-| grim.dll | 105/146 | 12747/22800 | 55.9% | 15119/22800 | 66.3% | 109/146 | 15613/22800 | 68.5% | 105/109 |
+| grim.dll | 107/137 | 12765/21158 | 60.3% | 15707/21158 | 74.2% | 112/137 | 16365/21158 | 77.3% | 107/112 |
 
 ## crimsonland.exe
 
@@ -690,11 +699,14 @@ Compilable source candidates cover **718/817** functions and **336256/343605** c
 
 ## grim.dll
 
-**105/146** functions, **12747/22800** bytes (**55.9%**), **15119/22800** fuzzy-weighted bytes (**66.3%**), **109/146** source candidates covering **15613/22800** bytes (**68.5%**), **105/109** scratches verified.
+**107/137** functions, **12765/21158** bytes (**60.3%**), **15707/21158** fuzzy-weighted bytes (**74.2%**), **112/137** source candidates covering **16365/21158** bytes (**77.3%**), **107/112** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
+| match | grim_missing_frame_callback | 0x10001140 | 13 | 13/13 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | default-missing-frame-callback |
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
+| match | grim_config_defaults_init_thunk | 0x10001700 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | config-defaults-tail-thunk |
+| wip | grim_config_defaults_init | 0x10001710 | 734 | 571/734 | 163 | 143/140 | 77.74% | 0/140 | 65/0/2 |  | shared-config-defaults-and-input-bindings |
 | match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |
@@ -703,7 +715,7 @@ Compilable source candidates cover **718/817** functions and **336256/343605** c
 | match | grim_texture_init | 0x10004a50 | 83 | 83/83 | 0 | 38/38 | 100.00% | 38/38 | 1/0/0 |  | grim-texture-constructor |
 | match | grim_texture_release | 0x10004ab0 | 66 | 66/66 | 0 | 25/25 | 100.00% | 25/25 | 1/0/0 |  | grim-texture-destructor |
 | match | grim_path_has_extension | 0x10004b00 | 99 | 99/99 | 0 | 50/50 | 100.00% | 50/50 | 0/0/0 |  | grim-texture-extension |
-| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 8/13/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
+| wip | grim_decode_jaz_texture | 0x10004b70 | 785 | 679/785 | 106 | 252/252 | 86.51% | 32/252 | 16/5/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-jaz-texture-decode |
 | match | grim_jaz_jpeg_error_exit | 0x10004e90 | 41 | 41/41 | 0 | 14/14 | 100.00% | 14/14 | 1/0/0 | msvc6.5 /O2 /GB /W3 /GR- /MD | grim-jaz-jpeg-error |
 | wip | grim_texture_load_file | 0x10004ec0 | 591 | 379/591 | 212 | 223/235 | 64.19% | 0/235 | 24/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX /MD | grim-texture-file-decode |
 | match | grim_texture_name_equals | 0x10005110 | 93 | 93/93 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | grim-texture-name |
