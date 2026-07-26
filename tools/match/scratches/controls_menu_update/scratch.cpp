@@ -660,7 +660,7 @@ extern "C" void controls_menu_update(void)
                     ++peaks;
                     ++axis_index;
                 } while (
-                    peaks < &controls_rebind_axis_peak_abs_13f + 6);
+                    peaks < &controls_rebind_axis_peak_abs_13f + 7);
             }
         }
     }

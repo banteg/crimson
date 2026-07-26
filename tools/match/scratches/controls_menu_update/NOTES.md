@@ -61,10 +61,12 @@ the standalone scratch continues to compile it as `input_key_name`.
 
 The remaining tail now follows the native dataflow rather than helper-level
 equivalences: rebind capture writes the selected regular, Level Up, or Reload
-configuration field directly; the analog peak scan walks the six contiguous
-float slots with a pointer; dropdown selection returns the selected index;
-and list enable flags are reset and then cleared in native open-list order.
-The two capture prompts share one base Y value, as in the native branch join.
+configuration field directly; the analog peak scan walks seven contiguous
+float slots with a pointer, mapping the first six and routing the cleared
+seventh slot through the native switch default; dropdown selection returns the
+selected index; and list enable flags are reset and then cleared in native
+open-list order. The two capture prompts share one base Y value, as in the
+native branch join.
 
 Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **73.85%**, with a fuzzy gap of
 5,567.95 bytes, 4 exact prefix instructions, 5,421 native instructions versus
