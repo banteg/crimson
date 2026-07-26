@@ -72,7 +72,9 @@ larger in-progress scratches.
 The compiler backend can still vary by object. `bonus_label_for_entry` is exact
 with `msvc6.5` and `msvc6.6`, but not `msvc6.5pp` or `msvc7.0`; it also rejects
 `/O1`, `/Od`, and `/Oy-`, supporting speed optimization and frame-pointer
-omission. `perk_select_random` instead requires the tested `msvc6.5pp` backend.
+omission. The earlier Processor Pack match for `perk_select_random` was
+source-shape dependent: separate increments on its two rejection paths are
+exact with both `msvc6.5` and `msvc6.6`, so it uses the default compiler.
 Keep evidence-backed compiler overrides in `scratch.conf` while treating
 `msvc6.5 /O2 /GB` as the global starting profile.
 
@@ -304,7 +306,9 @@ JSON plan names exact, non-overlapping source spans and plausible replacements:
 The default sweep changes one site at a time. Increase `--max-changes` to test
 interactions; `--max-variants` keeps the Cartesian search bounded. Sites must
 match exactly once unless they specify a one-based `"occurrence"`. Ambiguous
-or overlapping sites fail before compilation.
+or overlapping sites fail before compilation. Specs use byte-exact source
+spans and should be regenerated or reviewed after reformatting or refactoring
+the scratch.
 
 ```sh
 uv run crimson match mutate tools/match/scratches/player_update \
@@ -312,13 +316,24 @@ uv run crimson match mutate tools/match/scratches/player_update \
 uv run crimson match mutate tools/match/scratches/player_update \
   --spec /tmp/player-update-mutations.json \
   --max-changes 2 --max-variants 128 --time-budget 120 \
-  --stop-on-improvement --json
+  --stop-on-improvement --record --json
 ```
 
 Every variant builds in an isolated temporary scratch and is ranked by the
 canonical match score, exact/reference-clean state, prefix, and instruction
 shape. Time budgets are soft: the current batch finishes, then no more variants
-are scheduled. The tracked scratch is never edited.
+are scheduled. Reports show evaluated/planned/possible coverage at each
+mutation depth and call out interaction combinations that were never
+evaluated. Ranked candidates also show movement of the first native mismatch
+byte offset.
+
+Pass `--record` to append one `kind=mutation-sweep` entry containing the full
+evaluated result set, spec SHA-256, coverage, scores, and improving winner to
+the scratch's `experiments.jsonl`. `--top` limits display only, not the recorded
+evidence. As with probe recording, do not run concurrent recording commands
+against the same scratch.
+
+The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the
 baseline; combine it with `--require-improvement` in scripted searches.
 

@@ -1950,6 +1950,8 @@ class ScratchStatus:
     masked_unresolved: int = 0
     masked_mismatches: int = 0
     audit: MaskedOperandAudit = field(default_factory=MaskedOperandAudit)
+    first_target_mismatch_offset: int | None = None
+    first_candidate_mismatch_offset: int | None = None
 
     @property
     def state(self) -> str:
@@ -2379,6 +2381,16 @@ def evaluate_scratch(
             masked_unresolved=result.masked_operand_audit.unresolved_count,
             masked_mismatches=result.masked_operand_audit.mismatch_count,
             audit=result.masked_operand_audit,
+            first_target_mismatch_offset=(
+                result.target_disassembly[result.prefix_instructions].offset
+                if result.prefix_instructions < len(result.target_disassembly)
+                else None
+            ),
+            first_candidate_mismatch_offset=(
+                result.candidate_disassembly[result.prefix_instructions].offset
+                if result.prefix_instructions < len(result.candidate_disassembly)
+                else None
+            ),
         )
     except Exception as exc:  # noqa: BLE001 - one scratch failure must remain a reportable status
         return ScratchStatus(
@@ -2907,6 +2919,8 @@ def _store_cached_status(
         "masked_ok": status.masked_ok,
         "masked_unresolved": status.masked_unresolved,
         "masked_mismatches": status.masked_mismatches,
+        "first_target_mismatch_offset": status.first_target_mismatch_offset,
+        "first_candidate_mismatch_offset": status.first_candidate_mismatch_offset,
     }
     _write_text_atomic(
         cache_path,
@@ -3029,6 +3043,16 @@ def collect_scratch_statuses(
                 masked_unresolved=result.masked_operand_audit.unresolved_count,
                 masked_mismatches=result.masked_operand_audit.mismatch_count,
                 audit=result.masked_operand_audit,
+                first_target_mismatch_offset=(
+                    result.target_disassembly[result.prefix_instructions].offset
+                    if result.prefix_instructions < len(result.target_disassembly)
+                    else None
+                ),
+                first_candidate_mismatch_offset=(
+                    result.candidate_disassembly[result.prefix_instructions].offset
+                    if result.prefix_instructions < len(result.candidate_disassembly)
+                    else None
+                ),
             )
             _store_cached_status(
                 status,
@@ -3636,6 +3660,10 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "candidate_instructions": status.candidate_instructions,
         "match_ratio": status.ratio,
         "prefix_instructions": status.prefix_instructions,
+        "first_mismatch": {
+            "target_offset": status.first_target_mismatch_offset,
+            "candidate_offset": status.first_candidate_mismatch_offset,
+        },
         "references": {
             "ok": status.masked_ok,
             "unresolved": status.masked_unresolved,

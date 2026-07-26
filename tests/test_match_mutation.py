@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 from crimson.cli.match import match_app
 from crimson.match import ScratchConfig, ScratchStatus
 from crimson.match_mutation import (
+    MutationChoice,
     MutationEvaluation,
     MutationReplacement,
     MutationSite,
@@ -36,7 +37,14 @@ def _config(directory: Path) -> ScratchConfig:
     )
 
 
-def _status(config: ScratchConfig, ratio: float | None, *, prefix: int = 1) -> ScratchStatus:
+def _status(
+    config: ScratchConfig,
+    ratio: float | None,
+    *,
+    prefix: int = 1,
+    first_target_offset: int | None = 0x10,
+    first_candidate_offset: int | None = 0x14,
+) -> ScratchStatus:
     return ScratchStatus(
         config=config,
         address=0x401000,
@@ -47,6 +55,8 @@ def _status(config: ScratchConfig, ratio: float | None, *, prefix: int = 1) -> S
         candidate_instructions=10,
         error="compile failed" if ratio is None else None,
         masked_ok=4,
+        first_target_mismatch_offset=first_target_offset,
+        first_candidate_mismatch_offset=first_candidate_offset,
     )
 
 
@@ -89,6 +99,8 @@ def test_mutation_spec_generates_bounded_combinations(tmp_path: Path) -> None:
     )
 
     assert batch.possible_variants == 5
+    assert batch.possible_by_changes == (3, 2)
+    assert batch.planned_by_changes == (3, 1)
     assert batch.truncated
     assert [variant.label for variant in batch.variants] == [
         "sum-order/commuted",
@@ -207,19 +219,47 @@ def test_mutate_cli_writes_only_an_improving_winner(
         label="sum-order/commuted",
         source_text="int value = y + x;\n",
         source_sha256="variant",
-        choices=(),
+        choices=(
+            MutationChoice(
+                site="sum-order",
+                replacement="commuted",
+                replacement_index=1,
+            ),
+        ),
     )
     evaluation = MutationEvaluation(
         variant=variant,
-        status=_status(replace(config, directory=Path("/tmp/shadow")), 0.75),
+        status=_status(
+            replace(config, directory=Path("/tmp/shadow")),
+            0.75,
+            first_target_offset=0x18,
+            first_candidate_offset=0x1C,
+        ),
+        baseline=baseline,
+    )
+    second_variant = MutationVariant(
+        label="qualifier/const",
+        source_text="const int value = x + y;\n",
+        source_sha256="second-variant",
+        choices=(
+            MutationChoice(
+                site="qualifier",
+                replacement="const",
+                replacement_index=1,
+            ),
+        ),
+    )
+    second_evaluation = MutationEvaluation(
+        variant=second_variant,
+        status=_status(replace(config, directory=Path("/tmp/shadow-2")), 0.6),
         baseline=baseline,
     )
     sweep = MutationSweep(
         spec=load_mutation_spec(spec_path),
         baseline=baseline,
-        evaluations=(evaluation,),
-        possible_variants=1,
-        planned_variants=1,
+        evaluations=(evaluation, second_evaluation),
+        possible_by_changes=(2, 3),
+        planned_by_changes=(2, 0),
     )
     monkeypatch.setattr(
         "crimson.cli.match.match_mutation.evaluate_mutation_sweep",
@@ -236,6 +276,9 @@ def test_mutate_cli_writes_only_an_improving_winner(
             str(spec_path),
             "--write-best",
             str(output),
+            "--record",
+            "--top",
+            "1",
             "--json",
         ],
     )
@@ -244,5 +287,21 @@ def test_mutate_cli_writes_only_an_improving_winner(
     payload = json.loads(completed.output)
     assert payload["best_improves"] is True
     assert payload["best_source_written_to"] == str(output)
+    assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
+    assert payload["coverage_by_changes"][1] == {
+        "changes": 2,
+        "evaluated": 0,
+        "never_evaluated": 3,
+        "planned": 0,
+        "possible": 3,
+    }
+    assert payload["combinations_never_evaluated"] == 3
+    assert payload["results"][0]["delta"]["first_mismatch"]["probe_target_offset"] == 0x18
+    assert len(payload["results"]) == 1
     assert output.read_text(encoding="utf-8") == variant.source_text
     assert source.read_text(encoding="utf-8") == "int value = x + y;\n"
+    recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
+    assert recorded["kind"] == "mutation-sweep"
+    assert recorded["spec_sha256"] == sweep.spec.sha256
+    assert recorded["winner"]["label"] == variant.label
+    assert len(recorded["results"]) == 2

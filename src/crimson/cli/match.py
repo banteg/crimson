@@ -510,6 +510,7 @@ def cmd_match_mutate(
         "--require-improvement",
         help="fail when no variant improves the baseline",
     ),
+    record: bool = typer.Option(False, "--record", help="append the complete sweep to experiments.jsonl"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
 ) -> None:
     """Compile and rank bounded source mutations without touching the scratch."""
@@ -544,9 +545,23 @@ def cmd_match_mutate(
         write_best.write_text(sweep.best.variant.source_text, encoding="utf-8")
         written_to = str(write_best)
 
+    recorded_to: str | None = None
+    if record:
+        record_path = config.directory / "experiments.jsonl"
+        record_payload = {
+            "kind": "mutation-sweep",
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "best_source_written_to": written_to,
+            **match_mutation.mutation_sweep_payload(sweep),
+        }
+        with record_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record_payload, separators=(",", ":"), sort_keys=True) + "\n")
+        recorded_to = str(record_path)
+
     if as_json:
         payload = match_mutation.mutation_sweep_payload(sweep, limit=top)
         payload["best_source_written_to"] = written_to
+        payload["recorded_to"] = recorded_to
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     else:
         typer.echo(match_mutation.render_mutation_sweep(sweep, limit=top))
@@ -554,6 +569,8 @@ def cmd_match_mutate(
             typer.echo(f"best_source={written_to}")
         elif write_best is not None:
             typer.echo("best_source=not-written (no improving variant)")
+        if recorded_to is not None:
+            typer.echo(f"recorded={recorded_to}")
 
     if sweep.baseline.state == "error" or all(
         evaluation.status.state == "error" for evaluation in sweep.evaluations

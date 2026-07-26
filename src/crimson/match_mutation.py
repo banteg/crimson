@@ -52,7 +52,15 @@ class MutationVariant:
 @dataclass(frozen=True, slots=True)
 class MutationBatch:
     variants: tuple[MutationVariant, ...]
-    possible_variants: int
+    possible_by_changes: tuple[int, ...]
+
+    @property
+    def possible_variants(self) -> int:
+        return sum(self.possible_by_changes)
+
+    @property
+    def planned_by_changes(self) -> tuple[int, ...]:
+        return _variant_counts_by_changes(self.variants, len(self.possible_by_changes))
 
     @property
     def truncated(self) -> bool:
@@ -81,9 +89,28 @@ class MutationSweep:
     spec: MutationSpec
     baseline: matchlib.ScratchStatus
     evaluations: tuple[MutationEvaluation, ...]
-    possible_variants: int
-    planned_variants: int
+    possible_by_changes: tuple[int, ...]
+    planned_by_changes: tuple[int, ...]
     stop_reason: str | None = None
+
+    @property
+    def possible_variants(self) -> int:
+        return sum(self.possible_by_changes)
+
+    @property
+    def planned_variants(self) -> int:
+        return sum(self.planned_by_changes)
+
+    @property
+    def evaluated_by_changes(self) -> tuple[int, ...]:
+        counts = [0] * len(self.possible_by_changes)
+        for evaluation in self.evaluations:
+            counts[len(evaluation.variant.choices) - 1] += 1
+        return tuple(counts)
+
+    @property
+    def unevaluated_interactions(self) -> int:
+        return sum(self.possible_by_changes[1:]) - sum(self.evaluated_by_changes[1:])
 
     @property
     def truncated(self) -> bool:
@@ -212,14 +239,24 @@ def _resolve_sites(source_text: str, spec: MutationSpec) -> tuple[_ResolvedSite,
     return resolved
 
 
-def _possible_variant_count(sites: tuple[_ResolvedSite, ...], max_changes: int) -> int:
+def _possible_variant_counts(sites: tuple[_ResolvedSite, ...], max_changes: int) -> tuple[int, ...]:
     counts = [0] * (max_changes + 1)
     counts[0] = 1
     for site in sites:
         alternatives = len(site.site.replacements)
         for changes in range(max_changes, 0, -1):
             counts[changes] += counts[changes - 1] * alternatives
-    return sum(counts[1:])
+    return tuple(counts[1:])
+
+
+def _variant_counts_by_changes(
+    variants: tuple[MutationVariant, ...],
+    max_changes: int,
+) -> tuple[int, ...]:
+    counts = [0] * max_changes
+    for variant in variants:
+        counts[len(variant.choices) - 1] += 1
+    return tuple(counts)
 
 
 def generate_mutation_variants(
@@ -235,7 +272,7 @@ def generate_mutation_variants(
         raise ValueError("max_variants must be at least 1")
     resolved = _resolve_sites(source_text, spec)
     max_changes = min(max_changes, len(resolved))
-    possible = _possible_variant_count(resolved, max_changes)
+    possible_by_changes = _possible_variant_counts(resolved, max_changes)
     variants: list[MutationVariant] = []
 
     for change_count in range(1, max_changes + 1):
@@ -267,8 +304,14 @@ def generate_mutation_variants(
                     ),
                 )
                 if len(variants) == max_variants:
-                    return MutationBatch(variants=tuple(variants), possible_variants=possible)
-    return MutationBatch(variants=tuple(variants), possible_variants=possible)
+                    return MutationBatch(
+                        variants=tuple(variants),
+                        possible_by_changes=possible_by_changes,
+                    )
+    return MutationBatch(
+        variants=tuple(variants),
+        possible_by_changes=possible_by_changes,
+    )
 
 
 def _status_rank(status: matchlib.ScratchStatus) -> tuple[int, float, int, int, int]:
@@ -349,8 +392,8 @@ def evaluate_mutation_sweep(
         spec=spec,
         baseline=baseline,
         evaluations=tuple(evaluations),
-        possible_variants=batch.possible_variants,
-        planned_variants=len(batch.variants),
+        possible_by_changes=batch.possible_by_changes,
+        planned_by_changes=batch.planned_by_changes,
         stop_reason=stop_reason,
     )
 
@@ -379,6 +422,12 @@ def mutation_evaluation_payload(evaluation: MutationEvaluation) -> dict[str, Any
             "prefix_instructions": (
                 evaluation.status.prefix_instructions - evaluation.baseline.prefix_instructions
             ),
+            "first_mismatch": {
+                "baseline_target_offset": evaluation.baseline.first_target_mismatch_offset,
+                "probe_target_offset": evaluation.status.first_target_mismatch_offset,
+                "baseline_candidate_offset": evaluation.baseline.first_candidate_mismatch_offset,
+                "probe_candidate_offset": evaluation.status.first_candidate_mismatch_offset,
+            },
             "references": {
                 "ok": evaluation.status.masked_ok - evaluation.baseline.masked_ok,
                 "unresolved": evaluation.status.masked_unresolved - evaluation.baseline.masked_unresolved,
@@ -390,15 +439,40 @@ def mutation_evaluation_payload(evaluation: MutationEvaluation) -> dict[str, Any
 
 def mutation_sweep_payload(sweep: MutationSweep, *, limit: int | None = None) -> dict[str, Any]:
     evaluations = sweep.evaluations if limit is None else sweep.evaluations[:limit]
+    winner = (
+        mutation_evaluation_payload(sweep.best)
+        if sweep.best is not None and sweep.best_improves
+        else None
+    )
     return {
         "schema": MUTATION_SPEC_SCHEMA,
         "spec_sha256": sweep.spec.sha256,
         "possible_variants": sweep.possible_variants,
         "planned_variants": sweep.planned_variants,
         "evaluated_variants": len(sweep.evaluations),
+        "coverage_by_changes": [
+            {
+                "changes": changes,
+                "possible": possible,
+                "planned": planned,
+                "evaluated": evaluated,
+                "never_evaluated": possible - evaluated,
+            }
+            for changes, (possible, planned, evaluated) in enumerate(
+                zip(
+                    sweep.possible_by_changes,
+                    sweep.planned_by_changes,
+                    sweep.evaluated_by_changes,
+                    strict=True,
+                ),
+                start=1,
+            )
+        ],
+        "combinations_never_evaluated": sweep.unevaluated_interactions,
         "truncated": sweep.truncated,
         "stop_reason": sweep.stop_reason,
         "best_improves": sweep.best_improves,
+        "winner": winner,
         "baseline": matchlib.scratch_status_payload(sweep.baseline),
         "results": [
             {"rank": rank, **mutation_evaluation_payload(evaluation)}
@@ -410,6 +484,18 @@ def mutation_sweep_payload(sweep: MutationSweep, *, limit: int | None = None) ->
 def render_mutation_sweep(sweep: MutationSweep, *, limit: int = 20) -> str:
     baseline = sweep.baseline
     baseline_ratio = f"{baseline.ratio:.2%}" if baseline.ratio is not None else "-"
+    coverage = " ".join(
+        f"{changes}-site={evaluated}/{planned}/{possible}"
+        for changes, (possible, planned, evaluated) in enumerate(
+            zip(
+                sweep.possible_by_changes,
+                sweep.planned_by_changes,
+                sweep.evaluated_by_changes,
+                strict=True,
+            ),
+            start=1,
+        )
+    )
     lines = [
         (
             f"baseline: state={baseline.state} match={baseline_ratio} "
@@ -423,15 +509,26 @@ def render_mutation_sweep(sweep: MutationSweep, *, limit: int = 20) -> str:
             f"best_improves={'yes' if sweep.best_improves else 'no'} "
             f"stop={sweep.stop_reason or '-'}"
         ),
-        "rank  state  fuzzy delta  match    prefix     refs       mutations",
+        (
+            f"coverage (evaluated/planned/possible): {coverage}; "
+            f"combinations never evaluated={sweep.unevaluated_interactions}"
+        ),
+        "rank  state  fuzzy delta  match    prefix     first target       refs       mutations",
     ]
     for rank, evaluation in enumerate(sweep.evaluations[:limit], start=1):
         status = evaluation.status
         ratio = f"{status.ratio:.2%}" if status.ratio is not None else "-"
+        before_offset = sweep.baseline.first_target_mismatch_offset
+        after_offset = status.first_target_mismatch_offset
+        first_mismatch = (
+            f"{f'0x{before_offset:x}' if before_offset is not None else '-'}"
+            f"->{f'0x{after_offset:x}' if after_offset is not None else '-'}"
+        )
         lines.append(
             f"{rank:<4}  {status.state:<5}  {status.fuzzy_weighted_bytes:>5.0f} "
             f"{evaluation.fuzzy_delta_bytes:>+5.0f}  {ratio:>7}  "
             f"{status.prefix_instructions:>4}/{status.target_instructions:<4}  "
+            f"{first_mismatch:<18} "
             f"{status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches:<3}  "
             f"{evaluation.variant.label}",
         )
