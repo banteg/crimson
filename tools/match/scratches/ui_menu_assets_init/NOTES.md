@@ -22,3 +22,10 @@ the equal source values from slots 3 and 2 (`0x0048fdd0`, `0x0048fdb4`). The
 full-vector `+= (0, 124)` spelling forces the native references but emits eight
 non-native x self-copies; `memmove` forces the references but emits calls.
 Neither is retained, and no volatile or artificial dependency is used.
+
+An address-level audit confirms that every other masked reference resolves.
+The two differing loads are the compiler's equal-value propagation described
+above, not wrong globals or record offsets, so recovery is classified
+`semantic-complete` with a `compiler` residual. MSVC 6.5 `/GX` and `/Ob1`
+variants are byte-identical; MSVC 6.5pp, `/Oy-`, `/G6`, `/O1`, and MSVC 7.0
+profiles all regress the instruction match without resolving the pair.
