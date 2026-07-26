@@ -1,5 +1,52 @@
 {
   "schema": 1,
+  "source_artifacts": [
+    {
+      "id": "directx-8.1-sdk-full",
+      "url": "https://web.archive.org/web/20040108202259id_/http://download.microsoft.com/download/whistler/dx/8.1/W982KMeXP/EN-US/DX81SDK_FULL.exe",
+      "size": 173778784,
+      "sha256": "73f6791e0ae7f8a1d74f71d8ebe517a79c0cbf03fd344424696fd7a3816d2d02",
+      "sha1": "61b5733209205e942f37431ee40da712e1f50e6a",
+      "md5": "28533018267fa278bb1c603a67d86d2f",
+      "members": [
+        {
+          "path": "DXF/DXSDK/lib/d3dx8.lib",
+          "size": 2150226,
+          "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+        }
+      ]
+    },
+    {
+      "id": "ijg-libjpeg-6a",
+      "url": "https://www.ijg.org/files/jpegsrc.v6a.tar.gz",
+      "size": 538910,
+      "sha256": "0e963fdd29d5049f61f3dc137bdc9437473a0ad505dbcfc8925f0fcad46c5929"
+    },
+    {
+      "id": "libpng-1.0.5",
+      "url": "https://ftp.osuosl.org/pub/libpng/src/archive/gz/libpng10/libpng-1.0.5.tar.gz",
+      "size": 299401,
+      "sha256": "b253ab276870c43f9e0e3cb1084f92fd4d11d9d8d250be48504e04336974de63"
+    },
+    {
+      "id": "zlib-1.1.3",
+      "url": "https://zlib.net/fossils/zlib-1.1.3.tar.gz",
+      "size": 168463,
+      "sha256": "cae5847bc0e1cf113d3f70d037400da3e47c2e2b7b1c96b0b08447a5fbb906f4"
+    },
+    {
+      "id": "libogg-1.0",
+      "url": "https://downloads.xiph.org/releases/ogg/libogg-1.0.tar.gz",
+      "size": 222625,
+      "sha256": "920fa2a0924d66884825d36a2e843de069cfdf1af01945d05da25999bbd6396c"
+    },
+    {
+      "id": "libvorbis-1.0",
+      "url": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
+      "size": 749064,
+      "sha256": "8ef7507c22aaddb9d99a4341c5b3e720932541f4b75b08f19fce473f054c620f"
+    }
+  ],
   "artifacts": [
     {
       "id": "crimsonland.exe",
@@ -9,9 +56,11 @@
       "components": [
         {
           "id": "d3dx8",
-          "version": "DirectX 8.1 SDK; exact D3DX archive revision pending",
+          "version": "DirectX 8.1 SDK release d3dx8.lib (2001-10-16)",
           "linkage": "static",
-          "confidence": "family-confirmed",
+          "confidence": "archive-confirmed",
+          "source_artifact": "directx-8.1-sdk-full",
+          "archive_member": "DXF/DXSDK/lib/d3dx8.lib",
           "ranges": [
             {
               "start": "0x00452EF0",
@@ -80,9 +129,11 @@
       "components": [
         {
           "id": "d3dx8",
-          "version": "DirectX 8.1 SDK; exact D3DX archive revision pending",
+          "version": "DirectX 8.1 SDK release d3dx8.lib (2001-10-16)",
           "linkage": "static",
-          "confidence": "family-confirmed",
+          "confidence": "archive-confirmed",
+          "source_artifact": "directx-8.1-sdk-full",
+          "archive_member": "DXF/DXSDK/lib/d3dx8.lib",
           "ranges": [
             {
               "start": "0x1000AAA6",
@@ -120,6 +171,7 @@
           "version": "IJG 6a",
           "linkage": "static-inside-d3dx8",
           "confidence": "version-confirmed",
+          "source_artifact": "ijg-libjpeg-6a",
           "source": "https://www.ijg.org/files/jpegsrc.v6a.tar.gz",
           "fingerprints": [
             {
@@ -144,6 +196,8 @@
           "version": "1.0.5",
           "linkage": "static-inside-d3dx8",
           "confidence": "version-confirmed",
+          "source_artifact": "libpng-1.0.5",
+          "source": "https://ftp.osuosl.org/pub/libpng/src/archive/gz/libpng10/libpng-1.0.5.tar.gz",
           "fingerprints": [
             {
               "address": "0x1004E1C0",
@@ -157,6 +211,7 @@
           "version": "1.1.3",
           "linkage": "static-inside-d3dx8",
           "confidence": "version-confirmed",
+          "source_artifact": "zlib-1.1.3",
           "source": "https://zlib.net/fossils/zlib-1.1.3.tar.gz",
           "fingerprints": [
             {
@@ -189,6 +244,7 @@
           "version": "1.0 release set",
           "linkage": "dynamic",
           "confidence": "release-set-confirmed",
+          "source_artifact": "libogg-1.0",
           "source": "https://downloads.xiph.org/releases/ogg/libogg-1.0.tar.gz"
         }
       ]
@@ -204,6 +260,7 @@
           "version": "1.0",
           "linkage": "dynamic",
           "confidence": "version-confirmed",
+          "source_artifact": "libvorbis-1.0",
           "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
           "fingerprints": [
             {
@@ -232,6 +289,7 @@
           "version": "1.0 release set",
           "linkage": "dynamic",
           "confidence": "release-set-confirmed",
+          "source_artifact": "libvorbis-1.0",
           "source": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.0.tar.gz",
           "imports": [
             {
@@ -243,6 +301,41 @@
               "symbols": []
             }
           ]
+        }
+      ]
+    }
+  ],
+  "archive_matches": [
+    {
+      "component": "d3dx8",
+      "source_artifact": "directx-8.1-sdk-full",
+      "member": "DXF/DXSDK/lib/d3dx8.lib",
+      "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28",
+      "archive_members": 149,
+      "coff_members": 146,
+      "object_functions": 2912,
+      "targets": [
+        {
+          "artifact": "crimsonland.exe",
+          "start": "0x00452EF0",
+          "end": "0x00460CB8",
+          "target_functions": 225,
+          "target_bytes": 51362,
+          "matched_functions": 172,
+          "matched_bytes": 40098,
+          "unique_functions": 118,
+          "unique_bytes": 37697
+        },
+        {
+          "artifact": "grim.dll",
+          "start": "0x1000AAA6",
+          "end": "0x1004B5B0",
+          "target_functions": 928,
+          "target_bytes": 250077,
+          "matched_functions": 683,
+          "matched_bytes": 156379,
+          "unique_functions": 548,
+          "unique_bytes": 151687
         }
       ]
     }

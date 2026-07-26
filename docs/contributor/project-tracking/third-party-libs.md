@@ -16,7 +16,7 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
 
 ## Bundled/embedded libraries (from the game binaries)
 
-### D3DX8 (DirectX 8.1 SDK; exact archive revision pending)
+### D3DX8 (DirectX 8.1 SDK release archive, 2001-10-16)
 
 - Evidence: both images import `Direct3DCreate8`, but contain D3DX entry points,
   image codecs, math routines, and processor-specific dispatch code internally.
@@ -29,9 +29,44 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   820-byte matrix inversion routine are independently checked across both
   images by `crimson match provenance`.
 
-- Status: D3DX8 family and DirectX 8.1 API version confirmed. The exact
-  historical `d3dx8.lib` revision still needs to be selected by archive-member
-  matching.
+- Evidence: the archived Microsoft `DX81SDK_FULL.exe` has SHA-256
+  `73f6791e0ae7f8a1d74f71d8ebe517a79c0cbf03fd344424696fd7a3816d2d02`,
+  SHA-1 `61b5733209205e942f37431ee40da712e1f50e6a`, and MD5
+  `28533018267fa278bb1c603a67d86d2f`. The latter two agree with independent
+  historical records.
+
+- Evidence: its `DXF/DXSDK/lib/d3dx8.lib` member has SHA-256
+  `39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28`.
+  Exact non-relocated bytes plus recorded COFF relocations match 172 functions
+  (40,098 bytes) in the EXE and 683 functions (156,379 bytes) in Grim. Of
+  those, 118 EXE functions and 548 Grim functions identify a single archive
+  symbol.
+
+- Status: exact DirectX 8.1 SDK archive confirmed for both images. The
+  remaining unmatched functions are a boundary/symbol-recovery problem, not a
+  reason to recreate D3DX from decompilation.
+
+Reproduce the archive proof without installing the SDK:
+
+```sh
+mkdir -p /tmp/crimson-dx81
+curl -L -o /tmp/crimson-dx81/DX81SDK_FULL.exe \
+  'https://web.archive.org/web/20040108202259id_/http://download.microsoft.com/download/whistler/dx/8.1/W982KMeXP/EN-US/DX81SDK_FULL.exe'
+shasum -a 256 /tmp/crimson-dx81/DX81SDK_FULL.exe
+unzip -j /tmp/crimson-dx81/DX81SDK_FULL.exe \
+  DXF/DXSDK/lib/d3dx8.lib -d /tmp/crimson-dx81
+
+uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
+  --image game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+  --start 0x00452ef0 --end 0x00460cb8 \
+  --expected-sha256 39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28 \
+  --check
+uv run crimson match archive /tmp/crimson-dx81/d3dx8.lib \
+  --image game_bins/crimsonland/1.9.93-gog/grim.dll \
+  --start 0x1000aaa6 --end 0x1004b5b0 \
+  --expected-sha256 39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28 \
+  --check
+```
 
 ### libpng (version 1.0.5)
 - Evidence: Grim function `FUN_100103d6` at `0x100103d6` calls
@@ -41,6 +76,8 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
 - Status: public headers synced from libpng v1.0.5 (`third_party/headers/png.h`,
   `third_party/headers/pngconf.h`, `third_party/headers/pngasmrd.h`) for reference.
 
+- Status: the exact `png*.obj` implementations are present in the confirmed
+  DirectX 8.1 `d3dx8.lib` and match Grim functions directly.
 - Status: png_* signatures mapped (name map).
 
 ### zlib (version 1.1.3)
@@ -51,6 +88,8 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
 
 - Status: headers imported (`third_party/headers/zlib.h`, `third_party/headers/zconf.h`).
+- Status: the exact zlib objects are present in the confirmed DirectX 8.1
+  `d3dx8.lib` and match Grim functions directly.
 - Status: mapped core inflate entry points
   (`inflateInit_`/`inflateInit2_`/`inflate`/`inflateReset`/`inflateEnd`).
 
@@ -63,6 +102,9 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
 - Status: version is confirmed, correcting the previous 6b-header assumption.
   The currently imported `JPEG_LIB_VERSION 62` headers are 6b and must be
   replaced with the exact 6a release before type/signature synchronization.
+- Status: the exact IJG objects are present in the confirmed DirectX 8.1
+  `d3dx8.lib`; member symbols such as `jdmarker.obj`, `jmemmgr.obj`, and
+  `jquant*.obj` match Grim functions directly.
 - Status: no signature mapping yet.
 
 ### libvorbisfile / libvorbis / libogg (version 1.0; headers match vorbis v1.0.0 tag)
@@ -105,7 +147,7 @@ Imported API versions can be checked from interfaces and call constants.
 Statically linked SDK utility code is tracked above and requires archive-member
 matching.
 
-### DirectX SDK version (likely 8.1)
+### DirectX SDK version (8.1, exact release archive confirmed)
 - Evidence: Grim functions including `FUN_10003090` at `0x10003090` call
   `Direct3DCreate8(0xDC)` (`D3D_SDK_VERSION = 220`).
 
@@ -133,9 +175,9 @@ matching.
 
 ## Next evidence to capture
 
-- Match candidate DirectX 8.0b/8.1 `d3dx8.lib` members against both embedded
-  D3DX8 ranges and record the exact archive hash.
 - Match the EXE range `0x00460cb8..0x0046e920` against the exact VC6 CRT
   archive.
+- Compare the bundled Xiph DLL hashes against the historical 1.0 Windows
+  release bundle, if an authenticated copy is available.
 - Replace the imported IJG 6b headers with 6a and map the duplicated codec
   object boundaries.

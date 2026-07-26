@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -63,6 +64,41 @@ def load_library_provenance(path: Path = DEFAULT_PROVENANCE_PATH) -> dict[str, A
         raise ValueError(f"{path}: every artifact requires an id")
     if len(artifact_ids) != len(set(artifact_ids)):
         raise ValueError(f"{path}: duplicate artifact id")
+
+    sources = payload.get("source_artifacts", [])
+    if not isinstance(sources, list):
+        raise TypeError(f"{path}: source_artifacts must be a list")
+    source_ids = [str(source.get("id", "")) for source in sources]
+    if any(not source_id for source_id in source_ids):
+        raise ValueError(f"{path}: every source artifact requires an id")
+    if len(source_ids) != len(set(source_ids)):
+        raise ValueError(f"{path}: duplicate source artifact id")
+    known_sources = set(source_ids)
+    for source in sources:
+        if int(source.get("size", 0)) <= 0:
+            raise ValueError(f"{path}: source artifact {source['id']!r} requires a positive size")
+        if re.fullmatch(r"[0-9a-f]{64}", str(source.get("sha256", ""))) is None:
+            raise ValueError(f"{path}: source artifact {source['id']!r} has invalid sha256")
+        for member in source.get("members", []):
+            if int(member.get("size", 0)) <= 0:
+                raise ValueError(f"{path}: source member {member.get('path')!r} requires a positive size")
+            if re.fullmatch(r"[0-9a-f]{64}", str(member.get("sha256", ""))) is None:
+                raise ValueError(f"{path}: source member {member.get('path')!r} has invalid sha256")
+
+    for artifact in artifacts:
+        for component in artifact.get("components", []):
+            source_id = component.get("source_artifact")
+            if source_id is not None and source_id not in known_sources:
+                raise ValueError(f"{path}: unknown source artifact {source_id!r}")
+    known_artifacts = set(artifact_ids)
+    for archive_match in payload.get("archive_matches", []):
+        source_id = archive_match.get("source_artifact")
+        if source_id not in known_sources:
+            raise ValueError(f"{path}: archive match has unknown source artifact {source_id!r}")
+        for target in archive_match.get("targets", []):
+            artifact_id = target.get("artifact")
+            if artifact_id not in known_artifacts:
+                raise ValueError(f"{path}: archive match has unknown target artifact {artifact_id!r}")
     return payload
 
 

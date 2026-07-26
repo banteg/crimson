@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from crimson.cli.match import match_app
@@ -15,10 +16,15 @@ from crimson.library_provenance import (
 
 
 def test_library_provenance_manifest_validates_current_binaries() -> None:
+    payload = load_library_provenance()
     report = validate_library_provenance()
 
     assert report.ok
     assert not report.failed
+    directx = next(source for source in payload["source_artifacts"] if source["id"] == "directx-8.1-sdk-full")
+    assert directx["members"][0]["sha256"] == "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+    archive_match = payload["archive_matches"][0]
+    assert [target["artifact"] for target in archive_match["targets"]] == ["crimsonland.exe", "grim.dll"]
     assert any(check.component == "libjpeg" and check.kind == "fingerprint" and check.passed for check in report.checks)
     assert sum(check.component == "d3dx8" and check.kind == "cross-image" for check in report.checks) == 3
 
@@ -35,6 +41,16 @@ def test_library_provenance_reports_artifact_hash_drift(tmp_path: Path) -> None:
     assert any(
         check.artifact == "crimsonland.exe" and check.kind == "sha256" and not check.passed for check in report.failed
     )
+
+
+def test_library_provenance_rejects_unknown_source_artifact(tmp_path: Path) -> None:
+    payload = load_library_provenance()
+    payload["artifacts"][0]["components"][0]["source_artifact"] = "missing-sdk"
+    manifest = tmp_path / "library_provenance.json"
+    manifest.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="unknown source artifact"):
+        load_library_provenance(manifest)
 
 
 def test_library_provenance_cli_check() -> None:
