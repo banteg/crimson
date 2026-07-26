@@ -11034,6 +11034,13 @@
       "type": "void (*)(void)"
     },
     {
+      "address": "0x1005d3ac",
+      "comment": "One-byte Grim state slot zero-initialized by grim_state_init; no other static xrefs in the image.",
+      "name": "grim_reserved_d3ac",
+      "program": "grim.dll",
+      "type": "char"
+    },
+    {
       "address": "0x1005d3b8",
       "comment": "Cached mouse wheel delta used when input-cached mode is enabled.",
       "name": "grim_mouse_wheel_delta_cached",
