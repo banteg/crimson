@@ -73,10 +73,17 @@ static __forceinline unsigned char startup_continue_requested(void)
     return !quit_requested;
 }
 
-extern "C" unsigned char game_startup_init(void)
+static __forceinline void startup_render_loading_outline(void)
 {
     float outline_xy[2];
+    outline_xy[0] = -4.0f;
+    outline_xy[1] = screen_height_f * 0.5f - 68.0f;
+    grim_interface_ptr->grim_draw_rect_outline(
+        outline_xy, screen_width_f + 8.0f, 128.0f);
+}
 
+extern "C" unsigned char game_startup_init(void)
+{
     frame_dt = grim_interface_ptr->grim_get_frame_dt();
     if (frame_dt > 0.1f) {
         frame_dt = 0.1f;
@@ -252,11 +259,13 @@ extern "C" unsigned char game_startup_init(void)
                         (float)logo_height);
                 } else if (startup_splash_timer > 7.0f
                     && startup_splash_timer < 8.0f) {
+                    float alpha = startup_splash_timer - 6.0f;
+                    alpha -= 1.0f;
                     grim_interface_ptr->grim_set_color(
                         1.0f,
                         1.0f,
                         1.0f,
-                        startup_splash_timer - 6.0f - 1.0f);
+                        alpha);
                     grim_interface_ptr->grim_draw_quad(
                         (float)(config_blob.screen_width / 2 - 256),
                         (float)(config_blob.screen_height / 2
@@ -401,10 +410,7 @@ render_loading_screen:
     render_tint_color_a = loading_alpha * 0.7f;
     grim_interface_ptr->grim_set_color_ptr(&render_tint_color_r);
 
-    outline_xy[0] = -4.0f;
-    outline_xy[1] = screen_height_f * 0.5f - 68.0f;
-    grim_interface_ptr->grim_draw_rect_outline(
-        outline_xy, screen_width_f + 8.0f, 128.0f);
+    startup_render_loading_outline();
 
     console_log_queue.update();
     console_log_queue.render();

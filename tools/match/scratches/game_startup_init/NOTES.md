@@ -35,9 +35,7 @@ The recovered callback also includes:
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=98.93% prefix=1/1126 target_insns=1126 candidate_insns=1126 refs=333/0/0
-first_target=sub esp, 0xc
-first_candidate=sub esp, 0x10
+match=100.00% prefix=1126/1126 target_insns=1126 candidate_insns=1126 refs=334/0/0
 ```
 
 The native interval ladder evaluates the second hold phase as
@@ -48,9 +46,12 @@ strict lower bounds at 1 and 7, and the native progress string is
 `"Grim GFX %d/%d"` without a colon. Those corrections eliminate all three
 reference mismatches.
 
-The remaining differences are compiler residue: the candidate uses a `0x10`
-local frame instead of the native `0x0c`, plus one independent x87/vtable-load
-scheduling swap. All recovered behavior and callsites are represented. The
-scratch deliberately leaves those differences honest rather than using
+The final compiler-only residue came from two natural source boundaries.
+Keeping the loading-screen outline position in its own forced-inline rendering
+helper lets VC6 reuse the caller's temporary slots and recovers the native
+`0x0c` frame. Computing the second-logo fade alpha as
+`alpha = timer - 6; alpha -= 1` preserves the same floating-point operations
+while reproducing the native x87/vtable-load schedule. Together they raise the
+former 98.93%, `333/0/0` candidate to an exact, reference-clean match without
 volatile state, dead expressions, dummy references, inline assembly, forced
 layout, or layout-only control flow.
