@@ -174,8 +174,8 @@ static __forceinline void draw_rebind_heading(
         228.0f,
         1.0f);
 
-    position.x += 8.0f;
     position.y += 18.0f;
+    position.x += 8.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 }
 
@@ -269,14 +269,13 @@ extern "C" void controls_menu_update(void)
 
     controls_vec2_t left_base(
         ui_element_slot_14.vertices[0].x
-            + ui_element_slot_14.pos_x
-            + ui_element_slot_14.render_offset_x
-            - 32.0f
-            - 64.0f
-            + 300.0f,
+            + ui_element_slot_14.pos_x,
         ui_element_slot_14.vertices[0].y
-            + ui_element_slot_14.pos_y
-            + 40.0f);
+            + ui_element_slot_14.pos_y);
+    left_base.x += 300.0f;
+    left_base.y += 40.0f;
+    left_base.x +=
+        ui_element_slot_14.render_offset_x - 32.0f - 64.0f;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     ui_draw_textured_quad(
@@ -381,6 +380,9 @@ extern "C" void controls_menu_update(void)
             "Configured controls"),
         1.0f);
 
+    draw_position.y = right_base.y + 26.0f;
+    draw_position.x = right_base.x - 8.0f;
+
     if (!(controls_menu_init_flags & 0x40)) {
         controls_menu_init_flags |= 0x40;
         int item_count = 15;
@@ -447,15 +449,13 @@ extern "C" void controls_menu_update(void)
         active.enabled = 0;
     }
 
+    draw_position.x -= 14.0f;
+    controls_color_t section_tint;
+    section_tint.r = render_tint_color_r;
+    section_tint.b = render_tint_color_b;
+    section_tint.g = render_tint_color_g;
     render_tint_color_a = 0.7f;
-    controls_color_t section_tint = {
-        render_tint_color_r,
-        render_tint_color_g,
-        render_tint_color_b,
-        render_tint_color_a,
-    };
-    draw_position.x = right_base.x - 22.0f;
-    draw_position.y = right_base.y + 26.0f;
+    section_tint.a = render_tint_color_a;
 
     draw_rebind_heading(draw_position, "Aiming", section_tint);
     if (config_aim_scheme[controls_rebind_player_index] == 1) {

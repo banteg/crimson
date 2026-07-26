@@ -68,13 +68,21 @@ selected index; and list enable flags are reset and then cleared in native
 open-list order. The two capture prompts share one base Y value, as in the
 native branch join.
 
-Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **73.85%**, with a fuzzy gap of
-5,567.95 bytes, 4 exact prefix instructions, 5,421 native instructions versus
-5,388 candidate instructions, and reference audit **1,448 resolved /
-4 unresolved / 17 mismatched**. This improves the prior **64.72%** result
-(7,511.49-byte gap, 4,493 candidate instructions, and 1,121 / 3 / 33
-references). Both functions retain the native `0x74`-byte frame. The remaining
-gap is dominated by register allocation inside the four enormous equivalent
+The panel geometry now preserves the native x87 staging. The left base first
+combines the vertex and widget position, then applies `+300` / `+40`, and only
+then folds in the render offset. On the right, the post-heading position is
+staged as `y + 26` and `x - 8` before rebuilding the key labels, followed by
+the native `x - 14` at `0x0044cb51`. The inlined heading advances Y by 18
+before X by 8, and its tint local is populated in native R/B/G order before
+the alpha write.
+
+Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **74.08%**, with a fuzzy gap of
+5,519.08 bytes, 4 exact prefix instructions, 5,421 native instructions versus
+5,395 candidate instructions, and reference audit **1,460 resolved /
+4 unresolved / 12 mismatched**. This improves the prior **73.85%** result
+(5,567.95-byte gap, 5,388 candidate instructions, and 1,448 / 4 / 17
+references) while retaining the native `0x74`-byte frame. The remaining gap
+is dominated by register allocation inside the four enormous equivalent
 inlined key-label bodies and early UI/x87 lowering. All observed widgets,
 labels, scheme branches, runtime binding copies, row updates, capture rules,
 and dropdown writes are present; no fake dependency, padding, volatile
