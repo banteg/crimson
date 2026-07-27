@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-loop-distance-lifetime",
+      "find": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            float distance = (float)sqrt(dx * dx + dy * dy);\n            if (distance > min_dist && distance < best_distance) {\n",
+      "replacements": [
+        {
+          "name": "assignment-in-condition",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            float distance;\n            if ((distance = (float)sqrt(dx * dx + dy * dy)) > min_dist\n                && distance < best_distance) {\n"
+        },
+        {
+          "name": "assignment-in-first-comparison",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            float distance;\n            if (min_dist < (distance = (float)sqrt(dx * dx + dy * dy))\n                && distance < best_distance) {\n"
+        },
+        {
+          "name": "staged-square-assignment-in-condition",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            float distance_sq = dx * dx + dy * dy;\n            float distance;\n            if ((distance = (float)sqrt(distance_sq)) > min_dist\n                && distance < best_distance) {\n"
+        }
+      ]
+    }
+  ]
+}

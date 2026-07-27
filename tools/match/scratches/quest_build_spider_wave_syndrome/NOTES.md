@@ -33,6 +33,14 @@ schedule found no further improvement (spec
 VC6.0, 6.5, 6.5 Processor Pack, and 6.6 tie at the retained score; VC7 is
 worse. All results are recorded in `experiments.jsonl`.
 
+`typed-boundary-mutations.json` adds seven record, position, count, and
+metadata alias shapes. Six compile byte-identically; moving metadata behind a
+typed post-position alias returns to the older 83.87% schedule and loses
+3.064516 fuzzy-weighted bytes. The plan SHA-256 is
+`90f0ef11e7de5c0a0d58d6875672b32f5ac9c91a135ad44ee003bb24775b3e18`.
+`/G5`, `/G7`, `/Ox`, and `/Ob1` also tie the retained `/GB` result, while
+`/G6` regresses.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-constructor-body",
+      "find": "    list_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value)\n    {\n    }\n",
+      "replacements": [
+        {
+          "name": "assignment-x-then-y",
+          "text": "    list_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "assignment-y-then-x",
+          "text": "    list_vec2_t(float x_value, float y_value)\n    {\n        y = y_value;\n        x = x_value;\n    }\n"
+        },
+        {
+          "name": "reversed-initializer-list",
+          "text": "    list_vec2_t(float x_value, float y_value)\n        : y(y_value), x(x_value)\n    {\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "row-position-copy-shape",
+      "find": "        list_vec2_t row_position(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n",
+      "replacements": [
+        {
+          "name": "predeclared-temporary-assignment",
+          "text": "        list_vec2_t row_position;\n        row_position = list_vec2_t(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n"
+        },
+        {
+          "name": "named-temporary-copy",
+          "text": "        list_vec2_t computed_row_position(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n        list_vec2_t row_position = computed_row_position;\n"
+        },
+        {
+          "name": "reversed-y-addends",
+          "text": "        list_vec2_t row_position(\n            xy->x, (float)(row_index * 16 + 16) + xy->y);\n"
+        },
+        {
+          "name": "named-x-coordinate",
+          "text": "        float row_x = xy->x;\n        list_vec2_t row_position(\n            row_x, xy->y + (float)(row_index * 16 + 16));\n"
+        }
+      ]
+    }
+  ]
+}

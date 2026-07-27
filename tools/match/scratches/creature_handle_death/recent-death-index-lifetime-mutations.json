@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "recent-death-index-lifetime",
+      "find": "        if (survival_recent_death_count < 3) {\n            survival_recent_death_pos[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_pos[survival_recent_death_count].y =\n                creature->position.y;\n        }\n",
+      "replacements": [
+        {
+          "name": "named-index-with-reload",
+          "text": "        if (survival_recent_death_count < 3) {\n            int death_index = survival_recent_death_count;\n            survival_recent_death_pos[death_index].x = creature->position.x;\n            death_index = survival_recent_death_count;\n            survival_recent_death_pos[death_index].y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "separate-scoped-indices",
+          "text": "        if (survival_recent_death_count < 3) {\n            {\n                int death_index = survival_recent_death_count;\n                survival_recent_death_pos[death_index].x = creature->position.x;\n            }\n            {\n                int death_index = survival_recent_death_count;\n                survival_recent_death_pos[death_index].y = creature->position.y;\n            }\n        }\n"
+        },
+        {
+          "name": "named-position-pointer",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t *death_pos =\n                &survival_recent_death_pos[survival_recent_death_count];\n            death_pos->x = creature->position.x;\n            death_pos->y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "aggregate-position-copy",
+          "text": "        if (survival_recent_death_count < 3) {\n            survival_recent_death_pos[survival_recent_death_count] =\n                creature->position;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

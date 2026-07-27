@@ -47,3 +47,19 @@ local pointer/reference receivers, named sizes, and coordinate declaration
 orders. Every alternative is again byte-identical at 177 instructions,
 98.87%, and `57/0/0` references. The final size-push/vtable-load swap is an
 optimizer scheduling boundary rather than a missing receiver lifetime.
+
+## Exact-tail audit (2026-07-27)
+
+A new live Binary Ninja check keeps the only residual at the final 32-by-32
+quad. MSVC 6.0, 6.5, and 6.6 are byte-identical; Processor Pack regresses to
+75.29% with two reference mismatches, and VC7 does not compile this source.
+No tested flag profile is exact.
+
+`final-quad-staged-scalar-mutations.json` evaluates four compound-scalar and
+array forms: the three scalar forms are byte-neutral, while the array form
+falls to 93.26% and introduces one reference mismatch.
+`final-quad-vector-mutations.json` evaluates three vector-type/materialization
+combinations: adding the unused type is neutral, but materializing the vector
+has the same 93.26% regression. The recorded `compound-final-y-confirmation`
+probe is neutral. No source change was retained; final remains **98.87%**,
+177/177, prefix 158, `57/0/0`.

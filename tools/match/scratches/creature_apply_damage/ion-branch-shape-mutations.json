@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-branch-shape",
+      "find": "    } else if (damage_type == 7\n        && perk_count_get(perk_id_ion_gun_master) != 0) {\n        damage *= 1.2f;\n    }\n",
+      "replacements": [
+        {
+          "name": "independent-if",
+          "text": "    }\n    if (damage_type == 7\n        && perk_count_get(perk_id_ion_gun_master) != 0) {\n        damage *= 1.2f;\n    }\n"
+        },
+        {
+          "name": "nested-else",
+          "text": "    } else {\n        if (damage_type == 7\n            && perk_count_get(perk_id_ion_gun_master) != 0) {\n            damage *= 1.2f;\n        }\n    }\n"
+        },
+        {
+          "name": "split-type-and-perk-tests",
+          "text": "    } else if (damage_type == 7) {\n        if (perk_count_get(perk_id_ion_gun_master) != 0) {\n            damage *= 1.2f;\n        }\n    }\n"
+        },
+        {
+          "name": "inverted-type-test",
+          "text": "    } else if (damage_type != 7) {\n    } else if (perk_count_get(perk_id_ion_gun_master) != 0) {\n        damage *= 1.2f;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

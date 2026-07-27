@@ -43,3 +43,23 @@ weapon suppression, and metadata enable test. Candidate and native each have
 162 instructions with `20/0/0` references. The localized delta is solely VC6's
 cold-block placement and resulting branch-target layout; recovery is
 `semantic-complete` with a `compiler` residual.
+
+## Cold-block layout experiments
+
+Live Binary Ninja disassembly confirms that the native stage-5 test is a
+distinct tail block at `0x00412628`--`0x0041263e`. It reuses the already-loaded
+major/minor values and compares `bonus_id` with the major value (both are 5)
+before jumping back to the common post-quest filters. This supports the
+recovered chained predicate and does not support introducing a second global
+load or an artificial tail label.
+
+The recorded `quest-stage-five-layout-mutations.json` sweep tested six natural
+CFG spellings: nested and flat final predicates, an independent final test, an
+explicit final `else`, reordered major-4/major-5 arms, and a combined major
+guard. Five compiled byte-identically to the 75.93% baseline. The combined
+guard gained only 3.43 fuzzy-weighted bytes while deleting three candidate
+instructions and two mapped references by sharing the Nuke comparison across
+major stages 4 and 5; native retains both comparisons, so that variant is
+rejected. Stock 6.5 and 6.6 with `/GB` or `/G5` are identical, `/G6` regresses,
+and the Processor Pack also regresses. The residual remains compiler block
+placement, with the clean reference-complete source retained.

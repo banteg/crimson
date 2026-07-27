@@ -34,9 +34,9 @@ struct quest_spawn_builder_t {
 extern "C" void quest_build_lizard_zombie_pact(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_spawn_builder_t builder((quest_entry_original_t *)entries);
-    int trigger_time_ms = 1500;
     int wave = 0;
+    int trigger_time_ms = 1500;
+    quest_spawn_builder_t builder((quest_entry_original_t *)entries);
 
     do {
         quest_entry_original_t *spawn = &builder.spawns[builder.count];

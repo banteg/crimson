@@ -14,6 +14,14 @@ alpha temporaries, assignment-in-condition forms, and alternate entry-index
 expressions also regress or compile identically. The scratch is therefore kept
 as an honest source-shape WIP rather than retaining the unsupported override.
 
+Live Binary Ninja HLIL exposes that native boundary as a temporary alpha load:
+the first three color words are stored, `color->a` is loaded,
+`fx_queue_count` is published, and the alpha word is then stored. The recorded
+`publication-alpha-mutations.json` sweep tested early publication plus manual
+float, aggregate, and word-copy alpha splits under stock VC6. All five
+regressed; none reproduced Processor Pack scheduling. Its spec SHA-256 is
+`1255f2e9a4b0b13864fea25a76d3dc93eac02d86adbcb9d28ebc784db417a875`.
+
 The recovered function appends one 40-byte `fx_queue_entry_t`, copying position
 and a 16-byte `effect_color_t` aggregate before width, height, rotation, and
 effect id. It returns a byte boolean (the native epilogue writes only `AL`). If

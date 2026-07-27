@@ -81,3 +81,11 @@ also byte-neutral, with a representative result recorded in
 regresses, and the `/G5`, `/G7`, `/Ox`, and `/Ob1` flag probes are neutral.
 The final order matrix SHA-256 is
 `3a4622c8060f2ab40ab5c2960a0ef4733a742aa4b016c9a77a11951c98dc785f`.
+
+`metadata-helper-shape-mutations.json` adds five explicit-inline,
+force-inline, explicit-`this`, reverse-store, and reference-return spellings.
+Four are byte-neutral and reversing the helper stores regresses by 54.4
+fuzzy-weighted bytes. Its SHA-256 is
+`fb81a462be22f2b5c4f1f8b1aa4035c528732b595bd536db0a304ab38c97f3c4`.
+A fresh compiler/flag matrix confirms MSVC 6.0/6.5/6.6 tie, Processor Pack and
+MSVC 7.0 regress, and only `/G6` regresses among the tested VC6 flag variants.

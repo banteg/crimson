@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "config-tail-assignment-order",
+      "find": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n",
+      "replacements": [
+        {
+          "name": "12-64-13-14",
+          "text": "    grim_config_values[0x12] = true;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "64-13-12-14",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "64-12-14-13",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x13] = (unsigned int)5;\n"
+        },
+        {
+          "name": "12-13-64-14",
+          "text": "    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "13-64-12-14",
+          "text": "    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "64-13-14-12",
+          "text": "    grim_config_values[0x64] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x12] = true;\n"
+        },
+        {
+          "name": "12-64-14-13",
+          "text": "    grim_config_values[0x12] = true;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x13] = (unsigned int)5;\n"
+        },
+        {
+          "name": "13-12-64-14",
+          "text": "    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x14] = (unsigned int)6;\n"
+        },
+        {
+          "name": "12-13-14-64",
+          "text": "    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x64] = true;\n"
+        },
+        {
+          "name": "14-64-12-13",
+          "text": "    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n    grim_config_values[0x13] = (unsigned int)5;\n"
+        },
+        {
+          "name": "13-14-64-12",
+          "text": "    grim_config_values[0x13] = (unsigned int)5;\n    grim_config_values[0x14] = (unsigned int)6;\n    grim_config_values[0x64] = true;\n    grim_config_values[0x12] = true;\n"
+        }
+      ]
+    }
+  ]
+}

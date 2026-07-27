@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muted-computed-volume",
+      "find": "                sfx_volume_table[i] =\n                    (volume = sfx_volume_table[i] - frame_dt * 0.5f);",
+      "replacements": [
+        {
+          "name": "comma-sequenced-statements",
+          "text": "                volume = sfx_volume_table[i] - frame_dt * 0.5f,\n                    sfx_volume_table[i] = volume;"
+        },
+        {
+          "name": "comma-rhs-reuse",
+          "text": "                sfx_volume_table[i] =\n                    ((volume = sfx_volume_table[i] - frame_dt * 0.5f), volume);"
+        },
+        {
+          "name": "scoped-reference",
+          "text": "                float &computed_volume = volume;\n                sfx_volume_table[i] =\n                    (computed_volume = sfx_volume_table[i] - frame_dt * 0.5f);"
+        },
+        {
+          "name": "scoped-pointer",
+          "text": "                float *computed_volume = &volume;\n                sfx_volume_table[i] =\n                    (*computed_volume = sfx_volume_table[i] - frame_dt * 0.5f);"
+        }
+      ]
+    },
+    {
+      "name": "ramp-computed-volume",
+      "find": "            sfx_volume_table[i] =\n                (volume = sfx_volume_table[i] + frame_dt);",
+      "replacements": [
+        {
+          "name": "comma-sequenced-statements",
+          "text": "            volume = sfx_volume_table[i] + frame_dt,\n                sfx_volume_table[i] = volume;"
+        },
+        {
+          "name": "comma-rhs-reuse",
+          "text": "            sfx_volume_table[i] =\n                ((volume = sfx_volume_table[i] + frame_dt), volume);"
+        },
+        {
+          "name": "scoped-reference",
+          "text": "            float &computed_volume = volume;\n            sfx_volume_table[i] =\n                (computed_volume = sfx_volume_table[i] + frame_dt);"
+        },
+        {
+          "name": "scoped-pointer",
+          "text": "            float *computed_volume = &volume;\n            sfx_volume_table[i] =\n                (*computed_volume = sfx_volume_table[i] + frame_dt);"
+        }
+      ]
+    }
+  ]
+}

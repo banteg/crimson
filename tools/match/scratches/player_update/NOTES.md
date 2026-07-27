@@ -636,3 +636,131 @@ instructions, 54.86%, and `736/0/11` references.
 ## Function-local declaration-order sweep
 
 The mutation harness tested all 12 declaration-order variants for the function-local temporaries. Every variant was byte-identical to the 56.6776% baseline (4023/4206 instructions, 7042.92-byte gap, five reference mismatches, `frame_size=0x48`). This rules out source declaration order as the control for the remaining stack layout: MSVC is placing these locals from their use sites instead. Recorded spec SHA: `91c82101299a1999c03ad3122f331f43cce50e5038264ce84faf892790180314`.
+
+## Fire Cough scoped selected-player lifetime
+
+The starting canonical build was 4,023/4,206 instructions at
+`56.6776035970%`: 9,214.078 weighted bytes, a 7,042.922-byte fuzzy gap,
+seven prefix instructions, and `766/0/5` reference results. A fresh compiler
+profile check found VC6.0, VC6.5, and VC6.6 exactly identical. VC6.5pp
+regressed to `48.2492211838%` and VC7.0 to `35.1396576136%`, so the retained
+VC6.5 profile remains native-supported rather than being changed to chase a
+score.
+
+Live Binary Ninja shows a distinct selected-player lifetime in the native Fire
+Cough block. The long-lived player in `EDI` supplies `aim_heading` at
+`0x00413a88`, but the code reloads `render_overlay_player_index` at
+`0x00413a8e` and constructs another player base in `EBP`. That reselected
+player supplies aim at `0x00413aba` and `0x00413ac0`, position through `EBX`
+at `0x00413aca`, and spread heat at `0x00413b4b`. The source now represents
+that lifetime as a scoped `fire_player` pointer and uses it for aim, position,
+and spread heat. This preserves the selected overlay player and does not add
+codegen-only state.
+
+An exhaustive 23/23 bounded mutation sweep covered direct versus scoped
+reselection, three `vec2_sub` receiver/return shapes, projectile-position
+reuse, and every interaction through three changed sites. Only the scoped
+reselected player won. It improves weighted similarity by
+`+90.3298187331` bytes and ratio by `+0.5556364565` percentage points while
+removing ten candidate instructions and improving references by 12 exact and
+two fewer mismatches. The retained build is 4,013/4,206 instructions at
+`57.2332400535%`: 9,304.408 weighted bytes, a 6,952.592-byte fuzzy gap,
+seven prefix instructions, and `778/0/3` references. The winner was separately
+confirmed from source SHA
+`386c42723d0264983766c8e88f97ad950703d9334911dcd29aad6287cb4e80cc`;
+the sweep spec SHA is
+`f552221b634c9e637751732b268898fa2760f6ad6f19208bc07ae6b19dd148c8`.
+
+The negative cases are recorded rather than retained. Projectile-position
+reuse lost 2.765 weighted bytes; reindexing only the `vec2_sub` receiver lost
+4.477; retaining its returned receiver lost 126.437 and shortened the prefix
+from seven instructions to two; direct unscoped reselection lost 161.098.
+The closest interaction was scoped reselection plus receiver-return and
+projectile reuse at `+90.3173151046`, still 0.0125 weighted bytes below the
+single scoped-pointer change. Binding the selected player at two earlier
+native-plausible points was byte-neutral in a complete 2/2 sweep (spec SHA
+`1d5991be05806bbdb1e0243b73a9ee9015c03b82aac13a9ad1cb50e44da8d6b7`).
+
+A corrected 6/6 source-shape sweep found pointer, const-pointer, reference,
+and const-reference forms byte-identical. Copying aim as an aggregate lost
+76.286 weighted bytes and one reference match; a named aggregate copy lost
+228.802, shortened the prefix to one instruction, and raised reference
+mismatches from three to six. Its authoritative spec SHA is
+`a5d8c52b01a079819c17bee8b2c8e2c53ee995a757f516b70b3b84f8b7def6cf`.
+The append-only experiment log also contains an earlier shape-plan SHA
+`a1c5028e94173d2a149480090cc69f7c8f7b3a0180f038d46e6ff723f27b8ac3`
+whose three reference cases were malformed by an unreplaced later `->`
+access; those compile failures are not treated as negative match evidence.
+
+The first mismatch remains the normalized branch target at native
+`0x004136bf`, where the target jumps to its distant shared epilogue. The next
+genuine scheduling difference is at function entry: native snapshots position
+x/y before its health `fld`/`fcomp`, while VC6 schedules the health comparison
+before completing those stores. The prior complete entry-snapshot and
+declaration-order sweeps ruled out the ordinary source forms tested there, so
+this Fire Cough improvement is retained without claiming that the remaining
+6,952.592-byte compiler residual is solved.
+
+## Main firing spread-angle lifetime
+
+The next live reference audit found three mismatches. At `0x00413eb2`, native
+keeps the 384-creature scan cursor at the `creature_pool` record base while
+VC6 rewrites the recovered pointer to `creature_pool + 0x18`; at
+`0x0041419e`, native's movement-mode tail loads
+`render_overlay_player_index` where the aligned candidate has already entered
+the next mode and loads `grim_interface_ptr`; and at `0x00415c78`, native's
+spread-angle constant was aligned with the candidate's later spread multiplier.
+The last mismatch identified a recoverable local lifetime rather than a wrong
+constant.
+
+Native calls `crt_rand` for the main spread angle at `0x00415c66`, converts
+and multiplies it by `0.012271847f`, then stores it in its own stack slot at
+`0x00415c7e`. The recovered source had instead borrowed `scratch_pos.x` for
+that value even though the later weapon dispatcher initializes every
+`scratch_pos` component before reading it. Giving the angle its own ordinary
+`float spread_angle` local is behavior-preserving and exposes the native
+lifetime. It improves weighted similarity by `+755.5875410634` bytes, raises
+the ratio by 4.6477673683 percentage points, adds 12 exact references, removes
+the spread reference mismatch, and leaves the candidate at 4,013 instructions.
+The 6/6 recorded sweep spec SHA is
+`1a7d5ed9bbae337089bdf643b8b94e8ecee8137388cb5f63c234d676b1268891`.
+
+The native follow-up sequence at `0x00415c98..0x00415ca8` first converts the
+second random value, then loads the saved radius, multiplies it by spread heat,
+combines the two x87 values with `fmulp`, and finally multiplies by
+`0.001953125f`. Grouping the source as random times `(radius * spread_heat)`
+recovers that same candidate sequence at object offsets `0x2390..0x23a2`.
+This adds one native-shaped instruction and another `+2.7316307328` weighted
+bytes without changing references. The complete 6/6 follow-up spec SHA is
+`fc1dd715bcbfb19101af5c26960616d0fd99c6036bb2b1fb1f72125ec7936159`.
+
+Across this slice the canonical build moves from 4,013/4,206 instructions at
+`57.2332400535%`, 9,304.408 weighted bytes, a 6,952.592-byte gap, and
+`778/0/3` references to 4,014/4,206 at `61.8978102190%`, 10,062.727 weighted
+bytes, a 6,194.273-byte gap, and `790/0/2` references. The prefix remains seven
+instructions. Final source SHA is
+`6f3eb8ad7f0d1b6c5ea0ab826e8f0c6fd61b52594abe6a0198e8fffba50ea678`.
+
+The bounded negatives are also recorded. Eight creature-loop variants found
+only a 5.089-byte gain from direct indexing, but it added a fourth reference
+mismatch and contradicted native's base-pointer induction, so it was rejected;
+three indexed pointer/reference forms lost 11.868 bytes and all ordinary
+pointer spellings were neutral (spec SHA
+`f4dc4ce635173d5a7f38307b3aa7912f5882541ed0a354117e71411d6128cf29`).
+Six active-condition and end-pointer spellings were byte-neutral (spec SHA
+`96f14f42e57d327e415b26650df327faa0faf1d04d7e616e064407cab21fad88`).
+Main-firing selected-player reselection gained only 1.119 bytes before the
+angle recovery while adding six instructions; after the angle recovery it
+lost 11.292 bytes, or 8.561 with native product grouping, so it was not
+retained (initial spec SHA
+`bd0ed66a4c9eaff4d9d7e79e51673ac3ee53f467a6cd667a5e83a83bfc11bcd7`).
+Naming only the radius was byte-neutral; naming both radius and angle,
+aggregate product variants, and scoped-player interactions all trailed the
+angle-only winner. `const`, split initialization, and an explicit random
+integer were byte-neutral.
+
+The final two audit mismatches are therefore documented compiler/alignment
+residuals: the creature scan's field-anchored induction pointer and the
+movement-mode tail alignment. No unsupported compiler profile, artificial
+dependency, volatile access, register constraint, or layout-only control flow
+is retained.

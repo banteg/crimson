@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "firing-spread-angle-followup",
+      "find": "        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            player_position->y - random_offset.y,\n            player_position->x - random_offset.x) - 1.5707964f;",
+      "replacements": [
+        {
+          "name": "const-spread-angle",
+          "text": "        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        const float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            player_position->y - random_offset.y,\n            player_position->x - random_offset.x) - 1.5707964f;"
+        },
+        {
+          "name": "split-spread-angle-initialization",
+          "text": "        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle;\n        spread_angle = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            player_position->y - random_offset.y,\n            player_position->x - random_offset.x) - 1.5707964f;"
+        },
+        {
+          "name": "named-spread-random-int",
+          "text": "        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        int spread_random = crt_rand() & 0x1ff;\n        angle_step = angle_step * player->spread_heat\n            * (float)spread_random * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            player_position->y - random_offset.y,\n            player_position->x - random_offset.x) - 1.5707964f;"
+        },
+        {
+          "name": "random-first-product",
+          "text": "        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = (float)(crt_rand() & 0x1ff)\n            * (angle_step * player->spread_heat) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            player_position->y - random_offset.y,\n            player_position->x - random_offset.x) - 1.5707964f;"
+        },
+        {
+          "name": "scoped-player",
+          "text": "        player_state_t *firing_player =\n            &player_state_table[render_overlay_player_index];\n        random_offset.x = firing_player->aim.x;\n        random_offset.y = firing_player->aim.y;\n        move_delta.x = random_offset.x - firing_player->position.x;\n        move_delta.y = random_offset.y - firing_player->position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * firing_player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            firing_player->position.y - random_offset.y,\n            firing_player->position.x - random_offset.x) - 1.5707964f;"
+        },
+        {
+          "name": "scoped-player-random-first",
+          "text": "        player_state_t *firing_player =\n            &player_state_table[render_overlay_player_index];\n        random_offset.x = firing_player->aim.x;\n        random_offset.y = firing_player->aim.y;\n        move_delta.x = random_offset.x - firing_player->position.x;\n        move_delta.y = random_offset.y - firing_player->position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        float spread_angle =\n            (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = (float)(crt_rand() & 0x1ff)\n            * (angle_step * firing_player->spread_heat) * 0.001953125f;\n        random_offset.x =\n            (float)cos(spread_angle) * angle_step + random_offset.x;\n        random_offset.y =\n            (float)sin(spread_angle) * angle_step + random_offset.y;\n        angle_step = (float)atan2(\n            firing_player->position.y - random_offset.y,\n            firing_player->position.x - random_offset.x) - 1.5707964f;"
+        }
+      ]
+    }
+  ]
+}

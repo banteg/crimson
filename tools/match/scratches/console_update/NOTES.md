@@ -36,3 +36,19 @@ current candidate has 297 instructions against 296 native instructions with
 `64/0/0` audited references. Every localized mismatch is explained by the
 early/shrink-wrapped saved-register lifetime and its shifted branch labels, so
 the scratch is classified `semantic-complete` with a `compiler` residual.
+
+## Late pointer declaration sweep
+
+Live disassembly places the native `push esi; push edi` pair immediately before
+the Right-arrow poll at `0x00401b91`, then keeps both saves through completion
+and both submission exits. The candidate saves `ESI` at entry and shrink-wraps
+only `EDI` around the string scans.
+
+A recorded three-variant sweep moved the autocomplete pointer, history-entry
+pointer, or both declarations to that native save boundary while preserving
+their assignment and use sites. All three compile byte-identically to the
+90.05% baseline with 297/296 instructions and `64/0/0` references. The spec
+SHA-256 is
+`e927fc662fb3a1729282d8d59524e42ad626c99d43c9da20fb57264dff2da4f6`.
+Lexical pointer declaration scope therefore does not control VC6's register
+save placement, and the narrower canonical declarations remain unchanged.

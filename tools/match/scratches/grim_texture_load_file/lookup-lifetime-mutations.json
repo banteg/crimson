@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "lookup-local-lifetimes",
+      "find": "    unsigned char *lookup_data = 0;\n    bool found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n",
+      "replacements": [
+        {
+          "name": "lookup-flag-first",
+          "text": "    bool found_in_lookup = false;\n    unsigned char *lookup_data = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "image-outputs-first",
+          "text": "    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n    unsigned char *lookup_data = 0;\n    bool found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n"
+        },
+        {
+          "name": "explicit-initialization-statements",
+          "text": "    unsigned char *lookup_data;\n    bool found_in_lookup;\n    lookup_data = 0;\n    found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "byte-lookup-flag",
+          "text": "    unsigned char *lookup_data = 0;\n    unsigned char found_in_lookup = 0;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data != 0;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "explicit-lookup-hit-branch",
+          "text": "    unsigned char *lookup_data = 0;\n    bool found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        if (lookup_data != 0) {\n            found_in_lookup = true;\n        }\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        },
+        {
+          "name": "conditional-lookup-flag",
+          "text": "    unsigned char *lookup_data = 0;\n    bool found_in_lookup = false;\n    if (grim_lookup_blob_loaded) {\n        lookup_data = (unsigned char *)grim_lookup_blob_find(path);\n        found_in_lookup = lookup_data ? true : false;\n    }\n\n    int image_width;\n    int image_height;\n    unsigned int image_size;\n    GrimD3dxImageInfo source_info;\n"
+        }
+      ]
+    }
+  ]
+}

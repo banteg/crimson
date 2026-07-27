@@ -100,3 +100,19 @@ with `27/0/0` references. The final clamp is recovered; the remaining localized
 regions reflect the documented computed-volume x87 duplication versus native
 spill/reload and resulting control-flow layout, so recovery remains
 `semantic-complete` with a `compiler` residual.
+
+## Computed-volume spill follow-up
+
+Live Binary Ninja disassembly reconfirmed the two native computation sequences:
+each stores the x87 result to the shared local, pops it into the table slot, and
+then reloads the local for the comparison. A complete recorded 24/24 sweep
+(`computed-volume-spill-mutations.json`, spec SHA-256
+`94a52255e039d3b118f95030c211253905a3877223b84bd461693681fe12e734`)
+tested comma-sequenced assignments, comma-expression reuse, scoped references,
+scoped pointers, and every two-site interaction.
+
+The reference and pointer spellings compile byte-identically to the retained
+86.44% source. Each comma spelling removes one candidate instruction and loses
+1.8073 fuzzy-weighted bytes at one site; their interactions do not recover the
+native spill/reload order. No variant improves the baseline, so the natural
+chained assignments remain canonical and the negative result is recorded.

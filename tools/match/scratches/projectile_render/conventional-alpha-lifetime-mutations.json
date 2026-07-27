@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "conventional-alpha-declaration",
+      "find": "    int player_index;\n    int projectile_index;\n    int secondary_index;",
+      "replacements": [
+        {
+          "name": "function-scope-after-loop-indices",
+          "text": "    int player_index;\n    int projectile_index;\n    int secondary_index;\n    float alpha;"
+        }
+      ]
+    },
+    {
+      "name": "conventional-alpha-zero-use",
+      "find": "    grim_interface_ptr->grim_set_color_slot(\n        0, 0.5f, 0.5f, 0.5f, 0.0f);\n    grim_interface_ptr->grim_set_color_slot(\n        1, 0.5f, 0.5f, 0.5f, 0.0f);",
+      "replacements": [
+        {
+          "name": "initialize-and-reuse",
+          "text": "    alpha = 0.0f;\n    grim_interface_ptr->grim_set_color_slot(\n        0, 0.5f, 0.5f, 0.5f, alpha);\n    grim_interface_ptr->grim_set_color_slot(\n        1, 0.5f, 0.5f, 0.5f, alpha);"
+        }
+      ]
+    },
+    {
+      "name": "conventional-alpha-projectile-use",
+      "find": "        float alpha = projectile_render_clamp(\n            tail->life_timer);\n        grim_interface_ptr->grim_set_color_slot(\n            2, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);\n        grim_interface_ptr->grim_set_color_slot(\n            3, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);",
+      "replacements": [
+        {
+          "name": "assign-and-reuse-function-local",
+          "text": "        alpha = projectile_render_clamp(\n            tail->life_timer);\n        grim_interface_ptr->grim_set_color_slot(\n            2, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);\n        grim_interface_ptr->grim_set_color_slot(\n            3, 0.5f, 0.5f, 0.5f, alpha * transition_alpha);"
+        }
+      ]
+    }
+  ]
+}

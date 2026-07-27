@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-local-declaration-order",
+      "find": "    creature_spawn_template_locals_t locals;\n    int root_slot_idx;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n    creature_t *creature;\n",
+      "replacements": [
+        {
+          "name": "creature-before-indices",
+          "text": "    creature_spawn_template_locals_t locals;\n    creature_t *creature;\n    int root_slot_idx;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n"
+        },
+        {
+          "name": "root-index-after-creature",
+          "text": "    creature_spawn_template_locals_t locals;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n    creature_t *creature;\n    int root_slot_idx;\n"
+        },
+        {
+          "name": "pointer-between-root-child",
+          "text": "    creature_spawn_template_locals_t locals;\n    int root_slot_idx;\n    creature_t *creature;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n"
+        },
+        {
+          "name": "aggregate-after-scalars",
+          "text": "    int root_slot_idx;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n    creature_t *creature;\n    creature_spawn_template_locals_t locals;\n"
+        },
+        {
+          "name": "reverse-loop-indices",
+          "text": "    creature_spawn_template_locals_t locals;\n    int root_slot_idx;\n    int child_slot_idx;\n    int random_heading_roll;\n    int grid_vertical_offset;\n    int chain_link_idx;\n    int ring_member_idx;\n    creature_t *creature;\n"
+        },
+        {
+          "name": "grouped-scalars",
+          "text": "    creature_spawn_template_locals_t locals;\n    int root_slot_idx, child_slot_idx, random_heading_roll;\n    int ring_member_idx, chain_link_idx, grid_vertical_offset;\n    creature_t *creature;\n"
+        },
+        {
+          "name": "creature-first",
+          "text": "    creature_t *creature;\n    creature_spawn_template_locals_t locals;\n    int root_slot_idx;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n"
+        },
+        {
+          "name": "root-and-creature-first",
+          "text": "    int root_slot_idx;\n    creature_t *creature;\n    creature_spawn_template_locals_t locals;\n    int child_slot_idx;\n    int random_heading_roll;\n    int ring_member_idx;\n    int chain_link_idx;\n    int grid_vertical_offset;\n"
+        }
+      ]
+    }
+  ]
+}

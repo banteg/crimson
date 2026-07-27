@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-peak-bit-scalar",
+      "find": "static __forceinline float abs_float(float value)\n{\n    *(unsigned int *)&value &= 0x7fffffff;\n    return value;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n",
+      "replacements": [
+        {
+          "name": "scalar-bits-store-back",
+          "text": "static __forceinline float abs_float(float value)\n{\n    unsigned int bits = *(unsigned int *)&value;\n    bits &= 0x7fffffff;\n    *(unsigned int *)&value = bits;\n    return value;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "scalar-bits-return-punned",
+          "text": "static __forceinline float abs_float(float value)\n{\n    unsigned int bits = *(unsigned int *)&value;\n    bits &= 0x7fffffff;\n    return *(float *)&bits;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "scalar-bits-combined-return-punned",
+          "text": "static __forceinline float abs_float(float value)\n{\n    unsigned int bits =\n        *(unsigned int *)&value & 0x7fffffff;\n    return *(float *)&bits;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "union-bits",
+          "text": "static __forceinline float abs_float(float value)\n{\n    union {\n        float value;\n        unsigned int bits;\n    } absolute;\n    absolute.value = value;\n    absolute.bits &= 0x7fffffff;\n    return absolute.value;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "direct-update-scalar-bits",
+          "text": "static __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    unsigned int bits = *(unsigned int *)&value;\n    bits &= 0x7fffffff;\n    *(unsigned int *)&value = bits;\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "scalar-bits-separate-result",
+          "text": "static __forceinline float abs_float(float value)\n{\n    unsigned int bits = *(unsigned int *)&value;\n    bits &= 0x7fffffff;\n    float result;\n    *(unsigned int *)&result = bits;\n    return result;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        }
+      ]
+    }
+  ]
+}

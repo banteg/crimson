@@ -23,3 +23,16 @@ consequences of the documented entry/cursor register choice, so recovery is
 `entry-alias-mutations.json` evaluated three entry/cursor lifetime forms. The
 plain alias is byte-neutral and the initialized-cursor alternatives regress,
 so no pointer-lifetime rewrite was retained.
+
+`post-normalization-lifetime-mutations.json` then tested whether beginning the
+entry alias only after the x87 volume mapping would reproduce the native
+delayed `EDI` load. Plain and `register` aliases plus scoped `for` and `do`
+loops all compiled byte-identically to the 86.67% baseline. The complete
+four-variant sweep is recorded under spec SHA-256
+`8f2426c36e4622732531b1e240100ae0fcd95ff309c469817334a7619b6c0b33`;
+the remaining allocation is not controlled by that lexical lifetime.
+
+`mapped-volume-lifetime-mutations.json` separately evaluated named and
+initialized mapped-volume locals, late cursor declarations, and a late entry
+alias. All four were also byte-neutral. Its recorded spec SHA-256 is
+`be623af3f1826444ee9ef9c0be5b41f3db8e5a27ca30192fe6df3de2468df75a`.

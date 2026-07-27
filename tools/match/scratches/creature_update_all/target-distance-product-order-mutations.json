@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "current-player-distance-product-order",
+      "find": "                    distance = (float)sqrt(dx * dx + dy * dy);",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "dy-product-first-in-source",
+          "text": "                    distance = (float)sqrt(dy * dy + dx * dx);"
+        }
+      ]
+    },
+    {
+      "name": "alternate-player-distance-product-order",
+      "find": "                                alternate_distance = (float)sqrt(dx * dx + dy * dy);",
+      "replacements": [
+        {
+          "name": "dy-product-first-in-source",
+          "text": "                                alternate_distance = (float)sqrt(dy * dy + dx * dx);"
+        }
+      ]
+    },
+    {
+      "name": "solo-player-distance-product-order",
+      "find": "                            alternate_distance = (float)sqrt(dx * dx + dy * dy);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "dy-product-first-in-source",
+          "text": "                            alternate_distance = (float)sqrt(dy * dy + dx * dx);"
+        }
+      ]
+    },
+    {
+      "name": "auto-target-distance-product-order",
+      "find": "                        if (alternate_distance < (float)sqrt(dx * dx + dy * dy)) {",
+      "replacements": [
+        {
+          "name": "dy-product-first-in-source",
+          "text": "                        if (alternate_distance < (float)sqrt(dy * dy + dx * dx)) {"
+        }
+      ]
+    }
+  ]
+}

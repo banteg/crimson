@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "firing-selected-player-lifetime",
+      "find": "        scalar = 1.0f;\n        if (cv_friendlyFire->value != 0.0f) {\n            owner_id = -1 - render_overlay_player_index;\n        } else {\n            owner_id = -100;\n        }\n\n        random_offset.x = player->aim.x;\n        random_offset.y = player->aim.y;\n        move_delta.x = random_offset.x - player_position->x;\n        move_delta.y = random_offset.y - player_position->y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;",
+      "replacements": [
+        {
+          "name": "scoped-player-after-owner",
+          "text": "        scalar = 1.0f;\n        if (cv_friendlyFire->value != 0.0f) {\n            owner_id = -1 - render_overlay_player_index;\n        } else {\n            owner_id = -100;\n        }\n\n        player_state_t *firing_player =\n            &player_state_table[render_overlay_player_index];\n        random_offset.x = firing_player->aim.x;\n        random_offset.y = firing_player->aim.y;\n        move_delta.x = random_offset.x - firing_player->position.x;\n        move_delta.y = random_offset.y - firing_player->position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * firing_player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "scoped-player-before-owner",
+          "text": "        scalar = 1.0f;\n        player_state_t *firing_player =\n            &player_state_table[render_overlay_player_index];\n        if (cv_friendlyFire->value != 0.0f) {\n            owner_id = -1 - render_overlay_player_index;\n        } else {\n            owner_id = -100;\n        }\n\n        random_offset.x = firing_player->aim.x;\n        random_offset.y = firing_player->aim.y;\n        move_delta.x = random_offset.x - firing_player->position.x;\n        move_delta.y = random_offset.y - firing_player->position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * firing_player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "scoped-index-and-player",
+          "text": "        scalar = 1.0f;\n        int firing_player_index = render_overlay_player_index;\n        if (cv_friendlyFire->value != 0.0f) {\n            owner_id = -1 - firing_player_index;\n        } else {\n            owner_id = -100;\n        }\n\n        player_state_t *firing_player =\n            &player_state_table[firing_player_index];\n        random_offset.x = firing_player->aim.x;\n        random_offset.y = firing_player->aim.y;\n        move_delta.x = random_offset.x - firing_player->position.x;\n        move_delta.y = random_offset.y - firing_player->position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step * firing_player->spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "direct-reindexed-player",
+          "text": "        scalar = 1.0f;\n        if (cv_friendlyFire->value != 0.0f) {\n            owner_id = -1 - render_overlay_player_index;\n        } else {\n            owner_id = -100;\n        }\n\n        random_offset.x =\n            player_state_table[render_overlay_player_index].aim.x;\n        random_offset.y =\n            player_state_table[render_overlay_player_index].aim.y;\n        move_delta.x = random_offset.x\n            - player_state_table[render_overlay_player_index].position.x;\n        move_delta.y = random_offset.y\n            - player_state_table[render_overlay_player_index].position.y;\n        angle_step = vec2_length(&move_delta) * 0.5f;\n        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;\n        angle_step = angle_step\n            * player_state_table[render_overlay_player_index].spread_heat\n            * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        }
+      ]
+    }
+  ]
+}

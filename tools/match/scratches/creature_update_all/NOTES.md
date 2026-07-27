@@ -270,3 +270,30 @@ baseline, 1,290/1,338 instructions, and `207/0/4` references. The other four
 spellings regressed by 0.3044 to 0.7426 percentage points and lost four to
 seven aligned references. No single mutation improved, so no interaction
 sweep was warranted and the native-grounded current source is retained.
+
+## Target-distance product-order sweep
+
+A final live Binary Ninja pass against target
+`3023:2:9499448411019345244` identifies the first tractable expression-level
+divergence after the known frame/index-allocation residual in the multiplayer
+target-selection block. At native `0x0042641b..0x00426532`, the distance
+calculations load `dx` and then `dy`, duplicate and multiply the `dx` value
+first, and only then form the `dy` product. The canonical VC6 body presents
+the equivalent x87 product schedule in the opposite order. The live disassembly
+export SHA-256 is
+`bc6ae07b525b4cfbee2fc6e70c5e168d73bb523750df40498f6304fc20b4ce97`;
+the live HLIL export SHA-256 is
+`1b1717b7d69680babfbd7e7dbff7e76f35a830b4c70d168222e20a5eb7728254`.
+
+The schema-1 spec `target-distance-product-order-mutations.json` reverses the
+two mathematically equivalent square addends independently in the current
+player, alternate player, solo fallback, and auto-target comparisons. Spec
+SHA-256 is
+`5eee4eb403d9cbc0f68929c976749d9b3417c51333f15c5ca2efe0b1ad97ed23`;
+the retained canonical source SHA-256 is
+`0928e121f84ed1937daeb86a57b9b0383bd0d3b2e35e395e4a491ce4bfe2eec3`.
+The recorded sweep exhausts all 15/15 non-empty combinations through four
+simultaneous changes. Every single-site and interaction variant is byte-neutral
+at 49.0868%, 1,290/1,338 instructions, `207/0/4` references, and 2,616.3242
+weighted bytes. VC6 therefore canonicalizes these equivalent source spellings
+before the observed x87 scheduling decision. No source change is retained.

@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-helper-boundary",
+      "find": "    void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_vec2_t &set(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "explicit-this",
+          "text": "    void set(float x_value, float y_value)\n    {\n        this->x = x_value;\n        this->y = y_value;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "metadata-helper-boundary",
+      "find": "    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set_spawn(int spawn_template_id, int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set_spawn(int spawn_template_id, int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set_spawn(\n        int spawn_template_id, int spawn_trigger_time_ms)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "explicit-this",
+          "text": "    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms)\n    {\n        this->template_id = spawn_template_id;\n        this->trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "first-entry-boundary",
+      "find": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n",
+      "replacements": [
+        {
+          "name": "record-pointer",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    quest_entry_original_t *first_spawn = &spawns[0];\n    first_spawn->pos.set(1088.0f, 512.0f);\n    first_spawn->set_spawn(splitter_template_id, 1000);\n    first_spawn->count = 1;\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    quest_entry_original_t &first_spawn = spawns[0];\n    first_spawn.pos.set(1088.0f, 512.0f);\n    first_spawn.set_spawn(splitter_template_id, 1000);\n    first_spawn.count = 1;\n"
+        },
+        {
+          "name": "position-pointer",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    quest_vec2_t *first_position = &spawns[0].pos;\n    first_position->set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    quest_vec2_t &first_position = spawns[0].pos;\n    first_position.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        },
+        {
+          "name": "count-pointer",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    int *first_count = &spawns[0].count;\n    *first_count = 1;\n"
+        }
+      ]
+    }
+  ]
+}

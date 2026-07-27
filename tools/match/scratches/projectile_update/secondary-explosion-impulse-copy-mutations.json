@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-explosion-normalized-impulse",
+      "find": "                            vec2f_t impulse = {dx, dy};\n                            vec2_normalize_dispatch(&impulse, &impulse);\n                            impulse.x *= 0.1f;\n                            impulse.y *= 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);",
+      "replacements": [
+        {
+          "name": "separate-scaled-aggregate",
+          "text": "                            vec2f_t direction = {dx, dy};\n                            vec2_normalize_dispatch(&direction, &direction);\n                            vec2f_t impulse = {\n                                direction.x * 0.1f,\n                                direction.y * 0.1f,\n                            };\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);"
+        },
+        {
+          "name": "separate-scaled-components",
+          "text": "                            vec2f_t direction = {dx, dy};\n                            vec2_normalize_dispatch(&direction, &direction);\n                            vec2f_t impulse;\n                            impulse.x = direction.x * 0.1f;\n                            impulse.y = direction.y * 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-set-helper",
+      "find": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "position-by-value",
+          "text": "    void set(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return *this;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "builder-add-helper",
+      "find": "    void add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->set(\n            position,\n            spawn_template_id,\n            spawn_trigger_time_ms,\n            spawn_count);\n        ++cursor;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->set(\n            position,\n            spawn_template_id,\n            spawn_trigger_time_ms,\n            spawn_count);\n        ++cursor;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->set(\n            position,\n            spawn_template_id,\n            spawn_trigger_time_ms,\n            spawn_count);\n        ++cursor;\n    }\n"
+        },
+        {
+          "name": "position-by-value",
+          "text": "    void add(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->set(\n            position,\n            spawn_template_id,\n            spawn_trigger_time_ms,\n            spawn_count);\n        ++cursor;\n    }\n"
+        },
+        {
+          "name": "direct-entry-stores",
+          "text": "    void add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->pos = position;\n        cursor->template_id = spawn_template_id;\n        cursor->trigger_time_ms = spawn_trigger_time_ms;\n        cursor->count = spawn_count;\n        ++cursor;\n    }\n"
+        },
+        {
+          "name": "direct-entry-stores-template-first",
+          "text": "    void add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->template_id = spawn_template_id;\n        cursor->pos = position;\n        cursor->trigger_time_ms = spawn_trigger_time_ms;\n        cursor->count = spawn_count;\n        ++cursor;\n    }\n"
+        },
+        {
+          "name": "return-builder-reference",
+          "text": "    quest_spawn_builder_t &add(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        ++count;\n        cursor->set(\n            position,\n            spawn_template_id,\n            spawn_trigger_time_ms,\n            spawn_count);\n        ++cursor;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

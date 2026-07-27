@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "turn-step-lifetime",
+      "find": "    if (direct > wrapped) {\n        if (target < *angle) {\n            *angle = frame_dt * amount * rate + *angle;\n            return amount;\n        }\n    } else {\n        if (target > *angle) {\n            *angle = frame_dt * amount * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - frame_dt * amount * rate;\n",
+      "replacements": [
+        {
+          "name": "split-final-rate",
+          "text": "    float step;\n    if (direct > wrapped) {\n        step = frame_dt * amount;\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        step = frame_dt * amount;\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step * rate;\n"
+        },
+        {
+          "name": "compound-split-final-rate",
+          "text": "    float step;\n    if (direct > wrapped) {\n        step = frame_dt;\n        step *= amount;\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        step = frame_dt;\n        step *= amount;\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step * rate;\n"
+        },
+        {
+          "name": "branch-local-split-rate",
+          "text": "    if (direct > wrapped) {\n        float step = frame_dt * amount;\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n        *angle = *angle - step * rate;\n        return amount;\n    } else {\n        float step = frame_dt * amount;\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n        *angle = *angle - step * rate;\n        return amount;\n    }\n"
+        },
+        {
+          "name": "hoisted-partial-product",
+          "text": "    float step = frame_dt * amount;\n    if (direct > wrapped) {\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step * rate;\n"
+        }
+      ]
+    }
+  ]
+}

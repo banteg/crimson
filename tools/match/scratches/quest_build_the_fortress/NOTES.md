@@ -49,3 +49,15 @@ None improved the 96.08% baseline. Named dead-entry storage is byte-neutral;
 split aggregate writes and early cursor advances regress instruction shape or
 allocation. The complete result is in `experiments.jsonl` (spec
 `63d5f1783fd858a39d11c9957d71b604dc60587e36256ec7f915e2922dc09ed8`).
+
+`first-loop-boundary-mutations.json` adds five typed record/position cursor
+forms for the seven-entry opening loop. Only the position pointer is
+byte-neutral; the record-cursor shapes lose 42.1 to 50.5 fuzzy-weighted bytes.
+`vector-helper-mutations.json` adds six constructor/assignment shapes: three
+constructor spellings are neutral and all explicit assignment operators
+regress. Their SHA-256 values are
+`51cde434112e54eed7509df5563a01482763423d1ff0ad31499d59f9fca3168c`
+and
+`3345a931147cba67328d3a8fa60d9ada42e5b5669cba0e3c77ce624535bf1f30`.
+MSVC 6.0/6.5/6.6 tie, Processor Pack and MSVC 7.0 regress, and `/G5`, `/G7`,
+`/Ox`, and `/Ob1` are neutral while `/G6` regresses.

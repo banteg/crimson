@@ -30,3 +30,14 @@ x-coordinate store. The residual is therefore not explained by local lifetime.
 All five declaration, literal, scalar-position, and const-local alternatives
 compile byte-identically at 98.39%, 62/62 instructions. This complete negative
 sweep leaves the helper-based source as the smallest honest representation.
+
+`helper-boundary-mutations.json` adds a complete 69-variant single/pair sweep
+over position and metadata helper forms plus typed first-entry boundaries.
+Every variant is byte-neutral. `setter-store-order-mutations.json` checks all
+three position/metadata reversal combinations; all regress. Their SHA-256
+values are
+`9dcba33d9a58541ec5667a3091ab7acdaf8ee09f60026f650c10efc74154c11e`
+and
+`b995511a540ec5d4809b661b41accd20f3952b12ba128b71838dae65d3f4796b`.
+MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
+`/G7`, `/Ox`, and `/Ob1` are byte-neutral while `/G6` regresses.

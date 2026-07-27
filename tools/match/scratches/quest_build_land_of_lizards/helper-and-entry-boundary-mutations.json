@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-set-helper",
+      "find": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "position-by-value",
+          "text": "    void set(\n        quest_vec2_t position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "explicit-this",
+          "text": "    void set(\n        const quest_vec2_t &position,\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        this->pos = position;\n        this->template_id = spawn_template_id;\n        this->trigger_time_ms = spawn_trigger_time_ms;\n        this->count = spawn_count;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "first-entry-boundary",
+      "find": "    spawns[0].set(\n        quest_vec2_t(256.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n",
+      "replacements": [
+        {
+          "name": "record-pointer",
+          "text": "    quest_entry_original_t *first_spawn = &spawns[0];\n    first_spawn->set(\n        quest_vec2_t(256.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "    quest_entry_original_t &first_spawn = spawns[0];\n    first_spawn.set(\n        quest_vec2_t(256.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n"
+        },
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t first_position(256.0f, 256.0f);\n    spawns[0].set(\n        first_position,\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n"
+        },
+        {
+          "name": "const-named-position",
+          "text": "    const quest_vec2_t first_position(256.0f, 256.0f);\n    spawns[0].set(\n        first_position,\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n"
+        }
+      ]
+    },
+    {
+      "name": "second-entry-boundary",
+      "find": "    spawns[1].set(\n        quest_vec2_t(768.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n",
+      "replacements": [
+        {
+          "name": "record-pointer",
+          "text": "    quest_entry_original_t *second_spawn = &spawns[1];\n    second_spawn->set(\n        quest_vec2_t(768.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "    quest_entry_original_t &second_spawn = spawns[1];\n    second_spawn.set(\n        quest_vec2_t(768.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n"
+        },
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t second_position(768.0f, 256.0f);\n    spawns[1].set(\n        second_position,\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n"
+        },
+        {
+          "name": "const-named-position",
+          "text": "    const quest_vec2_t second_position(768.0f, 256.0f);\n    spawns[1].set(\n        second_position,\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n"
+        }
+      ]
+    }
+  ]
+}

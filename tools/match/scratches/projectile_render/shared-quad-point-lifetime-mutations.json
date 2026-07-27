@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-quad-point-declarations",
+      "find": "    int player_index;\n    int projectile_index;\n    int secondary_index;",
+      "replacements": [
+        {
+          "name": "function-scope-after-loop-indices",
+          "text": "    int player_index;\n    int projectile_index;\n    int secondary_index;\n    projectile_render_vec2_t point0;\n    projectile_render_vec2_t point1;\n    projectile_render_vec2_t point2;\n    projectile_render_vec2_t point3;"
+        }
+      ]
+    },
+    {
+      "name": "sharpshooter-quad-point-use",
+      "find": "            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;",
+      "replacements": [
+        {
+          "name": "assign-function-scope-points",
+          "text": "            point0 = start_screen - half_width;\n            point1 = start_screen + half_width;\n            point2 = end_screen + half_width;\n            point3 = end_screen - half_width;"
+        }
+      ]
+    },
+    {
+      "name": "conventional-quad-point-declarations",
+      "find": "        projectile_render_vec2_t point0;\n        projectile_render_vec2_t point1;\n        projectile_render_vec2_t point2;\n        projectile_render_vec2_t point3;\n",
+      "replacements": [
+        {
+          "name": "reuse-function-scope-points",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

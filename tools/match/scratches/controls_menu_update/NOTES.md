@@ -366,3 +366,72 @@ are `86b57632d8e22f4f0ccce380ae6a7729964fb6256cd2feeb7d064c548a5307df`,
 and `cdfbe1fe76105490210d88db25c68fc2ba835282030c48eb94b63f604cc267ae`.
 The updated `experiments.jsonl` SHA-256 is
 `1ad3a6e82f40c9b8f237cc1b6e99a164f8ad29ab4b4342367da6509e805cbad8`.
+
+## Active-row reload and tint-aggregate recovery
+
+This wave started from **80.3731%**, 17,110.6380 fuzzy-weighted bytes, a
+4,178.3620-byte fuzzy gap, 5,406/5,421 candidate/native instructions, a
+164-instruction exact prefix, and reference audit 1,542/4/9.
+
+Live Binary Ninja target
+`3023:2:9499448411019345244` shows that native
+`0x0044cb06..0x0044cb4a` indexes `controls_rebind_items` directly. It reloads
+`controls_rebind_slot_index` after `crt_free`, scales the reloaded index, and
+keeps that scaled offset across `strdup_malloc`. The old scratch instead held
+an item reference across both calls. All four natural access shapes in
+`active-rebind-row-access-mutations.json` improved the aggregate score, but
+direct repeated indexing is the unique native instruction-for-instruction
+shape. It recovers 28.2946 weighted bytes, adds two native instructions, and
+changes the reference audit from 1,542/4/9 to 1,546/4/8.
+
+The adjacent native block at `0x0044cb51..0x0044cb97` loads tint R, B, and G,
+writes global alpha `0.7`, reloads alpha, and then publishes the local color.
+This is naturally explained by the contiguous global color aggregate already
+used by neighboring recovered UI code: assign its alpha field, then copy the
+aggregate into the local heading tint. The complete ten-variant
+`section-tint-publication-mutations.json` sweep confirms that
+`alpha-first-aliased-aggregate-copy` is the unique best form. It recovers a
+further 45.5953 weighted bytes, adds the one missing instruction, and improves
+the reference audit to 1,550/4/7.
+
+Together the retained changes make the normalized candidate exact from the
+native instruction at `0x0044cafb` through `0x0044cbea`; the next mismatch is
+the first heading line-offset stack slot at `0x0044cbef`.
+
+Four complete negative matrices bound nearby residuals:
+
+- `entry-alignment-interactions-mutations.json` evaluated all 19 runtime-copy
+  and item-reset singles and pairs. Two variants are byte-identical; the
+  native-looking early cursor schedules lose at least 1,018.54 weighted
+  bytes, and the interior-byte reset forms lose at least 3,699.32.
+- `heading-line-local-lifetimes-mutations.json` evaluated all eight
+  declaration and initialization placements for the repeated `(0, 13)`
+  heading vector. Four are byte-identical and four regress, proving that its
+  remaining stack-slot difference comes from broader function allocation.
+- `axis-peak-bit-scalar-mutations.json` evaluated six scalar, union, and
+  direct sign-bit-mask spellings. Two are byte-identical; the variants that
+  add the missing tail instructions still lose at least 143.90 weighted bytes
+  and 29 resolved references.
+- `axis-peak-bit-selection-mutations.json` evaluated six combinations of the
+  scalar bit temporary with branch and conditional selection shapes. Every
+  variant regresses; the nearest loses 54.23 weighted bytes.
+
+All 53 planned variants completed without truncation. The retained source now
+matches **80.7202%**, with **17,184.5280 fuzzy-weighted bytes** and a
+**4,104.4720-byte fuzzy gap**, 5,409 candidate instructions versus 5,421
+native instructions, a 164-instruction exact prefix, and reference audit
+**1,550 resolved / 4 unresolved / 7 mismatched**. This is a net recovery of
+73.8899 weighted bytes and two reference mismatches from the starting point.
+
+The retained source SHA-256 is
+`c44122e1e1e2f007f6dc5843c72960c57354ff7df461eb325ee3b812802e3487`.
+The recorded spec SHA-256 values are
+`40e1cf31137f7cf327c325fcb728fa7a47ff640b2e7177da54c2e011d83a2cda`,
+`daf069b49199ab58086bde73a95b2865d6799a00938d34434f0ee5bc1ada1ef3`,
+`d75e006bab6e2edff097ba4adec19c21537022ac8de9516933d80b711e99cd77`,
+`8c15f8b1f5b4f59416e2a723b1758e837b8c0243cd08ba2762c2d3f6a78129aa`,
+`e67c1557d747cc275714371ca0ac3809bd1cfbff5c3194c6fad1f990508b2743`,
+and
+`746641895ba65e4f8aa645ff24d44519b47117af79ac1b0d392c0ed12fc5b2da`.
+The updated `experiments.jsonl` SHA-256 is
+`7aaf689d28864fa1f3b83dcc710e476a56e595363c5dfcff5f5a96646819e9ac`.

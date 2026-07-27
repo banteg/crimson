@@ -416,3 +416,52 @@ Two additional native-shape probes also reject superficially closer spellings:
   aggregate remains. The complete 17-variant interaction sweep is recorded
   with spec SHA
   `f8836b8b398ef179e60e4a0b86463a1a06d05447739e4bc42bf7e31ee9d57fa5`.
+
+## Native particle hit-angle geometry
+
+A fresh live Binary Ninja export from target
+`3023:2:9499448411019345244` has HLIL SHA-256
+`3e29b5b5217f5cf7494380497272c903c80eb07d2a6f3e21eef5d13fde0d7204`
+and disassembly SHA-256
+`417f4c7a6dfe6f64d9e6a6da1c911c07c17e5e575a59f8247db83a22592c6d55`.
+At `0x00422936..0x00422981`, native does not collapse the particle collision
+heading into two `atan2` arguments. It first materializes
+`frame_dt * velocity` in `pos_2`, subtracts that from the particle position
+into `pos_3`, and then subtracts the hit creature position into `impulse`
+before calling `atan2`.
+
+`particle-hit-geometry-mutations.json` records all four bounded spellings with
+spec SHA
+`27e9b694764f47d54c120579c71911e443ca407a6234034b28b0b2d97497677f`.
+The native-complete three-vector form is the unique best result: it adds five
+candidate instructions, raises the weighted match from
+`4200.6320/8409` to `4207.3977/8409` bytes
+(`49.9540%` to `50.0345%`), and reduces the fuzzy gap by `6.7656` bytes.
+The independent recorded probe reproduces the same source SHA-256
+`53f5991434dba671cc095787f498ae7ff2ee1f7e338cbc02dd9a05b2b672d09d`.
+References move from `357/0/27` to `356/0/27`; there are still no unresolved
+references.
+
+Moving the three recovered vectors to function scope is byte-identical in all
+three tested declaration orders, so the simpler collision-local declarations
+remain. The complete lifetime sweep has spec SHA
+`248a10be4a412739967d4f92ee64c90e3505be27c87ce7624aca2d131b02b312`.
+A separate four-form test of staging the final hit-creature displacement
+regresses by at least `148.68` weighted bytes, despite the native tail's
+temporary stores, so the direct component update remains; that sweep has spec
+SHA
+`70cac96726095e03e48b873893eae5ced8dd5a6ae69ae503c9bffc5bb9a994bb`.
+
+Other live-slot hypotheses were also fully bounded and rejected. Hoisting the
+secondary trail vectors is byte-neutral
+(`69860cf13e02b46f5be6a904ddda834b54ad988946c9643ef46ea0a3e79ba0d7`).
+Cross-phase reuse of native `var_a0` loses at least `123.78` weighted bytes
+(`6602301ee6b8351a47771344b0908d2466e291c2cc8d96b792708da701532ba3`).
+Separating the exploding-secondary normalized direction from its scaled
+damage impulse also regresses as direct locals, function-scope locals, and a
+returned-value helper, recorded under spec SHAs
+`43c96baa64ab1a487e2c767a07f7cb645585ec60d8ed05a39d2d05f8cc876ccb`,
+`671a8c10d1dab9b7017ea2b8daadb4bea54bbbde1b04efdd1ff742f51be5583a`,
+and
+`7aeb552b56083433b31e489d7a7be37c119dfb3c03e2d4b5a90dd880fc2eadd0`.
+No rejected source spelling is retained.

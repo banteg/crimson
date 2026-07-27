@@ -54,3 +54,20 @@ fades, click flags, all secret-line mutations, both buttons, and exit actions.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail audit (2026-07-27)
+
+Live Binary Ninja reconfirmed that the only residual is the initial panel
+anchor's temporary slot and equivalent x87 schedule. MSVC 6.5 and 6.6 tie at
+the baseline; MSVC 6.0 falls to 88.84%, Processor Pack to 77.75%, and VC7 to
+66.15% with reference debt. No tested flag profile is exact.
+
+`hit-position-lifetime-mutations.json` evaluates three early/phase-local
+declaration combinations: both complete forms are byte-neutral and the
+declaration-removal-only form correctly fails compilation.
+`panel-declaration-order-mutations.json` evaluates four predeclaration orders:
+predeclaring only the real position is byte-neutral; the three panel-first
+forms fall to 88.84% and introduce one reference mismatch. The recorded
+`predeclared-panel-position-confirmation` probe is neutral. No source change
+was retained; baseline and final remain **98.90%**, 454/454, prefix 48,
+`175/0/0`.

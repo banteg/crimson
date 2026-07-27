@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "setjmp-failure-exit",
+      "find": "            if (image != 0) {\n                delete image;\n            }\n            return 0;\n",
+      "replacements": [
+        {
+          "name": "goto-shared-failure",
+          "text": "            if (image != 0) {\n                delete image;\n            }\n            goto decode_failed;\n"
+        }
+      ]
+    },
+    {
+      "name": "allocation-failure-exit",
+      "find": "        if (image == 0) {\n            jpeg_destroy_decompress(&context);\n            return 0;\n        }\n",
+      "replacements": [
+        {
+          "name": "goto-shared-failure",
+          "text": "        if (image == 0) {\n            jpeg_destroy_decompress(&context);\n            goto decode_failed;\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "empty-payload-failure-label",
+      "find": "        return image;\n    }\n\n    return 0;\n}\n",
+      "replacements": [
+        {
+          "name": "shared-failure-label",
+          "text": "        return image;\n    }\n\ndecode_failed:\n    return 0;\n}\n"
+        }
+      ]
+    }
+  ]
+}

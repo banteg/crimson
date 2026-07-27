@@ -60,13 +60,15 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     }
 
     int trigger_offset_ms = step_index * 300;
-    spawns[130].pos = quest_vec2_t(1280.0f, 512.0f);
+    spawns[130].pos.x = 1280.0f;
+    spawns[130].pos.y = 512.0f;
     spawns[130].set_spawn(
         SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 10000,
         16);
 
-    spawns[131].pos = quest_vec2_t(-256.0f, 512.0f);
+    spawns[131].pos.x = -256.0f;
+    spawns[131].pos.y = 512.0f;
     spawns[131].set_spawn(
         SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
         trigger_offset_ms + 20000,

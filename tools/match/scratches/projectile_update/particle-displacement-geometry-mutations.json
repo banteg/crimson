@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-creature-displacement",
+      "find": "                            hit_creature->position.x +=\n                                frame_dt * particle->velocity.x;\n                            hit_creature->position.y +=\n                                frame_dt * particle->velocity.y;",
+      "replacements": [
+        {
+          "name": "staged-velocity-dt-displacement",
+          "text": "                            vec2f_t reflected_velocity = {\n                                particle->velocity.x,\n                                particle->velocity.y,\n                            };\n                            float displacement_dt = frame_dt;\n                            vec2f_t creature_displacement = {\n                                reflected_velocity.x * displacement_dt,\n                                reflected_velocity.y * displacement_dt,\n                            };\n                            hit_creature->position.x += creature_displacement.x;\n                            hit_creature->position.y += creature_displacement.y;"
+        },
+        {
+          "name": "staged-velocity-displacement",
+          "text": "                            vec2f_t reflected_velocity = {\n                                particle->velocity.x,\n                                particle->velocity.y,\n                            };\n                            vec2f_t creature_displacement = {\n                                reflected_velocity.x * frame_dt,\n                                reflected_velocity.y * frame_dt,\n                            };\n                            hit_creature->position.x += creature_displacement.x;\n                            hit_creature->position.y += creature_displacement.y;"
+        },
+        {
+          "name": "staged-dt-displacement",
+          "text": "                            float displacement_dt = frame_dt;\n                            vec2f_t creature_displacement = {\n                                particle->velocity.x * displacement_dt,\n                                particle->velocity.y * displacement_dt,\n                            };\n                            hit_creature->position.x += creature_displacement.x;\n                            hit_creature->position.y += creature_displacement.y;"
+        },
+        {
+          "name": "staged-displacement-only",
+          "text": "                            vec2f_t creature_displacement = {\n                                frame_dt * particle->velocity.x,\n                                frame_dt * particle->velocity.y,\n                            };\n                            hit_creature->position.x += creature_displacement.x;\n                            hit_creature->position.y += creature_displacement.y;"
+        }
+      ]
+    }
+  ]
+}

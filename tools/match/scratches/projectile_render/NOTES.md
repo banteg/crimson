@@ -243,3 +243,31 @@ two complete records live in `experiments.jsonl`, whose SHA-256 is
 check of the conventional assault-rifle output geometry. Both natural
 alternatives regress by at least 27.66 fuzzy-weighted bytes, with no reference
 or prefix gain. No geometry rewrite was retained.
+
+## Cross-pass lifetime follow-up
+
+A fresh live Binary Ninja export from target
+`3023:2:9499448411019345244` has HLIL SHA-256
+`c1fa9ef04e3aeb54200892374c0593a054f5c748666fadf2a48d0761c0d7fb67`
+and disassembly SHA-256
+`0dfd7325f582932e85f04935e39a91521b5dc82aeac78781a62cea084ba104a1`.
+A focused profile refresh across MSVC 6.5/6.6 and `/GB`/`/G5` reproduces the
+same best output in all four cases: `51.0638298%`, 2,854/3,021 instructions,
+a `6,141.979`-byte fuzzy gap, and `402/0/16` references. The existing stock
+MSVC 6.5 `/O2 /GB` profile therefore remains justified.
+
+Two complete interaction sweeps reject additional cross-pass lifetime
+spellings:
+
+- Reusing one function-scope alpha for the pre-pass zero tint and conventional
+  projectile life alpha is byte-identical in every valid interaction. The
+  seven-variant sweep has spec SHA
+  `bb32f4ecf17bcfbd6d2e92081033282e453e5d61acf41f36c9f4c026a877770f`.
+- Sharing the four Sharpshooter quad points with the conventional projectile
+  pass is also byte-identical when both uses are activated. Merely adding the
+  unused function-scope point bank loses `17.09` weighted bytes. The complete
+  seven-variant sweep has spec SHA
+  `915c76ee9dc101de38b486ca4d25f6bd572bf18f769b38fe3183b7b59269ca41`.
+
+No render source rewrite is retained; its final metrics remain the baseline
+above.

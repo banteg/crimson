@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-phase-vector-declaration",
+      "find": "    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;",
+      "replacements": [
+        {
+          "name": "after-movement-locals",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t phase_vector;\n    float ion_damage_scale = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "primary-freeze-shard-use",
+      "find": "                                                vec2f_t shard_pos = {\n                                                    projectile->position.x\n                                                        + offset_x,\n                                                    projectile->position.y\n                                                        + offset_y,\n                                                };\n                                                effect_spawn_freeze_shard(\n                                                    &shard_pos,",
+      "replacements": [
+        {
+          "name": "assign-shared-phase-vector",
+          "text": "                                                phase_vector.x =\n                                                    projectile->position.x\n                                                        + offset_x;\n                                                phase_vector.y =\n                                                    projectile->position.y\n                                                        + offset_y;\n                                                effect_spawn_freeze_shard(\n                                                    &phase_vector,"
+        }
+      ]
+    },
+    {
+      "name": "secondary-movement-use",
+      "find": "                vec2f_t movement = {\n                    frame_dt * secondary->pos.vx.vel_x,\n                    frame_dt * secondary->pos.vx.vy.vel_y,\n                };\n                vec2_add(\n                    &secondary->position,\n                    &movement,\n                    4.0f);",
+      "replacements": [
+        {
+          "name": "assign-shared-phase-vector",
+          "text": "                phase_vector.x =\n                    frame_dt * secondary->pos.vx.vel_x;\n                phase_vector.y =\n                    frame_dt * secondary->pos.vx.vy.vel_y;\n                vec2_add(\n                    &secondary->position,\n                    &phase_vector,\n                    4.0f);"
+        }
+      ]
+    },
+    {
+      "name": "particle-default-movement-use",
+      "find": "                    vec2f_t movement = {\n                        move_x * 2.5f * particle->intensity,\n                        frame_dt * particle->velocity.y * 2.5f\n                            * particle->intensity,\n                    };\n                    vec2_add(\n                        &particle->position,\n                        &movement,\n                        3.0f);",
+      "replacements": [
+        {
+          "name": "assign-shared-phase-vector",
+          "text": "                    phase_vector.x =\n                        move_x * 2.5f * particle->intensity;\n                    phase_vector.y = frame_dt * particle->velocity.y * 2.5f\n                        * particle->intensity;\n                    vec2_add(\n                        &particle->position,\n                        &phase_vector,\n                        3.0f);"
+        }
+      ]
+    }
+  ]
+}

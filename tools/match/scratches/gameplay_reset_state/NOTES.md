@@ -89,3 +89,9 @@ the auxiliary-clear/move-target lifetime. Two alternative orderings are
 byte-neutral; every temporary or scalar interaction regresses. Complete
 two-site coverage therefore confirms that the remaining 16.02-byte gap is not
 hidden behind an untested interaction between the two mismatch regions.
+
+`vector-constructor-shape-mutations.json` records three additional constructor
+forms. An X-then-Y body and a multiline initializer list are byte-neutral at
+99.02%; reversing the body stores regresses to 97.39% and introduces a
+reference mismatch. Constructor syntax therefore does not recover the
+remaining temporary-store schedule.

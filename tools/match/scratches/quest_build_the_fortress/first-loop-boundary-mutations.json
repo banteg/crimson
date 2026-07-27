@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-boundary",
+      "find": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        spawns[spawn_index].pos = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 1;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n",
+      "replacements": [
+        {
+          "name": "named-record-pointer-in-loop",
+          "text": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        quest_entry_original_t *spawn = &spawns[spawn_index];\n        spawn->pos = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        spawn->template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n"
+        },
+        {
+          "name": "named-record-reference-in-loop",
+          "text": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        quest_entry_original_t &spawn = spawns[spawn_index];\n        spawn.pos = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        spawn.template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        spawn.trigger_time_ms = trigger_time_ms;\n        spawn.count = 1;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n"
+        },
+        {
+          "name": "preloop-record-cursor",
+          "text": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    quest_entry_original_t *spawn = &spawns[spawn_index];\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        spawn->pos = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        spawn->template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n        ++spawn;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n"
+        },
+        {
+          "name": "position-pointer-in-loop",
+          "text": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        quest_vec2_t *position = &spawns[spawn_index].pos;\n        *position = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        spawns[spawn_index].template_id =\n            SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 1;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n"
+        },
+        {
+          "name": "entry-count-after-first-cursor",
+          "text": "    int spawn_index = 1;\n    int trigger_time_ms = 1100;\n    quest_entry_original_t *first_spawn = &spawns[spawn_index];\n    int entry_count = 8;\n    while (trigger_time_ms < 0x14B4) {\n        first_spawn->pos = quest_vec2_t(\n            768.0f,\n            (float)y_seed * 0.125f + 256.0f);\n        first_spawn->template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n        first_spawn->trigger_time_ms = trigger_time_ms;\n        first_spawn->count = 1;\n        ++first_spawn;\n        ++spawn_index;\n        trigger_time_ms += 600;\n        y_seed += 0x200;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

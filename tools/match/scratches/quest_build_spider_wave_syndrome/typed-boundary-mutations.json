@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "typed-loop-boundary",
+      "find": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = config_blob.player_count * 2 + 6;\n",
+      "replacements": [
+        {
+          "name": "position-pointer",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        quest_vec2_t *position = &spawn->pos;\n        position->x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        position->y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        quest_vec2_t &position = spawn->pos;\n        position.x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        position.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "record-reference",
+          "text": "        quest_entry_original_t &spawn = builder.spawns[builder.count];\n        spawn.pos.x = -64.0f;\n        spawn.set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        spawn.pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn.count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "builder-count-pointer",
+          "text": "        int *entry_count = &builder.count;\n        quest_entry_original_t *spawn = &builder.spawns[*entry_count];\n        spawn->pos.x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++*entry_count;\n        spawn->count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "spawn-count-pointer",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        int *spawn_count = &spawn->count;\n        *spawn_count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "metadata-pointer-after-position",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        quest_entry_original_t *metadata = spawn;\n        metadata->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        ++builder.count;\n        metadata->count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "const-record-pointer",
+          "text": "        quest_entry_original_t *const spawn =\n            &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            trigger_time_ms);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = config_blob.player_count * 2 + 6;\n"
+        }
+      ]
+    }
+  ]
+}

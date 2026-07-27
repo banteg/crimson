@@ -39,9 +39,9 @@ extern "C" void quest_build_syntax_terror(
         config_blob.player_count += 4;
     }
 
-    int outer_seed = 0x14c9;
-    int outer_index = 0;
     int trigger_base = 1500;
+    int outer_index = 0;
+    int outer_seed = 0x14c9;
 
     do {
         int inner_index = 0;

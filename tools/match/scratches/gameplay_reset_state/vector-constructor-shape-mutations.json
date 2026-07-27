@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "reset-vector-constructor",
+      "find": "    reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "body-x-then-y",
+          "text": "    reset_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "body-y-then-x",
+          "text": "    reset_vec2_t(float x_value, float y_value)\n    {\n        y = y_value;\n        x = x_value;\n    }\n"
+        },
+        {
+          "name": "multiline-initializer-list",
+          "text": "    reset_vec2_t(float x_value, float y_value)\n        : x(x_value),\n          y(y_value)\n    {}\n"
+        }
+      ]
+    }
+  ]
+}

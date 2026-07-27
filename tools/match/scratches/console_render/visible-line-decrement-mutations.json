@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decrement-visible-line-limit",
+      "find": "        int visible_line_limit = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "compound-subtract-two",
+          "text": "        int visible_line_limit = height / 16;\n        visible_line_limit -= 2;\n"
+        },
+        {
+          "name": "two-pre-decrements",
+          "text": "        int visible_line_limit = height / 16;\n        --visible_line_limit;\n        --visible_line_limit;\n"
+        },
+        {
+          "name": "two-post-decrements",
+          "text": "        int visible_line_limit = height / 16;\n        visible_line_limit--;\n        visible_line_limit--;\n"
+        },
+        {
+          "name": "negative-left-addition",
+          "text": "        int visible_line_limit = -2 + height / 16;\n"
+        }
+      ]
+    },
+    {
+      "name": "decrement-maximum-line-limit",
+      "find": "        int max_visible_lines = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "compound-subtract-two",
+          "text": "        int max_visible_lines = height / 16;\n        max_visible_lines -= 2;\n"
+        },
+        {
+          "name": "two-pre-decrements",
+          "text": "        int max_visible_lines = height / 16;\n        --max_visible_lines;\n        --max_visible_lines;\n"
+        },
+        {
+          "name": "two-post-decrements",
+          "text": "        int max_visible_lines = height / 16;\n        max_visible_lines--;\n        max_visible_lines--;\n"
+        },
+        {
+          "name": "negative-left-addition",
+          "text": "        int max_visible_lines = -2 + height / 16;\n"
+        }
+      ]
+    }
+  ]
+}

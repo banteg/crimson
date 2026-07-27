@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-player-binding-timing",
+      "find": "            float aim_heading = player->aim_heading;\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;\n\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];",
+      "replacements": [
+        {
+          "name": "bind-before-muzzle-heading",
+          "text": "            float aim_heading = player->aim_heading;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;"
+        },
+        {
+          "name": "bind-before-trig-components",
+          "text": "            float aim_heading = player->aim_heading;\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;"
+        }
+      ]
+    }
+  ]
+}

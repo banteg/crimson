@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scalar-copy-helper-definition",
+      "find": "struct frame_color_t {\n",
+      "replacements": [
+        {
+          "name": "inline-scalar-copy",
+          "text": "static __inline void frame_copy_scalar(float *dst, float value)\n{\n    *dst = value;\n}\n\nstruct frame_color_t {\n"
+        },
+        {
+          "name": "forceinline-scalar-copy",
+          "text": "static __forceinline void frame_copy_scalar(float *dst, float value)\n{\n    *dst = value;\n}\n\nstruct frame_color_t {\n"
+        }
+      ]
+    },
+    {
+      "name": "scalar-copy-helper-calls",
+      "find": "            float *aim = &player_aim_screen_x[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;\n",
+      "replacements": [
+        {
+          "name": "separate-component-calls",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            frame_copy_scalar(&aim[0], ui_mouse_x);\n            frame_copy_scalar(&aim[1], ui_mouse_y);\n"
+        }
+      ]
+    }
+  ]
+}

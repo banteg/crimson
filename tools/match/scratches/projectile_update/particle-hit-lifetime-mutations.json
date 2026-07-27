@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-vector-declarations",
+      "find": "    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;",
+      "replacements": [
+        {
+          "name": "native-slot-order",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t particle_hit_direction;\n    vec2f_t particle_displacement;\n    vec2f_t particle_previous_position;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "source-use-order",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t particle_displacement;\n    vec2f_t particle_previous_position;\n    vec2f_t particle_hit_direction;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "reverse-source-order",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t particle_hit_direction;\n    vec2f_t particle_previous_position;\n    vec2f_t particle_displacement;\n    float ion_damage_scale = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "particle-hit-vector-use",
+      "find": "                            vec2f_t displacement = {\n                                frame_dt * particle->velocity.x,\n                                frame_dt * particle->velocity.y,\n                            };\n                            vec2f_t previous_position = {\n                                particle->position.x - displacement.x,\n                                particle->position.y - displacement.y,\n                            };\n                            vec2f_t hit_direction = {\n                                previous_position.x\n                                    - creature_pool[hit_id].position.x,\n                                previous_position.y\n                                    - creature_pool[hit_id].position.y,\n                            };\n                            float hit_angle = (float)atan2(\n                                hit_direction.y,\n                                hit_direction.x);",
+      "replacements": [
+        {
+          "name": "assign-function-scope-vectors",
+          "text": "                            particle_displacement.x =\n                                frame_dt * particle->velocity.x;\n                            particle_displacement.y =\n                                frame_dt * particle->velocity.y;\n                            particle_previous_position.x =\n                                particle->position.x\n                                    - particle_displacement.x;\n                            particle_previous_position.y =\n                                particle->position.y\n                                    - particle_displacement.y;\n                            particle_hit_direction.x =\n                                particle_previous_position.x\n                                    - creature_pool[hit_id].position.x;\n                            particle_hit_direction.y =\n                                particle_previous_position.y\n                                    - creature_pool[hit_id].position.y;\n                            float hit_angle = (float)atan2(\n                                particle_hit_direction.y,\n                                particle_hit_direction.x);"
+        }
+      ]
+    }
+  ]
+}

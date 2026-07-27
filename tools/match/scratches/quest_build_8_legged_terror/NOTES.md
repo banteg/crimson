@@ -40,6 +40,14 @@ five declaration-order replays were byte-neutral (spec
 VC6.0, 6.5, 6.5 Processor Pack, and 6.6 tie; VC7 is worse. The complete
 results are recorded in `experiments.jsonl`.
 
+`opening-position-boundary-mutations.json` adds six aggregate-position,
+inlined position-helper, and named-width shapes around the remaining opening
+entry. Every variant regresses; the least loses 30.1 fuzzy-weighted bytes and
+the exact prefix drops from 14 to 2 instructions. The plan SHA-256 is
+`80a74b7b2a0256678a861be1255d4189944ede56b46f0a0dd7cdc9696fb4c2cb`.
+A fresh flag matrix leaves `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied and
+confirms `/G6` is worse.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

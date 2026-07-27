@@ -103,3 +103,12 @@ branches, returns, and all 13 references are otherwise accounted for.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
 metadata-only change preserves the before/after result: 71.67%, prefix 0/126,
 114 candidate versus 126 target instructions, and references 13/0/0.
+
+## Recorded default-damage backedge search
+
+`default-damage-backedge-mutations.json` records five declaration and
+Fire-Bullets backedge combinations. Separating declaration from assignment is
+byte-neutral. Repeating the evidenced `1.0f` assignment on either side of the
+type override raises the candidate to 120 instructions but worsens the score
+to 69.92%; the backend still does not reproduce native's four-byte local, so
+the redundant source assignment is not retained.

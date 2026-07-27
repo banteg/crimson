@@ -57,3 +57,11 @@ Float `else if` axis selection compiles byte-identically; explicit
 float/double/long-double shared-tail and declaration-order variants do not
 improve the native layout. These negative results are retained in
 `experiments.jsonl`.
+
+A further recorded three-way `switch` sweep tested direct returns in both case
+orders and a shared float tail. All three shorten the candidate to 170
+instructions and score 80.00%; the reverse direct-return form also resolves all
+eight references. They are rejected because they destroy the 95-instruction
+exact prefix (falling to 5) and move the instruction count farther from the
+175-instruction target. The retained `if` spelling therefore remains the
+stronger local match despite its slightly lower aggregate ratio.

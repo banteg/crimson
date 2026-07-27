@@ -78,3 +78,11 @@ step, store, or reference is missing.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. This is
 byte-neutral: before and after are 89.87%, prefix 11/237, 237/237
 instructions, and references 80/0/0.
+
+## Recorded Ion-branch search
+
+`ion-branch-shape-mutations.json` records four ordinary independent, nested,
+split-test, and inverted-test spellings. VC6 emits the same 237-instruction
+candidate at 89.87% with references 80/0/0 for every form. This confirms that
+the native tail placement is backend block layout rather than evidence for a
+different semantic branch.

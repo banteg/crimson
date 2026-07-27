@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-bonus-position",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].pos.x = 256.0f;\n    spawns[0].pos.y = 256.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "right-big-alien-position",
+      "find": "    spawns[1].pos = quest_vec2_t(\n        (float)(terrain_texture_width + 32),\n        (float)(terrain_texture_height / 2));\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].pos.x = (float)(terrain_texture_width + 32);\n    spawns[1].pos.y = (float)(terrain_texture_height / 2);\n"
+        }
+      ]
+    },
+    {
+      "name": "left-big-alien-position",
+      "find": "    spawns[10].pos = quest_vec2_t(\n        -32.0f,\n        (float)(terrain_texture_height / 2));\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[10].pos.x = -32.0f;\n    spawns[10].pos.y = (float)(terrain_texture_height / 2);\n"
+        }
+      ]
+    }
+  ]
+}

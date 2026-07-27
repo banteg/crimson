@@ -88,3 +88,21 @@ call-only partial form fails compilation. The native import-pointer hoist
 cannot be recovered through an honest source-level declaration under the
 current CRT headers, so no import spelling is retained. The plan SHA-256 is
 `147c5fe7379f0cc416f334900cdb9c37e81ff6002d01909c1c32304571611061`.
+
+## Private switch-table audit
+
+Live bytes identify the final `68/1/1` reference pair precisely. Native has a
+23-entry jump table at `0x10006b80..0x10006bdc` followed by the 81-byte
+ID-`5..85` lookup table. ID 8 receives dispatch index 3 while the true default
+IDs 9 and 10 receive index 22; both jump-table entries point to the same
+ordinary record-copy block at `0x10006b42`. The stock candidate emits the same
+router body but folds all three IDs into one default index, leaving a 22-entry
+private jump table. Thus the unresolved/mismatched operands are the two
+compiler-local tables, not program data or a missing case behavior.
+
+Two recorded sweeps bound honest source recovery. Adding explicit `case 8`
+(alone or grouped with IDs 9/10) compiles byte-identically because VC6 folds
+the labels before table emission. Giving case 8 a separately spelled full-copy
+body adds 5 to 15 instructions and still leaves the private-table pair at
+`1/1`; the least-bad forced form falls to 93.83%. The canonical 94.36%,
+443-instruction source is retained.

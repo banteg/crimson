@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "early-hit-position-declaration",
+      "find": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n",
+      "replacements": [
+        {
+          "name": "after-static-buttons",
+          "text": "    static credits_button_t back_button;\n    static credits_button_t secret_button;\n\n    credits_vec2_t hit_position;\n"
+        }
+      ]
+    },
+    {
+      "name": "remove-phase-local-hit-position-declaration",
+      "find": "    } else if (ui_screen_phase == 1) {\n        credits_vec2_t hit_position;\n",
+      "replacements": [
+        {
+          "name": "reuse-early-hit-position",
+          "text": "    } else if (ui_screen_phase == 1) {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "reset-index-scope",
+      "find": "        {\n            int reset_index = render_overlay_player_index;\n            int alt_reload_time;\n",
+      "replacements": [
+        {
+          "name": "extend-through-perk-clear",
+          "text": "        int reset_index = render_overlay_player_index;\n        {\n            int alt_reload_time;\n"
+        }
+      ]
+    },
+    {
+      "name": "perk-clear-index",
+      "find": "            player_state_table[render_overlay_player_index].perk_counts,\n",
+      "replacements": [
+        {
+          "name": "reuse-reset-index",
+          "text": "            player_state_table[reset_index].perk_counts,\n"
+        }
+      ]
+    }
+  ]
+}

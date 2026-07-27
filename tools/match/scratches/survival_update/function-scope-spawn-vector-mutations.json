@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-spawn-vector",
+      "find": "extern \"C\" void survival_update(void)\n{\n",
+      "replacements": [
+        {
+          "name": "survival-vector",
+          "text": "extern \"C\" void survival_update(void)\n{\n    survival_vec2_t scripted_pos;\n"
+        },
+        {
+          "name": "canonical-vector",
+          "text": "extern \"C\" void survival_update(void)\n{\n    vec2f_t scripted_pos;\n"
+        }
+      ]
+    },
+    {
+      "name": "first-stage-vector",
+      "find": "        survival_vec2_t pos;\n        if (survival_spawn_stage == 0) {\n",
+      "replacements": [
+        {
+          "name": "use-function-scope-vector",
+          "text": "        survival_vec2_t &pos = *(survival_vec2_t *)&scripted_pos;\n        if (survival_spawn_stage == 0) {\n"
+        }
+      ]
+    }
+  ]
+}

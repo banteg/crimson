@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-store-order",
+      "find": "        x = x_value;\n        y = y_value;\n",
+      "replacements": [
+        {
+          "name": "reverse",
+          "text": "        y = y_value;\n        x = x_value;\n"
+        }
+      ]
+    },
+    {
+      "name": "metadata-store-order",
+      "find": "        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n",
+      "replacements": [
+        {
+          "name": "reverse",
+          "text": "        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n"
+        }
+      ]
+    }
+  ]
+}

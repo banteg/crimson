@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "explicit-generic-router-case",
+      "find": "    default:\n        break;\n",
+      "replacements": [
+        {
+          "name": "case-8-then-default",
+          "text": "    case 8:\n        break;\n\n    default:\n        break;\n"
+        },
+        {
+          "name": "cases-8-9-then-default",
+          "text": "    case 8:\n    case 9:\n        break;\n\n    default:\n        break;\n"
+        },
+        {
+          "name": "cases-8-9-10-then-default",
+          "text": "    case 8:\n    case 9:\n    case 10:\n        break;\n\n    default:\n        break;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-base-and-count-order",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int entry_count = 0;\n",
+      "replacements": [
+        {
+          "name": "count-before-base",
+          "text": "    int entry_count = 0;\n    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n"
+        },
+        {
+          "name": "base-const-pointer",
+          "text": "    quest_entry_original_t * const spawns =\n        (quest_entry_original_t *)entries;\n    int entry_count = 0;\n"
+        },
+        {
+          "name": "count-before-const-base",
+          "text": "    int entry_count = 0;\n    quest_entry_original_t * const spawns =\n        (quest_entry_original_t *)entries;\n"
+        }
+      ]
+    },
+    {
+      "name": "outer-induction-order",
+      "find": "    int outer_seed = 0x14c9;\n    int outer_index = 0;\n    int trigger_base = 1500;\n",
+      "replacements": [
+        {
+          "name": "index-trigger-seed",
+          "text": "    int outer_index = 0;\n    int trigger_base = 1500;\n    int outer_seed = 0x14c9;\n"
+        },
+        {
+          "name": "index-seed-trigger",
+          "text": "    int outer_index = 0;\n    int outer_seed = 0x14c9;\n    int trigger_base = 1500;\n"
+        },
+        {
+          "name": "trigger-index-seed",
+          "text": "    int trigger_base = 1500;\n    int outer_index = 0;\n    int outer_seed = 0x14c9;\n"
+        }
+      ]
+    }
+  ]
+}

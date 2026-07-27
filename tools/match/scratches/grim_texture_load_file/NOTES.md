@@ -57,11 +57,29 @@ The following diagnostic variants were rejected rather than retained:
   and has no semantic basis.
 - Giving each branch a separate image-info local prevents tail merging but
   grows the frame to 0x48 because VC6 does not reuse the slots.
+- Naming an explicit pointer to the texture-field slot compiles
+  byte-identically and does not change the 0x2c frame or register allocation.
 - Reversing one width/height assignment prevents tail merging and reaches the
   native instruction count, but emits the wrong store order.
 - `/O1`, `/G5`, `/G6`, explicit `this` aliases, named HRESULT temporaries, and
   alternate `if`/`else` spellings either do not resolve the allocation or
   degrade the match.
+
+## Recorded lookup-lifetime sweep
+
+Live native disassembly at `0x10004ec0` confirms the first structural
+divergence is already present in the prologue: native allocates a 0x30-byte
+frame, keeps `path`/`this`/the texture slot/lookup data in
+`esi`/`ebp`/`ebx`/`edi`, and spills the lookup-hit byte. The stock candidate
+allocates 0x2c bytes, keeps the hit flag in `bl`, and spills `this`.
+
+`lookup-lifetime-mutations.json` records six plausible declaration and
+assignment forms around that lifetime boundary. Reordering the pointer and
+flag, moving image outputs before them, splitting their initialization,
+spelling the flag as an unsigned byte, and using an explicit conditional all
+compile byte-identically at 64.19% with 223 instructions. An explicit
+lookup-hit branch adds one instruction and falls to 64.05%. No variant changes
+the native-relevant frame or register allocation, so none is retained.
 
 No volatile state, dummy reference, forced address, fake helper, or
 layout-only arithmetic is retained. The residual is a compiler allocation and

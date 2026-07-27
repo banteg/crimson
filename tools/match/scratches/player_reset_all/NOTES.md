@@ -62,3 +62,13 @@ though both real operands resolve to the correct adjacent fields.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
 classification is byte-neutral: before and after are 91.83%, prefix 94/127,
 130 candidate versus 127 target instructions, and references 57/0/1.
+
+## Recorded tail-lifetime search
+
+`demo-flag-lifetime-mutations.json` records four byte, bool, and integer
+lifetimes around the final player stores. All are byte-neutral, so naming the
+native flag lifetime does not alter VC6's `AL` allocation.
+`reset-index-lifetime-mutations.json` then tests carrying the cached player
+index through the perk clear. Extending only its lexical scope is byte-neutral;
+using it in the clear moves an earlier allocation boundary and regresses to
+57.25%, so the narrower source remains retained.

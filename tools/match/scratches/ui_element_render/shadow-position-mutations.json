@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "transform-shadow-position",
+      "find": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.x = element->pos_x + 7.0f;\n                shadow_pos.y = element->pos_y + 7.0f;\n                grim_interface_ptr->grim_submit_vertices_transform_color(",
+      "replacements": [
+        {
+          "name": "aggregate-initializer",
+          "text": "                ui_render_vec2_t shadow_pos = {\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f\n                };\n                grim_interface_ptr->grim_submit_vertices_transform_color("
+        },
+        {
+          "name": "y-then-x",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.y = element->pos_y + 7.0f;\n                shadow_pos.x = element->pos_x + 7.0f;\n                grim_interface_ptr->grim_submit_vertices_transform_color("
+        }
+      ]
+    },
+    {
+      "name": "offset-shadow-position",
+      "find": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.x = element->pos_x + 7.0f;\n                shadow_pos.y = element->pos_y + 7.0f;\n                shadow_pos.x += element->render_offset_x;\n                shadow_pos.y += element->render_offset_y;\n                grim_interface_ptr->grim_submit_vertices_offset_color(",
+      "replacements": [
+        {
+          "name": "fully-folded-aggregate",
+          "text": "                ui_render_vec2_t shadow_pos = {\n                    element->pos_x + 7.0f + element->render_offset_x,\n                    element->pos_y + 7.0f + element->render_offset_y\n                };\n                grim_interface_ptr->grim_submit_vertices_offset_color("
+        },
+        {
+          "name": "aggregate-then-offsets",
+          "text": "                ui_render_vec2_t shadow_pos = {\n                    element->pos_x + 7.0f,\n                    element->pos_y + 7.0f\n                };\n                shadow_pos.x += element->render_offset_x;\n                shadow_pos.y += element->render_offset_y;\n                grim_interface_ptr->grim_submit_vertices_offset_color("
+        },
+        {
+          "name": "direct-final-components",
+          "text": "                ui_render_vec2_t shadow_pos;\n                shadow_pos.x =\n                    element->pos_x + 7.0f + element->render_offset_x;\n                shadow_pos.y =\n                    element->pos_y + 7.0f + element->render_offset_y;\n                grim_interface_ptr->grim_submit_vertices_offset_color("
+        }
+      ]
+    }
+  ]
+}

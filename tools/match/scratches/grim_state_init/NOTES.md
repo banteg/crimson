@@ -25,6 +25,25 @@ constructor temporaries and current-UV stores, direct versus import-indirect
 observed state store, callback assignment, allocation/copy, and table loop is
 represented, so the recovery is marked semantic-complete rather than exact.
 
+A focused atlas-loop source-shape check rejected row locals and explicit
+row-pointer increments (both fell to 78.19%). Reusing shared `x`/`y` counters
+and spelling the grids as two-dimensional arrays compile byte-identically to
+the retained flat row-major form. These variants therefore do not recover the
+native outer-counter allocation and are not retained.
+
+The recorded config-tail ordering sweep covers eleven permutations of the
+adjacent `0x64`, `0x12`, `0x13`, and `0x14` assignments that contain all nine
+masked conflicts. Canonical order remains best. The apparent best
+reference-count variant reduces mismatches from 9 to 7, but also shortens the
+candidate to 413 instructions, moves the exact prefix from 167 to 165, and
+drops the aggregate match from 78.67% to 73.99%; it is rejected as a
+misleading reference-only improvement.
+
+A stock-VC6 diagnostic matrix further bounds the scheduling residual. `/G5`,
+`/Ob1`, and explicit `/Ot` are byte-identical to `/GB`; `/G6` drops to 61.74%,
+disabling intrinsics drops to 30.83%, and disabling global optimization drops
+to 16.50%. No function-local profile override is justified.
+
 The nine reported reference mismatches were audited as alignment artifacts in
 the single constructor/store-scheduling region. Every native destination is
 also present as an exact candidate relocation, including all four words of

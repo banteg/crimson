@@ -591,3 +591,19 @@ independent source-reference debt and remains visible as `352/0/1` rather than
 being hidden behind an alias. The first mismatch remains the evidenced
 root-offset/zero-vector local slot permutation shown above; no gameplay source
 is missing there.
+
+## Function-local declaration-order sweep
+
+A recorded eight-variant sweep tested whether the opening low-slot permutation
+was controlled by lexical declaration order. `local-declaration-order-
+mutations.json` moved the creature pointer before and among the root/child
+indices, moved the named aggregate after the scalars, reversed the loop-index
+declarations, and grouped the scalar declarations. All 8/8 variants compile
+byte-identically to the 86.9304% baseline with the same 23-instruction prefix,
+3,161/3,159 instruction shape, and `352/0/1` references. The spec SHA-256 is
+`760c800cffb12153d0617a418f3cbda73ad4ed7a803dd6cb976f2a8526cef0d8`.
+
+This rules out ordinary function-local declaration order as the control for
+the native `[esp+0x10..0x18]` rotation. VC6 is assigning those slots from the
+root-offset and zero-vector use lifetimes, so the canonical declarations remain
+unchanged rather than adding an explicit byte-offset local.

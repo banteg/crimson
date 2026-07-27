@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-stage-four-five-layout",
+      "find": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            } else if (quest_stage_major == 5) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {\n                    continue;\n                }\n            }\n",
+      "replacements": [
+        {
+          "name": "independent-stage-five",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            }\n            if (quest_stage_major == 5) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {\n                    continue;\n                }\n            }\n"
+        },
+        {
+          "name": "flat-stage-five-conjunction",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            } else if (\n                quest_stage_major == 5 && quest_stage_minor == 10\n                && bonus_id == BONUS_ID_NUKE\n            ) {\n                continue;\n            }\n"
+        },
+        {
+          "name": "explicit-final-else",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            } else {\n                if (quest_stage_major == 5) {\n                    if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                }\n            }\n"
+        },
+        {
+          "name": "separate-flat-stage-five",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            }\n            if (\n                quest_stage_major == 5 && quest_stage_minor == 10\n                && bonus_id == BONUS_ID_NUKE\n            ) {\n                continue;\n            }\n"
+        },
+        {
+          "name": "stage-five-before-four",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 5) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_NUKE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            }\n"
+        },
+        {
+          "name": "combined-major-guard",
+          "text": "            if (config_blob.hardcore && quest_stage_major == 2) {\n                if (quest_stage_minor == 10 && bonus_id == BONUS_ID_FREEZE) {\n                    continue;\n                }\n            } else if (quest_stage_major == 4 || quest_stage_major == 5) {\n                if (quest_stage_minor == 10) {\n                    if (bonus_id == BONUS_ID_NUKE) {\n                        continue;\n                    }\n                    if (quest_stage_major == 4 && bonus_id == BONUS_ID_FREEZE) {\n                        continue;\n                    }\n                }\n            }\n"
+        }
+      ]
+    }
+  ]
+}

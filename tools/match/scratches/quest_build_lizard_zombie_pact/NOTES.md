@@ -33,3 +33,22 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, and 6.6 tied at 56.84210526315789%; both the 6.5 Processor
+Pack and MSVC 7.0 regressed to 43.24%. `/GB`, `/G5`, `/G7`, `/Ox`, and
+`/Ob1` tied, while `/G6` regressed.
+
+`local-declaration-order-mutations.json` (SHA-256
+`7bcdd17056bc032b017c333b71f20bc1ebf1ad6f3dda5b97206675cbbbf5db79`)
+recorded five complete variants. Three local-order spellings produced the
+same winning bytes; the retained wave-trigger-builder order is the smallest
+source-only representation of the native wave and trigger lifetimes. No
+behavior, entry layout, or arithmetic changed.
+
+Fresh scratch recomputation improved 176.77894736842106/311 to
+180.05263157894737/311 weighted bytes: 56.84210526315789% to
+57.89473684210527%, with the gap falling from 134.22105263157894 to
+130.94736842105263. The validated result remains exactly 95/95 instructions,
+prefix two, and references 3/0/0.

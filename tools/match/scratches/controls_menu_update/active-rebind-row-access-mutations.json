@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "active-rebind-row-access",
+      "find": "    if (controls_rebind_slot_index != -1) {\n        ui_menu_item_t &active =\n            controls_rebind_items[controls_rebind_slot_index];\n        if (active.label) {\n            crt_free(active.label);\n        }\n        active.label = strdup_malloc(\"???\");\n        active.enabled = 0;\n    }",
+      "replacements": [
+        {
+          "name": "direct-global-indexing",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_items[controls_rebind_slot_index].label) {\n            crt_free(\n                controls_rebind_items[controls_rebind_slot_index].label);\n        }\n        controls_rebind_items[controls_rebind_slot_index].label =\n            strdup_malloc(\"???\");\n        controls_rebind_items[controls_rebind_slot_index].enabled = 0;\n    }"
+        },
+        {
+          "name": "local-index-direct-indexing",
+          "text": "    int active_index = controls_rebind_slot_index;\n    if (active_index != -1) {\n        if (controls_rebind_items[active_index].label) {\n            crt_free(controls_rebind_items[active_index].label);\n        }\n        controls_rebind_items[active_index].label =\n            strdup_malloc(\"???\");\n        controls_rebind_items[active_index].enabled = 0;\n    }"
+        },
+        {
+          "name": "global-index-then-pointer-after-free",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_items[controls_rebind_slot_index].label) {\n            crt_free(\n                controls_rebind_items[controls_rebind_slot_index].label);\n        }\n        ui_menu_item_t *active =\n            &controls_rebind_items[controls_rebind_slot_index];\n        active->label = strdup_malloc(\"???\");\n        active->enabled = 0;\n    }"
+        },
+        {
+          "name": "pointer-recomputed-for-each-operation",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        ui_menu_item_t *active =\n            &controls_rebind_items[controls_rebind_slot_index];\n        if (active->label) {\n            crt_free(active->label);\n        }\n        active = &controls_rebind_items[controls_rebind_slot_index];\n        active->label = strdup_malloc(\"???\");\n        active = &controls_rebind_items[controls_rebind_slot_index];\n        active->enabled = 0;\n    }"
+        }
+      ]
+    }
+  ]
+}

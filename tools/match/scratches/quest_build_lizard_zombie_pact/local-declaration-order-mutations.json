@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-trigger-wave-order",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 1500;\n    int wave = 0;\n",
+      "replacements": [
+        {
+          "name": "builder-wave-trigger",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave = 0;\n    int trigger_time_ms = 1500;\n"
+        },
+        {
+          "name": "trigger-builder-wave",
+          "text": "    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave = 0;\n"
+        },
+        {
+          "name": "wave-builder-trigger",
+          "text": "    int wave = 0;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 1500;\n"
+        },
+        {
+          "name": "trigger-wave-builder",
+          "text": "    int trigger_time_ms = 1500;\n    int wave = 0;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n"
+        },
+        {
+          "name": "wave-trigger-builder",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n"
+        }
+      ]
+    }
+  ]
+}

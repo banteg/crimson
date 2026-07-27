@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-explosion-impulse-declarations",
+      "find": "    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;",
+      "replacements": [
+        {
+          "name": "direction-then-impulse",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t explosion_direction;\n    vec2f_t explosion_impulse;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "impulse-then-direction",
+          "text": "    vec2f_t delta;\n    int step;\n    vec2f_t explosion_impulse;\n    vec2f_t explosion_direction;\n    float ion_damage_scale = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "secondary-explosion-impulse-use",
+      "find": "                            vec2f_t impulse = {dx, dy};\n                            vec2_normalize_dispatch(&impulse, &impulse);\n                            impulse.x *= 0.1f;\n                            impulse.y *= 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &impulse);",
+      "replacements": [
+        {
+          "name": "assign-function-scope-vectors",
+          "text": "                            explosion_direction.x = dx;\n                            explosion_direction.y = dy;\n                            vec2_normalize_dispatch(\n                                &explosion_direction,\n                                &explosion_direction);\n                            explosion_impulse.x =\n                                explosion_direction.x * 0.1f;\n                            explosion_impulse.y =\n                                explosion_direction.y * 0.1f;\n                            creature_apply_damage(\n                                creature_id,\n                                frame_dt\n                                    * secondary->pos.vx.vy.vel_y * 700.0f,\n                                3,\n                                &explosion_impulse);"
+        }
+      ]
+    }
+  ]
+}

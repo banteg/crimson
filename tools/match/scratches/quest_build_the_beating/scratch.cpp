@@ -61,9 +61,8 @@ extern "C" void quest_build_the_beating(
         --remaining;
     } while (remaining != 0);
 
-    spawns[10].pos = quest_vec2_t(
-        -32.0f,
-        (float)(terrain_texture_height / 2));
+    spawns[10].pos.x = -32.0f;
+    spawns[10].pos.y = (float)(terrain_texture_height / 2);
     spawns[10].set_spawn(
         SPAWN_ID_ALIEN_BIG_GRAY_29,
         18000,

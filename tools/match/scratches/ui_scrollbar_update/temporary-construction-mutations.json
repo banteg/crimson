@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "focus-position-construction",
+      "find": "        scrollbar_vec2_t position(xy->x - 16.0f, xy->y);\n        ui_focus_draw((float *)&position);",
+      "replacements": [
+        {
+          "name": "component-assignment-x-first",
+          "text": "        scrollbar_vec2_t position;\n        position.x = xy->x - 16.0f;\n        position.y = xy->y;\n        ui_focus_draw((float *)&position);"
+        },
+        {
+          "name": "component-assignment-y-first",
+          "text": "        scrollbar_vec2_t position;\n        position.y = xy->y;\n        position.x = xy->x - 16.0f;\n        ui_focus_draw((float *)&position);"
+        }
+      ]
+    },
+    {
+      "name": "outer-color-construction",
+      "find": "        scrollbar_color_t color(1.0f, 1.0f, 1.0f, 1.0f);\n        grim_interface_ptr->grim_draw_rect_filled(",
+      "replacements": [
+        {
+          "name": "component-assignment",
+          "text": "        scrollbar_color_t color;\n        color.r = 1.0f;\n        color.g = 1.0f;\n        color.b = 1.0f;\n        color.a = 1.0f;\n        grim_interface_ptr->grim_draw_rect_filled("
+        }
+      ]
+    },
+    {
+      "name": "interior-position-construction",
+      "find": "        scrollbar_vec2_t position(xy->x + 1.0f, xy->y + 1.0f);\n        scrollbar_color_t color(0.0f, 0.0f, 0.0f, 1.0f);",
+      "replacements": [
+        {
+          "name": "component-assignment",
+          "text": "        scrollbar_vec2_t position;\n        position.x = xy->x + 1.0f;\n        position.y = xy->y + 1.0f;\n        scrollbar_color_t color;\n        color.r = 0.0f;\n        color.g = 0.0f;\n        color.b = 0.0f;\n        color.a = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "track-position-construction",
+      "find": "        scrollbar_vec2_t position(xy->x + 240.0f, xy->y);\n        scrollbar_color_t color(1.0f, 1.0f, 1.0f, 0.8f);",
+      "replacements": [
+        {
+          "name": "component-assignment",
+          "text": "        scrollbar_vec2_t position;\n        position.x = xy->x + 240.0f;\n        position.y = xy->y;\n        scrollbar_color_t color;\n        color.r = 1.0f;\n        color.g = 1.0f;\n        color.b = 1.0f;\n        color.a = 0.8f;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-position-construction",
+      "find": "    scrollbar_vec2_t thumb_position(xy->x + 241.0f, thumb_y);",
+      "replacements": [
+        {
+          "name": "component-assignment",
+          "text": "    scrollbar_vec2_t thumb_position;\n    thumb_position.x = xy->x + 241.0f;\n    thumb_position.y = thumb_y;"
+        },
+        {
+          "name": "component-assignment-y-first",
+          "text": "    scrollbar_vec2_t thumb_position;\n    thumb_position.y = thumb_y;\n    thumb_position.x = xy->x + 241.0f;"
+        }
+      ]
+    },
+    {
+      "name": "row-position-construction",
+      "find": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;",
+      "replacements": [
+        {
+          "name": "direct-final-x",
+          "text": "    scrollbar_vec2_t row_position;\n    row_position.x = xy->x - 2.0f;\n    row_position.y = xy->y;"
+        },
+        {
+          "name": "component-copy-then-subtract",
+          "text": "    scrollbar_vec2_t row_position;\n    row_position.x = xy->x;\n    row_position.y = xy->y;\n    row_position.x -= 2.0f;"
+        }
+      ]
+    }
+  ]
+}

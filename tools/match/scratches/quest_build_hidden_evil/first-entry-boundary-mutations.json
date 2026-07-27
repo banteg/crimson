@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-entry-boundary",
+      "find": "    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n",
+      "replacements": [
+        {
+          "name": "record-pointer-before-position",
+          "text": "    quest_entry_original_t *first_spawn = &spawns[0];\n    first_spawn->pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    first_spawn->set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "record-reference-before-position",
+          "text": "    quest_entry_original_t &first_spawn = spawns[0];\n    first_spawn.pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    first_spawn.set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "position-pointer-before-position",
+          "text": "    quest_vec2_t *first_position = &spawns[0].pos;\n    *first_position = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "position-reference-before-position",
+          "text": "    quest_vec2_t &first_position = spawns[0].pos;\n    first_position = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[0].set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "record-pointer-after-position",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    quest_entry_original_t *first_spawn = &spawns[0];\n    first_spawn->set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "record-reference-after-position",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    quest_entry_original_t &first_spawn = spawns[0];\n    first_spawn.set_spawn(\n        SPAWN_ID_ALIEN_HIDDEN_1_21,\n        500,\n        50);\n"
+        },
+        {
+          "name": "metadata-fields-through-pointer",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    quest_entry_original_t *first_spawn = &spawns[0];\n    first_spawn->template_id = SPAWN_ID_ALIEN_HIDDEN_1_21;\n    first_spawn->trigger_time_ms = 500;\n    first_spawn->count = 50;\n"
+        },
+        {
+          "name": "scoped-record-reference",
+          "text": "    {\n        quest_entry_original_t &first_spawn = spawns[0];\n        first_spawn.pos = quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_height + 64));\n        first_spawn.set_spawn(\n            SPAWN_ID_ALIEN_HIDDEN_1_21,\n            500,\n            50);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

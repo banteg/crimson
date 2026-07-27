@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "setter-store-order",
+      "find": "        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n",
+      "replacements": [
+        {
+          "name": "pos-template-count-trigger",
+          "text": "        pos = position;\n        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        },
+        {
+          "name": "pos-trigger-template-count",
+          "text": "        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n        count = spawn_count;\n"
+        },
+        {
+          "name": "pos-trigger-count-template",
+          "text": "        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        template_id = spawn_template_id;\n"
+        },
+        {
+          "name": "pos-count-template-trigger",
+          "text": "        pos = position;\n        count = spawn_count;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        },
+        {
+          "name": "pos-count-trigger-template",
+          "text": "        pos = position;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n"
+        },
+        {
+          "name": "template-before-position",
+          "text": "        template_id = spawn_template_id;\n        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n"
+        },
+        {
+          "name": "count-before-position",
+          "text": "        count = spawn_count;\n        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        }
+      ]
+    }
+  ]
+}

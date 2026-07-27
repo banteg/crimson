@@ -48,3 +48,25 @@ frame, four outer batches, signed cubic/modulo coordinate arithmetic, per-entry
 metadata, hardcore player-count restoration, and both output-count return
 paths. The remaining 106/104 instruction delta is register assignment and
 scheduling; one audited reference is matched.
+
+## 2026-07-27 focused profile and mutation pass
+
+The initial compiler profile pass reproduced 49.523809523809526% under MSVC
+6.0, 6.5, and 6.6. The 6.5 Processor Pack reached 54.0284% and four matched
+references, but the product/build provenance noted above still excludes it;
+MSVC 7.0 scored 37.91%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied, while
+`/G6` regressed.
+
+`local-declaration-order-mutations.json` (SHA-256
+`55e5669524b23537f156632a6488f1bb0beecdbc2e05a80d876c0c6f06ae8214`)
+recorded all 15 requested single and interaction variants. Reordering the
+semantic outer-loop locals to trigger, index, seed recovered the native
+induction-value lifetime shape. The alternate index-trigger-seed spelling was
+byte-identical; entry base/count reorderings were neutral, so the smallest
+winning order change was retained.
+
+Fresh scratch recomputation improved 167.8857142857143/339 to
+220.5933014354067/339 weighted bytes: 49.523809523809526% to
+65.07177033492823%, with the gap falling from 171.1142857142857 to
+118.40669856459331. The validated result has 105/104 instructions, prefix
+two, and six matched references with no mismatch or unresolved reference.

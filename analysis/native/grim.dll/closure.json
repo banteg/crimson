@@ -1,5 +1,5 @@
 {
-  "audit_digest": "cf8daf76982833848bf436bd5e277893d5d8cb7e51c87fe08849780279818a4b",
+  "audit_digest": "d61b5e164d3dd2235236c4b2aa4215811b761697068ab65eb40409db0b2bc08b",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -540,7 +540,7 @@
         "tools/match/scratches/grim_begin_batch/build/msvc6.5/484538efa8876dff/scratch.obj",
         "tools/match/scratches/grim_bind_texture/build/msvc6.5/78ac64bf61d28fa1/scratch.obj",
         "tools/match/scratches/grim_clear_color/build/msvc6.5/ae7d1a074aca7b08/scratch.obj",
-        "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+        "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
         "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/eae4e698075e2e7a/scratch.obj",
         "tools/match/scratches/grim_create_texture/build/msvc6.5/2e3f89a773bb4ef0/scratch.obj",
         "tools/match/scratches/grim_default_device_callback/build/msvc6.5/183cc64416a7a030/scratch.obj",
@@ -689,7 +689,7 @@
         "tools/match/scratches/grim_begin_batch/build/msvc6.5/484538efa8876dff/scratch.obj",
         "tools/match/scratches/grim_bind_texture/build/msvc6.5/78ac64bf61d28fa1/scratch.obj",
         "tools/match/scratches/grim_clear_color/build/msvc6.5/ae7d1a074aca7b08/scratch.obj",
-        "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+        "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
         "tools/match/scratches/grim_config_defaults_init_thunk/build/msvc6.5/eae4e698075e2e7a/scratch.obj",
         "tools/match/scratches/grim_create_texture/build/msvc6.5/2e3f89a773bb4ef0/scratch.obj",
         "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
@@ -1008,7 +1008,7 @@
           "function": "grim_config_defaults_init",
           "kind": "section",
           "logical_section_size": 7,
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -1026,7 +1026,7 @@
           "function": "grim_config_defaults_init",
           "kind": "section",
           "logical_section_size": 8,
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -3832,7 +3832,7 @@
           "function": "grim_config_defaults_init",
           "kind": "section",
           "logical_section_size": 752,
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -4520,7 +4520,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj"
+      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj"
     },
     {
       "directives": [
@@ -6588,7 +6588,7 @@
           "function": "grim_config_defaults_init",
           "kind": "section",
           "logical_section_size": 752,
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -7672,7 +7672,7 @@
       "referenced_by": [
         {
           "function": "grim_config_defaults_init",
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "weak": false
         }
       ]
@@ -11465,7 +11465,7 @@
         },
         {
           "function": "grim_config_defaults_init",
-          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+          "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
           "weak": false
         },
         {

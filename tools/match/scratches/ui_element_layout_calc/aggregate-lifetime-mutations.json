@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "add-default-vector-constructor",
+      "find": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n",
+      "replacements": [
+        {
+          "name": "empty-default-constructor",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t() {}\n\n    ui_layout_vec2_t(float x_value, float y_value)\n"
+        }
+      ]
+    },
+    {
+      "name": "predeclare-minimum-position",
+      "find": "    hover_min += position + vertex_0;\n    hover_max += position + vertex_0;\n\n    ui_layout_vec2_t min_position = position + vertex_0;\n",
+      "replacements": [
+        {
+          "name": "before-bound-translations",
+          "text": "    ui_layout_vec2_t min_position;\n\n    hover_min += position + vertex_0;\n    hover_max += position + vertex_0;\n\n    min_position = position + vertex_0;\n"
+        },
+        {
+          "name": "after-bound-translations",
+          "text": "    hover_min += position + vertex_0;\n    hover_max += position + vertex_0;\n\n    ui_layout_vec2_t min_position;\n    min_position = position + vertex_0;\n"
+        }
+      ]
+    }
+  ]
+}

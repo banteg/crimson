@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-helper-shape",
+      "find": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n",
+      "replacements": [
+        {
+          "name": "constructor-body",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n"
+        },
+        {
+          "name": "explicit-inline-constructor",
+          "text": "    __inline quest_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n"
+        },
+        {
+          "name": "force-inline-constructor",
+          "text": "    __forceinline quest_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n"
+        },
+        {
+          "name": "explicit-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "force-inline-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    __forceinline quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "body-and-assignment",
+          "text": "    quest_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    quest_vec2_t &operator=(const quest_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

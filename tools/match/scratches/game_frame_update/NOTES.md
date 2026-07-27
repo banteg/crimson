@@ -121,3 +121,10 @@ forms around the final `set_color` call. Every complete form is byte-neutral,
 which bounds the remaining call-order residual to VC6 scheduling rather than a
 missing source-level helper. Its SHA-256 is
 `19e5f0079dc9ee5720343e25ab7e88390d943fc33ea6e8e33079467e1b2ee9df`.
+
+`aim-copy-scalar-helper-mutations.json` additionally evaluates five bounded
+single- and two-site forms around separate scalar helper calls. Helper
+definitions alone are byte-neutral, while both complete call forms move an
+earlier scheduling boundary and regress to 91.27% with four fewer resolved
+references. This rules out a per-component inline call boundary as the source
+of native's X-store-before-Y-load schedule.

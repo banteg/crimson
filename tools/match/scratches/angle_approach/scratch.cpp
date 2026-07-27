@@ -42,18 +42,18 @@ extern "C" float angle_approach(float *angle, float target, float rate)
     }
     float step;
     if (direct > wrapped) {
-        step = frame_dt * amount * rate;
+        step = frame_dt * amount;
         if (target < *angle) {
-            *angle = step + *angle;
+            *angle = step * rate + *angle;
             return amount;
         }
     } else {
-        step = frame_dt * amount * rate;
+        step = frame_dt * amount;
         if (target > *angle) {
-            *angle = step + *angle;
+            *angle = step * rate + *angle;
             return amount;
         }
     }
-    *angle = *angle - step;
+    *angle = *angle - step * rate;
     return amount;
 }

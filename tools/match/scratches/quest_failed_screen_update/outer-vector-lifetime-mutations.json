@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-vector-declarations",
+      "find": "extern \"C\" void quest_failed_screen_update(void)\n{\n",
+      "replacements": [
+        {
+          "name": "declare-input-before-screen-work",
+          "text": "extern \"C\" void quest_failed_screen_update(void)\n{\n    quest_failed_vec2_t input_xy;\n"
+        },
+        {
+          "name": "declare-banner-before-screen-work",
+          "text": "extern \"C\" void quest_failed_screen_update(void)\n{\n    quest_failed_vec2_t banner_xy;\n"
+        },
+        {
+          "name": "declare-both-before-screen-work",
+          "text": "extern \"C\" void quest_failed_screen_update(void)\n{\n    quest_failed_vec2_t input_xy;\n    quest_failed_vec2_t banner_xy;\n"
+        }
+      ]
+    },
+    {
+      "name": "remove-inner-input-vector-declaration",
+      "find": "        quest_failed_vec2_t input_xy;\n        input_xy.x = xy.x + 4.0f;\n",
+      "replacements": [
+        {
+          "name": "reuse-outer-input-vector",
+          "text": "        input_xy.x = xy.x + 4.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "replace-inner-banner-vector-initialization",
+      "find": "            quest_failed_vec2_t banner_xy = xy;\n",
+      "replacements": [
+        {
+          "name": "assign-outer-banner-vector",
+          "text": "            banner_xy = xy;\n"
+        }
+      ]
+    }
+  ]
+}

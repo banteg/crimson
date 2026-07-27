@@ -43,3 +43,17 @@ for the template and emits the count immediate. A combined vector-and-metadata
 setter, metadata-first order, and explicit preincrement cursor all scored worse.
 No artificial dependencies, volatile state, or register-forcing constructs are
 used.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, and 6.6 tied at 66.28242074927954%. The 6.5 Processor Pack
+profile regressed to 59.94% with 13 matched references; MSVC 7.0 fell to
+32.29% with references 6/3/0. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied,
+while `/G6` regressed.
+
+`opening-local-lifetime-mutations.json` (SHA-256
+`e0c73992addd25fd3e12e3255968268b8fd1d515ed72995c0d4a1a856625f202`)
+recorded five complete variants, all byte-neutral. No source change was
+retained. Fresh validation remains at 458.6743515850144/692 weighted bytes,
+a 233.3256484149856 gap, 66.28242074927954%, 173/174 instructions, prefix
+four, and references 18/0/0.

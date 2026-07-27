@@ -49,3 +49,17 @@ handling, vertex count, and U-coordinate swaps agree with the native routine.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail audit (2026-07-27)
+
+Live Binary Ninja reconfirmed both remaining regions as aggregate-store,
+direction-load, and x87 scheduling only. MSVC 6.0, 6.5, and 6.6 reproduce the
+same **97.67%** result; Processor Pack falls to 80.00%, and VC7 does not
+compile this source. The bounded flag matrix likewise found no exact profile.
+
+`aggregate-lifetime-mutations.json` evaluated five default-constructor and
+predeclared-minimum combinations. The three compile-valid forms are
+byte-identical; the two partial forms correctly fail because they omit the
+required default constructor. The recorded `predeclared-minimum-confirmation`
+probe is neutral at 86/86 instructions and `6/0/0` references. No canonical
+source change was retained; baseline and final remain **97.67%**, prefix 32.

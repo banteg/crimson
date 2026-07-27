@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "metadata-helper-shape",
+      "find": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "count-before-trigger",
+          "text": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "metadata-reverse",
+          "text": "    void set_spawn(\n        int spawn_template_id,\n        int spawn_trigger_time_ms,\n        int spawn_count)\n    {\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

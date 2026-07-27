@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-angle-geometry",
+      "find": "                            float hit_angle = (float)atan2(\n                                particle->position.y\n                                    - frame_dt * particle->velocity.y\n                                    - creature_pool[hit_id].position.y,\n                                particle->position.x\n                                    - frame_dt * particle->velocity.x\n                                    - creature_pool[hit_id].position.x);",
+      "replacements": [
+        {
+          "name": "staged-displacement-position-direction",
+          "text": "                            vec2f_t displacement = {\n                                frame_dt * particle->velocity.x,\n                                frame_dt * particle->velocity.y,\n                            };\n                            vec2f_t previous_position = {\n                                particle->position.x - displacement.x,\n                                particle->position.y - displacement.y,\n                            };\n                            vec2f_t hit_direction = {\n                                previous_position.x\n                                    - creature_pool[hit_id].position.x,\n                                previous_position.y\n                                    - creature_pool[hit_id].position.y,\n                            };\n                            float hit_angle = (float)atan2(\n                                hit_direction.y,\n                                hit_direction.x);"
+        },
+        {
+          "name": "staged-position-direction",
+          "text": "                            vec2f_t previous_position = {\n                                particle->position.x\n                                    - frame_dt * particle->velocity.x,\n                                particle->position.y\n                                    - frame_dt * particle->velocity.y,\n                            };\n                            vec2f_t hit_direction = {\n                                previous_position.x\n                                    - creature_pool[hit_id].position.x,\n                                previous_position.y\n                                    - creature_pool[hit_id].position.y,\n                            };\n                            float hit_angle = (float)atan2(\n                                hit_direction.y,\n                                hit_direction.x);"
+        },
+        {
+          "name": "staged-displacement-position",
+          "text": "                            vec2f_t displacement = {\n                                frame_dt * particle->velocity.x,\n                                frame_dt * particle->velocity.y,\n                            };\n                            vec2f_t previous_position = {\n                                particle->position.x - displacement.x,\n                                particle->position.y - displacement.y,\n                            };\n                            float hit_angle = (float)atan2(\n                                previous_position.y\n                                    - creature_pool[hit_id].position.y,\n                                previous_position.x\n                                    - creature_pool[hit_id].position.x);"
+        },
+        {
+          "name": "staged-direction-only",
+          "text": "                            vec2f_t hit_direction = {\n                                particle->position.x\n                                    - frame_dt * particle->velocity.x\n                                    - creature_pool[hit_id].position.x,\n                                particle->position.y\n                                    - frame_dt * particle->velocity.y\n                                    - creature_pool[hit_id].position.y,\n                            };\n                            float hit_angle = (float)atan2(\n                                hit_direction.y,\n                                hit_direction.x);"
+        }
+      ]
+    }
+  ]
+}

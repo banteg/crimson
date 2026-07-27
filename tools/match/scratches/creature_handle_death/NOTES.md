@@ -80,3 +80,12 @@ Classification is therefore `RECOVERY=semantic-complete`,
 `RESIDUAL=compiler`. The classification-only change is byte-neutral:
 before and after are 84.73%, prefix 5/204, 202/204 candidate instructions,
 and references 80/0/1.
+
+## Recorded recent-death lifetime search
+
+`recent-death-index-lifetime-mutations.json` records four natural forms around
+the two stored Survival coordinates. Named and separately scoped indices plus
+aggregate assignment are byte-neutral. A named destination pointer restores
+the 204-instruction count and an `81/0/0` reference audit, but worsens the
+normalized score to 84.31%, so it is not retained over the direct indexed
+source shown by native HLIL.

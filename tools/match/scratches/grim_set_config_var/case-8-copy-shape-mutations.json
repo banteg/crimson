@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "case-8-copy-shape",
+      "find": "    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n",
+      "replacements": [
+        {
+          "name": "word-zero-then-shared-tail",
+          "text": "    case 8:\n        grim_config_values[id].words[0] = value.words[0];\n        goto copy_config_tail;\n\n    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n"
+        },
+        {
+          "name": "whole-record-then-return",
+          "text": "    case 8:\n        grim_config_values[id] = value;\n        return;\n\n    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n"
+        },
+        {
+          "name": "named-record-then-return",
+          "text": "    case 8: {\n        grim_config_value_t *config = &grim_config_values[id];\n        *config = value;\n        return;\n    }\n\n    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n"
+        },
+        {
+          "name": "four-scalars-then-return",
+          "text": "    case 8:\n        grim_config_values[id].words[0] = value.words[0];\n        grim_config_values[id].words[1] = value.words[1];\n        grim_config_values[id].words[2] = value.words[2];\n        grim_config_values[id].words[3] = value.words[3];\n        return;\n\n    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n"
+        },
+        {
+          "name": "goto-generic-record-label",
+          "text": "    case 8:\n        goto copy_generic_record;\n\n    default:\n        break;\n    }\n\ncopy_generic_record:\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n"
+        }
+      ]
+    }
+  ]
+}

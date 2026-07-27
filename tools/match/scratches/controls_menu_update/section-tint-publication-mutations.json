@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "section-tint-publication",
+      "find": "    draw_position.x -= 14.0f;\n    controls_color_t section_tint;\n    section_tint.r = render_tint_color_r;\n    section_tint.b = render_tint_color_b;\n    section_tint.g = render_tint_color_g;\n    render_tint_color_a = 0.7f;\n    section_tint.a = render_tint_color_a;",
+      "replacements": [
+        {
+          "name": "alpha-first-direct-aggregate-copy",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint =\n        *(controls_color_t *)&render_tint_color_r;"
+        },
+        {
+          "name": "alpha-first-aliased-aggregate-copy",
+          "text": "    draw_position.x -= 14.0f;\n    controls_color_t &render_tint =\n        *(controls_color_t *)&render_tint_color_r;\n    render_tint.a = 0.7f;\n    controls_color_t section_tint = render_tint;"
+        },
+        {
+          "name": "aggregate-copy-then-alpha-refresh-direct",
+          "text": "    draw_position.x -= 14.0f;\n    controls_color_t section_tint =\n        *(controls_color_t *)&render_tint_color_r;\n    render_tint_color_a = 0.7f;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "aggregate-copy-then-alpha-refresh-aliased",
+          "text": "    draw_position.x -= 14.0f;\n    controls_color_t &render_tint =\n        *(controls_color_t *)&render_tint_color_r;\n    controls_color_t section_tint = render_tint;\n    render_tint.a = 0.7f;\n    section_tint.a = render_tint.a;"
+        },
+        {
+          "name": "alpha-first-rbg-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.r = render_tint_color_r;\n    section_tint.b = render_tint_color_b;\n    section_tint.g = render_tint_color_g;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "alpha-first-rgb-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.r = render_tint_color_r;\n    section_tint.g = render_tint_color_g;\n    section_tint.b = render_tint_color_b;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "alpha-first-brg-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.b = render_tint_color_b;\n    section_tint.r = render_tint_color_r;\n    section_tint.g = render_tint_color_g;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "alpha-first-bgr-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.b = render_tint_color_b;\n    section_tint.g = render_tint_color_g;\n    section_tint.r = render_tint_color_r;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "alpha-first-grb-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.g = render_tint_color_g;\n    section_tint.r = render_tint_color_r;\n    section_tint.b = render_tint_color_b;\n    section_tint.a = render_tint_color_a;"
+        },
+        {
+          "name": "alpha-first-gbr-fields",
+          "text": "    draw_position.x -= 14.0f;\n    render_tint_color_a = 0.7f;\n    controls_color_t section_tint;\n    section_tint.g = render_tint_color_g;\n    section_tint.b = render_tint_color_b;\n    section_tint.r = render_tint_color_r;\n    section_tint.a = render_tint_color_a;"
+        }
+      ]
+    }
+  ]
+}

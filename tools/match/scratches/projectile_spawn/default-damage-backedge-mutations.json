@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "default-damage-declaration",
+      "find": "    float default_damage = 1.0f;\n",
+      "replacements": [
+        {
+          "name": "separate-assignment",
+          "text": "    float default_damage;\n    default_damage = 1.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "fire-override-backedge",
+      "find": "        ) {\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n        }\n",
+      "replacements": [
+        {
+          "name": "repeat-damage-after-type",
+          "text": "        ) {\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n            default_damage = 1.0f;\n        }\n"
+        },
+        {
+          "name": "repeat-damage-before-type",
+          "text": "        ) {\n            default_damage = 1.0f;\n            type_id = PROJECTILE_TYPE_FIRE_BULLETS;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

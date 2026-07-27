@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **295074/341963** code bytes (**86.3%**).
+Fuzzy-weighted alignment is **296201/341963** code bytes (**86.6%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 275034/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
-| grim.dll | 130/137 | 14153/21158 | 66.9% | 20039/21158 | 94.7% | 137/137 | 21159/21158 | 100.0% | 130/137 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 276097/320805 | 86.1% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| grim.dll | 130/137 | 14153/21158 | 66.9% | 20104/21158 | 95.0% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **275034/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **276097/320805** fuzzy-weighted bytes (**86.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -300,7 +300,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | gameplay_reset_state | 0x00412dc0 | 1639 | 1623/1639 | 16 | 307/307 | 99.02% | 165/307 | 213/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 9214/16257 | 7043 | 4023/4206 | 56.68% | 7/4206 | 766/0/5 |  | core-player-simulation |
+| wip | player_update | 0x004136b0 | 16257 | 10063/16257 | 6194 | 4014/4206 | 61.90% | 7/4206 | 790/0/2 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | j_ui_menu_template_pool_init | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |
@@ -406,7 +406,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | config_sync_from_grim | 0x0041ec60 | 1225 | 1225/1225 | 0 | 277/277 | 100.00% | 277/277 | 37/0/0 |  | grim-config-sync-and-legacy-migration |
 | match | config_ensure_file | 0x0041f130 | 112 | 112/112 | 0 | 36/36 | 100.00% | 36/36 | 13/0/0 |  | config-file-bootstrap |
 | wip | config_load_presets | 0x0041f1a0 | 653 | 576/653 | 77 | 178/178 | 88.20% | 67/178 | 50/0/3 |  | config-file-load-and-runtime-sync |
-| wip | angle_approach | 0x0041f430 | 299 | 271/299 | 28 | 100/101 | 90.55% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
+| wip | angle_approach | 0x0041f430 | 299 | 283/299 | 16 | 100/101 | 94.53% | 73/101 | 9/0/0 |  | gameplay-angle-x87 |
 | match | bonus_pool_sentinel_global_init_thunk | 0x0041f560 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-sentinel-global-initialization-thunk |
 | match | bonus_pool_sentinel_global_init | 0x0041f570 | 11 | 11/11 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | bonus-pool-sentinel-global-initialization |
 | match | bonus_alloc_slot | 0x0041f580 | 46 | 46/46 | 0 | 14/14 | 100.00% | 14/14 | 4/0/0 |  | gameplay-bonus-pool |
@@ -417,7 +417,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | wip | player_reset_all | 0x0041fc80 | 584 | 536/584 | 48 | 130/127 | 91.83% | 94/127 | 57/0/1 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |
 | match | effect_uv_tables_init | 0x0041fed0 | 356 | 356/356 | 0 | 109/109 | 100.00% | 109/109 | 15/0/0 |  | gameplay-effect-atlas-uv-init |
-| wip | creature_find_nearest | 0x00420040 | 225 | 209/225 | 16 | 90/89 | 92.74% | 51/89 | 5/0/0 |  | gameplay-target-search |
+| wip | creature_find_nearest | 0x00420040 | 225 | 210/225 | 15 | 91/89 | 93.33% | 51/89 | 5/0/0 |  | gameplay-target-search |
 | match | fx_spawn_particle | 0x00420130 | 264 | 264/264 | 0 | 67/67 | 100.00% | 67/67 | 18/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_particle_slow | 0x00420240 | 274 | 274/274 | 0 | 67/67 | 100.00% | 67/67 | 19/0/0 |  | gameplay-particle-spawn |
 | match | fx_spawn_secondary_projectile | 0x00420360 | 218 | 218/218 | 0 | 65/65 | 100.00% | 65/65 | 13/0/0 |  | gameplay-secondary-projectile |
@@ -427,7 +427,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | creature_find_in_radius | 0x004206a0 | 133 | 133/133 | 0 | 47/47 | 100.00% | 47/47 | 5/0/0 |  | gameplay-target-search |
 | match | player_find_in_radius | 0x00420730 | 133 | 133/133 | 0 | 54/54 | 100.00% | 54/54 | 5/0/0 |  | gameplay-target-search |
 | wip | creature_apply_damage | 0x004207c0 | 963 | 865/963 | 98 | 237/237 | 89.87% | 11/237 | 80/0/0 |  | creature-damage-and-lethal-effects |
-| wip | projectile_update | 0x00420b90 | 8409 | 4201/8409 | 4208 | 2145/2203 | 49.95% | 0/2203 | 357/0/27 |  | core-projectile-simulation |
+| wip | projectile_update | 0x00420b90 | 8409 | 4207/8409 | 4202 | 2150/2203 | 50.03% | 0/2203 | 356/0/27 |  | core-projectile-simulation |
 | wip | projectile_render | 0x00422c70 | 12551 | 6409/12551 | 6142 | 2854/3021 | 51.06% | 0/3021 | 402/0/16 |  | laser-primary-plasma-beam-plague-and-secondary-projectile-passes |
 | match | plaguebearer_spread_infection | 0x00425d80 | 203 | 203/203 | 0 | 64/64 | 100.00% | 64/64 | 14/0/0 |  | gameplay-plaguebearer-spread |
 | match | player_take_damage | 0x00425e50 | 969 | 969/969 | 0 | 267/267 | 100.00% | 267/267 | 73/0/0 |  | gameplay-player-damage |
@@ -512,8 +512,8 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_the_gang_wars | 0x00435120 | 424 | 369/424 | 55 | 92/92 | 86.96% | 4/92 | 7/0/0 |  | quest-gang-wars-alternating-formations |
 | wip | quest_build_the_fortress | 0x004352d0 | 429 | 412/429 | 17 | 102/102 | 96.08% | 21/102 | 8/0/0 |  | quest-fortress-overwritten-grid-seed |
 | wip | quest_build_cross_fire | 0x00435480 | 390 | 318/390 | 72 | 76/76 | 81.58% | 10/76 | 2/0/0 |  | quest-cross-fire-fixed-table |
-| wip | quest_build_the_beating | 0x00435610 | 649 | 442/649 | 207 | 166/166 | 68.07% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
-| wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 237/391 | 154 | 94/94 | 60.64% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
+| wip | quest_build_the_beating | 0x00435610 | 649 | 479/649 | 170 | 162/166 | 73.78% | 37/166 | 7/0/0 |  | quest-the-beating-four-lines |
+| wip | quest_build_the_spanking_of_the_dead | 0x004358a0 | 391 | 246/391 | 145 | 87/94 | 62.98% | 4/94 | 5/0/0 |  | quest-spanking-of-the-dead-spiral |
 | wip | quest_build_hidden_evil | 0x00435a30 | 407 | 395/407 | 12 | 101/101 | 97.03% | 10/101 | 10/0/0 |  | quest-hidden-evil-fixed-waves |
 | wip | quest_build_land_hostile | 0x00435bd0 | 239 | 221/239 | 18 | 53/53 | 92.45% | 19/53 | 2/0/0 |  | quest-land-hostile-builder |
 | wip | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 428/466 | 38 | 135/135 | 91.85% | 2/135 | 7/0/0 |  | quest-minor-alien-breach-escalating-edges |
@@ -527,10 +527,10 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 170/249 | 79 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 358/382 | 24 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |
 | wip | quest_build_gauntlet | 0x004369a0 | 614 | 493/614 | 121 | 182/182 | 80.22% | 31/182 | 25/0/0 |  | quest-gauntlet-rings-and-edges |
-| wip | quest_build_syntax_terror | 0x00436c10 | 339 | 168/339 | 171 | 106/104 | 49.52% | 2/104 | 1/0/0 |  | quest-syntax-terror-polynomial-spawners |
+| wip | quest_build_syntax_terror | 0x00436c10 | 339 | 221/339 | 118 | 105/104 | 65.07% | 2/104 | 6/0/0 |  | quest-syntax-terror-polynomial-spawners |
 | wip | quest_build_spider_spawns | 0x00436d70 | 365 | 320/365 | 45 | 73/73 | 87.67% | 2/73 | 0/0/0 |  | quest-spider-spawns-fixed-table |
 | match | quest_build_two_fronts | 0x00436ee0 | 383 | 383/383 | 0 | 112/112 | 100.00% | 112/112 | 3/0/0 |  | quest-two-fronts-cardinal-waves |
-| wip | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 534/861 | 327 | 217/228 | 62.02% | 5/228 | 0/0/0 |  | quest-survival-fastest-shared-index-path |
+| wip | quest_build_survival_of_the_fastest | 0x00437060 | 861 | 548/861 | 313 | 218/228 | 63.68% | 5/228 | 0/0/0 |  | quest-survival-fastest-shared-index-path |
 | wip | quest_build_spideroids | 0x004373c0 | 224 | 220/224 | 4 | 62/62 | 98.39% | 5/62 | 3/0/0 |  | quest-spideroids-builder |
 | match | quest_build_evil_zombies_at_large | 0x004374a0 | 244 | 244/244 | 0 | 81/81 | 100.00% | 81/81 | 6/0/0 |  | quest-evil-zombies-at-large-builder |
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 341/367 | 26 | 114/114 | 92.98% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
@@ -538,7 +538,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_sweep_stakes | 0x00437810 | 258 | 195/258 | 63 | 75/76 | 75.50% | 6/76 | 7/0/0 |  | quest-sweep-stakes-builder |
 | wip | quest_build_deja_vu | 0x00437920 | 209 | 176/209 | 33 | 63/63 | 84.13% | 7/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
 | wip | quest_build_target_practice | 0x00437a00 | 240 | 216/240 | 24 | 69/69 | 89.86% | 23/69 | 8/0/0 |  | quest-target-practice-radial-builder |
-| wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 160/167 | 7 | 48/48 | 95.83% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
+| wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 164/167 | 3 | 48/48 | 97.92% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 191/204 | 13 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
 | wip | quest_build_the_lizquidation | 0x00437c70 | 245 | 121/245 | 124 | 79/79 | 49.37% | 4/79 | 3/0/0 | msvc6.5 /O2 /G6 /W3 /GR- | quest-the-lizquidation-builder |
 | wip | quest_build_zombie_time | 0x00437d70 | 152 | 125/152 | 27 | 50/50 | 82.00% | 16/50 | 3/0/0 |  | quest-zombie-time-builder |
@@ -548,7 +548,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_the_annihilation | 0x004382c0 | 278 | 206/278 | 72 | 77/77 | 74.03% | 15/77 | 1/0/0 |  | quest-the-annihilation-builder |
 | match | quest_build_the_massacre | 0x004383e0 | 184 | 184/184 | 0 | 61/61 | 100.00% | 61/61 | 4/0/0 |  | quest-the-massacre-builder |
 | match | quest_build_the_killing | 0x004384a0 | 602 | 602/602 | 0 | 173/173 | 100.00% | 173/173 | 14/0/0 |  | quest-the-killing-discarded-rng-cycle |
-| wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 177/311 | 134 | 95/95 | 56.84% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
+| wip | quest_build_lizard_zombie_pact | 0x00438700 | 311 | 180/311 | 131 | 95/95 | 57.89% | 2/95 | 3/0/0 |  | quest-lizard-zombie-pact-builder |
 | wip | quest_build_lizard_raze | 0x00438840 | 254 | 201/254 | 53 | 77/77 | 79.22% | 16/77 | 3/0/0 |  | quest-lizard-raze-builder |
 | match | quest_build_surrounded_by_reptiles | 0x00438940 | 242 | 242/242 | 0 | 68/68 | 100.00% | 68/68 | 4/0/0 |  | quest-surrounded-by-reptiles-builder |
 | wip | quest_build_the_unblitzkrieg | 0x00438a40 | 975 | 734/975 | 241 | 291/291 | 75.26% | 12/291 | 0/0/0 |  | quest-unblitzkrieg-perimeter-sweeps |
@@ -730,7 +730,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
-| wip | controls_menu_update | 0x00448cd0 | 21289 | 17111/21289 | 4178 | 5406/5421 | 80.37% | 164/5421 | 1542/4/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
+| wip | controls_menu_update | 0x00448cd0 | 21289 | 17185/21289 | 4104 | 5409/5421 | 80.72% | 164/5421 | 1550/4/7 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | nullsub_89 | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_90 | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
@@ -761,7 +761,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 ## grim.dll
 
-**130/137** functions, **14153/21158** bytes (**66.9%**), **20039/21158** fuzzy-weighted bytes (**94.7%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
+**130/137** functions, **14153/21158** bytes (**66.9%**), **20104/21158** fuzzy-weighted bytes (**95.0%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -787,7 +787,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | grim_default_device_callback | 0x10001150 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | default-device-callback |
 | match | grim_noop | 0x10001160 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | smoke |
 | match | grim_config_defaults_init_thunk | 0x10001700 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | config-defaults-tail-thunk |
-| wip | grim_config_defaults_init | 0x10001710 | 734 | 571/734 | 163 | 143/140 | 77.74% | 0/140 | 65/0/2 |  | shared-config-defaults-and-input-bindings |
+| wip | grim_config_defaults_init | 0x10001710 | 734 | 636/734 | 98 | 144/140 | 86.62% | 0/140 | 80/0/0 | msvc6.5 /O2 /GB /Oy- /W3 /GR- | shared-config-defaults-and-input-bindings |
 | match | grim_apply_render_state | 0x10004520 | 720 | 720/720 | 0 | 232/232 | 100.00% | 232/232 | 41/0/0 |  | grim-render-state-restore |
 | match | grim_is_texture_format_supported | 0x100047f0 | 51 | 51/51 | 0 | 19/19 | 100.00% | 19/19 | 4/0/0 |  | grim-texture-format-probe |
 | match | grim_select_texture_format | 0x10004830 | 232 | 232/232 | 0 | 67/67 | 100.00% | 67/67 | 17/0/0 |  | grim-texture-format-selection |

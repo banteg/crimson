@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-position-stores",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 512.0f);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n\n    spawns[1].pos = quest_vec2_t(768.0f, 512.0f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].pos.x = 256.0f;\n    spawns[0].pos.y = 512.0f;\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n\n    spawns[1].pos.x = 768.0f;\n    spawns[1].pos.y = 512.0f;\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n"
+        }
+      ]
+    },
+    {
+      "name": "tail-position-stores",
+      "find": "    spawns[130].pos = quest_vec2_t(1280.0f, 512.0f);\n    spawns[130].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 10000,\n        16);\n\n    spawns[131].pos = quest_vec2_t(-256.0f, 512.0f);\n    spawns[131].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 20000,\n        16);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[130].pos.x = 1280.0f;\n    spawns[130].pos.y = 512.0f;\n    spawns[130].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 10000,\n        16);\n\n    spawns[131].pos.x = -256.0f;\n    spawns[131].pos.y = 512.0f;\n    spawns[131].set_spawn(\n        SPAWN_ID_ZOMBIE_SMALL_WHITE_42,\n        trigger_offset_ms + 20000,\n        16);\n"
+        }
+      ]
+    }
+  ]
+}

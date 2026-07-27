@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "auto-target-creature-condition-shape",
+      "find": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        do {\n            if (candidate->active && candidate->health > 0.0f) {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate->position.y)\n                            * (player_position->y - candidate->position.y)\n                        + (player_position->x - candidate->position.x)\n                            * (player_position->x - candidate->position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);",
+      "replacements": [
+        {
+          "name": "explicit-active-nonzero",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        do {\n            if (candidate->active != 0 && candidate->health > 0.0f) {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate->position.y)\n                            * (player_position->y - candidate->position.y)\n                        + (player_position->x - candidate->position.x)\n                            * (player_position->x - candidate->position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);"
+        },
+        {
+          "name": "explicit-active-nested",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        do {\n            if (candidate->active != 0) {\n                if (candidate->health > 0.0f) {\n                    float distance = (float)sqrt(\n                        (player_position->y - candidate->position.y)\n                                * (player_position->y - candidate->position.y)\n                            + (player_position->x - candidate->position.x)\n                                * (player_position->x - candidate->position.x));\n                    if (distance < nearest_distance - 64.0f) {\n                        player->auto_target = creature_index;\n                        nearest_distance = distance;\n                    }\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);"
+        },
+        {
+          "name": "zero-active-empty-else",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        do {\n            if (candidate->active == 0 || candidate->health <= 0.0f) {\n            } else {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate->position.y)\n                            * (player_position->y - candidate->position.y)\n                        + (player_position->x - candidate->position.x)\n                            * (player_position->x - candidate->position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);"
+        },
+        {
+          "name": "array-zero-explicit-active",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        do {\n            if (candidate[0].active != 0 && candidate[0].health > 0.0f) {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate[0].position.y)\n                            * (player_position->y - candidate[0].position.y)\n                        + (player_position->x - candidate[0].position.x)\n                            * (player_position->x - candidate[0].position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);"
+        },
+        {
+          "name": "explicit-zero-element-address",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = &creature_pool[0];\n        do {\n            if (candidate->active != 0 && candidate->health > 0.0f) {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate->position.y)\n                            * (player_position->y - candidate->position.y)\n                        + (player_position->x - candidate->position.x)\n                            * (player_position->x - candidate->position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while ((int)candidate < (int)&creature_pool[384]);"
+        },
+        {
+          "name": "explicit-end-pointer",
+          "text": "        int creature_index = 0;\n        creature_t *candidate = creature_pool;\n        creature_t *candidate_end = &creature_pool[384];\n        do {\n            if (candidate->active != 0 && candidate->health > 0.0f) {\n                float distance = (float)sqrt(\n                    (player_position->y - candidate->position.y)\n                            * (player_position->y - candidate->position.y)\n                        + (player_position->x - candidate->position.x)\n                            * (player_position->x - candidate->position.x));\n                if (distance < nearest_distance - 64.0f) {\n                    player->auto_target = creature_index;\n                    nearest_distance = distance;\n                }\n            }\n            ++candidate;\n            ++creature_index;\n        } while (candidate < candidate_end);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-loop-distance-representations",
+      "find": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            float distance = (float)sqrt(dx * dx + dy * dy);\n            if (distance > min_dist && distance < best_distance) {\n",
+      "replacements": [
+        {
+          "name": "wide-live-float-stored",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (live_distance > min_dist && distance < best_distance) {\n"
+        },
+        {
+          "name": "wide-live-commuted-lower-bound",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            double live_distance = sqrt(dx * dx + dy * dy);\n            float distance = (float)live_distance;\n            if (min_dist < live_distance && distance < best_distance) {\n"
+        },
+        {
+          "name": "assigned-wide-live-float-stored",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            double live_distance;\n            float distance = (float)(live_distance = sqrt(dx * dx + dy * dy));\n            if (live_distance > min_dist && distance < best_distance) {\n"
+        },
+        {
+          "name": "wide-live-explicit-casts",
+          "text": "            float dx = pos->x - creature->position.x;\n            float dy = pos->y - creature->position.y;\n            double live_distance = sqrt((double)(dx * dx + dy * dy));\n            float distance = (float)live_distance;\n            if (live_distance > (double)min_dist\n                && distance < best_distance) {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -59,3 +59,25 @@ The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live decompilation confirms all five routed phases plus the four fixed
 corners, including their template IDs and paired trigger times. The candidate
 remains 217/228 instructions with no static-reference debt.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 produced the same 62.02247191011236%
+baseline; MSVC 7.0 regressed to 12.84%. `/GB`, `/G5`, `/G7`, `/Ox`, and
+`/Ob1` tied, while `/G6` regressed.
+
+`opening-phase-reservation-mutations.json` (SHA-256
+`82c4900a8f8975dd4341ca277530c9875e5b5eb711ec0c7fd125e6f66eaa7eae`)
+recorded all 15 requested single and pair variants. The retained
+`south-phase-count/preadvance-direct` spelling advances the south-phase entry
+cursor before direct stores through `spawn[-1]`, matching the native
+trigger-field cursor's preadvance/negative-offset dataflow without changing
+the entries produced. Adding the analogous east-phase spelling was
+byte-neutral relative to this winner, so only the smaller south-phase change
+was retained; reservation forms regressed materially.
+
+Fresh scratch recomputation improved 534.0134831460674/861 to
+548.2600896860986/861 weighted bytes: 62.02247191011236% to
+63.67713004484304%, with the gap falling from 326.9865168539326 to
+312.7399103139014. The validated result has 218/228 instructions, prefix
+five, and references 0/0/0.

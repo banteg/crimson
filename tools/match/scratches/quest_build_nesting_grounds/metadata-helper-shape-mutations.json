@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "metadata-helper-shape",
+      "find": "    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms) {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-inline",
+          "text": "    __inline void set_spawn(\n        int spawn_template_id, int spawn_trigger_time_ms) {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "force-inline",
+          "text": "    __forceinline void set_spawn(\n        int spawn_template_id, int spawn_trigger_time_ms) {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "explicit-this",
+          "text": "    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms) {\n        this->template_id = spawn_template_id;\n        this->trigger_time_ms = spawn_trigger_time_ms;\n    }\n"
+        },
+        {
+          "name": "reverse-stores",
+          "text": "    void set_spawn(int spawn_template_id, int spawn_trigger_time_ms) {\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n    }\n"
+        },
+        {
+          "name": "return-reference",
+          "text": "    quest_entry_original_t &set_spawn(\n        int spawn_template_id, int spawn_trigger_time_ms) {\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

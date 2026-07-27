@@ -263,14 +263,16 @@ extern "C" void player_update(void)
             movement_input.x = (float)cos(muzzle_heading) * 16.0f;
             movement_input.y = (float)sin(muzzle_heading) * 16.0f;
 
-            random_offset.x = player->aim.x;
-            random_offset.y = player->aim.y;
-            move_delta.x = random_offset.x - player_position->x;
-            move_delta.y = random_offset.y - player_position->y;
+            player_state_t *fire_player =
+                &player_state_table[render_overlay_player_index];
+            random_offset.x = fire_player->aim.x;
+            random_offset.y = fire_player->aim.y;
+            move_delta.x = random_offset.x - fire_player->position.x;
+            move_delta.y = random_offset.y - fire_player->position.y;
             float spread_radius = vec2_length(&move_delta) * 0.5f;
             float spread_angle =
                 (float)(crt_rand() & 0x1ff) * 0.012271847f;
-            spread_radius = spread_radius * player->spread_heat
+            spread_radius = spread_radius * fire_player->spread_heat
                 * (float)(crt_rand() & 0x1ff) * 0.001953125f;
             random_offset.x = (float)cos(spread_angle) * spread_radius
                 + random_offset.x;
@@ -1142,13 +1144,14 @@ extern "C" void player_update(void)
         move_delta.x = random_offset.x - player_position->x;
         move_delta.y = random_offset.y - player_position->y;
         angle_step = vec2_length(&move_delta) * 0.5f;
-        scratch_pos.x = (float)(crt_rand() & 0x1ff) * 0.012271847f;
-        angle_step = angle_step * player->spread_heat
-            * (float)(crt_rand() & 0x1ff) * 0.001953125f;
+        float spread_angle =
+            (float)(crt_rand() & 0x1ff) * 0.012271847f;
+        angle_step = (float)(crt_rand() & 0x1ff)
+            * (angle_step * player->spread_heat) * 0.001953125f;
         random_offset.x =
-            (float)cos(scratch_pos.x) * angle_step + random_offset.x;
+            (float)cos(spread_angle) * angle_step + random_offset.x;
         random_offset.y =
-            (float)sin(scratch_pos.x) * angle_step + random_offset.y;
+            (float)sin(spread_angle) * angle_step + random_offset.y;
         angle_step = (float)atan2(
             player_position->y - random_offset.y,
             player_position->x - random_offset.x) - 1.5707964f;

@@ -112,3 +112,20 @@ classification. The source remains SHA-256
 at **60.04%**, 255/258 instructions, and reference audit 12/0/0. The updated
 `experiments.jsonl` SHA-256 is
 `6ba887e1f4aa932a067e42515c71c89a711b110b9d04f7d8105cecb2fda05477`.
+
+## 2026-07-27 focused profile and mutation pass
+
+The compiler profile matrix left the default source at 60.03898635477583%:
+MSVC 6.0, 6.5, and 6.6 tied; 6.5 Processor Pack fell to 55.45% with
+247 instructions and eight matched references, and MSVC 7.0 fell to 27.97%.
+`/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` were byte-identical, while `/G6`
+regressed.
+
+`metadata-helper-shape-mutations.json` (SHA-256
+`eff4f02fc31cd68015005e127d560fd282e016cfdddf01c662f15aae582e6c6f`)
+recorded five complete variants. Explicit-inline, force-inline, and
+return-by-reference helper spellings were byte-neutral; moving count before
+trigger lost 22.994 weighted bytes and reversing the metadata stores lost
+49.821. No variant was retained. The validated source remains at
+590.1832358674463/983 weighted bytes, a 392.81676413255366 gap, 255/258
+instructions, prefix seven, and references 12/0/0.

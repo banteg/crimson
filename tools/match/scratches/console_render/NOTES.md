@@ -51,3 +51,19 @@ and staged-minimum shapes. Every compile-valid alternative was byte-neutral
 or worse, so no source change was retained. The complete records reinforce
 that the final two differences are compiler spelling rather than missing
 visible-line behavior.
+
+## Exact-tail audit (2026-07-27)
+
+A fresh live Binary Ninja read and focused `--regions` comparison reconfirm the
+two isolated `add eax, -2` versus `sub eax, 2` spellings. The supported
+MSVC 6.0, 6.5, and 6.6 compilers are byte-identical at the baseline; the
+Processor Pack profile regresses to 87.30%, and VC7 does not compile this
+source. `/Ox`, `/G5`, and `/Ob1` are byte-neutral, while `/G6`, `/Oy-`, `/O1`,
+and `/Os` regress.
+
+`visible-line-decrement-mutations.json` adds 24 bounded single- and paired-site
+tests for compound subtraction, pre/post decrement pairs, and negative-left
+addition. All 24 variants are byte-identical to the **99.50%**, 400/400,
+`61/0/0` baseline. A recorded `two-pre-decrements-confirmation` probe is also
+exactly neutral. No source rewrite was retained; baseline and final metrics are
+unchanged.

@@ -64,6 +64,21 @@ equivalent regions differently from the native function:
   to rename the canonical noop or add a fake destructor stub. The native-link
   track must provide an explicit evidence-backed alias.
 
+## Recorded shared-failure sweep
+
+The first meaningful mismatch follows the exact 32-instruction prefix at the
+setjmp failure branch. Live native disassembly shows the setjmp and allocation
+failures converging on the scope-cleanup return block at `0x10004cab`.
+
+`shared-failure-epilogue-mutations.json` records the corresponding explicit
+source shape. Merely naming the final label, or routing either one failure to
+it, compiles byte-identically at 86.51%. Routing both failures through the
+shared label remains at 252 instructions but shortens the exact prefix to 11
+instructions and falls to 82.14%. Incomplete dependent combinations fail to
+compile because the label is absent. The natural early-return source is
+therefore retained: an explicit semantic join does not reproduce native block
+placement.
+
 No inline assembly, volatile state, dummy reference, forced address, or
 layout-only arithmetic is used. The three remaining unresolved references are
 compiler-private exception or stack-local labels rather than unidentified

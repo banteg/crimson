@@ -41,11 +41,10 @@ struct quest_spawn_builder_t {
         int spawn_count)
     {
         ++count;
-        cursor->set(
-            position,
-            spawn_template_id,
-            spawn_trigger_time_ms,
-            spawn_count);
+        cursor->pos = position;
+        cursor->template_id = spawn_template_id;
+        cursor->trigger_time_ms = spawn_trigger_time_ms;
+        cursor->count = spawn_count;
         ++cursor;
     }
 };

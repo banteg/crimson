@@ -25,3 +25,16 @@ the strongest plausible source shape.
 and scalar materializations of the first wave position. None improved the
 match; the negative sweep leaves the documented VC6 store scheduling as the
 only residual and retains the simpler source.
+
+`first-entry-boundary-mutations.json` adds eight typed record/position aliases;
+all are byte-neutral. `vector-helper-mutations.json` adds six constructor and
+assignment shapes: three constructor spellings are neutral and explicit
+assignment operators regress. `metadata-store-order-mutations.json` evaluates
+all five non-baseline metadata permutations; every one regresses, the least by
+16.1 fuzzy-weighted bytes. Their SHA-256 values are
+`f53e79b788c65b77b5f31c06910fc427b7dadd914095313e8ad47ec0fa4479b8`,
+`3345a931147cba67328d3a8fa60d9ada42e5b5669cba0e3c77ce624535bf1f30`,
+and
+`caabc677c87c39821efd82d268e8fb051cb0829252c1604fe4c9d78318efcaaa`.
+MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
+`/G7`, `/Ox`, and `/Ob1` are neutral while `/G6` regresses.

@@ -443,22 +443,20 @@ extern "C" void controls_menu_update(void)
     }
 
     if (controls_rebind_slot_index != -1) {
-        ui_menu_item_t &active =
-            controls_rebind_items[controls_rebind_slot_index];
-        if (active.label) {
-            crt_free(active.label);
+        if (controls_rebind_items[controls_rebind_slot_index].label) {
+            crt_free(
+                controls_rebind_items[controls_rebind_slot_index].label);
         }
-        active.label = strdup_malloc("???");
-        active.enabled = 0;
+        controls_rebind_items[controls_rebind_slot_index].label =
+            strdup_malloc("???");
+        controls_rebind_items[controls_rebind_slot_index].enabled = 0;
     }
 
     draw_position.x -= 14.0f;
-    controls_color_t section_tint;
-    section_tint.r = render_tint_color_r;
-    section_tint.b = render_tint_color_b;
-    section_tint.g = render_tint_color_g;
-    render_tint_color_a = 0.7f;
-    section_tint.a = render_tint_color_a;
+    controls_color_t &render_tint =
+        *(controls_color_t *)&render_tint_color_r;
+    render_tint.a = 0.7f;
+    controls_color_t section_tint = render_tint;
 
     draw_rebind_heading(draw_position, "Aiming", section_tint);
     if (config_aim_scheme[controls_rebind_player_index] == 1) {

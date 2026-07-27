@@ -49,7 +49,7 @@
     "source_sha256": "bfc2a9f090e1ca5d654c54c8c425f78f71650ee9d57d6458071d7664b29027fe",
     "status": "passed"
   },
-  "audit_digest": "cf8daf76982833848bf436bd5e277893d5d8cb7e51c87fe08849780279818a4b",
+  "audit_digest": "d61b5e164d3dd2235236c4b2aa4215811b761697068ab65eb40409db0b2bc08b",
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
   "object_count": 137,
@@ -59,7 +59,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "35f03bf792cfc05e72a7ce64707579f2775577ba053c9d9f5a9286485fc0c8a9",
+  "object_list_sha256": "e1a4da8d74aa2d6cc365715097df4cfab98333a083fbbcfb92958b70280dd870",
   "object_order": "ascending-reference-address",
   "objects": [
     {
@@ -1453,6 +1453,7 @@
       "cflags": [
         "/O2",
         "/GB",
+        "/Oy-",
         "/W3",
         "/GR-"
       ],
@@ -1461,6 +1462,7 @@
         "/c",
         "/O2",
         "/GB",
+        "/Oy-",
         "/W3",
         "/GR-",
         "scratch.cpp"
@@ -1474,7 +1476,7 @@
         {
           "path": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
           "repository_relative": true,
-          "sha256": "ce8193edadb106a6a55ed1cabbc8d6ae40720ef1cafe193bb968c2a9bff34bb9"
+          "sha256": "8e07f82dfccb235c391b07e23e80c87fe0f841eb718d42283d3f231c109ebe62"
         },
         {
           "path": "tools/match/cl.sh",
@@ -1504,23 +1506,23 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
-      "config_sha256": "ce8193edadb106a6a55ed1cabbc8d6ae40720ef1cafe193bb968c2a9bff34bb9",
+      "config_sha256": "8e07f82dfccb235c391b07e23e80c87fe0f841eb718d42283d3f231c109ebe62",
       "effective_end": 268442094,
       "end": 268442094,
       "function": "grim_config_defaults_init",
       "match": {
-        "candidate_instructions": 143,
-        "masked_mismatches": 2,
-        "masked_ok": 65,
+        "candidate_instructions": 144,
+        "masked_mismatches": 0,
+        "masked_ok": 80,
         "masked_unresolved": 0,
         "prefix_instructions": 0,
-        "ratio": 0.7773851590106007,
+        "ratio": 0.8661971830985915,
         "state": "wip",
         "target_instructions": 140
       },
-      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/be60553f73213c9d/scratch.obj",
+      "object": "tools/match/scratches/grim_config_defaults_init/build/msvc6.5/43eeb7e76c2ad308/scratch.obj",
       "object_function_symbol": "_grim_config_defaults_init",
-      "object_sha256": "b6f3ef0e99a11ea324508e4cfa642d76fd9345f580dacc1d702b96dbc71db1e4",
+      "object_sha256": "49d4a5b5948d3cbea8cabeee37ef8ca4bc1d6e1b9101fd7b8e5f4c7699cdf7b3",
       "scratch": "tools/match/scratches/grim_config_defaults_init",
       "source": "tools/match/scratches/grim_config_defaults_init/scratch.cpp",
       "source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",

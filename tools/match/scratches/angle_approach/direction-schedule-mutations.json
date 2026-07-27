@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "arc-direction-control",
+      "find": "    float step;\n    if (direct > wrapped) {\n        step = frame_dt * amount * rate;\n        if (target < *angle) {\n            *angle = step + *angle;\n            return amount;\n        }\n    } else {\n        step = frame_dt * amount * rate;\n        if (target > *angle) {\n            *angle = step + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step;\n",
+      "replacements": [
+        {
+          "name": "precompute-target-above",
+          "text": "    bool target_above = target > *angle;\n    float step;\n    if (direct > wrapped) {\n        step = frame_dt * amount * rate;\n        if (!target_above) {\n            *angle = step + *angle;\n            return amount;\n        }\n    } else {\n        step = frame_dt * amount * rate;\n        if (target_above) {\n            *angle = step + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step;\n"
+        },
+        {
+          "name": "target-first-nested-branches",
+          "text": "    float step;\n    if (target > *angle) {\n        if (direct <= wrapped) {\n            step = frame_dt * amount * rate;\n            *angle = step + *angle;\n            return amount;\n        }\n    } else if (direct > wrapped) {\n        step = frame_dt * amount * rate;\n        *angle = step + *angle;\n        return amount;\n    }\n    step = frame_dt * amount * rate;\n    *angle = *angle - step;\n"
+        },
+        {
+          "name": "branch-local-step-and-fallback",
+          "text": "    if (direct > wrapped) {\n        float step = frame_dt * amount * rate;\n        if (target < *angle) {\n            *angle = step + *angle;\n            return amount;\n        }\n        *angle = *angle - step;\n        return amount;\n    } else {\n        float step = frame_dt * amount * rate;\n        if (target > *angle) {\n            *angle = step + *angle;\n            return amount;\n        }\n        *angle = *angle - step;\n        return amount;\n    }\n"
+        },
+        {
+          "name": "duplicate-step-expression",
+          "text": "    if (direct > wrapped) {\n        if (target < *angle) {\n            *angle = frame_dt * amount * rate + *angle;\n            return amount;\n        }\n    } else {\n        if (target > *angle) {\n            *angle = frame_dt * amount * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - frame_dt * amount * rate;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -59,3 +59,23 @@ a separate current-entry pointer or reference also emitted 170 instructions
 and regressed to 43.45%, so those variants were rejected.
 
 Recovery is classified `semantic-complete` with a `compiler` residual.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tied at the
+68.07228915662651% baseline; MSVC 7.0 regressed to 44.64% with references
+5/1/0. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied, while `/G6` regressed.
+
+`fixed-position-store-mutations.json` (SHA-256
+`fbea9d4516b925edd0ff05344e55e6f42503a675c57c78322adc714460542854`)
+recorded seven variants. The retained `left-big-alien-position/direct-fields`
+variant spells the fixed entry-ten position as direct x/y stores, matching
+the native scalar-store shape without changing the quest entry. The analogous
+right-side change improved less but shortened the prefix, and combining both
+regressed below baseline; neither was retained.
+
+Fresh scratch recomputation improved 441.78915662650604/649 to
+478.8353658536585/649 weighted bytes: 68.07228915662651% to
+73.78048780487805%, with the gap falling from 207.21084337349396 to
+170.16463414634148. The validated result has 162/166 instructions, preserves
+the 37-instruction prefix, and preserves references 7/0/0.

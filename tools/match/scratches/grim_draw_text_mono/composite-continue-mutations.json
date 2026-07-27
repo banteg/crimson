@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "e4-loop-exit",
+      "find": "            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {\n",
+      "replacements": [
+        {
+          "name": "explicit-continue",
+          "text": "            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n            continue;\n        } else if (character == '\\xf6') {\n"
+        }
+      ]
+    },
+    {
+      "name": "f6-loop-exit",
+      "find": "            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n            if (combine) {\n",
+      "replacements": [
+        {
+          "name": "explicit-continue",
+          "text": "            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n            continue;\n        } else {\n            if (combine) {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -59,6 +59,12 @@ compile when combined incompatibly (spec
 The full result, including compile-invalid interactions, is recorded in
 `experiments.jsonl`.
 
+`function-scope-spawn-vector-mutations.json` separately tests two canonical
+function-scope declarations and their interaction with the first scripted
+stage. Declarations alone are byte-neutral; actually routing the spawn through
+either long-lived vector regresses to 83.33%. The native stack-slot reuse is
+therefore not evidence for extending the vector's semantic lifetime.
+
 ## Recovery classification audit
 
 The focused diff has the exact native 504-instruction count and confines every

@@ -31,3 +31,22 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tied at
+60.63829787234043%; MSVC 7.0 regressed to 31.91%. `/GB`, `/G5`, `/G7`,
+`/Ox`, and `/Ob1` tied, while `/G6` regressed.
+
+`fixed-position-store-mutations.json` (SHA-256
+`f4160d3b2795d44e249c77a690b5f138929f4852eb219fe082438d6b02b7c74b`)
+recorded three complete variants. The retained tail variant uses direct x/y
+stores for the two fixed waves, matching the native scalar-store shape without
+changing either entry. Applying the same form to the opening pair, alone or
+with the tail, regressed and was rejected.
+
+Fresh scratch recomputation improved 237.09574468085108/391 to
+246.26519337016572/391 weighted bytes: 60.63829787234043% to
+62.98342541436464%, with the gap falling from 153.90425531914892 to
+144.73480662983428. The validated result has 87/94 instructions, prefix four,
+and preserves references 5/0/0.

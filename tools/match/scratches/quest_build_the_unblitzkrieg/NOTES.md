@@ -55,3 +55,18 @@ stores also regressed to 70.10% while preserving instruction count and prefix.
 The retained source is the strongest natural spelling, and the repeated
 independent-store schedule is a compiler residual. The scratch is classified
 `semantic-complete` with a `compiler` residual.
+
+## 2026-07-27 focused profile and mutation pass
+
+MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tied at
+75.25773195876289%; MSVC 7.0 regressed to 36.49%. `/GB`, `/G5`, `/G7`,
+`/Ox`, and `/Ob1` were byte-identical, while `/G6` regressed.
+
+`metadata-helper-shape-mutations.json` (SHA-256
+`eff4f02fc31cd68015005e127d560fd282e016cfdddf01c662f15aae582e6c6f`)
+recorded five complete variants. Explicit-inline, force-inline,
+return-by-reference, and count-before-trigger spellings were byte-neutral.
+Reversing metadata stores lost 23.4536 weighted bytes and three prefix
+instructions, so no variant was retained. The validated source remains at
+733.7628865979382/975 weighted bytes, a 241.23711340206182 gap, 291/291
+instructions, prefix twelve, and references 0/0/0.

@@ -79,3 +79,19 @@ The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 constructor, and component-assignment forms in the only residual region. The
 natural named forms are byte-neutral; component assignments regress despite
 one moving the prefix by a single instruction. No source change was retained.
+
+## Exact-tail audit (2026-07-27)
+
+Live Binary Ninja and `--regions` again confine the delta to the row vector's
+X/Y materialization and argument-push schedule. MSVC 6.0, 6.5, and 6.6 all
+produce the baseline; Processor Pack falls to 84.57%, while VC7 falls to
+67.59% with unresolved and mismatched references. No tested flag profile is
+exact.
+
+`row-constructor-shape-mutations.json` evaluates 19 initializer-list,
+assignment-body, addend-order, named-X, and temporary-copy combinations.
+Eight natural forms are byte-neutral. Y-first assignment falls to 97.27%;
+temporary copies fall to 81.98% and lose a resolved reference. The recorded
+`reversed-initializer-confirmation` probe is neutral. No source change was
+retained; baseline and final remain **99.26%**, 403/403, prefix 321,
+`50/0/0`.

@@ -102,5 +102,22 @@ Recorded spec SHA-256 values are
 `b2375c37b131052def17d74ac924399d4d6c29133a96253e8aa53c86eba52091`
 (offset/result). The unchanged source SHA-256 is
 `7da4fdcf4cdf3729128fa1d272e811ae1f7871f37dfb72023a2b18da0a30f4c5`;
-the updated `experiments.jsonl` SHA-256 is
+the `experiments.jsonl` SHA-256 at that earlier checkpoint was
 `dc0c47e25016a70a97210dda06cbe9f38b686efc0c55aa16812762cb71fa3047`.
+
+## Exact-tail audit (2026-07-27)
+
+Live Binary Ninja still shows only the first chained-vector Y temporary at a
+different stack slot. MSVC 6.0, 6.5, and 6.6 reproduce the baseline;
+Processor Pack falls to 88.66% with a reference mismatch, and VC7 falls to
+78.32% with unresolved and mismatched references. No tested flag profile is
+exact.
+
+`outer-vector-lifetime-mutations.json` evaluates 15 function-scope input and
+banner declaration/reuse combinations. Five complete forms are byte-neutral;
+moving the real input vector out of its inner lifetime falls to 97.60%; invalid
+partial transformations fail compilation. A recorded
+`canonical-vector-add-confirmation` probe is neutral. No source change was
+retained; baseline and final remain **99.32%**, 292/292, prefix 30,
+`151/0/0`. After these appended records, `experiments.jsonl` is
+`43f42db83c3ed24eada717d441ea1ae565d39ca2438a43e19fdedbf61b0ca618`.

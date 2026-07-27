@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-trail-declarations",
+      "find": "            } else {\n                vec2f_t movement = {\n                    frame_dt * secondary->pos.vx.vel_x,\n                    frame_dt * secondary->pos.vx.vy.vel_y,\n                };",
+      "replacements": [
+        {
+          "name": "velocity-position-before-movement",
+          "text": "            } else {\n                vec2f_t trail_velocity;\n                vec2f_t trail_pos;\n                vec2f_t movement = {\n                    frame_dt * secondary->pos.vx.vel_x,\n                    frame_dt * secondary->pos.vx.vy.vel_y,\n                };"
+        },
+        {
+          "name": "position-velocity-before-movement",
+          "text": "            } else {\n                vec2f_t trail_pos;\n                vec2f_t trail_velocity;\n                vec2f_t movement = {\n                    frame_dt * secondary->pos.vx.vel_x,\n                    frame_dt * secondary->pos.vx.vy.vel_y,\n                };"
+        }
+      ]
+    },
+    {
+      "name": "secondary-trail-use",
+      "find": "                    vec2f_t trail_velocity = {\n                        trail_cos * 90.0f,\n                        trail_cos * 90.0f,\n                    };\n                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - (float)cos(trail_heading) * 9.0f,\n                        secondary->position.y\n                            - (float)sin(trail_heading) * 9.0f,\n                    };",
+      "replacements": [
+        {
+          "name": "assign-branch-locals",
+          "text": "                    trail_velocity.x = trail_cos * 90.0f;\n                    trail_velocity.y = trail_cos * 90.0f;\n                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    trail_pos.x = secondary->position.x\n                        - (float)cos(trail_heading) * 9.0f;\n                    trail_pos.y = secondary->position.y\n                        - (float)sin(trail_heading) * 9.0f;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-scoped-player-shape",
+      "find": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;",
+      "replacements": [
+        {
+          "name": "const-pointer",
+          "text": "            const player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "reference",
+          "text": "            player_state_t &fire_player =\n                player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player.aim.x;\n            random_offset.y = fire_player.aim.y;\n            move_delta.x = random_offset.x - fire_player.position.x;\n            move_delta.y = random_offset.y - fire_player.position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player.spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "const-reference",
+          "text": "            const player_state_t &fire_player =\n                player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player.aim.x;\n            random_offset.y = fire_player.aim.y;\n            move_delta.x = random_offset.x - fire_player.position.x;\n            move_delta.y = random_offset.y - fire_player.position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player.spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "aggregate-aim-copy",
+          "text": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset = fire_player->aim;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "named-aggregate-aim-copy",
+          "text": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            player_update_vec2_t fire_aim = fire_player->aim;\n            random_offset = fire_aim;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "reference-aggregate-aim-copy",
+          "text": "            const player_state_t &fire_player =\n                player_state_table[render_overlay_player_index];\n            random_offset = fire_player.aim;\n            move_delta.x = random_offset.x - fire_player.position.x;\n            move_delta.y = random_offset.y - fire_player.position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player.spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        }
+      ]
+    }
+  ]
+}

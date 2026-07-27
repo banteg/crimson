@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pellet-position-lifetime",
+      "find": "                int pellet_count = 12;\n                do {\n                    player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &effect_velocity, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_velocity,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + shot_heading,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        -100);\n",
+      "replacements": [
+        {
+          "name": "loop-local-canonical-vector",
+          "text": "                int pellet_count = 12;\n                do {\n                    vec2f_t pellet_position;\n                    player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + shot_heading,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        -100);\n"
+        },
+        {
+          "name": "outer-canonical-vector",
+          "text": "                vec2f_t pellet_position;\n                int pellet_count = 12;\n                do {\n                    player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    typo_fire_vec_add(\n                        &pellet_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + shot_heading,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        -100);\n"
+        },
+        {
+          "name": "loop-local-component-stores",
+          "text": "                int pellet_count = 12;\n                do {\n                    vec2f_t pellet_position;\n                    player_position =\n                        &player_state_table[render_overlay_player_index].position;\n                    pellet_position.x = player_position->x + local_offset.x;\n                    pellet_position.y = player_position->y + local_offset.y;\n                    int projectile_index = projectile_spawn(\n                        &pellet_position,\n                        (float)(crt_rand() % 200 - 100) * 0.0013f\n                            + shot_heading,\n                        PROJECTILE_TYPE_SHOTGUN,\n                        -100);\n"
+        }
+      ]
+    }
+  ]
+}

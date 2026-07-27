@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-selected-player-data",
+      "find": "            random_offset.x = player->aim.x;\n            random_offset.y = player->aim.y;\n            move_delta.x = random_offset.x - player_position->x;\n            move_delta.y = random_offset.y - player_position->y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n            random_offset.x = (float)cos(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = (float)sin(spread_angle) * spread_radius\n                + random_offset.y;",
+      "replacements": [
+        {
+          "name": "direct-reindexed-player",
+          "text": "            random_offset.x =\n                player_state_table[render_overlay_player_index].aim.x;\n            random_offset.y =\n                player_state_table[render_overlay_player_index].aim.y;\n            move_delta.x = random_offset.x\n                - player_state_table[render_overlay_player_index].position.x;\n            move_delta.y = random_offset.y\n                - player_state_table[render_overlay_player_index].position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius\n                * player_state_table[render_overlay_player_index].spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n            random_offset.x = (float)cos(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = (float)sin(spread_angle) * spread_radius\n                + random_offset.y;"
+        },
+        {
+          "name": "scoped-reindexed-player",
+          "text": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;\n            random_offset.x = (float)cos(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = (float)sin(spread_angle) * spread_radius\n                + random_offset.y;"
+        }
+      ]
+    },
+    {
+      "name": "fire-cough-vec2-sub-result",
+      "find": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;",
+      "replacements": [
+        {
+          "name": "reindexed-receiver",
+          "text": "            ((vec2_t *)&player_state_table[render_overlay_player_index]\n                    .position)\n                ->vec2_sub(&scratch_pos.x, &random_offset.x);\n            float shot_heading =\n                (float)atan2(scratch_pos.y, scratch_pos.x) - 1.5707964f;"
+        },
+        {
+          "name": "reindexed-receiver-return",
+          "text": "            float *shot_delta =\n                ((vec2_t *)&player_state_table[render_overlay_player_index]\n                        .position)\n                    ->vec2_sub(&scratch_pos.x, &random_offset.x);\n            float shot_heading =\n                (float)atan2(shot_delta[1], shot_delta[0]) - 1.5707964f;"
+        },
+        {
+          "name": "retained-receiver-return",
+          "text": "            float *shot_delta = ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);\n            float shot_heading =\n                (float)atan2(shot_delta[1], shot_delta[0]) - 1.5707964f;"
+        }
+      ]
+    },
+    {
+      "name": "fire-cough-projectile-position-lifetime",
+      "find": "            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &movement_input,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n\n            move_delta.x = (float)cos(aim_heading) * 25.0f;\n            move_delta.y = (float)sin(aim_heading) * 25.0f;\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);",
+      "replacements": [
+        {
+          "name": "reuse-move-delta-for-projectile-position",
+          "text": "            move_delta.x = movement_input.x + player_position->x;\n            move_delta.y = movement_input.y + player_position->y;\n            projectile_spawn(\n                &move_delta,\n                shot_heading,\n                PROJECTILE_TYPE_FIRE_BULLETS,\n                owner_id);\n\n            move_delta.x = (float)cos(aim_heading) * 25.0f;\n            move_delta.y = (float)sin(aim_heading) * 25.0f;\n            movement_input.x = movement_input.x + player_position->x;\n            movement_input.y = movement_input.y + player_position->y;\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);"
+        }
+      ]
+    }
+  ]
+}

@@ -1223,13 +1223,23 @@ extern "C" void projectile_update(void)
                                 particle->angle += 6.2831855f;
                             }
 
-                            float hit_angle = (float)atan2(
-                                particle->position.y
-                                    - frame_dt * particle->velocity.y
+                            vec2f_t displacement = {
+                                frame_dt * particle->velocity.x,
+                                frame_dt * particle->velocity.y,
+                            };
+                            vec2f_t previous_position = {
+                                particle->position.x - displacement.x,
+                                particle->position.y - displacement.y,
+                            };
+                            vec2f_t hit_direction = {
+                                previous_position.x
+                                    - creature_pool[hit_id].position.x,
+                                previous_position.y
                                     - creature_pool[hit_id].position.y,
-                                particle->position.x
-                                    - frame_dt * particle->velocity.x
-                                    - creature_pool[hit_id].position.x);
+                            };
+                            float hit_angle = (float)atan2(
+                                hit_direction.y,
+                                hit_direction.x);
                             while (6.2831855f < hit_angle) {
                                 hit_angle -= 6.2831855f;
                             }

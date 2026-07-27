@@ -28,3 +28,10 @@ storage forms, and point-add operator shapes. Every compile-valid alternative
 was byte-neutral or worse; incomplete dependent-site combinations that did
 not compile remain visible in the machine record. No source change was
 retained, strengthening the tail-merging compiler-residual classification.
+
+`composite-continue-mutations.json` adds a direct loop-control bound around the
+native-duplicated suffix. Adding an explicit `continue` after either composite
+mark draw, or after both, is semantically neutral and compiles byte-identically
+at 94.39% with 298 instructions and all 41 references resolved. Thus branch
+fallthrough spelling is not what causes stock VC6.5 to merge the `0xe4` and
+`0xf6` mark tails, and no variant is retained.

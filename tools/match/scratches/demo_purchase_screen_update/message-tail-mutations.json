@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "message-width-progress-order",
+      "find": "    float message_y;\n    float message_width = (float)strlen(message) * 12.8f;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;",
+      "replacements": [
+        {
+          "name": "width-then-message-y-then-progress",
+          "text": "    float message_width = (float)strlen(message) * 12.8f;\n    float message_y;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;"
+        },
+        {
+          "name": "message-y-initialized-before-width",
+          "text": "    float message_y = position_y + 50.0f;\n    float message_width = (float)strlen(message) * 12.8f;\n    float progress_width =\n        (float)quest_spawn_timeline\n        / (float)demo_time_limit_ms\n        * message_width;"
+        }
+      ]
+    },
+    {
+      "name": "message-y-materialization",
+      "find": "    position.x = 60.0f;\n    position.y = (message_y = position_y + 50.0f) - 4.0f;",
+      "replacements": [
+        {
+          "name": "message-y-then-position",
+          "text": "    message_y = position_y + 50.0f;\n    position.x = 60.0f;\n    position.y = message_y - 4.0f;"
+        },
+        {
+          "name": "position-x-then-message-y",
+          "text": "    position.x = 60.0f;\n    message_y = position_y + 50.0f;\n    position.y = message_y - 4.0f;"
+        }
+      ]
+    },
+    {
+      "name": "message-selector-shape",
+      "find": "        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        } else if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        } else if (message_index == 2) {\n            message = \"Want more Perks?\";\n        } else if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        } else if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }",
+      "replacements": [
+        {
+          "name": "switch",
+          "text": "        switch (message_index) {\n        case 0:\n            message = \"Want more Levels?\";\n            break;\n        case 1:\n            message = \"Want more Weapons?\";\n            break;\n        case 2:\n            message = \"Want more Perks?\";\n            break;\n        case 3:\n            message = \"Want unlimited Play time?\";\n            break;\n        case 4:\n            message = \"Want to post your high scores?\";\n            break;\n        }"
+        },
+        {
+          "name": "independent-comparisons",
+          "text": "        if (message_index == 0) {\n            message = \"Want more Levels?\";\n        }\n        if (message_index == 1) {\n            message = \"Want more Weapons?\";\n        }\n        if (message_index == 2) {\n            message = \"Want more Perks?\";\n        }\n        if (message_index == 3) {\n            message = \"Want unlimited Play time?\";\n        }\n        if (message_index == 4) {\n            message = \"Want to post your high scores?\";\n        }"
+        }
+      ]
+    }
+  ]
+}

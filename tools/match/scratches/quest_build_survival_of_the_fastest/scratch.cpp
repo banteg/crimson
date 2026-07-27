@@ -57,13 +57,12 @@ extern "C" void quest_build_survival_of_the_fastest(
     trigger_time_ms = 5900;
     spawn = &builder.spawns[builder.count];
     while (y < 688) {
-        spawn->pos = quest_vec2_t(688.0f, (float)y);
-        spawn->set_spawn(
-            SPAWN_ID_DEN_SPIDER_WEAK_10,
-            trigger_time_ms,
-            1);
-        ++builder.count;
         ++spawn;
+        spawn[-1].pos = quest_vec2_t(688.0f, (float)y);
+        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;
+        spawn[-1].trigger_time_ms = trigger_time_ms;
+        spawn[-1].count = 1;
+        ++builder.count;
         ++path_index;
         y += 72;
         trigger_time_ms += 900;

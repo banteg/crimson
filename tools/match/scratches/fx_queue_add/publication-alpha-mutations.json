@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "queue-publication-and-alpha-copy",
+      "find": "    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n",
+      "replacements": [
+        {
+          "name": "publish-after-color",
+          "text": "    entry->position = *pos;\n    entry->color = *color;\n    fx_queue_count = count;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n"
+        },
+        {
+          "name": "publish-before-color",
+          "text": "    entry->position = *pos;\n    fx_queue_count = count;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n"
+        },
+        {
+          "name": "manual-float-alpha-split",
+          "text": "    entry->position = *pos;\n    entry->color.r = color->r;\n    entry->color.g = color->g;\n    entry->color.b = color->b;\n    float alpha = color->a;\n    fx_queue_count = count;\n    entry->color.a = alpha;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n"
+        },
+        {
+          "name": "aggregate-temp-alpha-split",
+          "text": "    entry->position = *pos;\n    effect_color_t color_copy = *color;\n    entry->color.r = color_copy.r;\n    entry->color.g = color_copy.g;\n    entry->color.b = color_copy.b;\n    fx_queue_count = count;\n    entry->color.a = color_copy.a;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n"
+        },
+        {
+          "name": "manual-word-alpha-split",
+          "text": "    entry->position = *pos;\n    unsigned int *src_color = (unsigned int *)color;\n    unsigned int *dst_color = (unsigned int *)&entry->color;\n    dst_color[0] = src_color[0];\n    dst_color[1] = src_color[1];\n    dst_color[2] = src_color[2];\n    unsigned int alpha = src_color[3];\n    fx_queue_count = count;\n    dst_color[3] = alpha;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n"
+        }
+      ]
+    }
+  ]
+}

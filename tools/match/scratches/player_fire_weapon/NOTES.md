@@ -75,3 +75,10 @@ recovered source. The stack-coloring residual remains explicit.
 `pellet-vector-reuse-mutations.json` also tested reusing the existing
 effect-position aggregate for each pellet. It regresses 99.21% to 96.03%, so
 the dedicated semantic projectile vector is retained.
+
+`pellet-position-lifetime-mutations.json` records three further dedicated
+pellet-position lifetimes. Outer- and loop-scoped canonical vectors both
+regress to 90.21%, and explicit component stores regress to 89.42%, while
+retaining the 378-instruction count and 142 resolved references. The existing
+adjacent-vector expression remains the strongest source evidence despite its
+two stack-slot operand differences.

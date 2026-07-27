@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "demo-flag-lifetime",
+      "find": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n",
+      "replacements": [
+        {
+          "name": "cached-byte-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_active) {\n"
+        },
+        {
+          "name": "cached-bool-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            bool demo_active = demo_mode_active != 0;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_active) {\n"
+        },
+        {
+          "name": "cached-int-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            int demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_active) {\n"
+        },
+        {
+          "name": "cached-byte-after-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n            player_state_table[reset_index].weapon_id = 1;\n            player_state_table[reset_index].reset_reserved_zero = 0;\n            player_state_table[reset_index].death_timer = 16.0f;\n            unsigned char demo_active = demo_mode_active;\n\n            if (!demo_active) {\n"
+        }
+      ]
+    }
+  ]
+}

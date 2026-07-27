@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-local-order",
+      "find": "    int one = 1;\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n",
+      "replacements": [
+        {
+          "name": "template-before-one",
+          "text": "    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    int one = 1;\n"
+        },
+        {
+          "name": "const-one",
+          "text": "    const int one = 1;\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n"
+        },
+        {
+          "name": "const-template",
+          "text": "    int one = 1;\n    const int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n"
+        },
+        {
+          "name": "both-const-template-first",
+          "text": "    const int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    const int one = 1;\n"
+        },
+        {
+          "name": "enum-constants",
+          "text": "    enum {\n        one = 1,\n        corner_template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C\n    };\n"
+        }
+      ]
+    }
+  ]
+}
