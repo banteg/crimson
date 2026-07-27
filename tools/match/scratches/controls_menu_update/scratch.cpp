@@ -366,10 +366,10 @@ extern "C" void controls_menu_update(void)
         1.0f,
         controls_redefine_button.hover_anim * 0.000900000043f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);
-    right_base = controls_vec2_t(
-        right_base.x + 16.0f,
-        right_base.y + 4.0f - 38.0f);
+    float right_y_before_subtract = right_base.y + 4.0f;
+    right_base.x += 16.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+    right_base.y = right_y_before_subtract - 38.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
         right_base.x + 54.0f,
         right_base.y,

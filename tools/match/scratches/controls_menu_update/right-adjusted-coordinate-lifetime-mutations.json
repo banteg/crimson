@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-adjusted-coordinate-lifetime",
+      "find": "    right_base = controls_vec2_t(\n        right_base.x + 16.0f,\n        right_base.y + 4.0f - 38.0f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);",
+      "replacements": [
+        {
+          "name": "staged-yx-across-call",
+          "text": "    float right_y_before_subtract = right_base.y + 4.0f;\n    float right_x_adjusted = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.x = right_x_adjusted;\n    right_base.y = right_y_before_subtract - 38.0f;"
+        },
+        {
+          "name": "staged-yx-construct-after-call",
+          "text": "    float right_y_before_subtract = right_base.y + 4.0f;\n    float right_x_adjusted = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base = controls_vec2_t(\n        right_x_adjusted,\n        right_y_before_subtract - 38.0f);"
+        },
+        {
+          "name": "staged-final-yx-across-call",
+          "text": "    float right_y_adjusted = right_base.y + 4.0f - 38.0f;\n    float right_x_adjusted = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.x = right_x_adjusted;\n    right_base.y = right_y_adjusted;"
+        },
+        {
+          "name": "staged-xy-across-call",
+          "text": "    float right_x_adjusted = right_base.x + 16.0f;\n    float right_y_before_subtract = right_base.y + 4.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.x = right_x_adjusted;\n    right_base.y = right_y_before_subtract - 38.0f;"
+        },
+        {
+          "name": "direct-yx-around-call",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "reuse-right-position-across-call",
+          "text": "    right_position.y = right_base.y + 4.0f;\n    right_position.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.x = right_position.x;\n    right_base.y = right_position.y - 38.0f;"
+        },
+        {
+          "name": "staged-vector-fields-across-call",
+          "text": "    controls_vec2_t adjusted_right;\n    adjusted_right.y = right_base.y + 4.0f;\n    adjusted_right.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.x = adjusted_right.x;\n    right_base.y = adjusted_right.y - 38.0f;"
+        },
+        {
+          "name": "mixed-y-temp-x-base",
+          "text": "    float right_y_before_subtract = right_base.y + 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_y_before_subtract - 38.0f;"
+        }
+      ]
+    }
+  ]
+}

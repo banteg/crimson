@@ -323,3 +323,46 @@ Recorded spec SHA-256 values:
 
 The updated `experiments.jsonl` SHA-256 is
 `728d942aeb826d66779c3dc67bfe419fa75af5d8a53404c6042f300c0336ad1c`.
+
+## Right-coordinate lifetime refinement
+
+Live Binary Ninja disassembly at `0x0044936e..0x004493a6` shows the right
+panel evaluating `y + 4` before `x + 16`, then subtracting 38 from the staged
+Y coordinate around the white-color call. The complete eight-variant
+`right-adjusted-coordinate-lifetime-mutations.json` sweep tested scalar,
+vector, field, and direct compound-assignment lifetimes for that schedule.
+The unique best form keeps the pre-subtraction Y value in a scalar while
+updating X in the existing base vector. It is behavior-preserving and
+recovers **11.80 fuzzy-weighted bytes** without changing the 5,406-instruction
+candidate, exact prefix, unresolved references, or mismatched references.
+The clean resolved-reference count changes from 1,543 to 1,542.
+
+The retained source now matches **80.3731%**, with **17,110.64
+fuzzy-weighted bytes** and a **4,178.36-byte fuzzy gap**, 5,406 candidate
+instructions versus 5,421 native instructions, a 164-instruction exact
+prefix, and reference audit **1,542 resolved / 4 unresolved / 9
+mismatched**.
+
+Three complete matrices were replayed after the changed local lifetime:
+
+- all 15 outline/row-start singles and pairs remained negative; the nearest
+  variant lost 3.93 weighted bytes;
+- all five opening vector declaration orders remained byte-identical; and
+- four of six left-panel lifetime variants remained byte-identical, while
+  the two scalar forms lost 23.60 and 1,027.36 weighted bytes.
+
+This covers all 26 planned post-win variants without budget truncation. A
+compiler-profile sweep also leaves stock MSVC 6.5 and 6.6 tied at the retained
+result; MSVC 6.0 and the Processor Pack regress materially, while MSVC 7 does
+not compile this scratch.
+
+The retained source SHA-256 is
+`9b0c0387901cdf3403587e0da7a3857214ade111eedca09580d0484c07a34a5c`.
+The new coordinate-lifetime spec SHA-256 is
+`83ad5aa51866b438651f6d48378b33f2755bc8f4003877c5a6d0ee4b340612fa`;
+the replayed outline, opening-declaration, and left-panel spec SHA-256 values
+are `86b57632d8e22f4f0ccce380ae6a7729964fb6256cd2feeb7d064c548a5307df`,
+`34e1998c665348f26f8300c2c1ce4d731914ef5fc75bcead329dec5061cc4c93`,
+and `cdfbe1fe76105490210d88db25c68fc2ba835282030c48eb94b63f604cc267ae`.
+The updated `experiments.jsonl` SHA-256 is
+`1ad3a6e82f40c9b8f237cc1b6e99a164f8ad29ab4b4342367da6509e805cbad8`.
