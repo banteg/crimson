@@ -4,6 +4,9 @@
 state. Decompiled text is a view of that state, not a checked-in source of
 truth.
 
+Deterministic canonical-object and symbol-closure artifacts for the native
+linker track live under [`analysis/native/`](native/README.md).
+
 Consult a function in this order:
 
 1. Binary Ninja, using the live database and `bn`.

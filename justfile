@@ -123,6 +123,9 @@ ida-rebuild-grim:
 entrypoint-trace:
     uv run scripts/entrypoint_trace.py --depth 2 --skip-external
 
+native-audit image="grim.dll" *args:
+    uv run crimson native audit --image "{{image}}" --out-dir "analysis/native/{{image}}" {{args}}
+
 function-hotspots:
     uv run scripts/function_hotspots.py --top 12 --only-fun
 

@@ -130,9 +130,9 @@
     "func_name": "grim_apply_settings",
     "func_size": 8,
     "calling_convention": "unknown",
-    "return_type": "void",
+    "return_type": "bool",
     "param_count": 0,
-    "signature": "void grim_apply_settings(void)",
+    "signature": "bool grim_apply_settings(void)",
     "source_type": "DEFAULT"
   },
   {

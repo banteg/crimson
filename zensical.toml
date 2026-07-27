@@ -80,6 +80,7 @@ nav = [
       { "Overview" = "re/static/index.md" },
       { "Binary analysis" = "re/static/binary-analysis.md" },
       { "Entrypoint trace" = "re/static/entrypoint.md" },
+      { "Native linking" = "re/static/native-linking.md" },
       { "Boot / loading sequence" = "re/static/boot-sequence.md" },
       { "Detangling notes" = "re/static/detangling.md" },
       { "Perk runtime reference" = "re/static/perks-runtime-reference.md" },

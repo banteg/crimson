@@ -1573,10 +1573,15 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
 
     optimized = compile_scratch(config, Path("match"))
     unoptimized = compile_scratch(replace(config, cflags="/Od"), Path("match"))
+    cached = compile_scratch(config, Path("match"))
+    forced = compile_scratch(config, Path("match"), force=True)
 
     assert optimized != unoptimized
     assert optimized.parent != unoptimized.parent
     assert optimized.read_bytes() != unoptimized.read_bytes()
+    assert cached == optimized
+    assert forced == optimized
+    assert len(commands) == 3
     assert Path(commands[0][0]).is_absolute()
     assert commands[0][0] == str((match_root / "cl.sh").resolve())
 

@@ -55,6 +55,14 @@ equivalent regions differently from the native function:
   difference or changed real local lifetimes and degraded the match.
 - Independent width/height stores and the image-header pointer adjustment use
   a different register schedule immediately before `alloc_sarray`.
+- Binary Ninja resolves the cleanup calls at `0x10004cb5` and `0x10004e69` to
+  the one-byte `grim_noop` at `0x10001160`; both callsites first load the scope
+  address into `ecx` and mark the C++ unwind state complete. The same native
+  address is also called as the variadic disabled-log sink throughout the
+  platform code. This is evidence for linker-folded
+  `_grim_noop`/`GrimJazDecodeScope::~GrimJazDecodeScope` aliases, not grounds
+  to rename the canonical noop or add a fake destructor stub. The native-link
+  track must provide an explicit evidence-backed alias.
 
 No inline assembly, volatile state, dummy reference, forced address, or
 layout-only arithmetic is used. The three remaining unresolved references are

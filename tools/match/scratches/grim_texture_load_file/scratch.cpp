@@ -6,7 +6,7 @@
 extern unsigned char grim_lookup_blob_loaded;
 
 extern "C" bool grim_path_has_extension(char *path, char *extension);
-unsigned char *grim_lookup_blob_find(char *path);
+char *grim_lookup_blob_find(char *path);
 unsigned int grim_lookup_blob_size_for_path(char *path);
 unsigned char *grim_decode_jaz_texture(
     unsigned char *source,
@@ -29,7 +29,7 @@ bool GrimTexture::grim_texture_load_file(char *path)
     unsigned char *lookup_data = 0;
     bool found_in_lookup = false;
     if (grim_lookup_blob_loaded) {
-        lookup_data = grim_lookup_blob_find(path);
+        lookup_data = (unsigned char *)grim_lookup_blob_find(path);
         found_in_lookup = lookup_data != 0;
     }
 

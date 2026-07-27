@@ -1,6 +1,5 @@
 #include "grim2d_cpp.h"
-
-extern int grim_find_texture_by_name(char *name);
+#include "grim_texture.h"
 
 int IGrim2D_cpp::grim_get_texture_handle(char *name)
 {

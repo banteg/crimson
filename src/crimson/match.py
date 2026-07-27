@@ -44,7 +44,20 @@ IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_STATIC = 3
 IMAGE_SCN_CNT_CODE = 0x00000020
+IMAGE_SCN_CNT_UNINITIALIZED_DATA = 0x00000080
+IMAGE_SCN_LNK_COMDAT = 0x00001000
+IMAGE_SCN_LNK_NRELOC_OVFL = 0x01000000
 IMAGE_REL_I386_REL32 = 0x14
+IMAGE_REL_I386_WIDTHS = {
+    0x0000: 0,
+    0x0006: 4,
+    0x0007: 4,
+    0x000A: 2,
+    0x000B: 4,
+    0x000C: 4,
+    0x000D: 1,
+    0x0014: 4,
+}
 SYM_TYPE_FUNCTION = 0x20
 PADDING_BYTES = b"\xcc\x90"
 PADDING_LINE_TEXT = {
@@ -563,6 +576,11 @@ class CoffSection:
     data: bytes
     characteristics: int
     relocations: tuple[CoffRelocation, ...]
+    index: int = 0
+    comdat_key: str | None = None
+    comdat_selection: int | None = None
+    comdat_associative_section: int | None = None
+    logical_size: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -573,6 +591,9 @@ class CoffSymbol:
     section_number: int
     symbol_type: int
     storage_class: int
+    aux_records: tuple[bytes, ...] = ()
+    weak_default_symbol_index: int | None = None
+    weak_search: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -770,6 +791,8 @@ class MatchDump:
 
 
 def parse_coff_object(data: bytes) -> CoffObject:
+    if len(data) < 20:
+        raise ValueError("truncated COFF header")
     machine, section_count, _, symtab_offset, symbol_count, optional_header_size, _ = struct.unpack_from(
         "<HHIIIHH",
         data,
@@ -778,13 +801,30 @@ def parse_coff_object(data: bytes) -> CoffObject:
     if machine != IMAGE_FILE_MACHINE_I386:
         raise ValueError(f"expected i386 COFF object, got machine 0x{machine:x}")
 
+    section_headers_end = 20 + optional_header_size + section_count * 40
+    if section_headers_end > len(data):
+        raise ValueError("truncated COFF section table")
+    symbol_table_end = symtab_offset + symbol_count * 18
+    if symtab_offset < section_headers_end or symbol_table_end + 4 > len(data):
+        raise ValueError("invalid COFF symbol table extent")
     string_table_offset = symtab_offset + symbol_count * 18
+    string_table_size = struct.unpack_from("<I", data, string_table_offset)[0]
+    if string_table_size < 4 or string_table_offset + string_table_size > len(data):
+        raise ValueError("invalid COFF string table extent")
+    string_table_end = string_table_offset + string_table_size
+
+    def string_at(offset: int) -> str:
+        absolute = string_table_offset + offset
+        if offset < 4 or absolute >= string_table_end:
+            raise ValueError(f"invalid COFF string offset {offset}")
+        end = data.find(b"\x00", absolute, string_table_end)
+        if end < 0:
+            raise ValueError(f"unterminated COFF string at offset {offset}")
+        return data[absolute:end].decode("latin1")
 
     def symbol_name(raw: bytes) -> str:
         if raw[:4] == b"\x00\x00\x00\x00":
-            offset = string_table_offset + struct.unpack_from("<I", raw, 4)[0]
-            end = data.index(b"\x00", offset)
-            return data[offset:end].decode("latin1")
+            return string_at(struct.unpack_from("<I", raw, 4)[0])
         return raw.rstrip(b"\x00").decode("latin1")
 
     symbols: list[CoffSymbol] = []
@@ -792,6 +832,23 @@ def parse_coff_object(data: bytes) -> CoffObject:
     while index < symbol_count:
         record = data[symtab_offset + index * 18 : symtab_offset + (index + 1) * 18]
         value, section_number, symbol_type, storage_class, aux_count = struct.unpack_from("<IhHBB", record, 8)
+        if index + 1 + aux_count > symbol_count:
+            raise ValueError(f"COFF symbol {index} auxiliary records exceed the symbol table")
+        aux_records = tuple(
+            data[
+                symtab_offset + (index + 1 + aux_index) * 18 :
+                symtab_offset + (index + 2 + aux_index) * 18
+            ]
+            for aux_index in range(aux_count)
+        )
+        weak_default_symbol_index: int | None = None
+        weak_search: int | None = None
+        if storage_class == 105:
+            if section_number != 0 or value != 0 or aux_count != 1:
+                raise ValueError(f"COFF weak external {index} has invalid primary or auxiliary fields")
+            weak_default_symbol_index, weak_search = struct.unpack_from("<II", aux_records[0], 0)
+            if weak_search not in (1, 2, 3):
+                raise ValueError(f"COFF weak external {index} has invalid search policy {weak_search}")
         symbols.append(
             CoffSymbol(
                 raw_index=index,
@@ -800,14 +857,33 @@ def parse_coff_object(data: bytes) -> CoffObject:
                 section_number=section_number,
                 symbol_type=symbol_type,
                 storage_class=storage_class,
+                aux_records=aux_records,
+                weak_default_symbol_index=weak_default_symbol_index,
+                weak_search=weak_search,
             ),
         )
         index += 1 + aux_count
+
+    symbols_by_raw_index = {symbol.raw_index: symbol for symbol in symbols}
+    for symbol in symbols:
+        if (
+            symbol.storage_class == 105
+            and symbol.weak_default_symbol_index not in symbols_by_raw_index
+        ):
+            raise ValueError(
+                f"COFF weak external {symbol.raw_index} fallback "
+                f"{symbol.weak_default_symbol_index} is not a primary symbol",
+            )
 
     sections: list[CoffSection] = []
     for section_index in range(section_count):
         header_offset = 20 + optional_header_size + section_index * 40
         name_raw = data[header_offset : header_offset + 8]
+        short_name = name_raw.rstrip(b"\x00").decode("latin1")
+        if short_name.startswith("/") and short_name[1:].isdigit():
+            section_name = string_at(int(short_name[1:], 10))
+        else:
+            section_name = short_name
         (
             _virtual_size,
             _virtual_address,
@@ -819,17 +895,194 @@ def parse_coff_object(data: bytes) -> CoffObject:
             _line_count,
             characteristics,
         ) = struct.unpack_from("<IIIIIIHHI", data, header_offset + 8)
+        uninitialized = bool(characteristics & IMAGE_SCN_CNT_UNINITIALIZED_DATA)
+        if raw_size and not uninitialized and (
+            raw_offset < section_headers_end
+            or raw_offset + raw_size > len(data)
+        ):
+            raise ValueError(f"section {section_name!r} has invalid raw-data extent")
+        relocation_overflow = bool(characteristics & IMAGE_SCN_LNK_NRELOC_OVFL)
+        if relocation_overflow and reloc_count != 0xFFFF:
+            raise ValueError(
+                f"section {section_name!r} has relocation-overflow flag without count 0xffff",
+            )
+        relocation_start_index = 0
+        relocation_table_count = reloc_count
+        if relocation_overflow:
+            if reloc_offset < section_headers_end or reloc_offset + 10 > len(data):
+                raise ValueError(f"section {section_name!r} has invalid relocation-overflow sentinel")
+            extended_count, sentinel_symbol, sentinel_type = struct.unpack_from(
+                "<IIH",
+                data,
+                reloc_offset,
+            )
+            if extended_count <= 0xFFFF or sentinel_symbol != 0 or sentinel_type != 0:
+                raise ValueError(f"section {section_name!r} has invalid relocation-overflow sentinel")
+            relocation_start_index = 1
+            relocation_table_count = extended_count
+        if relocation_table_count and (
+            reloc_offset < section_headers_end
+            or reloc_offset + relocation_table_count * 10 > len(data)
+        ):
+            raise ValueError(f"section {section_name!r} has invalid relocation extent")
         relocations = tuple(
-            CoffRelocation(*struct.unpack_from("<IIH", data, reloc_offset + i * 10)) for i in range(reloc_count)
+            CoffRelocation(*struct.unpack_from("<IIH", data, reloc_offset + i * 10))
+            for i in range(relocation_start_index, relocation_table_count)
         )
+        if any(relocation.symbol_index not in symbols_by_raw_index for relocation in relocations):
+            raise ValueError(f"section {section_name!r} relocation references an invalid symbol index")
+        for relocation in relocations:
+            width = IMAGE_REL_I386_WIDTHS.get(relocation.relocation_type)
+            if width is None:
+                raise ValueError(
+                    f"section {section_name!r} has unsupported i386 relocation type "
+                    f"0x{relocation.relocation_type:x}",
+                )
+            if relocation.virtual_address + width > raw_size:
+                raise ValueError(
+                    f"section {section_name!r} relocation at {relocation.virtual_address} "
+                    f"with width {width} exceeds section size {raw_size}",
+                )
         sections.append(
             CoffSection(
-                name=name_raw.rstrip(b"\x00").decode("latin1"),
-                data=data[raw_offset : raw_offset + raw_size],
+                name=section_name,
+                data=(
+                    b""
+                    if uninitialized
+                    else data[raw_offset : raw_offset + raw_size]
+                ),
                 characteristics=characteristics,
                 relocations=relocations,
+                index=section_index + 1,
+                logical_size=raw_size,
             ),
         )
+
+    for symbol in symbols:
+        if symbol.section_number > len(sections) or symbol.section_number < -2:
+            raise ValueError(
+                f"COFF symbol {symbol.raw_index} references invalid section {symbol.section_number}",
+            )
+        if symbol.section_number > 0:
+            section = sections[symbol.section_number - 1]
+            logical_size = section.logical_size or 0
+            if symbol.value > logical_size:
+                raise ValueError(
+                    f"COFF symbol {symbol.raw_index} value {symbol.value} exceeds "
+                    f"section {symbol.section_number} size {logical_size}",
+                )
+
+    first_symbol_index_by_section: dict[int, int] = {}
+    for symbol in symbols:
+        if symbol.section_number > 0:
+            first_symbol_index_by_section.setdefault(symbol.section_number, symbol.raw_index)
+
+    section_metadata: dict[int, tuple[int, int | None, str | None]] = {}
+    for symbol in symbols:
+        if (
+            symbol.storage_class != IMAGE_SYM_CLASS_STATIC
+            or symbol.section_number <= 0
+            or symbol.section_number > len(sections)
+            or symbol.name != sections[symbol.section_number - 1].name
+        ):
+            continue
+        section = sections[symbol.section_number - 1]
+        if not symbol.aux_records:
+            continue
+        if symbol.value != 0 or symbol.symbol_type != 0:
+            raise ValueError(
+                f"COFF section symbol {symbol.raw_index} has invalid value or type",
+            )
+        if len(symbol.aux_records) != 1:
+            raise ValueError(
+                f"COFF section symbol {symbol.raw_index} must have one auxiliary record",
+            )
+        associated_section = struct.unpack_from("<h", symbol.aux_records[0], 12)[0]
+        selection = symbol.aux_records[0][14]
+        is_comdat = bool(section.characteristics & IMAGE_SCN_LNK_COMDAT)
+        if selection == 0:
+            if is_comdat:
+                raise ValueError(
+                    f"COMDAT section {section.name!r} has no selection policy",
+                )
+            continue
+        if not 1 <= selection <= 7 or not is_comdat:
+            raise ValueError(
+                f"section {section.name!r} has invalid COMDAT selection {selection}",
+            )
+        if first_symbol_index_by_section[symbol.section_number] != symbol.raw_index:
+            raise ValueError(
+                f"COMDAT section {section.name!r} definition symbol must be first",
+            )
+        if symbol.section_number in section_metadata:
+            raise ValueError(f"section {section.name!r} has duplicate definition symbols")
+
+        comdat_key: str | None = None
+        if selection == 5:
+            if (
+                not 1 <= associated_section <= len(sections)
+                or associated_section == symbol.section_number
+            ):
+                raise ValueError(
+                    f"associative COMDAT section {section.name!r} has invalid parent "
+                    f"{associated_section}",
+                )
+        else:
+            key_index = symbol.raw_index + 1 + len(symbol.aux_records)
+            key_symbol = symbols_by_raw_index.get(key_index)
+            if (
+                key_symbol is None
+                or key_symbol.storage_class
+                not in (IMAGE_SYM_CLASS_EXTERNAL, IMAGE_SYM_CLASS_STATIC)
+                or key_symbol.section_number != symbol.section_number
+                or key_symbol.value != 0
+            ):
+                raise ValueError(
+                    f"COMDAT section {section.name!r} has invalid key symbol",
+                )
+            comdat_key = key_symbol.name
+        section_metadata[symbol.section_number] = (
+            selection,
+            associated_section if selection == 5 else None,
+            comdat_key,
+        )
+
+    for section in sections:
+        is_comdat = bool(section.characteristics & IMAGE_SCN_LNK_COMDAT)
+        if is_comdat and section.index not in section_metadata:
+            raise ValueError(f"COMDAT section {section.name!r} has no definition symbol")
+    for section_number, (selection, associated_section, _) in section_metadata.items():
+        if selection != 5 or associated_section is None:
+            continue
+        parent = sections[associated_section - 1]
+        if not parent.characteristics & IMAGE_SCN_LNK_COMDAT:
+            raise ValueError(
+                f"associative COMDAT section {section_number} has non-COMDAT parent "
+                f"{associated_section}",
+            )
+        seen: set[int] = set()
+        current = section_number
+        while current in section_metadata and section_metadata[current][0] == 5:
+            if current in seen:
+                raise ValueError(f"associative COMDAT cycle at section {current}")
+            seen.add(current)
+            next_section = section_metadata[current][1]
+            if next_section is None:
+                break
+            current = next_section
+
+    sections = [
+        replace(
+            section,
+            comdat_selection=section_metadata.get(section.index, (None, None, None))[0],
+            comdat_associative_section=section_metadata.get(
+                section.index,
+                (None, None, None),
+            )[1],
+            comdat_key=section_metadata.get(section.index, (None, None, None))[2],
+        )
+        for section in sections
+    ]
     return CoffObject(sections=tuple(sections), symbols=tuple(symbols))
 
 
@@ -2291,6 +2544,7 @@ def compile_scratch(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
+    force: bool = False,
 ) -> Path:
     import shutil
     import subprocess
@@ -2302,7 +2556,7 @@ def compile_scratch(
     build_dir = _scratch_build_directory(config)
     obj_name = Path(config.source).with_suffix(".obj").name
     obj_path = build_dir / obj_name
-    if _scratch_object_is_current(
+    if not force and _scratch_object_is_current(
         obj_path,
         config,
         match_root,
