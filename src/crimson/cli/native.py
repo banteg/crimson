@@ -68,7 +68,9 @@ def cmd_native_audit(
     typer.echo(
         f"objects={object_summary['object_count']} "
         f"states={object_summary['states']} "
-        f"abi={object_summary['abi_assertions']['status'] if object_summary['abi_assertions'] else 'not-configured'}",
+        f"abi={object_summary['abi_assertions']['status'] if object_summary['abi_assertions'] else 'not-configured'} "
+        f"functions={object_summary.get('function_count', object_summary['object_count'])} "
+        f"clusters={object_summary.get('translation_units', {}).get('cluster_count', 0)}",
     )
     typer.echo(
         f"closure resolved={closure_summary['resolved_symbols']} "

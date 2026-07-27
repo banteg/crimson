@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import struct
 from pathlib import Path
 
@@ -9,17 +10,22 @@ from crimson import match as matchlib
 from crimson.native_link import (
     IMAGE_SCN_LNK_COMDAT,
     IMAGE_SYM_CLASS_WEAK_EXTERNAL,
+    NativeCompilerBundleSnapshot,
+    NativeFunctionBinding,
     NativeObjectRecord,
     NativeObjectSet,
     NativeSymbolCatalog,
+    NativeToolchainSnapshot,
     _normalized_coff_sha256,
     _resolve_wibo_path,
     _select_unique_statuses,
     _validate_loaded_configs,
     _vc6_linker_internal_name,
     data_manifest_payload,
+    load_native_translation_unit_config,
     object_manifest_payload,
     render_export_definition,
+    render_object_list,
     symbol_closure_payload,
 )
 
@@ -265,8 +271,14 @@ def test_object_manifest_is_deterministic_and_content_addressed(tmp_path: Path) 
     second = object_manifest_payload(objects, repo_root=tmp_path)
 
     assert first == second
+    assert first["function_count"] == 1
     assert first["object_count"] == 1
     assert first["objects"][0]["object"] == "tools/match/scratches/first/build/scratch.obj"
+    assert first["objects"][0]["functions"][0]["function"] == "first"
+    assert first["translation_units"] == {
+        "cluster_count": 0,
+        "isolated_count": 1,
+    }
     assert len(first["objects"][0]["source_sha256"]) == 64
     assert first["object_hash"]["normalization"] == ["zero COFF TimeDateStamp bytes 4..7"]
     assert first["provenance"]["build_policy"] == "forced-isolated-recompile"
@@ -286,6 +298,122 @@ def test_object_manifest_is_deterministic_and_content_addressed(tmp_path: Path) 
     ] != compiler_bundle["bundle_sha256"]
 
 
+def test_object_manifest_represents_cluster_members_on_one_physical_object(
+    tmp_path: Path,
+) -> None:
+    scratch_root = tmp_path / "tools" / "match" / "scratches"
+    first_scratch = scratch_root / "first"
+    provider_scratch = scratch_root / "second"
+    for scratch, function in (
+        (first_scratch, "first"),
+        (provider_scratch, "second"),
+    ):
+        scratch.mkdir(parents=True)
+        (scratch / "scratch.cpp").write_text(
+            f"void {function}(void) {{}}\n",
+            encoding="utf-8",
+        )
+        (scratch / "scratch.conf").write_text(
+            f"IMAGE=grim.dll\nFUNCTION={function}\n",
+            encoding="utf-8",
+        )
+    object_path = provider_scratch / "build" / "cluster.obj"
+    object_path.parent.mkdir()
+    object_path.write_bytes(b"coff")
+    translation_unit_config = (
+        tmp_path / "tools" / "native" / "translation_units" / "grim.dll.json"
+    )
+    translation_unit_config.parent.mkdir(parents=True)
+    translation_unit_config.write_text("{}\n", encoding="utf-8")
+    image_path = tmp_path / "game_bins" / "grim.dll"
+    image_path.parent.mkdir()
+    image_path.write_bytes(b"pe")
+    functions = (
+        _function("first", 0x10001000),
+        _function("second", 0x10001010),
+    )
+    statuses = (
+        _status(first_scratch, "first", functions[0].address),
+        _status(provider_scratch, "second", functions[1].address),
+    )
+    bindings = tuple(
+        NativeFunctionBinding(
+            function=function,
+            status=status,
+            object_symbol=symbol,
+            config_sha256="a" * 64,
+            source_sha256="b" * 64,
+        )
+        for function, status, symbol in zip(
+            functions,
+            statuses,
+            ("_$E1", "_$E2"),
+            strict=True,
+        )
+    )
+    toolchain = NativeToolchainSnapshot(
+        cl_wrapper=tmp_path / "tools" / "match" / "cl.sh",
+        cl_wrapper_mode=0o755,
+        cl_wrapper_sha256="c" * 64,
+        compiler_bundles=(
+            NativeCompilerBundleSnapshot(
+                compiler="msvc6.5",
+                root=tmp_path / "tools" / "match" / "compilers" / "msvc6.5",
+                included_trees=("Bin", "Include"),
+                sha256="d" * 64,
+            ),
+        ),
+        wibo=tmp_path / "tools" / "match" / "bin" / "wibo",
+        wibo_mode=0o755,
+        wibo_sha256="e" * 64,
+    )
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x10000000, functions),
+        image_path=image_path,
+        records=(
+            NativeObjectRecord(
+                function=functions[0],
+                status=statuses[0],
+                object_path=object_path,
+                object_symbol="_$E1",
+                coff=_coff(),
+                config_sha256="f" * 64,
+                object_sha256="1" * 64,
+                source_sha256="2" * 64,
+                compile_config=statuses[1].config,
+                members=bindings,
+                translation_unit="metadata-lifecycle",
+                translation_unit_config=translation_unit_config,
+                translation_unit_config_sha256="3" * 64,
+            ),
+        ),
+        match_root=tmp_path / "tools" / "match",
+        toolchain=toolchain,
+    )
+
+    payload = object_manifest_payload(objects, repo_root=tmp_path)
+
+    assert payload["function_count"] == 2
+    assert payload["object_count"] == 1
+    assert payload["translation_units"] == {
+        "cluster_count": 1,
+        "isolated_count": 0,
+    }
+    assert payload["provenance"]["build_policy"] == (
+        "forced-explicit-translation-unit-recompile"
+    )
+    assert [row["function"] for row in payload["objects"][0]["functions"]] == [
+        "first",
+        "second",
+    ]
+    assert payload["objects"][0]["scratch"].endswith("/second")
+    assert payload["objects"][0]["translation_unit"]["name"] == (
+        "metadata-lifecycle"
+    )
+
+
 def test_loaded_config_validation_rejects_post_selection_change(tmp_path: Path) -> None:
     scratch = tmp_path / "scratch"
     scratch.mkdir()
@@ -302,6 +430,45 @@ def test_loaded_config_validation_rejects_post_selection_change(tmp_path: Path) 
 
     with pytest.raises(ValueError, match="changed after canonical selection"):
         _validate_loaded_configs((selected,))
+
+
+def test_translation_unit_config_binds_unique_member_symbols(tmp_path: Path) -> None:
+    path = tmp_path / "translation-units.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "image": "crimsonland.exe",
+                "clusters": [
+                    {
+                        "name": "metadata-lifecycle",
+                        "scratch": "metadata_destroy",
+                        "members": [
+                            {"function": "metadata_init", "symbol": "_$E1"},
+                            {"function": "metadata_destroy", "symbol": "_$E2"},
+                        ],
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    config = load_native_translation_unit_config(
+        path,
+        image="crimsonland.exe",
+    )
+
+    assert config.image == "crimsonland.exe"
+    assert config.clusters[0].scratch == "metadata_destroy"
+    assert [
+        (member.function, member.symbol)
+        for member in config.clusters[0].members
+    ] == [
+        ("metadata_init", "_$E1"),
+        ("metadata_destroy", "_$E2"),
+    ]
+    assert len(config.sha256) == 64
 
 
 def test_wibo_resolution_skips_non_executable_repository_copy(
@@ -397,6 +564,9 @@ def test_symbol_closure_keeps_exact_link_identity_and_classifies_debt(tmp_path: 
     assert closure["summary"]["hard_duplicate_by_section"] == {".text": 1}
     assert closure["summary"]["function_closure"] is False
     assert closure["summary"]["game_owned_closure"] is False
+    isolated_reference = closure["resolved"][0]["referenced_by"][0]
+    assert "functions" not in isolated_reference
+    assert "translation_unit" not in isolated_reference
 
 
 def test_symbol_closure_splits_game_function_linkage_debt(tmp_path: Path) -> None:
@@ -437,6 +607,112 @@ def test_symbol_closure_splits_game_function_linkage_debt(tmp_path: Path) -> Non
         "missing_definition": 1,
     }
     assert closure["summary"]["function_closure"] is False
+
+
+def test_symbol_closure_counts_cluster_object_once_and_closes_local_members(
+    tmp_path: Path,
+) -> None:
+    functions = tuple(
+        _function(name, 0x10001000 + index * 0x10)
+        for index, name in enumerate(
+            (
+                "metadata_global_construct",
+                "metadata_init",
+                "metadata_register",
+                "metadata_destroy",
+            ),
+        )
+    )
+    coff = _coff(
+        definitions=(("?metadata_table@@3PAUmetadata@@A", 1),),
+        undefined=("_atexit",),
+    )
+    local_symbols = tuple(
+        matchlib.CoffSymbol(
+            raw_index=len(coff.symbols) + index,
+            name=symbol,
+            value=index,
+            section_number=1,
+            symbol_type=0x20,
+            storage_class=matchlib.IMAGE_SYM_CLASS_STATIC,
+        )
+        for index, symbol in enumerate(("_$E4", "_$E1", "_$E3", "_$E2"))
+    )
+    coff = matchlib.CoffObject(
+        sections=coff.sections,
+        symbols=(*coff.symbols, *local_symbols),
+    )
+    statuses = tuple(
+        _status(tmp_path / function.name, function.name, function.address)
+        for function in functions
+    )
+    bindings = tuple(
+        NativeFunctionBinding(
+            function=function,
+            status=status,
+            object_symbol=symbol,
+            config_sha256="a" * 64,
+            source_sha256="b" * 64,
+        )
+        for function, status, symbol in zip(
+            functions,
+            statuses,
+            ("_$E4", "_$E1", "_$E3", "_$E2"),
+            strict=True,
+        )
+    )
+    cluster_object = tmp_path / "metadata-lifecycle.obj"
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x10000000, functions),
+        image_path=tmp_path / "grim.dll",
+        records=(
+            NativeObjectRecord(
+                function=functions[0],
+                status=statuses[0],
+                object_path=cluster_object,
+                object_symbol="_$E4",
+                coff=coff,
+                members=bindings,
+                translation_unit="metadata-lifecycle",
+            ),
+        ),
+    )
+    catalog = NativeSymbolCatalog(
+        port_functions={
+            function.name: (
+                {"address": function.address, "function": function.name},
+            )
+            for function in functions
+        },
+        excluded_functions={},
+        data={},
+        imports={
+            "atexit": (
+                {"address": 0x10004000, "module": "MSVCRT", "name": "atexit"},
+            ),
+        },
+        exports=(),
+    )
+
+    closure = symbol_closure_payload(objects, catalog=catalog, repo_root=tmp_path)
+
+    assert closure["summary"]["object_count"] == 1
+    assert closure["summary"]["function_count"] == 4
+    assert closure["summary"]["game_function_debt"] == {}
+    assert closure["summary"]["function_closure"] is True
+    assert [row["name"] for row in closure["unresolved"]] == ["_atexit"]
+    clustered_reference = closure["unresolved"][0]["referenced_by"][0]
+    assert clustered_reference["function"] is None
+    assert clustered_reference["functions"] == [
+        function.name
+        for function in functions
+    ]
+    assert clustered_reference["translation_unit"] == "metadata-lifecycle"
+    assert render_object_list(objects, repo_root=tmp_path) == (
+        "metadata-lifecycle.obj\n"
+    )
 
 
 def test_symbol_closure_rejects_mixed_or_non_any_comdat_duplicates(tmp_path: Path) -> None:

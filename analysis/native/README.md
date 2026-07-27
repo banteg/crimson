@@ -9,7 +9,7 @@ just native-audit grim.dll
 
 Each image directory contains:
 
-- `objects.json`: the canonical one-function-per-translation-unit selection,
+- `objects.json`: the canonical function-to-translation-unit selection,
   compiler profile, matching state, and source/config/object hashes;
 - `objects.txt`: the same object files in ascending reference-address order;
 - `exports.def`: explicit reference-export name/ordinal mappings to decorated
@@ -40,10 +40,22 @@ The audit is intentionally strict:
 
 - canonical identity is `(image, resolved native address)`;
 - missing, duplicate, malformed, or non-canonical scratches are errors;
-- every recovered function remains its own translation unit;
+- every recovered function remains isolated unless an explicit
+  `tools/native/translation_units/<image>.json` cluster binds compiler-local
+  members emitted by one source translation unit;
+- every cluster member must preserve its canonical byte ratio and reference
+  audit, and each physical cluster object appears once in the link list;
 - symbol closure uses exact decorated COFF names;
 - the reference PE export must have an unambiguous `.def` mapping;
 - no unresolved symbol is hidden behind a generated stub.
+
+The three Crimsonland metadata lifecycle clusters are the first modeled
+exception. Their natural global-array definitions emit exact
+`$E4/$E1/$E3/$E2` initializer, constructor, registrar, and finalizer
+functions. Co-location keeps the registrar-to-finalizer relocation COFF-local
+instead of inventing an external callback provider. `function_count`
+therefore remains the owned function count while `object_count` is the number
+of physical linker inputs.
 
 `function_closure` means there are no unresolved in-scope game functions and
 no duplicate strong definitions. `game_owned_closure` additionally requires

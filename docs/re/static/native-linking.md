@@ -13,10 +13,25 @@ linker track makes those remaining obligations explicit.
 ## Image audits
 
 Both `grim.dll` and `crimsonland.exe` have native audit tracks. Their active
-port scopes have one canonical scratch for every owned function, and the audit
-keeps each function in its own translation unit so pooling, inlining,
+port scopes have one canonical scratch for every owned function. Isolated
+one-function translation units remain the default so pooling, inlining,
 constructor ordering, and static symbol changes cannot disturb established
 evidence.
+
+The executable has three explicitly modeled exceptions in
+`tools/native/translation_units/crimsonland.exe.json`. VC6 generates each
+quest, bonus, or perk metadata array's initializer, registrar, and finalizer
+as four COFF-local functions in the translation unit that owns the global
+array. Compiling those functions separately turns the registrar's local
+finalizer relocation into a false external game-function dependency. The
+translation-unit config binds the four recovered native functions to their
+actual `$E4/$E1/$E3/$E2` members and includes the physical object once.
+
+Every configured member is still compared independently with its reference
+function using the canonical scratch boundaries. The audit rejects a cluster
+that lowers the byte ratio or adds unresolved or mismatched references. This
+is source-provenance modeling, not a linker alias: the object retains the
+compiler-generated local symbols and local relocations.
 
 Generate the checked-in reports:
 
@@ -59,11 +74,17 @@ not unrelated SDK or library directories. A shared audit digest detects
 mixed-generation JSON, and component hashes cover the object list and export
 definition. The report never adds fake providers.
 
-The executable audit keeps its current function closure debt explicit:
+`objects.json` distinguishes `function_count` from physical `object_count`.
+Each physical row has a `functions` array; ordinary rows contain one binding,
+while an explicit cluster contains every independently validated member. The
+link list contains each physical object exactly once.
+
+The executable audit keeps any remaining closure debt explicit:
 same-display-name definitions with incompatible decorated linkage are not
-treated as resolutions, functions that emit only compiler initializer symbols
-remain missing definitions, and repeated non-COMDAT `.bss` owners remain hard
-duplicates.
+treated as resolutions, absent definitions remain visible, and repeated
+non-COMDAT `.bss` owners remain hard duplicates. The modeled metadata
+lifecycle clusters close the executable's current game-function debt without
+weakening those rules.
 
 ## Closure gates
 

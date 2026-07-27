@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "image": "crimsonland.exe",
+  "clusters": [
+    {
+      "name": "quest-meta-lifecycle",
+      "scratch": "quest_meta_table_destroy",
+      "members": [
+        {
+          "function": "quest_meta_global_construct_and_register",
+          "symbol": "_$E4"
+        },
+        {
+          "function": "quest_meta_init",
+          "symbol": "_$E1"
+        },
+        {
+          "function": "quest_meta_register_atexit",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "quest_meta_table_destroy",
+          "symbol": "_$E2"
+        }
+      ]
+    },
+    {
+      "name": "bonus-meta-lifecycle",
+      "scratch": "bonus_meta_table_destroy",
+      "members": [
+        {
+          "function": "bonus_meta_global_construct_and_register",
+          "symbol": "_$E4"
+        },
+        {
+          "function": "bonus_meta_table_init",
+          "symbol": "_$E1"
+        },
+        {
+          "function": "bonus_meta_register_atexit",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "bonus_meta_table_destroy",
+          "symbol": "_$E2"
+        }
+      ]
+    },
+    {
+      "name": "perk-meta-lifecycle",
+      "scratch": "perk_meta_table_destroy",
+      "members": [
+        {
+          "function": "perk_meta_global_construct_and_register",
+          "symbol": "_$E4"
+        },
+        {
+          "function": "perk_meta_table_init",
+          "symbol": "_$E1"
+        },
+        {
+          "function": "perk_meta_register_atexit",
+          "symbol": "_$E3"
+        },
+        {
+          "function": "perk_meta_table_destroy",
+          "symbol": "_$E2"
+        }
+      ]
+    }
+  ]
+}

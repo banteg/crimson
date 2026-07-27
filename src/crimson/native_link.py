@@ -14,9 +14,10 @@ from typing import Any
 
 from . import match as matchlib
 
-NATIVE_OBJECT_MANIFEST_SCHEMA = 1
-NATIVE_SYMBOL_CLOSURE_SCHEMA = 1
+NATIVE_OBJECT_MANIFEST_SCHEMA = 2
+NATIVE_SYMBOL_CLOSURE_SCHEMA = 2
 NATIVE_DATA_MANIFEST_SCHEMA = 1
+NATIVE_TRANSLATION_UNIT_SCHEMA = 1
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
@@ -38,6 +39,45 @@ DEFAULT_ABI_CONFIGS = {
     "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
 }
+DEFAULT_TRANSLATION_UNIT_CONFIGS = {
+    "crimsonland.exe": (
+        matchlib.REPO_ROOT
+        / "tools"
+        / "native"
+        / "translation_units"
+        / "crimsonland.exe.json"
+    ),
+}
+
+
+@dataclass(frozen=True, slots=True)
+class NativeFunctionBinding:
+    function: matchlib.FunctionSymbol
+    status: matchlib.ScratchStatus
+    object_symbol: str
+    config_sha256: str | None = None
+    source_sha256: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class NativeTranslationUnitMember:
+    function: str
+    symbol: str
+
+
+@dataclass(frozen=True, slots=True)
+class NativeTranslationUnitSpec:
+    name: str
+    scratch: str
+    members: tuple[NativeTranslationUnitMember, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NativeTranslationUnitConfig:
+    image: str
+    path: Path
+    sha256: str
+    clusters: tuple[NativeTranslationUnitSpec, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,6 +91,11 @@ class NativeObjectRecord:
     config_sha256: str | None = None
     object_sha256: str | None = None
     source_sha256: str | None = None
+    compile_config: matchlib.ScratchConfig | None = None
+    members: tuple[NativeFunctionBinding, ...] = ()
+    translation_unit: str | None = None
+    translation_unit_config: Path | None = None
+    translation_unit_config_sha256: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,6 +160,116 @@ class NativeAuditArtifacts:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_native_translation_unit_config(
+    path: Path,
+    *,
+    image: str,
+) -> NativeTranslationUnitConfig:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != NATIVE_TRANSLATION_UNIT_SCHEMA:
+        raise ValueError(
+            f"{path}: expected schema {NATIVE_TRANSLATION_UNIT_SCHEMA}",
+        )
+    if payload.get("image") != image:
+        raise ValueError(f"{path}: targets {payload.get('image')!r}, expected {image!r}")
+
+    raw_clusters = payload.get("clusters")
+    if not isinstance(raw_clusters, list):
+        raise TypeError(f"{path}: clusters must be a list")
+    clusters: list[NativeTranslationUnitSpec] = []
+    cluster_names: set[str] = set()
+    member_functions: set[str] = set()
+    for index, raw_cluster in enumerate(raw_clusters):
+        if not isinstance(raw_cluster, dict):
+            raise TypeError(f"{path}: clusters[{index}] must be an object")
+        name = raw_cluster.get("name")
+        scratch = raw_cluster.get("scratch")
+        raw_members = raw_cluster.get("members")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"{path}: clusters[{index}].name must be non-empty")
+        if name in cluster_names:
+            raise ValueError(f"{path}: duplicate translation-unit name {name!r}")
+        cluster_names.add(name)
+        if (
+            not isinstance(scratch, str)
+            or not scratch
+            or Path(scratch).name != scratch
+            or scratch in {".", ".."}
+        ):
+            raise ValueError(
+                f"{path}: clusters[{index}].scratch must name one scratch directory",
+            )
+        if not isinstance(raw_members, list) or len(raw_members) < 2:
+            raise ValueError(
+                f"{path}: translation unit {name!r} must contain at least two members",
+            )
+        members: list[NativeTranslationUnitMember] = []
+        symbols: set[str] = set()
+        for member_index, raw_member in enumerate(raw_members):
+            if not isinstance(raw_member, dict):
+                raise TypeError(
+                    f"{path}: clusters[{index}].members[{member_index}] must be an object",
+                )
+            function = raw_member.get("function")
+            symbol = raw_member.get("symbol")
+            if not isinstance(function, str) or not function:
+                raise ValueError(
+                    f"{path}: clusters[{index}].members[{member_index}].function "
+                    "must be non-empty",
+                )
+            if not isinstance(symbol, str) or not symbol:
+                raise ValueError(
+                    f"{path}: clusters[{index}].members[{member_index}].symbol "
+                    "must be non-empty",
+                )
+            if function in member_functions:
+                raise ValueError(
+                    f"{path}: function {function!r} belongs to multiple translation units",
+                )
+            if symbol in symbols:
+                raise ValueError(
+                    f"{path}: translation unit {name!r} reuses symbol {symbol!r}",
+                )
+            member_functions.add(function)
+            symbols.add(symbol)
+            members.append(NativeTranslationUnitMember(function=function, symbol=symbol))
+        clusters.append(
+            NativeTranslationUnitSpec(
+                name=name,
+                scratch=scratch,
+                members=tuple(members),
+            ),
+        )
+    return NativeTranslationUnitConfig(
+        image=image,
+        path=path.resolve(),
+        sha256=_sha256(path),
+        clusters=tuple(clusters),
+    )
+
+
+def _record_bindings(record: NativeObjectRecord) -> tuple[NativeFunctionBinding, ...]:
+    if record.members:
+        return record.members
+    return (
+        NativeFunctionBinding(
+            function=record.function,
+            status=record.status,
+            object_symbol=record.object_symbol,
+            config_sha256=record.config_sha256,
+            source_sha256=record.source_sha256,
+        ),
+    )
+
+
+def _record_compile_config(record: NativeObjectRecord) -> matchlib.ScratchConfig:
+    return record.compile_config or record.status.config
+
+
+def _record_min_address(record: NativeObjectRecord) -> int:
+    return min(binding.function.address for binding in _record_bindings(record))
 
 
 def _normalized_coff_sha256(data: bytes) -> str:
@@ -265,7 +420,7 @@ def _toolchain_payload(
     *,
     repo_root: Path,
 ) -> dict[str, Any]:
-    configs = tuple(record.status.config for record in objects.records)
+    configs = tuple(_record_compile_config(record) for record in objects.records)
     if objects.abi_config is not None:
         configs = (*configs, objects.abi_config)
     snapshot = objects.toolchain or _capture_toolchain_snapshot(configs, objects.match_root)
@@ -315,6 +470,8 @@ def _image_paths(image: str) -> tuple[Path, Path, Path]:
 def _analysis_input_snapshot(
     image: str,
     scope: str,
+    *,
+    translation_unit_configs: dict[str, Path] | None = None,
 ) -> tuple[tuple[Path, str], ...]:
     image_path, functions_path, metadata_path = _image_paths(image)
     paths = [
@@ -328,7 +485,30 @@ def _analysis_input_snapshot(
     ]
     if scope != "all":
         paths.append(matchlib.DEFAULT_MATCHING_SCOPE_PATH)
+    resolved_translation_unit_configs = (
+        DEFAULT_TRANSLATION_UNIT_CONFIGS
+        if translation_unit_configs is None
+        else translation_unit_configs
+    )
+    if translation_unit_config := resolved_translation_unit_configs.get(image):
+        paths.append(translation_unit_config)
     return tuple((path.resolve(), _sha256(path)) for path in paths)
+
+
+def _load_image_translation_unit_config(
+    image: str,
+    *,
+    translation_unit_configs: dict[str, Path] | None,
+) -> NativeTranslationUnitConfig | None:
+    resolved_configs = (
+        DEFAULT_TRANSLATION_UNIT_CONFIGS
+        if translation_unit_configs is None
+        else translation_unit_configs
+    )
+    path = resolved_configs.get(image)
+    if path is None:
+        return None
+    return load_native_translation_unit_config(path, image=image)
 
 
 def _discover_image_scratch_directories(image: str, match_root: Path) -> tuple[Path, ...]:
@@ -421,6 +601,79 @@ def _select_unique_statuses(
     return tuple(by_address[function.address][0] for function in manifest.functions)
 
 
+def _refresh_status(
+    status: matchlib.ScratchStatus,
+    result: matchlib.MatchResult,
+) -> matchlib.ScratchStatus:
+    return replace(
+        status,
+        ratio=result.ratio,
+        prefix_instructions=result.prefix_instructions,
+        target_instructions=len(result.target_lines),
+        candidate_instructions=len(result.candidate_lines),
+        error=None,
+        masked_ok=result.masked_operand_audit.ok_count,
+        masked_unresolved=result.masked_operand_audit.unresolved_count,
+        masked_mismatches=result.masked_operand_audit.mismatch_count,
+        audit=result.masked_operand_audit,
+        first_target_mismatch_offset=(
+            result.target_disassembly[result.prefix_instructions].offset
+            if result.prefix_instructions < len(result.target_disassembly)
+            else None
+        ),
+        first_candidate_mismatch_offset=(
+            result.candidate_disassembly[result.prefix_instructions].offset
+            if result.prefix_instructions < len(result.candidate_disassembly)
+            else None
+        ),
+    )
+
+
+def _validate_cluster_match(
+    baseline: matchlib.ScratchStatus,
+    clustered: matchlib.ScratchStatus,
+    *,
+    translation_unit: str,
+) -> None:
+    if baseline.ratio is None or clustered.ratio is None:
+        raise ValueError(
+            f"{translation_unit}:{baseline.config.function}: cluster evaluation failed",
+        )
+    regressions: list[str] = []
+    if clustered.ratio < baseline.ratio:
+        regressions.append(f"ratio {baseline.ratio} -> {clustered.ratio}")
+    if clustered.masked_unresolved > baseline.masked_unresolved:
+        regressions.append(
+            f"unresolved references {baseline.masked_unresolved} "
+            f"-> {clustered.masked_unresolved}",
+        )
+    if clustered.masked_mismatches > baseline.masked_mismatches:
+        regressions.append(
+            f"mismatched references {baseline.masked_mismatches} "
+            f"-> {clustered.masked_mismatches}",
+        )
+    if regressions:
+        raise ValueError(
+            f"{translation_unit}:{baseline.config.function}: clustered object regresses "
+            + ", ".join(regressions),
+        )
+
+
+def _binding_from_status(
+    function: matchlib.FunctionSymbol,
+    status: matchlib.ScratchStatus,
+    object_symbol: str,
+) -> NativeFunctionBinding:
+    config = status.config
+    return NativeFunctionBinding(
+        function=function,
+        status=status,
+        object_symbol=object_symbol,
+        config_sha256=_sha256(config.directory / "scratch.conf"),
+        source_sha256=_sha256(config.directory / config.source),
+    )
+
+
 def build_native_object_set(
     image: str,
     *,
@@ -428,8 +681,9 @@ def build_native_object_set(
     match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     abi_configs: dict[str, Path] | None = None,
+    translation_unit_configs: dict[str, Path] | None = None,
 ) -> NativeObjectSet:
-    """Compile exactly one canonical scratch object for each scoped function."""
+    """Compile canonical functions as isolated or explicitly clustered objects."""
 
     if image not in matchlib.matching_scope_images(scope):
         supported = ", ".join(sorted(matchlib.matching_scope_images(scope)))
@@ -464,6 +718,79 @@ def build_native_object_set(
         manifest,
         native_manifest=native_manifest,
     )
+    function_by_name = {function.name: function for function in manifest.functions}
+    status_by_name = {
+        function.name: status
+        for function, status in zip(manifest.functions, selected, strict=True)
+    }
+    translation_units = _load_image_translation_unit_config(
+        image,
+        translation_unit_configs=translation_unit_configs,
+    )
+    prepared_clusters: list[
+        tuple[
+            NativeTranslationUnitSpec,
+            matchlib.ScratchConfig,
+            tuple[NativeTranslationUnitMember, ...],
+        ]
+    ] = []
+    clustered_functions: set[str] = set()
+    if translation_units is not None:
+        scratch_root = (match_root / "scratches").resolve()
+        for cluster in translation_units.clusters:
+            scratch_directory = (scratch_root / cluster.scratch).resolve()
+            if scratch_directory.parent != scratch_root:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} escapes scratch root",
+                )
+            provider = matchlib.load_scratch_config(scratch_directory)
+            if provider.image != image:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} provider targets "
+                    f"{provider.image!r}, expected {image!r}",
+                )
+            ordered_members = tuple(
+                sorted(
+                    cluster.members,
+                    key=lambda member: function_by_name[member.function].address
+                    if member.function in function_by_name
+                    else 0,
+                ),
+            )
+            missing_members = [
+                member.function
+                for member in ordered_members
+                if member.function not in function_by_name
+            ]
+            if missing_members:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} contains "
+                    f"out-of-scope functions {', '.join(missing_members)}",
+                )
+            provider_members = [
+                member
+                for member in ordered_members
+                if member.function == provider.function
+            ]
+            if len(provider_members) != 1:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} provider "
+                    f"FUNCTION={provider.function!r} must be one member",
+                )
+            if provider.symbol != provider_members[0].symbol:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} provider "
+                    f"SYMBOL={provider.symbol!r} does not match member symbol "
+                    f"{provider_members[0].symbol!r}",
+                )
+            canonical_provider = status_by_name[provider.function].config.directory.resolve()
+            if provider.directory.resolve() != canonical_provider:
+                raise ValueError(
+                    f"{translation_units.path}: cluster {cluster.name!r} provider "
+                    "must be the selected canonical scratch",
+                )
+            clustered_functions.update(member.function for member in ordered_members)
+            prepared_clusters.append((cluster, provider, ordered_members))
 
     resolved_abi_configs = DEFAULT_ABI_CONFIGS if abi_configs is None else abi_configs
     abi_directory = resolved_abi_configs.get(image)
@@ -493,6 +820,8 @@ def build_native_object_set(
 
     records: list[NativeObjectRecord] = []
     for function, status in zip(manifest.functions, selected, strict=True):
+        if function.name in clustered_functions:
+            continue
         inputs_before = _compile_input_snapshot(status.config, match_root)
         object_path = matchlib.compile_scratch(status.config, match_root, force=True)
         object_data = object_path.read_bytes()
@@ -511,28 +840,7 @@ def build_native_object_set(
             raise ValueError(
                 f"{status.config.directory.name}: object changed during native audit",
             )
-        refreshed_status = replace(
-            status,
-            ratio=result.ratio,
-            prefix_instructions=result.prefix_instructions,
-            target_instructions=len(result.target_lines),
-            candidate_instructions=len(result.candidate_lines),
-            error=None,
-            masked_ok=result.masked_operand_audit.ok_count,
-            masked_unresolved=result.masked_operand_audit.unresolved_count,
-            masked_mismatches=result.masked_operand_audit.mismatch_count,
-            audit=result.masked_operand_audit,
-            first_target_mismatch_offset=(
-                result.target_disassembly[result.prefix_instructions].offset
-                if result.prefix_instructions < len(result.target_disassembly)
-                else None
-            ),
-            first_candidate_mismatch_offset=(
-                result.candidate_disassembly[result.prefix_instructions].offset
-                if result.prefix_instructions < len(result.candidate_disassembly)
-                else None
-            ),
-        )
+        refreshed_status = _refresh_status(status, result)
         inputs_after = _compile_input_snapshot(status.config, match_root)
         if inputs_before != inputs_after:
             raise ValueError(
@@ -557,6 +865,96 @@ def build_native_object_set(
             ),
         )
 
+    for cluster, provider, members in prepared_clusters:
+        inputs_before = _compile_input_snapshot(provider, match_root)
+        object_path = matchlib.compile_scratch(provider, match_root, force=True)
+        object_data = object_path.read_bytes()
+        coff = matchlib.parse_coff_object(object_data)
+        aliases = tuple((member.symbol, member.function) for member in members)
+        bindings: list[NativeFunctionBinding] = []
+        for member in members:
+            function = function_by_name[member.function]
+            baseline_status = status_by_name[member.function]
+            result = matchlib.run_match(
+                obj_path=object_path,
+                function=member.function,
+                image_path=image_path,
+                functions_path=functions_path,
+                metadata_path=metadata_path,
+                symbol_name=member.symbol,
+                end_va=baseline_status.config.end_va,
+                reference_aliases=(*provider.reference_aliases, *aliases),
+                scope=scope,
+            )
+            clustered_status = _refresh_status(baseline_status, result)
+            _validate_cluster_match(
+                baseline_status,
+                clustered_status,
+                translation_unit=cluster.name,
+            )
+            object_function = matchlib.extract_object_function(coff, member.symbol)
+            bindings.append(
+                _binding_from_status(
+                    function,
+                    clustered_status,
+                    object_function.name,
+                ),
+            )
+        if object_path.read_bytes() != object_data:
+            raise ValueError(
+                f"{cluster.name}: object changed during native audit",
+            )
+        inputs_after = _compile_input_snapshot(provider, match_root)
+        if inputs_before != inputs_after:
+            raise ValueError(
+                f"{cluster.name}: compile inputs changed during native audit",
+            )
+        input_hashes = dict(inputs_after)
+        config_path = (provider.directory / "scratch.conf").resolve()
+        source_path = (provider.directory / provider.source).resolve()
+        first_binding = bindings[0]
+        records.append(
+            NativeObjectRecord(
+                function=first_binding.function,
+                status=first_binding.status,
+                object_path=object_path,
+                object_symbol=first_binding.object_symbol,
+                coff=coff,
+                compile_inputs=inputs_after,
+                config_sha256=input_hashes[config_path],
+                object_sha256=_normalized_coff_sha256(object_data),
+                source_sha256=input_hashes[source_path],
+                compile_config=provider,
+                members=tuple(bindings),
+                translation_unit=cluster.name,
+                translation_unit_config=translation_units.path
+                if translation_units is not None
+                else None,
+                translation_unit_config_sha256=translation_units.sha256
+                if translation_units is not None
+                else None,
+            ),
+        )
+
+    records.sort(key=_record_min_address)
+    bound_functions = [
+        binding.function.name
+        for record in records
+        for binding in _record_bindings(record)
+    ]
+    expected_functions = [function.name for function in manifest.functions]
+    if sorted(bound_functions) != sorted(expected_functions):
+        missing = sorted(set(expected_functions) - set(bound_functions))
+        duplicates = sorted(
+            name
+            for name, count in Counter(bound_functions).items()
+            if count > 1
+        )
+        raise ValueError(
+            "translation-unit binding mismatch: "
+            f"missing={missing}, duplicates={duplicates}",
+        )
+
     abi_object_path: Path | None = None
     abi_compile_inputs: tuple[tuple[Path, str], ...] = ()
     abi_object_sha256: str | None = None
@@ -572,6 +970,11 @@ def build_native_object_set(
         matchlib.parse_coff_object(abi_data)
         abi_object_sha256 = _normalized_coff_sha256(abi_data)
 
+    if (
+        translation_units is not None
+        and _sha256(translation_units.path) != translation_units.sha256
+    ):
+        raise ValueError("translation-unit config changed during native audit")
     compile_inputs_after = _compile_input_union_snapshot(
         toolchain_configs,
         match_root,
@@ -597,63 +1000,118 @@ def build_native_object_set(
     )
 
 
+def _match_status_payload(status: matchlib.ScratchStatus) -> dict[str, Any]:
+    return {
+        "candidate_instructions": status.candidate_instructions,
+        "masked_mismatches": status.masked_mismatches,
+        "masked_ok": status.masked_ok,
+        "masked_unresolved": status.masked_unresolved,
+        "prefix_instructions": status.prefix_instructions,
+        "ratio": status.ratio,
+        "state": status.state,
+        "target_instructions": status.target_instructions,
+    }
+
+
+def _function_binding_payload(
+    binding: NativeFunctionBinding,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    config = binding.status.config
+    config_path = config.directory / "scratch.conf"
+    source_path = config.directory / config.source
+    return {
+        "address": binding.function.address,
+        "canonical_config": _repo_relative(config_path, repo_root=repo_root),
+        "canonical_config_sha256": binding.config_sha256 or _sha256(config_path),
+        "canonical_scratch": _repo_relative(config.directory, repo_root=repo_root),
+        "canonical_source": _repo_relative(source_path, repo_root=repo_root),
+        "canonical_source_sha256": binding.source_sha256 or _sha256(source_path),
+        "effective_end": (
+            config.end_va
+            if config.end_va is not None
+            else binding.function.end
+        ),
+        "end": binding.function.end,
+        "function": binding.function.name,
+        "match": _match_status_payload(binding.status),
+        "object_function_symbol": binding.object_symbol,
+        "target_size": binding.function.size,
+    }
+
+
 def object_manifest_payload(
     objects: NativeObjectSet,
     *,
     repo_root: Path = matchlib.REPO_ROOT,
 ) -> dict[str, Any]:
-    state_counts = Counter(record.status.state for record in objects.records)
+    bindings = [
+        binding
+        for record in objects.records
+        for binding in _record_bindings(record)
+    ]
+    state_counts = Counter(binding.status.state for binding in bindings)
     records: list[dict[str, Any]] = []
     for record in objects.records:
-        config = record.status.config
-        source_path = config.directory / config.source
-        config_path = config.directory / "scratch.conf"
-        records.append(
-            {
-                "address": record.function.address,
-                "cflags": shlex.split(config.cflags),
-                "compile_argv": [
-                    "/nologo",
-                    "/c",
-                    *shlex.split(config.cflags),
-                    Path(config.source).name,
-                ],
-                "compile_inputs": [
-                    _snapshotted_file_payload(path, sha256, repo_root=repo_root)
-                    for path, sha256 in record.compile_inputs
-                ],
-                "compiler": config.compiler,
-                "config": _repo_relative(config_path, repo_root=repo_root),
-                "config_sha256": record.config_sha256 or _sha256(config_path),
-                "end": record.function.end,
-                "effective_end": (
-                    config.end_va
-                    if config.end_va is not None
-                    else record.function.end
-                ),
-                "function": record.function.name,
-                "match": {
-                    "candidate_instructions": record.status.candidate_instructions,
-                    "masked_mismatches": record.status.masked_mismatches,
-                    "masked_ok": record.status.masked_ok,
-                    "masked_unresolved": record.status.masked_unresolved,
-                    "prefix_instructions": record.status.prefix_instructions,
-                    "ratio": record.status.ratio,
-                    "state": record.status.state,
-                    "target_instructions": record.status.target_instructions,
-                },
-                "object": _repo_relative(record.object_path, repo_root=repo_root),
-                "object_function_symbol": record.object_symbol,
-                "object_sha256": (
-                    record.object_sha256
-                    or _normalized_coff_sha256(record.object_path.read_bytes())
-                ),
-                "scratch": _repo_relative(config.directory, repo_root=repo_root),
-                "source": _repo_relative(source_path, repo_root=repo_root),
-                "source_sha256": record.source_sha256 or _sha256(source_path),
-                "target_size": record.function.size,
+        compile_config = _record_compile_config(record)
+        source_path = compile_config.directory / compile_config.source
+        config_path = compile_config.directory / "scratch.conf"
+        record_bindings = _record_bindings(record)
+        first_binding = record_bindings[0]
+        row: dict[str, Any] = {
+            "address": first_binding.function.address,
+            "cflags": shlex.split(compile_config.cflags),
+            "compile_argv": [
+                "/nologo",
+                "/c",
+                *shlex.split(compile_config.cflags),
+                Path(compile_config.source).name,
+            ],
+            "compile_inputs": [
+                _snapshotted_file_payload(path, sha256, repo_root=repo_root)
+                for path, sha256 in record.compile_inputs
+            ],
+            "compiler": compile_config.compiler,
+            "config": _repo_relative(config_path, repo_root=repo_root),
+            "config_sha256": record.config_sha256 or _sha256(config_path),
+            "end": first_binding.function.end,
+            "effective_end": (
+                first_binding.status.config.end_va
+                if first_binding.status.config.end_va is not None
+                else first_binding.function.end
+            ),
+            "function": first_binding.function.name,
+            "functions": [
+                _function_binding_payload(binding, repo_root=repo_root)
+                for binding in record_bindings
+            ],
+            "match": _match_status_payload(first_binding.status),
+            "object": _repo_relative(record.object_path, repo_root=repo_root),
+            "object_function_symbol": first_binding.object_symbol,
+            "object_sha256": (
+                record.object_sha256
+                or _normalized_coff_sha256(record.object_path.read_bytes())
+            ),
+            "scratch": _repo_relative(compile_config.directory, repo_root=repo_root),
+            "source": _repo_relative(source_path, repo_root=repo_root),
+            "source_sha256": record.source_sha256 or _sha256(source_path),
+            "target_size": first_binding.function.size,
+            "translation_unit": {
+                "kind": "cluster" if record.translation_unit is not None else "isolated",
+                "name": record.translation_unit or first_binding.function.name,
             },
-        )
+        }
+        if record.translation_unit_config is not None:
+            row["translation_unit"]["config"] = _repo_relative(
+                record.translation_unit_config,
+                repo_root=repo_root,
+            )
+            row["translation_unit"]["config_sha256"] = (
+                record.translation_unit_config_sha256
+                or _sha256(record.translation_unit_config)
+            )
+        records.append(row)
 
     abi: dict[str, Any] | None = None
     if objects.abi_object_path is not None:
@@ -699,20 +1157,37 @@ def object_manifest_payload(
     ]
     if objects.scope != "all":
         selection_input_paths.append(matchlib.DEFAULT_MATCHING_SCOPE_PATH)
+    translation_unit_config_paths = sorted(
+        {
+            record.translation_unit_config
+            for record in objects.records
+            if record.translation_unit_config is not None
+        },
+    )
+    selection_input_paths.extend(translation_unit_config_paths)
+    cluster_count = sum(
+        record.translation_unit is not None
+        for record in objects.records
+    )
 
     return {
         "abi_assertions": abi,
+        "function_count": len(bindings),
         "image": objects.image,
         "kind": NATIVE_OBJECT_MANIFEST_KIND,
         "object_count": len(records),
-        "object_order": "ascending-reference-address",
+        "object_order": "ascending-minimum-reference-address",
         "object_hash": {
             "algorithm": "sha256",
             "normalization": ["zero COFF TimeDateStamp bytes 4..7"],
         },
         "objects": records,
         "provenance": {
-            "build_policy": "forced-isolated-recompile",
+            "build_policy": (
+                "forced-explicit-translation-unit-recompile"
+                if cluster_count
+                else "forced-isolated-recompile"
+            ),
             "selection_inputs": [
                 _file_payload(path, repo_root=repo_root)
                 for path in selection_input_paths
@@ -729,9 +1204,17 @@ def object_manifest_payload(
             "function_name_policy": "exact canonical manifest name",
             "key": ["image", "resolved_address"],
             "missing_policy": "error",
-            "source": "active scratch.conf files",
+            "source": "active scratch.conf files plus explicit translation-unit config",
+            "translation_unit_policy": (
+                "one object per function unless an explicit cluster binds every "
+                "member symbol and preserves its canonical match"
+            ),
         },
         "states": dict(sorted(state_counts.items())),
+        "translation_units": {
+            "cluster_count": cluster_count,
+            "isolated_count": len(records) - cluster_count,
+        },
     }
 
 
@@ -930,7 +1413,16 @@ def _symbol_occurrence(
     if 0 < symbol.section_number <= len(record.coff.sections):
         section = record.coff.sections[symbol.section_number - 1]
     kind = "common" if symbol.section_number == 0 and symbol.value > 0 else "section"
-    return {
+    bindings = _record_bindings(record)
+    matching_binding = next(
+        (
+            binding
+            for binding in bindings
+            if binding.object_symbol == symbol.name
+        ),
+        None,
+    )
+    occurrence: dict[str, Any] = {
         "comdat": bool(section and section.characteristics & IMAGE_SCN_LNK_COMDAT),
         "comdat_associative_section": (
             section.comdat_associative_section
@@ -939,7 +1431,13 @@ def _symbol_occurrence(
         ),
         "comdat_key": section.comdat_key if section is not None else None,
         "comdat_selection": section.comdat_selection if section is not None else None,
-        "function": record.function.name,
+        "function": (
+            matching_binding.function.name
+            if matching_binding is not None
+            else bindings[0].function.name
+            if len(bindings) == 1
+            else None
+        ),
         "kind": kind,
         "logical_section_size": section.logical_size if section is not None else None,
         "object": _repo_relative(record.object_path, repo_root=repo_root),
@@ -947,6 +1445,13 @@ def _symbol_occurrence(
         "size": symbol.value if kind == "common" else None,
         "weak": symbol.storage_class == IMAGE_SYM_CLASS_WEAK_EXTERNAL,
     }
+    if record.translation_unit is not None:
+        occurrence["functions"] = [
+            binding.function.name
+            for binding in bindings
+        ]
+        occurrence["translation_unit"] = record.translation_unit
+    return occurrence
 
 
 def _coff_directives(record: NativeObjectRecord) -> tuple[str, ...]:
@@ -973,6 +1478,16 @@ def symbol_closure_payload(
 
     for record in objects.records:
         object_name = _repo_relative(record.object_path, repo_root=repo_root)
+        bindings = _record_bindings(record)
+        record_context: dict[str, Any] = {
+            "function": bindings[0].function.name if len(bindings) == 1 else None,
+        }
+        if record.translation_unit is not None:
+            record_context["functions"] = [
+                binding.function.name
+                for binding in bindings
+            ]
+            record_context["translation_unit"] = record.translation_unit
         directives_by_object[object_name] = _coff_directives(record)
         symbols_by_raw_index = {symbol.raw_index: symbol for symbol in record.coff.symbols}
         for symbol in record.coff.symbols:
@@ -987,7 +1502,7 @@ def symbol_closure_payload(
             elif symbol.section_number == 0:
                 alias_fallback: str | None = None
                 reference: dict[str, Any] = {
-                    "function": record.function.name,
+                    **record_context,
                     "object": object_name,
                     "weak": symbol.storage_class == IMAGE_SYM_CLASS_WEAK_EXTERNAL,
                 }
@@ -1013,7 +1528,10 @@ def symbol_closure_payload(
     duplicate_rows: list[dict[str, Any]] = []
     coalescible_rows: list[dict[str, Any]] = []
     for name, occurrences in sorted(definitions.items()):
-        ordered = sorted(occurrences, key=lambda row: (row["object"], row["function"]))
+        ordered = sorted(
+            occurrences,
+            key=lambda row: (row["object"], str(row.get("function") or "")),
+        )
         row = {"definitions": ordered, "name": name}
         definition_rows.append(row)
         if len(ordered) > 1:
@@ -1041,14 +1559,14 @@ def symbol_closure_payload(
     for name, references in sorted(undefined.items()):
         ordered_references = sorted(
             references,
-            key=lambda row: (row["object"], row["function"]),
+            key=lambda row: (row["object"], str(row.get("function") or "")),
         )
         if name in definitions:
             resolved_rows.append(
                 {
                     "definitions": sorted(
                         definitions[name],
-                        key=lambda row: (row["object"], row["function"]),
+                        key=lambda row: (row["object"], str(row.get("function") or "")),
                     ),
                     "name": name,
                     "referenced_by": ordered_references,
@@ -1217,6 +1735,10 @@ def symbol_closure_payload(
             "game_function_debt": dict(sorted(game_function_debt.items())),
             "hard_duplicate_by_section": dict(sorted(hard_duplicate_sections.items())),
             "hard_duplicate_symbols": hard_duplicates,
+            "function_count": sum(
+                len(_record_bindings(record))
+                for record in objects.records
+            ),
             "object_count": len(objects.records),
             "reference_exports_closed": reference_exports_closed,
             "resolved_symbols": len(resolved_rows),
@@ -1355,13 +1877,19 @@ def build_native_audit(
     match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     repo_root: Path = matchlib.REPO_ROOT,
+    translation_unit_configs: dict[str, Path] | None = None,
 ) -> NativeAudit:
-    analysis_inputs_before = _analysis_input_snapshot(image, scope)
+    analysis_inputs_before = _analysis_input_snapshot(
+        image,
+        scope,
+        translation_unit_configs=translation_unit_configs,
+    )
     objects = build_native_object_set(
         image,
         scope=scope,
         match_root=match_root,
         jobs=jobs,
+        translation_unit_configs=translation_unit_configs,
     )
     object_manifest = object_manifest_payload(objects, repo_root=repo_root)
     symbol_closure = symbol_closure_payload(objects, repo_root=repo_root)
@@ -1372,7 +1900,11 @@ def build_native_audit(
     symbol_closure["export_definition_sha256"] = hashlib.sha256(
         export_definition.encode(),
     ).hexdigest()
-    if analysis_inputs_before != _analysis_input_snapshot(image, scope):
+    if analysis_inputs_before != _analysis_input_snapshot(
+        image,
+        scope,
+        translation_unit_configs=translation_unit_configs,
+    ):
         raise ValueError("analysis inputs changed during native audit")
     digest_payload = {
         "data_manifest": data_manifest,
