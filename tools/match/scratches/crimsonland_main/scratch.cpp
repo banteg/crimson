@@ -22,7 +22,7 @@ extern char *runtime_empty_string_copy;
 extern unsigned char grim_config_invoked;
 extern unsigned char terrain_texture_failed;
 extern unsigned char sfx_init_disabled;
-extern unsigned char update_notice_pending;
+extern volatile unsigned char update_notice_pending;
 extern char *update_notice_url;
 extern int online_sync_status;
 extern int startup_integrity_cookie;
@@ -503,8 +503,8 @@ extern "C" int WINAPI crimsonland_main(
                 update_notice_url);
         }
         update_notice_pending = 0;
-        console_log_queue.flush_log("console.log");
     }
+    console_log_queue.flush_log("console.log");
 
     return 0;
 }

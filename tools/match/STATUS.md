@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **294881/341963** code bytes (**86.2%**).
+Fuzzy-weighted alignment is **294912/341963** code bytes (**86.2%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274931/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274961/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 19950/21158 | 94.3% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **274931/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **274961/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -460,7 +460,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | game_startup_init | 0x0042b290 | 4303 | 4303/4303 | 0 | 1126/1126 | 100.00% | 1126/1126 | 334/0/0 |  | startup-loading-intro-and-frame-callback |
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
-| wip | crimsonland_main | 0x0042c450 | 3214 | 3133/3214 | 81 | 832/832 | 97.48% | 27/832 | 392/0/2 |  | primary-game-bootstrap-and-shutdown |
+| wip | crimsonland_main | 0x0042c450 | 3214 | 3164/3214 | 50 | 832/832 | 98.44% | 684/832 | 393/0/2 |  | primary-game-bootstrap-and-shutdown |
 | wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1196/1970 | 774 | 519/519 | 60.69% | 19/519 | 102/0/0 |  | online-highscore-submit-receive-worker |
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 1048/1364 | 316 | 373/361 | 76.84% | 21/361 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |

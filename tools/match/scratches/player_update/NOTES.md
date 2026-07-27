@@ -632,3 +632,7 @@ The Fire Cough smoke template now writes its two size components through
 `effect_template_t::half_extent`, completing the already-recovered velocity
 and color aggregate boundary. This is byte-neutral at the same 4,019/4,206
 instructions, 54.86%, and `736/0/11` references.
+
+## Function-local declaration-order sweep
+
+The mutation harness tested all 12 declaration-order variants for the function-local temporaries. Every variant was byte-identical to the 56.6776% baseline (4023/4206 instructions, 7042.92-byte gap, five reference mismatches, `frame_size=0x48`). This rules out source declaration order as the control for the remaining stack layout: MSVC is placing these locals from their use sites instead. Recorded spec SHA: `91c82101299a1999c03ad3122f331f43cce50e5038264ce84faf892790180314`.

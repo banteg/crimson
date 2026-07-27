@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shutdown-flush-scope",
+      "find": "        update_notice_pending = 0;\n        console_log_queue.flush_log(\"console.log\");\n    }\n\n    return 0;",
+      "replacements": [
+        {
+          "name": "unconditional-after-update-branch",
+          "text": "        update_notice_pending = 0;\n    }\n    console_log_queue.flush_log(\"console.log\");\n\n    return 0;"
+        }
+      ]
+    }
+  ]
+}

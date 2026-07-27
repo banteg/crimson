@@ -238,3 +238,9 @@ instructions, and reference audit **1,540 resolved / 4 unresolved / 9
 mismatched**. Relative to the pre-wave 76.7225% canonical result, this is a
 **3.4401 percentage-point** gain and about **732.35 recovered weighted
 bytes**, while also correcting the missing native right-heading coordinates.
+
+## Current opening-lifetime replay
+
+The existing left-panel lifetime menu was replayed against the current post-staging source. None of its six variants improved the 80.1625% baseline: four were byte-identical, one lost 11.80 weighted bytes, and the scalar form lost 1027.28. Recorded spec SHA: `cdfbe1fe76105490210d88db25c68fc2ba835282030c48eb94b63f604cc267ae`.
+
+A second five-variant sweep predeclared and regrouped the player-item publication and opening vectors. All five variants were byte-identical, showing that these opening locals are also placed from use sites rather than declaration order. Recorded spec SHA: `34e1998c665348f26f8300c2c1ce4d731914ef5fc75bcead329dec5061cc4c93`.

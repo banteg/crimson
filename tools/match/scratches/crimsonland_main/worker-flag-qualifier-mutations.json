@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "worker-flag-qualifier",
+      "find": "extern unsigned char update_notice_pending;",
+      "replacements": [
+        {
+          "name": "volatile-prefix",
+          "text": "extern volatile unsigned char update_notice_pending;"
+        },
+        {
+          "name": "volatile-suffix",
+          "text": "extern unsigned char volatile update_notice_pending;"
+        }
+      ]
+    }
+  ]
+}

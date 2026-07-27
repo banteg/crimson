@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-local-declaration-order",
+      "find": "    float movement_heading;\n    float angle_step;\n    float scalar;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;",
+      "replacements": [
+        {
+          "name": "previous-scratch-random-movement-delta",
+          "text": "    player_update_vec2_t previous_pos;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t move_delta;\n    float movement_heading;\n    float angle_step;\n    float scalar;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "previous-random-scratch-movement-delta",
+          "text": "    player_update_vec2_t previous_pos;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t move_delta;\n    float movement_heading;\n    float angle_step;\n    float scalar;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "random-scratch-movement-delta-previous",
+          "text": "    player_update_vec2_t random_offset;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t move_delta;\n    player_update_vec2_t previous_pos;\n    float movement_heading;\n    float angle_step;\n    float scalar;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "random-movement-scratch-delta-previous",
+          "text": "    player_update_vec2_t random_offset;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    player_update_vec2_t previous_pos;\n    float movement_heading;\n    float angle_step;\n    float scalar;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "reverse-vectors-then-scalars",
+          "text": "    player_update_vec2_t move_delta;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t random_offset;\n    float scalar;\n    float angle_step;\n    float movement_heading;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "vectors-original-then-scalars",
+          "text": "    player_update_vec2_t random_offset;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    float movement_heading;\n    float angle_step;\n    float scalar;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "booleans-vectors-scalars",
+          "text": "    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    float movement_heading;\n    float angle_step;\n    float scalar;"
+        },
+        {
+          "name": "scalars-previous-scratch-movement-delta-random",
+          "text": "    float movement_heading;\n    float angle_step;\n    float scalar;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t move_delta;\n    player_update_vec2_t random_offset;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "scalars-scratch-previous-movement-delta-random",
+          "text": "    float movement_heading;\n    float angle_step;\n    float scalar;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t move_delta;\n    player_update_vec2_t random_offset;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "scalars-movement-scratch-delta-random-previous",
+          "text": "    float movement_heading;\n    float angle_step;\n    float scalar;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t previous_pos;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "reverse-scalars-original-vectors",
+          "text": "    float scalar;\n    float angle_step;\n    float movement_heading;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t previous_pos;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;"
+        },
+        {
+          "name": "previous-last-after-booleans",
+          "text": "    float movement_heading;\n    float angle_step;\n    float scalar;\n    player_update_vec2_t random_offset;\n    player_update_vec2_t movement_input;\n    player_update_vec2_t scratch_pos;\n    player_update_vec2_t move_delta;\n    bool auto_fire;\n    bool normal_fire_ready;\n    bool perk_fire_ready;\n    player_update_vec2_t previous_pos;"
+        }
+      ]
+    }
+  ]
+}

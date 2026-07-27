@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "worker-status-qualifier",
+      "find": "extern int online_sync_status;",
+      "replacements": [
+        {
+          "name": "volatile",
+          "text": "extern volatile int online_sync_status;"
+        }
+      ]
+    },
+    {
+      "name": "worker-url-pointer-qualifier",
+      "find": "extern char *update_notice_url;",
+      "replacements": [
+        {
+          "name": "volatile-pointer",
+          "text": "extern char * volatile update_notice_url;"
+        }
+      ]
+    }
+  ]
+}
