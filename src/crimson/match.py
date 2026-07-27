@@ -4841,6 +4841,16 @@ def _native_input_records(
         if not isinstance(sha256, str) or len(sha256) != 64:
             raise ValueError(f"data.json.source.{key}_sha256 must be a SHA-256 digest")
         files.append((path, sha256, True))
+    if "definitions" in data_source or "definitions_sha256" in data_source:
+        path = data_source.get("definitions")
+        sha256 = data_source.get("definitions_sha256")
+        if not isinstance(path, str) or not path:
+            raise ValueError("data.json.source.definitions must be a non-empty string")
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError(
+                "data.json.source.definitions_sha256 must be a SHA-256 digest",
+            )
+        files.append((path, sha256, True))
 
     raw_bundles = toolchain.get("compiler_bundles")
     if not isinstance(raw_bundles, list):

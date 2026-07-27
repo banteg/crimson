@@ -17,11 +17,13 @@ from . import match as matchlib
 NATIVE_OBJECT_MANIFEST_SCHEMA = 2
 NATIVE_SYMBOL_CLOSURE_SCHEMA = 2
 NATIVE_DATA_MANIFEST_SCHEMA = 1
+NATIVE_DATA_DEFINITION_SCHEMA = 1
 NATIVE_TRANSLATION_UNIT_SCHEMA = 1
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
 NATIVE_DATA_MANIFEST_KIND = "crimson-native-data-manifest"
+NATIVE_DATA_DEFINITION_KIND = "crimson-native-data-definitions"
 
 IMAGE_SCN_LNK_COMDAT = 0x00001000
 IMAGE_SYM_CLASS_WEAK_EXTERNAL = 105
@@ -35,6 +37,9 @@ KNOWN_MSVC_TOOLCHAIN_EXTERNALS = frozenset(
 )
 
 DEFAULT_NATIVE_ANALYSIS_ROOT = matchlib.REPO_ROOT / "analysis" / "native"
+DEFAULT_DATA_DEFINITION_ROOT = (
+    matchlib.REPO_ROOT / "tools" / "native" / "data_definitions"
+)
 DEFAULT_ABI_CONFIGS = {
     "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
@@ -48,6 +53,10 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
         / "crimsonland.exe.json"
     ),
 }
+
+
+def default_native_data_definitions_path(image: str) -> Path:
+    return DEFAULT_DATA_DEFINITION_ROOT / f"{image}.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -485,6 +494,9 @@ def _analysis_input_snapshot(
     ]
     if scope != "all":
         paths.append(matchlib.DEFAULT_MATCHING_SCOPE_PATH)
+    data_definitions_path = default_native_data_definitions_path(image)
+    if data_definitions_path.exists():
+        paths.append(data_definitions_path)
     resolved_translation_unit_configs = (
         DEFAULT_TRANSLATION_UNIT_CONFIGS
         if translation_unit_configs is None
@@ -1749,14 +1761,271 @@ def symbol_closure_payload(
     }
 
 
+def load_native_data_definitions(
+    image: str,
+    *,
+    path: Path | None = None,
+    reference_image_path: Path | None = None,
+) -> dict[str, Any] | None:
+    path = path or default_native_data_definitions_path(image)
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError(f"{path}: data definitions must be an object")
+    if payload.get("schema") != NATIVE_DATA_DEFINITION_SCHEMA:
+        raise ValueError(
+            f"{path}: expected schema {NATIVE_DATA_DEFINITION_SCHEMA}",
+        )
+    if payload.get("kind") != NATIVE_DATA_DEFINITION_KIND:
+        raise ValueError(f"{path}: expected kind {NATIVE_DATA_DEFINITION_KIND!r}")
+    if payload.get("image") != image:
+        raise ValueError(f"{path}: targets {payload.get('image')!r}, expected {image!r}")
+
+    reference_image = payload.get("reference_image")
+    if not isinstance(reference_image, dict):
+        raise TypeError(f"{path}: reference_image must be an object")
+    reference_path = reference_image.get("path")
+    reference_sha256 = reference_image.get("sha256")
+    if (
+        not isinstance(reference_path, str)
+        or not reference_path
+        or Path(reference_path).name != image
+    ):
+        raise ValueError(f"{path}: reference_image.path must identify {image}")
+    if (
+        not isinstance(reference_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", reference_sha256) is None
+    ):
+        raise ValueError(f"{path}: reference_image.sha256 must be a lowercase SHA-256")
+    if (
+        reference_image_path is not None
+        and _sha256(reference_image_path) != reference_sha256
+    ):
+        raise ValueError(
+            f"{path}: reference image digest does not match {reference_image_path}",
+        )
+    loaded_reference_image = (
+        matchlib.load_image(reference_image_path)
+        if reference_image_path is not None
+        else None
+    )
+
+    raw_entries = payload.get("entries")
+    if not isinstance(raw_entries, list):
+        raise TypeError(f"{path}: entries must be an array")
+    entries: list[dict[str, Any]] = []
+    keys: set[tuple[int, str]] = set()
+    for index, raw_entry in enumerate(raw_entries):
+        label = f"{path}: entries[{index}]"
+        if not isinstance(raw_entry, dict):
+            raise TypeError(f"{label} must be an object")
+        name = raw_entry.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"{label}.name must be non-empty")
+        raw_address = raw_entry.get("address")
+        if not isinstance(raw_address, (str, int)):
+            raise TypeError(f"{label}.address must be an integer or hex string")
+        try:
+            address = matchlib.parse_int(raw_address)
+        except ValueError as exc:
+            raise ValueError(f"{label}.address must be an integer or hex string") from exc
+        key = (address, name)
+        if key in keys:
+            raise ValueError(f"{label}: duplicate definition for {name} at 0x{address:08x}")
+        keys.add(key)
+
+        normalized: dict[str, Any] = {
+            "address": address,
+            "name": name,
+            "note": str(raw_entry.get("note") or ""),
+        }
+        explicit_fields = 0
+        field_sources = {
+            "size": "size_source",
+            "alignment": "alignment_source",
+            "initializer_hex": "initializer_source",
+        }
+        for field, source_field in field_sources.items():
+            value = raw_entry.get(field)
+            source = raw_entry.get(source_field)
+            if value is None and source is None:
+                normalized[field] = None
+                normalized[source_field] = None
+                continue
+            if value is None or not isinstance(source, str) or not source.strip():
+                raise ValueError(
+                    f"{label}: {field} and {source_field} must be provided together",
+                )
+            explicit_fields += 1
+            normalized[field] = value
+            normalized[source_field] = source.strip()
+        if explicit_fields == 0:
+            raise ValueError(f"{label}: at least one explicit data fact is required")
+
+        size = normalized["size"]
+        if size is not None and (
+            not isinstance(size, int) or isinstance(size, bool) or size <= 0
+        ):
+            raise ValueError(f"{label}.size must be a positive integer")
+        alignment = normalized["alignment"]
+        if alignment is not None and (
+            not isinstance(alignment, int)
+            or isinstance(alignment, bool)
+            or alignment <= 0
+            or alignment & (alignment - 1)
+        ):
+            raise ValueError(f"{label}.alignment must be a positive power of two")
+        if alignment is not None and address % alignment:
+            raise ValueError(
+                f"{label}.address 0x{address:08x} is not aligned to {alignment}",
+            )
+        initializer_hex = normalized["initializer_hex"]
+        if initializer_hex is not None:
+            if (
+                not isinstance(initializer_hex, str)
+                or not initializer_hex
+                or re.fullmatch(r"(?:[0-9a-f]{2})+", initializer_hex) is None
+            ):
+                raise ValueError(
+                    f"{label}.initializer_hex must be non-empty lowercase byte hex",
+                )
+            if size is None:
+                raise ValueError(f"{label}: initializer_hex requires an explicit size")
+            if len(initializer_hex) // 2 != size:
+                raise ValueError(
+                    f"{label}: initializer has {len(initializer_hex) // 2} bytes, "
+                    f"expected size {size}",
+                )
+            if loaded_reference_image is not None:
+                start = address - loaded_reference_image.image_base
+                end = start + size
+                if start < 0 or end > len(loaded_reference_image.mapped):
+                    raise ValueError(
+                        f"{label}: initializer range is outside the reference image",
+                    )
+                reference_hex = loaded_reference_image.mapped[start:end].hex()
+                if initializer_hex != reference_hex:
+                    raise ValueError(
+                        f"{label}: initializer {initializer_hex} does not match "
+                        f"reference image bytes {reference_hex}",
+                    )
+        entries.append(normalized)
+
+    ordered = sorted(entries, key=lambda row: (row["address"], row["name"]))
+    if entries != ordered:
+        raise ValueError(f"{path}: entries must be sorted by address and name")
+    return {
+        "entries": entries,
+        "image": image,
+        "kind": NATIVE_DATA_DEFINITION_KIND,
+        "notes": str(payload.get("notes") or ""),
+        "reference_image": {
+            "path": reference_path,
+            "sha256": reference_sha256,
+        },
+        "schema": NATIVE_DATA_DEFINITION_SCHEMA,
+    }
+
+
+def _data_closure_references(
+    symbol_closure: dict[str, Any] | None,
+) -> dict[tuple[int, str], list[dict[str, Any]]]:
+    if symbol_closure is None:
+        return {}
+    raw_unresolved = symbol_closure.get("unresolved")
+    if not isinstance(raw_unresolved, list):
+        raise TypeError("symbol closure unresolved entries must be an array")
+    references: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
+    for index, raw_row in enumerate(raw_unresolved):
+        if not isinstance(raw_row, dict):
+            raise TypeError(f"symbol closure unresolved[{index}] must be an object")
+        if raw_row.get("category") != "game_data":
+            continue
+        name = raw_row.get("name")
+        lookup_name = raw_row.get("lookup_name")
+        referenced_by = raw_row.get("referenced_by")
+        catalog = raw_row.get("catalog")
+        if not isinstance(name, str) or not isinstance(lookup_name, str):
+            raise TypeError(f"symbol closure unresolved[{index}] has invalid names")
+        if not isinstance(referenced_by, list) or not isinstance(catalog, list):
+            raise TypeError(
+                f"symbol closure unresolved[{index}] requires catalog and referenced_by arrays",
+            )
+        symbol = {
+            "lookup_name": lookup_name,
+            "name": name,
+            "reference_count": len(referenced_by),
+        }
+        seen_keys: set[tuple[int, str]] = set()
+        for raw_catalog in catalog:
+            if not isinstance(raw_catalog, dict):
+                raise TypeError(
+                    f"symbol closure unresolved[{index}] catalog entries must be objects",
+                )
+            raw_address = raw_catalog.get("address")
+            raw_name = raw_catalog.get("name")
+            if not isinstance(raw_address, (str, int)) or not isinstance(
+                raw_name,
+                str,
+            ):
+                raise TypeError(
+                    f"symbol closure unresolved[{index}] has invalid catalog data",
+                )
+            try:
+                key = (
+                    matchlib.parse_int(raw_address),
+                    raw_name,
+                )
+            except ValueError as exc:
+                raise ValueError(
+                    f"symbol closure unresolved[{index}] has invalid catalog data",
+                ) from exc
+            if key not in seen_keys:
+                references[key].append(symbol)
+                seen_keys.add(key)
+    return references
+
+
+def _data_definition_state(entry: dict[str, Any]) -> str:
+    present = sum(
+        entry[field] is not None
+        for field in ("size", "alignment", "initializer_hex")
+    )
+    if present == 3:
+        return "fully-specified"
+    if present:
+        return "partial"
+    return "unknown"
+
+
 def data_manifest_payload(
     image: str,
     *,
     data_map_path: Path = matchlib.DEFAULT_DATA_MAP_PATH,
     segments_path: Path | None = None,
+    definitions_path: Path | None = None,
+    reference_image_path: Path | None = None,
+    symbol_closure: dict[str, Any] | None = None,
+    repo_root: Path = matchlib.REPO_ROOT,
 ) -> dict[str, Any]:
     if segments_path is None:
         segments_path = matchlib.default_functions_path(image).with_name("segments.json")
+    resolved_definitions_path = (
+        definitions_path
+        if definitions_path is not None
+        else default_native_data_definitions_path(image)
+    )
+    definitions = load_native_data_definitions(
+        image,
+        path=resolved_definitions_path,
+        reference_image_path=reference_image_path,
+    )
+    definitions_by_key = {
+        (int(entry["address"]), str(entry["name"])): entry
+        for entry in definitions["entries"]
+    } if definitions is not None else {}
+    closure_references = _data_closure_references(symbol_closure)
     payload = json.loads(data_map_path.read_text(encoding="utf-8"))
     segments: list[tuple[str, int, int]] = [
         (
@@ -1780,6 +2049,7 @@ def data_manifest_payload(
     fixed_arrays = 0
     incomplete_arrays = 0
     multidimensional_arrays = 0
+    matched_definition_keys: set[tuple[int, str]] = set()
     for row in sorted(
         source_rows,
         key=lambda item: (matchlib.parse_int(item["address"]), str(item["name"])),
@@ -1809,23 +2079,66 @@ def data_manifest_payload(
                 fixed_arrays += 1
             if type_name.count("[") > 1:
                 multidimensional_arrays += 1
+        key = (address, str(row["name"]))
+        definition = definitions_by_key.get(key)
+        if definition is not None:
+            matched_definition_keys.add(key)
+        requested_symbols = sorted(
+            closure_references.get(key, []),
+            key=lambda item: (-int(item["reference_count"]), str(item["name"])),
+        )
+        linker_reference_count = sum(
+            int(symbol["reference_count"])
+            for symbol in requested_symbols
+        )
         entries.append(
             {
                 "address": address,
                 "aliases": aliases,
-                "alignment": None,
-                "alignment_source": None,
+                "alignment": definition["alignment"] if definition is not None else None,
+                "alignment_source": (
+                    definition["alignment_source"]
+                    if definition is not None
+                    else None
+                ),
                 "comment": str(row["comment"]),
-                "initializer_hex": None,
-                "initializer_source": None,
+                "definition_state": (
+                    _data_definition_state(definition)
+                    if definition is not None
+                    else "unknown"
+                ),
+                "initializer_hex": (
+                    definition["initializer_hex"]
+                    if definition is not None
+                    else None
+                ),
+                "initializer_source": (
+                    definition["initializer_source"]
+                    if definition is not None
+                    else None
+                ),
+                "linker_reference_count": linker_reference_count,
                 "name": str(row["name"]),
                 "section": section,
                 "section_offset": address - segment[1] if segment is not None else None,
-                "section_source": _repo_relative(segments_path, repo_root=matchlib.REPO_ROOT),
-                "size": None,
-                "size_source": None,
+                "section_source": _repo_relative(segments_path, repo_root=repo_root),
+                "size": definition["size"] if definition is not None else None,
+                "size_source": (
+                    definition["size_source"]
+                    if definition is not None
+                    else None
+                ),
                 "type": type_name,
             },
+        )
+    unmatched_definition_keys = set(definitions_by_key) - matched_definition_keys
+    if unmatched_definition_keys:
+        rendered = ", ".join(
+            f"{name}@0x{address:08x}"
+            for address, name in sorted(unmatched_definition_keys)
+        )
+        raise ValueError(
+            f"{resolved_definitions_path}: definitions absent from data map: {rendered}",
         )
 
     overlays = [
@@ -1837,6 +2150,48 @@ def data_manifest_payload(
         if count > 1
     ]
     typed = sum(entry["type"] is not None for entry in entries)
+    priorities = [
+        {
+            "address": entry["address"],
+            "definition_state": entry["definition_state"],
+            "name": entry["name"],
+            "reference_count": entry["linker_reference_count"],
+            "requested_symbols": sorted(
+                closure_references[
+                    (int(entry["address"]), str(entry["name"]))
+                ],
+                key=lambda item: (
+                    -int(item["reference_count"]),
+                    str(item["name"]),
+                ),
+            ),
+        }
+        for entry in sorted(
+            (
+                entry
+                for entry in entries
+                if entry["linker_reference_count"]
+            ),
+            key=lambda item: (
+                -int(item["linker_reference_count"]),
+                int(item["address"]),
+                str(item["name"]),
+            ),
+        )[:50]
+    ]
+    source = {
+        "data_map": _repo_relative(data_map_path, repo_root=repo_root),
+        "data_map_sha256": _sha256(data_map_path),
+        "segments": _repo_relative(segments_path, repo_root=repo_root),
+        "segments_sha256": _sha256(segments_path),
+    }
+    if definitions is not None:
+        source["definitions"] = _repo_relative(
+            resolved_definitions_path,
+            repo_root=repo_root,
+        )
+        source["definitions_sha256"] = _sha256(resolved_definitions_path)
+        source["reference_image"] = definitions["reference_image"]
 
     return {
         "entries": entries,
@@ -1844,24 +2199,42 @@ def data_manifest_payload(
         "kind": NATIVE_DATA_MANIFEST_KIND,
         "notes": str(payload.get("notes") or ""),
         "overlays": overlays,
+        "priorities": priorities,
         "schema": NATIVE_DATA_MANIFEST_SCHEMA,
-        "source": {
-            "data_map": _repo_relative(data_map_path, repo_root=matchlib.REPO_ROOT),
-            "data_map_sha256": _sha256(data_map_path),
-            "segments": _repo_relative(segments_path, repo_root=matchlib.REPO_ROOT),
-            "segments_sha256": _sha256(segments_path),
-        },
+        "source": source,
         "summary": {
             "alias_names": alias_names,
             "alias_rows": alias_rows,
             "entry_count": len(entries),
-            "explicit_alignment_entries": 0,
-            "explicit_initializer_entries": 0,
-            "explicit_size_entries": 0,
+            "explicit_alignment_entries": sum(
+                entry["alignment"] is not None
+                for entry in entries
+            ),
+            "explicit_initializer_entries": sum(
+                entry["initializer_hex"] is not None
+                for entry in entries
+            ),
+            "explicit_size_entries": sum(
+                entry["size"] is not None
+                for entry in entries
+            ),
             "fixed_array_types": fixed_arrays,
+            "fully_specified_entries": sum(
+                entry["definition_state"] == "fully-specified"
+                for entry in entries
+            ),
+            "game_data_reference_count": sum(
+                int(entry["linker_reference_count"])
+                for entry in entries
+            ),
             "incomplete_array_types": incomplete_arrays,
             "multidimensional_array_types": multidimensional_arrays,
             "overlay_addresses": len(overlays),
+            "priority_entries": len(priorities),
+            "referenced_entries": sum(
+                bool(entry["linker_reference_count"])
+                for entry in entries
+            ),
             "section_counts": dict(sorted(section_counts.items())),
             "typed_entries": typed,
             "unique_addresses": len(addresses),
@@ -1893,7 +2266,12 @@ def build_native_audit(
     )
     object_manifest = object_manifest_payload(objects, repo_root=repo_root)
     symbol_closure = symbol_closure_payload(objects, repo_root=repo_root)
-    data_manifest = data_manifest_payload(image)
+    data_manifest = data_manifest_payload(
+        image,
+        reference_image_path=objects.image_path,
+        symbol_closure=symbol_closure,
+        repo_root=repo_root,
+    )
     object_list = render_object_list(objects, repo_root=repo_root)
     export_definition = render_export_definition(image, symbol_closure)
     object_manifest["object_list_sha256"] = hashlib.sha256(object_list.encode()).hexdigest()

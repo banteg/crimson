@@ -1395,6 +1395,9 @@ def _write_native_link_fixture(
     evidence = repo_root / "evidence.bin"
     evidence.write_bytes(b"native audit input")
     evidence_sha256 = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    definitions = repo_root / "definitions.json"
+    definitions.write_bytes(b'{"schema":1}')
+    definitions_sha256 = hashlib.sha256(definitions.read_bytes()).hexdigest()
     canonical = repo_root / "canonical.cpp"
     canonical.write_bytes(b"void recovered() {}")
     canonical_sha256 = hashlib.sha256(canonical.read_bytes()).hexdigest()
@@ -1482,6 +1485,8 @@ def _write_native_link_fixture(
         "source": {
             "data_map": "evidence.bin",
             "data_map_sha256": evidence_sha256,
+            "definitions": "definitions.json",
+            "definitions_sha256": definitions_sha256,
             "segments": "evidence.bin",
             "segments_sha256": evidence_sha256,
         },
@@ -1604,6 +1609,21 @@ def test_native_link_status_detects_report_content_changed_without_digest(
 
     assert status.artifact_state == "stale"
     assert "artifact content does not match audit digest" in status.artifact_note
+
+
+def test_native_link_status_detects_changed_data_definitions(tmp_path: Path) -> None:
+    analysis_dir, _ = _write_native_link_fixture(tmp_path)
+    (tmp_path / "definitions.json").write_text('{"schema":2}', encoding="utf-8")
+
+    status = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+
+    assert status.artifact_state == "stale"
+    assert "1 recorded file inputs changed or missing" in status.artifact_note
 
 
 def test_native_link_status_detects_changed_companion_artifact(tmp_path: Path) -> None:

@@ -32,6 +32,7 @@ def _audit(*, closed: bool):
         data_manifest={
             "summary": {
                 "entry_count": 273,
+                "explicit_alignment_entries": 0,
                 "explicit_initializer_entries": 0,
                 "explicit_size_entries": 0,
                 "typed_entries": 182,

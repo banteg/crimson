@@ -22,6 +22,7 @@ from crimson.native_link import (
     _validate_loaded_configs,
     _vc6_linker_internal_name,
     data_manifest_payload,
+    load_native_data_definitions,
     load_native_translation_unit_config,
     object_manifest_payload,
     render_export_definition,
@@ -959,15 +960,103 @@ def test_vc6_export_spelling_preserves_stdcall_suffix() -> None:
     assert _vc6_linker_internal_name("?decorated@Cpp@@") == "?decorated@Cpp@@"
 
 
-def test_grim_data_manifest_reports_unknown_extents_honestly() -> None:
+def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
     payload = data_manifest_payload("grim.dll")
 
     assert payload["summary"]["entry_count"] == 273
     assert payload["summary"]["typed_entries"] == 182
-    assert payload["summary"]["explicit_size_entries"] == 0
-    assert payload["summary"]["explicit_initializer_entries"] == 0
-    assert all(entry["size"] is None for entry in payload["entries"])
-    assert all(entry["initializer_hex"] is None for entry in payload["entries"])
+    assert payload["summary"]["explicit_size_entries"] == 8
+    assert payload["summary"]["explicit_alignment_entries"] == 8
+    assert payload["summary"]["explicit_initializer_entries"] == 8
+    assert payload["summary"]["fully_specified_entries"] == 8
+    assert payload["source"]["definitions"] == (
+        "tools/native/data_definitions/grim.dll.json"
+    )
+    defined = {
+        entry["name"]: entry
+        for entry in payload["entries"]
+        if entry["definition_state"] == "fully-specified"
+    }
+    assert defined["grim_d3d_device"]["size"] == 4
+    assert defined["grim_d3d_device"]["initializer_hex"] == "00000000"
+    assert defined["grim_render_disabled"]["size"] == 1
+    assert defined["grim_render_disabled"]["initializer_hex"] == "00"
+    assert next(
+        entry
+        for entry in payload["entries"]
+        if entry["name"] == "grim_texture_slots"
+    )["size"] is None
+
+
+def test_data_manifest_ranks_game_data_by_reference_fan_in() -> None:
+    closure = {
+        "unresolved": [
+            {
+                "category": "game_data",
+                "name": "?grim_d3d_device@@3PAUIDirect3DDevice8@@A",
+                "lookup_name": "grim_d3d_device",
+                "catalog": [
+                    {
+                        "address": 0x10059DBC,
+                        "name": "grim_d3d_device",
+                    },
+                ],
+                "referenced_by": [
+                    {"function": "first"},
+                    {"function": "second"},
+                ],
+            },
+        ],
+    }
+
+    payload = data_manifest_payload("grim.dll", symbol_closure=closure)
+
+    assert payload["summary"]["referenced_entries"] == 1
+    assert payload["summary"]["game_data_reference_count"] == 2
+    assert payload["priorities"][0] == {
+        "address": 0x10059DBC,
+        "definition_state": "fully-specified",
+        "name": "grim_d3d_device",
+        "reference_count": 2,
+        "requested_symbols": [
+            {
+                "lookup_name": "grim_d3d_device",
+                "name": "?grim_d3d_device@@3PAUIDirect3DDevice8@@A",
+                "reference_count": 2,
+            },
+        ],
+    }
+
+
+def test_data_definitions_reject_initializer_size_mismatch(tmp_path: Path) -> None:
+    path = tmp_path / "grim.dll.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "bad",
+                        "size": 4,
+                        "size_source": "type evidence",
+                        "initializer_hex": "00",
+                        "initializer_source": "image evidence",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="initializer has 1 bytes, expected size 4"):
+        load_native_data_definitions("grim.dll", path=path)
 
 
 def _build_auxiliary_coff(*, relocation_symbol_index: int | None = None) -> bytes:

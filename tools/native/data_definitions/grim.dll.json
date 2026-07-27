@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "kind": "crimson-native-data-definitions",
+  "image": "grim.dll",
+  "reference_image": {
+    "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
+    "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"
+  },
+  "notes": "Initial high-fan-in Grim data tranche. Every extent, alignment, and initializer is explicit; no size is inferred from adjacency.",
+  "entries": [
+    {
+      "address": "0x1005976c",
+      "name": "grim_vertex_capacity",
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_create_geometry_buffers/scratch.cpp: extern unsigned int; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_int_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data reference bytes at VA 0x1005976c"
+    },
+    {
+      "address": "0x10059dbc",
+      "name": "grim_d3d_device",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: LPDIRECT3DDEVICE8; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data reference bytes at VA 0x10059dbc"
+    },
+    {
+      "address": "0x10059e2c",
+      "name": "grim_vertex_buffer",
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: LPDIRECT3DVERTEXBUFFER8; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data reference bytes at VA 0x10059e2c"
+    },
+    {
+      "address": "0x1005c898",
+      "name": "grim_device_ready",
+      "size": 1,
+      "size_source": "analysis/ghidra/maps/data_map.json: char",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005c898"
+    },
+    {
+      "address": "0x1005c8dc",
+      "name": "grim_vertex_count",
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_draw_quad/scratch.cpp: extern unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_unsigned_long_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005c8dc"
+    },
+    {
+      "address": "0x1005c8f8",
+      "name": "grim_error_text",
+      "size": 4,
+      "size_source": "tools/match/scratches/grim_state_init/scratch.cpp: extern char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_pointer_alignment_is_four",
+      "initializer_hex": "00000000",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005c8f8"
+    },
+    {
+      "address": "0x1005d3bd",
+      "name": "grim_render_disabled",
+      "size": 1,
+      "size_source": "tools/match/scratches/grim_draw_quad/scratch.cpp: extern unsigned char",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3bd"
+    },
+    {
+      "address": "0x1005d3f4",
+      "name": "grim_batch_active",
+      "size": 1,
+      "size_source": "tools/match/scratches/grim_draw_quad/scratch.cpp: extern unsigned char",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/grim.dll/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_hex": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/grim.dll: .data virtual zero-fill at VA 0x1005d3f4"
+    }
+  ]
+}

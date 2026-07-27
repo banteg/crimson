@@ -17,7 +17,8 @@ Each image directory contains:
 - `closure.json`: exact decorated COFF definitions and references, duplicate
   definitions, PE exports/imports, linker directives, and unresolved-symbol
   categories;
-- `data.json`: the curated data-map rows joined to reference-image sections.
+- `data.json`: the curated data-map rows joined to reference-image sections,
+  explicit data-definition evidence, and unresolved linker fan-in.
 
 Object files remain ignored compiler-cache outputs. The manifest records their
 repository-relative paths and hashes so a build can be reproduced and audited
@@ -72,6 +73,20 @@ emits even such a candidate. `summary.hard_duplicate_by_section` groups the
 still-fatal strong duplicate symbols by their COFF section; it does not
 silently coalesce repeated `.bss` ownership.
 
-The initial data report does not infer facts absent from `data_map.json`.
-Section membership comes from the IDA segment export; size, alignment, and
-initializer fields remain `null` until backed by explicit evidence.
+Data-definition evidence lives in
+`tools/native/data_definitions/<image>.json`. Each size, alignment, and
+initializer must carry its own source; initializer byte counts must match the
+explicit size, alignments must be powers of two, and definitions must join the
+data map by exact `(address, name)`. The loader rejects unsorted, duplicate,
+unmapped, or reference-image-mismatched entries. During an audit, initializer
+bytes are also compared with the memory-mapped reference PE, including its
+virtual zero-fill. The loader never derives an extent from the next symbol and
+never treats unknown bytes as zero.
+
+Section membership still comes from the IDA segment export. Fields remain
+`null` when no explicit definition exists. `data.json.priorities` ranks the
+top 50 mapped data entries by unresolved COFF reference fan-in and preserves
+each requested decorated symbol, so inconsistent declaration types remain
+visible. A `fully-specified` manifest entry is ready for a later definition
+object; it does not claim linker closure until a real object emits that exact
+symbol.

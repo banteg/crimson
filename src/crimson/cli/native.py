@@ -89,7 +89,11 @@ def cmd_native_audit(
         f"data entries={data_summary['entry_count']} "
         f"typed={data_summary['typed_entries']} "
         f"explicit_sizes={data_summary['explicit_size_entries']} "
-        f"explicit_initializers={data_summary['explicit_initializer_entries']}",
+        f"explicit_alignments={data_summary['explicit_alignment_entries']} "
+        f"explicit_initializers={data_summary['explicit_initializer_entries']} "
+        f"fully_specified={data_summary.get('fully_specified_entries', 0)} "
+        f"referenced={data_summary.get('referenced_entries', 0)} "
+        f"reference_fan_in={data_summary.get('game_data_reference_count', 0)}",
     )
     typer.echo(f"object_manifest={artifacts.object_manifest}")
     typer.echo(f"object_list={artifacts.object_list}")

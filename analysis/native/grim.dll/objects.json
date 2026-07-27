@@ -13,7 +13,7 @@
       {
         "path": "tools/native/abi/grim.dll/abi_assertions.cpp",
         "repository_relative": true,
-        "sha256": "bfc2a9f090e1ca5d654c54c8c425f78f71650ee9d57d6458071d7664b29027fe"
+        "sha256": "5bea47e64fc357a8f5f54abc42d2f9ae037e69cc48bc054785f47cc908542bbe"
       },
       {
         "path": "tools/native/abi/grim.dll/scratch.conf",
@@ -46,10 +46,10 @@
     "object": "tools/native/abi/grim.dll/build/msvc6.5/528f168a972345bf/abi_assertions.obj",
     "object_sha256": "f337d520b587647e4e3e496f5176a6f7e845ff341e36a3e22c34dc741acc86fd",
     "source": "tools/native/abi/grim.dll/abi_assertions.cpp",
-    "source_sha256": "bfc2a9f090e1ca5d654c54c8c425f78f71650ee9d57d6458071d7664b29027fe",
+    "source_sha256": "5bea47e64fc357a8f5f54abc42d2f9ae037e69cc48bc054785f47cc908542bbe",
     "status": "passed"
   },
-  "audit_digest": "9bac0bb2ca8af3ad9442396502c748f486af8115f5cf7776f9ed04e3b0e68d82",
+  "audit_digest": "2b7c1fd87eb910071e7b3066a3c99aa6761a361ade25d0174fa98ea7301a4839",
   "function_count": 137,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",

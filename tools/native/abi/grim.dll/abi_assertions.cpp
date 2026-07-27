@@ -3,6 +3,21 @@
 #define GRIM_ABI_ASSERT(name, condition) \
     typedef char grim_abi_assert_##name[(condition) ? 1 : -1]
 
+struct grim_char_alignment_probe_t {
+    char prefix;
+    char value;
+};
+
+struct grim_unsigned_int_alignment_probe_t {
+    char prefix;
+    unsigned int value;
+};
+
+struct grim_unsigned_long_alignment_probe_t {
+    char prefix;
+    unsigned long value;
+};
+
 GRIM_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 GRIM_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 GRIM_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
@@ -42,6 +57,15 @@ GRIM_ABI_ASSERT(
 GRIM_ABI_ASSERT(
     default_pointer_alignment_is_four,
     offsetof(grim2d_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_char_alignment_is_one,
+    offsetof(grim_char_alignment_probe_t, value) == 1);
+GRIM_ABI_ASSERT(
+    default_unsigned_int_alignment_is_four,
+    offsetof(grim_unsigned_int_alignment_probe_t, value) == 4);
+GRIM_ABI_ASSERT(
+    default_unsigned_long_alignment_is_four,
+    offsetof(grim_unsigned_long_alignment_probe_t, value) == 4);
 
 GRIM_ABI_ASSERT(factory_pointer_is_32_bit, sizeof(grim_get_interface_fn) == 4);
 GRIM_ABI_ASSERT(member_pointer_is_32_bit, sizeof(grim_apply_settings_fn) == 4);
