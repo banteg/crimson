@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "copied-slot-alias-lifetime",
+      "find": "    subtemplates[0].slots[4] = subtemplates[0].slots[3];\n    subtemplates[0].slots[5] = subtemplates[0].slots[2];\n    subtemplates[0].slots[4].position.y += 124.0f;\n    subtemplates[0].slots[5].position.y += 124.0f;",
+      "replacements": [
+        {
+          "name": "interleaved-copy-adjust",
+          "text": "    subtemplates[0].slots[4] = subtemplates[0].slots[3];\n    subtemplates[0].slots[4].position.y += 124.0f;\n    subtemplates[0].slots[5] = subtemplates[0].slots[2];\n    subtemplates[0].slots[5].position.y += 124.0f;"
+        },
+        {
+          "name": "assignment-result-lvalue",
+          "text": "    (subtemplates[0].slots[4] = subtemplates[0].slots[3]).position.y += 124.0f;\n    (subtemplates[0].slots[5] = subtemplates[0].slots[2]).position.y += 124.0f;"
+        },
+        {
+          "name": "destination-references-before-copy",
+          "text": "    ui_menu_vertex_t &slot4 = subtemplates[0].slots[4];\n    ui_menu_vertex_t &slot5 = subtemplates[0].slots[5];\n    slot4 = subtemplates[0].slots[3];\n    slot5 = subtemplates[0].slots[2];\n    slot4.position.y += 124.0f;\n    slot5.position.y += 124.0f;"
+        },
+        {
+          "name": "destination-references-after-copy",
+          "text": "    subtemplates[0].slots[4] = subtemplates[0].slots[3];\n    subtemplates[0].slots[5] = subtemplates[0].slots[2];\n    ui_menu_vertex_t &slot4 = subtemplates[0].slots[4];\n    ui_menu_vertex_t &slot5 = subtemplates[0].slots[5];\n    slot4.position.y += 124.0f;\n    slot5.position.y += 124.0f;"
+        },
+        {
+          "name": "destination-pointers",
+          "text": "    ui_menu_vertex_t *slot4 = &subtemplates[0].slots[4];\n    ui_menu_vertex_t *slot5 = &subtemplates[0].slots[5];\n    *slot4 = subtemplates[0].slots[3];\n    *slot5 = subtemplates[0].slots[2];\n    slot4->position.y += 124.0f;\n    slot5->position.y += 124.0f;"
+        },
+        {
+          "name": "base-pointer-alias",
+          "text": "    ui_menu_vertex_t *slots = subtemplates[0].slots;\n    slots[4] = slots[3];\n    slots[5] = slots[2];\n    slots[4].position.y += 124.0f;\n    slots[5].position.y += 124.0f;"
+        }
+      ]
+    }
+  ]
+}

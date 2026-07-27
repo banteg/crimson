@@ -102,6 +102,41 @@ decomp.me's `msvcwin9x` release has usable `msvc6.5`, `msvc6.5pp`, and
 `msvc7.0` archives. The default dashboard profile is `msvc6.5 /O2 /GB`;
 alternate archives remain available for controlled shape experiments.
 
+### Grim build-8047 experiment gate
+
+The image-wide build-8047 hypothesis cannot yet be tested honestly. The
+published decomp.me VC6 inventory and every compiler bundle available in the
+local Crimson/Snail Mail workspaces were fingerprinted from the version strings
+embedded in `C1XX.DLL` and `C2.DLL`:
+
+| profile | C++ frontend | optimizer |
+| --- | ---: | ---: |
+| `msvc6.0` | 8168 | 8168 |
+| `msvc6.3` | 8472 | 8447 |
+| `msvc6.4` | 8867 | 8799 |
+| `msvc6.5` | 8964 | 8966 |
+| `msvc6.5pp` | 8964 | 9044 |
+| `msvc6.6` | 9782 | 9782 |
+
+None contains an 8047 frontend or optimizer. The two otherwise-uninstalled
+published archives checked here were `msvc6.3.tar.gz` at SHA-256
+`84f73e718b3671bfd5de3b7764622b07633b572ee826ca3b77602d224c128608`
+and `msvc6.4.tar.gz` at SHA-256
+`6d4ef930390ca7481ae5b63ea3bf00d62e0993cd95f1d6f42ba06bb30f993c57`.
+Do not substitute 8168 or another nearby build and label the result 8047.
+
+A corpus-wide Grim comparison between the available 8966 and 9782 optimizers
+is still useful as a control. Across all 137 Grim scratches it produced
+`0` wins, `0` losses, and `137` ties under the canonical state/ratio/reference
+rank. Both profiles report 130 matches, seven WIPs, 20,104.442 fuzzy-weighted
+bytes, and total reference debt 13, so there is no 9782-preference island.
+
+To unblock the proposed two-build experiment, provide a provenance-hashed
+bundle whose compiler components actually identify build 8047. Then compare
+the complete Grim corpus under 9782 and 8047 and accept compiler provenance
+only for address-contiguous preference runs; scattered wins remain
+source-shape evidence.
+
 Run the compiler through `wibo`. Put `wibo` on `PATH`, set
 `WIBO=/path/to/wibo`, or place it at `tools/match/bin/wibo`. On macOS/Apple
 Silicon, the `wibo-macos` x86_64 release runs under Rosetta 2. Download the

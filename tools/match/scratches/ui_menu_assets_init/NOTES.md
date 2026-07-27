@@ -29,3 +29,38 @@ above, not wrong globals or record offsets, so recovery is classified
 `semantic-complete` with a `compiler` residual. MSVC 6.5 `/GX` and `/Ob1`
 variants are byte-identical; MSVC 6.5pp, `/Oy-`, `/G6`, `/O1`, and MSVC 7.0
 profiles all regress the instruction match without resolving the pair.
+
+## Bounded residual audit (2026-07-27)
+
+The two mismatches are now pinned to native instructions 67 and 70, at
+`0x00419f1c` and `0x00419f2e`. Native loads copied destinations
+`0x0048fdec` and `0x0048fe08`; the candidate loads the equal source fields at
+`0x0048fdd0` and `0x0048fdb4`. The surrounding instructions and all 64 other
+masked references agree.
+
+`alias_lifetime_mutations.json` tests six natural spellings around only the two
+copies and adjustments:
+
+- destination references created before and after the copy, destination
+  pointers, and a base-slot pointer all compile identically to the baseline;
+- interleaving each copy with its adjustment and mutating the assignment-result
+  lvalue both regress to 97.27%, move the first mismatch to instruction 63, and
+  increase reference mismatches from two to five.
+
+The complete sweep is recorded in `experiments.jsonl`; it has four neutral and
+two degrading variants, with no improving winner. Reproduce it with:
+
+```sh
+uv run crimson match mutate tools/match/scratches/ui_menu_assets_init \
+  --spec tools/match/scratches/ui_menu_assets_init/alias_lifetime_mutations.json \
+  --max-variants 6 --jobs 6
+```
+
+A five-profile matrix closes the remaining installed compiler gap. VC6 builds
+8168 (`msvc6.0`), 8966 (`msvc6.5`), and 9782 (`msvc6.6`) all produce the same
+110-instruction, `refs=64/0/2` result. The Processor Pack and VC7 regress.
+In particular, build 9782 is the exact compiler family supported by the EXE's
+Rich records, so the residual is not explained by having tested only the
+default 8966 backend. Further work needs a different recovered type/TU
+constraint or the missing historical source context, not another generic flag
+or alias sweep.
