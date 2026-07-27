@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "acceleration-zero-lifetime",
+      "find": "    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n",
+      "replacements": [
+        {
+          "name": "declared-counter",
+          "text": "    int acceleration;\n    for (acceleration = 0; acceleration < 1500; acceleration += 15) {\n"
+        },
+        {
+          "name": "initialized-before-loop",
+          "text": "    int acceleration = 0;\n    for (; acceleration < 1500; acceleration += 15) {\n"
+        }
+      ]
+    },
+    {
+      "name": "trigger-step-publication",
+      "find": "        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n",
+      "replacements": [
+        {
+          "name": "constant-before-add-subtract-after",
+          "text": "        int trigger_step = 2000;\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_step -= acceleration;\n        trigger_time_ms += trigger_step;\n"
+        },
+        {
+          "name": "assigned-before-add-subtract-after",
+          "text": "        int trigger_step;\n        trigger_step = 2000;\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_step -= acceleration;\n        trigger_time_ms += trigger_step;\n"
+        },
+        {
+          "name": "constant-before-add-expression-after",
+          "text": "        int trigger_step = 2000;\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += trigger_step - acceleration;\n"
+        },
+        {
+          "name": "constant-after-add",
+          "text": "        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        int trigger_step = 2000;\n        trigger_step -= acceleration;\n        trigger_time_ms += trigger_step;\n"
+        }
+      ]
+    }
+  ]
+}

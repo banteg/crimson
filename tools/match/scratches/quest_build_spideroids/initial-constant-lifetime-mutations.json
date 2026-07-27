@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "initial-splitter-constant-lifetime",
+      "find": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n",
+      "replacements": [
+        {
+          "name": "declare-after-first-position",
+          "text": "    spawns[0].pos.set(1088.0f, 512.0f);\n    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        },
+        {
+          "name": "literal-first-entry",
+          "text": "    spawns[0].pos.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(SPAWN_ID_SPIDER_SP2_SPLITTER_01, 1000);\n    spawns[0].count = 1;\n    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n"
+        },
+        {
+          "name": "split-position-around-declaration",
+          "text": "    spawns[0].pos.x = 1088.0f;\n    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.y = 512.0f;\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        },
+        {
+          "name": "direct-position-after-declaration",
+          "text": "    int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.x = 1088.0f;\n    spawns[0].pos.y = 512.0f;\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        },
+        {
+          "name": "const-template-local",
+          "text": "    const int splitter_template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].pos.set(1088.0f, 512.0f);\n    spawns[0].set_spawn(splitter_template_id, 1000);\n    spawns[0].count = 1;\n"
+        }
+      ]
+    }
+  ]
+}

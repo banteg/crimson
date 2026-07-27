@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "filter-current-and-config-lifetime",
+      "find": "        grim_config_value_t *config = &grim_config_values[id];\n        unsigned int current = config->words[0];\n",
+      "replacements": [
+        {
+          "name": "current-before-config",
+          "text": "        unsigned int current = grim_config_values[id].words[0];\n        grim_config_value_t *config = &grim_config_values[id];\n"
+        },
+        {
+          "name": "declared-config-assigned-after-current",
+          "text": "        grim_config_value_t *config;\n        unsigned int current = grim_config_values[id].words[0];\n        config = &grim_config_values[id];\n"
+        },
+        {
+          "name": "named-index-current-before-config",
+          "text": "        unsigned int config_index = id;\n        unsigned int current = grim_config_values[config_index].words[0];\n        grim_config_value_t *config = &grim_config_values[config_index];\n"
+        },
+        {
+          "name": "config-reference",
+          "text": "        grim_config_value_t &config_ref = grim_config_values[id];\n        unsigned int current = config_ref.words[0];\n        grim_config_value_t *config = &config_ref;\n"
+        }
+      ]
+    }
+  ]
+}

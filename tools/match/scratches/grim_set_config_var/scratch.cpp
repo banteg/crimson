@@ -206,8 +206,8 @@ void IGrim2D_cpp::grim_set_config_var(
                     0, D3DTSS_MAXANISOTROPY, filter);
             }
         }
+        unsigned int current = grim_config_values[id].words[0];
         grim_config_value_t *config = &grim_config_values[id];
-        unsigned int current = config->words[0];
         if (current == 3) {
             grim_d3d_device->SetTextureStageState(
                 0, D3DTSS_MAXANISOTROPY, 1);
@@ -233,5 +233,9 @@ void IGrim2D_cpp::grim_set_config_var(
         break;
     }
 
-    grim_config_values[id] = value;
+    grim_config_value_t *config = &grim_config_values[id];
+    config->words[0] = value.words[0];
+    config->words[1] = value.words[1];
+    config->words[2] = value.words[2];
+    config->words[3] = value.words[3];
 }

@@ -41,3 +41,9 @@ The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `final-quad-coordinate-mutations.json` evaluated three named, staged, and
 component-wise coordinate lifetimes for the closing draw. All three compile
 byte-identically, so no cosmetic source rewrite was retained.
+
+`final-quad-receiver-lifetime-mutations.json` extends that audit with five
+local pointer/reference receivers, named sizes, and coordinate declaration
+orders. Every alternative is again byte-identical at 177 instructions,
+98.87%, and `57/0/0` references. The final size-push/vtable-load swap is an
+optimizer scheduling boundary rather than a missing receiver lifetime.

@@ -15,8 +15,8 @@ C++ method ABI and uses the normal Direct3D 8 interface; it contains no
 inline assembly, padding, volatile state, forced registers, dummy
 dependencies, or fake references.
 
-Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` produces an `88.05%`
-candidate with `427/443` normalized instructions and references `67/1/1`.
+Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` now produces a `90.12%`
+candidate with `438/443` normalized instructions and references `69/1/1`.
 The audit identifies the only unresolved/mismatched pair as the compiler's
 private sparse-switch lookup and jump tables; all externally meaningful
 references resolve. The residual is block placement and shared-tail shaping,
@@ -26,3 +26,25 @@ compiler residual.
 The available `/GB`, `/G5`, `/G6`, MSVC 6.5, and MSVC 6.5 processor-pack
 profiles were checked. `/GB` and `/G5` tie for best; `/G6` and the
 processor-pack compiler regress.
+
+## Recorded router-lifetime wave
+
+Live native disassembly shows full scalar record copies in the shared router
+tails. `common-copy-tail-mutations.json` evaluated 19 single and pair
+spellings. A named config destination followed by four scalar word copies adds
+ten candidate instructions and 23.00 fuzzy-weighted bytes, raising the score
+from 88.05% to 89.55% without changing the reference audit. The simpler tied
+form was retained; the extra source-only value copy was discarded.
+
+The filter route independently exposes native `load current; materialize
+config pointer; compare current`. `filter-current-lifetime-mutations.json`
+found three byte-identical ways to express that order. The simplest retained
+form loads `current` directly before naming the destination pointer. It adds
+one instruction, 8.89 fuzzy-weighted bytes, and two resolved references,
+bringing the composed result to **90.12%** with a 151.48-byte fuzzy gap.
+
+`resource-path-lifetime-mutations.json` tested four direct-slot and cached
+`strdup` call forms against the native import-cache allocation. Three are
+byte-neutral and the named-config form regresses, so none was retained. A
+five-profile diagnostic matrix likewise keeps stock VC6 `/GB` tied for best;
+no compiler override is justified.

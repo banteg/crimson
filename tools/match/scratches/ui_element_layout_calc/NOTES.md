@@ -24,20 +24,27 @@ body or its six resolved references. Snapshotting `direction_flag` after the
 trailing-bound aggregate copy also recovers the native early byte load and
 raises the score from 95.35% to 96.51%.
 
-The remaining three changed instructions are independent scheduling choices:
-the native starts the width subtraction before committing the second
-`hover_min` component and loads `direction_flag` between the two aggregate
-`hover_max` stores. Moving the width calculation or splitting the aggregate
-copy materially worsens the candidate, so the stronger typed source is
-retained without volatile state or artificial dependencies.
+Live disassembly then showed that native retains the complete leading position
+before beginning the width subtraction. The recorded
+`hitbox-scheduling-mutations.json` sweep tested both hit-box aggregates and
+found one improving ordinary lifetime: naming `position + vertex_0`, computing
+the width, and only then publishing the aggregate. The retained form raises
+the score to **97.67%** and cuts the fuzzy gap from 10.05 to 6.70 bytes while
+keeping 86/86 instructions and `6/0/0` references.
+
+`hitbox-store-order-mutations.json` subsequently evaluated all 19 single and
+pair component-store refinements. Every one regressed sharply, generally
+disturbing the vector helper lowering from the start of the function. The two
+remaining differences are therefore left as honest store/load scheduling
+choices without volatile state or artificial dependencies.
 
 ## Recovery classification audit
 
-A fresh focused `--regions` run is unchanged before and after classification:
-**96.51%**, 86/86 instructions, prefix 34, and `6/0/0` references. Its two
-regions contain only the three documented store/load scheduling differences;
-all bounds translations, inset constants, skip cases, direction handling,
-vertex count, and U-coordinate swaps agree with the native routine.
+A fresh focused `--regions` run after the retained mutation reports **97.67%**,
+86/86 instructions, prefix 32, and `6/0/0` references. Its remaining regions
+contain only the documented aggregate-store and direction-load scheduling
+differences; all bounds translations, inset constants, skip cases, direction
+handling, vertex count, and U-coordinate swaps agree with the native routine.
 
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:

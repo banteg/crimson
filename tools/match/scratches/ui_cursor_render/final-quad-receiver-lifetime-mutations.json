@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-quad-receiver-lifetime",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, ui_mouse_y - 2.0f, 32.0f, 32.0f);\n",
+      "replacements": [
+        {
+          "name": "y-then-local-receiver",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    IGrim2D_cpp *cursor_grim = grim_interface_ptr;\n    cursor_grim->grim_draw_quad(\n        ui_mouse_x - 2.0f, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "coordinates-then-local-receiver",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    float cursor_x = ui_mouse_x - 2.0f;\n    IGrim2D_cpp *cursor_grim = grim_interface_ptr;\n    cursor_grim->grim_draw_quad(\n        cursor_x, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "local-receiver-then-coordinates",
+          "text": "    IGrim2D_cpp *cursor_grim = grim_interface_ptr;\n    float cursor_y = ui_mouse_y - 2.0f;\n    float cursor_x = ui_mouse_x - 2.0f;\n    cursor_grim->grim_draw_quad(\n        cursor_x, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "reference-receiver",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    IGrim2D_cpp &cursor_grim = *grim_interface_ptr;\n    cursor_grim.grim_draw_quad(\n        ui_mouse_x - 2.0f, cursor_y, 32.0f, 32.0f);\n"
+        },
+        {
+          "name": "named-size-and-local-receiver",
+          "text": "    float cursor_y = ui_mouse_y - 2.0f;\n    float cursor_x = ui_mouse_x - 2.0f;\n    float cursor_size = 32.0f;\n    IGrim2D_cpp *cursor_grim = grim_interface_ptr;\n    cursor_grim->grim_draw_quad(\n        cursor_x, cursor_y, cursor_size, cursor_size);\n"
+        }
+      ]
+    }
+  ]
+}

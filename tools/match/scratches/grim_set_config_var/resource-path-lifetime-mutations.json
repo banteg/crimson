@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "resource-path-copy-lifetimes",
+      "find": "    case 16: {\n        char *path = (char *)value.words[3];\n        if (strcmp(path, &grim_empty_string) == 0) {\n            char *stored =\n                (char *)grim_config_values[id].words[3];\n            if (stored != 0) {\n                delete stored;\n            }\n            grim_config_values[id].words[3] =\n                (unsigned int)strdup(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        char *stored = (char *)grim_config_values[id].words[3];\n        if (stored != 0) {\n            delete stored;\n        }\n        grim_config_values[id].words[3] = (unsigned int)strdup(path);\n        *(unsigned char *)grim_config_values[id].words =\n            grim_lookup_blob_loaded;\n        return;\n    }\n",
+      "replacements": [
+        {
+          "name": "cached-duplicate-call",
+          "text": "    case 16: {\n        char *path = (char *)value.words[3];\n        char *(__cdecl *duplicate)(const char *) = strdup;\n        if (strcmp(path, &grim_empty_string) == 0) {\n            char *stored =\n                (char *)grim_config_values[id].words[3];\n            if (stored != 0) {\n                delete stored;\n            }\n            grim_config_values[id].words[3] =\n                (unsigned int)duplicate(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        char *stored = (char *)grim_config_values[id].words[3];\n        if (stored != 0) {\n            delete stored;\n        }\n        grim_config_values[id].words[3] = (unsigned int)duplicate(path);\n        *(unsigned char *)grim_config_values[id].words =\n            grim_lookup_blob_loaded;\n        return;\n    }\n"
+        },
+        {
+          "name": "direct-config-slots",
+          "text": "    case 16: {\n        char *path = (char *)value.words[3];\n        if (strcmp(path, &grim_empty_string) == 0) {\n            if (grim_config_values[id].words[3] != 0) {\n                delete (char *)grim_config_values[id].words[3];\n            }\n            grim_config_values[id].words[3] =\n                (unsigned int)strdup(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        if (grim_config_values[id].words[3] != 0) {\n            delete (char *)grim_config_values[id].words[3];\n        }\n        grim_config_values[id].words[3] = (unsigned int)strdup(path);\n        *(unsigned char *)grim_config_values[id].words =\n            grim_lookup_blob_loaded;\n        return;\n    }\n"
+        },
+        {
+          "name": "cached-call-direct-slots",
+          "text": "    case 16: {\n        char *path = (char *)value.words[3];\n        char *(__cdecl *duplicate)(const char *) = strdup;\n        if (strcmp(path, &grim_empty_string) == 0) {\n            if (grim_config_values[id].words[3] != 0) {\n                delete (char *)grim_config_values[id].words[3];\n            }\n            grim_config_values[id].words[3] =\n                (unsigned int)duplicate(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        if (grim_config_values[id].words[3] != 0) {\n            delete (char *)grim_config_values[id].words[3];\n        }\n        grim_config_values[id].words[3] = (unsigned int)duplicate(path);\n        *(unsigned char *)grim_config_values[id].words =\n            grim_lookup_blob_loaded;\n        return;\n    }\n"
+        },
+        {
+          "name": "cached-call-named-config",
+          "text": "    case 16: {\n        char *path = (char *)value.words[3];\n        char *(__cdecl *duplicate)(const char *) = strdup;\n        grim_config_value_t *config = &grim_config_values[id];\n        if (strcmp(path, &grim_empty_string) == 0) {\n            char *stored = (char *)config->words[3];\n            if (stored != 0) {\n                delete stored;\n            }\n            config->words[3] =\n                (unsigned int)duplicate(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        char *stored = (char *)config->words[3];\n        if (stored != 0) {\n            delete stored;\n        }\n        config->words[3] = (unsigned int)duplicate(path);\n        *(unsigned char *)config->words = grim_lookup_blob_loaded;\n        return;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

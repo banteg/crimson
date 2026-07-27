@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hover-min-named-store-order",
+      "find": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n",
+      "replacements": [
+        {
+          "name": "x-width-y",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min.x = min_position.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position.y;\n"
+        },
+        {
+          "name": "x-y-width",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min.x = min_position.x;\n    hover_min.y = min_position.y;\n    float width = vertex_2.x - vertex_0.x;\n"
+        },
+        {
+          "name": "width-then-components",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.x = min_position.x;\n    hover_min.y = min_position.y;\n"
+        }
+      ]
+    },
+    {
+      "name": "hover-max-named-store-order",
+      "find": "    hover_max = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n",
+      "replacements": [
+        {
+          "name": "named-x-flag-y",
+          "text": "    ui_layout_vec2_t max_position = position + vertex_2;\n    hover_max.x = max_position.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = max_position.y;\n"
+        },
+        {
+          "name": "named-flag-x-y",
+          "text": "    ui_layout_vec2_t max_position = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.x = max_position.x;\n    hover_max.y = max_position.y;\n"
+        },
+        {
+          "name": "named-x-y-flag",
+          "text": "    ui_layout_vec2_t max_position = position + vertex_2;\n    hover_max.x = max_position.x;\n    hover_max.y = max_position.y;\n    unsigned char direction_flag = element->direction_flag;\n"
+        },
+        {
+          "name": "staged-y-x-flag-store",
+          "text": "    float hover_max_y = position.y + vertex_2.y;\n    hover_max.x = position.x + vertex_2.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = hover_max_y;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inline-vector-add-return-shape",
+      "find": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        return controls_vec2_t(x + other.x, other.y + y);\n    }\n",
+      "replacements": [
+        {
+          "name": "natural-component-order",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        return controls_vec2_t(x + other.x, y + other.y);\n    }\n"
+        },
+        {
+          "name": "named-result-constructor",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        controls_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }\n"
+        },
+        {
+          "name": "named-result-natural-order",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        controls_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }\n"
+        },
+        {
+          "name": "field-result-reversed-y",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        controls_vec2_t result;\n        result.x = x + other.x;\n        result.y = other.y + y;\n        return result;\n    }\n"
+        },
+        {
+          "name": "field-result-natural-order",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        controls_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }\n"
+        },
+        {
+          "name": "named-components",
+          "text": "    controls_vec2_t operator+(const controls_vec2_t &other) const\n    {\n        float result_x = x + other.x;\n        float result_y = y + other.y;\n        return controls_vec2_t(result_x, result_y);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

@@ -143,3 +143,18 @@ UI/x87 lowering around the four enormous equivalent inlined key-label bodies.
 All observed widgets, labels, scheme branches, runtime binding copies, row
 updates, capture rules, and dropdown writes are present; no fake dependency,
 padding, volatile coercion, or inline assembly is used.
+
+## Opening x87 lifetime sweeps
+
+Live disassembly evaluates the left-panel X/Y sums across publication of the
+four player labels. `vector-add-return-mutations.json` tested six constructor,
+named-result, field-result, and component-order forms. Natural component order
+and named scalar components are byte-identical; materializing a result object
+regresses by 283 to 303 fuzzy-weighted bytes.
+
+`left-panel-lifetime-mutations.json` then evaluated six complete geometry and
+player-item declaration orders. Four compile byte-identically. Scalarizing the
+offset extends the exact prefix by eight instructions but loses 11.81 weighted
+bytes and one reference overall; fully scalarizing the anchor loses more.
+Neither sweep improves the canonical 76.72% result, so the recorded negatives
+bound this opening mismatch without source churn.

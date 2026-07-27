@@ -51,3 +51,15 @@ The clean WIP remains preferable.
 
 Recovery is classified `semantic-complete` with an `analysis` residual for the
 unknown source shape.
+
+## Recorded loop-shape boundary
+
+`unlock-loop-shape-mutations.json` evaluates six complete pointer-headed,
+count-latched, explicit-CFG, and conjunctive loop forms under the canonical
+stock VC6 toolchain. All six compile to the same 52 instructions, 96.15%
+score, 38-instruction prefix, and `18/0/0` references. This records the
+optimizer fixed point instead of carrying equivalent cosmetic rewrites.
+
+The processor-pack compiler can make this function exact, but image-wide Rich
+header evidence rejects that compiler as the canonical executable toolchain.
+That result remains a source-shape search signal, not a scratch override.

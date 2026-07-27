@@ -25,3 +25,8 @@ without adding an artificial ordering constraint.
 Moving the shared template-id declaration to the first setter boundary produces
 the identical candidate: VC6 still hoists the constant load ahead of the first
 x-coordinate store. The residual is therefore not explained by local lifetime.
+
+`initial-constant-lifetime-mutations.json` records that boundary explicitly.
+All five declaration, literal, scalar-position, and const-local alternatives
+compile byte-identically at 98.39%, 62/62 instructions. This complete negative
+sweep leaves the helper-based source as the smallest honest representation.

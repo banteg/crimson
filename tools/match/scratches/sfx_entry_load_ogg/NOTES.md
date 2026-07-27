@@ -28,3 +28,9 @@ and explicit base/offset lifetimes. All four compile-valid alternatives were
 byte-neutral; the dependent partial combinations rejected by VC6 remain
 recorded as compile errors rather than being mistaken for tested semantic
 alternatives. No source change was retained.
+
+`decode-destination-association-mutations.json` closes the remaining arithmetic
+menu with four explicit associations, including the native-looking
+`pcm_data - remaining + pcm_bytes`. VC6 canonicalizes all four byte-for-byte
+to the same 99-instruction candidate, confirming that the final register-load
+swap is not controlled by expression association.

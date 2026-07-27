@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "hover-min-width-schedule",
+      "find": "    hover_min = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.x += width * 0.54f;\n",
+      "replacements": [
+        {
+          "name": "width-before-aggregate",
+          "text": "    float width = vertex_2.x - vertex_0.x;\n    hover_min = position + vertex_0;\n    hover_min.x += width * 0.54f;\n"
+        },
+        {
+          "name": "scalar-x-width-y",
+          "text": "    hover_min.x = position.x + vertex_0.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = position.y + vertex_0.y;\n    hover_min.x += width * 0.54f;\n"
+        },
+        {
+          "name": "staged-y-x-width-store",
+          "text": "    float hover_min_y = position.y + vertex_0.y;\n    hover_min.x = position.x + vertex_0.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = hover_min_y;\n    hover_min.x += width * 0.54f;\n"
+        },
+        {
+          "name": "named-position-then-width",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n"
+        }
+      ]
+    },
+    {
+      "name": "hover-max-direction-schedule",
+      "find": "    hover_max = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n",
+      "replacements": [
+        {
+          "name": "direction-before-aggregate",
+          "text": "    unsigned char direction_flag = element->direction_flag;\n    hover_max = position + vertex_2;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "scalar-x-direction-y",
+          "text": "    hover_max.x = position.x + vertex_2.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = position.y + vertex_2.y;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "staged-y-x-direction-store",
+          "text": "    float hover_max_y = position.y + vertex_2.y;\n    hover_max.x = position.x + vertex_2.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = hover_max_y;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "named-position-with-direction",
+          "text": "    ui_layout_vec2_t max_position = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max = max_position;\n    hover_max.x -= width * 0.05f;\n"
+        }
+      ]
+    }
+  ]
+}

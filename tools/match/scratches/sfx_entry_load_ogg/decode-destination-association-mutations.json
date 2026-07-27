@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-destination-subtraction-association",
+      "find": "            (char *)(entry->pcm_bytes - remaining +\n                (unsigned int)entry->pcm_data),\n",
+      "replacements": [
+        {
+          "name": "data-minus-remaining-plus-bytes",
+          "text": "            (char *)((unsigned int)entry->pcm_data - remaining\n                + entry->pcm_bytes),\n"
+        },
+        {
+          "name": "bytes-plus-data-minus-remaining",
+          "text": "            (char *)(entry->pcm_bytes\n                + ((unsigned int)entry->pcm_data - remaining)),\n"
+        },
+        {
+          "name": "grouped-data-subtraction",
+          "text": "            (char *)(((unsigned int)entry->pcm_data - remaining)\n                + entry->pcm_bytes),\n"
+        },
+        {
+          "name": "remaining-subtracted-from-sum",
+          "text": "            (char *)(((unsigned int)entry->pcm_data\n                + entry->pcm_bytes) - remaining),\n"
+        }
+      ]
+    }
+  ]
+}

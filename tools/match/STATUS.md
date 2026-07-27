@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **293924/341963** code bytes (**86.0%**).
+Fuzzy-weighted alignment is **293959/341963** code bytes (**86.0%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274005/320805 | 85.4% | 671/671 | 320805/320805 | 100.0% | 557/671 |
-| grim.dll | 130/137 | 14153/21158 | 66.9% | 19918/21158 | 94.1% | 137/137 | 21159/21158 | 100.0% | 130/137 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274009/320805 | 85.4% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| grim.dll | 130/137 | 14153/21158 | 66.9% | 19950/21158 | 94.3% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **274005/320805** fuzzy-weighted bytes (**85.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **274009/320805** fuzzy-weighted bytes (**85.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -748,7 +748,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | play_game_rush_button_destroy | 0x0044fa80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-rush-button-empty-destructor |
 | match | play_game_quests_button_destroy | 0x0044fa90 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | play-game-quests-button-empty-destructor |
 | match | ui_element_init_defaults | 0x0044faa0 | 173 | 173/173 | 0 | 40/40 | 100.00% | 40/40 | 3/0/0 |  | ui-element-default-state |
-| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 278/288 | 10 | 86/86 | 96.51% | 34/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
+| wip | ui_element_layout_calc | 0x0044fb50 | 288 | 281/288 | 7 | 86/86 | 97.67% | 32/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
 | wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6136/7237 | 1101 | 1404/1422 | 84.78% | 10/1422 | 439/0/22 |  | menu-element-graph-layout-and-responsive-transforms |
@@ -761,7 +761,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 ## grim.dll
 
-**130/137** functions, **14153/21158** bytes (**66.9%**), **19918/21158** fuzzy-weighted bytes (**94.1%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
+**130/137** functions, **14153/21158** bytes (**66.9%**), **19950/21158** fuzzy-weighted bytes (**94.3%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -816,7 +816,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | grim_shutdown | 0x10005ff0 | 38 | 38/38 | 0 | 8/8 | 100.00% | 8/8 | 7/0/0 |  | grim2d-system-shutdown |
 | match | grim_apply_settings | 0x10006020 | 8 | 8/8 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim2d-run-loop-wrapper |
 | match | grim_set_texture_stage_ops | 0x10006030 | 1324 | 1324/1324 | 0 | 468/468 | 100.00% | 468/468 | 65/0/0 |  | grim-texture-stage-operation-modes |
-| wip | grim_set_config_var | 0x10006580 | 1534 | 1351/1534 | 183 | 427/443 | 88.05% | 4/443 | 67/1/1 |  | grim2d-config-variable-router |
+| wip | grim_set_config_var | 0x10006580 | 1534 | 1383/1534 | 151 | 438/443 | 90.12% | 4/443 | 69/1/1 |  | grim2d-config-variable-router |
 | match | grim_get_config_var | 0x10006c30 | 102 | 102/102 | 0 | 32/32 | 100.00% | 32/32 | 5/0/0 |  | grim2d-get-config-var |
 | match | grim_get_error_text | 0x10006ca0 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | grim_clear_color | 0x10006cb0 | 150 | 150/150 | 0 | 45/45 | 100.00% | 45/45 | 11/0/0 |  | grim2d-device-clear |
