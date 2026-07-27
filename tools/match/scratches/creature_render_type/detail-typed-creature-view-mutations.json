@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "typed-creature-view-definition",
+      "find": "};\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;",
+      "replacements": [
+        {
+          "name": "typed-position-and-color",
+          "text": "};\n\nstruct creature_render_creature_t {\n    unsigned char active;\n    unsigned char _pad_to_lifecycle[0x0f];\n    float lifecycle_stage;\n    creature_render_vec2_t position;\n    float velocity_x;\n    float velocity_y;\n    float health;\n    float max_health;\n    float heading;\n    float target_heading;\n    float size;\n    float hit_flash_timer;\n    creature_render_color_t color;\n    unsigned char _pad_to_type[0x20];\n    int type_id;\n    unsigned char _pad_to_link[8];\n    int link_index;\n    unsigned char _pad_to_flags[0x10];\n    int flags;\n    int ai_mode;\n    float anim_phase;\n};\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;"
+        },
+        {
+          "name": "typed-color-only",
+          "text": "};\n\nstruct creature_render_creature_t {\n    unsigned char active;\n    unsigned char _pad_to_lifecycle[0x0f];\n    float lifecycle_stage;\n    vec2f_t position;\n    float velocity_x;\n    float velocity_y;\n    float health;\n    float max_health;\n    float heading;\n    float target_heading;\n    float size;\n    float hit_flash_timer;\n    creature_render_color_t color;\n    unsigned char _pad_to_type[0x20];\n    int type_id;\n    unsigned char _pad_to_link[8];\n    int link_index;\n    unsigned char _pad_to_flags[0x10];\n    int flags;\n    int ai_mode;\n    float anim_phase;\n};\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;"
+        },
+        {
+          "name": "typed-position-only",
+          "text": "};\n\nstruct creature_render_creature_t {\n    unsigned char active;\n    unsigned char _pad_to_lifecycle[0x0f];\n    float lifecycle_stage;\n    creature_render_vec2_t position;\n    float velocity_x;\n    float velocity_y;\n    float health;\n    float max_health;\n    float heading;\n    float target_heading;\n    float size;\n    float hit_flash_timer;\n    effect_color_t color;\n    unsigned char _pad_to_type[0x20];\n    int type_id;\n    unsigned char _pad_to_link[8];\n    int link_index;\n    unsigned char _pad_to_flags[0x10];\n    int flags;\n    int ai_mode;\n    float anim_phase;\n};\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;"
+        }
+      ]
+    },
+    {
+      "name": "detail-use-typed-creature-view",
+      "find": "            creature_t *creature = &creature_pool[creature_index];",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "typed-view-pointer",
+          "text": "            creature_render_creature_t *creature =\n                (creature_render_creature_t *)&creature_pool[creature_index];"
+        }
+      ]
+    }
+  ]
+}

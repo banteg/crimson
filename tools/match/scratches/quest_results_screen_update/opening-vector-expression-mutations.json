@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-vector-type-shape",
+      "find": "struct quest_results_vec2_t {\n    float x;\n    float y;\n};",
+      "replacements": [
+        {
+          "name": "native-order-operators",
+          "text": "struct quest_results_vec2_t {\n    float x;\n    float y;\n\n    quest_results_vec2_t() {}\n\n    quest_results_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(x + other.x, other.y + y);\n    }\n};"
+        },
+        {
+          "name": "symmetric-order-operators",
+          "text": "struct quest_results_vec2_t {\n    float x;\n    float y;\n\n    quest_results_vec2_t() {}\n\n    quest_results_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(x + other.x, y + other.y);\n    }\n};"
+        },
+        {
+          "name": "other-first-operators",
+          "text": "struct quest_results_vec2_t {\n    float x;\n    float y;\n\n    quest_results_vec2_t() {}\n\n    quest_results_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(other.x + x, other.y + y);\n    }\n};"
+        },
+        {
+          "name": "assigned-constructor-native-order",
+          "text": "struct quest_results_vec2_t {\n    float x;\n    float y;\n\n    quest_results_vec2_t() {}\n\n    quest_results_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    quest_results_vec2_t operator+(\n        const quest_results_vec2_t &other) const\n    {\n        return quest_results_vec2_t(x + other.x, other.y + y);\n    }\n};"
+        }
+      ]
+    },
+    {
+      "name": "opening-vector-expression",
+      "find": "    quest_results_vec2_t panel_xy;\n    panel_xy.x =\n        ui_element_slot_35.pos.x\n        + ui_element_slot_35.vertices[0].position.x;\n    panel_xy.y =\n        ui_element_slot_35.vertices[0].position.y\n        + ui_element_slot_35.pos.y;\n    panel_xy.x += 180.0f;\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.y += 40.0f;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;",
+      "replacements": [
+        {
+          "name": "chained-panel-then-copy",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "chained-panel-assigned-copy",
+          "text": "    quest_results_vec2_t panel_xy;\n    panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy;\n    xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "chained-working-direct",
+          "text": "    quest_results_vec2_t xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        },
+        {
+          "name": "two-stage-panel-offset",
+          "text": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position;\n    panel_xy = panel_xy + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;"
+        }
+      ]
+    }
+  ]
+}

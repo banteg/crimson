@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-item-induction",
+      "find": "    int item_index = first_item;\n    char **item = state->items + first_item;",
+      "replacements": [
+        {
+          "name": "native-byte-offset",
+          "text": "    int item_index = first_item;\n    int item_offset = first_item * 4;"
+        },
+        {
+          "name": "index-state-items",
+          "text": "    int item_index = first_item;"
+        }
+      ]
+    },
+    {
+      "name": "row-item-load",
+      "find": "        char *text = *item;",
+      "replacements": [
+        {
+          "name": "native-byte-offset",
+          "text": "        char *text =\n            *(char **)((char *)state->items + item_offset);"
+        },
+        {
+          "name": "index-state-items",
+          "text": "        char *text = state->items[item_index];"
+        }
+      ]
+    },
+    {
+      "name": "row-item-advance",
+      "find": "        ++item;\n        ++item_index;",
+      "replacements": [
+        {
+          "name": "native-byte-offset",
+          "text": "        item_offset += 4;\n        ++item_index;"
+        },
+        {
+          "name": "index-only",
+          "text": "        ++item_index;"
+        }
+      ]
+    }
+  ]
+}

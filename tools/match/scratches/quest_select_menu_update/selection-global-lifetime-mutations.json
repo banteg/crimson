@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "selected-minor-declaration",
+      "find": "    int selected_minor;\n    int selected_index;",
+      "replacements": [
+        {
+          "name": "global-only",
+          "text": "    int selected_index;"
+        }
+      ]
+    },
+    {
+      "name": "tenth-key-selection",
+      "find": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        selected_minor = 9;\n        quest_select_stage_minor_index = 9;\n        goto validate_selected;\n    }",
+      "replacements": [
+        {
+          "name": "global-literal-only",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        quest_select_stage_minor_index = 9;\n        goto validate_selected;\n    }"
+        },
+        {
+          "name": "global-then-reload",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        quest_select_stage_minor_index = 9;\n        selected_minor = quest_select_stage_minor_index;\n        goto validate_selected;\n    }"
+        },
+        {
+          "name": "local-then-copy",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        selected_minor = 9;\n        quest_select_stage_minor_index = selected_minor;\n        goto validate_selected;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "selection-validation-lifetime",
+      "find": "    selected_minor = quest_select_stage_minor_index;\n    if (quest_select_stage_minor_index != -10) {\nstart_selected:\n        if (selected_minor == 10) {\n            return;\n        }\nvalidate_selected:\n        selected_index = selected_minor + quest_select_stage_major * 10 - 10;",
+      "replacements": [
+        {
+          "name": "global-only",
+          "text": "    if (quest_select_stage_minor_index != -10) {\nstart_selected:\n        if (quest_select_stage_minor_index == 10) {\n            return;\n        }\nvalidate_selected:\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;"
+        },
+        {
+          "name": "global-validation-index",
+          "text": "    selected_minor = quest_select_stage_minor_index;\n    if (quest_select_stage_minor_index != -10) {\nstart_selected:\n        if (selected_minor == 10) {\n            return;\n        }\nvalidate_selected:\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;"
+        },
+        {
+          "name": "local-condition-global-index",
+          "text": "    selected_minor = quest_select_stage_minor_index;\n    if (selected_minor != -10) {\nstart_selected:\n        if (selected_minor == 10) {\n            return;\n        }\nvalidate_selected:\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;"
+        }
+      ]
+    },
+    {
+      "name": "mouse-selection-lifetime",
+      "find": "        selected_minor = quest_select_stage_minor_index;\n        goto start_selected;",
+      "replacements": [
+        {
+          "name": "global-only",
+          "text": "        goto start_selected;"
+        },
+        {
+          "name": "self-store-before-start",
+          "text": "        quest_select_stage_minor_index =\n            quest_select_stage_minor_index;\n        goto start_selected;"
+        }
+      ]
+    }
+  ]
+}

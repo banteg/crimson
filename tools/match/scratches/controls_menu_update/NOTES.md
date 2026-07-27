@@ -706,3 +706,107 @@ Recorded spec SHA-256 values are:
 
 The updated `experiments.jsonl` SHA-256 is
 `51d326e6bea9dd518fdd8421f73f5dc658b68672991f4177b7a75f0557019b3d`.
+
+## Tail ownership, cursor, and reference audit
+
+This follow-up slice started and ended at **81.7242%**, with **17,398.2653
+fuzzy-weighted bytes** and a **3,890.7347-byte fuzzy gap**, 5,413 candidate
+instructions versus 5,421 native instructions, a 172-instruction exact
+prefix, and reference audit **1,559/0/9**. It retained no source mutation:
+every non-neutral alternative either lowered the ranked byte score or
+increased reference debt.
+
+Live Binary Ninja target `3023:2:9499448411019345244` shows that native
+`0x0044ddfa..0x0044de64` loads the move-list open state before resetting the
+three enabled fields, then loads the aim-list state and reuses both values for
+the direction-arrow decision. Five explicit snapshot spellings were tested.
+An aim-only integer snapshot is byte-identical, while a move snapshot or both
+native-positioned integer snapshots lose 27.5102 weighted bytes and three
+resolved references. The boolean form adds four instructions and loses
+37.8499 weighted bytes. This proves that the retained direct source already
+induces the native state reuse; source-visible snapshots are not missing.
+
+The three inlined list activations at `0x0044de6b..0x0044dfeb` reuse the same
+native stack slots. Relative to the stable entry stack, the vector-add result
+is `E+10`, the persistent left base is `E+20`, and the temporary RHS is
+`E+28`. The candidate already agrees on the result at `E+10`, but assigns the
+base and RHS to `E+28` and `E+20` respectively. Five persistent/named RHS
+spellings all destroy the otherwise exact prologue allocation: the best loses
+1,206.5208 weighted bytes, moves the first mismatch from byte 847 to byte 5,
+and adds two reference mismatches. The shared native `rhs` local is therefore
+compiler stack-slot coloring across temporary expressions, not evidence for
+a long-lived source object.
+
+Native `0x004492a1..0x0044931d` materializes the configured-binding cursor at
+`axis_move_x`, loads `move_key_forward` through `[-12]`, advances the cursor
+by `0x40`, and emits the remaining fields through a live-player cursor
+anchored at `move_key_backward`. A fresh four-way replay tested that literal
+preincrement schedule against the current source. Merely changing the
+destination source spelling to `move_key_backward` is byte-identical.
+Typed-owner and raw interior-cursor preincrement forms all lose 1,120.0600
+weighted bytes and add one reference mismatch. The native cursor schedule is
+an induction-variable transform of the retained postincrement source rather
+than a semantic recovery gap.
+
+The right-panel final base was also checked independently. Native stores the
+final Y at `0x004492b4`, then completes the X expression through
+`render_offset_x - 64 + x + 64` at `0x004492be`. Five folded and reordered
+source forms were evaluated. Folding X while preserving the source order is
+byte-score neutral but trades two resolved references for two mismatches;
+every Y-first or explicitly assigned form loses 1,117.9792 to 1,122.8366
+weighted bytes. The retained three-statement form is the only ranked-safe
+representation of the same coordinates.
+
+The current-source replays also close the two neighboring interactions:
+
+- all 17 right-heading/item-reset singles and pairs were evaluated again.
+  The two staged-coordinate spellings are byte-identical; in-place
+  coordinates lose 1,103.4179 weighted bytes, and native-member reset bounds
+  lose 3,830.5319 weighted bytes and 270 resolved references;
+- all 15 outline/row-start singles and cross-products were evaluated.
+  Reversing the outline fields removes one mismatch, but loses 3.9300 weighted
+  bytes and one resolved reference. Constructor and vector-add forms trigger
+  allocation losses of 1,120.2898 to 3,860.3627 weighted bytes.
+
+A full `match audit --all-scores --status mismatch` classifies all nine
+remaining references. Two are equivalent aggregate/interior anchors in the
+runtime copy at native `0x00449268` (`player_state_table` versus
+`player_move_key_backward`) and `0x004492a1` (`config_blob+0x1cc` versus
+`config_p1_axis_move_x`). One at `0x00449401` pairs the right-outline
+`13.0f` load with native's neighboring `54.0f` load because the equivalent
+X/Y expressions are scheduled oppositely. The remaining six are compiler
+local data: switch partitions or jump tables at `0x0044aaab`,
+`0x0044aab1`, `0x0044b814`, `0x0044b81a`, `0x0044c57f`, and
+`0x0044dc16`. None identifies a wrong external field, call, literal, or
+control-flow policy.
+
+Together with the prior complete recovery of the key-name bodies, prompt
+branches, activation scan, regular/special capture paths, analog peak update
+and dispatch, and dropdown policy, this audit leaves no observed native
+behavior absent from the scratch. The residual evidence now points to global
+VC6 local allocation, x87 scheduling, induction lowering, and compiler-local
+table placement. The scratch metadata remains unchanged in this slice, but
+the evidence supports moving this function from incomplete recovery to the
+semantic-complete/compiler-residual track.
+
+This slice recorded **51 variants** across six complete, untruncated sweeps.
+Spec SHA-256 values are:
+
+- open-list snapshots:
+  `ae61c1506d4348f9b7c7a88c2ffe524bfbbc35cde12a1b3286d0860c8ddea81d`;
+- current right-coordinate/item-reset replay:
+  `94df05a6aa675be3a91399923146e81c8aeb093686573741e3fe39b0d263301c`;
+- list-offset lifetime:
+  `1ba92731c6936f80336c39a6d8955bd1968cc569361de454e1675df040c0e4ff`;
+- runtime native-cursor replay:
+  `01d09374501c570e6c680bb958e74866318c76cfff17ac7804213a0385f808dd`;
+- right-base final adjustment:
+  `34a7f3c783dc2d3852b12933e159d2afc188154868fe551d9abc62a6e62cb192`;
+  and
+- current outline/row-start replay:
+  `86b57632d8e22f4f0ccce380ae6a7729964fb6256cd2feeb7d064c548a5307df`.
+
+The unchanged source SHA-256 is
+`377d5fc3a10b21f64307532ef9f4c60d53bbff2ee6546d317807895f9bde7964`.
+The updated `experiments.jsonl` SHA-256 is
+`582f217c30dbc55926d241ffbe00e653c248042842d3831d3501172ad03727a4`.

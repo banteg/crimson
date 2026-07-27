@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "count-local-declaration-order",
+      "find": "    int item_count = state->item_count;\n    int visible_rows = state->visible_rows;\n    int max_scroll = item_count - visible_rows;",
+      "replacements": [
+        {
+          "name": "visible-item-max",
+          "text": "    int visible_rows = state->visible_rows;\n    int item_count = state->item_count;\n    int max_scroll = item_count - visible_rows;"
+        },
+        {
+          "name": "item-max-visible",
+          "text": "    int item_count = state->item_count;\n    int max_scroll;\n    int visible_rows = state->visible_rows;\n    max_scroll = item_count - visible_rows;"
+        },
+        {
+          "name": "visible-max-item",
+          "text": "    int visible_rows = state->visible_rows;\n    int max_scroll;\n    int item_count = state->item_count;\n    max_scroll = item_count - visible_rows;"
+        },
+        {
+          "name": "max-item-visible",
+          "text": "    int max_scroll;\n    int item_count = state->item_count;\n    int visible_rows = state->visible_rows;\n    max_scroll = item_count - visible_rows;"
+        },
+        {
+          "name": "max-visible-item",
+          "text": "    int max_scroll;\n    int visible_rows = state->visible_rows;\n    int item_count = state->item_count;\n    max_scroll = item_count - visible_rows;"
+        },
+        {
+          "name": "item-visible-max-direct-fields",
+          "text": "    int item_count = state->item_count;\n    int visible_rows = state->visible_rows;\n    int max_scroll = state->item_count - state->visible_rows;"
+        }
+      ]
+    }
+  ]
+}

@@ -212,9 +212,10 @@ extern "C" void mods_menu_update(void)
             version_text,
             "v%.2f",
             (double)mods_menu_selected_info->version);
+        IGrim2D_cpp *version_renderer = grim_interface_ptr;
         int text_width =
-            grim_interface_ptr->grim_measure_text_width(version_text);
-        grim_interface_ptr->grim_draw_text_small_fmt(
+            version_renderer->grim_measure_text_width(version_text);
+        version_renderer->grim_draw_text_small_fmt(
             position.x + 192.0f - (float)text_width,
             position.y,
             "%s",
@@ -233,9 +234,10 @@ extern "C" void mods_menu_update(void)
             1.0f, 1.0f, 1.0f, 0.34f);
         grim_interface_ptr->grim_draw_text_small_fmt(
             position.x, position.y, "name");
+        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;
         text_width =
-            grim_interface_ptr->grim_measure_text_width("version");
-        grim_interface_ptr->grim_draw_text_small_fmt(
+            version_label_renderer->grim_measure_text_width("version");
+        version_label_renderer->grim_draw_text_small_fmt(
             position.x + 192.0f - (float)text_width,
             position.y,
             "version");

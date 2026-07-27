@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-assignment-schedule",
+      "find": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "fields-x-then-y",
+          "text": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }"
+        },
+        {
+          "name": "fields-y-then-x",
+          "text": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }"
+        },
+        {
+          "name": "named-values-x-then-y",
+          "text": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        float new_x = other.x;\n        float new_y = other.y;\n        x = new_x;\n        y = new_y;\n        return *this;\n    }"
+        },
+        {
+          "name": "named-values-y-then-x",
+          "text": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        float new_y = other.y;\n        float new_x = other.x;\n        y = new_y;\n        x = new_x;\n        return *this;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "inline-vector-add-return",
+      "find": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        return options_vec2_t(x + other.x, other.y + y);\n    }",
+      "replacements": [
+        {
+          "name": "natural-component-order",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        return options_vec2_t(x + other.x, y + other.y);\n    }"
+        },
+        {
+          "name": "named-result-reversed-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }"
+        },
+        {
+          "name": "named-result-natural-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "field-result-reversed-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result;\n        result.x = x + other.x;\n        result.y = other.y + y;\n        return result;\n    }"
+        },
+        {
+          "name": "field-result-natural-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        }
+      ]
+    }
+  ]
+}

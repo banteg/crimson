@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "controls-position-lifetime",
+      "find": "    position.x = hover_left;\n    position.y += 12.0f;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {",
+      "replacements": [
+        {
+          "name": "y-before-x",
+          "text": "    position.y += 12.0f;\n    position.x = hover_left;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "aggregate-assignment",
+          "text": "    position = quest_select_vec2_t(\n        hover_left, position.y + 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "default-temp-assignment",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position.x = hover_left;\n    controls_position.y = position.y + 12.0f;\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "constructor-temp-assignment",
+          "text": "    quest_select_vec2_t controls_position(\n        hover_left, position.y + 12.0f);\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "named-x-y-before-x",
+          "text": "    float controls_x = hover_left;\n    position.y += 12.0f;\n    position.x = controls_x;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "named-y-before-x",
+          "text": "    float controls_y = position.y + 12.0f;\n    position.y = controls_y;\n    position.x = hover_left;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "vector-delta",
+          "text": "    position += quest_select_vec2_t(\n        hover_left - position.x, 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        }
+      ]
+    }
+  ]
+}

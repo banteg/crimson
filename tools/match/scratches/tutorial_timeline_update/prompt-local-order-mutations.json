@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-local-order",
+      "find": "        int prompt_transition = tutorial_stage_transition_timer;\n        int stage_timer = tutorial_stage_timer;\n        float prompt_alpha;\n",
+      "replacements": [
+        {
+          "name": "stage-timer-first",
+          "text": "        int stage_timer = tutorial_stage_timer;\n        int prompt_transition = tutorial_stage_transition_timer;\n        float prompt_alpha;\n"
+        },
+        {
+          "name": "alpha-before-stage-timer",
+          "text": "        int prompt_transition = tutorial_stage_transition_timer;\n        float prompt_alpha;\n        int stage_timer = tutorial_stage_timer;\n"
+        },
+        {
+          "name": "alpha-first",
+          "text": "        float prompt_alpha;\n        int prompt_transition = tutorial_stage_transition_timer;\n        int stage_timer = tutorial_stage_timer;\n"
+        },
+        {
+          "name": "separate-load-assignments",
+          "text": "        int prompt_transition;\n        int stage_timer;\n        float prompt_alpha;\n        prompt_transition = tutorial_stage_transition_timer;\n        stage_timer = tutorial_stage_timer;\n"
+        },
+        {
+          "name": "const-locals",
+          "text": "        const int prompt_transition = tutorial_stage_transition_timer;\n        const int stage_timer = tutorial_stage_timer;\n        float prompt_alpha;\n"
+        }
+      ]
+    }
+  ]
+}

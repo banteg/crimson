@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-mode-before-index",
+      "find": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;",
+      "replacements": [
+        {
+          "name": "branch-local-index-stage",
+          "text": "        int stage_major = quest_select_stage_major;\n        if (config_hardcore) {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "branch-local-index-direct",
+          "text": "        if (config_hardcore) {\n            int quest_index =\n                row + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            int quest_index =\n                row + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "branch-local-index-byte-mode",
+          "text": "        int stage_major = quest_select_stage_major;\n        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "mode-goto-shared-index",
+          "text": "        int stage_major = quest_select_stage_major;\n        unsigned char hardcore = config_hardcore;\n        int quest_index;\n        if (hardcore) {\n            quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n            goto locked_row_body;\n        }\n        quest_index = row + stage_major * 10 - 10;\n        if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\nlocked_row_body:\n        next_row = row + 1;"
+        },
+        {
+          "name": "branch-local-unlocked-flag",
+          "text": "        int stage_major = quest_select_stage_major;\n        bool row_unlocked;\n        if (config_hardcore) {\n            int quest_index = row + stage_major * 10 - 10;\n            row_unlocked = quest_unlock_index_full >= quest_index;\n        } else {\n            int quest_index = row + stage_major * 10 - 10;\n            row_unlocked = quest_unlock_index >= quest_index;\n        }\n        if (row_unlocked) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "mode-goto-duplicated-index",
+          "text": "        int stage_major = quest_select_stage_major;\n        if (!config_hardcore) {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n            goto locked_row_body;\n        }\n        {\n            int quest_index = row + stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        }\n\nlocked_row_body:\n        next_row = row + 1;"
+        }
+      ]
+    }
+  ]
+}

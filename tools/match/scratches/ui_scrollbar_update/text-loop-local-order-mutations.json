@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-loop-local-order",
+      "find": "        int text_length = strlen(text) + 1;\n        int cursor = 0;\n        int column = 0;",
+      "replacements": [
+        {
+          "name": "cursor-length-column",
+          "text": "        int cursor = 0;\n        int text_length = strlen(text) + 1;\n        int column = 0;"
+        },
+        {
+          "name": "cursor-column-length",
+          "text": "        int cursor = 0;\n        int column = 0;\n        int text_length = strlen(text) + 1;"
+        },
+        {
+          "name": "length-column-cursor",
+          "text": "        int text_length = strlen(text) + 1;\n        int column = 0;\n        int cursor = 0;"
+        },
+        {
+          "name": "column-length-cursor",
+          "text": "        int column = 0;\n        int text_length = strlen(text) + 1;\n        int cursor = 0;"
+        },
+        {
+          "name": "column-cursor-length",
+          "text": "        int column = 0;\n        int cursor = 0;\n        int text_length = strlen(text) + 1;"
+        },
+        {
+          "name": "split-length-increment",
+          "text": "        int text_length = strlen(text);\n        ++text_length;\n        int cursor = 0;\n        int column = 0;"
+        }
+      ]
+    }
+  ]
+}

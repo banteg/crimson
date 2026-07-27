@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "open-interaction-scope",
+      "find": "    float height = (float)(state->visible_rows * 16 + 4);",
+      "replacements": [
+        {
+          "name": "carry-first-item",
+          "text": "    int first_item;\n    {\n    float height = (float)(state->visible_rows * 16 + 4);"
+        }
+      ]
+    },
+    {
+      "name": "assign-carried-first-item",
+      "find": "    int first_item = (int)state->scroll_offset;",
+      "replacements": [
+        {
+          "name": "assign",
+          "text": "    first_item = (int)state->scroll_offset;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-grab-state-field",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "                        - state->scroll_offset\n                            / (float)state->item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "close-interaction-scope",
+      "find": "    scrollbar_vec2_t row_position(xy->x, xy->y);",
+      "replacements": [
+        {
+          "name": "before-row-rendering",
+          "text": "    }\n\n    scrollbar_vec2_t row_position(xy->x, xy->y);"
+        }
+      ]
+    },
+    {
+      "name": "initial-visible-rows-state-field",
+      "find": "    if (visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "    if (state->visible_rows <= 0) {"
+        }
+      ]
+    }
+  ]
+}

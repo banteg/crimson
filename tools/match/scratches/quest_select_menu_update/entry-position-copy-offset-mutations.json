@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-position-copy-offset",
+      "find": "    quest_select_vec2_t position;\n    position = panel_position;\n    position.y += 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;",
+      "replacements": [
+        {
+          "name": "default-plus-zero-forty",
+          "text": "    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "copy-init-plus-zero-forty",
+          "text": "    quest_select_vec2_t position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "default-constructor-value",
+          "text": "    quest_select_vec2_t position;\n    position = quest_select_vec2_t(\n        panel_position.x, panel_position.y + 40.0f);\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "constructor-value",
+          "text": "    quest_select_vec2_t position(\n        panel_position.x, panel_position.y + 40.0f);\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "default-components",
+          "text": "    quest_select_vec2_t position;\n    position.x = panel_position.x;\n    position.y = panel_position.y + 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "named-offset-plus",
+          "text": "    quest_select_vec2_t position_offset(0.0f, 40.0f);\n    quest_select_vec2_t position;\n    position = panel_position + position_offset;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "copy-then-y-expression",
+          "text": "    quest_select_vec2_t position;\n    position = panel_position;\n    position.y = panel_position.y + 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        }
+      ]
+    }
+  ]
+}

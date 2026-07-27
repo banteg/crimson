@@ -2,7 +2,7 @@
 
 - Native function: `0x0043def0` (`1767` bytes, `479` instructions)
 - Compiler profile: MSVC 6.5
-- Current result: `55.01%`, `470` candidate instructions, `59/0/0`
+- Current result: `61.22%`, `475` candidate instructions, `61/0/0`
   relocation references.
 
 ## Recovered behavior
@@ -92,17 +92,56 @@ Because no positive single justified interaction testing, the semantic source
 remains unchanged. This rules out cast spelling as the cause of the localized
 temporary layout.
 
+## Native-guided mutation wave
+
+The mutation harness was run against live Binary Ninja target
+`3023:2:9499448411019345244` and the localized matcher regions. The wave
+scheduled `668` bounded variants across `27` recorded sweeps; `544` compiled
+successfully, while the remaining records are invalid partial combinations
+from multi-site interaction specs. The all-error prototype scope sweep was
+discarded rather than preserved as evidence.
+
+The retained changes are semantic or directly native-evidenced:
+
+- assigning the proportional thumb's `y` component before `x` gives VC6 the
+  native interleaved x87 construction schedule at
+  `0x0043e1b0..0x0043e1db`;
+- drag scaling and clamping reload `item_count` and `visible_rows` from the
+  recovered state object, matching `0x0043e331..0x0043e337`, while the row
+  bounds reload the same fields at `0x0043e45a` and `0x0043e5af`;
+- a complete 63-variant ablation proved the best interaction keeps cached
+  locals for the grab divisor and first visible-row check, but retains the
+  later direct field reloads;
+- the tab loop indexes the recovered integral `column_offsets` array by the
+  column counter, and reuses the incremented cursor when consuming a field.
+  The latter removes the synthetic `consumed` local and follows the native
+  update sequence at `0x0043e579..0x0043e592`;
+- the leading-backslash policy is now precise. Native branches at
+  `0x0043e4b7..0x0043e50c` set green for `\g`, set white only when the first
+  byte is not a backslash, and leave the current color unchanged for other
+  backslash escapes. The nested source correction is byte-neutral but fixes
+  the recovered behavior.
+
+The combined result moves from `55.00526870389885%`
+(`971.943097997893` weighted bytes, `795.056902002107` gap, `470/479`
+instructions, `59/0/0` references, `0x54` frame) to
+`61.21593291404612%` (`1081.685534591195` weighted bytes,
+`685.314465408805` gap, `475/479` instructions, `61/0/0` references,
+`0x50` frame). That is a `6.21066421014727` percentage-point and
+`109.742436593302` weighted-byte improvement.
+
+Negative sweeps rule out max-scroll type changes, cast spelling, temporary
+constructor families, count declaration order, drag-block scheduling,
+row-position copies, equivalent structured/goto loop forms, interaction
+scopes, and alternate cursor/pointer lifetimes. A fresh profile matrix leaves
+stock MSVC 6.0, 6.5, and 6.6 tied at the retained result; the Processor Pack
+falls to `54.2766631467793%` and MSVC 7.0 to `30.2839116719243%`.
+
 ## Remaining mismatch
 
-MSVC allocates a `0x54`-byte frame for the recovered typed source versus the
-native `0x40`-byte frame. The control flow, calls, constants, state accesses,
-and interaction semantics are present; the remaining diff is dominated by
-temporary-object lifetime and stack-slot coalescing. Alternate `msvc6.5pp` and
-`msvc7.0` profiles score worse, so the scratch stays on the evidenced MSVC 6.5
-profile without allocator-driven source distortion.
-
-The scratch is classified `semantic-complete` with a `compiler` residual.
-Fresh live decompilation confirms the complete wheel/key, clamp, proportional
-thumb, drag, row-selection, green-marker, and tab-column paths. The 470/479
-instruction candidate resolves all 59 audited references; the first mismatch
-is the native `0x40` versus candidate `0x54` frame.
+The scratch remains `semantic-complete` with a `compiler` residual. MSVC now
+allocates a `0x50`-byte frame versus the native `0x40` frame. The remaining
+17 localized regions are dominated by temporary-object stack-slot coalescing,
+the proportional-thumb x87 schedule, and late row-loop allocation. The final
+candidate has `475/479` instructions and resolves all `61` audited references
+with no mismatches or unresolved relocations.

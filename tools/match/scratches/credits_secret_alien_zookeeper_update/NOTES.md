@@ -33,11 +33,11 @@ Native behavior intentionally retained:
 
 Best verified MSVC 6.5 result:
 
-- 83.70% matched;
+- 83.86% matched;
 - exact 638/638 normalized instruction count;
 - exact `0x54` stack frame;
 - 15-instruction exact prefix; and
-- 153 resolved references, with no missing or extra references.
+- 154 resolved references, with no missing or extra references.
 
 MSVC 6.6 produced the same useful shape during compiler-profile testing.
 MSVC 6.5 Processor Pack regressed substantially. The remaining mismatch
@@ -55,7 +55,7 @@ Fresh live Binary Ninja output covers the timer, drawing loop, arbitrary-cell
 swap, first-match clearing, score/time award, reset reroll, and Back route;
 IDA and Ghidra corroborate the same seven-callee surface. Candidate and native
 remain exactly 638 instructions with the exact `0x54` frame and a clean
-`153/0/0` reference audit. A temporary scalar-component rewrite of the
+`154/0/0` reference audit. A temporary scalar-component rewrite of the
 initial chained panel expression was rejected: it fell from 83.70% to 76.45%,
 reduced the prefix from 15 to 3, and changed the audit to `147/0/4`.
 
@@ -79,3 +79,44 @@ Every single is byte-identical to the baseline:
 references. The record has `best_improves=false`, so no interaction sweep or
 source change is justified. The unchanged source SHA-256 is
 `83befaeb028305ccdf28f767bb1f82a00a9bbec765dcfb060c4e5d5c99581c4f`.
+
+## Mutation-harness wave (2026-07-27)
+
+Live Binary Ninja target `3023:2:9499448411019345244` confirms the native
+function at `0x0040f4f0` is 2,612 bytes. The entry computes the board Y value
+with an explicit add followed by a distinct store at
+`0x0040f56d..0x0040f57b`; HLIL exposes that stored result as `var_2c_1`.
+Representing it as the ordinary named intermediate `board_y` is therefore
+native-evidenced source, not an artificial dependency.
+
+The complete recorded `initial-layout-mutations.json` sweep evaluated all
+80/80 single-site and two-site variants. Its spec SHA-256 is
+`a6577a2c7e88830ad020e307297b2f201c434ae70ec55e2f18408500e642c3b0`.
+The named Y intermediate was the retained source shape: weighted bytes rose
+from `2186.219435736677` to `2190.3134796238246`, ratio from
+`83.69905956112853%` to `83.85579937304075%`, and aligned references from
+`153/0/0` to `154/0/0`. It preserves the exact 638-instruction count,
+15-instruction prefix, and first mismatch at normalized offset 61. The fuzzy
+gap fell by `4.0940438871475635` bytes, from `425.78056426332296` to
+`421.6865203761754`. The retained source SHA-256 is
+`812e79e1415800f212ad810df381d461d5ddb2039b04bcdad49e05e7a6975549`.
+
+Two follow-up plans recorded complete negative evidence from the improved
+baseline:
+
+- `board-loop-register-mutations.json`, SHA-256
+  `3606c6bb0c1a46fca9dfbb91f6ccb3e43bd7cf8b0812215050265360af4ed4cf`,
+  evaluated all 57/57 declaration-order, pointer/value-load, and two-site
+  combinations. Every variant was byte-identical to the improved baseline.
+- `timer-layout-mutations.json`, SHA-256
+  `ae95837566f483edf6d9c01c3326edd42ffb222768639113e6a55620a80c23ea`,
+  evaluated all 29/29 width/position lifetime combinations. The ordinary
+  forms were byte-identical; split default construction regressed to 642
+  instructions and was rejected.
+
+The compiler sweep covered all five installed backends. MSVC 6.5 and 6.6 tie
+for best; 6.0, the 6.5 Processor Pack, and 7.0 regress. An additional
+11-profile VC6.5 flag matrix found `/GB`, `/G5`, and `/Ot` byte-identical.
+`/Ox` keeps the fuzzy ratio but introduces six unresolved references, while
+`/Oi-`, `/Oy-`, `/G6`, `/Op`, `/Ob0`, `/Os`, and `/O1` regress. No compiler
+or flag override is justified.

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "handle-initialization-shape",
+      "find": "    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;",
+      "replacements": [
+        {
+          "name": "single-declaration",
+          "text": "    HINTERNET internet = 0, connection = 0, request = 0;"
+        },
+        {
+          "name": "chained-zero",
+          "text": "    HINTERNET internet;\n    HINTERNET connection;\n    HINTERNET request;\n    internet = connection = request = 0;"
+        },
+        {
+          "name": "internet-seeded",
+          "text": "    HINTERNET internet = 0;\n    HINTERNET connection = internet;\n    HINTERNET request = internet;"
+        },
+        {
+          "name": "request-seeded",
+          "text": "    HINTERNET request = 0;\n    HINTERNET connection = request;\n    HINTERNET internet = request;"
+        },
+        {
+          "name": "connection-seeded",
+          "text": "    HINTERNET connection = 0;\n    HINTERNET internet = connection;\n    HINTERNET request = connection;"
+        }
+      ]
+    }
+  ]
+}

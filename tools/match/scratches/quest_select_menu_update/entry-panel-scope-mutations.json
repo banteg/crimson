@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-panel-scope",
+      "find": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position = panel_position;",
+      "replacements": [
+        {
+          "name": "nested-panel-before-hover",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t position;\n    {\n        quest_select_vec2_t panel_position;\n        panel_position.x =\n            ui_element_slot_37.pos.x\n            + ui_element_slot_37.vertices[0].position.x;\n        panel_position.y =\n            ui_element_slot_37.vertices[0].position.y\n            + ui_element_slot_37.pos.y;\n        panel_position.x += 300.0f;\n        position = panel_position;\n    }\n\n    bool row_hovered = false;"
+        },
+        {
+          "name": "nested-panel-hover-before-offset",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t position;\n    bool row_hovered;\n    {\n        quest_select_vec2_t panel_position;\n        panel_position.x =\n            ui_element_slot_37.pos.x\n            + ui_element_slot_37.vertices[0].position.x;\n        panel_position.y =\n            ui_element_slot_37.vertices[0].position.y\n            + ui_element_slot_37.pos.y;\n        row_hovered = false;\n        panel_position.x += 300.0f;\n        position = panel_position;\n    }"
+        },
+        {
+          "name": "nested-panel-hover-after-offset",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t position;\n    bool row_hovered;\n    {\n        quest_select_vec2_t panel_position;\n        panel_position.x =\n            ui_element_slot_37.pos.x\n            + ui_element_slot_37.vertices[0].position.x;\n        panel_position.y =\n            ui_element_slot_37.vertices[0].position.y\n            + ui_element_slot_37.pos.y;\n        panel_position.x += 300.0f;\n        row_hovered = false;\n        position = panel_position;\n    }"
+        },
+        {
+          "name": "direct-position-hover-before-offset",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t position;\n    position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    bool row_hovered = false;\n    position.x += 300.0f;"
+        },
+        {
+          "name": "direct-position-hover-after-offset",
+          "text": "extern \"C\" void quest_select_menu_update(void)\n{\n    quest_select_vec2_t position;\n    position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    position.x += 300.0f;\n    bool row_hovered = false;"
+        }
+      ]
+    }
+  ]
+}

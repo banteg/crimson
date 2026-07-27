@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "base-reveal-order",
+      "find": "                case 0:\n                    quest_results_reveal_step_timer_ms = 40;\n                    quest_results_reveal_base_time_ms += 2000;\n                    sfx_play(sfx_ui_clink_01, 1.0f);",
+      "replacements": [
+        {
+          "name": "base-then-timer",
+          "text": "                case 0:\n                    quest_results_reveal_base_time_ms += 2000;\n                    quest_results_reveal_step_timer_ms = 40;\n                    sfx_play(sfx_ui_clink_01, 1.0f);"
+        },
+        {
+          "name": "snapshot-base-then-timer",
+          "text": "                case 0:\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        quest_results_reveal_base_time_ms += 2000;\n                        quest_results_reveal_step_timer_ms = 40;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "base-snapshot-then-timer",
+          "text": "                case 0:\n                    quest_results_reveal_base_time_ms += 2000;\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        quest_results_reveal_step_timer_ms = 40;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "base-timer-then-snapshot",
+          "text": "                case 0:\n                    quest_results_reveal_base_time_ms += 2000;\n                    quest_results_reveal_step_timer_ms = 40;\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "snapshot-current-store-order",
+          "text": "                case 0:\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        quest_results_reveal_step_timer_ms = 40;\n                        quest_results_reveal_base_time_ms += 2000;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        }
+      ]
+    },
+    {
+      "name": "perk-reveal-order",
+      "find": "                case 2:\n                    quest_results_reveal_step_timer_ms = 300;\n                    ++quest_results_reveal_perk_bonus_s;\n                    sfx_play(sfx_ui_clink_01, 1.0f);",
+      "replacements": [
+        {
+          "name": "increment-then-timer",
+          "text": "                case 2:\n                    ++quest_results_reveal_perk_bonus_s;\n                    quest_results_reveal_step_timer_ms = 300;\n                    sfx_play(sfx_ui_clink_01, 1.0f);"
+        },
+        {
+          "name": "increment-timer-then-snapshot",
+          "text": "                case 2:\n                    ++quest_results_reveal_perk_bonus_s;\n                    quest_results_reveal_step_timer_ms = 300;\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "snapshot-increment-then-timer",
+          "text": "                case 2:\n                    {\n                        int clink_sfx = sfx_ui_clink_01;\n                        ++quest_results_reveal_perk_bonus_s;\n                        quest_results_reveal_step_timer_ms = 300;\n                        sfx_play(clink_sfx, 1.0f);\n                    }"
+        },
+        {
+          "name": "named-increment-then-timer",
+          "text": "                case 2:\n                    {\n                        int reveal_perk_bonus =\n                            quest_results_reveal_perk_bonus_s + 1;\n                        quest_results_reveal_step_timer_ms = 300;\n                        quest_results_reveal_perk_bonus_s =\n                            reveal_perk_bonus;\n                    }\n                    sfx_play(sfx_ui_clink_01, 1.0f);"
+        }
+      ]
+    }
+  ]
+}

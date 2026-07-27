@@ -35,7 +35,6 @@ extern "C" void highscore_sync_worker(void *)
     char *headers =
         "Content-Disposition: inline; filename=\"test\"\r\n"
         "Content-type: application/octet-stream";
-    DWORD headers_length = strlen(headers);
     online_sync_status = 1;
     bool success = false;
     HINTERNET internet = 0;
@@ -46,6 +45,7 @@ extern "C" void highscore_sync_worker(void *)
     BOOL request_ok;
     BOOL read_ok;
     DWORD received;
+    DWORD headers_length = strlen(headers);
     const char *accept_types[] = {
         "image/gif",
         "image/x-xbitmap",
@@ -196,16 +196,9 @@ extern "C" void highscore_sync_worker(void *)
     memset(data, 0, 0x8000);
     read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
     received = bytes_read;
-    while (read_ok) {
-        if ((int)(received + 0x400) > 0x8000) {
-            console_printf(
-                &console_log_queue,
-                "Warning: receiving too much data, breaking out..\n");
-            break;
-        }
-        if (bytes_read == 0) {
-            break;
-        }
+    while (read_ok
+        && (int)(received + 0x400) <= 0x8000
+        && bytes_read != 0) {
         read_ok = InternetReadFile(
             request,
             data + received,
@@ -230,6 +223,11 @@ extern "C" void highscore_sync_worker(void *)
             &headers_length);
         console_printf(&console_log_queue, "Or: %s\n", data);
         goto cleanup;
+    }
+    if ((int)(received + 0x400) > 0x8000) {
+        console_printf(
+            &console_log_queue,
+            "Warning: receiving too much data, breaking out..\n");
     }
 
     console_printf(
@@ -263,8 +261,9 @@ extern "C" void highscore_sync_worker(void *)
         if (total_count > 0) {
             char *read_cursor = data + 3;
             int remaining = total_count;
-            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;
             do {
+                unsigned char hardcore_marker =
+                    config_hardcore ? 0x75 : 0;
                 memcpy(&received_record, read_cursor, 0x44);
                 received_record.flags = 1;
                 received_record.hardcore_marker = hardcore_marker;

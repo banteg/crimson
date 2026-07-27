@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-formation-position",
+      "find": "            creature_spawn_template(\n                SPAWN_ID_ALIEN_CONST_GREEN_24,\n                (const vec2f_t *)&spawn_pos,\n                3.14159274f);\n",
+      "replacements": [
+        {
+          "name": "named-aggregate-copy",
+          "text": "            tutorial_vec2_t final_spawn_pos = spawn_pos;\n            creature_spawn_template(\n                SPAWN_ID_ALIEN_CONST_GREEN_24,\n                (const vec2f_t *)&final_spawn_pos,\n                3.14159274f);\n"
+        },
+        {
+          "name": "named-component-copy",
+          "text": "            tutorial_vec2_t final_spawn_pos;\n            final_spawn_pos.x = spawn_pos.x;\n            final_spawn_pos.y = spawn_pos.y;\n            creature_spawn_template(\n                SPAWN_ID_ALIEN_CONST_GREEN_24,\n                (const vec2f_t *)&final_spawn_pos,\n                3.14159274f);\n"
+        },
+        {
+          "name": "named-aggregate-initializer",
+          "text": "            tutorial_vec2_t final_spawn_pos = {\n                spawn_pos.x,\n                spawn_pos.y,\n            };\n            creature_spawn_template(\n                SPAWN_ID_ALIEN_CONST_GREEN_24,\n                (const vec2f_t *)&final_spawn_pos,\n                3.14159274f);\n"
+        },
+        {
+          "name": "named-pointer-alias",
+          "text": "            tutorial_vec2_t *final_spawn_pos = &spawn_pos;\n            creature_spawn_template(\n                SPAWN_ID_ALIEN_CONST_GREEN_24,\n                (const vec2f_t *)final_spawn_pos,\n                3.14159274f);\n"
+        }
+      ]
+    }
+  ]
+}

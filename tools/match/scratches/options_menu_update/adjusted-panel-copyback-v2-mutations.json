@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "adjusted-panel-copyback-v2",
+      "find": "    options_vec2_t xy = panel_position;\n    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position = xy;",
+      "replacements": [
+        {
+          "name": "named-x-then-copyback",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    xy.x = adjusted_panel_x;\n    panel_position = xy;"
+        },
+        {
+          "name": "const-named-x-then-copyback",
+          "text": "    options_vec2_t xy = panel_position;\n    const float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    xy.x = adjusted_panel_x;\n    panel_position = xy;"
+        },
+        {
+          "name": "named-render-offset-parts",
+          "text": "    options_vec2_t xy = panel_position;\n    float panel_render_x = ui_element_slot_31.render_offset_x;\n    float adjusted_panel_x =\n        panel_render_x - 24.0f - 64.0f + xy.x;\n    xy.x = adjusted_panel_x;\n    panel_position = xy;"
+        },
+        {
+          "name": "construct-adjusted-working-vector",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    xy = options_vec2_t(adjusted_panel_x, xy.y);\n    panel_position = xy;"
+        },
+        {
+          "name": "construct-adjusted-panel-vector",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position = options_vec2_t(adjusted_panel_x, xy.y);\n    xy = panel_position;"
+        },
+        {
+          "name": "named-adjusted-vector",
+          "text": "    options_vec2_t xy = panel_position;\n    options_vec2_t adjusted_panel(\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x,\n        xy.y);\n    xy = adjusted_panel;\n    panel_position = adjusted_panel;"
+        },
+        {
+          "name": "copyback-before-working-x-publication",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.x = adjusted_panel_x;\n    xy.x = adjusted_panel_x;\n    panel_position.y = xy.y;"
+        },
+        {
+          "name": "chained-adjusted-x-then-y-copy",
+          "text": "    options_vec2_t xy = panel_position;\n    panel_position.x = (xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x);\n    panel_position.y = xy.y;"
+        }
+      ]
+    }
+  ]
+}

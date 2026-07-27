@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "weapon-pass-zero-local",
+      "find": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);",
+      "replacements": [
+        {
+          "name": "plain-zero-local",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    int weapon_zero = 0;\n    grim_interface_ptr->grim_bind_texture(\n        ui_weapon_icons_texture, weapon_zero);"
+        },
+        {
+          "name": "register-zero-local",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    register int weapon_zero = 0;\n    grim_interface_ptr->grim_bind_texture(\n        ui_weapon_icons_texture, weapon_zero);"
+        }
+      ]
+    },
+    {
+      "name": "weapon-loop-zero-init",
+      "find": "    for (bonus_index = 0; bonus_index < 16; ++bonus_index) {\n        bonus_entry_t *entry = &bonus_pool[bonus_index];\n        if (entry->bonus_id != BONUS_ID_WEAPON) {",
+      "replacements": [
+        {
+          "name": "reuse-zero-local",
+          "text": "    for (bonus_index = weapon_zero;\n         bonus_index < 16;\n         ++bonus_index) {\n        bonus_entry_t *entry = &bonus_pool[bonus_index];\n        if (entry->bonus_id != BONUS_ID_WEAPON) {"
+        }
+      ]
+    },
+    {
+      "name": "weapon-rotation-zero",
+      "find": "        grim_interface_ptr->grim_set_rotation(\n            (float)sin(\n                (float)bonus_index\n                - (float)survival_elapsed_ms * 0.003f));\n        grim_interface_ptr->grim_set_rotation(0.0f);\n        grim_interface_ptr->grim_set_sub_rect(",
+      "replacements": [
+        {
+          "name": "reuse-zero-local",
+          "text": "        grim_interface_ptr->grim_set_rotation(\n            (float)sin(\n                (float)bonus_index\n                - (float)survival_elapsed_ms * 0.003f));\n        grim_interface_ptr->grim_set_rotation((float)weapon_zero);\n        grim_interface_ptr->grim_set_sub_rect("
+        }
+      ]
+    },
+    {
+      "name": "telekinetic-player-zero-init",
+      "find": "    int player_index = 0;\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);",
+      "replacements": [
+        {
+          "name": "reuse-zero-local",
+          "text": "    int player_index = weapon_zero;\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);"
+        }
+      ]
+    }
+  ]
+}

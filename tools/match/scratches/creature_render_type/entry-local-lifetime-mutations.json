@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-local-lifetime",
+      "find": "extern \"C\" void creature_render_type(int type_id, float transition_alpha)\n{\n    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;",
+      "replacements": [
+        {
+          "name": "draw-position-before-color",
+          "text": "extern \"C\" void creature_render_type(int type_id, float transition_alpha)\n{\n    creature_render_vec2_t draw_pos;\n    creature_render_color_t color;"
+        },
+        {
+          "name": "named-parameter-copy",
+          "text": "extern \"C\" void creature_render_type(int type_id_arg, float transition_alpha)\n{\n    int type_id = type_id_arg;\n    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;"
+        },
+        {
+          "name": "const-named-parameter-copy",
+          "text": "extern \"C\" void creature_render_type(int type_id_arg, float transition_alpha)\n{\n    const int type_id = type_id_arg;\n    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;"
+        },
+        {
+          "name": "const-parameters",
+          "text": "extern \"C\" void creature_render_type(\n    const int type_id, const float transition_alpha)\n{\n    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;"
+        },
+        {
+          "name": "enum-type-parameter",
+          "text": "extern \"C\" void creature_render_type(\n    creature_type_id_t type_id, float transition_alpha)\n{\n    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;"
+        }
+      ]
+    }
+  ]
+}

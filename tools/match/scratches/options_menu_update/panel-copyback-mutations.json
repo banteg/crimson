@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "adjusted-panel-copyback",
+      "find": "    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.x = xy.x;",
+      "replacements": [
+        {
+          "name": "whole-vector-assignment",
+          "text": "    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position = xy;"
+        },
+        {
+          "name": "explicit-fields-x-y",
+          "text": "    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.x = xy.x;\n    panel_position.y = xy.y;"
+        },
+        {
+          "name": "explicit-fields-y-x",
+          "text": "    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.y = xy.y;\n    panel_position.x = xy.x;"
+        },
+        {
+          "name": "copy-through-named-vector",
+          "text": "    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    options_vec2_t adjusted_panel = xy;\n    panel_position = adjusted_panel;"
+        }
+      ]
+    },
+    {
+      "name": "heading-quad-coordinate-owner",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, panel_position.y, 128.0f, 32.0f);",
+      "replacements": [
+        {
+          "name": "panel-x-panel-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, panel_position.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "working-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, xy.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "panel-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, xy.y, 128.0f, 32.0f);"
+        }
+      ]
+    }
+  ]
+}

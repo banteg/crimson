@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "disjoint-vector-storage",
+      "find": "    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;",
+      "replacements": [
+        {
+          "name": "effect-storage-direction-reference",
+          "text": "    player_render_vec2_t effect_offset;\n    player_render_vec2_t &direction = effect_offset;"
+        },
+        {
+          "name": "direction-storage-effect-reference",
+          "text": "    player_render_vec2_t direction;\n    player_render_vec2_t &effect_offset = direction;"
+        }
+      ]
+    }
+  ]
+}

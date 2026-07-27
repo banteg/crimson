@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "direction-storage-type",
+      "find": "    player_render_vec2_t direction;",
+      "replacements": [
+        {
+          "name": "plain-vec2-storage",
+          "text": "    vec2f_t direction;"
+        }
+      ]
+    },
+    {
+      "name": "direction-assignment-shape",
+      "find": "                    direction = player_render_vec2_t(\n                        creature_pool[line_player->auto_target].pos_x\n                            - line_player->pos_x,\n                        creature_pool[line_player->auto_target].pos_y\n                            - line_player->pos_y);",
+      "replacements": [
+        {
+          "name": "assigned-components",
+          "text": "                    direction.x =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    direction.y =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;"
+        },
+        {
+          "name": "raw-vector-assignment",
+          "text": "                    *(player_render_vec2_t *)&direction =\n                        player_render_vec2_t(\n                            creature_pool[line_player->auto_target].pos_x\n                                - line_player->pos_x,\n                            creature_pool[line_player->auto_target].pos_y\n                                - line_player->pos_y);"
+        },
+        {
+          "name": "named-raw-vector-assignment",
+          "text": "                    player_render_vec2_t target_direction(\n                        creature_pool[line_player->auto_target].pos_x\n                            - line_player->pos_x,\n                        creature_pool[line_player->auto_target].pos_y\n                            - line_player->pos_y);\n                    *(player_render_vec2_t *)&direction = target_direction;"
+        }
+      ]
+    }
+  ]
+}

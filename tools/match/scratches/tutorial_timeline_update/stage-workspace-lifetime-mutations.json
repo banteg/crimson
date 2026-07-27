@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-stage-three-workspace",
+      "find": "    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n",
+      "replacements": [
+        {
+          "name": "declare-stage-three-third-position",
+          "text": "    tutorial_vec2_t stage3_pos2;\n    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n"
+        }
+      ]
+    },
+    {
+      "name": "remove-stage-three-block-declaration",
+      "find": "        tutorial_vec2_t stage3_pos0;\n        tutorial_vec2_t stage3_pos1;\n        tutorial_vec2_t stage3_pos2;\n        int *fire_key = &player_state_table[0].input.fire_key;\n",
+      "replacements": [
+        {
+          "name": "use-function-scope-third-position",
+          "text": "        tutorial_vec2_t stage3_pos0;\n        tutorial_vec2_t stage3_pos1;\n        int *fire_key = &player_state_table[0].input.fire_key;\n"
+        }
+      ]
+    }
+  ]
+}

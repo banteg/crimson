@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "version-right-edge-schedule",
+      "find": "        int text_width =\n            grim_interface_ptr->grim_measure_text_width(version_text);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,",
+      "replacements": [
+        {
+          "name": "named-right-edge",
+          "text": "        float version_right_edge = position.x + 192.0f;\n        int text_width =\n            grim_interface_ptr->grim_measure_text_width(version_text);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            version_right_edge - (float)text_width,"
+        },
+        {
+          "name": "named-right-edge-commuted",
+          "text": "        float version_right_edge = 192.0f + position.x;\n        int text_width =\n            grim_interface_ptr->grim_measure_text_width(version_text);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            version_right_edge - (float)text_width,"
+        }
+      ]
+    },
+    {
+      "name": "version-label-right-edge-schedule",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\"version\");\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,",
+      "replacements": [
+        {
+          "name": "named-right-edge",
+          "text": "        float version_label_right_edge = position.x + 192.0f;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(\"version\");\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            version_label_right_edge - (float)text_width,"
+        },
+        {
+          "name": "named-right-edge-commuted",
+          "text": "        float version_label_right_edge = 192.0f + position.x;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(\"version\");\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            version_label_right_edge - (float)text_width,"
+        }
+      ]
+    },
+    {
+      "name": "author-pointer-and-right-edge-schedule",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\n                mods_menu_selected_info->author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            mods_menu_selected_info->author);",
+      "replacements": [
+        {
+          "name": "named-author-and-right-edge",
+          "text": "        char *author = mods_menu_selected_info->author;\n        float author_right_edge = position.x + 192.0f;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            author_right_edge - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        },
+        {
+          "name": "named-author-only",
+          "text": "        char *author = mods_menu_selected_info->author;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        }
+      ]
+    },
+    {
+      "name": "filename-right-edge-schedule",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(filename);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,",
+      "replacements": [
+        {
+          "name": "named-right-edge",
+          "text": "        float filename_right_edge = position.x + 192.0f;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(filename);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            filename_right_edge - (float)text_width,"
+        },
+        {
+          "name": "named-right-edge-commuted",
+          "text": "        float filename_right_edge = 192.0f + position.x;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(filename);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            filename_right_edge - (float)text_width,"
+        }
+      ]
+    }
+  ]
+}

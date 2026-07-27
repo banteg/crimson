@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "open-list-state-snapshots",
+      "find": "    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (controls_move_method_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    if (controls_aim_method_list.open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_move_method_list.open || controls_aim_method_list.open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n",
+      "replacements": [
+        {
+          "name": "native-positioned-int-snapshots",
+          "text": "    int move_list_open = controls_move_method_list.open;\n    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (move_list_open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    int aim_list_open = controls_aim_method_list.open;\n    if (aim_list_open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (move_list_open || aim_list_open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n"
+        },
+        {
+          "name": "early-int-snapshots",
+          "text": "    int move_list_open = controls_move_method_list.open;\n    int aim_list_open = controls_aim_method_list.open;\n    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (move_list_open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    if (aim_list_open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (move_list_open || aim_list_open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n"
+        },
+        {
+          "name": "native-positioned-bool-snapshots",
+          "text": "    bool move_list_open = controls_move_method_list.open != 0;\n    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (move_list_open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    bool aim_list_open = controls_aim_method_list.open != 0;\n    if (aim_list_open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (move_list_open || aim_list_open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n"
+        },
+        {
+          "name": "move-int-snapshot-only",
+          "text": "    int move_list_open = controls_move_method_list.open;\n    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (move_list_open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    if (controls_aim_method_list.open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (move_list_open || controls_aim_method_list.open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n"
+        },
+        {
+          "name": "aim-int-snapshot-only",
+          "text": "    controls_move_method_list.enabled = 1;\n    controls_aim_method_list.enabled = 1;\n    controls_player_profile_list.enabled = 1;\n    controls_direction_arrow_checkbox.disabled = 0;\n    if (controls_move_method_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_player_profile_list.open) {\n        controls_aim_method_list.enabled = 0;\n        controls_move_method_list.enabled = 0;\n    }\n    int aim_list_open = controls_aim_method_list.open;\n    if (aim_list_open) {\n        controls_move_method_list.enabled = 0;\n        controls_player_profile_list.enabled = 0;\n    }\n    if (controls_move_method_list.open || aim_list_open) {\n        controls_direction_arrow_checkbox.disabled = 1;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

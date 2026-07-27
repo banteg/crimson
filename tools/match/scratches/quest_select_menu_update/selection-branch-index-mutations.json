@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "selected-index-declaration",
+      "find": "    int selected_minor;\n    int selected_index;",
+      "replacements": [
+        {
+          "name": "remove-unused-index",
+          "text": "    int selected_minor;"
+        },
+        {
+          "name": "index-before-minor",
+          "text": "    int selected_index;\n    int selected_minor;"
+        }
+      ]
+    },
+    {
+      "name": "validation-branch-index",
+      "find": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }",
+      "replacements": [
+        {
+          "name": "branch-assignment",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            selected_index =\n                quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else {\n            selected_index =\n                quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index < selected_index) {\n                return;\n            }\n        }"
+        },
+        {
+          "name": "branch-local-index",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            int branch_index =\n                quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index_full < branch_index) {\n                return;\n            }\n        } else {\n            int branch_index =\n                quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index < branch_index) {\n                return;\n            }\n        }"
+        },
+        {
+          "name": "branch-split-assignment",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            selected_index = quest_select_stage_minor_index;\n            selected_index += quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else {\n            selected_index = quest_select_stage_minor_index;\n            selected_index += quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index < selected_index) {\n                return;\n            }\n        }"
+        },
+        {
+          "name": "mode-byte-direct-index",
+          "text": "        unsigned char hardcore;\n        hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }"
+        }
+      ]
+    }
+  ]
+}

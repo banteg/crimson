@@ -2,9 +2,9 @@
 
 Native target: `crimsonland.exe` at `0x004475d0` (1,621 bytes).
 
-Current reconstruction: **71.20%**, 373 candidate instructions versus 377
-native instructions, with 146 aligned references proven, no unresolved
-references, and three alignment mismatches.
+Current reconstruction: **75.50%**, 378 candidate instructions versus 377
+native instructions, with 151 aligned references proven, no unresolved
+references, and one alignment mismatch.
 
 Live Binary Ninja and IDA evidence recovers the complete options-screen
 callback. It positions the panel from UI element 31, renders the options
@@ -18,16 +18,15 @@ sensitivity to 0.1..1.0. It also refreshes the violence-sensitive name and
 description of the Bloody Mess / Quick Learner perk slot, routes the Controls
 button, and handles Escape through the contextual Back action.
 
-The four-instruction residual is global VC6 allocation/scheduling shape. The
-native retains panel X in `edi`, later reuses that register for the detail
-maximum, and orders several independent two-float widget-position stores
-differently. The known VC6.5 point-profile, VC6.6, VC6.5pp, VC7, and `/G6`
-checks did not reproduce that allocation; the semantically direct `/GB`
-source remains the strongest result. The scratch is consequently
-`semantic-complete` with a `compiler` residual. Its three visible audit
-mismatches pair adjacent static-widget fields, render constants, and the
-already-recovered Bloody Mess / Quick Learner name-description values after
-that scheduling divergence; none is aliased away as reference debt.
+The remaining residual is global VC6 allocation/scheduling shape. The retained
+panel ownership correction now gives the candidate the native `edi` save and
+reuse for the detail maximum. The first region still orders independent x87
+work and the four color-argument pushes differently, and the candidate has one
+extra normalized instruction overall. The known VC6.5 point-profile, VC6.6,
+VC6.5pp, VC7, and `/G6` checks did not reproduce that schedule; the
+semantically direct `/GB` source remains the strongest result. The scratch is
+consequently `semantic-complete` with a `compiler` residual. Its one visible
+audit mismatch remains exposed rather than being treated as reference debt.
 
 ## Native-grounded SFX position sweep (2026-07-26)
 
@@ -76,3 +75,73 @@ Name-first ordering with a common description store gains only
 `11.45593235425008` weighted bytes; the two one-branch reorderings are weaker,
 and common name/description stores regress. The retained branch-local form is
 ordinary behavior-equivalent C++ and contains no match-only construct.
+
+## Panel ownership correction and mutation wave (2026-07-27)
+
+Live Binary Ninja disassembly resolves the opening allocation cascade as a
+source-ownership issue. After computing the adjusted working X, native
+`0x0044763a..0x00447654` copies both working-vector components back into the
+panel: Y is carried through `esi`, while adjusted X is stored, loaded into
+`edi`, and published to the panel X slot. The heading quad at
+`0x004476bc..0x004476c0` then passes panel Y in `esi` and panel X in `edi`.
+The previous source copied only X and passed a mixed working/panel pair.
+
+The complete 19-variant `panel-copyback-mutations.json` sweep found the
+corresponding two-site interaction: whole-vector `panel_position = xy`
+copyback plus panel-owned X/Y quad arguments. It improves weighted bytes by
+`52.47316556291389`, from `1154.152/1621` to
+`1206.625165562914/1621`; ratio rises from `71.2%` to
+`74.43708609271523%`, prefix from 8 to 10, references from `146/0/3` to
+`151/0/1`, and candidate instructions from 373 to 378. Its generated and
+retained source SHA-256 was
+`f4e5f016f2b1a9c713609984afad428ed727572a56e712b0523f8f62024f1c91`;
+the spec SHA-256 is
+`b0d263386d8db124df6bca4efb81a47c6ced3969711ad388aeaaf278fc1b80f6`.
+The whole-vector copy alone and the mixed-coordinate alternatives regress,
+which is why both source corrections are retained together.
+
+With that ownership fixed, the complete 29-variant
+`vector-assignment-schedule-mutations.json` sweep isolated one further
+compiler-lifetime improvement. Returning a named, ordinary
+`options_vec2_t result` from the inline addition helper gains
+`17.176158940397272` weighted bytes without changing the instruction count,
+prefix, or reference totals. It raises the final result to
+`1223.8013245033112/1621` (`75.49668874172185%`) and lowers the gap to
+`397.1986754966888`. The winning generated source SHA-256 was
+`f04f3fe3f3b14b7a897ec8a978cf06352d7c9fdf15fd3c4f25bcc39fe8947ea5`;
+the spec SHA-256 is
+`edbe07e9ed1c0a46ca3530b94e177b8f371926fcb4fed6b0d01277be8ce86cf9`.
+Explicit assignment operators all regress, so none was retained.
+
+This wave evaluated 397 planned variants across eight complete recorded
+sweeps, with no truncation:
+
+- `opening-panel-lifetime-mutations.json`: 137 variants. Its only positive
+  removes two candidate instructions and worsens references to `144/0/5`, so
+  it was rejected.
+- `detail-limit-lifetime-mutations.json`: 10 variants, all byte-identical.
+  This proves native `edi = 5` follows the opening allocation rather than the
+  detail declaration order.
+- `heading-quad-coordinate-owner-mutations.json`: 3 variants. Panel-owned X/Y
+  is the only positive and became part of the retained two-site correction.
+- `panel-copy-semantics-mutations.json`: 68 variants. Explicit copy
+  constructors and working-copy spellings add nothing; only the already-seen
+  panel-owned quad arguments improve.
+- `panel-copyback-mutations.json`: 19 variants, containing the retained
+  `+52.47316556291389` interaction above.
+- `vector-assignment-schedule-mutations.json`: 29 variants, containing the
+  retained `+17.176158940397272` named-result lifetime above.
+- `opening-vector-construction-v2-mutations.json`: 123 variants, all neutral
+  or worse after the retained changes.
+- `adjusted-panel-copyback-v2-mutations.json`: 8 variants, all worse.
+
+The other spec SHA-256 values, in the same order, are
+`6176405ee5ecc4d141edd312a986d30f996127618047d751a525800e606ca72b`,
+`0f295ee67627efd4912be03150f952411cec34970523acd1cb879b9b4d6aafb4`,
+`5551da65be28a5dc437b8d054606ec678d2d23f5e295056b53f5aea041072a76`,
+`41e29c789f556a8ff80a2003ffca1dac8868a8c26615c53dac6479c17d1a5e4a`,
+`c4ce2cf8814d7b2628c15c7732718525d182f14f8031e99534013e3d640b0225`,
+and
+`ac2eaec813733940e9d923ecf83839c6269b1bcbca40a7b0189429284606105f`.
+All retained source is behavior-preserving C++; no volatile state, dummy use,
+forced address, alias masking, inline assembly, or inert control flow is used.

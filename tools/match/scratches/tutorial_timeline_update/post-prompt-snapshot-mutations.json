@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "post-prompt-state-snapshot",
+      "find": "    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n    if (!tutorial_hint_bonus_consumed_latch) {\n",
+      "replacements": [
+        {
+          "name": "named-latch-after-stage",
+          "text": "    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n    bool hint_consumed = tutorial_hint_bonus_consumed_latch;\n    if (!hint_consumed) {\n"
+        },
+        {
+          "name": "stage-before-transition",
+          "text": "    stage = tutorial_stage_index;\n    transition = tutorial_stage_transition_timer;\n    if (!tutorial_hint_bonus_consumed_latch) {\n"
+        },
+        {
+          "name": "named-latch-before-stage",
+          "text": "    transition = tutorial_stage_transition_timer;\n    bool hint_consumed = tutorial_hint_bonus_consumed_latch;\n    stage = tutorial_stage_index;\n    if (!hint_consumed) {\n"
+        },
+        {
+          "name": "explicit-false-latch",
+          "text": "    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n    if (tutorial_hint_bonus_consumed_latch == false) {\n"
+        },
+        {
+          "name": "snapshot-then-assign",
+          "text": "    int next_transition = tutorial_stage_transition_timer;\n    int next_stage = tutorial_stage_index;\n    bool hint_consumed = tutorial_hint_bonus_consumed_latch;\n    transition = next_transition;\n    stage = next_stage;\n    if (!hint_consumed) {\n"
+        }
+      ]
+    }
+  ]
+}

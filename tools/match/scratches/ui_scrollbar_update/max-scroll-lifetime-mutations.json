@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "max-scroll-x87-lifetime",
+      "find": "    int max_scroll = item_count - visible_rows;\n    if ((float)max_scroll < state->scroll_offset) {\n        state->scroll_offset = (float)max_scroll;\n    }\n    if (state->scroll_offset < 0.0f) {\n        state->scroll_offset = 0.0f;\n    }\n\n    int first_item = (int)state->scroll_offset;\n    float thumb_height =\n        (float)visible_rows / (float)item_count * interior_height;\n    if (thumb_height > interior_height) {\n        thumb_height = height - 3.0f;\n    }\n    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;",
+      "replacements": [
+        {
+          "name": "float-explicit-conversion",
+          "text": "    float max_scroll = (float)(item_count - visible_rows);\n    if (max_scroll < state->scroll_offset) {\n        state->scroll_offset = max_scroll;\n    }\n    if (state->scroll_offset < 0.0f) {\n        state->scroll_offset = 0.0f;\n    }\n\n    int first_item = (int)state->scroll_offset;\n    float thumb_height =\n        (float)visible_rows / (float)item_count * interior_height;\n    if (thumb_height > interior_height) {\n        thumb_height = height - 3.0f;\n    }\n    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "float-implicit-conversion",
+          "text": "    float max_scroll = item_count - visible_rows;\n    if (max_scroll < state->scroll_offset) {\n        state->scroll_offset = max_scroll;\n    }\n    if (state->scroll_offset < 0.0f) {\n        state->scroll_offset = 0.0f;\n    }\n\n    int first_item = (int)state->scroll_offset;\n    float thumb_height =\n        (float)visible_rows / (float)item_count * interior_height;\n    if (thumb_height > interior_height) {\n        thumb_height = height - 3.0f;\n    }\n    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "long-double-explicit-conversion",
+          "text": "    long double max_scroll = (long double)(item_count - visible_rows);\n    if (max_scroll < state->scroll_offset) {\n        state->scroll_offset = (float)max_scroll;\n    }\n    if (state->scroll_offset < 0.0f) {\n        state->scroll_offset = 0.0f;\n    }\n\n    int first_item = (int)state->scroll_offset;\n    float thumb_height =\n        (float)visible_rows / (float)item_count * interior_height;\n    if (thumb_height > interior_height) {\n        thumb_height = height - 3.0f;\n    }\n    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;"
+        }
+      ]
+    }
+  ]
+}

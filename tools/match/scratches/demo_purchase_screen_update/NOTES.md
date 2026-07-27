@@ -54,3 +54,10 @@ The remaining differences are the native cold placement of the five-message
 selection ladder, seven candidate instructions, and x87 scheduling within the
 message renderer. They are retained rather than forcing layout-only control
 flow, stack overlays, volatile qualifiers, or other byte-shaping constructs.
+
+The recorded `message-selector-shape/switch` variant raises the aggregate fuzzy
+score by `12.49` weighted bytes and happens to equalize the instruction counts.
+It is deliberately rejected: the regional diff shows VC6 emitting a jump table,
+while live native disassembly at `0x0040c137..0x0040c185` is the recovered
+comparison ladder. The higher aggregate score is therefore not matching
+evidence for a source correction.

@@ -121,7 +121,8 @@ extern "C" void credits_secret_alien_zookeeper_update(void)
         board_position.x
         + ui_element_slot_09.render_offset_x
         - 80.0f;
-    board_position.y += 10.0f;
+    float board_y = board_position.y + 10.0f;
+    board_position.y = board_y;
     credits_secret_vec2_t button_origin = board_position;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);

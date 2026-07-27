@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-local-order",
+      "find": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int row = 0;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    int item_index = first_item;\n    char **item = state->items + first_item;",
+      "replacements": [
+        {
+          "name": "row-before-position",
+          "text": "    int row = 0;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    int item_index = first_item;\n    char **item = state->items + first_item;"
+        },
+        {
+          "name": "predeclare-row-item-position",
+          "text": "    int row;\n    int item_index;\n    char **item;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    row = 0;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item = state->items + first_item;"
+        },
+        {
+          "name": "position-predeclare-item-row",
+          "text": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int item_index;\n    char **item;\n    int row = 0;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item = state->items + first_item;"
+        },
+        {
+          "name": "row-position-predeclare-item",
+          "text": "    int row = 0;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    int item_index;\n    char **item;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item = state->items + first_item;"
+        },
+        {
+          "name": "predeclare-item-row-position",
+          "text": "    int item_index;\n    char **item;\n    int row = 0;\n    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;\n    if (visible_rows <= 0) {\n        return;\n    }\n\n    item_index = first_item;\n    item = state->items + first_item;"
+        }
+      ]
+    }
+  ]
+}

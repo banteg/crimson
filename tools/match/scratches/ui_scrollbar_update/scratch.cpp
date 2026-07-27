@@ -123,7 +123,9 @@ extern "C" void ui_scrollbar_update(
         (height - 3.0f - thumb_height) / (float)max_scroll
             * (float)first_item
         + 1.0f + xy->y;
-    scrollbar_vec2_t thumb_position(xy->x + 241.0f, thumb_y);
+    scrollbar_vec2_t thumb_position;
+    thumb_position.y = thumb_y;
+    thumb_position.x = xy->x + 241.0f;
 
     if (item_count > visible_rows) {
         {
@@ -178,9 +180,10 @@ extern "C" void ui_scrollbar_update(
         if (ui_scrollbar_drag_active && input_primary_is_down()) {
             float scroll_offset =
                 (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)
-                / height * (float)item_count;
+                / height * (float)state->item_count;
             state->scroll_offset = scroll_offset;
-            float max_offset = (float)(item_count - visible_rows);
+            float max_offset =
+                (float)(state->item_count - state->visible_rows);
             if (scroll_offset > max_offset) {
                 state->scroll_offset = max_offset;
             }
@@ -200,7 +203,7 @@ extern "C" void ui_scrollbar_update(
     int item_index = first_item;
     char **item = state->items + first_item;
     do {
-        if (row >= item_count) {
+        if (row >= state->item_count) {
             return;
         }
 
@@ -220,9 +223,12 @@ extern "C" void ui_scrollbar_update(
         }
 
         char *text = *item;
-        if (text[0] == '\\' && text[1] == 'g') {
-            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);
-            text += 2;
+        if (text[0] == '\\') {
+            if (text[1] == 'g') {
+                grim_interface_ptr->grim_set_color(
+                    0.7f, 1.0f, 0.7f, alpha);
+                text += 2;
+            }
         } else {
             grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);
         }
@@ -231,21 +237,20 @@ extern "C" void ui_scrollbar_update(
         int cursor = 0;
         int column = 0;
         if (text_length > 0) {
-            int *column_offset = state->column_offsets;
             do {
                 if (text[cursor] == '\t' || text[cursor] == '\0') {
                     text[cursor] = '\0';
-                    int x_offset = *column_offset * column;
+                    int x_offset =
+                        state->column_offsets[column] * column;
                     grim_interface_ptr->grim_draw_text_small(
                         row_position.x + (float)x_offset + 8.0f,
                         row_position.y + 2.0f,
                         text);
 
-                    int consumed = cursor + 1;
                     ++column;
-                    text += consumed;
-                    text_length -= consumed;
-                    ++column_offset;
+                    ++cursor;
+                    text += cursor;
+                    text_length -= cursor;
                     cursor = 0;
                 }
                 ++cursor;
@@ -256,5 +261,5 @@ extern "C" void ui_scrollbar_update(
         ++row;
         ++item;
         ++item_index;
-    } while (row < visible_rows);
+    } while (row < state->visible_rows);
 }

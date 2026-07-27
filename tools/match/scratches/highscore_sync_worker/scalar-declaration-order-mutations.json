@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scalar-declaration-order",
+      "find": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;",
+      "replacements": [
+        {
+          "name": "handles-before-header",
+          "text": "    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "score-and-bytes-before-handles",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "bytes-before-score-and-handles",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    DWORD bytes_read = 0;\n    unsigned char score_count;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "header-bytes-score-handles-success",
+          "text": "    DWORD headers_length = strlen(headers);\n    DWORD bytes_read = 0;\n    unsigned char score_count;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    online_sync_status = 1;\n    bool success = false;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "header-success-bytes-score-reverse-handles",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    DWORD bytes_read = 0;\n    unsigned char score_count;\n    HINTERNET request = 0;\n    HINTERNET connection = 0;\n    HINTERNET internet = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "reverse-handles",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    HINTERNET request = 0;\n    HINTERNET connection = 0;\n    HINTERNET internet = 0;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "request-internet-connection",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    HINTERNET request = 0;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "connection-request-internet",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    HINTERNET internet = 0;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;"
+        },
+        {
+          "name": "all-output-scalars-before-handles",
+          "text": "    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;"
+        },
+        {
+          "name": "header-after-all-scalars",
+          "text": "    online_sync_status = 1;\n    bool success = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;\n    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    DWORD headers_length = strlen(headers);"
+        },
+        {
+          "name": "outputs-header-handles",
+          "text": "    unsigned char score_count;\n    DWORD bytes_read = 0;\n    BOOL request_ok;\n    BOOL read_ok;\n    DWORD received;\n    DWORD headers_length = strlen(headers);\n    online_sync_status = 1;\n    bool success = false;\n    HINTERNET internet = 0;\n    HINTERNET connection = 0;\n    HINTERNET request = 0;"
+        },
+        {
+          "name": "native-slot-hypothesis",
+          "text": "    HINTERNET internet = 0;\n    BOOL request_ok;\n    HINTERNET request = 0;\n    DWORD bytes_read = 0;\n    unsigned char score_count;\n    DWORD headers_length = strlen(headers);\n    HINTERNET connection = 0;\n    BOOL read_ok;\n    DWORD received;\n    online_sync_status = 1;\n    bool success = false;"
+        }
+      ]
+    }
+  ]
+}

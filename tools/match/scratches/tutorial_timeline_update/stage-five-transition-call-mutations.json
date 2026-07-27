@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "repeat-limit-transition",
+      "find": "                if (tutorial_stage_transition_timer == -1) {\n                    tutorial_stage_transition_timer = -1000;\n                    sfx_play(sfx_ui_levelup, 1.0f);\n                    player_state_table[0].experience = 3000;\n                }\n                return;\n",
+      "replacements": [
+        {
+          "name": "named-sfx-id",
+          "text": "                if (tutorial_stage_transition_timer == -1) {\n                    int levelup_sfx_id = sfx_ui_levelup;\n                    tutorial_stage_transition_timer = -1000;\n                    sfx_play(levelup_sfx_id, 1.0f);\n                    player_state_table[0].experience = 3000;\n                }\n                return;\n"
+        },
+        {
+          "name": "const-named-sfx-id",
+          "text": "                if (tutorial_stage_transition_timer == -1) {\n                    const int levelup_sfx_id = sfx_ui_levelup;\n                    tutorial_stage_transition_timer = -1000;\n                    sfx_play(levelup_sfx_id, 1.0f);\n                    player_state_table[0].experience = 3000;\n                }\n                return;\n"
+        },
+        {
+          "name": "named-sfx-pointer",
+          "text": "                if (tutorial_stage_transition_timer == -1) {\n                    int *levelup_sfx_id = &sfx_ui_levelup;\n                    tutorial_stage_transition_timer = -1000;\n                    sfx_play(*levelup_sfx_id, 1.0f);\n                    player_state_table[0].experience = 3000;\n                }\n                return;\n"
+        },
+        {
+          "name": "negative-transition-guard",
+          "text": "                if (tutorial_stage_transition_timer != -1) {\n                    return;\n                }\n                tutorial_stage_transition_timer = -1000;\n                sfx_play(sfx_ui_levelup, 1.0f);\n                player_state_table[0].experience = 3000;\n                return;\n"
+        },
+        {
+          "name": "negative-guard-named-sfx",
+          "text": "                if (tutorial_stage_transition_timer != -1) {\n                    return;\n                }\n                int levelup_sfx_id = sfx_ui_levelup;\n                tutorial_stage_transition_timer = -1000;\n                sfx_play(levelup_sfx_id, 1.0f);\n                player_state_table[0].experience = 3000;\n                return;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-call-interface-lifetime",
+      "find": "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);",
+      "replacements": [
+        {
+          "name": "shared-local-interface",
+          "text": "    IGrim2D_cpp *color_interface = grim_interface_ptr;\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "separate-local-interfaces",
+          "text": "    IGrim2D_cpp *dim_color_interface = grim_interface_ptr;\n    dim_color_interface->grim_set_color(\n        1.0f, 1.0f, 1.0f, 0.9f);\n    IGrim2D_cpp *full_color_interface = grim_interface_ptr;\n    full_color_interface->grim_set_color(\n        1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "local-first-direct-second",
+          "text": "    IGrim2D_cpp *color_interface = grim_interface_ptr;\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "direct-first-local-second",
+          "text": "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);\n    IGrim2D_cpp *color_interface = grim_interface_ptr;\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "split-reload-local",
+          "text": "    IGrim2D_cpp *color_interface = grim_interface_ptr;\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);\n    color_interface = grim_interface_ptr;\n    color_interface->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        }
+      ]
+    }
+  ]
+}

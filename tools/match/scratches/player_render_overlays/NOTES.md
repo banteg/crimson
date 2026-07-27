@@ -23,9 +23,9 @@ therefore preserved as recovered native source shape, but deliberately not
 given a speculative gameplay name or treated as a required modern-port feature.
 
 With the standard `msvc6.5 /O2 /GB` profile, the complete candidate is an
-`83.88%` WIP (`1,141/1,148` instructions, prefix `9/1,148`). The target and
+`85.20%` WIP (`1,136/1,148` instructions, prefix `9/1,148`). The target and
 candidate prologues are identical through the `sub esp, 0x2c` local-frame
-allocation. Masked-reference auditing reports `326/0/0`: every aligned symbol
+allocation. Masked-reference auditing reports `325/0/0`: every aligned symbol
 resolves and agrees without a speculative alias.
 
 The target-trail direction is a two-component value passed in place as both
@@ -33,8 +33,9 @@ the destination and immutable source of `vec2_normalize_dispatch`. Its live
 prototype is now the proven stdcall
 `vec2f_t *(vec2f_t *, const vec2f_t *)`, replacing Binary Ninja's former cdecl
 `float *(float *, float *)` guess. Propagating that contract through this
-custom vector value is matcher-neutral and leaves the `83.88%` score and
-`326/0/0` reference audit unchanged.
+custom vector value remains matcher-neutral. The later target-direction
+assignment correction described below moves the current score to `85.20%`
+with a `325/0/0` reference audit.
 
 The muzzle-flash weapon-flag arms deliberately retain their identical
 `grim_draw_quad` calls. Native reloads the player size in each arm and pushes
@@ -160,3 +161,64 @@ remain 83.8794233%, a 738.645-byte fuzzy gap, 1,141/1,148 instructions,
 prefix 9, and `326/0/0` references. The final eight-record
 `experiments.jsonl` SHA-256 is
 `7581c8c2d39f5fb69f6971dd4b8f7f1d168603621c64e3d319e03e1e7a3526cb`.
+
+## Component-assignment correction and expanded mutation wave
+
+The same live Binary Ninja target and bundle identify one source-level
+imprecision in the recovered target-trail construction. Native computes the
+target x delta at `0x0042940f-0x0042941c`, writes it to `var_8.x` at
+`0x00429435`, computes the y delta at `0x00429420-0x0042943d`, and writes it
+to `var_8.y` at `0x00429457`. This is component assignment into the vector
+passed in place to `vec2_normalize_dispatch`, not construction of a temporary
+vector followed by whole-object assignment.
+
+`direction-pod-storage-mutations.json` tested the recovered assignment shape
+independently from the storage type. All seven planned variants were
+evaluated. Component assignment is the sole winner, adding
+60.573019 weighted bytes and 1.321978 percentage points. Replacing the custom
+vector storage with plain `vec2f_t` is byte-identical when combined with that
+assignment, so only the source correction is retained. The spec SHA-256 is
+`beac4704e5951617e851c50276d3ff3377dfe1e442c6f5a1a71c6886dbe431f5`.
+
+The retained source SHA-256 is
+`b4425bd97866530a2a8d39a28925924926010b09a3aa602baee0903e85c84a5b`.
+It improves the scratch from 83.8794233% to 85.2014011%, raises the
+fuzzy-weighted score from 3,843.355/4,582 to 3,903.928/4,582, and reduces the
+gap from 738.645 to 678.072 bytes. Candidate instruction count changes from
+1,141 to 1,136 against 1,148 native instructions; prefix remains 9. The
+aligned-reference inventory becomes `325/0/0`: one duplicate aligned
+reference is folded, with no unresolved or mismatched reference introduced.
+
+The mutation wave added 15 complete records and evaluated 181 planned
+variants. The positive assignment record is followed by complete reruns from
+the improved source where allocator interactions were plausible:
+
+| family | variants | spec SHA-256 | result |
+| --- | ---: | --- | --- |
+| tint alpha lifetime | 4 | `76aa7cdffa8e8000d71af5bf297ef126e52fcf479e87fe4c644c570bd83c2aa1` | neutral except one 4.382-byte regression |
+| vector scope lifetime | 23 | `e391add15d223cfbd408567e20d0a08fedf76f95944d4f9c7a10552c04b502e3` | effect scope neutral; direction localization regresses |
+| disjoint vector storage alias | 2 | `0bb88acdf9e90b9c63b2b2707d47268ced9a915f167acd335eede56349e28d7e` | rejects storage aliasing |
+| simple coordinate lifetime | 9 | `a57e8ba4288a55a2503f5c8d2bd46e214ae8d94ab0169eb93ac71237fdb487da` | named centers neutral; explicit forms regress |
+| recoil scope, before and after winner | 16 | `3873d9ade93ae5835c618f689a730188497c060e1963fedf689e2d367bdca47a` | all valid variants regress |
+| alive tint helper extraction | 5 | `70d78a0ceecc12039fa065acbdc48c10a4d6e5d12f1d45ef0421a27fd9cc8f5a` | value and const-reference helpers byte-identical |
+| target stride addressing | 11 | `4cb5fcca6d137391af966a220b47791ad898ca0210f68e547016aa6c1bc96ee0` | `19 * 8` forms neutral; vector subtraction regresses |
+| vector operator lowering | 24 | `ec26a9a4593ed06b1e2ebfdfdbdedf473a139dade57c8e64f941a4c1e9f62b54` | canonical forms neutral; explicit assignments regress |
+| half-size vector shape, before and after winner | 62 | `3f671eef7fd898bacab7d2585176e4a3f9fd5919a1e2f581c3b38fed44c4397c` | all five-site combinations byte-identical |
+| direction storage and assignment | 7 | `beac4704e5951617e851c50276d3ff3377dfe1e442c6f5a1a71c6886dbe431f5` | component assignment retained |
+| direction component lifetime | 6 | `38e975f1b69f0d3024f0c7f17c7b557b671d558892b700bd4ba55823730bc23a` | named deltas neutral; reversed order regresses |
+| shield and muzzle offset assignment | 8 | `12025e56d6d2f9fdc295bf0390b9e2a29a98688598e3ca488416f5610afdd7d2` | single-site forms neutral; paired forms regress |
+| target draw-origin construction | 4 | `c0ec852fd4ca9cb4d2bd38a71f7da7b8dab6828e23f5246cf3638b348b900a21` | all four forms byte-identical |
+
+A separate 30-cell profile matrix covered `msvc6.5` and `msvc6.6` across 15
+optimizer flag sets. `/O2 /GB`, `/O2 /G5`, explicit `/Ob1`, explicit `/Ot`,
+equivalent `/Og /Oi /Ot /Oy /Ob1|2`, and `/Zp8` all tie the retained
+baseline. `/Oi-`, `/Op`, `/Ob0`, `/Os`, and `/O1` regress; `/Za` does not
+compile this Windows-backed scratch. No compiler or flag override is retained.
+
+The final 23-record `experiments.jsonl` SHA-256 is
+`242ea9b60cec063273c84f1e3e0555beca0e9c3d3d5f377d931dd541cb170e76`.
+The first substantive residuals are still reusable-local/x87 scheduling
+differences, beginning at native `0x004285e8`; the largest later cluster is
+the multiplayer tint schedule at `0x00428c66-0x00428cd2`. The component
+correction is therefore retained as semantic recovery, while the remaining
+gap stays classified `RESIDUAL=compiler`.

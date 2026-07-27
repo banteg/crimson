@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "declare-column-pointer",
+      "find": "        if (text_length > 0) {\n            do {",
+      "replacements": [
+        {
+          "name": "native-pointer",
+          "text": "        if (text_length > 0) {\n            int *column_offset = state->column_offsets;\n            do {"
+        }
+      ]
+    },
+    {
+      "name": "load-through-column-pointer",
+      "find": "                    int x_offset =\n                        state->column_offsets[column] * column;",
+      "replacements": [
+        {
+          "name": "native-pointer",
+          "text": "                    int x_offset = *column_offset * column;"
+        }
+      ]
+    },
+    {
+      "name": "advance-column-pointer",
+      "find": "                    ++column;\n                    ++cursor;",
+      "replacements": [
+        {
+          "name": "native-pointer",
+          "text": "                    ++column;\n                    ++column_offset;\n                    ++cursor;"
+        }
+      ]
+    }
+  ]
+}

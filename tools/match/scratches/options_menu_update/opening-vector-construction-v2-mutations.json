@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-panel-construction-v2",
+      "find": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + options_vec2_t(300.0f, 40.0f);",
+      "replacements": [
+        {
+          "name": "anchor-then-in-place-add",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position =\n        panel_position + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "named-anchor-then-final",
+          "text": "    options_vec2_t panel_anchor =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    options_vec2_t panel_position =\n        panel_anchor + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "default-then-full-assignment",
+          "text": "    options_vec2_t panel_position;\n    panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "anchor-then-field-add-x-y",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position.x += 300.0f;\n    panel_position.y += 40.0f;"
+        },
+        {
+          "name": "anchor-then-field-add-y-x",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position.y += 40.0f;\n    panel_position.x += 300.0f;"
+        },
+        {
+          "name": "named-offset-then-chain",
+          "text": "    options_vec2_t panel_offset(300.0f, 40.0f);\n    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + panel_offset;"
+        },
+        {
+          "name": "direct-components-x-y",
+          "text": "    options_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_31.pos_x\n        + ui_element_slot_31.vertices[0].x\n        + 300.0f;\n    panel_position.y =\n        ui_element_slot_31.pos_y\n        + ui_element_slot_31.vertices[0].y\n        + 40.0f;"
+        },
+        {
+          "name": "direct-components-y-x",
+          "text": "    options_vec2_t panel_position;\n    panel_position.y =\n        ui_element_slot_31.pos_y\n        + ui_element_slot_31.vertices[0].y\n        + 40.0f;\n    panel_position.x =\n        ui_element_slot_31.pos_x\n        + ui_element_slot_31.vertices[0].x\n        + 300.0f;"
+        }
+      ]
+    },
+    {
+      "name": "two-float-constructor-shape",
+      "find": "    options_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}",
+      "replacements": [
+        {
+          "name": "body-x-then-y",
+          "text": "    options_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }"
+        },
+        {
+          "name": "body-y-then-x",
+          "text": "    options_vec2_t(float x_value, float y_value)\n    {\n        y = y_value;\n        x = x_value;\n    }"
+        },
+        {
+          "name": "reversed-initializer-list",
+          "text": "    options_vec2_t(float x_value, float y_value)\n        : y(y_value), x(x_value) {}"
+        },
+        {
+          "name": "const-reference-parameters",
+          "text": "    options_vec2_t(const float &x_value, const float &y_value)\n        : x(x_value), y(y_value) {}"
+        },
+        {
+          "name": "named-parameter-copies",
+          "text": "    options_vec2_t(float x_value, float y_value)\n    {\n        float new_x = x_value;\n        float new_y = y_value;\n        x = new_x;\n        y = new_y;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "inline-vector-add-signature",
+      "find": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }",
+      "replacements": [
+        {
+          "name": "named-result-natural-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "by-value-reversed-y",
+          "text": "    options_vec2_t operator+(options_vec2_t other) const\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }"
+        },
+        {
+          "name": "by-value-natural-y",
+          "text": "    options_vec2_t operator+(options_vec2_t other) const\n    {\n        options_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "nonconst-method-reversed-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other)\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }"
+        },
+        {
+          "name": "const-named-result",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        const options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }"
+        }
+      ]
+    }
+  ]
+}

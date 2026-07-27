@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-stage-three-escaped-positions",
+      "find": "    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n",
+      "replacements": [
+        {
+          "name": "declare-first-two-stage-three-positions",
+          "text": "    tutorial_vec2_t stage3_pos0;\n    tutorial_vec2_t stage3_pos1;\n    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n"
+        },
+        {
+          "name": "declare-all-three-stage-three-positions",
+          "text": "    tutorial_vec2_t stage3_pos0;\n    tutorial_vec2_t stage3_pos1;\n    tutorial_vec2_t stage3_pos2;\n    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n"
+        }
+      ]
+    },
+    {
+      "name": "stage-three-block-position-declarations",
+      "find": "        tutorial_vec2_t stage3_pos0;\n        tutorial_vec2_t stage3_pos1;\n        tutorial_vec2_t stage3_pos2;\n        int *fire_key = &player_state_table[0].input.fire_key;\n",
+      "replacements": [
+        {
+          "name": "retain-third-position-only",
+          "text": "        tutorial_vec2_t stage3_pos2;\n        int *fire_key = &player_state_table[0].input.fire_key;\n"
+        },
+        {
+          "name": "remove-all-position-declarations",
+          "text": "        int *fire_key = &player_state_table[0].input.fire_key;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-lowering",
+      "find": "    player_render_vec2_t operator+(\n        const player_render_vec2_t &other) const\n    {\n        return player_render_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "named-constructed-result",
+          "text": "    player_render_vec2_t operator+(\n        const player_render_vec2_t &other) const\n    {\n        player_render_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "assigned-result-components",
+          "text": "    player_render_vec2_t operator+(\n        const player_render_vec2_t &other) const\n    {\n        player_render_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "copy-then-add-components",
+          "text": "    player_render_vec2_t operator+(\n        const player_render_vec2_t &other) const\n    {\n        player_render_vec2_t result(*this);\n        result.x += other.x;\n        result.y += other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "named-component-results",
+          "text": "    player_render_vec2_t operator+(\n        const player_render_vec2_t &other) const\n    {\n        float result_x = x + other.x;\n        float result_y = y + other.y;\n        return player_render_vec2_t(result_x, result_y);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "scalar-subtract-lowering",
+      "find": "    player_render_vec2_t operator-(float value) const\n    {\n        return player_render_vec2_t(x - value, y - value);\n    }",
+      "replacements": [
+        {
+          "name": "named-constructed-result",
+          "text": "    player_render_vec2_t operator-(float value) const\n    {\n        player_render_vec2_t result(x - value, y - value);\n        return result;\n    }"
+        },
+        {
+          "name": "assigned-result-components",
+          "text": "    player_render_vec2_t operator-(float value) const\n    {\n        player_render_vec2_t result;\n        result.x = x - value;\n        result.y = y - value;\n        return result;\n    }"
+        },
+        {
+          "name": "copy-then-subtract-components",
+          "text": "    player_render_vec2_t operator-(float value) const\n    {\n        player_render_vec2_t result(*this);\n        result.x -= value;\n        result.y -= value;\n        return result;\n    }"
+        },
+        {
+          "name": "subtract-splat-vector",
+          "text": "    player_render_vec2_t operator-(float value) const\n    {\n        player_render_vec2_t scalar(value, value);\n        return *this - scalar;\n    }"
+        }
+      ]
+    }
+  ]
+}

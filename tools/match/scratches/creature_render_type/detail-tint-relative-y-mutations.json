@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-tint-relative-y",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);",
+      "replacements": [
+        {
+          "name": "typed-owner-inline-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    ((creature_t *)((char *)tint\n                        - offsetof(creature_t, color)))->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        },
+        {
+          "name": "relative-float-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    ((float *)tint)[\n                        (offsetof(creature_t, position)\n                            + offsetof(vec2f_t, y)\n                            - offsetof(creature_t, color)) / sizeof(float)])\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        },
+        {
+          "name": "relative-byte-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    *(float *)((char *)tint\n                        + offsetof(creature_t, position)\n                        + offsetof(vec2f_t, y)\n                        - offsetof(creature_t, color)))\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        },
+        {
+          "name": "named-relative-float-y",
+          "text": "            const float *tint_words = (const float *)tint;\n            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    tint_words[(offsetof(creature_t, position)\n                        + offsetof(vec2f_t, y)\n                        - offsetof(creature_t, color)) / sizeof(float)])\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        }
+      ]
+    }
+  ]
+}

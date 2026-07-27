@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "board-loop-outer-declarations",
+      "find": "    int row = 0;\n    int row_y_offset = 0;\n    int row_base_index = 0;\n    int *cell = credits_secret_board;",
+      "replacements": [
+        {
+          "name": "cell-first",
+          "text": "    int *cell = credits_secret_board;\n    int row = 0;\n    int row_y_offset = 0;\n    int row_base_index = 0;"
+        },
+        {
+          "name": "cell-before-base-index",
+          "text": "    int row = 0;\n    int row_y_offset = 0;\n    int *cell = credits_secret_board;\n    int row_base_index = 0;"
+        },
+        {
+          "name": "offset-before-row",
+          "text": "    int row_y_offset = 0;\n    int row = 0;\n    int row_base_index = 0;\n    int *cell = credits_secret_board;"
+        },
+        {
+          "name": "base-index-before-offset",
+          "text": "    int row = 0;\n    int row_base_index = 0;\n    int row_y_offset = 0;\n    int *cell = credits_secret_board;"
+        },
+        {
+          "name": "split-cell-initialization",
+          "text": "    int row = 0;\n    int row_y_offset = 0;\n    int row_base_index = 0;\n    int *cell;\n    cell = credits_secret_board;"
+        },
+        {
+          "name": "address-of-first-cell",
+          "text": "    int row = 0;\n    int row_y_offset = 0;\n    int row_base_index = 0;\n    int *cell = &credits_secret_board[0];"
+        }
+      ]
+    },
+    {
+      "name": "board-loop-inner-declarations",
+      "find": "        int column_x_offset = 0;\n        int column = 0;",
+      "replacements": [
+        {
+          "name": "column-before-offset",
+          "text": "        int column = 0;\n        int column_x_offset = 0;"
+        },
+        {
+          "name": "split-column",
+          "text": "        int column_x_offset = 0;\n        int column;\n        column = 0;"
+        },
+        {
+          "name": "split-offset",
+          "text": "        int column_x_offset;\n        column_x_offset = 0;\n        int column = 0;"
+        }
+      ]
+    },
+    {
+      "name": "board-cell-value-load",
+      "find": "            int value = *cell;",
+      "replacements": [
+        {
+          "name": "split-value-load",
+          "text": "            int value;\n            value = *cell;"
+        },
+        {
+          "name": "array-zero-load",
+          "text": "            int value = cell[0];"
+        },
+        {
+          "name": "const-value-load",
+          "text": "            const int value = *cell;"
+        }
+      ]
+    }
+  ]
+}

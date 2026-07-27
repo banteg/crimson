@@ -8,6 +8,17 @@ extern IGrim2D_cpp *grim_interface_ptr;
 struct quest_results_vec2_t {
     float x;
     float y;
+
+    quest_results_vec2_t() {}
+
+    quest_results_vec2_t(float x_value, float y_value)
+        : x(x_value), y(y_value) {}
+
+    quest_results_vec2_t operator+(
+        const quest_results_vec2_t &other) const
+    {
+        return quest_results_vec2_t(x + other.x, y + other.y);
+    }
 };
 
 struct quest_results_text_input_t {
@@ -139,17 +150,13 @@ extern "C" void quest_results_screen_update(void)
     static quest_results_text_input_t name_input(
         quest_results_name_input_buffer, 0x18, 0x60);
 
-    quest_results_vec2_t panel_xy;
-    panel_xy.x =
-        ui_element_slot_35.pos.x
-        + ui_element_slot_35.vertices[0].position.x;
-    panel_xy.y =
-        ui_element_slot_35.vertices[0].position.y
-        + ui_element_slot_35.pos.y;
-    panel_xy.x += 180.0f;
+    quest_results_vec2_t panel_xy =
+        *(quest_results_vec2_t *)&ui_element_slot_35.pos
+        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position
+        + quest_results_vec2_t(180.0f, 40.0f);
 
+    quest_results_vec2_t record_xy;
     quest_results_vec2_t xy = panel_xy;
-    xy.y += 40.0f;
     xy.x += ui_element_slot_35.render_offset_x;
     xy.x += 40.0f;
     ui_draw_textured_quad(
@@ -461,7 +468,6 @@ extern "C" void quest_results_screen_update(void)
         xy.y += 30.0f;
         grim_interface_ptr->grim_set_color_ptr(
             &render_tint_color_r);
-        quest_results_vec2_t record_xy;
         record_xy.x = xy.x + 26.0f;
         record_xy.y = xy.y + 16.0f;
         ui_text_input_render(

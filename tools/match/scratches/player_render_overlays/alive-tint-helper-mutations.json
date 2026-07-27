@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "introduce-alive-tint-helper",
+      "find": "static __inline float player_render_distance(\n",
+      "replacements": [
+        {
+          "name": "value-parameter",
+          "text": "static __inline void player_render_set_alive_tint(float tint_alpha)\n{\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, tint_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, tint_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, tint_alpha);\n        }\n    }\n}\n\nstatic __inline float player_render_distance(\n"
+        },
+        {
+          "name": "const-reference-parameter",
+          "text": "static __inline void player_render_set_alive_tint(\n    const float &tint_alpha)\n{\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, tint_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, tint_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, tint_alpha);\n        }\n    }\n}\n\nstatic __inline float player_render_distance(\n"
+        }
+      ]
+    },
+    {
+      "name": "replace-alive-tint-block",
+      "find": "    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, transition_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, transition_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, transition_alpha);\n        }\n    }",
+      "replacements": [
+        {
+          "name": "call-helper",
+          "text": "    player_render_set_alive_tint(transition_alpha);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-panel-elision",
+      "find": "    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position =\n        panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;",
+      "replacements": [
+        {
+          "name": "direct-components",
+          "text": "    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x\n        + 300.0f;\n    position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y + 40.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "direct-base-plus-assignment",
+          "text": "    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x\n        + 300.0f;\n    position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    position =\n        position + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "direct-base-plus-equals",
+          "text": "    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x\n        + 300.0f;\n    position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    position += quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "constructed-base-plus-assignment",
+          "text": "    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position =\n        quest_select_vec2_t(\n            ui_element_slot_37.pos.x\n                + ui_element_slot_37.vertices[0].position.x\n                + 300.0f,\n            ui_element_slot_37.vertices[0].position.y\n                + ui_element_slot_37.pos.y)\n        + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "named-scalars-plus-assignment",
+          "text": "    float panel_x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x\n        + 300.0f;\n    float panel_y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position =\n        quest_select_vec2_t(panel_x, panel_y)\n        + quest_select_vec2_t(0.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "panel-plus-equals-then-copy",
+          "text": "    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n    panel_position += quest_select_vec2_t(0.0f, 40.0f);\n\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position = panel_position;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "panel-y-adjust-then-copy",
+          "text": "    quest_select_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_37.pos.x\n        + ui_element_slot_37.vertices[0].position.x;\n    panel_position.y =\n        ui_element_slot_37.vertices[0].position.y\n        + ui_element_slot_37.pos.y;\n    panel_position.x += 300.0f;\n    panel_position.y += 40.0f;\n\n    bool row_hovered = false;\n    quest_select_vec2_t position;\n    position = panel_position;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "nested-panel-plus-assignment",
+          "text": "    bool row_hovered = false;\n    quest_select_vec2_t position;\n    {\n        quest_select_vec2_t panel_position;\n        panel_position.x =\n            ui_element_slot_37.pos.x\n            + ui_element_slot_37.vertices[0].position.x;\n        panel_position.y =\n            ui_element_slot_37.vertices[0].position.y\n            + ui_element_slot_37.pos.y;\n        panel_position.x += 300.0f;\n        position =\n            panel_position + quest_select_vec2_t(0.0f, 40.0f);\n    }\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        }
+      ]
+    }
+  ]
+}

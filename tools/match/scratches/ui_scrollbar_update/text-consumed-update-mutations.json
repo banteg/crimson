@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-consumed-update",
+      "find": "                    int consumed = cursor + 1;\n                    ++column;\n                    text += consumed;\n                    text_length -= consumed;\n                    cursor = 0;",
+      "replacements": [
+        {
+          "name": "column-then-cursor",
+          "text": "                    ++column;\n                    ++cursor;\n                    text += cursor;\n                    text_length -= cursor;\n                    cursor = 0;"
+        },
+        {
+          "name": "cursor-then-column",
+          "text": "                    ++cursor;\n                    ++column;\n                    text += cursor;\n                    text_length -= cursor;\n                    cursor = 0;"
+        },
+        {
+          "name": "direct-cursor-plus-one",
+          "text": "                    ++column;\n                    text += cursor + 1;\n                    text_length -= cursor + 1;\n                    cursor = 0;"
+        },
+        {
+          "name": "preincrement-expressions",
+          "text": "                    ++column;\n                    text += ++cursor;\n                    text_length -= cursor;\n                    cursor = 0;"
+        }
+      ]
+    }
+  ]
+}

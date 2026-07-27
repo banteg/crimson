@@ -14,7 +14,8 @@ struct options_vec2_t {
 
     options_vec2_t operator+(const options_vec2_t &other) const
     {
-        return options_vec2_t(x + other.x, other.y + y);
+        options_vec2_t result(x + other.x, other.y + y);
+        return result;
     }
 };
 
@@ -113,14 +114,14 @@ extern "C" void options_menu_update(void)
     options_vec2_t xy = panel_position;
     xy.x =
         ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;
-    panel_position.x = xy.x;
+    panel_position = xy;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_bind_texture(ui_item_texts_texture, 0);
     grim_interface_ptr->grim_set_uv(0.0f, 0.25f, 1.0f, 0.375f);
     grim_interface_ptr->grim_set_config_var(0x15, 1u);
     grim_interface_ptr->grim_draw_quad(
-        xy.x, panel_position.y, 128.0f, 32.0f);
+        panel_position.x, panel_position.y, 128.0f, 32.0f);
     grim_interface_ptr->grim_end_batch();
     grim_interface_ptr->grim_set_config_var(0x15, 2u);
 

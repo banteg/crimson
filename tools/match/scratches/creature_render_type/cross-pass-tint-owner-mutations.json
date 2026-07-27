@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-draw-y-from-tint-owner",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;",
+      "replacements": [
+        {
+          "name": "typed-owner-y",
+          "text": "            creature_t *tint_owner = (creature_t *)((char *)tint\n                - offsetof(creature_t, color));\n            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x, tint_owner->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;"
+        }
+      ]
+    },
+    {
+      "name": "main-normal-draw-y-from-tint-owner",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f,\n                    creature->size * 0.5f);\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "typed-owner-y",
+          "text": "            creature_t *tint_owner = (creature_t *)((char *)tint\n                - offsetof(creature_t, color));\n            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x, tint_owner->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f,\n                    creature->size * 0.5f);\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);"
+        }
+      ]
+    }
+  ]
+}

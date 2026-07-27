@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "main-animation-cursor-header",
+      "find": "    } else {\n        for (int creature_index = 0; creature_index < 384; creature_index++) {\n            creature_t *creature = &creature_pool[creature_index];\n            if (!creature->active || creature->type_id != type_id) {",
+      "replacements": [
+        {
+          "name": "animation-do-loop",
+          "text": "    } else {\n        float *anim_phase = &creature_pool[0].anim_phase;\n        do {\n            creature_t *creature = (creature_t *)((char *)anim_phase\n                - offsetof(creature_t, anim_phase));\n            if (!creature->active || creature->type_id != type_id) {"
+        }
+      ]
+    },
+    {
+      "name": "main-animation-cursor-tail",
+      "find": "            if (creature->lifecycle_stage < -10.0f) {\n                creature->active = 0;\n                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {\n                    creature_spawn_slot_table[creature->link_index].owner = 0;\n                }\n            }\n        }\n    }",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "typed-end-pointer",
+          "text": "            if (creature->lifecycle_stage < -10.0f) {\n                creature->active = 0;\n                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {\n                    creature_spawn_slot_table[creature->link_index].owner = 0;\n                }\n            }\n            anim_phase += sizeof(creature_t) / sizeof(float);\n        } while (anim_phase < &creature_pool[384].anim_phase);\n    }"
+        },
+        {
+          "name": "integer-end-pointer",
+          "text": "            if (creature->lifecycle_stage < -10.0f) {\n                creature->active = 0;\n                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {\n                    creature_spawn_slot_table[creature->link_index].owner = 0;\n                }\n            }\n            anim_phase += sizeof(creature_t) / sizeof(float);\n        } while ((int)anim_phase < (int)&creature_pool[384].anim_phase);\n    }"
+        },
+        {
+          "name": "global-offset-end",
+          "text": "            if (creature->lifecycle_stage < -10.0f) {\n                creature->active = 0;\n                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {\n                    creature_spawn_slot_table[creature->link_index].owner = 0;\n                }\n            }\n            anim_phase += sizeof(creature_t) / sizeof(float);\n        } while ((int)anim_phase\n            < (int)(&creature_pool[0].anim_phase + 384 * 38));\n    }"
+        },
+        {
+          "name": "preincrement-condition",
+          "text": "            if (creature->lifecycle_stage < -10.0f) {\n                creature->active = 0;\n                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {\n                    creature_spawn_slot_table[creature->link_index].owner = 0;\n                }\n            }\n        } while ((anim_phase += sizeof(creature_t) / sizeof(float))\n            < &creature_pool[384].anim_phase);\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -132,10 +132,10 @@ extern "C" void quest_select_menu_update(void)
 
     bool row_hovered = false;
     quest_select_vec2_t position;
-    position = panel_position;
-    position.y += 40.0f;
-    position.x += 64.0f;
+    position =
+        panel_position + quest_select_vec2_t(0.0f, 40.0f);
     position.x += ui_element_slot_37.render_offset_x;
+    position.x += 64.0f;
     position.x -= 145.0f;
     position.y += 4.0f;
 
@@ -283,21 +283,19 @@ extern "C" void quest_select_menu_update(void)
 
         int quest_index = row + quest_select_stage_major * 10 - 10;
         if (config_hardcore) {
-            if (quest_unlock_index_full < quest_index) {
-                goto locked_row;
+            if (quest_unlock_index_full >= quest_index) {
+                goto unlocked_row;
             }
-        } else if (quest_unlock_index < quest_index) {
-            goto locked_row;
+        } else if (quest_unlock_index >= quest_index) {
+            goto unlocked_row;
         }
-        goto unlocked_row;
 
-locked_row:
         next_row = row + 1;
         {
             float row_y = position.y;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x,
-                position.y,
+                row_y,
                 "%d.%d",
                 quest_select_stage_major,
                 next_row);
@@ -358,8 +356,9 @@ row_done:
             "(completed/games)");
     }
 
-    position.x = hover_left;
+    float controls_x = hover_left;
     position.y += 12.0f;
+    position.x = controls_x;
     if (grim_interface_ptr->grim_was_key_pressed(203)) {
         --quest_select_stage_major;
         if (quest_select_stage_major < 1) {
@@ -378,7 +377,9 @@ row_done:
 
     static quest_select_button_t back_button;
     back_button.label = menu_label_back;
-    quest_select_vec2_t back_position(position.x + 148.0f, position.y);
+    quest_select_vec2_t back_position;
+    back_position.x = position.x + 148.0f;
+    back_position.y = position.y;
     ui_button_update(
         (float *)&back_position,
         (ui_button_t *)&back_button);
@@ -436,15 +437,21 @@ start_selected:
             return;
         }
 validate_selected:
-        selected_index = selected_minor + quest_select_stage_major * 10 - 10;
-        if (config_hardcore) {
-            if (quest_unlock_index_full < selected_index) {
-                return;
+        unsigned char hardcore = config_hardcore;
+        if (hardcore) {
+            if (quest_unlock_index_full
+                >= quest_select_stage_minor_index
+                    + quest_select_stage_major * 10 - 10) {
+                goto selection_unlocked;
             }
-        } else if (quest_unlock_index < selected_index) {
+            return;
+        } else if (quest_unlock_index
+            < quest_select_stage_minor_index
+                + quest_select_stage_major * 10 - 10) {
             return;
         }
 
+selection_unlocked:
         ui_sign_crimson.focus_disabled = 0;
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_GAMEPLAY;

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "formation-polarity-value",
+      "find": "            if (tutorial_repeat_spawn_count & 1) {\n",
+      "replacements": [
+        {
+          "name": "named-repeat-value",
+          "text": "            if (repeat_count & 1) {\n"
+        }
+      ]
+    },
+    {
+      "name": "odd-carrier-gate-value",
+      "find": "                if (tutorial_repeat_spawn_count < 6) {\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-repeat-value",
+          "text": "                if (repeat_count < 6) {\n"
+        }
+      ]
+    },
+    {
+      "name": "even-carrier-gate-value",
+      "find": "                if (tutorial_repeat_spawn_count < 6) {\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "named-repeat-value",
+          "text": "                if (repeat_count < 6) {\n"
+        }
+      ]
+    }
+  ]
+}

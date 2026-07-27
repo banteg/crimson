@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "heading-quad-coordinate-owner",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, panel_position.y, 128.0f, 32.0f);",
+      "replacements": [
+        {
+          "name": "panel-x-panel-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, panel_position.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "working-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, xy.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "panel-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, xy.y, 128.0f, 32.0f);"
+        }
+      ]
+    }
+  ]
+}

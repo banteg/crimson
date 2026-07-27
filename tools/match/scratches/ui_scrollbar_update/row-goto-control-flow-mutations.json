@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-loop-label",
+      "find": "    do {\n        if (row >= state->item_count) {",
+      "replacements": [
+        {
+          "name": "native-top-label",
+          "text": "row_loop:\n        if (row >= state->item_count) {"
+        }
+      ]
+    },
+    {
+      "name": "row-loop-backedge",
+      "find": "        ++item_index;\n    } while (row < state->visible_rows);",
+      "replacements": [
+        {
+          "name": "native-conditional-goto",
+          "text": "        ++item_index;\n        if (row < state->visible_rows) {\n            goto row_loop;\n        }"
+        }
+      ]
+    }
+  ]
+}

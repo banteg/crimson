@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-alpha-local-order",
+      "find": "        float alpha;\n        if ((unsigned char)ui_mouse_inside_rect(\n                (float *)&row_position, 17, 240)) {\n            alpha = 1.0f;\n            state->hovered_index = item_index;\n            if (input_primary_just_pressed()) {\n                state->selected_index = item_index;\n            }\n        } else {\n            alpha = 0.9f;\n            if (state->selected_index != item_index) {\n                alpha = 0.7f;\n            }\n        }\n\n        char *text = *item;",
+      "replacements": [
+        {
+          "name": "text-before-alpha",
+          "text": "        char *text;\n        float alpha;\n        if ((unsigned char)ui_mouse_inside_rect(\n                (float *)&row_position, 17, 240)) {\n            alpha = 1.0f;\n            state->hovered_index = item_index;\n            if (input_primary_just_pressed()) {\n                state->selected_index = item_index;\n            }\n        } else {\n            alpha = 0.9f;\n            if (state->selected_index != item_index) {\n                alpha = 0.7f;\n            }\n        }\n\n        text = *item;"
+        },
+        {
+          "name": "alpha-then-text-predeclared",
+          "text": "        float alpha;\n        char *text;\n        if ((unsigned char)ui_mouse_inside_rect(\n                (float *)&row_position, 17, 240)) {\n            alpha = 1.0f;\n            state->hovered_index = item_index;\n            if (input_primary_just_pressed()) {\n                state->selected_index = item_index;\n            }\n        } else {\n            alpha = 0.9f;\n            if (state->selected_index != item_index) {\n                alpha = 0.7f;\n            }\n        }\n\n        text = *item;"
+        }
+      ]
+    }
+  ]
+}

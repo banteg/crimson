@@ -488,11 +488,12 @@ extern "C" void player_render_overlays(void)
                             [line_player->auto_target]
                                 .position)
                     <= 80.0f) {
-                    direction = player_render_vec2_t(
+                    direction.x =
                         creature_pool[line_player->auto_target].pos_x
-                            - line_player->pos_x,
+                        - line_player->pos_x;
+                    direction.y =
                         creature_pool[line_player->auto_target].pos_y
-                            - line_player->pos_y);
+                        - line_player->pos_y;
                     float distance = (float)sqrt(
                         direction.y * direction.y
                         + direction.x * direction.x);

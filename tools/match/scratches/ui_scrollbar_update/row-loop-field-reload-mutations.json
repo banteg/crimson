@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "initial-visible-rows-reload",
+      "find": "    if (visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "state-field",
+          "text": "    if (state->visible_rows <= 0) {"
+        }
+      ]
+    },
+    {
+      "name": "item-count-loop-reload",
+      "find": "        if (row >= item_count) {",
+      "replacements": [
+        {
+          "name": "state-field",
+          "text": "        if (row >= state->item_count) {"
+        }
+      ]
+    },
+    {
+      "name": "visible-rows-loop-reload",
+      "find": "    } while (row < visible_rows);",
+      "replacements": [
+        {
+          "name": "state-field",
+          "text": "    } while (row < state->visible_rows);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "received-hardcore-marker-lifetime",
+      "find": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }",
+      "replacements": [
+        {
+          "name": "reload-before-copy",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "reload-after-copy",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                unsigned char hardcore_marker = config_hardcore ? 0x75 : 0;\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "inline-after-flags",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "inline-before-flags",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                received_record.flags = 1;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        }
+      ]
+    }
+  ]
+}

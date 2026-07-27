@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "revert-thumb-grab-item-count",
+      "find": "                        - state->scroll_offset\n                            / (float)state->item_count * height;",
+      "replacements": [
+        {
+          "name": "cached-local",
+          "text": "                        - state->scroll_offset / (float)item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "revert-drag-item-count",
+      "find": "                / height * (float)state->item_count;",
+      "replacements": [
+        {
+          "name": "cached-local",
+          "text": "                / height * (float)item_count;"
+        }
+      ]
+    },
+    {
+      "name": "revert-drag-max-fields",
+      "find": "            float max_offset =\n                (float)(state->item_count - state->visible_rows);",
+      "replacements": [
+        {
+          "name": "cached-locals",
+          "text": "            float max_offset = (float)(item_count - visible_rows);"
+        }
+      ]
+    },
+    {
+      "name": "revert-initial-visible-rows",
+      "find": "    if (state->visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "cached-local",
+          "text": "    if (visible_rows <= 0) {"
+        }
+      ]
+    },
+    {
+      "name": "revert-item-count-loop",
+      "find": "        if (row >= state->item_count) {",
+      "replacements": [
+        {
+          "name": "cached-local",
+          "text": "        if (row >= item_count) {"
+        }
+      ]
+    },
+    {
+      "name": "revert-visible-rows-loop",
+      "find": "    } while (row < state->visible_rows);",
+      "replacements": [
+        {
+          "name": "cached-local",
+          "text": "    } while (row < visible_rows);"
+        }
+      ]
+    }
+  ]
+}

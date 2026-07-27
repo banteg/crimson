@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "glow-style-field-cursor",
+      "find": "        for (int particle_index = 0;\n             particle_index < 0x80;\n             ++particle_index) {\n            particle_t *glow =\n                &particle[particle_index];",
+      "replacements": [
+        {
+          "name": "explicit-style-cursor",
+          "text": "        int particle_index = 0;\n        unsigned char *glow_style = &particle[0].style_id;\n        for (;\n             (int)glow_style < (int)&particle[0x80].style_id;\n             glow_style += sizeof(particle_t), ++particle_index) {\n            particle_t *glow = (particle_t *)(\n                (char *)glow_style - offsetof(particle_t, style_id));"
+        }
+      ]
+    },
+    {
+      "name": "sprite-rotation-field-cursor",
+      "find": "    for (int sprite_index = 0;\n         sprite_index < 0x80;\n         ++sprite_index) {\n            particle_t *sprite =\n                &particle[sprite_index];",
+      "replacements": [
+        {
+          "name": "explicit-rotation-cursor",
+          "text": "    float *sprite_rotation = &particle[0].rotation;\n    for (;\n         (int)sprite_rotation < (int)&particle[0x80].rotation;\n         sprite_rotation = (float *)(\n             (char *)sprite_rotation + sizeof(particle_t))) {\n        particle_t *sprite = (particle_t *)(\n            (char *)sprite_rotation - offsetof(particle_t, rotation));"
+        }
+      ]
+    },
+    {
+      "name": "beam-style-field-cursor",
+      "find": "    for (int beam_index = 0;\n         beam_index < 0x80;\n         ++beam_index) {\n            particle_t *beam =\n                &particle[beam_index];",
+      "replacements": [
+        {
+          "name": "explicit-style-cursor",
+          "text": "    unsigned char *beam_style = &particle[0].style_id;\n    for (;\n         (int)beam_style < (int)&particle[0x80].style_id;\n         beam_style += sizeof(particle_t)) {\n        particle_t *beam = (particle_t *)(\n            (char *)beam_style - offsetof(particle_t, style_id));"
+        }
+      ]
+    }
+  ]
+}

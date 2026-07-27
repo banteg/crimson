@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "working-vector-scope-start",
+      "find": "    quest_results_vec2_t panel_xy =\n        *(quest_results_vec2_t *)&ui_element_slot_35.pos\n        + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n        + quest_results_vec2_t(180.0f, 40.0f);\n\n    quest_results_vec2_t xy = panel_xy;\n    xy.x += ui_element_slot_35.render_offset_x;\n    xy.x += 40.0f;",
+      "replacements": [
+        {
+          "name": "working-before-do",
+          "text": "    quest_results_vec2_t xy;\n    do {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n        xy.x += ui_element_slot_35.render_offset_x;\n        xy.x += 40.0f;"
+        },
+        {
+          "name": "both-inside-do",
+          "text": "    do {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n\n        quest_results_vec2_t xy = panel_xy;\n        xy.x += ui_element_slot_35.render_offset_x;\n        xy.x += 40.0f;"
+        },
+        {
+          "name": "working-before-block",
+          "text": "    quest_results_vec2_t xy;\n    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n        xy.x += ui_element_slot_35.render_offset_x;\n        xy.x += 40.0f;"
+        },
+        {
+          "name": "both-inside-block",
+          "text": "    {\n        quest_results_vec2_t panel_xy =\n            *(quest_results_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_results_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_results_vec2_t(180.0f, 40.0f);\n\n        quest_results_vec2_t xy = panel_xy;\n        xy.x += ui_element_slot_35.render_offset_x;\n        xy.x += 40.0f;"
+        }
+      ]
+    },
+    {
+      "name": "working-vector-scope-end",
+      "find": "\ndone:\n    perk_prompt_update_and_render();",
+      "replacements": [
+        {
+          "name": "close-do",
+          "text": "    } while (false);\n\ndone:\n    perk_prompt_update_and_render();"
+        },
+        {
+          "name": "close-block",
+          "text": "    }\n\ndone:\n    perk_prompt_update_and_render();"
+        }
+      ]
+    }
+  ]
+}

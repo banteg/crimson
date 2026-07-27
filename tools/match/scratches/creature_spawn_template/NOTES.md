@@ -765,3 +765,22 @@ Together the nine retained lifetime seams improve this scratch by
 3,161/3,159, the prefix remains 23, and references remain `352/0/1`. The
 retained source SHA-256 is
 `3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.
+
+## Grid-child tint-copy negative control
+
+The five grid loops share a conspicuous scheduling seam around native
+`0x00431b2a..0x00431b72`: VC6 loads the four-component stack tint in order but
+delays the alpha store until after the child speed and reward stores. The
+recorded `grid-child-tint-copy-mutations.json` sweep tested six ordinary
+source forms: explicit component copies with alpha at four plausible
+boundaries, a contiguous component copy, and a typed aggregate pointer.
+
+All 6/6 variants were evaluated without truncation and none improved the
+87.6899% baseline. Explicit components collapse 45 instructions across the
+expanded loops and lose 374.19 weighted bytes; the typed pointer is less
+disruptive but still loses 214.16. This rules out source-level component
+placement as the cause of the native schedule and supports retaining the
+value-object copy. The spec SHA-256 is
+`e11ddf48ea48aeb4d126ad72056d5b7f8795e2122a3bc6559be25045f25416b8`;
+the tested source remains
+`3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.

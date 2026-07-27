@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "dead-pass-coordinate-lifetime",
+      "find": "        render_scratch_f0 =\n            camera_offset\n            + *(player_render_vec2_t *)&player_state_table\n                  [render_overlay_player_index]\n                      .pos_x\n            - half_size;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-player-center",
+          "text": "        player_render_vec2_t player_center =\n            camera_offset\n            + *(player_render_vec2_t *)&player_state_table\n                  [render_overlay_player_index]\n                      .pos_x;\n        render_scratch_f0 = player_center - half_size;"
+        },
+        {
+          "name": "named-player-position",
+          "text": "        player_render_vec2_t player_position =\n            *(player_render_vec2_t *)&player_state_table\n                [render_overlay_player_index]\n                    .pos_x;\n        render_scratch_f0 =\n            camera_offset + player_position - half_size;"
+        },
+        {
+          "name": "explicit-components",
+          "text": "        render_scratch_f0.x =\n            camera_offset.x\n            + player_state_table[render_overlay_player_index].pos_x\n            - half_size;\n        render_scratch_f0.y =\n            camera_offset.y\n            + player_state_table[render_overlay_player_index].pos_y\n            - half_size;"
+        }
+      ]
+    },
+    {
+      "name": "alive-shadow-coordinate-lifetime",
+      "find": "    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "named-player-center",
+          "text": "    player_render_vec2_t player_center =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x;\n    render_scratch_f0 = player_center - half_size;"
+        },
+        {
+          "name": "named-player-position",
+          "text": "    player_render_vec2_t player_position =\n        *(player_render_vec2_t *)&player_state_table\n            [render_overlay_player_index]\n                .pos_x;\n    render_scratch_f0 =\n        camera_offset + player_position - half_size;"
+        },
+        {
+          "name": "explicit-components",
+          "text": "    render_scratch_f0.x =\n        camera_offset.x\n        + player_state_table[render_overlay_player_index].pos_x\n        - half_size;\n    render_scratch_f0.y =\n        camera_offset.y\n        + player_state_table[render_overlay_player_index].pos_y\n        - half_size;"
+        }
+      ]
+    },
+    {
+      "name": "alive-body-coordinate-lifetime",
+      "find": "    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "named-player-center",
+          "text": "    player_render_vec2_t player_center =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x;\n    render_scratch_f0 = player_center - half_size;"
+        },
+        {
+          "name": "named-player-position",
+          "text": "    player_render_vec2_t player_position =\n        *(player_render_vec2_t *)&player_state_table\n            [render_overlay_player_index]\n                .pos_x;\n    render_scratch_f0 =\n        camera_offset + player_position - half_size;"
+        },
+        {
+          "name": "explicit-components",
+          "text": "    render_scratch_f0.x =\n        camera_offset.x\n        + player_state_table[render_overlay_player_index].pos_x\n        - half_size;\n    render_scratch_f0.y =\n        camera_offset.y\n        + player_state_table[render_overlay_player_index].pos_y\n        - half_size;"
+        }
+      ]
+    }
+  ]
+}

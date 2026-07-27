@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shield-effect-offset-assignment",
+      "find": "        effect_offset = player_render_vec2_t(\n            (float)cos(effect_heading) * 3.0f,\n            (float)sin(effect_heading) * 3.0f);",
+      "replacements": [
+        {
+          "name": "assigned-components",
+          "text": "        effect_offset.x = (float)cos(effect_heading) * 3.0f;\n        effect_offset.y = (float)sin(effect_heading) * 3.0f;"
+        },
+        {
+          "name": "named-trig-components",
+          "text": "        float effect_cosine = (float)cos(effect_heading);\n        effect_offset.x = effect_cosine * 3.0f;\n        float effect_sine = (float)sin(effect_heading);\n        effect_offset.y = effect_sine * 3.0f;"
+        }
+      ]
+    },
+    {
+      "name": "muzzle-effect-offset-assignment",
+      "find": "        effect_offset = player_render_vec2_t(\n            (float)cos(effect_heading)\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - (float)cos(effect_heading) * 21.0f,\n            (float)sin(effect_heading)\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - (float)sin(effect_heading) * 21.0f);",
+      "replacements": [
+        {
+          "name": "assigned-components",
+          "text": "        effect_offset.x =\n            (float)cos(effect_heading)\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - (float)cos(effect_heading) * 21.0f;\n        effect_offset.y =\n            (float)sin(effect_heading)\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - (float)sin(effect_heading) * 21.0f;"
+        },
+        {
+          "name": "named-trig-components",
+          "text": "        float effect_cosine = (float)cos(effect_heading);\n        effect_offset.x =\n            effect_cosine\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - effect_cosine * 21.0f;\n        float effect_sine = (float)sin(effect_heading);\n        effect_offset.y =\n            effect_sine\n                    * player_state_table[render_overlay_player_index]\n                          .muzzle_flash_alpha\n                    * 12.0f\n                - effect_sine * 21.0f;"
+        }
+      ]
+    }
+  ]
+}

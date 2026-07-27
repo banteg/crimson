@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "controls-vector-copy",
+      "find": "    float controls_x = hover_left;\n    position.y += 12.0f;\n    position.x = controls_x;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {",
+      "replacements": [
+        {
+          "name": "default-temp-y-first",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position.y = position.y + 12.0f;\n    controls_position.x = hover_left;\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "updated-position-to-temp-y-first",
+          "text": "    position.y += 12.0f;\n    quest_select_vec2_t controls_position;\n    controls_position.y = position.y;\n    controls_position.x = hover_left;\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "copy-adjust-x-then-y",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position = position;\n    controls_position.x = hover_left;\n    controls_position.y += 12.0f;\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "copy-adjust-y-then-x",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position = position;\n    controls_position.y += 12.0f;\n    controls_position.x = hover_left;\n    position = controls_position;\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "temp-plus-offset-x-first",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position.x = hover_left;\n    controls_position.y = position.y;\n    position =\n        controls_position + quest_select_vec2_t(0.0f, 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "temp-plus-offset-y-first",
+          "text": "    quest_select_vec2_t controls_position;\n    controls_position.y = position.y;\n    controls_position.x = hover_left;\n    position =\n        controls_position + quest_select_vec2_t(0.0f, 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "constructor-then-vector-offset",
+          "text": "    position = quest_select_vec2_t(hover_left, position.y);\n    position += quest_select_vec2_t(0.0f, 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        },
+        {
+          "name": "constructor-plus-offset-assignment",
+          "text": "    position =\n        quest_select_vec2_t(hover_left, position.y)\n        + quest_select_vec2_t(0.0f, 12.0f);\n    if (grim_interface_ptr->grim_was_key_pressed(203)) {"
+        }
+      ]
+    }
+  ]
+}

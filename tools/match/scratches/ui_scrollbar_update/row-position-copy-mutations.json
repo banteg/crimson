@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-position-copy-shape",
+      "find": "    scrollbar_vec2_t row_position(xy->x, xy->y);\n    row_position.x -= 2.0f;",
+      "replacements": [
+        {
+          "name": "scrollbar-copy-initialization",
+          "text": "    scrollbar_vec2_t row_position = *(scrollbar_vec2_t *)xy;\n    row_position.x -= 2.0f;"
+        },
+        {
+          "name": "scrollbar-copy-assignment",
+          "text": "    scrollbar_vec2_t row_position;\n    row_position = *(scrollbar_vec2_t *)xy;\n    row_position.x -= 2.0f;"
+        },
+        {
+          "name": "shared-copy-initialization",
+          "text": "    vec2f_t row_position = *xy;\n    row_position.x -= 2.0f;"
+        },
+        {
+          "name": "shared-copy-assignment",
+          "text": "    vec2f_t row_position;\n    row_position = *xy;\n    row_position.x -= 2.0f;"
+        },
+        {
+          "name": "shared-component-assignment",
+          "text": "    vec2f_t row_position;\n    row_position.x = xy->x;\n    row_position.y = xy->y;\n    row_position.x -= 2.0f;"
+        }
+      ]
+    }
+  ]
+}

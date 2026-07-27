@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-alpha-initialization-order",
+      "find": "        if (prompt_transition < 0) {\n            if (prompt_transition < -1) {\n                prompt_alpha = (float)-prompt_transition * 0.001f;\n            } else {\n                prompt_alpha = 1.0f;\n            }\n        } else {\n            prompt_alpha =\n                (float)tutorial_stage_transition_timer * 0.001f;\n        }\n",
+      "replacements": [
+        {
+          "name": "nonnegative-path-first",
+          "text": "        if (prompt_transition >= 0) {\n            prompt_alpha =\n                (float)tutorial_stage_transition_timer * 0.001f;\n        } else if (prompt_transition < -1) {\n            prompt_alpha = (float)-prompt_transition * 0.001f;\n        } else {\n            prompt_alpha = 1.0f;\n        }\n"
+        },
+        {
+          "name": "nonnegative-path-first-nested",
+          "text": "        if (prompt_transition >= 0) {\n            prompt_alpha =\n                (float)tutorial_stage_transition_timer * 0.001f;\n        } else {\n            if (prompt_transition < -1) {\n                prompt_alpha = (float)-prompt_transition * 0.001f;\n            } else {\n                prompt_alpha = 1.0f;\n            }\n        }\n"
+        },
+        {
+          "name": "negative-sentinel-first",
+          "text": "        if (prompt_transition == -1) {\n            prompt_alpha = 1.0f;\n        } else if (prompt_transition < -1) {\n            prompt_alpha = (float)-prompt_transition * 0.001f;\n        } else {\n            prompt_alpha =\n                (float)tutorial_stage_transition_timer * 0.001f;\n        }\n"
+        },
+        {
+          "name": "flatten-negative-path",
+          "text": "        if (prompt_transition < -1) {\n            prompt_alpha = (float)-prompt_transition * 0.001f;\n        } else if (prompt_transition < 0) {\n            prompt_alpha = 1.0f;\n        } else {\n            prompt_alpha =\n                (float)tutorial_stage_transition_timer * 0.001f;\n        }\n"
+        },
+        {
+          "name": "named-absolute-ticks",
+          "text": "        if (prompt_transition == -1) {\n            prompt_alpha = 1.0f;\n        } else {\n            int prompt_alpha_ticks = prompt_transition;\n            if (prompt_alpha_ticks < 0) {\n                prompt_alpha_ticks = -prompt_alpha_ticks;\n            }\n            prompt_alpha = (float)prompt_alpha_ticks * 0.001f;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

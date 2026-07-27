@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-creature-register-hint",
+      "find": "            creature_t *creature = &creature_pool[creature_index];",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "register-creature-pointer",
+          "text": "            register creature_t *creature =\n                &creature_pool[creature_index];"
+        }
+      ]
+    },
+    {
+      "name": "detail-flags-register-hint",
+      "find": "            int flags = creature->flags;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "register-flags",
+          "text": "            register int flags = creature->flags;"
+        }
+      ]
+    },
+    {
+      "name": "detail-tint-register-hint",
+      "find": "            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "register-tint-pointer",
+          "text": "            register creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;"
+        },
+        {
+          "name": "register-const-tint-pointer",
+          "text": "            register const creature_render_color_t *tint =\n                (const creature_render_color_t *)&creature->color;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-local-order",
+      "find": "            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;\n\n            int frame;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "frame-flags-tint",
+          "text": "            int frame;\n            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "flags-frame-tint",
+          "text": "            int flags = creature->flags;\n            int frame;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "flags-tint-frame-color",
+          "text": "            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            int frame;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "tint-color-flags-frame",
+          "text": "            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            int flags = creature->flags;\n            int frame;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "tint-flags-color-frame",
+          "text": "            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            int flags = creature->flags;\n            color = *tint;\n            int frame;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "frame-tint-flags-color",
+          "text": "            int frame;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            int flags = creature->flags;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "tint-frame-flags-color",
+          "text": "            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            int frame;\n            int flags = creature->flags;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "frame-tint-color-flags",
+          "text": "            int frame;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            int flags = creature->flags;\n            color.a *= 0.4f;"
+        }
+      ]
+    }
+  ]
+}

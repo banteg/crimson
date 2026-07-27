@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "multiplayer-tint-alpha-lifetime",
+      "find": "    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, transition_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, transition_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, transition_alpha);\n        }\n    }",
+      "replacements": [
+        {
+          "name": "named-copy-all-calls",
+          "text": "    float tint_alpha = transition_alpha;\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, tint_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, tint_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, tint_alpha);\n        }\n    }"
+        },
+        {
+          "name": "named-copy-first-call",
+          "text": "    float tint_alpha = transition_alpha;\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, tint_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, transition_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, transition_alpha);\n        }\n    }"
+        },
+        {
+          "name": "named-copy-branch-calls",
+          "text": "    float tint_alpha = transition_alpha;\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, transition_alpha);\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, tint_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, tint_alpha);\n        }\n    }"
+        },
+        {
+          "name": "branch-local-copy",
+          "text": "    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, transition_alpha);\n    float tint_alpha = transition_alpha;\n    if (config_player_count > 1) {\n        if (render_overlay_player_index == 0) {\n            grim_interface_ptr->grim_set_color(\n                0.3f, 0.3f, 1.0f, tint_alpha);\n        } else {\n            grim_interface_ptr->grim_set_color(\n                1.0f, 0.55f, 0.35f, tint_alpha);\n        }\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "thumb-grab-item-count-state-field",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "                        - state->scroll_offset\n                            / (float)state->item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "initial-visible-rows-state-field",
+      "find": "    if (visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "    if (state->visible_rows <= 0) {"
+        }
+      ]
+    }
+  ]
+}

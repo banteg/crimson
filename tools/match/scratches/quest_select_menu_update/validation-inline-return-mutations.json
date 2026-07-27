@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "validation-inline-return",
+      "find": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }\n\n        ui_sign_crimson.focus_disabled = 0;",
+      "replacements": [
+        {
+          "name": "hardcore-success-goto",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                >= quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                goto selection_unlocked;\n            }\n            return;\n        }\n        if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }\nselection_unlocked:\n        ui_sign_crimson.focus_disabled = 0;"
+        },
+        {
+          "name": "hardcore-failure-then-success-goto",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n            goto selection_unlocked;\n        }\n        if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }\nselection_unlocked:\n        ui_sign_crimson.focus_disabled = 0;"
+        },
+        {
+          "name": "normal-first",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (!hardcore) {\n            if (quest_unlock_index\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n            goto selection_unlocked;\n        }\n        if (quest_unlock_index_full\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }\nselection_unlocked:\n        ui_sign_crimson.focus_disabled = 0;"
+        },
+        {
+          "name": "hardcore-success-goto-with-else",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                >= quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                goto selection_unlocked;\n            }\n            return;\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }\nselection_unlocked:\n        ui_sign_crimson.focus_disabled = 0;"
+        },
+        {
+          "name": "both-success-goto",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                >= quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                goto selection_unlocked;\n            }\n            return;\n        }\n        if (quest_unlock_index\n            >= quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            goto selection_unlocked;\n        }\n        return;\nselection_unlocked:\n        ui_sign_crimson.focus_disabled = 0;"
+        }
+      ]
+    }
+  ]
+}

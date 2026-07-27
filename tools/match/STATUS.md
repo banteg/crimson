@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **689/808** functions matched exactly, **128666/341963** code bytes (**37.6%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **298303/341963** code bytes (**87.2%**).
+Fuzzy-weighted alignment is **299643/341963** code bytes (**87.6%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 278199/320805 | 86.7% | 671/671 | 320805/320805 | 100.0% | 559/671 |
+| crimsonland.exe | 559/671 | 114513/320805 | 35.7% | 279539/320805 | 87.1% | 671/671 | 320805/320805 | 100.0% | 559/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 20104/21158 | 95.0% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**559/671** functions, **114513/320805** bytes (**35.7%**), **278199/320805** fuzzy-weighted bytes (**86.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
+**559/671** functions, **114513/320805** bytes (**35.7%**), **279539/320805** fuzzy-weighted bytes (**87.1%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **559/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -172,7 +172,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | tutorial_prompt_dialog | 0x00408530 | 1084 | 1084/1084 | 0 | 254/254 | 100.00% | 254/254 | 80/0/0 |  | tutorial-prompt-actions |
 | match | nullsub_13 | 0x00408970 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_14 | 0x00408980 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
-| wip | tutorial_timeline_update | 0x00408990 | 2907 | 1935/2907 | 972 | 693/695 | 66.57% | 6/695 | 154/0/4 |  | tutorial-script-prompts-hints-and-spawns |
+| wip | tutorial_timeline_update | 0x00408990 | 2907 | 2231/2907 | 676 | 686/695 | 76.76% | 6/695 | 169/0/1 |  | tutorial-script-prompts-hints-and-spawns |
 | match | camera_update | 0x00409500 | 910 | 910/910 | 0 | 249/249 | 100.00% | 249/249 | 76/0/0 |  | camera-shake-focus-and-clamp |
 | match | bonus_apply | 0x00409890 | 2693 | 2693/2693 | 0 | 668/668 | 100.00% | 668/668 | 216/0/0 |  | gameplay-bonus-switch |
 | match | bonus_update | 0x0040a320 | 416 | 416/416 | 0 | 115/115 | 100.00% | 115/115 | 37/0/0 |  | gameplay-bonus-update |
@@ -238,12 +238,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | nullsub_21 | 0x0040e850 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | mod_load_mod | 0x0040e860 | 219 | 219/219 | 0 | 61/61 | 100.00% | 61/61 | 24/0/0 |  | mod-interface-dll-loader |
 | match | mods_any_available | 0x0040e940 | 87 | 87/87 | 0 | 33/33 | 100.00% | 33/33 | 4/0/0 |  | mods-dll-presence |
-| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2178/2607 | 429 | 645/648 | 83.53% | 0/648 | 168/0/0 |  | mods-browser-metadata-and-plugin-launch |
+| wip | mods_menu_update | 0x0040e9a0 | 2607 | 2222/2607 | 385 | 645/648 | 85.23% | 0/648 | 169/0/0 |  | mods-browser-metadata-and-plugin-launch |
 | match | mods_menu_launch_button_destroy | 0x0040f3d0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-launch-button-empty-destructor |
 | match | mods_menu_main_menu_button_destroy | 0x0040f3e0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-main-menu-button-empty-destructor |
 | match | mods_menu_scrollbar_destroy | 0x0040f3f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | mods-menu-scrollbar-empty-destructor |
 | match | credits_secret_match3_find | 0x0040f400 | 230 | 230/230 | 0 | 96/96 | 100.00% | 96/96 | 0/0/0 |  | credits-secret-match3-scan |
-| wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 2186/2612 | 426 | 638/638 | 83.70% | 15/638 | 153/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
+| wip | credits_secret_alien_zookeeper_update | 0x0040f4f0 | 2612 | 2190/2612 | 422 | 638/638 | 83.86% | 15/638 | 154/0/0 |  | credits-secret-match3-board-timer-scoring-and-navigation |
 | match | nullsub_25 | 0x0040ff30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_26 | 0x0040ff40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | time_format_mm_ss | 0x0040ff50 | 105 | 105/105 | 0 | 37/37 | 100.00% | 37/37 | 8/0/0 |  | ui-time-format |
@@ -257,7 +257,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | quest_failed_main_menu_button_destroy | 0x00410cf0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-main-menu-button-empty-destructor |
 | match | quest_failed_play_another_button_destroy | 0x00410d00 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-another-button-empty-destructor |
 | match | quest_failed_play_again_button_destroy | 0x00410d10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-failed-play-again-button-empty-destructor |
-| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4201/4857 | 656 | 1165/1168 | 86.50% | 1/1168 | 437/0/2 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
+| wip | quest_results_screen_update | 0x00410d20 | 4857 | 4235/4857 | 622 | 1165/1168 | 87.18% | 1/1168 | 438/0/2 |  | quest-time-breakdown-highscore-entry-unlocks-and-routing |
 | match | quest_results_main_menu_button_destroy | 0x00412020 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-main-menu-button-empty-destructor |
 | match | quest_results_highscores_button_destroy | 0x00412030 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-highscores-button-empty-destructor |
 | match | quest_results_play_again_button_destroy | 0x00412040 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-results-play-again-button-empty-destructor |
@@ -440,9 +440,9 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | wip | creature_spawn | 0x00428240 | 334 | 287/334 | 47 | 79/79 | 86.08% | 7/79 | 27/0/0 |  | gameplay-creature-spawn |
-| wip | player_render_overlays | 0x00428390 | 4582 | 3843/4582 | 739 | 1141/1148 | 83.88% | 9/1148 | 326/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| wip | player_render_overlays | 0x00428390 | 4582 | 3904/4582 | 678 | 1136/1148 | 85.20% | 9/1148 | 325/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
-| wip | bonus_render | 0x004295f0 | 4088 | 3602/4088 | 486 | 1089/1088 | 88.10% | 14/1088 | 218/0/10 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
+| wip | bonus_render | 0x004295f0 | 4088 | 3620/4088 | 468 | 1089/1088 | 88.56% | 14/1088 | 220/0/9 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | audio_suspend_all | 0x0042a630 | 52 | 52/52 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
 | match | texture_get_or_load | 0x0042a670 | 133 | 133/133 | 0 | 44/44 | 100.00% | 44/44 | 11/0/0 |  | texture-cache-load |
@@ -461,7 +461,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | console_cmd_snd_add_game_tune | 0x0042c360 | 100 | 100/100 | 0 | 29/29 | 100.00% | 29/29 | 9/0/0 |  | console-music-queue-command |
 | match | console_cmd_set_gamma_ramp | 0x0042c3d0 | 116 | 116/116 | 0 | 35/35 | 100.00% | 35/35 | 13/0/0 |  | console-gamma-command |
 | wip | crimsonland_main | 0x0042c450 | 3214 | 3164/3214 | 50 | 832/832 | 98.44% | 684/832 | 393/0/2 |  | primary-game-bootstrap-and-shutdown |
-| wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1196/1970 | 774 | 519/519 | 60.69% | 19/519 | 102/0/0 |  | online-highscore-submit-receive-worker |
+| wip | highscore_sync_worker | 0x0042d0e0 | 1970 | 1320/1970 | 650 | 517/519 | 66.99% | 26/519 | 107/0/0 |  | online-highscore-submit-receive-worker |
 | wip | statistics_update_check_worker | 0x0042d8a0 | 1364 | 1048/1364 | 316 | 373/361 | 76.84% | 21/361 | 106/0/0 |  | statistics-version-update-check-worker |
 | match | effect_pool_vertices_global_init_thunk | 0x0042de00 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | effect-pool-vertex-global-init-thunk |
 | match | effect_pool_vertices_global_init | 0x0042de10 | 39 | 39/39 | 0 | 15/15 | 100.00% | 15/15 | 3/0/0 |  | effect-pool-vertex-global-construction |
@@ -634,7 +634,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
 | match | ui_segmented_slider_update | 0x0043d9b0 | 714 | 714/714 | 0 | 213/213 | 100.00% | 213/213 | 35/0/0 |  | ui-segmented-slider-widget |
 | match | ui_checkbox_update | 0x0043dc80 | 622 | 622/622 | 0 | 188/188 | 100.00% | 188/188 | 27/0/0 |  | ui-checkbox-widget |
-| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 972/1767 | 795 | 470/479 | 55.01% | 0/479 | 59/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
+| wip | ui_scrollbar_update | 0x0043def0 | 1767 | 1082/1767 | 685 | 475/479 | 61.22% | 0/479 | 61/0/0 |  | ui-scrollbar-wheel-drag-navigation-and-column-rendering |
 | match | ui_menu_item_update | 0x0043e5e0 | 548 | 548/548 | 0 | 153/153 | 100.00% | 153/153 | 38/0/0 |  | ui-menu-item-widget |
 | match | ui_menu_hover_color_destroy | 0x0043e810 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-hover-color-empty-destructor |
 | match | ui_menu_idle_color_destroy | 0x0043e820 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | ui-menu-idle-color-empty-destructor |
@@ -709,7 +709,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | ui_menu_pause_click_resume | 0x00447490 | 67 | 67/67 | 0 | 18/18 | 100.00% | 18/18 | 7/0/0 |  | ui-menu-resume |
 | match | ui_menu_pause_click_main_menu | 0x004474e0 | 160 | 160/160 | 0 | 40/40 | 100.00% | 40/40 | 22/0/0 |  | pause-menu-plugin-exit |
 | match | config_apply_detail_preset | 0x00447580 | 57 | 57/57 | 0 | 15/15 | 100.00% | 15/15 | 8/0/0 |  | graphics-detail-preset-flags |
-| wip | options_menu_update | 0x004475d0 | 1621 | 1154/1621 | 467 | 373/377 | 71.20% | 8/377 | 146/0/3 |  | options-audio-detail-input-and-controls-navigation |
+| wip | options_menu_update | 0x004475d0 | 1621 | 1224/1621 | 397 | 378/377 | 75.50% | 10/377 | 151/0/1 |  | options-audio-detail-input-and-controls-navigation |
 | match | nullsub_73 | 0x00447c30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_74 | 0x00447c40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_75 | 0x00447c50 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
@@ -718,7 +718,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | nullsub_78 | 0x00447c80 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | input_configure_for_label | 0x00447c90 | 58 | 58/58 | 0 | 18/18 | 100.00% | 18/18 | 8/0/0 |  | input-configuration-label |
 | match | input_scheme_label | 0x00447cf0 | 53 | 53/53 | 0 | 17/17 | 100.00% | 17/17 | 7/0/0 |  | input-scheme-label |
-| wip | quest_select_menu_update | 0x00447d40 | 3436 | 2694/3436 | 742 | 794/803 | 78.40% | 0/803 | 246/0/7 |  | quest-stage-picker-hardcore-gating-and-start-routing |
+| wip | quest_select_menu_update | 0x00447d40 | 3436 | 3273/3436 | 163 | 803/803 | 95.27% | 0/803 | 282/0/0 |  | quest-stage-picker-hardcore-gating-and-start-routing |
 | match | quest_select_back_button_destroy | 0x00448ab0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-back-button-empty-destructor |
 | match | quest_select_hardcore_checkbox_destroy | 0x00448ac0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-hardcore-checkbox-empty-destructor |
 | match | quest_select_unused_orange_color_destroy | 0x00448ad0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-unused-orange-color-empty-destructor |

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-cursor-lifetime",
+      "find": "        char *text = *item;\n        if (text[0] == '\\\\' && text[1] == 'g') {\n            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);\n            text += 2;\n        } else {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        }\n\n        int cursor = 0;\n        int text_length = strlen(text) + 1;",
+      "replacements": [
+        {
+          "name": "cursor-before-text",
+          "text": "        int cursor = 0;\n        char *text = *item;\n        if (text[0] == '\\\\' && text[1] == 'g') {\n            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);\n            text += 2;\n        } else {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        }\n\n        int text_length = strlen(text) + 1;"
+        },
+        {
+          "name": "declare-before-text-assign-after-color",
+          "text": "        int cursor;\n        char *text = *item;\n        if (text[0] == '\\\\' && text[1] == 'g') {\n            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);\n            text += 2;\n        } else {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        }\n\n        cursor = 0;\n        int text_length = strlen(text) + 1;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-local-scope-open",
+      "find": "            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "scoped-copy-init-color",
+          "text": "            {\n            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            creature_render_color_t color = *tint;"
+        },
+        {
+          "name": "scoped-default-color",
+          "text": "            {\n            creature_render_color_t color;\n            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;"
+        },
+        {
+          "name": "scoped-copy-color-and-position",
+          "text": "            {\n            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            creature_render_color_t color = *tint;\n            creature_render_vec2_t draw_pos;"
+        },
+        {
+          "name": "scoped-default-color-and-position",
+          "text": "            {\n            creature_render_color_t color;\n            creature_render_vec2_t draw_pos;\n            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;"
+        }
+      ]
+    },
+    {
+      "name": "detail-local-scope-close",
+      "find": "            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, draw_size, draw_size);\n        }\n\n        grim_interface_ptr->grim_end_batch();",
+      "replacements": [
+        {
+          "name": "close-scope",
+          "text": "            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, draw_size, draw_size);\n            }\n        }\n\n        grim_interface_ptr->grim_end_batch();"
+        }
+      ]
+    }
+  ]
+}

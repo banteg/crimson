@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bonus-zero-position-materialization",
+      "find": "        bonus_pool[0].time.position.x = bonus_pos0.x;\n        bonus_pool[0].time.position.y = bonus_pos0.y;\n",
+      "replacements": [
+        {
+          "name": "aggregate-local-copy",
+          "text": "        *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-one-position-materialization",
+      "find": "        bonus_pool[1].time.position.x = bonus_pos1.x;\n        bonus_pool[1].time.position.y = bonus_pos1.y;\n",
+      "replacements": [
+        {
+          "name": "aggregate-local-copy",
+          "text": "        *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;\n"
+        }
+      ]
+    }
+  ]
+}

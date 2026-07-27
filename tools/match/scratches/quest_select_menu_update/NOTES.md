@@ -39,17 +39,14 @@ match.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 794 normalized instructions against 803 native,
-scores 76.8942%, and audits 237 references as resolved, zero as unresolved,
-and four as mismatched inside nonmatching instruction regions. Its weighted
-gap is 793.9161 bytes. The broad behavior
-and static-constructor sequence are recovered, but the natural reconstruction
-uses a 56-byte frame while native uses 48 bytes. Native also keeps icon Y and
-row/control constants in a different EBX/EBP/ESI allocation and lays out the
-unlocked quest metadata block after its alternate unlock-table branch. Attempts
-to collapse the named panel/position objects or force the decompiler-shaped
-row labels reduced the match substantially, so those code-generation residuals
-are recorded rather than hidden with match-only shaping.
+The verified VC6 build is now 803 normalized instructions against 803 native,
+scores 95.26774595267746%, and audits 282 references as resolved, zero as
+unresolved, and zero as mismatched. Its weighted score is
+3273.3997509339974/3436, leaving a 162.60024906600256-byte fuzzy gap. The
+broad behavior and static-constructor sequence are recovered, but the natural
+reconstruction still uses a 56-byte frame while native uses 48 bytes. The
+remaining small regions are register/lifetime and stack-layout differences;
+they are recorded rather than hidden with match-only shaping.
 
 The panel geometry now uses the recovered UI element and vertex position
 aggregates in native operand order. Reordering the equivalent commutative
@@ -176,9 +173,9 @@ as rejected rather than writing it.
 Live disassembly at `0x00448515..0x00448631` shows the two unlock modes joining
 an out-of-line unlocked-row body: Hardcore compares
 `quest_unlock_index_full` with the row index, while normal mode compares
-`quest_unlock_index`; either smaller value enters the locked-row body. The
-retained source spells those two native locked predicates explicitly and
-jumps to the shared unlocked row otherwise.
+`quest_unlock_index`; either smaller value enters the locked-row body. This
+first pass spelled those two native locked predicates explicitly and jumped to
+the shared unlocked row otherwise.
 
 `row-unlock-branch-shape-mutations.json` evaluated four equivalent predicate
 and flag shapes. Only `locked-label` improves: it raises the weighted score
@@ -195,15 +192,65 @@ The spec SHA-256 is
 the retained source SHA-256 reported by the sweep is
 `eedf5a2cfb41e68f1082671cc84b9dbfd1190a86ebd4f6190958cba9ab91bc81`.
 
+The later `row-native-layout` sweep superseded that source spelling with the
+equivalent positive `unlocked-predicate` form. It follows the target's
+out-of-line body more closely, gains another 68.76297686053795 weighted bytes,
+and removes no native dependency.
+
+## Mutation-harness wave (2026-07-27)
+
+The next bounded wave started from the retained 78.39699436443331% build
+(2693.720726361929/3436 weighted bytes, 794/803 instructions, and
+246/0/7 references). Each retained change was checked against live native
+disassembly and written only when it preserved or corrected the recovered
+behavior:
+
+| Retained sweep | Weighted gain | Result |
+| --- | ---: | --- |
+| `selection-validation-lifetime/global-validation-index` | 48.20297595201737 | preserves the native global minor-index reload |
+| `unlock-validation-order/byte-mode-direct-index` | 60.16760475297042 | follows the mode-byte and unlock-table load order; clears the first reference debt |
+| `row-native-layout/unlocked-predicate` | 68.76297686053795 | expresses the shared out-of-line unlocked-row body |
+| `back-position-lifetime/float-pair` | 98.84677923702338 | keeps the Back-button X/Y pair live across the native tail |
+| `validation-inline-return/hardcore-success-goto-with-else` | 12.164273493875953 | reproduces the inline Hardcore failure epilogue |
+| `entry-position-copy-offset/named-offset-plus` | 188.83952012869486 | restores the native working-vector copy and reaches 803 candidate instructions |
+| `entry-x-add-order/single-expression-render-first` | 0.0 | byte-neutral, but corrects both remaining entry-reference alignments |
+| `locked-row-y-argument/row-y-before-next-row` | 8.237786604472149 | reuses the native locked-row Y value and removes two redundant instructions |
+| `controls-position-lifetime/named-x-y-before-x` | 94.45710754247648 | restores the long-lived controls X value and returns to 803 instructions |
+
+The cumulative retained gain is 579.6790245720684 weighted bytes, or
+16.87075158824415 percentage points. The gap falls from
+742.2792736380711 to 162.60024906600256 bytes; candidate instructions move
+from 794 to the native 803, and the reference audit improves from 246/0/7 to
+282/0/0.
+
+The source-order corrections are evidence-backed rather than scorer-only.
+Native `0x004489f4..0x00448a31` reloads the global minor index, tests the
+Hardcore mode byte, selects the corresponding unlock table, and places the
+Hardcore failure epilogue inline. At entry, native materializes the temporary
+`(0, 40)` offset and copies the resulting vector, then reads
+`ui_element_slot_37.render_offset_x` before adding 64. Native
+`0x00448543..0x0044856d` keeps the locked-row Y argument live for both text
+calls, while `0x004485d4..0x004485f7` prepares Y before restoring the saved
+controls X coordinate. These observations select the retained variants even
+where aggregate score is tied.
+
+All 32 sweeps are persisted in `experiments.jsonl`. Negative and neutral
+records cover selection branches, vector assignment and operator spellings,
+entry-panel scopes and elision, checkbox lifetime, alternate row-mode/index
+layouts, row-loop tail order, color-call pointer lifetimes, Back store order,
+and row/Back interactions. In particular, the locally attractive
+`entry-position-adjustment/named-adjusted-y` result was rejected because it
+introduced three mismatched references, and the branch-local row-mode forms
+lost aggregate similarity despite matching one local load order. A compiler
+profile matrix (`/G5`, `/G6`, `/Ob1`, `/Ob2`, `/Ot`, `/Oy-`, `/Os`, and `/O1`)
+found no improvement over the retained `/O2 /GB /W3 /GR-` build.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
-paths, and its seven-call inventory agrees with the recovered source. All seven
-masked-reference mismatches occur inside nonmatching sequence alignments and
-resolve to source operations already present in the surrounding native flow.
-They remain visible and unaliased rather than being classified as separate
-reference debt. The remaining 48-byte native versus 56-byte candidate frame
-and register/lifetime differences are compiler layout, not missing menu
+paths. All 282 audited references resolve, with no unresolved or mismatched
+entries. The remaining 48-byte native versus 56-byte candidate frame and
+small register/lifetime differences are compiler layout, not missing menu
 behavior.

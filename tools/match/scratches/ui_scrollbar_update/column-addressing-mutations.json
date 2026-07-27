@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "column-pointer-initialization",
+      "find": "            int *column_offset = state->column_offsets;",
+      "replacements": [
+        {
+          "name": "split-assignment",
+          "text": "            int *column_offset;\n            column_offset = state->column_offsets;"
+        },
+        {
+          "name": "explicit-address",
+          "text": "            int *column_offset = &state->column_offsets[0];"
+        },
+        {
+          "name": "const-pointer",
+          "text": "            const int *column_offset = state->column_offsets;"
+        }
+      ]
+    },
+    {
+      "name": "column-offset-addressing",
+      "find": "                    int x_offset = *column_offset * column;",
+      "replacements": [
+        {
+          "name": "state-index",
+          "text": "                    int x_offset =\n                        state->column_offsets[column] * column;"
+        },
+        {
+          "name": "state-pointer-index",
+          "text": "                    int x_offset =\n                        *(state->column_offsets + column) * column;"
+        },
+        {
+          "name": "state-byte-offset",
+          "text": "                    int x_offset =\n                        *(int *)((char *)state->column_offsets + column * 4)\n                        * column;"
+        },
+        {
+          "name": "commuted-multiply",
+          "text": "                    int x_offset = column * *column_offset;"
+        }
+      ]
+    }
+  ]
+}

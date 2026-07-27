@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "beam-phase-width-height-lifetimes",
+      "find": "            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float half_height =\n                (phase_size + 15.0f)\n                * beam->scale_x\n                * 7.0f;\n            half_width =\n                half_width * beam->scale_x * 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;",
+      "replacements": [
+        {
+          "name": "reuse-phase-as-height",
+          "text": "            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size =\n                (phase_size + 15.0f)\n                * beam->scale_x\n                * 7.0f;\n            half_width =\n                half_width * beam->scale_x * 7.0f;\n            float half_height = phase_size;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "increment-phase-before-height",
+          "text": "            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            phase_size += 15.0f;\n            float half_height =\n                phase_size * beam->scale_x * 7.0f;\n            half_width =\n                half_width * beam->scale_x * 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "compound-height-and-width",
+          "text": "            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float half_height = phase_size + 15.0f;\n            half_height *= beam->scale_x * 7.0f;\n            half_width *= beam->scale_x * 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        },
+        {
+          "name": "split-scale-products",
+          "text": "            float phase_size = (float)sin(beam->rotation) * 3.0f;\n            float half_width = 15.0f - phase_size;\n            float half_height = phase_size + 15.0f;\n            half_height *= beam->scale_x;\n            half_height *= 7.0f;\n            half_width *= beam->scale_x;\n            half_width *= 7.0f;\n            float height = half_height + half_height;\n            float width = half_width + half_width;"
+        }
+      ]
+    }
+  ]
+}

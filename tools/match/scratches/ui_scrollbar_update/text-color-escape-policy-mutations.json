@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "text-color-escape-policy",
+      "find": "        if (text[0] == '\\\\' && text[1] == 'g') {\n            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);\n            text += 2;\n        } else {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        }",
+      "replacements": [
+        {
+          "name": "native-nested-policy",
+          "text": "        if (text[0] == '\\\\') {\n            if (text[1] == 'g') {\n                grim_interface_ptr->grim_set_color(\n                    0.7f, 1.0f, 0.7f, alpha);\n                text += 2;\n            }\n        } else {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        }"
+        },
+        {
+          "name": "native-inverted-policy",
+          "text": "        if (text[0] != '\\\\') {\n            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);\n        } else if (text[1] == 'g') {\n            grim_interface_ptr->grim_set_color(0.7f, 1.0f, 0.7f, alpha);\n            text += 2;\n        }"
+        }
+      ]
+    }
+  ]
+}

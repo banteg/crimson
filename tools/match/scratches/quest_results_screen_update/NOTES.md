@@ -39,14 +39,13 @@ those scoped `REFERENCE_ALIASES`.
 ## Matching evidence and honest residual
 
 The verified VC6 build is 1,165 normalized instructions against 1,168 native,
-scores 86.50%, and audits 437 references as resolved, zero as unresolved, and
+scores 87.18%, and audits 438 references as resolved, zero as unresolved, and
 2 as mismatched within nonmatching instruction regions. The remaining broad
 delta is register/stack allocation: native uses a 24-byte frame and caches the
-working coordinates in `edi`/`ebp`, while the natural reconstruction uses a
-32-byte frame for separately named panel, button, and record positions and
-hoists the constant-one and name-buffer values. Reusing or artificially
-overlapping those positions made the source less faithful and reduced the
-instruction match, so the residual is recorded rather than forced.
+working coordinates in `edi`/`ebp`, while the natural reconstruction still
+uses a 32-byte frame and hoists the constant-one and name-buffer values.
+Bounded lifetime tests leave that residual visible rather than forcing stack
+overlap.
 
 The score-ranking branch at `0x0041168d` is invalid-first: records ranked 100
 or worse clear the name-input state, advance directly to the completed-results
@@ -68,18 +67,20 @@ after the wider frame changes register allocation.
 `health-reveal-schedule-mutations.json` exhausts five valid single-site
 variants across the counter expression and clink-id lifetime. Explicit
 assignment, named and split accumulators, and pre-/post-timer clink snapshots
-all compile to the same 1,165-instruction candidate: 4,201/4,857 fuzzy bytes,
-86.4981%, a 1/1,168 exact prefix, and `437/0/2` references. Since no single
-improved the baseline, no interaction was run and `scratch.cpp` remains
-unchanged. This records the localized scheduling delta as compiler residual
-without aliases, forced dependencies, volatile barriers, or storage overlap.
+were all byte-neutral at the original baseline. The complete two-site
+interaction matrix was rerun after the opening/lifetime improvements and all
+11 variants remain byte-neutral at 87.1839%, 1,165 instructions, and
+`438/0/2` references. This records the localized scheduling delta as compiler
+residual without aliases, forced dependencies, volatile barriers, or storage
+overlap.
 
-The panel geometry now uses the recovered UI element and vertex position
-aggregates in native operand order. The post-record spacing remains visibly
-split into its native 78- and 6-pixel additions, and the button alpha stores
-follow the native high-scores/play-next schedule. Together these source-shape
-recoveries move the build to 1,165/1,168 instructions, 86.4981%, and a
-437/0/2 reference audit without hiding either remaining mismatch.
+The panel geometry now uses the recovered chained vector expression over the
+UI element position, first vertex, and `(180, 40)` offset. The post-record
+spacing remains visibly split into its native 78- and 6-pixel additions, and
+the button alpha stores follow the native high-scores/play-next schedule.
+Together these source-shape recoveries move the build to 1,165/1,168
+instructions, 87.1839%, and a `438/0/2` reference audit without hiding either
+remaining mismatch.
 
 The quest-results name editor is now imported as its 32-byte character array,
 and the compiler-generated zero-based scan variable at `0x0041184d` is
@@ -92,7 +93,7 @@ The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output covers the four-step reveal,
 high-score qualification and name validation, unlock notices, and every exit
 route; IDA and Ghidra corroborate the same 21-callee surface. The candidate is
-within three instructions of native at 1,165/1,168 with `437/0/2`
+within three instructions of native at 1,165/1,168 with `438/0/2`
 references. Both mismatches align the repeated `sfx_ui_clink_01` load against
 the adjacent, already-recovered health/perk reveal accumulators after the
 stack-allocation divergence. They remain visible and unaliased, but are not
@@ -100,3 +101,39 @@ independent reference debt. A temporary overlay that reused the panel position
 to chase the native `0x18` frame was rejected: it fell from 86.50% to 72.68%,
 lost 27 aligned references, and introduced five additional reference
 mismatches.
+
+## Opening-vector and record-lifetime recovery (2026-07-27)
+
+Live Binary Ninja renders the opening geometry as the UI element position plus
+its first vertex and the `(180, 40)` panel offset before copying the working
+cursor. The exact `quest_failed_screen_update` sibling uses the same chained
+vector idiom. `opening-vector-expression-mutations.json` evaluated all 24
+bounded type/expression combinations. The symmetric vector operator plus the
+chained panel expression retained here adds 20.818688 weighted bytes and one
+aligned reference without changing instruction count or reference debt.
+
+`shared-temporary-vector-mutations.json` then evaluated all 63 declaration and
+reuse combinations for the line, name-entry button, and two record positions.
+Moving only the name-entry `record_xy` declaration to the native-length outer
+lifetime adds another 12.491213 weighted bytes. Reusing other positions cannot
+improve that result and is not retained.
+
+The exact-sibling-inspired whole-body scope matrix
+(`working-vector-scope-mutations.json`, 14 variants) is neutral at best; the
+single-iteration `do` forms substantially regress alignment. The
+Binary-Ninja-grounded base/perk reveal ordering matrix
+(`reveal-case-order-mutations.json`, 29 variants) is entirely byte-neutral.
+Those negative results bound the remaining source-shape search without
+register forcing or artificial storage overlap.
+
+The retained source is now **87.1839%**, 1,165/1,168 instructions, a
+1-instruction exact prefix, and `438/0/2` references. It gains 33.309901
+weighted bytes over the prior baseline. Spec SHA-256 values are
+`5abcd4c986d71457dd9b5997399e0687c5e07abd5405423fae34daeed9cce59e`
+(opening), `3466fb782f7779cde29aa3672949cd5ad56ae583c75a50d9f070042796c83b16`
+(shared temporary),
+`dcda755367dd51f88ca29a5c864d46af6adbe09aa8c501480b8374a30688ff5d`
+(scope), and
+`a9dc6deca9310b323f80ceae0127ece9505aa5de987bf80907d334e5e2cbe595`
+(reveal ordering). The retained source SHA-256 is
+`bce9bb81ae0a484367fdf7d5f18daf560ba06145c5dac64dc8c9110ec20d2179`.

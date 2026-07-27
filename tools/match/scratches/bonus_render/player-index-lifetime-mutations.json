@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "start-player-index-before-weapon-pass",
+      "find": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);",
+      "replacements": [
+        {
+          "name": "declare-before-weapon-pass",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    int player_index = 0;\n    grim_interface_ptr->grim_bind_texture(ui_weapon_icons_texture, 0);"
+        }
+      ]
+    },
+    {
+      "name": "remove-late-player-index-declaration",
+      "find": "    grim_interface_ptr->grim_end_batch();\n\n    int player_index = 0;\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);",
+      "replacements": [
+        {
+          "name": "reuse-weapon-pass-zero",
+          "text": "    grim_interface_ptr->grim_end_batch();\n\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "tint-owner-y-helper",
+      "find": "};\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;",
+      "replacements": [
+        {
+          "name": "inline-helper",
+          "text": "};\n\nstatic __inline float creature_render_tint_owner_y(\n    const creature_render_color_t *tint)\n{\n    const creature_t *owner = (const creature_t *)((const char *)tint\n        - offsetof(creature_t, color));\n    return owner->position.y;\n}\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;"
+        },
+        {
+          "name": "forceinline-helper",
+          "text": "};\n\nstatic __forceinline float creature_render_tint_owner_y(\n    const creature_render_color_t *tint)\n{\n    const creature_t *owner = (const creature_t *)((const char *)tint\n        - offsetof(creature_t, color));\n    return owner->position.y;\n}\n\nextern \"C\" {\nextern creature_type_table_t creature_type_table;"
+        }
+      ]
+    },
+    {
+      "name": "detail-use-tint-owner-helper",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);",
+      "replacements": [
+        {
+          "name": "helper-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    creature_render_tint_owner_y(tint))\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        }
+      ]
+    },
+    {
+      "name": "main-normal-use-tint-owner-helper",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f,\n                    creature->size * 0.5f);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "helper-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    creature_render_tint_owner_y(tint))\n                - creature_render_vec2_t(\n                    creature->size * 0.5f,\n                    creature->size * 0.5f);"
+        }
+      ]
+    }
+  ]
+}

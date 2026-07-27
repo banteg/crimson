@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "remove-early-score-count",
+      "find": "    unsigned char score_count;\n",
+      "replacements": [
+        {
+          "name": "remove",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "score-count-initialization",
+      "find": "    score_count = 0;",
+      "replacements": [
+        {
+          "name": "declare-at-initialization",
+          "text": "    unsigned char score_count = 0;"
+        },
+        {
+          "name": "declare-then-initialize",
+          "text": "    unsigned char score_count;\n    score_count = 0;"
+        }
+      ]
+    }
+  ]
+}

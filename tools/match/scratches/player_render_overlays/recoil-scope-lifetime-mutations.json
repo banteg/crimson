@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "introduce-function-recoil",
+      "find": "    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;",
+      "replacements": [
+        {
+          "name": "after-direction",
+          "text": "    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;\n    player_render_vec2_t recoil;"
+        },
+        {
+          "name": "before-effect-offset",
+          "text": "    player_render_vec2_t recoil;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;"
+        }
+      ]
+    },
+    {
+      "name": "replace-local-recoil-construction",
+      "find": "    player_render_vec2_t recoil(\n        (float)cos(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f,\n        (float)sin(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f);",
+      "replacements": [
+        {
+          "name": "assign-temporary",
+          "text": "    recoil = player_render_vec2_t(\n        (float)cos(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f,\n        (float)sin(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f);"
+        },
+        {
+          "name": "assign-components",
+          "text": "    recoil.x =\n        (float)cos(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f;\n    recoil.y =\n        (float)sin(recoil_heading)\n            * player_state_table[render_overlay_player_index]\n                  .muzzle_flash_alpha\n            * 12.0f;"
+        }
+      ]
+    }
+  ]
+}

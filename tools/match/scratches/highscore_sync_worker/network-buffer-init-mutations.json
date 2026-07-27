@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "server-address-init",
+      "find": "        char server_address[64] = \"scores.crimsonland.com\";",
+      "replacements": [
+        {
+          "name": "zero-init-then-copy",
+          "text": "        char server_address[64] = {0};\n        strcpy(server_address, \"scores.crimsonland.com\");"
+        },
+        {
+          "name": "memset-then-copy",
+          "text": "        char server_address[64];\n        memset(server_address, 0, sizeof(server_address));\n        strcpy(server_address, \"scores.crimsonland.com\");"
+        },
+        {
+          "name": "empty-init-then-copy",
+          "text": "        char server_address[64] = \"\";\n        strcpy(server_address, \"scores.crimsonland.com\");"
+        }
+      ]
+    },
+    {
+      "name": "request-path-init",
+      "find": "        char request_path[64] = \"/scoring_v2_7.php\";",
+      "replacements": [
+        {
+          "name": "zero-init-then-copy",
+          "text": "        char request_path[64] = {0};\n        strcpy(request_path, \"/scoring_v2_7.php\");"
+        },
+        {
+          "name": "memset-then-copy",
+          "text": "        char request_path[64];\n        memset(request_path, 0, sizeof(request_path));\n        strcpy(request_path, \"/scoring_v2_7.php\");"
+        },
+        {
+          "name": "empty-init-then-copy",
+          "text": "        char request_path[64] = \"\";\n        strcpy(request_path, \"/scoring_v2_7.php\");"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "drag-block-schedule",
+      "find": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)item_count;\n            state->scroll_offset = scroll_offset;\n            float max_offset = (float)(item_count - visible_rows);\n            if (scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }",
+      "replacements": [
+        {
+          "name": "field-max-before-field-scale",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float max_offset =\n                (float)(state->item_count - state->visible_rows);\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)state->item_count;\n            state->scroll_offset = scroll_offset;\n            if (scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        },
+        {
+          "name": "local-max-before-local-scale",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float max_offset = (float)(item_count - visible_rows);\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)item_count;\n            state->scroll_offset = scroll_offset;\n            if (scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        },
+        {
+          "name": "local-max-before-field-scale",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float max_offset = (float)(item_count - visible_rows);\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)state->item_count;\n            state->scroll_offset = scroll_offset;\n            if (scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        },
+        {
+          "name": "field-max-before-local-scale",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float max_offset =\n                (float)(state->item_count - state->visible_rows);\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)item_count;\n            state->scroll_offset = scroll_offset;\n            if (scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        },
+        {
+          "name": "integer-field-max-before-field-scale",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            int max_offset = state->item_count - state->visible_rows;\n            float scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)state->item_count;\n            state->scroll_offset = scroll_offset;\n            if (scroll_offset > (float)max_offset) {\n                state->scroll_offset = (float)max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        },
+        {
+          "name": "field-max-direct-state-compare",
+          "text": "        if (ui_scrollbar_drag_active && input_primary_is_down()) {\n            float max_offset =\n                (float)(state->item_count - state->visible_rows);\n            state->scroll_offset =\n                (ui_mouse_y - xy->y - ui_scrollbar_drag_offset)\n                / height * (float)state->item_count;\n            if (state->scroll_offset > max_offset) {\n                state->scroll_offset = max_offset;\n            }\n            if (state->scroll_offset < 0.0f) {\n                state->scroll_offset = 0.0f;\n            }\n        }"
+        }
+      ]
+    }
+  ]
+}

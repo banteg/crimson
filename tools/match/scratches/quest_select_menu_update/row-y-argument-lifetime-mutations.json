@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "locked-row-y-argument",
+      "occurrence": 1,
+      "find": "        next_row = row + 1;\n        {\n            float row_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                position.y,\n                \"%d.%d\",",
+      "replacements": [
+        {
+          "name": "reuse-row-y",
+          "text": "        next_row = row + 1;\n        {\n            float row_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                row_y,\n                \"%d.%d\","
+        },
+        {
+          "name": "row-y-before-next-row",
+          "text": "        {\n            float row_y = position.y;\n            next_row = row + 1;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                row_y,\n                \"%d.%d\","
+        }
+      ]
+    },
+    {
+      "name": "unlocked-row-y-argument",
+      "find": "unlocked_row:\n        next_row = row + 1;\n        {\n            float row_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                position.y,\n                \"%d.%d\",",
+      "replacements": [
+        {
+          "name": "reuse-row-y",
+          "text": "unlocked_row:\n        next_row = row + 1;\n        {\n            float row_y = position.y;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                row_y,\n                \"%d.%d\","
+        },
+        {
+          "name": "row-y-before-next-row",
+          "text": "unlocked_row:\n        {\n            float row_y = position.y;\n            next_row = row + 1;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x,\n                row_y,\n                \"%d.%d\","
+        }
+      ]
+    }
+  ]
+}

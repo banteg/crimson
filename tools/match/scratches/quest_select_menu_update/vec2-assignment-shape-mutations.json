@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-assignment-shape",
+      "find": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const",
+      "replacements": [
+        {
+          "name": "explicit-x-then-y",
+          "text": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_select_vec2_t &operator=(\n        const quest_select_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const"
+        },
+        {
+          "name": "explicit-y-then-x",
+          "text": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_select_vec2_t &operator=(\n        const quest_select_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n\n    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const"
+        },
+        {
+          "name": "explicit-components-via-this",
+          "text": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_select_vec2_t &operator=(\n        const quest_select_vec2_t &other)\n    {\n        this->x = other.x;\n        this->y = other.y;\n        return *this;\n    }\n\n    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const"
+        },
+        {
+          "name": "explicit-components-via-pointer",
+          "text": "    quest_select_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    quest_select_vec2_t &operator=(\n        const quest_select_vec2_t &other)\n    {\n        quest_select_vec2_t *destination = this;\n        destination->x = other.x;\n        destination->y = other.y;\n        return *destination;\n    }\n\n    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const"
+        }
+      ]
+    }
+  ]
+}

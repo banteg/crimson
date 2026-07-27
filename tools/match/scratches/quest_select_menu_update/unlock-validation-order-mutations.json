@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "unlock-validation-order",
+      "find": "        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else if (quest_unlock_index < selected_index) {\n            return;\n        }",
+      "replacements": [
+        {
+          "name": "bool-mode-before-index",
+          "text": "        bool hardcore = config_hardcore;\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else if (quest_unlock_index < selected_index) {\n            return;\n        }"
+        },
+        {
+          "name": "byte-mode-before-index",
+          "text": "        unsigned char hardcore = config_hardcore;\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else if (quest_unlock_index < selected_index) {\n            return;\n        }"
+        },
+        {
+          "name": "split-bool-mode-before-index",
+          "text": "        bool hardcore;\n        hardcore = config_hardcore;\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else if (quest_unlock_index < selected_index) {\n            return;\n        }"
+        },
+        {
+          "name": "split-byte-mode-before-index",
+          "text": "        unsigned char hardcore;\n        hardcore = config_hardcore;\n        selected_index =\n            quest_select_stage_minor_index\n            + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < selected_index) {\n                return;\n            }\n        } else if (quest_unlock_index < selected_index) {\n            return;\n        }"
+        },
+        {
+          "name": "bool-mode-direct-index",
+          "text": "        bool hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }"
+        },
+        {
+          "name": "byte-mode-direct-index",
+          "text": "        unsigned char hardcore = config_hardcore;\n        if (hardcore) {\n            if (quest_unlock_index_full\n                < quest_select_stage_minor_index\n                    + quest_select_stage_major * 10 - 10) {\n                return;\n            }\n        } else if (quest_unlock_index\n            < quest_select_stage_minor_index\n                + quest_select_stage_major * 10 - 10) {\n            return;\n        }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "repeat-increment-gate",
+      "find": "            ++tutorial_repeat_spawn_count;\n            if (tutorial_repeat_spawn_count > 7) {\n",
+      "replacements": [
+        {
+          "name": "preincrement-in-condition",
+          "text": "            if (++tutorial_repeat_spawn_count > 7) {\n"
+        },
+        {
+          "name": "postincrement-old-value-gate",
+          "text": "            if (tutorial_repeat_spawn_count++ >= 7) {\n"
+        },
+        {
+          "name": "named-preincrement-result",
+          "text": "            int repeat_count = ++tutorial_repeat_spawn_count;\n            if (repeat_count > 7) {\n"
+        },
+        {
+          "name": "named-add-result",
+          "text": "            int repeat_count = tutorial_repeat_spawn_count + 1;\n            tutorial_repeat_spawn_count = repeat_count;\n            if (repeat_count > 7) {\n"
+        },
+        {
+          "name": "named-reloaded-result",
+          "text": "            tutorial_repeat_spawn_count += 1;\n            int repeat_count = tutorial_repeat_spawn_count;\n            if (repeat_count > 7) {\n"
+        },
+        {
+          "name": "explicit-add-assignment",
+          "text": "            tutorial_repeat_spawn_count =\n                tutorial_repeat_spawn_count + 1;\n            if (tutorial_repeat_spawn_count > 7) {\n"
+        }
+      ]
+    }
+  ]
+}

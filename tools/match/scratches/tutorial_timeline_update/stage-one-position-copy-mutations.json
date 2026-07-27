@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bonus-zero-position-copy",
+      "find": "        *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;\n",
+      "replacements": [
+        {
+          "name": "component-x-y",
+          "text": "        bonus_pool[0].time.position.x = bonus_pos0.x;\n        bonus_pool[0].time.position.y = bonus_pos0.y;\n"
+        },
+        {
+          "name": "component-y-x",
+          "text": "        bonus_pool[0].time.position.y = bonus_pos0.y;\n        bonus_pool[0].time.position.x = bonus_pos0.x;\n"
+        },
+        {
+          "name": "direct-components-x-y",
+          "text": "        bonus_pool[0].time.position.x = 260.0f;\n        bonus_pool[0].time.position.y = 260.0f;\n"
+        },
+        {
+          "name": "direct-components-y-x",
+          "text": "        bonus_pool[0].time.position.y = 260.0f;\n        bonus_pool[0].time.position.x = 260.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-one-position-copy",
+      "find": "        *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;\n",
+      "replacements": [
+        {
+          "name": "component-x-y",
+          "text": "        bonus_pool[1].time.position.x = bonus_pos1.x;\n        bonus_pool[1].time.position.y = bonus_pos1.y;\n"
+        },
+        {
+          "name": "component-y-x",
+          "text": "        bonus_pool[1].time.position.y = bonus_pos1.y;\n        bonus_pool[1].time.position.x = bonus_pos1.x;\n"
+        },
+        {
+          "name": "direct-components-x-y",
+          "text": "        bonus_pool[1].time.position.x = 600.0f;\n        bonus_pool[1].time.position.y = 400.0f;\n"
+        },
+        {
+          "name": "direct-components-y-x",
+          "text": "        bonus_pool[1].time.position.y = 400.0f;\n        bonus_pool[1].time.position.x = 600.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-two-position-copy",
+      "find": "        *(tutorial_vec2_t *)&bonus_pool[2].time.position = bonus_pos2;\n",
+      "replacements": [
+        {
+          "name": "component-x-y",
+          "text": "        bonus_pool[2].time.position.x = bonus_pos2.x;\n        bonus_pool[2].time.position.y = bonus_pos2.y;\n"
+        },
+        {
+          "name": "component-y-x",
+          "text": "        bonus_pool[2].time.position.y = bonus_pos2.y;\n        bonus_pool[2].time.position.x = bonus_pos2.x;\n"
+        },
+        {
+          "name": "direct-components-x-y",
+          "text": "        bonus_pool[2].time.position.x = 300.0f;\n        bonus_pool[2].time.position.y = 400.0f;\n"
+        },
+        {
+          "name": "direct-components-y-x",
+          "text": "        bonus_pool[2].time.position.y = 400.0f;\n        bonus_pool[2].time.position.x = 300.0f;\n"
+        }
+      ]
+    }
+  ]
+}

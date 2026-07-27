@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-loop-open",
+      "find": "    do {\n        if (row >= state->item_count) {",
+      "replacements": [
+        {
+          "name": "for-ever",
+          "text": "    for (;;) {\n        if (row >= state->item_count) {"
+        },
+        {
+          "name": "while-true",
+          "text": "    while (1) {\n        if (row >= state->item_count) {"
+        }
+      ]
+    },
+    {
+      "name": "row-loop-close",
+      "find": "        ++item_index;\n    } while (row < state->visible_rows);",
+      "replacements": [
+        {
+          "name": "bottom-return",
+          "text": "        ++item_index;\n        if (row >= state->visible_rows) {\n            return;\n        }\n    }"
+        },
+        {
+          "name": "bottom-inverted-return",
+          "text": "        ++item_index;\n        if (!(row < state->visible_rows)) {\n            return;\n        }\n    }"
+        },
+        {
+          "name": "do-while-true-bottom-return",
+          "text": "        ++item_index;\n        if (row >= state->visible_rows) {\n            return;\n        }\n    } while (1);"
+        }
+      ]
+    },
+    {
+      "name": "initial-visible-rows-state-field",
+      "find": "    if (visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "    if (state->visible_rows <= 0) {"
+        }
+      ]
+    },
+    {
+      "name": "thumb-grab-item-count-state-field",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "                        - state->scroll_offset\n                            / (float)state->item_count * height;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "direction-component-lifetime",
+      "find": "                    direction.x =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    direction.y =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;",
+      "replacements": [
+        {
+          "name": "named-deltas-before-assignment",
+          "text": "                    float target_dx =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    float target_dy =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;\n                    direction.x = target_dx;\n                    direction.y = target_dy;"
+        },
+        {
+          "name": "named-deltas-interleaved-assignment",
+          "text": "                    float target_dx =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    direction.x = target_dx;\n                    float target_dy =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;\n                    direction.y = target_dy;"
+        },
+        {
+          "name": "named-vector-component-copy",
+          "text": "                    player_render_vec2_t target_direction(\n                        creature_pool[line_player->auto_target].pos_x\n                            - line_player->pos_x,\n                        creature_pool[line_player->auto_target].pos_y\n                            - line_player->pos_y);\n                    direction.x = target_direction.x;\n                    direction.y = target_direction.y;"
+        },
+        {
+          "name": "reverse-component-assignment",
+          "text": "                    direction.y =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;\n                    direction.x =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;"
+        },
+        {
+          "name": "named-x-delta-only",
+          "text": "                    float target_dx =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    direction.x = target_dx;\n                    direction.y =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;"
+        },
+        {
+          "name": "named-y-delta-only",
+          "text": "                    direction.x =\n                        creature_pool[line_player->auto_target].pos_x\n                        - line_player->pos_x;\n                    float target_dy =\n                        creature_pool[line_player->auto_target].pos_y\n                        - line_player->pos_y;\n                    direction.y = target_dy;"
+        }
+      ]
+    }
+  ]
+}

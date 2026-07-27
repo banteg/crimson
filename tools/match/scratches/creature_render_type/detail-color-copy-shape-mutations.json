@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-color-copy-shape",
+      "find": "            color = *tint;\n            color.a *= 0.4f;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "field-assign-forward",
+          "text": "            color.r = tint->r;\n            color.g = tint->g;\n            color.b = tint->b;\n            color.a = tint->a;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "field-assign-alpha-last",
+          "text": "            color.r = tint->r;\n            color.g = tint->g;\n            color.b = tint->b;\n            color.a = tint->a * 0.4f;"
+        },
+        {
+          "name": "copy-init-temporary",
+          "text": "            creature_render_color_t tint_copy = *tint;\n            color = tint_copy;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "constructor-copy",
+          "text": "            color = creature_render_color_t(\n                tint->r, tint->g, tint->b, tint->a);\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "word-copy-forward",
+          "text": "            ((unsigned int *)&color)[0] =\n                ((const unsigned int *)tint)[0];\n            ((unsigned int *)&color)[1] =\n                ((const unsigned int *)tint)[1];\n            ((unsigned int *)&color)[2] =\n                ((const unsigned int *)tint)[2];\n            ((unsigned int *)&color)[3] =\n                ((const unsigned int *)tint)[3];\n            color.a *= 0.4f;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "received-loop-local-order",
+      "find": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }",
+      "replacements": [
+        {
+          "name": "remaining-before-cursor",
+          "text": "        if (total_count > 0) {\n            int remaining = total_count;\n            char *read_cursor = data + 3;\n            do {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "predecrement-condition",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            int remaining = total_count;\n            do {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n            } while (--remaining != 0);\n        }"
+        },
+        {
+          "name": "remaining-before-cursor-predecrement",
+          "text": "        if (total_count > 0) {\n            int remaining = total_count;\n            char *read_cursor = data + 3;\n            do {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n            } while (--remaining != 0);\n        }"
+        },
+        {
+          "name": "split-initialization",
+          "text": "        if (total_count > 0) {\n            char *read_cursor;\n            int remaining;\n            read_cursor = data + 3;\n            remaining = total_count;\n            do {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n                remaining--;\n            } while (remaining != 0);\n        }"
+        },
+        {
+          "name": "counted-for",
+          "text": "        if (total_count > 0) {\n            char *read_cursor = data + 3;\n            for (int remaining = total_count;\n                 remaining != 0;\n                 remaining--) {\n                unsigned char hardcore_marker =\n                    config_hardcore ? 0x75 : 0;\n                memcpy(&received_record, read_cursor, 0x44);\n                received_record.flags = 1;\n                received_record.hardcore_marker = hardcore_marker;\n                highscore_save_record(&received_record);\n                read_cursor += 0x44;\n            }\n        }"
+        }
+      ]
+    }
+  ]
+}

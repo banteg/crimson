@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "thumb-height-integer-divisor",
+      "find": "        (float)visible_rows / (float)item_count * interior_height;",
+      "replacements": [
+        {
+          "name": "native-fidiv-shape",
+          "text": "        (float)visible_rows / item_count * interior_height;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-travel-integer-operands",
+      "find": "    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * (float)first_item\n        + 1.0f + xy->y;",
+      "replacements": [
+        {
+          "name": "implicit-divisor",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll\n+            * (float)first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "implicit-multiplier",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / (float)max_scroll\n            * first_item\n        + 1.0f + xy->y;"
+        },
+        {
+          "name": "implicit-both",
+          "text": "    float thumb_y =\n        (height - 3.0f - thumb_height) / max_scroll * first_item\n        + 1.0f + xy->y;"
+        }
+      ]
+    },
+    {
+      "name": "thumb-grab-integer-divisor",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "cached-implicit",
+          "text": "                        - state->scroll_offset / item_count * height;"
+        },
+        {
+          "name": "native-state-field",
+          "text": "                        - state->scroll_offset\n                            / (float)state->item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "drag-item-count-implicit",
+      "find": "                / height * (float)state->item_count;",
+      "replacements": [
+        {
+          "name": "implicit-field",
+          "text": "                / height * state->item_count;"
+        }
+      ]
+    },
+    {
+      "name": "drag-max-offset-implicit",
+      "find": "            float max_offset =\n                (float)(state->item_count - state->visible_rows);",
+      "replacements": [
+        {
+          "name": "implicit-fields",
+          "text": "            float max_offset =\n                state->item_count - state->visible_rows;"
+        }
+      ]
+    },
+    {
+      "name": "initial-visible-rows-state-field",
+      "find": "    if (visible_rows <= 0) {",
+      "replacements": [
+        {
+          "name": "native-state-field",
+          "text": "    if (state->visible_rows <= 0) {"
+        }
+      ]
+    }
+  ]
+}

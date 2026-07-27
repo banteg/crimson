@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-base-final-adjustment",
+      "find": "    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;",
+      "replacements": [
+        {
+          "name": "folded-x-then-compound-y",
+          "text": "    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x + 64.0f;\n    right_base.y += 32.0f;"
+        },
+        {
+          "name": "folded-x-then-assigned-y",
+          "text": "    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x + 64.0f;\n    right_base.y = right_position.y + 32.0f;"
+        },
+        {
+          "name": "assigned-y-then-folded-x",
+          "text": "    right_base.y = right_position.y + 32.0f;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x + 64.0f;"
+        },
+        {
+          "name": "compound-y-then-folded-x",
+          "text": "    right_base.y += 32.0f;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x + 64.0f;"
+        },
+        {
+          "name": "staged-folded-x-after-y",
+          "text": "    float right_x_adjusted =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x + 64.0f;\n    right_base.y = right_position.y + 32.0f;\n    right_base.x = right_x_adjusted;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-position-adjustment",
+      "find": "    position.y += 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;",
+      "replacements": [
+        {
+          "name": "vector-pairs-plus-equals",
+          "text": "    position += quest_select_vec2_t(64.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position += quest_select_vec2_t(-145.0f, 4.0f);"
+        },
+        {
+          "name": "vector-pairs-plus-assignment",
+          "text": "    position =\n        position + quest_select_vec2_t(64.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position =\n        position + quest_select_vec2_t(-145.0f, 4.0f);"
+        },
+        {
+          "name": "vector-first-pair",
+          "text": "    position += quest_select_vec2_t(64.0f, 40.0f);\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "vector-second-pair",
+          "text": "    position.y += 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position += quest_select_vec2_t(-145.0f, 4.0f);"
+        },
+        {
+          "name": "explicit-assignments",
+          "text": "    position.y = position.y + 40.0f;\n    position.x = position.x + 64.0f;\n    position.x =\n        position.x + ui_element_slot_37.render_offset_x;\n    position.x = position.x - 145.0f;\n    position.y = position.y + 4.0f;"
+        },
+        {
+          "name": "named-y-before-adjustment",
+          "text": "    float position_y = position.y;\n    position.y = position_y + 40.0f;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y += 4.0f;"
+        },
+        {
+          "name": "named-adjusted-y",
+          "text": "    float position_y = position.y + 40.0f;\n    position.y = position_y;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y = position_y + 4.0f;"
+        },
+        {
+          "name": "named-y-after-first-store",
+          "text": "    position.y += 40.0f;\n    float position_y = position.y;\n    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;\n    position.y = position_y + 4.0f;"
+        }
+      ]
+    }
+  ]
+}

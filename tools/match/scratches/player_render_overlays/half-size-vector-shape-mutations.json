@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "dead-pass-half-size-shape",
+      "find": "        half_size =\n            player_state_table[render_overlay_player_index].size * 0.5f;\n        render_scratch_f0 =\n            camera_offset\n            + *(player_render_vec2_t *)&player_state_table\n                  [render_overlay_player_index]\n                      .pos_x\n            - half_size;\n        sprite_size =\n            player_state_table[render_overlay_player_index].size * 1.03f;",
+      "replacements": [
+        {
+          "name": "explicit-splat-vector",
+          "text": "        half_size =\n            player_state_table[render_overlay_player_index].size * 0.5f;\n        render_scratch_f0 =\n            camera_offset\n            + *(player_render_vec2_t *)&player_state_table\n                  [render_overlay_player_index]\n                      .pos_x\n            - player_render_vec2_t(half_size, half_size);\n        sprite_size =\n            player_state_table[render_overlay_player_index].size * 1.03f;"
+        }
+      ]
+    },
+    {
+      "name": "alive-shadow-pass-half-size-shape",
+      "find": "    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f - 2.0f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size;\n    sprite_size =\n        player_state_table[render_overlay_player_index].size * 1.02f;",
+      "replacements": [
+        {
+          "name": "explicit-splat-vector",
+          "text": "    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f - 2.0f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - player_render_vec2_t(half_size, half_size);\n    sprite_size =\n        player_state_table[render_overlay_player_index].size * 1.02f;"
+        }
+      ]
+    },
+    {
+      "name": "alive-shadow-torso-half-size-shape",
+      "find": "    player_render_set_uv(player_overlay_torso_uv8, frame);\n    grim_interface_ptr->grim_set_rotation(\n        player_state_table[render_overlay_player_index].aim_heading);\n    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size\n        + recoil;\n    sprite_size =\n        player_state_table[render_overlay_player_index].size * 1.03f;",
+      "replacements": [
+        {
+          "name": "explicit-splat-vector",
+          "text": "    player_render_set_uv(player_overlay_torso_uv8, frame);\n    grim_interface_ptr->grim_set_rotation(\n        player_state_table[render_overlay_player_index].aim_heading);\n    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - player_render_vec2_t(half_size, half_size)\n        + recoil;\n    sprite_size =\n        player_state_table[render_overlay_player_index].size * 1.03f;"
+        }
+      ]
+    },
+    {
+      "name": "alive-body-pass-half-size-shape",
+      "find": "    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size;\n    grim_interface_ptr->grim_draw_quad(\n        render_scratch_f0.x,\n        render_scratch_f0.y,",
+      "replacements": [
+        {
+          "name": "explicit-splat-vector",
+          "text": "    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - player_render_vec2_t(half_size, half_size);\n    grim_interface_ptr->grim_draw_quad(\n        render_scratch_f0.x,\n        render_scratch_f0.y,"
+        }
+      ]
+    },
+    {
+      "name": "alive-body-torso-half-size-shape",
+      "find": "    player_render_set_uv(player_overlay_torso_uv8, frame);\n    grim_interface_ptr->grim_set_rotation(\n        player_state_table[render_overlay_player_index].aim_heading);\n    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - half_size\n        + recoil;\n    grim_interface_ptr->grim_draw_quad(\n        render_scratch_f0.x,\n        render_scratch_f0.y,",
+      "replacements": [
+        {
+          "name": "explicit-splat-vector",
+          "text": "    player_render_set_uv(player_overlay_torso_uv8, frame);\n    grim_interface_ptr->grim_set_rotation(\n        player_state_table[render_overlay_player_index].aim_heading);\n    half_size =\n        player_state_table[render_overlay_player_index].size * 0.5f;\n    render_scratch_f0 =\n        camera_offset\n        + *(player_render_vec2_t *)&player_state_table\n              [render_overlay_player_index]\n                  .pos_x\n        - player_render_vec2_t(half_size, half_size)\n        + recoil;\n    grim_interface_ptr->grim_draw_quad(\n        render_scratch_f0.x,\n        render_scratch_f0.y,"
+        }
+      ]
+    }
+  ]
+}

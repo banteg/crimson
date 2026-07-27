@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "target-draw-origin-construction",
+      "find": "                    player_render_vec2_t draw_origin(\n                        camera_offset.x + line_player->pos_x - 16.0f,\n                        camera_offset.y + line_player->pos_y - 16.0f);",
+      "replacements": [
+        {
+          "name": "assigned-components",
+          "text": "                    player_render_vec2_t draw_origin;\n                    draw_origin.x =\n                        camera_offset.x + line_player->pos_x - 16.0f;\n                    draw_origin.y =\n                        camera_offset.y + line_player->pos_y - 16.0f;"
+        },
+        {
+          "name": "named-components-then-constructor",
+          "text": "                    float draw_origin_x =\n                        camera_offset.x + line_player->pos_x - 16.0f;\n                    float draw_origin_y =\n                        camera_offset.y + line_player->pos_y - 16.0f;\n                    player_render_vec2_t draw_origin(\n                        draw_origin_x, draw_origin_y);"
+        },
+        {
+          "name": "named-components-then-assignment",
+          "text": "                    float draw_origin_x =\n                        camera_offset.x + line_player->pos_x - 16.0f;\n                    float draw_origin_y =\n                        camera_offset.y + line_player->pos_y - 16.0f;\n                    player_render_vec2_t draw_origin;\n                    draw_origin.x = draw_origin_x;\n                    draw_origin.y = draw_origin_y;"
+        },
+        {
+          "name": "named-x-interleaved-assignment",
+          "text": "                    player_render_vec2_t draw_origin;\n                    float draw_origin_x =\n                        camera_offset.x + line_player->pos_x - 16.0f;\n                    draw_origin.x = draw_origin_x;\n                    draw_origin.y =\n                        camera_offset.y + line_player->pos_y - 16.0f;"
+        }
+      ]
+    }
+  ]
+}

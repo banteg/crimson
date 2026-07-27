@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-assignment-operator",
+      "find": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value) {}\n};",
+      "replacements": [
+        {
+          "name": "explicit-inline-assignment",
+          "text": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value) {}\n\n    creature_render_color_t &operator=(\n        const creature_render_color_t &other)\n    {\n        r = other.r;\n        g = other.g;\n        b = other.b;\n        a = other.a;\n        return *this;\n    }\n};"
+        },
+        {
+          "name": "explicit-forceinline-assignment",
+          "text": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value) {}\n\n    __forceinline creature_render_color_t &operator=(\n        const creature_render_color_t &other)\n    {\n        r = other.r;\n        g = other.g;\n        b = other.b;\n        a = other.a;\n        return *this;\n    }\n};"
+        },
+        {
+          "name": "explicit-word-copy-assignment",
+          "text": "    creature_render_color_t(\n        float r_value, float g_value, float b_value, float a_value)\n        : r(r_value), g(g_value), b(b_value), a(a_value) {}\n\n    creature_render_color_t &operator=(\n        const creature_render_color_t &other)\n    {\n        const unsigned int *source = (const unsigned int *)&other;\n        unsigned int *destination = (unsigned int *)this;\n        destination[0] = source[0];\n        destination[1] = source[1];\n        destination[2] = source[2];\n        destination[3] = source[3];\n        return *this;\n    }\n};"
+        }
+      ]
+    }
+  ]
+}

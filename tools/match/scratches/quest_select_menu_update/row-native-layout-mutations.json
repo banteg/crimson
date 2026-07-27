@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-native-layout",
+      "find": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full < quest_index) {\n                goto locked_row;\n            }\n        } else if (quest_unlock_index < quest_index) {\n            goto locked_row;\n        }\n        goto unlocked_row;\n\nlocked_row:\n        next_row = row + 1;",
+      "replacements": [
+        {
+          "name": "unlocked-predicate",
+          "text": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "stage-byte-mode-unlocked",
+          "text": "        int stage_major = quest_select_stage_major;\n        unsigned char hardcore = config_hardcore;\n        int quest_index = row + stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "stage-bool-mode-unlocked",
+          "text": "        int stage_major = quest_select_stage_major;\n        bool hardcore = config_hardcore;\n        int quest_index = row + stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "stage-byte-mode-unlocked-explicit-else",
+          "text": "        int stage_major = quest_select_stage_major;\n        unsigned char hardcore = config_hardcore;\n        int quest_index = row + stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "byte-mode-before-index-unlocked",
+          "text": "        unsigned char hardcore = config_hardcore;\n        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;"
+        },
+        {
+          "name": "stage-byte-mode-locked",
+          "text": "        int stage_major = quest_select_stage_major;\n        unsigned char hardcore = config_hardcore;\n        int quest_index = row + stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < quest_index) {\n                goto locked_row;\n            }\n        } else if (quest_unlock_index < quest_index) {\n            goto locked_row;\n        }\n        goto unlocked_row;\n\nlocked_row:\n        next_row = row + 1;"
+        },
+        {
+          "name": "stage-bool-mode-locked",
+          "text": "        int stage_major = quest_select_stage_major;\n        bool hardcore = config_hardcore;\n        int quest_index = row + stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full < quest_index) {\n                goto locked_row;\n            }\n        } else if (quest_unlock_index < quest_index) {\n            goto locked_row;\n        }\n        goto unlocked_row;\n\nlocked_row:\n        next_row = row + 1;"
+        }
+      ]
+    }
+  ]
+}

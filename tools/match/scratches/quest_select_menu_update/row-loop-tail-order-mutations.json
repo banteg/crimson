@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-loop-tail-order",
+      "find": "row_done:\n        row = next_row;\n        position.y += 20.0f;\n    } while (next_row < 10);",
+      "replacements": [
+        {
+          "name": "y-before-row-row-condition",
+          "text": "row_done:\n        position.y += 20.0f;\n        row = next_row;\n    } while (row < 10);"
+        },
+        {
+          "name": "assignment-in-condition",
+          "text": "row_done:\n        position.y += 20.0f;\n    } while ((row = next_row) < 10);"
+        },
+        {
+          "name": "explicit-break-row",
+          "text": "row_done:\n        position.y += 20.0f;\n        row = next_row;\n        if (row >= 10) {\n            break;\n        }\n    } while (true);"
+        },
+        {
+          "name": "explicit-break-next-row",
+          "text": "row_done:\n        position.y += 20.0f;\n        row = next_row;\n        if (next_row >= 10) {\n            break;\n        }\n    } while (true);"
+        },
+        {
+          "name": "split-row-assignment",
+          "text": "row_done:\n        position.y += 20.0f;\n        int completed_row = next_row;\n        row = completed_row;\n    } while (row < 10);"
+        }
+      ]
+    }
+  ]
+}

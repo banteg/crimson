@@ -393,12 +393,13 @@ extern "C" void bonus_render(void)
                 1.0f, 1.0f, 1.0f, beam->color_a);
             float phase_size = (float)sin(beam->rotation) * 3.0f;
             float half_width = 15.0f - phase_size;
-            float half_height =
+            phase_size =
                 (phase_size + 15.0f)
                 * beam->scale_x
                 * 7.0f;
             half_width =
                 half_width * beam->scale_x * 7.0f;
+            float half_height = phase_size;
             float height = half_height + half_height;
             float width = half_width + half_width;
             grim_interface_ptr->grim_draw_quad(

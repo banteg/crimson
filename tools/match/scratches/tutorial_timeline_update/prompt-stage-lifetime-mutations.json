@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-local-stage",
+      "find": "    int stage;\n    {\n        int prompt_transition = tutorial_stage_transition_timer;\n",
+      "replacements": [
+        {
+          "name": "declare-inside-prompt-block",
+          "text": "    {\n        int stage;\n        int prompt_transition = tutorial_stage_transition_timer;\n"
+        }
+      ]
+    },
+    {
+      "name": "timeline-stage-redeclaration",
+      "find": "    }\n\n    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n",
+      "replacements": [
+        {
+          "name": "declare-after-prompt-block",
+          "text": "    }\n\n    int stage;\n    transition = tutorial_stage_transition_timer;\n    stage = tutorial_stage_index;\n"
+        },
+        {
+          "name": "initialize-after-prompt-block",
+          "text": "    }\n\n    transition = tutorial_stage_transition_timer;\n    int stage = tutorial_stage_index;\n"
+        }
+      ]
+    }
+  ]
+}

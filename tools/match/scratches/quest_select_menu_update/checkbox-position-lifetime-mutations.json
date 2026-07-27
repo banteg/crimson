@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "checkbox-position-lifetime",
+      "find": "        quest_select_vec2_t checkbox_position(\n            position.x + 132.0f,\n            position.y - 12.0f);\n        hardcore_checkbox.checked = config_hardcore;",
+      "replacements": [
+        {
+          "name": "default-x-then-y",
+          "text": "        quest_select_vec2_t checkbox_position;\n        checkbox_position.x = position.x + 132.0f;\n        checkbox_position.y = position.y - 12.0f;\n        hardcore_checkbox.checked = config_hardcore;"
+        },
+        {
+          "name": "default-y-then-x",
+          "text": "        quest_select_vec2_t checkbox_position;\n        checkbox_position.y = position.y - 12.0f;\n        checkbox_position.x = position.x + 132.0f;\n        hardcore_checkbox.checked = config_hardcore;"
+        },
+        {
+          "name": "checked-between-components",
+          "text": "        quest_select_vec2_t checkbox_position;\n        checkbox_position.x = position.x + 132.0f;\n        hardcore_checkbox.checked = config_hardcore;\n        checkbox_position.y = position.y - 12.0f;"
+        },
+        {
+          "name": "float-pair",
+          "text": "        float checkbox_position[2];\n        checkbox_position[0] = position.x + 132.0f;\n        checkbox_position[1] = position.y - 12.0f;\n        hardcore_checkbox.checked = config_hardcore;"
+        },
+        {
+          "name": "float-pair-checked-between",
+          "text": "        float checkbox_position[2];\n        checkbox_position[0] = position.x + 132.0f;\n        hardcore_checkbox.checked = config_hardcore;\n        checkbox_position[1] = position.y - 12.0f;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-server-address",
+      "find": "    const char *accept_types[] = {",
+      "replacements": [
+        {
+          "name": "before-accept-types",
+          "text": "    char server_address[64] = \"scores.crimsonland.com\";\n    const char *accept_types[] = {"
+        },
+        {
+          "name": "zeroed-before-accept-types",
+          "text": "    char server_address[64] = {0};\n    strcpy(server_address, \"scores.crimsonland.com\");\n    const char *accept_types[] = {"
+        }
+      ]
+    },
+    {
+      "name": "remove-inner-server-address",
+      "find": "        char server_address[64] = \"scores.crimsonland.com\";\n",
+      "replacements": [
+        {
+          "name": "remove",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

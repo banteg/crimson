@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-limit-lifetime",
+      "find": "    static options_slider_t graphics_detail_slider;\n    int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);",
+      "replacements": [
+        {
+          "name": "value-before-limits",
+          "text": "    static options_slider_t graphics_detail_slider;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "position-before-limits",
+          "text": "    static options_slider_t graphics_detail_slider;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "limits-after-position-before-value",
+          "text": "    static options_slider_t graphics_detail_slider;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "split-limit-assignment",
+          "text": "    static options_slider_t graphics_detail_slider;\n    int detail_max;\n    detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "const-limit",
+          "text": "    static options_slider_t graphics_detail_slider;\n    const int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "chained-limit-store-local-first",
+          "text": "    static options_slider_t graphics_detail_slider;\n    int detail_max;\n    graphics_detail_slider.max = (detail_max = 5);\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "chained-limit-store-field-first",
+          "text": "    static options_slider_t graphics_detail_slider;\n    int detail_max = (graphics_detail_slider.max = 5);\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "read-limit-after-field-store",
+          "text": "    static options_slider_t graphics_detail_slider;\n    graphics_detail_slider.max = 5;\n    int detail_max = graphics_detail_slider.max;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "named-min-and-max",
+          "text": "    static options_slider_t graphics_detail_slider;\n    int detail_min = 1;\n    int detail_max = 5;\n    graphics_detail_slider.max = detail_max;\n    graphics_detail_slider.min = detail_min;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        },
+        {
+          "name": "max-store-after-position",
+          "text": "    static options_slider_t graphics_detail_slider;\n    int detail_max = 5;\n    graphics_detail_slider.min = 1;\n    graphics_detail_slider.value = config_blob.detail_preset;\n    slider_position.x = xy.x;\n    slider_position.y = panel_position.y + 87.0f;\n    graphics_detail_slider.max = detail_max;\n    ui_segmented_slider_update(\n        (float *)&slider_position,\n        (ui_segmented_slider_t *)&graphics_detail_slider);"
+        }
+      ]
+    }
+  ]
+}

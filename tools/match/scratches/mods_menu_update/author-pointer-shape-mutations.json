@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "author-pointer-shape",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\n                mods_menu_selected_info->author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            mods_menu_selected_info->author);",
+      "replacements": [
+        {
+          "name": "direct-pointer",
+          "text": "        char *author = mods_menu_selected_info->author;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        },
+        {
+          "name": "first-element-pointer",
+          "text": "        char *author = &mods_menu_selected_info->author[0];\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        },
+        {
+          "name": "const-pointer",
+          "text": "        char *const author = mods_menu_selected_info->author;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        },
+        {
+          "name": "assigned-pointer",
+          "text": "        char *author;\n        author = mods_menu_selected_info->author;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        },
+        {
+          "name": "array-reference",
+          "text": "        char (&author)[32] = mods_menu_selected_info->author;\n        text_width =\n            grim_interface_ptr->grim_measure_text_width(author);\n        grim_interface_ptr->grim_draw_text_small_fmt(\n            position.x + 192.0f - (float)text_width,\n            position.y,\n            \"%s\",\n            author);"
+        }
+      ]
+    }
+  ]
+}

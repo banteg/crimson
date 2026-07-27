@@ -194,3 +194,72 @@ five-profile matrix also confirmed identical best output from MSVC 6.0, 6.5,
 and 6.6, while `msvc6.5pp` and MSVC 7.0 regressed to 59.67% and 46.03%.
 Across 27 recorded mutations and five compiler profiles, no locally
 corroborated improvement was found, so `scratch.cpp` remains unchanged.
+
+## Native cursor/lifetime mutation campaign
+
+A second bounded campaign again selected live Binary Ninja target
+`3023:2:9499448411019345244`. The exported decompilation and disassembly have
+SHA-256
+`4388afa83f67d0145a5bfdb0f682506aed95f320fffbdbc20b87d372aed60f12`
+and
+`fe18b6c5bf43eac6d39019e26526fe2db668761ff880bafe55143a2521396865`.
+The baseline source SHA-256 remains
+`8764235bae69d4c6e5601f075daf937b8db7b1fcc5d0c9e2a56ecf431a04412c`:
+78.4494086728%, 2,223.2562417871/2,834 fuzzy-weighted bytes, a
+610.7437582129-byte gap, 757/765 instructions, prefix 25, an exact `0x3c`
+frame, and references `136/0/5`.
+
+The native detail pass gives a precise allocation target. It forms the tint
+pointer in `ebp` at `0x00418c23`, copies that pointer to `eax` at
+`0x00418c29`, later addresses position y as `[ebp-0x24]` at `0x00418df9`,
+and reloads the type argument into `ebp` at `0x00418e37`. The candidate
+instead folds the tint pointer into `eax`, addresses position from the
+lifecycle cursor, and needs no reload. Native similarly anchors the normal
+main pass at `&creature_pool[0].anim_phase` at `0x00419171`. These are
+concrete lifetime/cursor differences, not evidence of missing render
+behavior.
+
+Twelve additional schema-1 sweeps evaluated all 82/82 planned variants
+without truncation and appended their complete results to `experiments.jsonl`:
+
+- Cross-pass owner and helper experiments
+  `cross-pass-tint-owner-mutations.json` (`eaf81856...`, 3/3),
+  `tint-owner-helper-mutations.json` (`154f1350...`, 11/11),
+  `detail-hoisted-tint-interaction-mutations.json` (`4b77796d...`, 7/7),
+  and `detail-tint-relative-y-mutations.json` (`3804f82b...`, 4/4)
+  all agree. Unused helpers and hoisted declarations are byte-neutral, while
+  every valid late owner-y spelling adds two instructions and loses
+  43.8284202648 weighted bytes. The paired detail/main owner form loses
+  678.1133846443 weighted bytes.
+- `entry-local-lifetime-mutations.json` (`b995142e...`, 5/5),
+  `detail-register-hint-mutations.json` (`5a3b8108...`, 11/11), and
+  `detail-local-order-mutations.json` (`daa06873...`, 8/8) show that parameter
+  copies, const/enum spelling, register hints, and all tested frame/flags/tint
+  declaration orders are byte-identical. Narrowing the detail color/position
+  lifetime in `detail-local-scope-mutations.json` (`9102d77a...`, 9/9)
+  instead loses 48.4126149803 weighted bytes.
+- Direct copy and assignment alternatives were also negative.
+  `color-assignment-operator-mutations.json` (`8ef75b65...`, 3/3) loses at
+  least 152.3279995225 weighted bytes; in
+  `detail-color-copy-shape-mutations.json` (`6cac456c...`, 5/5), a temporary
+  aggregate copy is neutral and explicit field, word, or constructor copies
+  lose 87.9741905051 to 106.5603621272 weighted bytes.
+- `main-animation-cursor-mutations.json` (`06808304...`, 9/9) tests four
+  complete typed/integer/preincrement end forms. Each correct native-style
+  animation anchor reduces the reference mismatch count from five to four,
+  but adds one instruction and loses 57.2838189375 weighted bytes. As with the
+  earlier flash cursor, the isolated anchor improvement does not justify the
+  larger scheduling regression.
+- Finally, `detail-typed-creature-view-mutations.json` (`1af30502...`, 7/7)
+  tests layout-identical local views with native-style vector and/or color
+  members. Every complete definition/use pair is byte-identical. This rules
+  out the local POD member types as the cause of the allocation difference
+  and provides no matching evidence for changing the shared port types.
+
+An expanded VC6.5 flag matrix also leaves the best profile unchanged.
+`/G7`, `/GX-`, `/Ob2`, and `/Gy` are byte-identical to `/O2 /GB /W3 /GR-`;
+`/G6`, `/Oy-`, and `/Og-` regress to 71.98%, 49.51%, and 18.86%.
+Together with the earlier `/G5`, `/Ob1`, `/Ot`, `/Oi-`, `/Op`, `/Os`, and
+`/O1` checks, this bounds the ordinary profile space. No mutation improved
+the aggregate rank, so none was retained in `scratch.cpp`; the honest stopping
+state remains semantic-complete with a compiler residual.

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-operator-plus-shape",
+      "find": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        return quest_select_vec2_t(x + other.x, y + other.y);\n    }",
+      "replacements": [
+        {
+          "name": "default-result-x-first",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        quest_select_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "default-result-y-first",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        quest_select_vec2_t result;\n        result.y = y + other.y;\n        result.x = x + other.x;\n        return result;\n    }"
+        },
+        {
+          "name": "copy-then-components",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        quest_select_vec2_t result = *this;\n        result.x += other.x;\n        result.y += other.y;\n        return result;\n    }"
+        },
+        {
+          "name": "copy-then-plus-equals",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        quest_select_vec2_t result = *this;\n        result += other;\n        return result;\n    }"
+        },
+        {
+          "name": "named-sums-constructor",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        float sum_x = x + other.x;\n        float sum_y = y + other.y;\n        return quest_select_vec2_t(sum_x, sum_y);\n    }"
+        },
+        {
+          "name": "named-sums-default-result",
+          "text": "    quest_select_vec2_t operator+(const quest_select_vec2_t &other) const\n    {\n        float sum_x = x + other.x;\n        float sum_y = y + other.y;\n        quest_select_vec2_t result;\n        result.x = sum_x;\n        result.y = sum_y;\n        return result;\n    }"
+        }
+      ]
+    }
+  ]
+}

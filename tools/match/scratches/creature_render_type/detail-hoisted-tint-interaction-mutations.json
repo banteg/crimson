@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-scope-tint-pointer",
+      "find": "    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;",
+      "replacements": [
+        {
+          "name": "add-tint-pointer",
+          "text": "    creature_render_color_t color;\n    creature_render_vec2_t draw_pos;\n    creature_render_color_t *tint;"
+        }
+      ]
+    },
+    {
+      "name": "detail-assign-hoisted-tint",
+      "find": "            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;",
+      "replacements": [
+        {
+          "name": "assign",
+          "text": "            int flags = creature->flags;\n            tint = (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;"
+        }
+      ]
+    },
+    {
+      "name": "detail-use-hoisted-tint-owner",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);",
+      "replacements": [
+        {
+          "name": "typed-owner-y",
+          "text": "            creature_t *tint_owner = (creature_t *)((char *)tint\n                - offsetof(creature_t, color));\n            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x, tint_owner->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);"
+        }
+      ]
+    }
+  ]
+}

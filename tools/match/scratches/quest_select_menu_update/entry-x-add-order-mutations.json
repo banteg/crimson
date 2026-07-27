@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-x-add-order",
+      "find": "    position.x += 64.0f;\n    position.x += ui_element_slot_37.render_offset_x;\n    position.x -= 145.0f;",
+      "replacements": [
+        {
+          "name": "render-offset-before-constant",
+          "text": "    position.x += ui_element_slot_37.render_offset_x;\n    position.x += 64.0f;\n    position.x -= 145.0f;"
+        },
+        {
+          "name": "single-expression-render-first",
+          "text": "    position.x =\n        position.x + ui_element_slot_37.render_offset_x\n        + 64.0f - 145.0f;"
+        },
+        {
+          "name": "single-expression-constant-first",
+          "text": "    position.x =\n        position.x + 64.0f\n        + ui_element_slot_37.render_offset_x - 145.0f;"
+        }
+      ]
+    }
+  ]
+}

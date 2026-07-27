@@ -27,7 +27,7 @@ matching the native load at `0x0040ec74` and its use at `0x0040ecbc`.
 Current MSVC 6.5 `/O2 /GB` result:
 
 ```txt
-match=83.53% prefix=0/648 target_insns=648 candidate_insns=645 refs=168/0/0
+match=85.23% prefix=0/648 target_insns=648 candidate_insns=645 refs=169/0/0
 first_target=sub esp, 0x144
 first_candidate=sub esp, 0x15c
 ```
@@ -64,3 +64,73 @@ matcher result as the baseline: **83.53%**, 645 candidate instructions, prefix
 0, `168/0/0` references, and exactly zero weighted-score delta. There were no
 positive singles, so no interaction was eligible. The complete sweep is
 recorded in `experiments.jsonl`; no source variant was applied.
+
+## Render-pair lifetime and profile wave (2026-07-27)
+
+The live Binary Ninja target
+`3023:2:9499448411019345244` and function bundle SHA-256
+`5dd60c0305a41f8147a0d9753ad0fd8c20347b7fc6605c86d571c25dd5234aef`
+show two adjacent per-pair renderer lifetimes that were imprecise in the
+source. For the selected mod's numeric version, native loads the Grim object
+at `0x0040ee17`, captures its virtual-call state at `0x0040ee27`, measures at
+`0x0040ee40`, and draws at `0x0040ee5c`. The `"version"` column label repeats
+the same pair at `0x0040ef0a`, `0x0040ef1a`, `0x0040ef2e`, and
+`0x0040ef4b`. Both pairs keep one interface value across their measure and
+draw calls.
+
+`render-pair-interface-lifetime-mutations.json` exhaustively evaluated all
+15 nonempty combinations across the version value, version label, author,
+and filename pairs. Capturing the interface only for the first two pairs is
+the clean winner:
+
+```txt
+83.5266821% -> 85.2281516%
+weighted 2177.540603/2607 -> 2221.897912/2607
+gap 429.459397 -> 385.102088 bytes
+instructions 645/648 -> 645/648
+references 168/0/0 -> 169/0/0
+```
+
+The gain is 44.357309 weighted bytes, or 1.701469 percentage points, without
+unresolved or mismatched references. The author-only capture regresses by
+4.032483 bytes, and every filename-capture combination regresses sharply.
+Only the two native-supported pair captures are retained. The spec SHA-256 is
+`80265c35e5450db967867297a3613d369eaacde435e069f8cf1fb1442f8dd065`.
+
+The other complete recorded sweeps bound the adjacent alternatives:
+
+- `right-aligned-text-schedule-mutations.json` evaluated all 80 possible
+  one- through four-site variants. Naming the four right edges before the
+  width calls regresses. Its only fuzzy-positive single names the author
+  pointer, but introduces one reference mismatch. Spec SHA-256 is
+  `8c08117328266c8d6ca89f79402e26541a8454b907f4e3dadb5350258c2d30d2`.
+- `author-pointer-shape-mutations.json` evaluated five ordinary pointer
+  spellings before and after the retained pair captures. All ten evaluations
+  compile identically: the improved baseline gains 7.480864 weighted bytes
+  but changes the author cluster to `168/0/1`. Native keeps the interface
+  vtable in `esi` through this region, while that candidate assigns `esi` to
+  the author pointer. The source remains unchanged to preserve the clean
+  reference schedule. Spec SHA-256 is
+  `4be622383ba85e3b7b095b403a89c3145c311102625ab87fc6339e7258dc2bd4`.
+- `author-pair-lifetime-combined-mutations.json` evaluated pointer-only,
+  renderer-only, and combined forms from the improved source. Renderer-only
+  loses 4.032483 bytes; the combined form loses 66.885528 bytes and still has
+  a mismatch. Spec SHA-256 is
+  `9abf23320be91e48b020e1df470f641927e55096497c067421d608335cca4c0c`.
+
+Together with the earlier five-variant scrollbar sweep, the six-record
+`experiments.jsonl` contains 113/113 evaluated variants, no truncation, and
+SHA-256
+`cd01ed0666435921b0cd1aa4dc4b929ae38e1f8b50361e220a4e5e7fe7c02eba`.
+
+A separate 30-cell profile matrix covered MSVC 6.5 and 6.6 across 15 flag
+sets. `/O2 /GB`, `/O2 /G5`, `/O2` without an explicit CPU switch, `/Ob1`,
+`/Ob2`, `/Ot`, and `/Zp8` tie the canonical score on both compilers. Explicit
+decomposed `/Og /Oi /Ot /Oy /Ob1|2` also ties instruction bytes but leaves
+16 references unresolved. `/G6`, `/Op`, `/Oy-`, `/Oi-`, `/Os`, and `/O1`
+regress. No profile override is retained.
+
+Final source SHA-256 is
+`fb24d0b3077b3fa86fab7bdf1b57bf8822db3b3c431c09372825472d2cc7fed4`.
+The frame remains `0x15c` versus native `0x144`; the remaining gap is still
+classified `RESIDUAL=compiler`.

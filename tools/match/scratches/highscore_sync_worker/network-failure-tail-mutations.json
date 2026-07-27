@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "failure-message-local",
+      "find": "    DWORD received;\n    DWORD headers_length = strlen(headers);",
+      "replacements": [
+        {
+          "name": "declare",
+          "text": "    DWORD received;\n    const char *failure_message;\n    DWORD headers_length = strlen(headers);"
+        }
+      ]
+    },
+    {
+      "name": "internet-open-failure",
+      "find": "    if (!internet) {\n        console_printf(\n            &console_log_queue,\n            \"ONLINE Scores: InternetOpen failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!internet) {\n        failure_message = \"ONLINE Scores: InternetOpen failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "internet-connect-failure",
+      "find": "        if (!connection) {\n            console_printf(\n                &console_log_queue,\n                \"ONLINE Scores: InternetConnect failed.\\n\");\n            goto cleanup;\n        }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "        if (!connection) {\n            failure_message = \"ONLINE Scores: InternetConnect failed.\\n\";\n            goto network_failure;\n        }"
+        }
+      ]
+    },
+    {
+      "name": "http-open-failure",
+      "find": "    if (!request) {\n        console_printf(\n            &console_log_queue,\n            \"ONLINE Scores: HttpOpenRequest failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!request) {\n        failure_message = \"ONLINE Scores: HttpOpenRequest failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "http-send-failure",
+      "find": "    if (!request_ok) {\n        console_printf(\n            &console_log_queue,\n            \"ONLINE Scores: HttpSendRequest failed.\\n\");\n        goto cleanup;\n    }",
+      "replacements": [
+        {
+          "name": "shared-tail",
+          "text": "    if (!request_ok) {\n        failure_message = \"ONLINE Scores: HttpSendRequest failed.\\n\";\n        goto network_failure;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "shared-failure-tail",
+      "find": "    success = true;\n\ncleanup:",
+      "replacements": [
+        {
+          "name": "add-tail",
+          "text": "    success = true;\n\n    goto cleanup;\n\nnetwork_failure:\n    console_printf(&console_log_queue, failure_message);\n\ncleanup:"
+        }
+      ]
+    }
+  ]
+}

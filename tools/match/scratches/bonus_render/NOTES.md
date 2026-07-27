@@ -14,9 +14,9 @@ fade envelopes and that the icon size pulse is `pow(sin(phase), 2.0)`, not a
 fourth power. The modern renderer parity fix is tracked separately from this
 matching scratch.
 
-The complete VC6 scratch currently matches 88.10% (1,088 target instructions,
+The complete VC6 scratch currently matches 88.56% (1,088 target instructions,
 1,089 candidate instructions, 14-instruction exact prefix). Reference auditing
-reports 218 aligned references, no unresolved references, and 10 mismatches.
+reports 220 aligned references, no unresolved references, and 9 mismatches.
 The remaining reference mismatches are instruction-alignment or strength-
 reduced field-anchor differences such as `particle_style_id` versus the same
 record's `intensity` field; no reference aliases are used.
@@ -99,6 +99,45 @@ at one mutually exclusive site, no cross-site interaction exists to test.
 The complete sweep is recorded in `experiments.jsonl`, whose SHA-256 is
 `17d2b41e6c6f230957cd91bb4b38910d44f3446379ec393d62651e194044b24e`.
 
+## Recorded beam lifetime sweep
+
+Live native disassembly at `0x0042a250..0x0042a2ac` shows the Bubblegun beam
+pass consuming the sine phase twice: it stores the unscaled half-width, reuses
+the remaining x87 phase as the half-height, and only then scales both values.
+The previous source named a separate `half_height` immediately, which let VC6
+duplicate and reorder the phase. Reusing `phase_size` for the scaled
+half-height describes the same arithmetic while recovering the native x87
+lifetime.
+
+`beam-x87-lifetime-mutations.json` is a schema-1, one-site plan with four
+semantic spellings. Its SHA-256 is
+`c24f8184b10de32a70f4df342712753aa4798b697fa55818819d29962231ac6c`.
+All 4/4 variants were evaluated and recorded without truncation. Three were
+byte-neutral; `reuse-phase-as-height` was the sole improvement and was
+retained. It raises the whole-function match from 88.1029% to 88.5622%, adds
+18.778 fuzzy-weighted bytes, and reduces the fuzzy gap from 486.354 to
+467.576 bytes. Instruction counts and prefix remain 1,089/1,088 and 14, while
+reference agreement improves from `218/0/10` to `220/0/9`. The retained source
+SHA-256 is
+`0815cae05ff7539e64c66f8731bf92f1e36cc486e46ab45ce5e1402963d21de0`.
+
+Four additional complete matrices record useful boundaries:
+
+- the 2/2 Telekinetic exit-shape sweep was byte-neutral;
+- moving the player-index lifetime across the weapon pass was negative
+  (`86.6850%`, `213/0/12`);
+- the 7/7 explicit particle interior-cursor matrix was negative despite
+  reducing some reference mismatches;
+- all viable variants in the 23/23 weapon-zero lifetime matrix were
+  byte-neutral.
+
+An earlier scaffolding sweep is retained in `experiments.jsonl` because it
+establishes that the direct `player_aim_x` symbol spelling is byte-neutral.
+Its shared-threshold alternative contained a spec-label typo and is not
+semantic evidence; the corrected 2/2 exit-shape sweep above supersedes it.
+The final seven-line experiment log has SHA-256
+`4442d3601955a03895a0b60d7c86f5f427ddb9a3404d3c66beea36185ac90009`.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms the ordinary and weapon
 bonus passes, Telekinetic hover/apply path, all three particle passes, exploding
@@ -106,7 +145,7 @@ secondary-projectile and sprite-effect passes, and the final `effects_render`
 call through `0x004295f0..0x0042a5e8`. IDA and Ghidra independently retain the
 same signature and six named helper calls. The first localized regions differ
 only in branch displacement, zero materialization (`EBX` versus literal zero),
-and x87 scheduling. All their scoped references resolve; the ten whole-function
+and x87 scheduling. All their scoped references resolve; the nine whole-function
 audit mismatches remain visible as alignment or strength-reduced field-anchor
 effects rather than being aliased away. Each candidate cursor is an evidenced
 interior of the same player, particle, secondary-projectile, camera, or sprite

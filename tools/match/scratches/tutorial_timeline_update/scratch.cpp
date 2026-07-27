@@ -124,25 +124,27 @@ extern "C" void tutorial_timeline_update(void)
         int prompt_transition = tutorial_stage_transition_timer;
         int stage_timer = tutorial_stage_timer;
         float prompt_alpha;
-        if (prompt_transition < 0) {
+        if (prompt_transition >= 0) {
+            prompt_alpha =
+                (float)tutorial_stage_transition_timer * 0.001f;
+        } else {
             if (prompt_transition < -1) {
                 prompt_alpha = (float)-prompt_transition * 0.001f;
             } else {
                 prompt_alpha = 1.0f;
             }
-        } else {
-            prompt_alpha =
-                (float)tutorial_stage_transition_timer * 0.001f;
         }
 
-        stage = tutorial_stage_index;
         if (prompt_alpha >= 1.0f) {
+            stage = tutorial_stage_index;
             if (stage == 5
                 && stage_timer > 5000
                 && prompt_transition >= -1) {
                 prompt_alpha = 1.0f
                     - (float)(stage_timer - 5000) * 0.001f;
             }
+        } else {
+            stage = tutorial_stage_index;
         }
         if (stage == 5 && stage_timer > 6000) {
             prompt_alpha = 0.0f;
@@ -246,7 +248,8 @@ extern "C" void tutorial_timeline_update(void)
         bonus_pool[0].time.time_max = 100.0f;
         bonus_pool[0].state = 0;
         bonus_pool[0].time.amount = 500;
-        *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;
+        bonus_pool[0].time.position.x = bonus_pos0.x;
+        bonus_pool[0].time.position.y = bonus_pos0.y;
         effect_spawn_burst(
             &bonus_pool[0].time.position,
             12);
@@ -257,7 +260,8 @@ extern "C" void tutorial_timeline_update(void)
         bonus_pool[1].time.time_max = bonus_pool[0].time.time_left;
         bonus_pool[1].state = 0;
         bonus_pool[1].time.amount = 1000;
-        *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;
+        bonus_pool[1].time.position.x = bonus_pos1.x;
+        bonus_pool[1].time.position.y = bonus_pos1.y;
         effect_spawn_burst(
             &bonus_pool[1].time.position,
             12);
@@ -355,8 +359,9 @@ extern "C" void tutorial_timeline_update(void)
             ++bonus_count;
         }
         if (bonus_count == 0x10 && creatures_none_active()) {
-            ++tutorial_repeat_spawn_count;
-            if (tutorial_repeat_spawn_count > 7) {
+            int repeat_count = tutorial_repeat_spawn_count + 1;
+            tutorial_repeat_spawn_count = repeat_count;
+            if (repeat_count > 7) {
                 if (tutorial_stage_transition_timer == -1) {
                     tutorial_stage_transition_timer = -1000;
                     sfx_play(sfx_ui_levelup, 1.0f);

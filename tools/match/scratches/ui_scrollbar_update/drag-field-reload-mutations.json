@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "thumb-grab-item-count-reload",
+      "find": "                        - state->scroll_offset / (float)item_count * height;",
+      "replacements": [
+        {
+          "name": "field-explicit-cast",
+          "text": "                        - state->scroll_offset\n                            / (float)state->item_count * height;"
+        },
+        {
+          "name": "field-implicit-cast",
+          "text": "                        - state->scroll_offset\n                            / state->item_count * height;"
+        }
+      ]
+    },
+    {
+      "name": "drag-item-count-reload",
+      "find": "                / height * (float)item_count;",
+      "replacements": [
+        {
+          "name": "field-explicit-cast",
+          "text": "                / height * (float)state->item_count;"
+        },
+        {
+          "name": "field-implicit-cast",
+          "text": "                / height * state->item_count;"
+        }
+      ]
+    },
+    {
+      "name": "drag-max-offset-reloads",
+      "find": "            float max_offset = (float)(item_count - visible_rows);",
+      "replacements": [
+        {
+          "name": "both-fields-explicit-cast",
+          "text": "            float max_offset =\n                (float)(state->item_count - state->visible_rows);"
+        },
+        {
+          "name": "both-fields-implicit-cast",
+          "text": "            float max_offset =\n                state->item_count - state->visible_rows;"
+        },
+        {
+          "name": "item-field-visible-local",
+          "text": "            float max_offset =\n                (float)(state->item_count - visible_rows);"
+        },
+        {
+          "name": "item-local-visible-field",
+          "text": "            float max_offset =\n                (float)(item_count - state->visible_rows);"
+        }
+      ]
+    }
+  ]
+}

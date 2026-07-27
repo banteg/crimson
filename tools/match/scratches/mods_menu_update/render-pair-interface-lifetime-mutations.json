@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "version-renderer-lifetime",
+      "find": "        int text_width =\n            grim_interface_ptr->grim_measure_text_width(version_text);\n        grim_interface_ptr->grim_draw_text_small_fmt(",
+      "replacements": [
+        {
+          "name": "pair-local-renderer",
+          "text": "        IGrim2D_cpp *version_renderer = grim_interface_ptr;\n        int text_width =\n            version_renderer->grim_measure_text_width(version_text);\n        version_renderer->grim_draw_text_small_fmt("
+        }
+      ]
+    },
+    {
+      "name": "version-label-renderer-lifetime",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\"version\");\n        grim_interface_ptr->grim_draw_text_small_fmt(",
+      "replacements": [
+        {
+          "name": "pair-local-renderer",
+          "text": "        IGrim2D_cpp *version_label_renderer = grim_interface_ptr;\n        text_width =\n            version_label_renderer->grim_measure_text_width(\"version\");\n        version_label_renderer->grim_draw_text_small_fmt("
+        }
+      ]
+    },
+    {
+      "name": "author-renderer-lifetime",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(\n                mods_menu_selected_info->author);\n        grim_interface_ptr->grim_draw_text_small_fmt(",
+      "replacements": [
+        {
+          "name": "pair-local-renderer",
+          "text": "        IGrim2D_cpp *author_renderer = grim_interface_ptr;\n        text_width =\n            author_renderer->grim_measure_text_width(\n                mods_menu_selected_info->author);\n        author_renderer->grim_draw_text_small_fmt("
+        }
+      ]
+    },
+    {
+      "name": "filename-renderer-lifetime",
+      "find": "        text_width =\n            grim_interface_ptr->grim_measure_text_width(filename);\n        grim_interface_ptr->grim_draw_text_small_fmt(",
+      "replacements": [
+        {
+          "name": "pair-local-renderer",
+          "text": "        IGrim2D_cpp *filename_renderer = grim_interface_ptr;\n        text_width =\n            filename_renderer->grim_measure_text_width(filename);\n        filename_renderer->grim_draw_text_small_fmt("
+        }
+      ]
+    }
+  ]
+}

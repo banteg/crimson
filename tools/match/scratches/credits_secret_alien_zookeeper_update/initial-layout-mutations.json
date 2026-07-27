@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-position-initialization",
+      "find": "    credits_secret_vec2_t panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);",
+      "replacements": [
+        {
+          "name": "direct-initialization",
+          "text": "    credits_secret_vec2_t panel_position(\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f));"
+        },
+        {
+          "name": "split-assignment",
+          "text": "    credits_secret_vec2_t panel_position;\n    panel_position =\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "explicit-copy-temporary",
+          "text": "    credits_secret_vec2_t panel_position = credits_secret_vec2_t(\n        *(credits_secret_vec2_t *)&ui_element_slot_09.pos_x\n        + *(credits_secret_vec2_t *)&ui_element_slot_09.vertices[0].x\n        + credits_secret_vec2_t(300.0f, 40.0f));"
+        }
+      ]
+    },
+    {
+      "name": "board-position-copy",
+      "find": "    credits_secret_vec2_t board_position = panel_position;",
+      "replacements": [
+        {
+          "name": "direct-initialization",
+          "text": "    credits_secret_vec2_t board_position(panel_position);"
+        },
+        {
+          "name": "split-assignment",
+          "text": "    credits_secret_vec2_t board_position;\n    board_position = panel_position;"
+        },
+        {
+          "name": "component-initialization",
+          "text": "    credits_secret_vec2_t board_position(\n        panel_position.x, panel_position.y);"
+        }
+      ]
+    },
+    {
+      "name": "board-x-expression",
+      "find": "    board_position.x =\n        board_position.x\n        + ui_element_slot_09.render_offset_x\n        - 80.0f;",
+      "replacements": [
+        {
+          "name": "parenthesized-left-associative",
+          "text": "    board_position.x =\n        (board_position.x\n            + ui_element_slot_09.render_offset_x)\n        - 80.0f;"
+        },
+        {
+          "name": "temporary-left-associative",
+          "text": "    float board_x =\n        board_position.x\n        + ui_element_slot_09.render_offset_x;\n    board_position.x = board_x - 80.0f;"
+        }
+      ]
+    },
+    {
+      "name": "board-y-expression",
+      "find": "    board_position.y += 10.0f;",
+      "replacements": [
+        {
+          "name": "explicit-assignment",
+          "text": "    board_position.y = board_position.y + 10.0f;"
+        },
+        {
+          "name": "temporary-addition",
+          "text": "    float board_y = board_position.y + 10.0f;\n    board_position.y = board_y;"
+        }
+      ]
+    },
+    {
+      "name": "button-origin-copy",
+      "find": "    credits_secret_vec2_t button_origin = board_position;",
+      "replacements": [
+        {
+          "name": "direct-initialization",
+          "text": "    credits_secret_vec2_t button_origin(board_position);"
+        },
+        {
+          "name": "split-assignment",
+          "text": "    credits_secret_vec2_t button_origin;\n    button_origin = board_position;"
+        },
+        {
+          "name": "component-initialization",
+          "text": "    credits_secret_vec2_t button_origin(\n        board_position.x, board_position.y);"
+        }
+      ]
+    }
+  ]
+}

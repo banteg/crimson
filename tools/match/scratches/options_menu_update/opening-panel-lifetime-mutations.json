@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-panel-construction",
+      "find": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + options_vec2_t(300.0f, 40.0f);",
+      "replacements": [
+        {
+          "name": "anchor-then-in-place-add",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position =\n        panel_position + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "named-anchor-then-final",
+          "text": "    options_vec2_t panel_anchor =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    options_vec2_t panel_position =\n        panel_anchor + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "default-then-full-assignment",
+          "text": "    options_vec2_t panel_position;\n    panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + options_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "anchor-then-field-add-x-y",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position.x += 300.0f;\n    panel_position.y += 40.0f;"
+        },
+        {
+          "name": "anchor-then-field-add-y-x",
+          "text": "    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x;\n    panel_position.y += 40.0f;\n    panel_position.x += 300.0f;"
+        },
+        {
+          "name": "named-offset-then-chain",
+          "text": "    options_vec2_t panel_offset(300.0f, 40.0f);\n    options_vec2_t panel_position =\n        *(options_vec2_t *)&ui_element_slot_31.pos_x\n        + *(options_vec2_t *)&ui_element_slot_31.vertices[0].x\n        + panel_offset;"
+        },
+        {
+          "name": "direct-components-x-y",
+          "text": "    options_vec2_t panel_position;\n    panel_position.x =\n        ui_element_slot_31.pos_x\n        + ui_element_slot_31.vertices[0].x\n        + 300.0f;\n    panel_position.y =\n        ui_element_slot_31.pos_y\n        + ui_element_slot_31.vertices[0].y\n        + 40.0f;"
+        },
+        {
+          "name": "direct-components-y-x",
+          "text": "    options_vec2_t panel_position;\n    panel_position.y =\n        ui_element_slot_31.pos_y\n        + ui_element_slot_31.vertices[0].y\n        + 40.0f;\n    panel_position.x =\n        ui_element_slot_31.pos_x\n        + ui_element_slot_31.vertices[0].x\n        + 300.0f;"
+        }
+      ]
+    },
+    {
+      "name": "adjusted-panel-x-publication",
+      "find": "    options_vec2_t xy = panel_position;\n    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.x = xy.x;",
+      "replacements": [
+        {
+          "name": "panel-first-then-working-copy",
+          "text": "    options_vec2_t xy = panel_position;\n    panel_position.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f\n        + panel_position.x;\n    xy.x = panel_position.x;"
+        },
+        {
+          "name": "named-x-working-then-panel",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    xy.x = adjusted_panel_x;\n    panel_position.x = adjusted_panel_x;"
+        },
+        {
+          "name": "named-x-panel-then-working",
+          "text": "    options_vec2_t xy = panel_position;\n    float adjusted_panel_x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x;\n    panel_position.x = adjusted_panel_x;\n    xy.x = adjusted_panel_x;"
+        },
+        {
+          "name": "chained-working-then-panel",
+          "text": "    options_vec2_t xy = panel_position;\n    panel_position.x = (xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x);"
+        },
+        {
+          "name": "chained-panel-then-working",
+          "text": "    options_vec2_t xy = panel_position;\n    xy.x = (panel_position.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f + xy.x);"
+        },
+        {
+          "name": "panel-source-working-then-panel",
+          "text": "    options_vec2_t xy = panel_position;\n    xy.x =\n        ui_element_slot_31.render_offset_x - 24.0f - 64.0f\n        + panel_position.x;\n    panel_position.x = xy.x;"
+        }
+      ]
+    },
+    {
+      "name": "inline-vector-add-return",
+      "find": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        return options_vec2_t(x + other.x, other.y + y);\n    }",
+      "replacements": [
+        {
+          "name": "natural-component-order",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        return options_vec2_t(x + other.x, y + other.y);\n    }"
+        },
+        {
+          "name": "named-result-reversed-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, other.y + y);\n        return result;\n    }"
+        },
+        {
+          "name": "named-result-natural-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }"
+        },
+        {
+          "name": "field-result-reversed-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result;\n        result.x = x + other.x;\n        result.y = other.y + y;\n        return result;\n    }"
+        },
+        {
+          "name": "field-result-natural-y",
+          "text": "    options_vec2_t operator+(const options_vec2_t &other) const\n    {\n        options_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }"
+        }
+      ]
+    }
+  ]
+}

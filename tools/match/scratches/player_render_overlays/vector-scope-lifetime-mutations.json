@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "remove-function-effect-offset",
+      "find": "    player_render_vec2_t effect_offset;\n",
+      "replacements": [
+        {
+          "name": "remove",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "introduce-effect-offset-at-first-pass",
+      "find": "    if (player_state_table[render_overlay_player_index].shield_timer > 0.0f) {",
+      "replacements": [
+        {
+          "name": "declare-before-shield",
+          "text": "    player_render_vec2_t effect_offset;\n    if (player_state_table[render_overlay_player_index].shield_timer > 0.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "remove-function-direction",
+      "find": "    player_render_vec2_t direction;\n",
+      "replacements": [
+        {
+          "name": "remove",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "name": "introduce-direction-at-target",
+      "find": "                    direction = player_render_vec2_t(\n                        creature_pool[line_player->auto_target].pos_x\n                            - line_player->pos_x,\n                        creature_pool[line_player->auto_target].pos_y\n                            - line_player->pos_y);",
+      "replacements": [
+        {
+          "name": "direct-constructor",
+          "text": "                    player_render_vec2_t direction(\n                        creature_pool[line_player->auto_target].pos_x\n                            - line_player->pos_x,\n                        creature_pool[line_player->auto_target].pos_y\n                            - line_player->pos_y);"
+        },
+        {
+          "name": "copy-initialization",
+          "text": "                    player_render_vec2_t direction =\n                        player_render_vec2_t(\n                            creature_pool[line_player->auto_target].pos_x\n                                - line_player->pos_x,\n                            creature_pool[line_player->auto_target].pos_y\n                                - line_player->pos_y);"
+        }
+      ]
+    }
+  ]
+}

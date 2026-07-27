@@ -39,14 +39,16 @@ and player-key bounds retain the native signed pointer comparisons. The three
 stage-one point bonuses also preserve the otherwise easy-to-miss reload of
 bonus zero's `time_left` into bonuses one and two's `time_max` fields.
 
-The current honest VC6.5 result is 66.57%: 695 target instructions versus 693
-candidate instructions, with references `154/0/4`. The stack frame remains the
-native `0x5c` bytes. Remaining differences are dominated by prompt-alpha block
-placement, register scheduling after the stage-one point-bonus stores, branch
-stack-slot coalescing, and switch-case block placement. The structured source
-keeps exact runtime behavior; no volatile qualifiers, dummy references, fake
-externals, artificial dependencies, inline assembly, or register constraints
-are used to hide those residuals.
+The current honest VC6.5 result is 76.76%: `2231.2961622013036/2907`
+weighted bytes, gap `675.7038377986964`, 695 target instructions versus 686
+candidate instructions, prefix 6, and references `169/0/1`. The stack frame
+remains the native `0x5c` bytes. Remaining differences are dominated by
+prompt-register allocation, register scheduling after the stage-one
+point-bonus stores, branch stack-slot coalescing in stages four through six,
+and switch-case block placement. The structured source keeps exact runtime
+behavior; no volatile qualifiers, dummy references, fake externals,
+artificial dependencies, inline assembly, or register constraints are used to
+hide those residuals.
 
 At entry, native VC6 loads and stores `tutorial_stage_timer` first while
 keeping `quest_spawn_timeline` live across construction of the two local text
@@ -103,13 +105,13 @@ The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja evidence retains every stage, prompt,
 fixed-slot bonus, bonus-carrier handoff, spawn formation, and completion
 transition. IDA and Ghidra independently report the same five-callee surface.
-The candidate remains within two instructions of native at 693/695 with the
-exact `0x5c` frame and `154/0/4` references; bounded mismatches are branch
-placement for the prompt transition and VC6 register, stack-slot, jump-table,
-and scheduling choices rather than missing behavior. The three fixed-slot
-bonus anchors and the compiler-local stage jump table stay visible and
-unaliased; their surrounding native operations are all present, so they do not
-represent separate source-reference debt.
+The candidate remains at 686/695 instructions with the exact `0x5c` frame and
+`169/0/1` references; bounded mismatches are VC6 register, stack-slot,
+jump-table, and scheduling choices rather than missing behavior. The sole
+reference mismatch is the compiler-local stage-five jump table. The three
+fixed-slot bonus anchors stay visible and unaliased; their surrounding native
+operations are all present, so they do not represent separate source-reference
+debt.
 
 ## Stage-one movement-key cursor sweep
 
@@ -148,3 +150,47 @@ scheduling. No new source discrepancy or honest mutation site was found, so
 the scratch remains unchanged at `1935.207492795389/2907` weighted bytes
 (`66.57060518731989%`), gap `971.792507204611`, 693/695 instructions, prefix
 6, and `154/0/4` references.
+
+## Mutation-harness wave
+
+The bounded mutation wave started from that `66.57060518731989%` result and
+retained four behavior-preserving source shapes. Together they add
+`296.0886694059146` weighted bytes, reduce the fuzzy gap by the same amount,
+and raise the ratio by 10.1854 percentage points:
+
+- Native loads `tutorial_stage_index` separately on both sides of the
+  `prompt_alpha >= 1.0f` decision (`0x00408b06` and `0x00408b5b`). Expressing
+  those two loads in the source adds `32.09272318733224` weighted bytes.
+- Component-wise copies for the first two fixed point-bonus positions are
+  behaviorally identical to the former aggregate copies. The best complete
+  124-variant sweep adds `146.1161489702115` weighted bytes and changes the
+  reference audit from `153/0/4` to `166/0/1`. All four component spellings
+  per slot compile identically; the tracked source keeps the natural X-then-Y
+  form. Native itself still materializes both vectors on the stack, so this is
+  a code-generation shaping choice rather than a claim about original source
+  syntax. Restoring either aggregate copy loses `23.15040061484251` weighted
+  bytes; restoring both loses `217.78301634493414`.
+- Native keeps `tutorial_repeat_spawn_count + 1` in `eax`, stores it, then
+  tests that same value at `0x0040912a..0x00409138`. Naming the incremented
+  value and assigning it back explicitly adds `88.40984793627786` weighted
+  bytes and three aligned references without changing any stage-five
+  behavior.
+- Native places the non-negative prompt-transition path first at
+  `0x00408ae3..0x00408b04`. Reversing only that outer source condition, while
+  preserving the nested negative/sentinel policy and the two stage loads,
+  adds the final `29.469949312092922` weighted bytes.
+
+All complete sweeps are recorded in `experiments.jsonl`. Declaration order,
+prompt-stage lifetime, post-prompt snapshots, repeat-value spelling,
+stage-three workspace/boundary spelling, and the compiler/flag matrices were
+neutral or negative.
+
+Three stage-five menus produced higher-ranked but behaviorally invalid partial
+combinations. Their winners either populated a separate final-position value
+without passing it to `creature_spawn_template`, or moved the common final
+spawn into only the odd formation branch. Those candidates would omit or
+misplace the even branch's third green alien and were rejected despite their
+aggregate scores. The fully behavior-preserving combinations were evaluated
+and regressed. This is a useful guardrail for future harness work: ranked
+mutation evidence still requires a semantic review before a winner is
+retained.

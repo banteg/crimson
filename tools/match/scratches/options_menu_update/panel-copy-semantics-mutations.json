@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-copy-semantics",
+      "find": "    options_vec2_t() {}\n\n    options_vec2_t(float x_value, float y_value)",
+      "replacements": [
+        {
+          "name": "copy-constructor-initializer",
+          "text": "    options_vec2_t() {}\n\n    options_vec2_t(const options_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    options_vec2_t(float x_value, float y_value)"
+        },
+        {
+          "name": "copy-constructor-body-x-y",
+          "text": "    options_vec2_t() {}\n\n    options_vec2_t(const options_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n    }\n\n    options_vec2_t(float x_value, float y_value)"
+        },
+        {
+          "name": "copy-constructor-body-y-x",
+          "text": "    options_vec2_t() {}\n\n    options_vec2_t(const options_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n    }\n\n    options_vec2_t(float x_value, float y_value)"
+        },
+        {
+          "name": "copy-and-assignment-x-y",
+          "text": "    options_vec2_t() {}\n\n    options_vec2_t(const options_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    options_vec2_t(float x_value, float y_value)"
+        },
+        {
+          "name": "copy-and-assignment-y-x",
+          "text": "    options_vec2_t() {}\n\n    options_vec2_t(const options_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n    }\n\n    options_vec2_t &operator=(const options_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n\n    options_vec2_t(float x_value, float y_value)"
+        }
+      ]
+    },
+    {
+      "name": "working-copy-initialization",
+      "find": "    options_vec2_t xy = panel_position;",
+      "replacements": [
+        {
+          "name": "direct-copy-constructor",
+          "text": "    options_vec2_t xy(panel_position);"
+        },
+        {
+          "name": "direct-component-constructor",
+          "text": "    options_vec2_t xy(panel_position.x, panel_position.y);"
+        },
+        {
+          "name": "default-then-object-assignment",
+          "text": "    options_vec2_t xy;\n    xy = panel_position;"
+        },
+        {
+          "name": "default-then-fields-x-y",
+          "text": "    options_vec2_t xy;\n    xy.x = panel_position.x;\n    xy.y = panel_position.y;"
+        },
+        {
+          "name": "default-then-fields-y-x",
+          "text": "    options_vec2_t xy;\n    xy.y = panel_position.y;\n    xy.x = panel_position.x;"
+        }
+      ]
+    },
+    {
+      "name": "heading-quad-coordinate-owner",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, panel_position.y, 128.0f, 32.0f);",
+      "replacements": [
+        {
+          "name": "panel-x-panel-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, panel_position.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "working-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        xy.x, xy.y, 128.0f, 32.0f);"
+        },
+        {
+          "name": "panel-x-working-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        panel_position.x, xy.y, 128.0f, 32.0f);"
+        }
+      ]
+    }
+  ]
+}

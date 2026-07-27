@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "timer-width-initialization",
+      "find": "    int timer_width = credits_secret_timer_ms / 100;",
+      "replacements": [
+        {
+          "name": "split-assignment",
+          "text": "    int timer_width;\n    timer_width = credits_secret_timer_ms / 100;"
+        },
+        {
+          "name": "explicit-parentheses",
+          "text": "    int timer_width = (credits_secret_timer_ms / 100);"
+        }
+      ]
+    },
+    {
+      "name": "filled-timer-position",
+      "find": "        credits_secret_vec2_t timer_position(\n            board_position.x, board_position.y + 200.0f);",
+      "replacements": [
+        {
+          "name": "copy-initialization",
+          "text": "        credits_secret_vec2_t timer_position =\n            credits_secret_vec2_t(\n                board_position.x,\n                board_position.y + 200.0f);"
+        },
+        {
+          "name": "split-assignment",
+          "text": "        credits_secret_vec2_t timer_position;\n        timer_position = credits_secret_vec2_t(\n            board_position.x, board_position.y + 200.0f);"
+        },
+        {
+          "name": "named-components",
+          "text": "        float timer_x = board_position.x;\n        float timer_y = board_position.y + 200.0f;\n        credits_secret_vec2_t timer_position(timer_x, timer_y);"
+        }
+      ],
+      "occurrence": 1
+    },
+    {
+      "name": "outline-timer-position",
+      "find": "        credits_secret_vec2_t timer_position(\n            board_position.x, board_position.y + 200.0f);",
+      "replacements": [
+        {
+          "name": "copy-initialization",
+          "text": "        credits_secret_vec2_t timer_position =\n            credits_secret_vec2_t(\n                board_position.x,\n                board_position.y + 200.0f);"
+        },
+        {
+          "name": "split-assignment",
+          "text": "        credits_secret_vec2_t timer_position;\n        timer_position = credits_secret_vec2_t(\n            board_position.x, board_position.y + 200.0f);"
+        },
+        {
+          "name": "named-components",
+          "text": "        float timer_x = board_position.x;\n        float timer_y = board_position.y + 200.0f;\n        credits_secret_vec2_t timer_position(timer_x, timer_y);"
+        }
+      ],
+      "occurrence": 2
+    }
+  ]
+}
