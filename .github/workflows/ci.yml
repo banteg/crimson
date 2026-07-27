@@ -119,5 +119,35 @@ jobs:
         if: matrix.do_sync
         run: uv sync --frozen ${{ matrix.sync_args }}
 
+      - name: Download provenance artifacts
+        if: ${{ matrix.task == 'pytest' }}
+        run: |
+          game_dir="game_bins/crimsonland/1.9.93-gog"
+          base_url="https://paq.crimson.banteg.xyz/v1.9.93"
+          xiph_url="https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip"
+          xiph_archive="$(mktemp)"
+          trap 'rm -f "$xiph_archive"' EXIT
+
+          mkdir -p "$game_dir"
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$game_dir/crimsonland.exe" "$base_url/crimsonland.exe"
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$game_dir/grim.dll" "$base_url/grim.dll"
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$xiph_archive" "$xiph_url"
+          unzip -j "$xiph_archive" \
+            "oggvorbis-win32sdk-1.0/bin/ogg.dll" \
+            "oggvorbis-win32sdk-1.0/bin/vorbis.dll" \
+            "oggvorbis-win32sdk-1.0/bin/vorbisfile.dll" \
+            -d "$game_dir"
+
+          sha256sum --check <<'EOF'
+          771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+          373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70  game_bins/crimsonland/1.9.93-gog/grim.dll
+          308540dbd488f3bceca2dbadefe02cf29d10a27c4ac096bb3da053e3e0b923ea  game_bins/crimsonland/1.9.93-gog/ogg.dll
+          b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b  game_bins/crimsonland/1.9.93-gog/vorbis.dll
+          f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2  game_bins/crimsonland/1.9.93-gog/vorbisfile.dll
+          EOF
+
       - name: Run check
         run: ${{ matrix.command }}
