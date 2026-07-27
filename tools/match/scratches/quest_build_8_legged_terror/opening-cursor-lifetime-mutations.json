@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-cursor-lifetime",
+      "find": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    cursor->trigger_time_ms = 1000;\n    cursor->count = 1;\n    ++cursor;\n\n    quest_spawn_builder_t builder(cursor, 1);\n",
+      "replacements": [
+        {
+          "name": "opening-postincrement",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    quest_spawn_entry_t *opening = cursor++;\n    opening->pos_x = (float)(terrain_texture_width - 256);\n    opening->pos_y = (float)(terrain_texture_width / 2);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        },
+        {
+          "name": "opening-then-increment",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    quest_spawn_entry_t *opening = cursor;\n    ++cursor;\n    opening->pos_x = (float)(terrain_texture_width - 256);\n    opening->pos_y = (float)(terrain_texture_width / 2);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        },
+        {
+          "name": "named-next-cursor",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    quest_spawn_entry_t *next_cursor = cursor + 1;\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    cursor->trigger_time_ms = 1000;\n    cursor->count = 1;\n\n    quest_spawn_builder_t builder(next_cursor, 1);\n"
+        },
+        {
+          "name": "direct-next-cursor",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    cursor->trigger_time_ms = 1000;\n    cursor->count = 1;\n\n    quest_spawn_builder_t builder(cursor + 1, 1);\n"
+        },
+        {
+          "name": "builder-before-metadata",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    quest_spawn_entry_t *opening = cursor++;\n    quest_spawn_builder_t builder(cursor, 1);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n"
+        },
+        {
+          "name": "builder-before-position-y",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    quest_spawn_entry_t *opening = cursor++;\n    opening->pos_x = (float)(terrain_texture_width - 256);\n    quest_spawn_builder_t builder(cursor, 1);\n    opening->pos_y = (float)(terrain_texture_width / 2);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n"
+        },
+        {
+          "name": "entries-and-next-direct",
+          "text": "    quest_spawn_entry_t *opening = entries;\n    quest_spawn_entry_t *cursor = entries + 1;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    opening->pos_x = (float)(terrain_texture_width - 256);\n    opening->pos_y = (float)(terrain_texture_width / 2);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        },
+        {
+          "name": "far-edge-before-wave-template",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    float far_edge = 1049.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    cursor->trigger_time_ms = 1000;\n    cursor->count = 1;\n    ++cursor;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        },
+        {
+          "name": "far-edge-after-opening-x",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    float far_edge = 1049.0f;\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    cursor->trigger_time_ms = 1000;\n    cursor->count = 1;\n    ++cursor;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        },
+        {
+          "name": "opening-postincrement-far-before-wave",
+          "text": "    quest_spawn_entry_t *cursor = entries;\n    float near_edge = -25.0f;\n    float far_edge = 1049.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n\n    quest_spawn_entry_t *opening = cursor++;\n    opening->pos_x = (float)(terrain_texture_width - 256);\n    opening->pos_y = (float)(terrain_texture_width / 2);\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n\n    quest_spawn_builder_t builder(cursor, 1);\n"
+        }
+      ]
+    }
+  ]
+}

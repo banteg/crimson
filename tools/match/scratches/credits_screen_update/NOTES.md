@@ -29,6 +29,19 @@ No union, dead expression, fake reference, volatile state, or register/order
 constraint is used to force the remaining stack-slot choice. The fakematch
 validator passes.
 
+## Recorded panel-lifetime bounds
+
+Two complete mutation sweeps now bound the remaining panel-anchor residual.
+`panel-anchor-lifetime-mutations.json` tested eight named-anchor, component,
+constructor, and chained-add spellings (spec
+`e5229aab47a79f2058c1f402d6c1f6500bfdbbf2248ea3faa950011802571bb2`).
+`panel-chain-storage-mutations.json` tested eight predeclared-storage and
+chained-assignment spellings (spec
+`5e70f061b2cb8a72a1d068687f9cbf2a408dc580391f903fd8eebab79c3a029b`).
+Neither sweep improved the baseline: the closest alternatives lose 8.18 or
+12.27 weighted bytes while retaining the same first mismatch. The complete
+results are recorded in `experiments.jsonl`.
+
 ## Recovery classification audit
 
 A fresh focused `--regions` run is unchanged before and after classification:

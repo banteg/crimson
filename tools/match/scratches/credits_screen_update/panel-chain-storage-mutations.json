@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-chain-storage",
+      "find": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n",
+      "replacements": [
+        {
+          "name": "predeclared-panel-chain",
+          "text": "    credits_vec2_t panel_position;\n    panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "predeclared-both-chain",
+          "text": "    credits_vec2_t panel_position;\n    credits_vec2_t position;\n    panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    position = panel_position;\n"
+        },
+        {
+          "name": "predeclared-position-chain",
+          "text": "    credits_vec2_t position;\n    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    position = panel_position;\n"
+        },
+        {
+          "name": "predeclared-panel-parenthesized-chain",
+          "text": "    credits_vec2_t panel_position;\n    panel_position =\n        (*(credits_vec2_t *)&ui_element_slot_09.pos_x +\n         *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x) +\n        credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "predeclared-panel-two-assignments",
+          "text": "    credits_vec2_t panel_position;\n    panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position =\n        panel_position + credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "predeclared-panel-named-anchor",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position;\n    panel_position =\n        panel_anchor + credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "chain-explicit-position-assignment",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position;\n    position = panel_position;\n"
+        },
+        {
+          "name": "chain-component-position-assignment",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position;\n    position.x = panel_position.x;\n    position.y = panel_position.y;\n"
+        }
+      ]
+    }
+  ]
+}

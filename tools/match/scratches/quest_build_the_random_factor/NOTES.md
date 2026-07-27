@@ -15,6 +15,16 @@ instructions and scores 90.54%. Residuals are independent template/trigger
 stores moving around `pos.y` conversions and analogous scheduling in the
 optional AlienBigGray entry. No ordering-only dependency is added.
 
+## Recorded entry-order search
+
+`entry-order-interactions-mutations.json` exhaustively evaluated all 215
+single, pair, and triple combinations over the two fixed entries and optional
+entry. None improved the 90.54% baseline; several alternatives were byte-neutral
+fixed points (spec
+`7a6cee7264e5b8a6d42d180ec2c8957adee7bf981822c8866f4ce7c0113871b8`).
+The stock VC6 profiles tie and VC7 is worse. The complete matrix is recorded in
+`experiments.jsonl`.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

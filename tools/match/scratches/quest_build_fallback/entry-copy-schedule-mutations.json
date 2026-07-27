@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-entry",
+      "find": "    spawns[0].pos = quest_vec2_t(-50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(0x40, 500, 10);\n",
+      "replacements": [
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t first_position(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].pos = first_position;\n    spawns[0].set_spawn(0x40, 500, 10);\n"
+        },
+        {
+          "name": "position-pointer",
+          "text": "    quest_vec2_t *first_position = &spawns[0].pos;\n    *first_position = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(0x40, 500, 10);\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    quest_vec2_t &first_position = spawns[0].pos;\n    first_position = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(0x40, 500, 10);\n"
+        },
+        {
+          "name": "component-position",
+          "text": "    spawns[0].pos.x = -50.0f;\n    spawns[0].pos.y = (float)terrain_texture_height * 0.5f;\n    spawns[0].set_spawn(0x40, 500, 10);\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].template_id = 0x40;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 10;\n"
+        },
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[0].set_spawn(0x40, 500, 10);\n    spawns[0].pos = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n"
+        },
+        {
+          "name": "template-before-position",
+          "text": "    spawns[0].template_id = 0x40;\n    spawns[0].pos = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 10;\n"
+        },
+        {
+          "name": "explicit-component-copy",
+          "text": "    quest_vec2_t first_position(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[0].pos.x = first_position.x;\n    spawns[0].pos.y = first_position.y;\n    spawns[0].set_spawn(0x40, 500, 10);\n"
+        }
+      ]
+    },
+    {
+      "name": "second-entry",
+      "find": "    spawns[1].pos = quest_vec2_t(-50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(0x40, 5000, 20);\n",
+      "replacements": [
+        {
+          "name": "named-position",
+          "text": "    quest_vec2_t second_position(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[1].pos = second_position;\n    spawns[1].set_spawn(0x40, 5000, 20);\n"
+        },
+        {
+          "name": "position-pointer",
+          "text": "    quest_vec2_t *second_position = &spawns[1].pos;\n    *second_position = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(0x40, 5000, 20);\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    quest_vec2_t &second_position = spawns[1].pos;\n    second_position = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(0x40, 5000, 20);\n"
+        },
+        {
+          "name": "component-position",
+          "text": "    spawns[1].pos.x = -50.0f;\n    spawns[1].pos.y = (float)terrain_texture_height * 0.5f;\n    spawns[1].set_spawn(0x40, 5000, 20);\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "    spawns[1].pos = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n    spawns[1].template_id = 0x40;\n    spawns[1].trigger_time_ms = 5000;\n    spawns[1].count = 20;\n"
+        },
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[1].set_spawn(0x40, 5000, 20);\n    spawns[1].pos = quest_vec2_t(\n        -50.0f, (float)terrain_texture_height * 0.5f);\n"
+        }
+      ]
+    }
+  ]
+}

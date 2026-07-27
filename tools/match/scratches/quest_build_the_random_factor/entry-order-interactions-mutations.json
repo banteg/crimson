@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-entry",
+      "find": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = config_blob.player_count * 2 + 4;\n",
+      "replacements": [
+        {
+          "name": "metadata-before-y",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = config_blob.player_count * 2 + 4;\n"
+        },
+        {
+          "name": "increment-before-y",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = config_blob.player_count * 2 + 4;\n"
+        },
+        {
+          "name": "postincremented-entry",
+          "text": "        quest_entry_original_t *spawn =\n            &builder.spawns[builder.count++];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = config_blob.player_count * 2 + 4;\n"
+        },
+        {
+          "name": "named-half-width",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        int right_half_width = terrain_texture_width / 2;\n        spawn->pos.y = (float)right_half_width;\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = config_blob.player_count * 2 + 4;\n"
+        },
+        {
+          "name": "count-before-y",
+          "text": "        quest_entry_original_t *spawn = &builder.spawns[builder.count];\n        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->count = config_blob.player_count * 2 + 4;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "left-entry",
+      "find": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n        spawn->count = 6;\n",
+      "replacements": [
+        {
+          "name": "metadata-before-y",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->count = 6;\n"
+        },
+        {
+          "name": "increment-before-y",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n        spawn->count = 6;\n"
+        },
+        {
+          "name": "postincremented-entry",
+          "text": "        spawn = &builder.spawns[builder.count++];\n        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n        spawn->count = 6;\n"
+        },
+        {
+          "name": "named-half-width",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        int left_half_width = terrain_texture_width / 2;\n        spawn->pos.y = (float)left_half_width;\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n        spawn->count = 6;\n"
+        },
+        {
+          "name": "count-before-y",
+          "text": "        spawn = &builder.spawns[builder.count];\n        spawn->pos.x = -64.0f;\n        spawn->count = 6;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->template_id = SPAWN_ID_ALIEN_RANDOM_1D;\n        spawn->trigger_time_ms = trigger_time_ms + 200;\n"
+        }
+      ]
+    },
+    {
+      "name": "optional-entry",
+      "find": "            spawn = &builder.spawns[builder.count];\n            spawn->pos.x = (float)(terrain_texture_width / 2);\n            spawn->pos.y = 1088.0f;\n            ++builder.count;\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = config_blob.player_count;\n",
+      "replacements": [
+        {
+          "name": "metadata-before-y",
+          "text": "            spawn = &builder.spawns[builder.count];\n            spawn->pos.x = (float)(terrain_texture_width / 2);\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->pos.y = 1088.0f;\n            ++builder.count;\n            spawn->count = config_blob.player_count;\n"
+        },
+        {
+          "name": "y-before-x",
+          "text": "            spawn = &builder.spawns[builder.count];\n            spawn->pos.y = 1088.0f;\n            spawn->pos.x = (float)(terrain_texture_width / 2);\n            ++builder.count;\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = config_blob.player_count;\n"
+        },
+        {
+          "name": "postincremented-entry",
+          "text": "            spawn = &builder.spawns[builder.count++];\n            spawn->pos.x = (float)(terrain_texture_width / 2);\n            spawn->pos.y = 1088.0f;\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = config_blob.player_count;\n"
+        },
+        {
+          "name": "named-half-width",
+          "text": "            spawn = &builder.spawns[builder.count];\n            int optional_half_width = terrain_texture_width / 2;\n            spawn->pos.x = (float)optional_half_width;\n            spawn->pos.y = 1088.0f;\n            ++builder.count;\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = config_blob.player_count;\n"
+        },
+        {
+          "name": "increment-before-position",
+          "text": "            spawn = &builder.spawns[builder.count];\n            ++builder.count;\n            spawn->pos.x = (float)(terrain_texture_width / 2);\n            spawn->pos.y = 1088.0f;\n            spawn->template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = config_blob.player_count;\n"
+        }
+      ]
+    }
+  ]
+}

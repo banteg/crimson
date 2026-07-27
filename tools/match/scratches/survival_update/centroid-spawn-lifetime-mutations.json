@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "outer-vector",
+      "find": "    {\n        if (config_player_count == 1) {\n",
+      "replacements": [
+        {
+          "name": "shared-survival-vector",
+          "text": "    {\n        survival_vec2_t pos;\n        if (config_player_count == 1) {\n"
+        },
+        {
+          "name": "shared-plain-vector",
+          "text": "    {\n        vec2f_t pos;\n        if (config_player_count == 1) {\n"
+        },
+        {
+          "name": "dedicated-spawn-vector",
+          "text": "    {\n        survival_vec2_t spawn_pos;\n        if (config_player_count == 1) {\n"
+        }
+      ]
+    },
+    {
+      "name": "centroid-vector",
+      "find": "        if (survival_recent_death_count == 3\n            && !survival_reward_fire_seen) {\n            survival_vec2_t pos;\n            pos.x = survival_recent_death_pos[0].x;\n            pos.y = survival_recent_death_pos[0].y;\n            pos += survival_recent_death_pos[1];\n            pos += survival_recent_death_pos[2];\n            pos.x *= 0.333333343f;\n            pos.y *= 0.333333343f;\n            float dx = player_state_table[0].position.x - pos.x;\n            float dy = player_state_table[0].position.y - pos.y;\n            if ((float)sqrt(dx * dx + dy * dy) < 16.0f\n                && player_state_table[0].health < 15.0f) {\n                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);\n                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;\n                survival_reward_fire_seen = 1;\n                survival_reward_handout_enabled = 0;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "reuse-outer-vector",
+          "text": "        if (survival_recent_death_count == 3\n            && !survival_reward_fire_seen) {\n            pos.x = survival_recent_death_pos[0].x;\n            pos.y = survival_recent_death_pos[0].y;\n            pos += survival_recent_death_pos[1];\n            pos += survival_recent_death_pos[2];\n            pos.x *= 0.333333343f;\n            pos.y *= 0.333333343f;\n            float dx = player_state_table[0].position.x - pos.x;\n            float dy = player_state_table[0].position.y - pos.y;\n            if ((float)sqrt(dx * dx + dy * dy) < 16.0f\n                && player_state_table[0].health < 15.0f) {\n                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);\n                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;\n                survival_reward_fire_seen = 1;\n                survival_reward_handout_enabled = 0;\n            }\n        }\n"
+        },
+        {
+          "name": "scalar-x-reuse-outer-y",
+          "text": "        if (survival_recent_death_count == 3\n            && !survival_reward_fire_seen) {\n            float centroid_x =\n                survival_recent_death_pos[0].x\n                + survival_recent_death_pos[1].x\n                + survival_recent_death_pos[2].x;\n            pos.y = survival_recent_death_pos[0].y;\n            pos.y += survival_recent_death_pos[1].y;\n            pos.y += survival_recent_death_pos[2].y;\n            centroid_x *= 0.333333343f;\n            pos.y *= 0.333333343f;\n            float dx = player_state_table[0].position.x - centroid_x;\n            float dy = player_state_table[0].position.y - pos.y;\n            if ((float)sqrt(dx * dx + dy * dy) < 16.0f\n                && player_state_table[0].health < 15.0f) {\n                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);\n                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;\n                survival_reward_fire_seen = 1;\n                survival_reward_handout_enabled = 0;\n            }\n        }\n"
+        },
+        {
+          "name": "renamed-centroid-vector",
+          "text": "        if (survival_recent_death_count == 3\n            && !survival_reward_fire_seen) {\n            survival_vec2_t centroid;\n            centroid.x = survival_recent_death_pos[0].x;\n            centroid.y = survival_recent_death_pos[0].y;\n            centroid += survival_recent_death_pos[1];\n            centroid += survival_recent_death_pos[2];\n            centroid.x *= 0.333333343f;\n            centroid.y *= 0.333333343f;\n            float dx = player_state_table[0].position.x - centroid.x;\n            float dy = player_state_table[0].position.y - centroid.y;\n            if ((float)sqrt(dx * dx + dy * dy) < 16.0f\n                && player_state_table[0].health < 15.0f) {\n                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);\n                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;\n                survival_reward_fire_seen = 1;\n                survival_reward_handout_enabled = 0;\n            }\n        }\n"
+        },
+        {
+          "name": "plain-centroid-vector",
+          "text": "        if (survival_recent_death_count == 3\n            && !survival_reward_fire_seen) {\n            vec2f_t centroid;\n            centroid.x = survival_recent_death_pos[0].x;\n            centroid.y = survival_recent_death_pos[0].y;\n            centroid.x += survival_recent_death_pos[1].x;\n            centroid.y += survival_recent_death_pos[1].y;\n            centroid.x += survival_recent_death_pos[2].x;\n            centroid.y += survival_recent_death_pos[2].y;\n            centroid.x *= 0.333333343f;\n            centroid.y *= 0.333333343f;\n            float dx = player_state_table[0].position.x - centroid.x;\n            float dy = player_state_table[0].position.y - centroid.y;\n            if ((float)sqrt(dx * dx + dy * dy) < 16.0f\n                && player_state_table[0].health < 15.0f) {\n                weapon_assign_player(0, WEAPON_ID_BLADE_GUN);\n                survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;\n                survival_reward_fire_seen = 1;\n                survival_reward_handout_enabled = 0;\n            }\n        }\n"
+        }
+      ]
+    },
+    {
+      "name": "spawn-vector",
+      "find": "        survival_vec2_t pos;\n        if (survival_spawn_stage == 0) {\n",
+      "replacements": [
+        {
+          "name": "plain-local-vector",
+          "text": "        vec2f_t pos;\n        if (survival_spawn_stage == 0) {\n"
+        },
+        {
+          "name": "reuse-outer-vector",
+          "text": "        if (survival_spawn_stage == 0) {\n"
+        },
+        {
+          "name": "reference-outer-spawn-vector",
+          "text": "        survival_vec2_t &pos = spawn_pos;\n        if (survival_spawn_stage == 0) {\n"
+        }
+      ]
+    }
+  ]
+}

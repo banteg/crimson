@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "loop-constant-order",
+      "find": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n",
+      "replacements": [
+        {
+          "name": "near-far-template",
+          "text": "    float near_edge = -25.0f;\n    float far_edge = 1049.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n"
+        },
+        {
+          "name": "far-near-template",
+          "text": "    float far_edge = 1049.0f;\n    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n"
+        },
+        {
+          "name": "template-near-far",
+          "text": "    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float near_edge = -25.0f;\n    float far_edge = 1049.0f;\n"
+        },
+        {
+          "name": "far-template-near",
+          "text": "    float far_edge = 1049.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float near_edge = -25.0f;\n"
+        },
+        {
+          "name": "template-far-near",
+          "text": "    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n    float near_edge = -25.0f;\n"
+        }
+      ]
+    }
+  ]
+}

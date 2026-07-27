@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **295061/341963** code bytes (**86.3%**).
+Fuzzy-weighted alignment is **295070/341963** code bytes (**86.3%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 275022/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 275031/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 20039/21158 | 94.7% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **275022/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **275031/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -519,10 +519,10 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_minor_alien_breach | 0x00435cc0 | 466 | 428/466 | 38 | 135/135 | 91.85% | 2/135 | 7/0/0 |  | quest-minor-alien-breach-escalating-edges |
 | wip | quest_build_alien_squads | 0x00435ea0 | 507 | 455/507 | 52 | 108/108 | 89.81% | 10/108 | 0/0/0 |  | quest-alien-squads-fixed-corners |
 | match | quest_build_zombie_masters | 0x004360a0 | 128 | 128/128 | 0 | 31/31 | 100.00% | 31/31 | 2/0/0 |  | quest-zombie-masters |
-| wip | quest_build_8_legged_terror | 0x00436120 | 213 | 197/213 | 16 | 68/68 | 92.65% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
+| wip | quest_build_8_legged_terror | 0x00436120 | 213 | 204/213 | 9 | 68/68 | 95.59% | 14/68 | 4/0/0 |  | quest-eight-legged-terror-builder |
 | wip | quest_build_ghost_patrols | 0x00436200 | 334 | 271/334 | 63 | 90/90 | 81.11% | 14/90 | 5/0/0 |  | quest-ghost-patrols-cursor |
 | wip | quest_build_the_random_factor | 0x00436350 | 237 | 215/237 | 22 | 74/74 | 90.54% | 16/74 | 7/0/0 |  | quest-random-factor-builder |
-| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 80/95 | 15 | 31/31 | 83.87% | 12/31 | 2/0/0 |  | quest-spider-wave-syndrome |
+| wip | quest_build_spider_wave_syndrome | 0x00436440 | 95 | 83/95 | 12 | 31/31 | 87.10% | 9/31 | 2/0/0 |  | quest-spider-wave-syndrome |
 | wip | quest_build_nesting_grounds | 0x004364a0 | 626 | 621/626 | 5 | 138/138 | 99.28% | 10/138 | 15/0/0 |  | quest-nesting-grounds-fixed-nests |
 | wip | quest_build_alien_dens | 0x00436720 | 249 | 170/249 | 79 | 60/60 | 68.33% | 4/60 | 1/0/0 |  | quest-alien-dens-builder |
 | wip | quest_build_arachnoid_farm | 0x00436820 | 382 | 358/382 | 24 | 112/112 | 93.75% | 12/112 | 10/0/0 |  | quest-arachnoid-farm-three-spawner-lines |

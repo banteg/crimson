@@ -47,6 +47,18 @@ The recent-death reward distance now also reads player zero through
 98.21%, 504/504 instructions, a 102-instruction prefix, and 139/0/0
 references.
 
+## Recorded centroid/spawn lifetime search
+
+`centroid-spawn-lifetime-mutations.json` exhaustively evaluated 79 single,
+pair, and triple lifetime combinations spanning shared versus dedicated outer
+vectors, centroid representations, and the first scripted spawn temporary.
+No valid variant improved the 98.21% baseline: natural shared/dedicated and
+renamed forms are byte-neutral, while scalar/plain forms regress or fail to
+compile when combined incompatibly (spec
+`90ba4a354d983edcc00f75723e265e90a7744a3f08bc9ad34a93ac99e1616eac`).
+The full result, including compile-invalid interactions, is recorded in
+`experiments.jsonl`.
+
 ## Recovery classification audit
 
 The focused diff has the exact native 504-instruction count and confines every

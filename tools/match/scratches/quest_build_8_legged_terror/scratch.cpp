@@ -18,12 +18,11 @@ extern "C" void quest_build_8_legged_terror(
 
     cursor->pos_x = (float)(terrain_texture_width - 256);
     cursor->pos_y = (float)(terrain_texture_width / 2);
-    cursor->template_id = SPAWN_ID_SPIDER_BOSS_3A;
-    cursor->trigger_time_ms = 1000;
-    cursor->count = 1;
-    ++cursor;
-
+    quest_spawn_entry_t *opening = cursor++;
     quest_spawn_builder_t builder(cursor, 1);
+    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;
+    opening->trigger_time_ms = 1000;
+    opening->count = 1;
     for (int trigger_time_ms = 6000;
          trigger_time_ms < 36800;
          trigger_time_ms += 2200) {

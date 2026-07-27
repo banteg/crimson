@@ -36,6 +36,14 @@ original entry held a C++ two-float vector, rather than two unrelated scalar
 position fields. This scratch preserves both facts instead of zero-filling the
 structure or flattening away the vector construction.
 
+## Recorded first-entry search
+
+`entry-copy-schedule-mutations.json` exhaustively evaluated 62 single and pair
+combinations over the first-entry copy, metadata stores, height calculation,
+and second-entry setup. None improved the 87.50% baseline (spec
+`061931b9ed1e1a2923722c113d4892f9c79da7a8dfe7c144b1b6bacda59d58b5`).
+The complete negative matrix is recorded in `experiments.jsonl`.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

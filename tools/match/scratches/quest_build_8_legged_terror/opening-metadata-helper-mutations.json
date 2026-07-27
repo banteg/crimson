@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "metadata-helper",
+      "find": "};\n\nextern \"C\" void quest_build_8_legged_terror(\n",
+      "replacements": [
+        {
+          "name": "inline-pointer",
+          "text": "};\n\nstatic __inline void quest_set_opening_spawn(\n    quest_spawn_entry_t *spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn->template_id = template_id;\n    spawn->trigger_time_ms = trigger_time_ms;\n    spawn->count = count;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        },
+        {
+          "name": "force-inline-pointer",
+          "text": "};\n\nstatic __forceinline void quest_set_opening_spawn(\n    quest_spawn_entry_t *spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn->template_id = template_id;\n    spawn->trigger_time_ms = trigger_time_ms;\n    spawn->count = count;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        },
+        {
+          "name": "inline-pointer-reverse",
+          "text": "};\n\nstatic __inline void quest_set_opening_spawn(\n    quest_spawn_entry_t *spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn->count = count;\n    spawn->trigger_time_ms = trigger_time_ms;\n    spawn->template_id = template_id;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        },
+        {
+          "name": "force-inline-pointer-reverse",
+          "text": "};\n\nstatic __forceinline void quest_set_opening_spawn(\n    quest_spawn_entry_t *spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn->count = count;\n    spawn->trigger_time_ms = trigger_time_ms;\n    spawn->template_id = template_id;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        },
+        {
+          "name": "force-inline-reference",
+          "text": "};\n\nstatic __forceinline void quest_set_opening_spawn(\n    quest_spawn_entry_t &spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn.template_id = template_id;\n    spawn.trigger_time_ms = trigger_time_ms;\n    spawn.count = count;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        },
+        {
+          "name": "inline-return-pointer",
+          "text": "};\n\nstatic __inline quest_spawn_entry_t *quest_set_opening_spawn(\n    quest_spawn_entry_t *spawn,\n    int template_id,\n    int trigger_time_ms,\n    int count)\n{\n    spawn->template_id = template_id;\n    spawn->trigger_time_ms = trigger_time_ms;\n    spawn->count = count;\n    return spawn;\n}\n\nextern \"C\" void quest_build_8_legged_terror(\n"
+        }
+      ]
+    },
+    {
+      "name": "metadata-publication",
+      "find": "    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n",
+      "replacements": [
+        {
+          "name": "pointer-helper-call",
+          "text": "    quest_set_opening_spawn(\n        opening, SPAWN_ID_SPIDER_BOSS_3A, 1000, 1);\n"
+        },
+        {
+          "name": "reference-helper-call",
+          "text": "    quest_set_opening_spawn(\n        *opening, SPAWN_ID_SPIDER_BOSS_3A, 1000, 1);\n"
+        },
+        {
+          "name": "reverse-direct-stores",
+          "text": "    opening->count = 1;\n    opening->trigger_time_ms = 1000;\n    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;\n"
+        },
+        {
+          "name": "named-template-direct-stores",
+          "text": "    int opening_template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    opening->template_id = opening_template_id;\n    opening->trigger_time_ms = 1000;\n    opening->count = 1;\n"
+        }
+      ]
+    }
+  ]
+}

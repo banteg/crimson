@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-anchor-lifetime",
+      "find": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n",
+      "replacements": [
+        {
+          "name": "named-anchor-plus-offset",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position =\n        panel_anchor + credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-anchor-copy-then-add",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position = panel_anchor;\n    panel_position += credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "chained-three-add",
+          "text": "    credits_vec2_t panel_position =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x +\n        credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-anchor-constructor",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position(\n        panel_anchor.x + 300.0f, panel_anchor.y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-anchor-split-offset",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position = panel_anchor;\n    panel_position.x += 300.0f;\n    panel_position.y += 40.0f;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "direct-component-constructor",
+          "text": "    credits_vec2_t panel_position(\n        ui_element_slot_09.pos_x +\n            ui_element_slot_09.vertices[0].x + 300.0f,\n        ui_element_slot_09.pos_y +\n            ui_element_slot_09.vertices[0].y + 40.0f);\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "named-offset-vector",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_offset(300.0f, 40.0f);\n    credits_vec2_t panel_position = panel_anchor + panel_offset;\n    credits_vec2_t position = panel_position;\n"
+        },
+        {
+          "name": "explicit-position-copy",
+          "text": "    credits_vec2_t panel_anchor =\n        *(credits_vec2_t *)&ui_element_slot_09.pos_x +\n        *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;\n    credits_vec2_t panel_position =\n        panel_anchor + credits_vec2_t(300.0f, 40.0f);\n    credits_vec2_t position(panel_position.x, panel_position.y);\n"
+        }
+      ]
+    }
+  ]
+}
