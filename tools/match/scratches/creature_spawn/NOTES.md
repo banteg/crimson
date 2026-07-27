@@ -55,6 +55,22 @@ The Python and Zig rush-mode spawn models already preserve the native formulas,
 two RNG call sites, four-component tint, and max-health copy, so this audit did
 not reveal a port-parity correction.
 
+## Recorded mutation evidence
+
+Two complete, recorded mutation matrices cover 53 ordinary source-shape
+variants without retaining a change. `initializer-schedule-mutations.json`
+evaluates 24 single and paired tint/size scheduling alternatives; its best
+`size-between-tint-and-scalars` form is byte-neutral.
+`field-init-order-mutations.json` evaluates 29 zero-storage and field-order
+alternatives. Four natural zero-initializer spellings are also byte-neutral,
+while moving `active` ahead of the clears changes reference alignment or
+regresses the score. Their specification SHA-256 values are
+`2b2320d4b5e9e40bd13181ac371e8d32e9095c203bca618354e0d472423cf3b3`
+and
+`b9ae36e738f49449b48c0387faa63cb850526ea0b0aea248c0b0c7456e2a5258`.
+This rules out the remaining obvious initializer-order interactions rather
+than treating the 86.08% baseline as an untested source preference.
+
 ## Recovery classification audit
 
 The live native body still contains the same 79 instructions and complete

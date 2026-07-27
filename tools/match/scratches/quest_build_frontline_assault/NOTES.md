@@ -39,6 +39,22 @@ Its cursor/count aggregate now also agrees with the repeatedly evidenced quest
 builder source idiom without changing the record view or introducing a
 code-generation-only wrapper.
 
+## Recorded mutation evidence
+
+Two complete sweeps add 49 variants around the dominant compiler residual.
+`bottom-entry-shape-mutations.json` evaluates eight nested, independent,
+defaulted, switch, and repeated-entry forms. The greater-first nesting is
+byte-neutral, while duplicating the complete entry construction regresses
+sharply; none restores the native unfused pale/blue/pale ladder. Its SHA-256 is
+`ef601c16d6e7ab3cd54bf575c83d0e99f09eca650a464d073eaaa6cf21f63faa`.
+
+`arithmetic-epilogue-mutations.json` exhausts all 11 single-site and 30
+two-site combinations of equivalent negative-trigger spellings and output
+pointer forms. All 41 are byte-identical to the baseline, ruling out AST
+spelling and their interaction as controls for the native `add -5000` and
+final `ecx` allocation. Its SHA-256 is
+`8b841b0ad44299e42ec85d1fcab0525d074b829331f4aeb42b0bee81821f2e34`.
+
 ## Recovery classification audit
 
 Fresh Binary Ninja HLIL confirms the complete wave range, template ladder,

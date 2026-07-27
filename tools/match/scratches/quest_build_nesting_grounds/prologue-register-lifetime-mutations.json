@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-shared-constant-lifetimes",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    spawns[1].count = 1;",
+      "replacements": [
+        {
+          "name": "template-local-before-first-entry",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int weak_den_template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        weak_den_template_id,\n        8000);\n    spawns[1].count = 1;"
+        },
+        {
+          "name": "template-local-before-first-use",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    int weak_den_template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        weak_den_template_id,\n        8000);\n    spawns[1].count = 1;"
+        },
+        {
+          "name": "template-then-count-locals",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int weak_den_template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    int singleton_count = 1;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        weak_den_template_id,\n        8000);\n    spawns[1].count = singleton_count;"
+        },
+        {
+          "name": "count-then-template-locals",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int singleton_count = 1;\n    int weak_den_template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        weak_den_template_id,\n        8000);\n    spawns[1].count = singleton_count;"
+        },
+        {
+          "name": "template-const-local",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    const int weak_den_template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        weak_den_template_id,\n        8000);\n    spawns[1].count = 1;"
+        },
+        {
+          "name": "named-first-position",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int first_x = terrain_texture_width / 2;\n\n    spawns[0].pos.x = (float)first_x;\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    spawns[1].count = 1;"
+        }
+      ]
+    }
+  ]
+}

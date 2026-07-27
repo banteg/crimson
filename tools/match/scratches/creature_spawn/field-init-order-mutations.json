@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "core-field-order",
+      "find": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].state_flag = 1;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;",
+      "replacements": [
+        {
+          "name": "active-before-clears",
+          "text": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].state_flag = 1;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "one-flags-before-clears",
+          "text": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].state_flag = 1;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "byte-fields-before-words",
+          "text": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].state_flag = 1;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;"
+        },
+        {
+          "name": "lifecycle-before-flags",
+          "text": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].state_flag = 1;"
+        },
+        {
+          "name": "native-store-sequence",
+          "text": "    creature_pool[slot_id].type_id = type_id;\n    creature_pool[slot_id].ai_mode = 0;\n    creature_pool[slot_id].collision_flag = 0;\n    creature_pool[slot_id].collision_timer = 0.0f;\n    creature_pool[slot_id].force_target = 0;\n    creature_pool[slot_id].active = 1;\n    creature_pool[slot_id].state_flag = 1;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;"
+        }
+      ]
+    },
+    {
+      "name": "zero-storage-shape",
+      "find": "    int slot_id = creature_alloc_slot();\n    creature_spawn_locals_t velocity_storage = {{0, 0}};",
+      "replacements": [
+        {
+          "name": "split-zero-word-stores",
+          "text": "    int slot_id = creature_alloc_slot();\n    creature_spawn_locals_t velocity_storage;\n    velocity_storage.zero_words[0] = 0;\n    velocity_storage.zero_words[1] = 0;"
+        },
+        {
+          "name": "zero-local-initializer",
+          "text": "    int zero = 0;\n    int slot_id = creature_alloc_slot();\n    creature_spawn_locals_t velocity_storage = {{zero, zero}};"
+        },
+        {
+          "name": "aggregate-zero",
+          "text": "    int slot_id = creature_alloc_slot();\n    creature_spawn_locals_t velocity_storage = {0};"
+        },
+        {
+          "name": "nested-brace-zero",
+          "text": "    int slot_id = creature_alloc_slot();\n    creature_spawn_locals_t velocity_storage = {{0}};"
+        }
+      ]
+    }
+  ]
+}

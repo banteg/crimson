@@ -59,8 +59,9 @@ extern "C" void quest_build_nesting_grounds(
     spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);
     spawns[5].count = config_blob.player_count * 3 + 3;
 
-    spawns[6].pos.x = 384.0f;
-    spawns[6].pos.y = 512.0f;
+    quest_vec2_t *entry_six_pos = &spawns[6].pos;
+    entry_six_pos->x = 384.0f;
+    entry_six_pos->y = 512.0f;
     spawns[6].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         41100);

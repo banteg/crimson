@@ -15,6 +15,13 @@ scores 92.45%. The remaining differences are three independent scheduling
 choices between metadata stores for one entry and construction of the next
 entry's position. They are left unconstrained.
 
+`entry-boundary-mutations.json` records four complete whole-builder
+alternatives: aggregate and scalar direct metadata, a shared-template direct
+form, and metadata-before-position ordering. None improves the 92.45%
+baseline; the direct aggregate forms regress to 81.13%. The plan SHA-256 is
+`49c496601413ecac2798903dbfbf0bb78f837635a420e88ccd2d1db0f79def45`,
+so these negative results remain reproducible after future source refactors.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

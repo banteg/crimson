@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-three-position-boundary",
+      "find": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;",
+      "replacements": [
+        {
+          "name": "position-pointer-after-entry-two",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    quest_vec2_t *entry_three_pos = &spawns[3].pos;\n    entry_three_pos->x = 768.0f;\n    entry_three_pos->y = 768.0f;"
+        },
+        {
+          "name": "record-pointer-after-entry-two",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    quest_entry_original_t *entry_three = &spawns[3];\n    entry_three->pos.x = 768.0f;\n    entry_three->pos.y = 768.0f;"
+        },
+        {
+          "name": "position-pointer-before-entry-two",
+          "text": "    quest_vec2_t *entry_three_pos = &spawns[3].pos;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    entry_three_pos->x = 768.0f;\n    entry_three_pos->y = 768.0f;"
+        },
+        {
+          "name": "record-pointer-before-entry-two",
+          "text": "    quest_entry_original_t *entry_three = &spawns[3];\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    entry_three->pos.x = 768.0f;\n    entry_three->pos.y = 768.0f;"
+        },
+        {
+          "name": "named-axis-after-entry-two",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    float entry_three_axis = 768.0f;\n    spawns[3].pos.x = entry_three_axis;\n    spawns[3].pos.y = entry_three_axis;"
+        },
+        {
+          "name": "named-axis-before-entry-two",
+          "text": "    float entry_three_axis = 768.0f;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = entry_three_axis;\n    spawns[3].pos.y = entry_three_axis;"
+        },
+        {
+          "name": "chained-position-assignment",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "reverse-position-members",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.y = 768.0f;\n    spawns[3].pos.x = 768.0f;"
+        }
+      ]
+    }
+  ]
+}

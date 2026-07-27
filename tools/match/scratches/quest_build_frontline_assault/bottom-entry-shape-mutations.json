@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bottom-entry-shape",
+      "find": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        if (wave <= 4) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (wave < 10) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;",
+      "replacements": [
+        {
+          "name": "strict-comparator-nesting",
+          "text": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        if (wave < 5) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else {\n            if (wave < 10) {\n                builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n            } else {\n                builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            }\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "greater-first-nesting",
+          "text": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        if (wave > 4) {\n            if (wave < 10) {\n                builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n            } else {\n                builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            }\n        } else {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "three-independent-conditions",
+          "text": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        if (wave <= 4) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n        if (wave > 4 && wave < 10) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        }\n        if (wave >= 10) {\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "default-then-middle-override",
+          "text": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        if (wave > 4 && wave < 10) {\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "repeat-position-per-branch",
+          "text": "        if (wave <= 4) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        } else if (wave < 10) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        } else {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "repeat-complete-entry-per-branch",
+          "text": "        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        if (wave <= 4) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        } else if (wave < 10) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        } else {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        }\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "repeat-complete-entry-with-branch-trigger",
+          "text": "        int trigger_time_ms;\n        if (wave <= 4) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            trigger_time_ms = wave * trigger_step_ms - 5000;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        } else if (wave < 10) {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n            trigger_time_ms = wave * trigger_step_ms - 5000;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        } else {\n            builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n            builder.cursor->pos_y = 1088.0f;\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            trigger_time_ms = wave * trigger_step_ms - 5000;\n            builder.cursor->trigger_time_ms = trigger_time_ms;\n            builder.cursor->count = 1;\n        }\n        ++builder.cursor;\n        ++builder.count;"
+        },
+        {
+          "name": "switch-middle-wave-range",
+          "text": "        builder.cursor->pos_x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos_y = 1088.0f;\n        switch (wave) {\n        case 5:\n        case 6:\n        case 7:\n        case 8:\n        case 9:\n            builder.cursor->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n            break;\n        default:\n            builder.cursor->template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n            break;\n        }\n        int trigger_time_ms = wave * trigger_step_ms - 5000;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = 1;\n        ++builder.cursor;\n        ++builder.count;"
+        }
+      ]
+    }
+  ]
+}

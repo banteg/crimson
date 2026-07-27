@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-boundary",
+      "find": "    spawns[0].set(\n        quest_vec2_t(\n            (float)(terrain_texture_width / 2),\n            (float)(terrain_texture_height + 64)),\n        SPAWN_ID_ALIEN_SMALL_GRAY_26,\n        500,\n        1);\n    spawns[1].set(\n        quest_vec2_t(-64.0f, 1088.0f),\n        SPAWN_ID_ALIEN_SMALL_GRAY_26,\n        2500,\n        2);\n    spawns[2].set(\n        quest_vec2_t(-64.0f, -64.0f),\n        SPAWN_ID_ALIEN_SMALL_GRAY_26,\n        6500,\n        3);\n    spawns[3].set(\n        quest_vec2_t(1088.0f, -64.0f),\n        SPAWN_ID_ALIEN_SMALL_GRAY_26,\n        11500,\n        4);",
+      "replacements": [
+        {
+          "name": "aggregate-position-direct-metadata",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n    spawns[1].pos = quest_vec2_t(-64.0f, 1088.0f);\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 2500;\n    spawns[1].count = 2;\n    spawns[2].pos = quest_vec2_t(-64.0f, -64.0f);\n    spawns[2].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[2].trigger_time_ms = 6500;\n    spawns[2].count = 3;\n    spawns[3].pos = quest_vec2_t(1088.0f, -64.0f);\n    spawns[3].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[3].trigger_time_ms = 11500;\n    spawns[3].count = 4;"
+        },
+        {
+          "name": "scalar-position-direct-metadata",
+          "text": "    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n    spawns[1].pos.x = -64.0f;\n    spawns[1].pos.y = 1088.0f;\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 2500;\n    spawns[1].count = 2;\n    spawns[2].pos.x = -64.0f;\n    spawns[2].pos.y = -64.0f;\n    spawns[2].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[2].trigger_time_ms = 6500;\n    spawns[2].count = 3;\n    spawns[3].pos.x = 1088.0f;\n    spawns[3].pos.y = -64.0f;\n    spawns[3].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[3].trigger_time_ms = 11500;\n    spawns[3].count = 4;"
+        },
+        {
+          "name": "shared-template-direct-metadata",
+          "text": "    int template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[0].template_id = template_id;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n    spawns[1].pos = quest_vec2_t(-64.0f, 1088.0f);\n    spawns[1].template_id = template_id;\n    spawns[1].trigger_time_ms = 2500;\n    spawns[1].count = 2;\n    spawns[2].pos = quest_vec2_t(-64.0f, -64.0f);\n    spawns[2].template_id = template_id;\n    spawns[2].trigger_time_ms = 6500;\n    spawns[2].count = 3;\n    spawns[3].pos = quest_vec2_t(1088.0f, -64.0f);\n    spawns[3].template_id = template_id;\n    spawns[3].trigger_time_ms = 11500;\n    spawns[3].count = 4;"
+        },
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[0].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n    spawns[0].pos = quest_vec2_t(\n        (float)(terrain_texture_width / 2),\n        (float)(terrain_texture_height + 64));\n    spawns[1].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[1].trigger_time_ms = 2500;\n    spawns[1].count = 2;\n    spawns[1].pos = quest_vec2_t(-64.0f, 1088.0f);\n    spawns[2].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[2].trigger_time_ms = 6500;\n    spawns[2].count = 3;\n    spawns[2].pos = quest_vec2_t(-64.0f, -64.0f);\n    spawns[3].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;\n    spawns[3].trigger_time_ms = 11500;\n    spawns[3].count = 4;\n    spawns[3].pos = quest_vec2_t(1088.0f, -64.0f);"
+        }
+      ]
+    }
+  ]
+}

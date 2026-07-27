@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "health-velocity-order",
+      "find": "    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;\n    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;\n    creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;",
+      "replacements": [
+        {
+          "name": "health-before-velocity",
+          "text": "    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;\n    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;\n    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;"
+        },
+        {
+          "name": "health-before-lifecycle",
+          "text": "    creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;\n    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;"
+        },
+        {
+          "name": "velocity-before-lifecycle",
+          "text": "    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;\n    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;\n    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;"
+        },
+        {
+          "name": "named-health-after-velocity",
+          "text": "    creature_pool[slot_id].lifecycle_stage = 16.0f;\n    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;\n    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;\n    float health = (float)survival_elapsed_ms * 0.0001f + 10.0f;\n    creature_pool[slot_id].health = health;"
+        }
+      ]
+    },
+    {
+      "name": "tint-size-order",
+      "find": "    creature_pool[slot_id].color = *tint;\n    creature_pool[slot_id].contact_damage = 4.0f;\n    creature_pool[slot_id].max_health = creature_pool[slot_id].health;\n    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;",
+      "replacements": [
+        {
+          "name": "size-before-tint",
+          "text": "    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n    creature_pool[slot_id].color = *tint;\n    creature_pool[slot_id].contact_damage = 4.0f;\n    creature_pool[slot_id].max_health = creature_pool[slot_id].health;"
+        },
+        {
+          "name": "size-between-tint-and-scalars",
+          "text": "    creature_pool[slot_id].color = *tint;\n    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n    creature_pool[slot_id].contact_damage = 4.0f;\n    creature_pool[slot_id].max_health = creature_pool[slot_id].health;"
+        },
+        {
+          "name": "scalars-before-tint-and-size",
+          "text": "    creature_pool[slot_id].contact_damage = 4.0f;\n    creature_pool[slot_id].max_health = creature_pool[slot_id].health;\n    creature_pool[slot_id].color = *tint;\n    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;"
+        },
+        {
+          "name": "named-size-after-tint",
+          "text": "    creature_pool[slot_id].color = *tint;\n    creature_pool[slot_id].contact_damage = 4.0f;\n    creature_pool[slot_id].max_health = creature_pool[slot_id].health;\n    float size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n    creature_pool[slot_id].size = size;"
+        }
+      ]
+    }
+  ]
+}

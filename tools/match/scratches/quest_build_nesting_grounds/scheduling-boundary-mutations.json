@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-three-position-lifetime",
+      "find": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;",
+      "replacements": [
+        {
+          "name": "named-axis-after-entry-two",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    float entry_three_axis = 768.0f;\n    spawns[3].pos.x = entry_three_axis;\n    spawns[3].pos.y = entry_three_axis;"
+        },
+        {
+          "name": "declared-axis-assigned-after-entry-two",
+          "text": "    float entry_three_axis;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    entry_three_axis = 768.0f;\n    spawns[3].pos.x = entry_three_axis;\n    spawns[3].pos.y = entry_three_axis;"
+        },
+        {
+          "name": "chained-position-assignment",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "named-position-pointer",
+          "text": "    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    quest_vec2_t *entry_three_pos = &spawns[3].pos;\n    entry_three_pos->x = 768.0f;\n    entry_three_pos->y = 768.0f;"
+        },
+        {
+          "name": "separate-entry-scopes",
+          "text": "    {\n        spawns[2].set_spawn(\n            SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n            13000);\n        spawns[2].count = 1;\n    }\n\n    {\n        spawns[3].pos.x = 768.0f;\n        spawns[3].pos.y = 768.0f;\n    }"
+        }
+      ]
+    },
+    {
+      "name": "entry-six-position-lifetime",
+      "find": "    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n    spawns[5].count = config_blob.player_count * 3 + 3;\n\n    spawns[6].pos.x = 384.0f;\n    spawns[6].pos.y = 512.0f;",
+      "replacements": [
+        {
+          "name": "named-dynamic-count",
+          "text": "    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n    int entry_five_count = config_blob.player_count * 3 + 3;\n    spawns[5].count = entry_five_count;\n\n    spawns[6].pos.x = 384.0f;\n    spawns[6].pos.y = 512.0f;"
+        },
+        {
+          "name": "staged-dynamic-count",
+          "text": "    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n    int entry_five_count = config_blob.player_count;\n    entry_five_count = entry_five_count * 3 + 3;\n    spawns[5].count = entry_five_count;\n\n    spawns[6].pos.x = 384.0f;\n    spawns[6].pos.y = 512.0f;"
+        },
+        {
+          "name": "named-entry-six-scalars",
+          "text": "    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n    spawns[5].count = config_blob.player_count * 3 + 3;\n\n    float entry_six_x = 384.0f;\n    float entry_six_y = 512.0f;\n    spawns[6].pos.x = entry_six_x;\n    spawns[6].pos.y = entry_six_y;"
+        },
+        {
+          "name": "named-entry-six-position-pointer",
+          "text": "    spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n    spawns[5].count = config_blob.player_count * 3 + 3;\n\n    quest_vec2_t *entry_six_pos = &spawns[6].pos;\n    entry_six_pos->x = 384.0f;\n    entry_six_pos->y = 512.0f;"
+        },
+        {
+          "name": "separate-entry-scopes",
+          "text": "    {\n        spawns[5].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 39000);\n        spawns[5].count = config_blob.player_count * 3 + 3;\n    }\n\n    {\n        spawns[6].pos.x = 384.0f;\n        spawns[6].pos.y = 512.0f;\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "trigger-offset-spelling",
+      "find": "wave * trigger_step_ms - 5000",
+      "replacements": [
+        {
+          "name": "add-negative-decimal",
+          "text": "wave * trigger_step_ms + -5000"
+        },
+        {
+          "name": "add-parenthesized-negative",
+          "text": "wave * trigger_step_ms + (-5000)"
+        },
+        {
+          "name": "add-negative-hex",
+          "text": "wave * trigger_step_ms + -0x1388"
+        },
+        {
+          "name": "add-zero-minus",
+          "text": "wave * trigger_step_ms + (0 - 5000)"
+        },
+        {
+          "name": "subtract-parenthesized",
+          "text": "wave * trigger_step_ms - (5000)"
+        },
+        {
+          "name": "add-bitwise-complement",
+          "text": "wave * trigger_step_ms + ~4999"
+        }
+      ]
+    },
+    {
+      "name": "output-count-store",
+      "find": "    *count = builder.count;",
+      "replacements": [
+        {
+          "name": "index-zero",
+          "text": "    count[0] = builder.count;"
+        },
+        {
+          "name": "dereference-add-zero",
+          "text": "    *(count + 0) = builder.count;"
+        },
+        {
+          "name": "named-output-pointer",
+          "text": "    int *output_count = count;\n    *output_count = builder.count;"
+        },
+        {
+          "name": "named-output-value",
+          "text": "    int output_count = builder.count;\n    *count = output_count;"
+        },
+        {
+          "name": "postincrement-output-pointer",
+          "text": "    *count++ = builder.count;"
+        }
+      ]
+    }
+  ]
+}
