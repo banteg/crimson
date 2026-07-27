@@ -33,6 +33,16 @@ pushes, and the initial trigger load. `while` and `do/while` compile identically
 the simpler decompiler-aligned `while` is retained without artificial ordering
 dependencies.
 
+## Recorded opening-lifetime search
+
+`opening-lifetime-mutations.json` exhaustively evaluated 43 single and pair
+combinations over named/split opening vectors and loop-scalar initialization.
+Natural named temporaries, direct metadata, declaration swaps, and split
+trigger assignment are all byte-neutral; split component schedules regress.
+The 95.74% baseline remains best. The complete result is recorded in
+`experiments.jsonl` (spec
+`0925043af860b29e4188ee7d85c81c28d2beb137cd807d35f7fbb2cd08a6ebf8`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

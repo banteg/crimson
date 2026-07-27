@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "overwritten-entry-schedule",
+      "find": "    spawns[8].pos = quest_vec2_t(128.0f, 512.0f);\n    spawns[8].set_spawn(\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        6500,\n        1);\n\n    int x_seed = 0x180;\n",
+      "replacements": [
+        {
+          "name": "split-position",
+          "text": "    spawns[8].pos.x = 128.0f;\n    spawns[8].pos.y = 512.0f;\n    spawns[8].set_spawn(\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        6500,\n        1);\n\n    int x_seed = 0x180;\n"
+        },
+        {
+          "name": "seed-after-position",
+          "text": "    spawns[8].pos.x = 128.0f;\n    spawns[8].pos.y = 512.0f;\n    int x_seed = 0x180;\n    spawns[8].set_spawn(\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        6500,\n        1);\n"
+        },
+        {
+          "name": "seed-after-template",
+          "text": "    spawns[8].pos.x = 128.0f;\n    spawns[8].pos.y = 512.0f;\n    spawns[8].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    int x_seed = 0x180;\n    spawns[8].trigger_time_ms = 6500;\n    spawns[8].count = 1;\n"
+        },
+        {
+          "name": "seed-after-trigger",
+          "text": "    spawns[8].pos.x = 128.0f;\n    spawns[8].pos.y = 512.0f;\n    spawns[8].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[8].trigger_time_ms = 6500;\n    int x_seed = 0x180;\n    spawns[8].count = 1;\n"
+        },
+        {
+          "name": "named-entry-seed-after-template",
+          "text": "    quest_entry_original_t *overwritten = &spawns[8];\n    overwritten->pos.x = 128.0f;\n    overwritten->pos.y = 512.0f;\n    overwritten->template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    int x_seed = 0x180;\n    overwritten->trigger_time_ms = 6500;\n    overwritten->count = 1;\n"
+        },
+        {
+          "name": "named-entry-helper",
+          "text": "    quest_entry_original_t *overwritten = &spawns[8];\n    overwritten->pos = quest_vec2_t(128.0f, 512.0f);\n    overwritten->set_spawn(\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        6500,\n        1);\n\n    int x_seed = 0x180;\n"
+        },
+        {
+          "name": "seed-before-entry",
+          "text": "    int x_seed = 0x180;\n    spawns[8].pos = quest_vec2_t(128.0f, 512.0f);\n    spawns[8].set_spawn(\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        6500,\n        1);\n"
+        }
+      ]
+    },
+    {
+      "name": "grid-entry-schedule",
+      "find": "                spawns[entry_count].pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                spawns[entry_count].template_id =\n                    SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawns[entry_count].trigger_time_ms = trigger_time_ms;\n                spawns[entry_count].count = 1;\n                trigger_time_ms += 600;\n                ++entry_count;\n",
+      "replacements": [
+        {
+          "name": "named-entry-preincrement",
+          "text": "                quest_entry_original_t *spawn = &spawns[entry_count];\n                ++entry_count;\n                spawn->pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                spawn->count = 1;\n                trigger_time_ms += 600;\n"
+        },
+        {
+          "name": "named-entry-postincrement",
+          "text": "                quest_entry_original_t *spawn =\n                    &spawns[entry_count++];\n                spawn->pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                spawn->count = 1;\n                trigger_time_ms += 600;\n"
+        },
+        {
+          "name": "named-entry-increment-after-position",
+          "text": "                quest_entry_original_t *spawn = &spawns[entry_count];\n                spawn->pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                ++entry_count;\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                spawn->count = 1;\n                trigger_time_ms += 600;\n"
+        },
+        {
+          "name": "named-entry-increment-before-y",
+          "text": "                quest_entry_original_t *spawn = &spawns[entry_count];\n                spawn->pos.x =\n                    (float)x_seed * 0.166666672f + 256.0f;\n                ++entry_count;\n                spawn->pos.y =\n                    512.0f - (float)(row * 0x180) * 0.166666672f;\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                spawn->count = 1;\n                trigger_time_ms += 600;\n"
+        },
+        {
+          "name": "named-entry-trigger-before-count",
+          "text": "                quest_entry_original_t *spawn =\n                    &spawns[entry_count++];\n                spawn->pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                trigger_time_ms += 600;\n                spawn->count = 1;\n"
+        },
+        {
+          "name": "direct-postincrement-position",
+          "text": "                quest_entry_original_t *spawn =\n                    &spawns[entry_count++];\n                spawn->pos.x =\n                    (float)x_seed * 0.166666672f + 256.0f;\n                spawn->pos.y =\n                    512.0f - (float)(row * 0x180) * 0.166666672f;\n                spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n                spawn->trigger_time_ms = trigger_time_ms;\n                spawn->count = 1;\n                trigger_time_ms += 600;\n"
+        },
+        {
+          "name": "named-entry-helper",
+          "text": "                quest_entry_original_t *spawn =\n                    &spawns[entry_count++];\n                spawn->pos = quest_vec2_t(\n                    (float)x_seed * 0.166666672f + 256.0f,\n                    512.0f - (float)(row * 0x180) * 0.166666672f);\n                spawn->set_spawn(\n                    SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                    trigger_time_ms,\n                    1);\n                trigger_time_ms += 600;\n"
+        }
+      ]
+    }
+  ]
+}

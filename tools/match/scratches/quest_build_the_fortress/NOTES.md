@@ -40,3 +40,12 @@ putting either count or index first shortens the exact prefix from 21 to 20,
 while both trigger-first variants reproduce the retained result. The residual
 initialization swaps therefore cannot be resolved by ordinary scalar source
 order.
+
+## Recorded grid-schedule search
+
+`grid-schedule-mutations.json` exhaustively evaluated 63 single and pair
+combinations over the dead entry-8 write and accepted-grid cursor schedule.
+None improved the 96.08% baseline. Named dead-entry storage is byte-neutral;
+split aggregate writes and early cursor advances regress instruction shape or
+allocation. The complete result is in `experiments.jsonl` (spec
+`63d5f1783fd858a39d11c9957d71b604dc60587e36256ec7f915e2922dc09ed8`).

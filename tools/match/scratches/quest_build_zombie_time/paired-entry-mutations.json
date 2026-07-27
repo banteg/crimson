@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-entry",
+      "find": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        right->pos_y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        right->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n",
+      "replacements": [
+        {
+          "name": "postincremented-index",
+          "text": "        quest_entry_original_t *right =\n            &builder.spawns[builder.count++];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        right->pos_y = (float)(terrain_texture_width / 2);\n        right->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "increment-before-y",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        right->pos_y = (float)(terrain_texture_width / 2);\n        right->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        right->pos_y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        right->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        right->trigger_time_ms = trigger_time;\n        right->count = 8;\n"
+        },
+        {
+          "name": "increment-before-y-direct-metadata",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        right->pos_y = (float)(terrain_texture_width / 2);\n        right->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        right->trigger_time_ms = trigger_time;\n        right->count = 8;\n"
+        },
+        {
+          "name": "metadata-before-y",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        right->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n        ++builder.count;\n        right->pos_y = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "named-half-before-increment",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        int right_half_width = terrain_texture_width / 2;\n        ++builder.count;\n        right->pos_y = (float)right_half_width;\n        right->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "postincrement-direct-metadata",
+          "text": "        quest_entry_original_t *right =\n            &builder.spawns[builder.count++];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        right->pos_y = (float)(terrain_texture_width / 2);\n        right->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        right->trigger_time_ms = trigger_time;\n        right->count = 8;\n"
+        },
+        {
+          "name": "metadata-between-position",
+          "text": "        quest_entry_original_t *right = &builder.spawns[builder.count];\n        right->pos_x = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        right->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        right->trigger_time_ms = trigger_time;\n        right->pos_y = (float)(terrain_texture_width / 2);\n        right->count = 8;\n"
+        }
+      ]
+    },
+    {
+      "name": "left-entry",
+      "find": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        left->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n",
+      "replacements": [
+        {
+          "name": "postincremented-index",
+          "text": "        quest_entry_original_t *left =\n            &builder.spawns[builder.count++];\n        left->pos_x = -64.0f;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        left->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "increment-before-y",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        ++builder.count;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        left->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        left->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        left->trigger_time_ms = trigger_time;\n        left->count = 8;\n"
+        },
+        {
+          "name": "increment-before-y-direct-metadata",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        ++builder.count;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        left->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        left->trigger_time_ms = trigger_time;\n        left->count = 8;\n"
+        },
+        {
+          "name": "metadata-before-y",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        left->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n        ++builder.count;\n        left->pos_y = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "named-half-before-increment",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        int left_half_width = terrain_texture_width / 2;\n        ++builder.count;\n        left->pos_y = (float)left_half_width;\n        left->set_spawn(SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);\n"
+        },
+        {
+          "name": "postincrement-direct-metadata",
+          "text": "        quest_entry_original_t *left =\n            &builder.spawns[builder.count++];\n        left->pos_x = -64.0f;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        left->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        left->trigger_time_ms = trigger_time;\n        left->count = 8;\n"
+        },
+        {
+          "name": "metadata-between-position",
+          "text": "        quest_entry_original_t *left = &builder.spawns[builder.count];\n        left->pos_x = -64.0f;\n        ++builder.count;\n        left->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        left->trigger_time_ms = trigger_time;\n        left->pos_y = (float)(terrain_texture_width / 2);\n        left->count = 8;\n"
+        }
+      ]
+    }
+  ]
+}

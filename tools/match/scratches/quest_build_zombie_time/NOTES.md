@@ -20,6 +20,15 @@ the loop increment. The natural inlined entry setter produces the same
 schedule, so no artificial dependencies or volatile fields are used to move
 those stores.
 
+## Recorded paired-entry search
+
+`paired-entry-mutations.json` exhaustively evaluated 80 single and pair
+combinations across the right and left record schedules. Direct metadata,
+named half-width, and several post-incremented-index spellings are byte-neutral;
+placing metadata across the y conversion regresses. No variant improves the
+82.00% baseline. The complete matrix is recorded in `experiments.jsonl` (spec
+`685d991255aaf4bcbda4b11cfbf008562d427b6028789ce582136ecf9e0d7d74`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

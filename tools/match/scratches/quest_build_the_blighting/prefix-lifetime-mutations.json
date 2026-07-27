@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "dynamic-prefix",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n",
+      "replacements": [
+        {
+          "name": "template-after-first-x",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "template-after-first-y",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "split-template-assignment",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_template_id;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "direct-first-metadata",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[0].trigger_time_ms = 1500;\n    spawns[0].count = 2;\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "direct-both-metadata",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[0].trigger_time_ms = 1500;\n    spawns[0].count = 2;\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[1].trigger_time_ms = 1500;\n    spawns[1].count = 2;\n"
+        },
+        {
+          "name": "template-after-x-direct-first",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[0].trigger_time_ms = 1500;\n    spawns[0].count = 2;\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "first-metadata-after-template-variable",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width + 128);\n    spawns[0].pos.y = (float)(terrain_texture_width / 2);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        },
+        {
+          "name": "named-first-entry",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int spawn_template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n    quest_entry_original_t *first = &spawns[0];\n\n    first->pos.x = (float)(terrain_texture_width + 128);\n    first->pos.y = (float)(terrain_texture_width / 2);\n    first->set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n\n    spawns[1].pos.x = -128.0f;\n    spawns[1].pos.y = (float)(terrain_texture_width / 2);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n"
+        }
+      ]
+    },
+    {
+      "name": "loop-initialization",
+      "find": "    int wave = 0;\n    quest_spawn_builder_t builder(&spawns[6], 6);\n    int trigger_time_ms = 4000;\n",
+      "replacements": [
+        {
+          "name": "builder-before-wave",
+          "text": "    quest_spawn_builder_t builder(&spawns[6], 6);\n    int wave = 0;\n    int trigger_time_ms = 4000;\n"
+        },
+        {
+          "name": "trigger-before-builder",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 4000;\n    quest_spawn_builder_t builder(&spawns[6], 6);\n"
+        },
+        {
+          "name": "trigger-builder-wave",
+          "text": "    int trigger_time_ms = 4000;\n    quest_spawn_builder_t builder(&spawns[6], 6);\n    int wave = 0;\n"
+        },
+        {
+          "name": "builder-trigger-wave",
+          "text": "    quest_spawn_builder_t builder(&spawns[6], 6);\n    int trigger_time_ms = 4000;\n    int wave = 0;\n"
+        },
+        {
+          "name": "split-trigger",
+          "text": "    int wave = 0;\n    quest_spawn_builder_t builder(&spawns[6], 6);\n    int trigger_time_ms;\n    trigger_time_ms = 4000;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-lifetime",
+      "find": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        cursor->pos = position;\n        cursor->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        cursor->trigger_time_ms = trigger_time_ms;\n        cursor->count = 1;\n        cursor->heading =\n            (cursor->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n        ++cursor;\n",
+      "replacements": [
+        {
+          "name": "entry-after-radius",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_entry_original_t *entry = cursor++;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->pos = position;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-angle",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        quest_entry_original_t *entry = cursor++;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->pos = position;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-before-angle",
+          "text": "        quest_entry_original_t *entry = cursor++;\n        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->pos = position;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-offset",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n        quest_entry_original_t *entry = cursor++;\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->pos = position;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-radius-set",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_entry_original_t *entry = cursor++;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->set(\n            position,\n            SPAWN_ID_ALIEN_AI7_ORBITER_36,\n            trigger_time_ms,\n            1);\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-angle-set",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        quest_entry_original_t *entry = cursor++;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->set(\n            position,\n            SPAWN_ID_ALIEN_AI7_ORBITER_36,\n            trigger_time_ms,\n            1);\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-offset-set",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n        quest_entry_original_t *entry = cursor++;\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->set(\n            position,\n            SPAWN_ID_ALIEN_AI7_ORBITER_36,\n            trigger_time_ms,\n            1);\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-radius-components",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_entry_original_t *entry = cursor++;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        entry->pos.x = offset.x + 512.0f;\n        entry->pos.y = offset.y + 512.0f;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        },
+        {
+          "name": "entry-after-radius-split-increment",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        int radius = (crt_rand() % 8 + 2) * 32;\n        quest_entry_original_t *entry = cursor;\n        ++cursor;\n        quest_vec2_t offset(\n            (float)radius * (float)cos(angle),\n            (float)radius * (float)sin(angle));\n\n        quest_vec2_t position(\n            offset.x + 512.0f,\n            offset.y + 512.0f);\n        entry->pos = position;\n        entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n        entry->trigger_time_ms = trigger_time_ms;\n        entry->count = 1;\n        entry->heading =\n            (entry->pos - quest_vec2_t(512.0f, 512.0f)).angle()\n            - 1.57079637f;\n"
+        }
+      ]
+    },
+    {
+      "name": "trigger-clamp",
+      "find": "        int trigger_increment_ms = trigger_step_ms;\n        if (trigger_increment_ms < 1100) {\n            trigger_increment_ms = 1100;\n        }\n        trigger_step_ms -= 50;\n        trigger_time_ms += trigger_increment_ms;\n",
+      "replacements": [
+        {
+          "name": "ternary",
+          "text": "        int trigger_increment_ms =\n            trigger_step_ms < 1100 ? 1100 : trigger_step_ms;\n        trigger_step_ms -= 50;\n        trigger_time_ms += trigger_increment_ms;\n"
+        },
+        {
+          "name": "reversed-branch",
+          "text": "        int trigger_increment_ms;\n        if (trigger_step_ms >= 1100) {\n            trigger_increment_ms = trigger_step_ms;\n        } else {\n            trigger_increment_ms = 1100;\n        }\n        trigger_step_ms -= 50;\n        trigger_time_ms += trigger_increment_ms;\n"
+        },
+        {
+          "name": "direct-add-branch",
+          "text": "        if (trigger_step_ms < 1100) {\n            trigger_time_ms += 1100;\n        } else {\n            trigger_time_ms += trigger_step_ms;\n        }\n        trigger_step_ms -= 50;\n"
+        },
+        {
+          "name": "decrement-after-add",
+          "text": "        int trigger_increment_ms = trigger_step_ms;\n        if (trigger_increment_ms < 1100) {\n            trigger_increment_ms = 1100;\n        }\n        trigger_time_ms += trigger_increment_ms;\n        trigger_step_ms -= 50;\n"
+        },
+        {
+          "name": "clamp-step-copy",
+          "text": "        int old_trigger_step_ms = trigger_step_ms;\n        trigger_step_ms -= 50;\n        if (old_trigger_step_ms < 1100) {\n            old_trigger_step_ms = 1100;\n        }\n        trigger_time_ms += old_trigger_step_ms;\n"
+        }
+      ]
+    }
+  ]
+}

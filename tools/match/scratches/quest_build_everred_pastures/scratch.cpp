@@ -44,10 +44,9 @@ extern "C" void quest_build_everred_pastures(
         builder.cursor->pos.y = (float)(terrain_texture_width / 2);
         ++builder.count;
         int trigger_time_ms = wave * 13000 + 1500;
-        builder.cursor->set_spawn(
-            SPAWN_ID_SPIDER_SP1_RANDOM_32,
-            trigger_time_ms,
-            wave_count);
+        builder.cursor->template_id = SPAWN_ID_SPIDER_SP1_RANDOM_32;
+        builder.cursor->trigger_time_ms = trigger_time_ms;
+        builder.cursor->count = wave_count;
         ++builder.cursor;
 
         builder.cursor->pos.x = -64.0f;

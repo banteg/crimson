@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "top-bound",
+      "find": "    int spawn_count = 0;\n    int top_index = 0;\n\n    if (config_player_count + 4 > 0) {\n        int trigger_time_ms = 500;\n        while (top_index < config_player_count + 4) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++top_index;\n            trigger_time_ms += 500;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "named-bound-before-index",
+          "text": "    int spawn_count = 0;\n    int top_bound = config_player_count + 4;\n    int top_index = 0;\n\n    if (top_bound > 0) {\n        int trigger_time_ms = 500;\n        while (top_index < top_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++top_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "named-bound-after-index",
+          "text": "    int spawn_count = 0;\n    int top_index = 0;\n    int top_bound = config_player_count + 4;\n\n    if (top_bound > 0) {\n        int trigger_time_ms = 500;\n        while (top_index < top_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++top_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "snapshot-player-count",
+          "text": "    int spawn_count = 0;\n    int top_index = 0;\n    int top_player_count = config_player_count;\n    int top_bound = top_player_count + 4;\n\n    if (top_bound > 0) {\n        int trigger_time_ms = 500;\n        while (top_index < top_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++top_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "for-loop-bound",
+          "text": "    int spawn_count = 0;\n    int top_bound = config_player_count + 4;\n\n    if (top_bound > 0) {\n        int trigger_time_ms = 500;\n        for (int top_index = 0; top_index < top_bound; ++top_index) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)top_index * 102.4f + 256.0f,\n                256.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-bound",
+      "find": "    int bottom_index = 0;\n    if (config_player_count + 4 > 0) {\n        int trigger_time_ms = 10500;\n        while (bottom_index < config_player_count + 4) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++bottom_index;\n            trigger_time_ms += 500;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "named-bound-before-index",
+          "text": "    int bottom_bound = config_player_count + 4;\n    int bottom_index = 0;\n    if (bottom_bound > 0) {\n        int trigger_time_ms = 10500;\n        while (bottom_index < bottom_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++bottom_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "named-bound-after-index",
+          "text": "    int bottom_index = 0;\n    int bottom_bound = config_player_count + 4;\n    if (bottom_bound > 0) {\n        int trigger_time_ms = 10500;\n        while (bottom_index < bottom_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++bottom_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "snapshot-player-count",
+          "text": "    int bottom_index = 0;\n    int bottom_player_count = config_player_count;\n    int bottom_bound = bottom_player_count + 4;\n    if (bottom_bound > 0) {\n        int trigger_time_ms = 10500;\n        while (bottom_index < bottom_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++bottom_index;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        },
+        {
+          "name": "for-loop-bound",
+          "text": "    int bottom_bound = config_player_count + 4;\n    if (bottom_bound > 0) {\n        int trigger_time_ms = 10500;\n        for (int bottom_index = 0; bottom_index < bottom_bound; ++bottom_index) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)bottom_index * 102.4f + 256.0f,\n                768.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            trigger_time_ms += 500;\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "middle-bound",
+      "find": "    int middle_index = 0;\n    if (config_player_count + 7 > 0) {\n        int trigger_time_ms = 40500;\n        while (middle_index < config_player_count + 7) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++middle_index;\n            trigger_time_ms += 3500;\n        }\n\n        *count = spawn_count;\n        return;\n    }\n",
+      "replacements": [
+        {
+          "name": "named-bound-before-index",
+          "text": "    int middle_bound = config_player_count + 7;\n    int middle_index = 0;\n    if (middle_bound > 0) {\n        int trigger_time_ms = 40500;\n        while (middle_index < middle_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++middle_index;\n            trigger_time_ms += 3500;\n        }\n\n        *count = spawn_count;\n        return;\n    }\n"
+        },
+        {
+          "name": "named-bound-after-index",
+          "text": "    int middle_index = 0;\n    int middle_bound = config_player_count + 7;\n    if (middle_bound > 0) {\n        int trigger_time_ms = 40500;\n        while (middle_index < middle_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++middle_index;\n            trigger_time_ms += 3500;\n        }\n\n        *count = spawn_count;\n        return;\n    }\n"
+        },
+        {
+          "name": "snapshot-player-count",
+          "text": "    int middle_index = 0;\n    int middle_player_count = config_player_count;\n    int middle_bound = middle_player_count + 7;\n    if (middle_bound > 0) {\n        int trigger_time_ms = 40500;\n        while (middle_index < middle_bound) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            ++middle_index;\n            trigger_time_ms += 3500;\n        }\n\n        *count = spawn_count;\n        return;\n    }\n"
+        },
+        {
+          "name": "for-loop-bound",
+          "text": "    int middle_bound = config_player_count + 7;\n    if (middle_bound > 0) {\n        int trigger_time_ms = 40500;\n        for (int middle_index = 0; middle_index < middle_bound; ++middle_index) {\n            spawns[spawn_count].pos = quest_vec2_t(\n                (float)middle_index * 64.0f + 256.0f,\n                512.0f);\n            spawns[spawn_count].set_spawn(\n                SPAWN_ID_DEN_SPIDER_WEAK_10,\n                trigger_time_ms,\n                1);\n            ++spawn_count;\n            trigger_time_ms += 3500;\n        }\n\n        *count = spawn_count;\n        return;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

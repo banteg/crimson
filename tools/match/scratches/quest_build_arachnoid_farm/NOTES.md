@@ -25,6 +25,17 @@ A per-entry pointer, post-incremented pointer, `msvc6.5pp`, `msvc7.0`, and
 `/G6` were checked and regress. The exact-length default-profile form is kept
 without forced registers or artificial dependencies.
 
+## Recorded line-bound search
+
+`line-bound-mutations.json` exhaustively evaluated all 124 single, pair, and
+triple combinations of named top, bottom, and middle line bounds. Every cached
+bound loses an instruction and one or more global references; the best such
+variant drops 56.64 weighted bytes. This confirms that the native repeatedly
+loads `config_player_count` rather than preserving one derived bound, despite
+the final destructive `add edx, 7` allocation. The complete negative matrix is
+recorded in `experiments.jsonl` (spec
+`c0701e97213920a151df1226955167aabd43ef2cf0ebb18eedc1fbab9f00e944`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

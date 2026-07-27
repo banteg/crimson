@@ -34,6 +34,16 @@ and backedge body matches. Its ten residual mismatches are independent VC6
 schedules within the fixed prefix and loop initialization; no artificial
 dependencies or register forcing are used.
 
+## Recorded prefix-lifetime search
+
+`prefix-lifetime-mutations.json` exhaustively evaluated 53 single and pair
+combinations over the two terrain-derived prefix entries, template lifetime,
+direct metadata stores, and loop initialization order. Several natural forms
+are byte-neutral, including direct first-entry metadata and a split trigger
+assignment; none improves the 94.74% baseline. The complete matrix is recorded
+in `experiments.jsonl` (spec
+`a24eba9ef1efe6187cd7f486b0bc0dbcb48db7354fd80776e7bf5fb5bb3c32eb`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

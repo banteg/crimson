@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-lifetime",
+      "find": "    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n",
+      "replacements": [
+        {
+          "name": "named-position-before-count",
+          "text": "    quest_vec2_t opening_position(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].pos = opening_position;\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "named-position-count-before-copy",
+          "text": "    quest_vec2_t opening_position(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    int entry_count = 1;\n    spawns[0].pos = opening_position;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "count-before-position",
+          "text": "    int entry_count = 1;\n    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "split-position",
+          "text": "    spawns[0].pos.x = -50.0f;\n    spawns[0].pos.y = (float)terrain_texture_height * 0.5f;\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "split-count-between-components",
+          "text": "    spawns[0].pos.x = -50.0f;\n    int entry_count = 1;\n    spawns[0].pos.y = (float)terrain_texture_height * 0.5f;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "named-x",
+          "text": "    float opening_x = -50.0f;\n    spawns[0].pos = quest_vec2_t(\n        opening_x,\n        (float)terrain_texture_height * 0.5f);\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "named-y",
+          "text": "    float opening_y =\n        (float)terrain_texture_height * 0.5f;\n    spawns[0].pos = quest_vec2_t(-50.0f, opening_y);\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "named-components",
+          "text": "    float opening_x = -50.0f;\n    float opening_y =\n        (float)terrain_texture_height * 0.5f;\n    spawns[0].pos = quest_vec2_t(opening_x, opening_y);\n    int entry_count = 1;\n    spawns[0].set_spawn(\n        SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,\n        100,\n        entry_count);\n"
+        },
+        {
+          "name": "metadata-before-y",
+          "text": "    spawns[0].pos.x = -50.0f;\n    int entry_count = 1;\n    spawns[0].template_id = SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43;\n    spawns[0].trigger_time_ms = 100;\n    spawns[0].pos.y = (float)terrain_texture_height * 0.5f;\n    spawns[0].count = entry_count;\n"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    int entry_count = 1;\n    spawns[0].template_id = SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43;\n    spawns[0].trigger_time_ms = 100;\n    spawns[0].count = entry_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "loop-initialization",
+      "find": "    int wave = 0;\n    int trigger_time_ms = 500;\n",
+      "replacements": [
+        {
+          "name": "trigger-before-wave",
+          "text": "    int trigger_time_ms = 500;\n    int wave = 0;\n"
+        },
+        {
+          "name": "split-trigger-assignment",
+          "text": "    int wave = 0;\n    int trigger_time_ms;\n    trigger_time_ms = 500;\n"
+        },
+        {
+          "name": "hex-trigger",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 0x1f4;\n"
+        }
+      ]
+    }
+  ]
+}

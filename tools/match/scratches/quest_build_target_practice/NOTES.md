@@ -16,6 +16,17 @@ has the same 69 instructions and scores 89.86%. Residuals are the early
 scheduling of three independent entry metadata stores, cursor advancement, and
 one trigger-step register move. They remain unconstrained.
 
+## Recorded entry-lifetime search
+
+`entry-lifetime-mutations.json` exhaustively evaluated 59 single and pair
+combinations over the record cursor lifetime and trigger clamp. Reversed and
+decrement-after-add clamp spellings are byte-neutral. Every natural named
+post-incremented entry form instead changes the opening allocation and loses
+52.17 weighted bytes, so the native early `ESI` advance is already a compiler
+schedule of the retained cursor source. The complete matrix is recorded in
+`experiments.jsonl` (spec
+`37a3fb35eeddfaf0f75de96a3c995ae7cbec37460f86f39fdd208ce57c117be7`).
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

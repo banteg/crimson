@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "trigger-shape",
+      "find": "        int trigger_time_ms = wave * 13000 + 1500;\n",
+      "replacements": [
+        {
+          "name": "factor-65-200",
+          "text": "        int trigger_time_ms = (wave * 65) * 200 + 1500;\n"
+        },
+        {
+          "name": "factor-200-65",
+          "text": "        int trigger_time_ms = (wave * 200) * 65 + 1500;\n"
+        },
+        {
+          "name": "factor-13-1000",
+          "text": "        int trigger_time_ms = (wave * 13) * 1000 + 1500;\n"
+        },
+        {
+          "name": "stepwise-65-200",
+          "text": "        int trigger_time_ms = wave * 65;\n        trigger_time_ms *= 200;\n        trigger_time_ms += 1500;\n"
+        },
+        {
+          "name": "stepwise-13-1000",
+          "text": "        int trigger_time_ms = wave * 13;\n        trigger_time_ms *= 1000;\n        trigger_time_ms += 1500;\n"
+        },
+        {
+          "name": "named-step",
+          "text": "        int trigger_step_ms = 13000;\n        int trigger_time_ms = wave * trigger_step_ms + 1500;\n"
+        },
+        {
+          "name": "from-wave-count",
+          "text": "        int trigger_time_ms = (wave_count - 1) * 13000 + 1500;\n"
+        },
+        {
+          "name": "split-base-add",
+          "text": "        int trigger_time_ms = wave * 13000;\n        trigger_time_ms += 1500;\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-entry",
+      "find": "        builder.cursor->pos.x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos.y = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        builder.cursor->set_spawn(\n            SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34,\n            trigger_time_ms,\n            wave_count);\n        ++builder.cursor;\n",
+      "replacements": [
+        {
+          "name": "named-bottom-edge",
+          "text": "        builder.cursor->pos.x = (float)(terrain_texture_width / 2);\n        int bottom_edge = terrain_texture_width + 64;\n        builder.cursor->pos.y = (float)bottom_edge;\n        ++builder.count;\n        builder.cursor->set_spawn(\n            SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34,\n            trigger_time_ms,\n            wave_count);\n        ++builder.cursor;\n"
+        },
+        {
+          "name": "named-half-and-bottom",
+          "text": "        int bottom_half = terrain_texture_width / 2;\n        builder.cursor->pos.x = (float)bottom_half;\n        int bottom_edge = terrain_texture_width + 64;\n        builder.cursor->pos.y = (float)bottom_edge;\n        ++builder.count;\n        builder.cursor->set_spawn(\n            SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34,\n            trigger_time_ms,\n            wave_count);\n        ++builder.cursor;\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "        builder.cursor->pos.x = (float)(terrain_texture_width / 2);\n        builder.cursor->pos.y = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        builder.cursor->template_id = SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34;\n        builder.cursor->trigger_time_ms = trigger_time_ms;\n        builder.cursor->count = wave_count;\n        ++builder.cursor;\n"
+        }
+      ]
+    },
+    {
+      "name": "output-count",
+      "find": "    *count = builder.count;\n",
+      "replacements": [
+        {
+          "name": "index-zero",
+          "text": "    count[0] = builder.count;\n"
+        },
+        {
+          "name": "named-value",
+          "text": "    int emitted_count = builder.count;\n    *count = emitted_count;\n"
+        },
+        {
+          "name": "named-pointer",
+          "text": "    int *output_count = count;\n    *output_count = builder.count;\n"
+        },
+        {
+          "name": "named-pointer-and-value",
+          "text": "    int *output_count = count;\n    int emitted_count = builder.count;\n    *output_count = emitted_count;\n"
+        }
+      ]
+    }
+  ]
+}
