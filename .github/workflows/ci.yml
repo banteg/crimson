@@ -124,22 +124,12 @@ jobs:
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
           base_url="https://paq.crimson.banteg.xyz/v1.9.93"
-          xiph_url="https://web.archive.org/web/20030403114946id_/http://www.vorbis.com/files/1.0/windows/OggVorbis-win32sdk-1.0.zip"
-          xiph_archive="$(mktemp)"
-          trap 'rm -f "$xiph_archive"' EXIT
 
           mkdir -p "$game_dir"
-          curl --fail --location --retry 3 --retry-all-errors \
-            --output "$game_dir/crimsonland.exe" "$base_url/crimsonland.exe"
-          curl --fail --location --retry 3 --retry-all-errors \
-            --output "$game_dir/grim.dll" "$base_url/grim.dll"
-          curl --fail --location --retry 3 --retry-all-errors \
-            --output "$xiph_archive" "$xiph_url"
-          unzip -j "$xiph_archive" \
-            "oggvorbis-win32sdk-1.0/bin/ogg.dll" \
-            "oggvorbis-win32sdk-1.0/bin/vorbis.dll" \
-            "oggvorbis-win32sdk-1.0/bin/vorbisfile.dll" \
-            -d "$game_dir"
+          for name in crimsonland.exe grim.dll ogg.dll vorbis.dll vorbisfile.dll; do
+            curl --fail --location --retry 3 --retry-all-errors \
+              --output "$game_dir/$name" "$base_url/$name"
+          done
 
           sha256sum --check <<'EOF'
           771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
