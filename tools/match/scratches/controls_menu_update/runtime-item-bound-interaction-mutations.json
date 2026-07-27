@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "runtime-binding-owner-shape",
+      "find": "    int *binding_axis_move_x_cursor =\n        &config_blob.input_config[0].axis_move_x;\n    int *runtime_move_forward =\n        &player_state_table[0].input.move_key_forward;\n    do {\n        runtime_move_forward[0] = binding_axis_move_x_cursor[-12];\n        runtime_move_forward[1] = binding_axis_move_x_cursor[-11];\n        runtime_move_forward[2] = binding_axis_move_x_cursor[-10];\n        runtime_move_forward[3] = binding_axis_move_x_cursor[-9];\n        runtime_move_forward[4] = binding_axis_move_x_cursor[-8];\n        runtime_move_forward[5] = binding_axis_move_x_cursor[-7];\n        runtime_move_forward[6] = binding_axis_move_x_cursor[-6];\n        runtime_move_forward[7] = binding_axis_move_x_cursor[-5];\n        runtime_move_forward[8] = binding_axis_move_x_cursor[-4];\n        runtime_move_forward[10] = binding_axis_move_x_cursor[-3];\n        runtime_move_forward[9] = binding_axis_move_x_cursor[-2];\n        runtime_move_forward[12] = binding_axis_move_x_cursor[-1];\n        runtime_move_forward[11] = binding_axis_move_x_cursor[0];\n        binding_axis_move_x_cursor += 16;\n        runtime_move_forward += sizeof(player_state_t) / sizeof(int);\n    } while ((int)binding_axis_move_x_cursor\n        < (int)(config_p1_move_forward + 44));",
+      "replacements": [
+        {
+          "name": "typed-owner-signed-bound",
+          "text": "    player_input_config_t *binding =\n        (player_input_config_t *)config_p1_move_forward;\n    player_state_t *player = player_state_table;\n    do {\n        player_input_t &input = player->input;\n        input.move_key_forward = binding->move_key_forward;\n        input.move_key_backward = binding->move_key_backward;\n        input.turn_key_left = binding->turn_key_left;\n        input.turn_key_right = binding->turn_key_right;\n        input.fire_key = binding->fire_key;\n        input.key_reserved_0 = binding->key_reserved_0;\n        input.key_reserved_1 = binding->key_reserved_1;\n        input.aim_key_left = binding->aim_key_left;\n        input.aim_key_right = binding->aim_key_right;\n        input.axis_aim_y = binding->axis_aim_y;\n        input.axis_aim_x = binding->axis_aim_x;\n        input.axis_move_y = binding->axis_move_y;\n        input.axis_move_x = binding->axis_move_x;\n        ++binding;\n        ++player;\n    } while ((int)binding\n        < (int)((player_input_config_t *)config_p1_move_forward + 2));"
+        },
+        {
+          "name": "destination-interior-typed-source",
+          "text": "    player_input_config_t *binding =\n        (player_input_config_t *)config_p1_move_forward;\n    int *runtime_move_backward =\n        &player_state_table[0].input.move_key_backward;\n    do {\n        runtime_move_backward[-1] = binding->move_key_forward;\n        runtime_move_backward[0] = binding->move_key_backward;\n        runtime_move_backward[1] = binding->turn_key_left;\n        runtime_move_backward[2] = binding->turn_key_right;\n        runtime_move_backward[3] = binding->fire_key;\n        runtime_move_backward[4] = binding->key_reserved_0;\n        runtime_move_backward[5] = binding->key_reserved_1;\n        runtime_move_backward[6] = binding->aim_key_left;\n        runtime_move_backward[7] = binding->aim_key_right;\n        runtime_move_backward[9] = binding->axis_aim_y;\n        runtime_move_backward[8] = binding->axis_aim_x;\n        runtime_move_backward[11] = binding->axis_move_y;\n        runtime_move_backward[10] = binding->axis_move_x;\n        ++binding;\n        runtime_move_backward += sizeof(player_state_t) / sizeof(int);\n    } while ((int)binding\n        < (int)((player_input_config_t *)config_p1_move_forward + 2));"
+        },
+        {
+          "name": "source-interior-typed-destination",
+          "text": "    int *binding_axis_move_x_cursor = config_p1_move_forward + 12;\n    player_state_t *player = player_state_table;\n    do {\n        player_input_t &input = player->input;\n        input.move_key_forward = binding_axis_move_x_cursor[-12];\n        binding_axis_move_x_cursor += 16;\n        input.move_key_backward = binding_axis_move_x_cursor[-27];\n        input.turn_key_left = binding_axis_move_x_cursor[-26];\n        input.turn_key_right = binding_axis_move_x_cursor[-25];\n        input.fire_key = binding_axis_move_x_cursor[-24];\n        input.key_reserved_0 = binding_axis_move_x_cursor[-23];\n        input.key_reserved_1 = binding_axis_move_x_cursor[-22];\n        input.aim_key_left = binding_axis_move_x_cursor[-21];\n        input.aim_key_right = binding_axis_move_x_cursor[-20];\n        input.axis_aim_y = binding_axis_move_x_cursor[-19];\n        input.axis_aim_x = binding_axis_move_x_cursor[-18];\n        input.axis_move_y = binding_axis_move_x_cursor[-17];\n        input.axis_move_x = binding_axis_move_x_cursor[-16];\n        ++player;\n    } while ((int)binding_axis_move_x_cursor\n        < (int)(config_p1_move_forward + 44));"
+        }
+      ]
+    },
+    {
+      "name": "direct-item-reset-bound",
+      "find": "        } while (item < controls_rebind_items + 15);",
+      "replacements": [
+        {
+          "name": "signed-activated-member-bound",
+          "text": "        } while ((int)&item->activated\n            < (int)&controls_rebind_items[15].activated);"
+        }
+      ]
+    }
+  ]
+}

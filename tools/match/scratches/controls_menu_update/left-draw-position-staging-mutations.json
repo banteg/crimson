@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-draw-position-staging",
+      "find": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(left_base.x + 2.0f),\n        (int)(left_base.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    controls_vec2_t draw_position(\n        left_base.x + 9.0f,\n        left_base.y + 3.0f);",
+      "replacements": [
+        {
+          "name": "copy-before-adjust-publish-x",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    controls_vec2_t draw_position = left_base;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    draw_position.x = left_base.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(draw_position.x + 2.0f),\n        (int)(draw_position.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        },
+        {
+          "name": "copy-before-adjust-use-base",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    controls_vec2_t draw_position = left_base;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    draw_position.x = left_base.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(left_base.x + 2.0f),\n        (int)(left_base.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        },
+        {
+          "name": "copy-after-adjust",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    controls_vec2_t draw_position = left_base;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(draw_position.x + 2.0f),\n        (int)(draw_position.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        },
+        {
+          "name": "draw-position-is-adjusted-base",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    controls_vec2_t draw_position = left_base;\n    draw_position.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + draw_position.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(draw_position.x + 2.0f),\n        (int)(draw_position.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        },
+        {
+          "name": "copy-before-adjust-assign-yx",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    controls_vec2_t draw_position;\n    draw_position.y = left_base.y;\n    draw_position.x = left_base.x;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    draw_position.x = left_base.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(draw_position.x + 2.0f),\n        (int)(draw_position.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        },
+        {
+          "name": "panel-position-then-adjust-copy",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t draw_position = left_panel;\n    controls_vec2_t left_base = draw_position;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    draw_position.x = left_base.x;\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    ui_draw_textured_quad(\n        (int)(draw_position.x + 2.0f),\n        (int)(draw_position.y + 4.0f),\n        128,\n        32,\n        ui_text_controls_texture);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.y += 3.0f;\n    draw_position.x += 9.0f;"
+        }
+      ]
+    }
+  ]
+}

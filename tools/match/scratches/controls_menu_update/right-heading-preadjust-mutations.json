@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-heading-preadjust",
+      "find": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;",
+      "replacements": [
+        {
+          "name": "self-vector-add",
+          "text": "    right_base = right_base + controls_vec2_t(16.0f, 4.0f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "offset-vector-add",
+          "text": "    right_base = controls_vec2_t(16.0f, 4.0f) + right_base;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "construct-vector-result",
+          "text": "    right_base = controls_vec2_t(\n        right_base.x + 16.0f,\n        right_base.y + 4.0f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "separate-xy-order",
+          "text": "    right_base.x += 16.0f;\n    right_base.y += 4.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "reuse-position-offset-vector",
+          "text": "    right_position = controls_vec2_t(16.0f, 4.0f);\n    right_base = right_base + right_position;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        },
+        {
+          "name": "reuse-position-offset-fields",
+          "text": "    right_position.x = 16.0f;\n    right_position.y = 4.0f;\n    right_base = right_base + right_position;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;"
+        }
+      ]
+    }
+  ]
+}

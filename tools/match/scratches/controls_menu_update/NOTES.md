@@ -77,8 +77,11 @@ the neighboring menu callbacks. The left base adds the widget position and
 vertex vectors and applies `(300, 40)` before folding in the render offset.
 Live disassembly at `0x00449238` shows the corresponding right base adding
 `(50, 40)`, preserving a copy, applying `render_offset_x - 64`, and then
-adding 32 to Y and 64 to X. This replaces the formerly fused right expression,
-whose extra `+16` and `+4 - 38` did not represent the native coordinates.
+adding 32 to Y and 64 to X. A later live trace at
+`0x0044936e..0x0044946d` proves that native then advances the working X by 16
+and replaces the working Y with `y + 4 - 38` before drawing the
+`"Configured controls"` heading. Those two operations were missing from the
+scratch and are now restored explicitly.
 Later, the post-heading position is staged as `y + 26` and `x - 8` before
 rebuilding the key labels, followed by the native `x - 14` at `0x0044cb51`.
 The inlined heading advances Y by 18 before X by 8, and its tint local is
@@ -132,7 +135,8 @@ and two exact prefix instructions. Native and candidate now agree through the
 publication and all four item stores; the first residual is the following x87
 temporary, stored at native `[esp+0x30]` versus candidate `[esp+0x18]`.
 
-Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.72%**, with a fuzzy gap of
+Before the geometry/staging mutation wave below, the MSVC 6.5
+`/O2 /GB /W3 /GR-` result was **76.72%**, with a fuzzy gap of
 4,955.55 bytes, 164 exact prefix instructions, 5,421 native instructions
 versus 5,392 candidate instructions, and reference audit **1,535 resolved /
 4 unresolved / 9 mismatched**. This improves the earlier **76.59%** result
@@ -156,5 +160,81 @@ regresses by 283 to 303 fuzzy-weighted bytes.
 player-item declaration orders. Four compile byte-identically. Scalarizing the
 offset extends the exact prefix by eight instructions but loses 11.81 weighted
 bytes and one reference overall; fully scalarizing the anchor loses more.
-Neither sweep improves the canonical 76.72% result, so the recorded negatives
-bound this opening mismatch without source churn.
+Neither sweep improved that 76.72% baseline, so the recorded negatives bound
+the opening mismatch without source churn.
+
+## Native geometry correction and vector-staging mutation wave
+
+The next wave started by rechecking the opening and right-panel dataflow in
+live Binary Ninja target `3023:2:9499448411019345244`. Native
+`0x004492a1..0x0044931d` walks the configured bindings from
+`input_config[0].axis_move_x`, writes 13 fields into each live
+`player_state_t::input`, swaps stored X/Y into runtime Y/X order, advances the
+source by `0x40` and destination by `0x360`, and uses a signed loop bound. The
+retained typed `int *` cursor reproduces that ownership without raw byte
+offsets. Native widget initialization at `0x00449484..0x00449499` also stores
+`hovered` before `activated`; restoring that field order is independently
+positive. Together these two small, recorded changes added 11.81
+fuzzy-weighted bytes before the larger geometry work.
+
+The live right-panel trace at `0x0044936e..0x0044946d` exposed a real source
+recovery error rather than a compiler residual: after staging the right base,
+native adds 16 to X and computes `y + 4 - 38` before drawing
+`"Configured controls"`. The scratch omitted both operations. Restoring them
+initially lowers the aggregate score because it perturbs the enormous
+function's allocation, but it is required by the native semantics. The
+complete constructor form in
+`right-heading-complete-preadjust-mutations.json` then recovers 283.20
+fuzzy-weighted bytes relative to that corrected intermediate. Reversing the
+right-position/right-base ownership to match the native two-vector staging
+adds another 16.19 weighted bytes; several natural spellings compile
+identically, so the simplest evidence-backed form is retained.
+
+The highest-leverage result comes from the left panel. Native
+`0x00448fbb..0x00449074` materializes the adjusted left base and then copies
+both components into the draw-position local before the first textured-quad
+call. The scratch had collapsed those objects. The complete six-variant
+`left-draw-position-staging-mutations.json` sweep found a unique natural
+winner, `copy-after-adjust`: it restores the three missing copy instructions,
+adds **734.73 fuzzy-weighted bytes**, improves the reference audit by two
+mismatches and three resolved references at that checkpoint, and requires no
+volatile storage, padding, dummy dependency, raw offset, or register forcing.
+That native-grounded staging is retained.
+
+Several complete negative searches constrain the remaining opening residual:
+
+- `right-heading-geometry-mutations.json` and
+  `right-heading-existing-local-mutations.json` evaluated seven alternatives
+  each while isolating the recovered coordinate operations.
+- `item-reset-bound-mutations.json` evaluated all six direct/member-bound
+  spellings. Removing the extra loop instruction caused a much larger
+  allocation collapse.
+- `runtime-item-bound-interaction-mutations.json` evaluated all seven singles
+  and pairs across the runtime-copy and item-reset bounds; no interaction
+  improved the retained source.
+- `right-outline-position-mutations.json` completed all 15 singles and pairs
+  for outline and row-start construction; its best result still lost 3.93
+  weighted bytes.
+
+The complete sweeps are recorded in `experiments.jsonl`; its SHA-256 is
+`802926d57dce9ebb81f8b5fea321cd418be86547b4079b4f617a47cff623eb5d`.
+The principal retained specs have SHA-256
+`2570be67d39faa840b30f09745d1be1ff2100d28c69d646096884847f4f7cdb6`
+(runtime copy),
+`5ff9f46e9a43810dbfebd3e3db2e9295cc409620ff51a1e7a86730ae566a8a8b`
+(item order),
+`bbb72d87ba070a3767777fa8b37055114b5a66223a97b2e4381f9e4c144bff95`
+(complete heading preadjust),
+`4080f35f412acb83528b303aa3c0cce196a2def32b1402063af39d477c009885`
+(right-base staging), and
+`3f6b04f779999102d9452c4f4fb019e8d37cad3687359144c437348d90f47695`
+(left draw-position staging).
+
+The retained source SHA-256 is
+`e058ee5ca4a0a759954180b63e6e655443fba76097ec3c2e99f31b31f1d38133`.
+It now matches **80.1625%**, with a fuzzy gap of **4,223.1965 bytes**, 164
+exact prefix instructions, 5,421 native instructions versus 5,407 candidate
+instructions, and reference audit **1,540 resolved / 4 unresolved / 9
+mismatched**. Relative to the pre-wave 76.7225% canonical result, this is a
+**3.4401 percentage-point** gain and about **732.35 recovered weighted
+bytes**, while also correcting the missing native right-heading coordinates.

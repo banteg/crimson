@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "initial-item-byte-order",
+      "find": "            item->enabled = 1;\n            item->alpha = 1.0f;\n            item->label = 0;\n            item->activated = 0;\n            item->hovered = 0;\n            item->hover_phase = 0.0f;",
+      "replacements": [
+        {
+          "name": "hovered-before-activated",
+          "text": "            item->enabled = 1;\n            item->alpha = 1.0f;\n            item->label = 0;\n            item->hovered = 0;\n            item->activated = 0;\n            item->hover_phase = 0.0f;"
+        }
+      ]
+    },
+    {
+      "name": "per-frame-item-reset-cursor",
+      "find": "    {\n        ui_menu_item_t *item = controls_rebind_items;\n        do {\n            item->enabled = 1;\n            item->activated = 0;\n            ++item;\n        } while (item < controls_rebind_items + 15);\n    }",
+      "replacements": [
+        {
+          "name": "activated-interior-cursor",
+          "text": "    {\n        unsigned char *activated =\n            &controls_rebind_items[0].activated;\n        do {\n            activated[1] = 1;\n            activated[0] = 0;\n            activated += sizeof(ui_menu_item_t);\n        } while ((int)activated\n            < (int)&controls_rebind_items[15].activated);\n    }"
+        }
+      ]
+    }
+  ]
+}

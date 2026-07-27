@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bonus-pool-reset-loop",
+      "find": "                bonus_entry_t *bonus = bonus_pool;\n                do {\n                    bonus->bonus_id = BONUS_ID_NONE;\n                    ++bonus;\n                } while (bonus < bonus_pool + 16);",
+      "replacements": [
+        {
+          "name": "signed-pointer-bound",
+          "text": "                bonus_entry_t *bonus = bonus_pool;\n                do {\n                    bonus->bonus_id = BONUS_ID_NONE;\n                    ++bonus;\n                } while ((int)bonus < (int)(bonus_pool + 16));"
+        },
+        {
+          "name": "indexed-do-while",
+          "text": "                int bonus_index = 0;\n                do {\n                    bonus_pool[bonus_index].bonus_id = BONUS_ID_NONE;\n                    ++bonus_index;\n                } while (bonus_index < 16);"
+        },
+        {
+          "name": "indexed-for",
+          "text": "                for (int bonus_index = 0; bonus_index < 16;\n                     ++bonus_index) {\n                    bonus_pool[bonus_index].bonus_id = BONUS_ID_NONE;\n                }"
+        }
+      ]
+    },
+    {
+      "name": "projectile-pool-reset-loop",
+      "find": "                projectile_t *projectile = projectile_pool;\n                do {\n                    projectile->active = 0;\n                    ++projectile;\n                } while (projectile < projectile_pool + 0x60);",
+      "replacements": [
+        {
+          "name": "signed-pointer-bound",
+          "text": "                projectile_t *projectile = projectile_pool;\n                do {\n                    projectile->active = 0;\n                    ++projectile;\n                } while ((int)projectile\n                    < (int)(projectile_pool + 0x60));"
+        },
+        {
+          "name": "indexed-do-while",
+          "text": "                int projectile_index = 0;\n                do {\n                    projectile_pool[projectile_index].active = 0;\n                    ++projectile_index;\n                } while (projectile_index < 0x60);"
+        },
+        {
+          "name": "indexed-for",
+          "text": "                for (int projectile_index = 0;\n                     projectile_index < 0x60;\n                     ++projectile_index) {\n                    projectile_pool[projectile_index].active = 0;\n                }"
+        }
+      ]
+    },
+    {
+      "name": "sprite-effect-pool-reset-loop",
+      "find": "                sprite_effect_t *sprite = sprite_effect_pool;\n                do {\n                    sprite->active = 0;\n                    ++sprite;\n                } while (sprite < sprite_effect_pool + 0x180);",
+      "replacements": [
+        {
+          "name": "signed-pointer-bound",
+          "text": "                sprite_effect_t *sprite = sprite_effect_pool;\n                do {\n                    sprite->active = 0;\n                    ++sprite;\n                } while ((int)sprite\n                    < (int)(sprite_effect_pool + 0x180));"
+        },
+        {
+          "name": "indexed-do-while",
+          "text": "                int sprite_index = 0;\n                do {\n                    sprite_effect_pool[sprite_index].active = 0;\n                    ++sprite_index;\n                } while (sprite_index < 0x180);"
+        },
+        {
+          "name": "indexed-for",
+          "text": "                for (int sprite_index = 0; sprite_index < 0x180;\n                     ++sprite_index) {\n                    sprite_effect_pool[sprite_index].active = 0;\n                }"
+        }
+      ]
+    },
+    {
+      "name": "secondary-projectile-pool-reset-loop",
+      "find": "                secondary_projectile_t *secondary = secondary_projectile_pool;\n                do {\n                    secondary->active = 0;\n                    ++secondary;\n                } while (secondary < secondary_projectile_pool + 0x40);",
+      "replacements": [
+        {
+          "name": "signed-pointer-bound",
+          "text": "                secondary_projectile_t *secondary = secondary_projectile_pool;\n                do {\n                    secondary->active = 0;\n                    ++secondary;\n                } while ((int)secondary\n                    < (int)(secondary_projectile_pool + 0x40));"
+        },
+        {
+          "name": "indexed-do-while",
+          "text": "                int secondary_index = 0;\n                do {\n                    secondary_projectile_pool[secondary_index].active = 0;\n                    ++secondary_index;\n                } while (secondary_index < 0x40);"
+        },
+        {
+          "name": "indexed-for",
+          "text": "                for (int secondary_index = 0;\n                     secondary_index < 0x40;\n                     ++secondary_index) {\n                    secondary_projectile_pool[secondary_index].active = 0;\n                }"
+        }
+      ]
+    },
+    {
+      "name": "creature-pool-reset-loop",
+      "find": "                creature_t *creature = creature_pool;\n                do {\n                    creature->active = 0;\n                    ++creature;\n                } while (creature < creature_pool + 384);",
+      "replacements": [
+        {
+          "name": "signed-pointer-bound",
+          "text": "                creature_t *creature = creature_pool;\n                do {\n                    creature->active = 0;\n                    ++creature;\n                } while ((int)creature < (int)(creature_pool + 384));"
+        },
+        {
+          "name": "indexed-do-while",
+          "text": "                int creature_index = 0;\n                do {\n                    creature_pool[creature_index].active = 0;\n                    ++creature_index;\n                } while (creature_index < 384);"
+        },
+        {
+          "name": "indexed-for",
+          "text": "                for (int creature_index = 0; creature_index < 384;\n                     ++creature_index) {\n                    creature_pool[creature_index].active = 0;\n                }"
+        }
+      ]
+    }
+  ]
+}

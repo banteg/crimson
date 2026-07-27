@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-base-copy-staging",
+      "find": "    controls_vec2_t right_base =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x\n        + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_position = right_base;\n    right_position.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.x = right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;",
+      "replacements": [
+        {
+          "name": "initial-position-copy-base",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x\n        + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_base = right_position;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "initial-position-copy-base-compound-x",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x\n        + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_base = right_position;\n    right_base.x += ui_element_slot_40.render_offset_x - 64.0f;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "initial-position-explicit-field-copy",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x\n        + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_base;\n    right_base.x = right_position.x;\n    right_base.y = right_position.y;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "initial-position-copy-then-compound",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x\n        + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_base(right_position);\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_base.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "anchor-then-offset-position-copy-base",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x;\n    right_position =\n        right_position + controls_vec2_t(50.0f, 40.0f);\n    controls_vec2_t right_base = right_position;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "anchor-field-offset-position-copy-base",
+          "text": "    controls_vec2_t right_position =\n        *(controls_vec2_t *)&ui_element_slot_40.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x;\n    right_position.x += 50.0f;\n    right_position.y += 40.0f;\n    controls_vec2_t right_base = right_position;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        },
+        {
+          "name": "scalar-position-copy-base",
+          "text": "    controls_vec2_t right_position;\n    right_position.x =\n        ui_element_slot_40.pos_x\n        + ui_element_slot_40.vertices[0].x\n        + 50.0f;\n    right_position.y =\n        ui_element_slot_40.pos_y\n        + ui_element_slot_40.vertices[0].y\n        + 40.0f;\n    controls_vec2_t right_base = right_position;\n    right_base.x =\n        ui_element_slot_40.render_offset_x - 64.0f\n        + right_position.x;\n    right_base.y += 32.0f;\n    right_base.x += 64.0f;"
+        }
+      ]
+    }
+  ]
+}

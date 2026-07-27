@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-heading-complete-preadjust",
+      "find": "    right_base.x += 16.0f;\n    right_base.y += 4.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;",
+      "replacements": [
+        {
+          "name": "yx-three-statements-before-call",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    right_base.y -= 38.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "xy-three-statements-before-call",
+          "text": "    right_base.x += 16.0f;\n    right_base.y += 4.0f;\n    right_base.y -= 38.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "combined-y-then-x",
+          "text": "    right_base.y = right_base.y + 4.0f - 38.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "x-then-combined-y",
+          "text": "    right_base.x += 16.0f;\n    right_base.y = right_base.y + 4.0f - 38.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "assign-yx-before-call",
+          "text": "    right_base.y = right_base.y + 4.0f - 38.0f;\n    right_base.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        },
+        {
+          "name": "construct-complete-result",
+          "text": "    right_base = controls_vec2_t(\n        right_base.x + 16.0f,\n        right_base.y + 4.0f - 38.0f);\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);"
+        }
+      ]
+    }
+  ]
+}

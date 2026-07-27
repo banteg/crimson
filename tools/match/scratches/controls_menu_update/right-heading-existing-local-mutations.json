@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-heading-existing-local-dataflow",
+      "find": "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        right_base.x + 54.0f,\n        right_base.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.x = right_base.x + 54.0f;\n    draw_position.y = right_base.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&draw_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    draw_position.y = right_base.y + 26.0f;\n    draw_position.x = right_base.x - 8.0f;",
+      "replacements": [
+        {
+          "name": "mutate-base-preserve-current-outline",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        right_base.x + 54.0f,\n        right_base.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.x = right_base.x + 54.0f;\n    draw_position.y = right_base.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&draw_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    draw_position.y = right_base.y + 26.0f;\n    draw_position.x = right_base.x - 8.0f;"
+        },
+        {
+          "name": "draw-work-right-outline-yx",
+          "text": "    draw_position.y = right_base.y + 4.0f;\n    draw_position.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    draw_position.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        draw_position.x + 54.0f,\n        draw_position.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    right_position.x = draw_position.x + 54.0f;\n    right_position.y = draw_position.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&right_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    draw_position.y += 26.0f;\n    draw_position.x -= 8.0f;"
+        },
+        {
+          "name": "draw-work-right-outline-xy",
+          "text": "    draw_position.x = right_base.x + 16.0f;\n    draw_position.y = right_base.y + 4.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    draw_position.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        draw_position.x + 54.0f,\n        draw_position.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    right_position.x = draw_position.x + 54.0f;\n    right_position.y = draw_position.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&right_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    draw_position.y += 26.0f;\n    draw_position.x -= 8.0f;"
+        },
+        {
+          "name": "copy-draw-work-right-outline",
+          "text": "    draw_position = right_base;\n    draw_position.y += 4.0f;\n    draw_position.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    draw_position.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        draw_position.x + 54.0f,\n        draw_position.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    right_position.x = draw_position.x + 54.0f;\n    right_position.y = draw_position.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&right_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    draw_position.y += 26.0f;\n    draw_position.x -= 8.0f;"
+        },
+        {
+          "name": "right-work-draw-outline",
+          "text": "    right_position.y = right_base.y + 4.0f;\n    right_position.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_position.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        right_position.x + 54.0f,\n        right_position.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.x = right_position.x + 54.0f;\n    draw_position.y = right_position.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&draw_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    right_position.y += 26.0f;\n    right_position.x -= 8.0f;\n    draw_position = right_position;"
+        },
+        {
+          "name": "base-work-right-outline",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        right_base.x + 54.0f,\n        right_base.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    right_position.x = right_base.x + 54.0f;\n    right_position.y = right_base.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&right_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    right_base.y += 26.0f;\n    right_base.x -= 8.0f;\n    draw_position = right_base;"
+        },
+        {
+          "name": "base-work-draw-outline",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        right_base.x + 54.0f,\n        right_base.y,\n        \"Configured controls\");\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);\n\n    draw_position.x = right_base.x + 54.0f;\n    draw_position.y = right_base.y + 13.0f;\n    grim_interface_ptr->grim_draw_rect_outline(\n        (float *)&draw_position,\n        (float)grim_interface_ptr->grim_measure_text_width(\n            \"Configured controls\"),\n        1.0f);\n\n    right_base.y += 26.0f;\n    right_base.x -= 8.0f;\n    draw_position = right_base;"
+        }
+      ]
+    }
+  ]
+}

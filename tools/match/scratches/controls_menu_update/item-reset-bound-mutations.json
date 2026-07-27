@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "per-frame-item-reset-bound",
+      "find": "        } while (item < controls_rebind_items + 15);",
+      "replacements": [
+        {
+          "name": "signed-activated-member-bound",
+          "text": "        } while ((int)&item->activated\n            < (int)&controls_rebind_items[15].activated);"
+        },
+        {
+          "name": "unsigned-activated-member-bound",
+          "text": "        } while (&item->activated\n            < &controls_rebind_items[15].activated);"
+        },
+        {
+          "name": "signed-enabled-member-bound",
+          "text": "        } while ((int)&item->enabled\n            < (int)&controls_rebind_items[15].enabled);"
+        },
+        {
+          "name": "signed-label-member-bound",
+          "text": "        } while ((int)&item->label\n            < (int)&controls_rebind_items[15].label);"
+        },
+        {
+          "name": "signed-struct-bound",
+          "text": "        } while ((int)item\n            < (int)(controls_rebind_items + 15));"
+        },
+        {
+          "name": "not-equal-struct-bound",
+          "text": "        } while (item != controls_rebind_items + 15);"
+        }
+      ]
+    }
+  ]
+}

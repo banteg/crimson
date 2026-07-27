@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-outline-position",
+      "find": "    draw_position.x = right_base.x + 54.0f;\n    draw_position.y = right_base.y + 13.0f;",
+      "replacements": [
+        {
+          "name": "constructor-assignment",
+          "text": "    draw_position = controls_vec2_t(\n        right_base.x + 54.0f,\n        right_base.y + 13.0f);"
+        },
+        {
+          "name": "vector-add-assignment",
+          "text": "    draw_position =\n        right_base + controls_vec2_t(54.0f, 13.0f);"
+        },
+        {
+          "name": "reverse-field-order",
+          "text": "    draw_position.y = right_base.y + 13.0f;\n    draw_position.x = right_base.x + 54.0f;"
+        }
+      ]
+    },
+    {
+      "name": "right-row-start-position",
+      "find": "    draw_position.y = right_base.y + 26.0f;\n    draw_position.x = right_base.x - 8.0f;",
+      "replacements": [
+        {
+          "name": "constructor-assignment",
+          "text": "    draw_position = controls_vec2_t(\n        right_base.x - 8.0f,\n        right_base.y + 26.0f);"
+        },
+        {
+          "name": "vector-add-assignment",
+          "text": "    draw_position =\n        right_base + controls_vec2_t(-8.0f, 26.0f);"
+        },
+        {
+          "name": "reverse-field-order",
+          "text": "    draw_position.x = right_base.x - 8.0f;\n    draw_position.y = right_base.y + 26.0f;"
+        }
+      ]
+    }
+  ]
+}

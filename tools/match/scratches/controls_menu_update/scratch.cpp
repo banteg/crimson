@@ -280,19 +280,19 @@ extern "C" void controls_menu_update(void)
     left_base.x =
         ui_element_slot_14.render_offset_x - 32.0f - 64.0f
         + left_base.x;
+    controls_vec2_t draw_position = left_base;
 
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     ui_draw_textured_quad(
-        (int)(left_base.x + 2.0f),
-        (int)(left_base.y + 4.0f),
+        (int)(draw_position.x + 2.0f),
+        (int)(draw_position.y + 4.0f),
         128,
         32,
         ui_text_controls_texture);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);
 
-    controls_vec2_t draw_position(
-        left_base.x + 9.0f,
-        left_base.y + 3.0f);
+    draw_position.y += 3.0f;
+    draw_position.x += 9.0f;
     grim_interface_ptr->grim_draw_text_small_fmt(
         draw_position.x + 126.0f,
         draw_position.y - 2.0f,
@@ -326,39 +326,39 @@ extern "C" void controls_menu_update(void)
     config_direction_arrow_flags[controls_rebind_player_index] =
         controls_direction_arrow_checkbox.checked;
 
-    controls_vec2_t right_base =
+    controls_vec2_t right_position =
         *(controls_vec2_t *)&ui_element_slot_40.pos_x
         + *(controls_vec2_t *)&ui_element_slot_40.vertices[0].x
         + controls_vec2_t(50.0f, 40.0f);
-    controls_vec2_t right_position = right_base;
-    right_position.x =
+    controls_vec2_t right_base = right_position;
+    right_base.x =
         ui_element_slot_40.render_offset_x - 64.0f
         + right_position.x;
-    right_base.x = right_position.x;
     right_base.y += 32.0f;
     right_base.x += 64.0f;
 
-    player_input_config_t *binding =
-        (player_input_config_t *)config_p1_move_forward;
-    player_state_t *player = player_state_table;
+    int *binding_axis_move_x_cursor =
+        &config_blob.input_config[0].axis_move_x;
+    int *runtime_move_forward =
+        &player_state_table[0].input.move_key_forward;
     do {
-        player_input_t &input = player->input;
-        input.move_key_forward = binding->move_key_forward;
-        input.move_key_backward = binding->move_key_backward;
-        input.turn_key_left = binding->turn_key_left;
-        input.turn_key_right = binding->turn_key_right;
-        input.fire_key = binding->fire_key;
-        input.key_reserved_0 = binding->key_reserved_0;
-        input.key_reserved_1 = binding->key_reserved_1;
-        input.aim_key_left = binding->aim_key_left;
-        input.aim_key_right = binding->aim_key_right;
-        input.axis_aim_y = binding->axis_aim_y;
-        input.axis_aim_x = binding->axis_aim_x;
-        input.axis_move_y = binding->axis_move_y;
-        input.axis_move_x = binding->axis_move_x;
-        ++binding;
-        ++player;
-    } while (binding < (player_input_config_t *)config_p1_move_forward + 2);
+        runtime_move_forward[0] = binding_axis_move_x_cursor[-12];
+        runtime_move_forward[1] = binding_axis_move_x_cursor[-11];
+        runtime_move_forward[2] = binding_axis_move_x_cursor[-10];
+        runtime_move_forward[3] = binding_axis_move_x_cursor[-9];
+        runtime_move_forward[4] = binding_axis_move_x_cursor[-8];
+        runtime_move_forward[5] = binding_axis_move_x_cursor[-7];
+        runtime_move_forward[6] = binding_axis_move_x_cursor[-6];
+        runtime_move_forward[7] = binding_axis_move_x_cursor[-5];
+        runtime_move_forward[8] = binding_axis_move_x_cursor[-4];
+        runtime_move_forward[10] = binding_axis_move_x_cursor[-3];
+        runtime_move_forward[9] = binding_axis_move_x_cursor[-2];
+        runtime_move_forward[12] = binding_axis_move_x_cursor[-1];
+        runtime_move_forward[11] = binding_axis_move_x_cursor[0];
+        binding_axis_move_x_cursor += 16;
+        runtime_move_forward += sizeof(player_state_t) / sizeof(int);
+    } while ((int)binding_axis_move_x_cursor
+        < (int)(config_p1_move_forward + 44));
 
     grim_interface_ptr->grim_set_color(
         1.0f,
@@ -366,6 +366,9 @@ extern "C" void controls_menu_update(void)
         1.0f,
         controls_redefine_button.hover_anim * 0.000900000043f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);
+    right_base = controls_vec2_t(
+        right_base.x + 16.0f,
+        right_base.y + 4.0f - 38.0f);
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_draw_text_small_fmt(
         right_base.x + 54.0f,
@@ -392,8 +395,8 @@ extern "C" void controls_menu_update(void)
             item->enabled = 1;
             item->alpha = 1.0f;
             item->label = 0;
-            item->activated = 0;
             item->hovered = 0;
+            item->activated = 0;
             item->hover_phase = 0.0f;
             ++item;
         } while (--item_count);

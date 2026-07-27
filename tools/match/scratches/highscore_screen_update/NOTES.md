@@ -195,3 +195,22 @@ byte-identically; the other natural spellings are decisive regressions.
 The scratch therefore keeps its original source hash and remains
 `semantic-complete` with a `compiler` residual, without volatility, fake
 arithmetic, dummy addressing, assembly, or register forcing.
+
+## Recorded pool-reset loop sweep
+
+The remaining five pool-reset loops are another plausible source of local
+cursor and induction-variable differences. The schema-1
+`pool-reset-loop-mutations.json` spec covers the bonus, projectile, sprite,
+secondary, and creature clears with three native-compatible spellings at each
+site: the retained signed pointer walk, an indexed `do/while`, and an indexed
+`for` loop. Its SHA-256 is
+`bb4f8a357bd529e990879ca66ae2df2af7c9f51a7068a785091530badc1fdd68`.
+
+A recorded single-site sweep evaluated all 15/15 variants. Every alternative
+compiled byte-identically to the canonical source: **77.5170%**, gap
+`1804.4830`, 1,959/2,004 instructions, prefix 45, and references `584/0/7`.
+This complete null result shows that VC6 canonicalizes these natural source
+spellings and rules out the five loop forms as an explanation for the
+residual without introducing artificial codegen controls. The source remains
+unchanged. The updated `experiments.jsonl` SHA-256 is
+`0c6437f16e799574f9d4e0f4edfb704e60759ea5b29f2394884b77675ac9641e`.
