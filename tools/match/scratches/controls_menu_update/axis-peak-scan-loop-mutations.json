@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-peak-scan-loop-open",
+      "find": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                do {\n",
+      "replacements": [
+        {
+          "name": "explicit-bottom-break-open",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                for (;;) {\n"
+        },
+        {
+          "name": "named-end-do-open",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                float *peak_end = peaks + 7;\n                int axis_index = 0;\n                do {\n"
+        },
+        {
+          "name": "prechecked-while-open",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while (peaks < &controls_rebind_axis_peak_abs_13f + 7) {\n"
+        }
+      ]
+    },
+    {
+      "name": "axis-peak-scan-loop-close",
+      "find": "                    ++peaks;\n                    ++axis_index;\n                } while (\n                    peaks < &controls_rebind_axis_peak_abs_13f + 7);\n",
+      "replacements": [
+        {
+          "name": "explicit-bottom-break-close",
+          "text": "                    ++peaks;\n                    ++axis_index;\n                    if (peaks >= &controls_rebind_axis_peak_abs_13f + 7) {\n                        break;\n                    }\n                }\n"
+        },
+        {
+          "name": "named-end-do-close",
+          "text": "                    ++peaks;\n                    ++axis_index;\n                } while (peaks < peak_end);\n"
+        },
+        {
+          "name": "prechecked-while-close",
+          "text": "                    ++peaks;\n                    ++axis_index;\n                }\n"
+        }
+      ]
+    }
+  ]
+}

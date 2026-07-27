@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "second-ring-cursor-shape",
+      "find": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        spawn->pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        spawn->pos.add(512.0f);\n        spawn->heading = angle;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++spawn;\n        ++ring_index;\n    }\n",
+      "replacements": [
+        {
+          "name": "pointer-addition",
+          "text": "    int ring_index = 0;\n    spawn = spawns + builder.count;\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        spawn->pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        spawn->pos.add(512.0f);\n        spawn->heading = angle;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++spawn;\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "scoped-entry-cursor",
+          "text": "    int ring_index = 0;\n    quest_entry_original_t *ring_spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        ring_spawn->pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_spawn->pos.add(512.0f);\n        ring_spawn->heading = angle;\n        ring_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++ring_spawn;\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "entry-reference",
+          "text": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        quest_entry_original_t &ring_spawn = *spawn;\n        ring_spawn.pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_spawn.pos.add(512.0f);\n        ring_spawn.heading = angle;\n        ring_spawn.set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++spawn;\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "position-reference",
+          "text": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        quest_vec2_t &ring_pos = spawn->pos;\n        ring_pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_pos.add(512.0f);\n        spawn->heading = angle;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++spawn;\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "position-pointer",
+          "text": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        quest_vec2_t *ring_pos = &spawn->pos;\n        ring_pos->set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_pos->add(512.0f);\n        spawn->heading = angle;\n        spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++spawn;\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "indexed-entry-reference",
+          "text": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        quest_entry_original_t &ring_spawn = spawn[ring_index];\n        ring_spawn.pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_spawn.pos.add(512.0f);\n        ring_spawn.heading = angle;\n        ring_spawn.set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++ring_index;\n    }\n"
+        },
+        {
+          "name": "indexed-entry-pointer",
+          "text": "    int ring_index = 0;\n    spawn = &spawns[builder.count];\n    builder.count += 12;\n    while (ring_index < 12) {\n        float angle = (float)ring_index * 0.52359879f;\n        quest_entry_original_t *ring_spawn = &spawn[ring_index];\n        ring_spawn->pos.set(\n            (float)cos(angle) * 178.0f,\n            (float)sin(angle) * 178.0f);\n        ring_spawn->pos.add(512.0f);\n        ring_spawn->heading = angle;\n        ring_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SMALL_BLUE_40,\n            8000,\n            1);\n        ++ring_index;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

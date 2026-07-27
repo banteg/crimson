@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-peak-absolute-value-shape",
+      "find": "static __forceinline float abs_float(float value)\n{\n    *(unsigned int *)&value &= 0x7fffffff;\n    return value;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = abs_float(grim_interface_ptr->grim_get_config_float(axis));\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n",
+      "replacements": [
+        {
+          "name": "direct-local-mask",
+          "text": "static __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    *(unsigned int *)&value &= 0x7fffffff;\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "direct-local-mask-reversed-comparison",
+          "text": "static __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    *(unsigned int *)&value &= 0x7fffffff;\n    if (value < peak) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "in-place-reference-helper",
+          "text": "static __forceinline void abs_float_in_place(float &value)\n{\n    *(unsigned int *)&value &= 0x7fffffff;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    abs_float_in_place(value);\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "in-place-pointer-helper",
+          "text": "static __forceinline void abs_float_in_place(float *value)\n{\n    *(unsigned int *)value &= 0x7fffffff;\n}\n\nstatic __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    abs_float_in_place(&value);\n    if (peak > value) {\n        value = peak;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "direct-local-mask-staged-peak",
+          "text": "static __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    float previous = peak;\n    *(unsigned int *)&value &= 0x7fffffff;\n    if (previous > value) {\n        value = previous;\n    }\n    peak = value;\n}\n"
+        },
+        {
+          "name": "direct-local-mask-conditional",
+          "text": "static __forceinline void update_axis_peak(float &peak, int axis)\n{\n    float value = grim_interface_ptr->grim_get_config_float(axis);\n    *(unsigned int *)&value &= 0x7fffffff;\n    peak = peak > value ? peak : value;\n}\n"
+        }
+      ]
+    }
+  ]
+}

@@ -85,3 +85,30 @@ The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja output confirms all 164 entries and each ring, corner
 wave, vertical line, and four-entry tail. The candidate remains 255/258
 instructions with all 12 audited references resolved and matched.
+
+## Builder and second-ring cursor bounds
+
+Two more complete mutation matrices tested the remaining native-looking
+cursor idioms without changing the canonical source.
+
+`corner-builder-advance-mutations.json` evaluated all 15 single and pair
+variants. The three helper-only `next_entry` spellings were byte-neutral.
+Actually routing the corner stores through post-increment indexing or a
+builder-returned entry collapsed the score from 590.18 to 213.36 weighted
+bytes, shortened the exact prefix from seven instructions to one, and lost
+three resolved references; several incomplete site combinations correctly
+failed compilation. Its SHA-256 is
+`dfc12b469bb91202eb9dc387ce3f6c19ec2c86444f4838a0839e40cbb9cc4ac1`.
+
+`second-ring-cursor-mutations.json` evaluated all seven natural cursor forms.
+Pointer addition and a scoped entry cursor were byte-identical. Position,
+entry-reference, and indexed-entry forms lost between 3.09 and 11.95 weighted
+bytes, with the latter forms also losing a resolved reference. Its SHA-256 is
+`5c43d7fcd6b249adfe38052a4b01e472eae0f8b0468a35153b286d50b2c1cddc`.
+
+These complete negatives strengthen the existing compiler-residual
+classification. The source remains SHA-256
+`83ac8f02a631f5f3036f15ad168eb4942d0b3b90dcf574e5fd55a4434ce55285`,
+at **60.04%**, 255/258 instructions, and reference audit 12/0/0. The updated
+`experiments.jsonl` SHA-256 is
+`6ba887e1f4aa932a067e42515c71c89a711b110b9d04f7d8105cecb2fda05477`.

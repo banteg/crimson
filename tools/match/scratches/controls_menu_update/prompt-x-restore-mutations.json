@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-x-restore",
+      "find": "    }\n\n    for (int i = 0; i < 15; ++i) {\n        if (controls_rebind_items[i].activated) {\n",
+      "replacements": [
+        {
+          "name": "compound-add",
+          "text": "    }\n\n    draw_position.x += 27.0f;\n    for (int i = 0; i < 15; ++i) {\n        if (controls_rebind_items[i].activated) {\n"
+        },
+        {
+          "name": "explicit-add",
+          "text": "    }\n\n    draw_position.x = draw_position.x + 27.0f;\n    for (int i = 0; i < 15; ++i) {\n        if (controls_rebind_items[i].activated) {\n"
+        },
+        {
+          "name": "subtract-negative",
+          "text": "    }\n\n    draw_position.x -= -27.0f;\n    for (int i = 0; i < 15; ++i) {\n        if (controls_rebind_items[i].activated) {\n"
+        }
+      ]
+    }
+  ]
+}

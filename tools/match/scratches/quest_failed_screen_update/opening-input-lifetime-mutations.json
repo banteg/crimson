@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "input-vector-declaration-lifetime",
+      "find": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n",
+      "replacements": [
+        {
+          "name": "declare-before-panel-chain",
+          "text": "    do {\n        quest_failed_vec2_t input_xy;\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "declare-between-panel-and-cursor",
+          "text": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t input_xy;\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "declare-after-live-cursor",
+          "text": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n        quest_failed_vec2_t input_xy;\n"
+        }
+      ]
+    },
+    {
+      "name": "input-vector-late-declaration",
+      "find": "        quest_failed_vec2_t input_xy;\n        input_xy.x = xy.x + 4.0f;\n",
+      "replacements": [
+        {
+          "name": "reuse-early-input-vector",
+          "text": "        input_xy.x = xy.x + 4.0f;\n"
+        }
+      ]
+    }
+  ]
+}

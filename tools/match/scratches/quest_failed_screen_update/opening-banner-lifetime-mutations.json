@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "banner-vector-declaration-lifetime",
+      "find": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n",
+      "replacements": [
+        {
+          "name": "declare-before-panel-chain",
+          "text": "    do {\n        quest_failed_vec2_t banner_xy;\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "declare-between-panel-and-cursor",
+          "text": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t banner_xy;\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "declare-after-live-cursor",
+          "text": "    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n        quest_failed_vec2_t banner_xy;\n"
+        }
+      ]
+    },
+    {
+      "name": "banner-vector-initialization",
+      "find": "            quest_failed_vec2_t banner_xy = xy;\n",
+      "replacements": [
+        {
+          "name": "assign-early-banner-vector",
+          "text": "            banner_xy = xy;\n"
+        }
+      ]
+    }
+  ]
+}

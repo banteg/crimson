@@ -259,3 +259,67 @@ variant preserves the 164-instruction prefix but loses at least 1,000.27
 fuzzy-weighted bytes; the best falls from 80.16% to 75.46%. The named aggregate
 anchors are not the missing source shape, so the typed interior cursor remains
 canonical.
+
+## Native capture and publication-order wave
+
+Live Binary Ninja evidence from target `3023:2:9499448411019345244` grounded
+another bounded pass through the axis-capture and player-selection tail. The
+wave started at **80.1625%**, 17,065.80 fuzzy-weighted bytes, 5,407/5,421
+instructions, a 164-instruction exact prefix, and reference audit
+1,540/4/9.
+
+Four natural source changes are retained:
+
+- `axis-peak-scan-loop-mutations.json` evaluated all 15 single and pair
+  variants. The complete prechecked `while` form is safe because the cursor
+  starts below the fixed seven-float end, and it recovered 14.17 weighted
+  bytes while removing four candidate instructions.
+- Native `0x0044d867..0x0044d98b` subtracts 27 pixels before the prompt and
+  restores them at the join before activation scanning. The scratch omitted
+  the restore. Both natural addition spellings in
+  `prompt-x-restore-mutations.json` recovered 7.07 weighted bytes and one
+  reference; the compound assignment is retained.
+- Native stages the prior-slot test, clears the slot, and assigns the current
+  row only when the prior slot was inactive. Reversing the equivalent source
+  branch in `rebind-activation-toggle-mutations.json` recovered 3.93 weighted
+  bytes. Boolean/default staging variants caused large allocation regressions
+  and were rejected.
+- Native `0x0044dfca..0x0044dfeb` publishes the profile selection and rebind
+  player before the derived aim and move selections. The matching simple
+  order in `player-selection-publication-mutations.json` recovered 7.87
+  weighted bytes and two references. Reversing the profile/player stores
+  worsened the reference audit, and reversing aim/move was neutral.
+
+The in-place sign-bit masking visible in the native axis helper was also
+tested directly. All six variants in
+`axis-peak-absolute-value-mutations.json` were replayed against both the
+original and retained loop shapes. The best natural in-place forms lost
+23.60 weighted bytes, and the more staged forms lost substantially more, so
+the current value-return helper remains canonical. All matrices completed
+without budget truncation; the negative results are retained as codegen
+evidence rather than source churn.
+
+The final retained source SHA-256 is
+`082e491da02ce7e642faf01abe6face27849b7da35fb30f167e99d09835ab0db`.
+It matches **80.3177%**, with **17,098.84 fuzzy-weighted bytes** and a
+**4,190.16-byte fuzzy gap**, 5,406 candidate instructions versus 5,421
+native instructions, the same 164-instruction exact prefix, and reference
+audit **1,543 resolved / 4 unresolved / 9 mismatched**. This slice recovered
+33.04 weighted bytes and three references without coercive constructs.
+
+Recorded spec SHA-256 values:
+
+- axis absolute-value shape:
+  `778eb5887be61af9c07ad366b9d6134cd5c3373991162df78bf8720cf2452e2e`;
+- axis peak-scan loop:
+  `6c0bbd6c017a1cc264951adb3749c28714e55398ece30c8f43e35b8e9aec5943`;
+- prompt X restore:
+  `909aa6f52822dc8d8492b9777df5ecd249b36abc7d871623ab267c6a5efc0675`;
+- activation toggle:
+  `388ef7ccd292caa70d195438cda24676292fd5cb4f1e9a704618ce0268ef479e`;
+  and
+- player-selection publication:
+  `15cf4b14ef2ecbee354da6a3f0556fc88bfa880751404cecac67929e3a9578a2`.
+
+The updated `experiments.jsonl` SHA-256 is
+`728d942aeb826d66779c3dc67bfe419fa75af5d8a53404c6042f300c0336ad1c`.

@@ -71,3 +71,36 @@ The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 copy-then-add, and panel-chain lifetime variants. None improved the score,
 instruction count, or reference audit. No stack-slot coercion was retained;
 the two-instruction compiler residual remains visible.
+
+## Opening stack-lifetime bounds
+
+Three follow-up matrices exhaust the nearby natural declaration and
+initialization choices for the hidden first-addition temporary:
+
+- `opening-input-lifetime-mutations.json` evaluated all seven input-vector
+  declaration/reuse variants. The three valid combined forms were
+  byte-identical; isolated partial transformations failed compilation.
+- `opening-banner-lifetime-mutations.json` evaluated all seven banner-vector
+  declaration/assignment variants. All six complete forms were
+  byte-identical, while the isolated assignment correctly failed compilation.
+- `opening-offset-lifetime-mutations.json` evaluated all five offset/result
+  forms. Three named or staged forms were byte-identical. Initializing the
+  live cursor directly lost 117.46 weighted bytes, four instructions, five
+  resolved references, and introduced one reference mismatch.
+
+All 19 variants completed without budget truncation. None moves the native
+`[esp+0x20]` temporary to the candidate's `[esp+0x10]` slot, so no source
+change is retained and the residual remains honestly classified as compiler
+stack coloring. The scratch remains **99.32%**, 292/292 instructions, a
+30-instruction exact prefix, and reference audit 151/0/0.
+
+Recorded spec SHA-256 values are
+`ecf000b7aef50bb8942d73df60274b515c84a20c26d77306cdd54c2a846702fb`
+(input),
+`2f111db0111c4481809e0b3f1b5ee93937894857a2b01a9cb6ca7efd21c8b020`
+(banner), and
+`b2375c37b131052def17d74ac924399d4d6c29133a96253e8aa53c86eba52091`
+(offset/result). The unchanged source SHA-256 is
+`7da4fdcf4cdf3729128fa1d272e811ae1f7871f37dfb72023a2b18da0a30f4c5`;
+the updated `experiments.jsonl` SHA-256 is
+`dc0c47e25016a70a97210dda06cbe9f38b686efc0c55aa16812762cb71fa3047`.

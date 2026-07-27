@@ -536,13 +536,14 @@ extern "C" void controls_menu_update(void)
         }
     }
 
+    draw_position.x += 27.0f;
     for (int i = 0; i < 15; ++i) {
         if (controls_rebind_items[i].activated) {
             controls_rebind_capture_armed = 0;
-            if (controls_rebind_slot_index == -1) {
-                controls_rebind_slot_index = i;
-            } else {
+            if (controls_rebind_slot_index != -1) {
                 controls_rebind_slot_index = -1;
+            } else {
+                controls_rebind_slot_index = i;
             }
         }
     }
@@ -625,7 +626,8 @@ extern "C" void controls_menu_update(void)
                 update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
                 float *peaks = &controls_rebind_axis_peak_abs_13f;
                 int axis_index = 0;
-                do {
+                while (
+                    peaks < &controls_rebind_axis_peak_abs_13f + 7) {
                     if (*peaks > 0.5f) {
                         int binding =
                             controls_rebind_player_index * 16
@@ -662,8 +664,7 @@ extern "C" void controls_menu_update(void)
                     }
                     ++peaks;
                     ++axis_index;
-                } while (
-                    peaks < &controls_rebind_axis_peak_abs_13f + 7);
+                }
             }
         }
     }
@@ -708,11 +709,11 @@ extern "C" void controls_menu_update(void)
         controls_vec2_t(136.0f, 16.0f),
         controls_player_profile_list);
     if (selected >= 0) {
+        controls_player_profile_list.selected_index = selected;
+        controls_rebind_player_index = selected;
         controls_aim_method_list.selected_index =
             config_aim_scheme[selected];
         controls_move_method_list.selected_index =
             config_player_mode_flags[selected] - 1;
-        controls_player_profile_list.selected_index = selected;
-        controls_rebind_player_index = selected;
     }
 }

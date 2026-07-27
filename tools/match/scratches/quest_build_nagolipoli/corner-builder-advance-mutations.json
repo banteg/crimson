@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-next-entry-api",
+      "find": "    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : spawns(spawn_entries), count(0) {}\n",
+      "replacements": [
+        {
+          "name": "postincrement-pointer",
+          "text": "    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : spawns(spawn_entries), count(0) {}\n\n    quest_entry_original_t *take_next_ptr()\n    {\n        return &spawns[count++];\n    }\n"
+        },
+        {
+          "name": "staged-increment-pointer",
+          "text": "    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : spawns(spawn_entries), count(0) {}\n\n    quest_entry_original_t *take_next_ptr()\n    {\n        quest_entry_original_t *result = &spawns[count];\n        ++count;\n        return result;\n    }\n"
+        },
+        {
+          "name": "postincrement-reference",
+          "text": "    quest_spawn_builder_t(quest_entry_original_t *spawn_entries)\n        : spawns(spawn_entries), count(0) {}\n\n    quest_entry_original_t &take_next_ref()\n    {\n        return spawns[count++];\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "corner-entry-advance-shape",
+      "find": "    int wave = 0;\n    int trigger_time_ms = 13000;\n    spawn = &spawns[builder.count];\n    while (trigger_time_ms < 0x96c8) {\n        int spawn_count = wave / 8 + 1;\n\n        spawn->pos = top_left;\n        spawn->heading = 1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;\n        ++spawn;\n\n        spawn->pos = top_right;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;\n        ++spawn;\n\n        spawn->pos = bottom_left;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;\n        ++spawn;\n\n        spawn->pos = bottom_right;\n        spawn->heading = 3.926991f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;\n        ++spawn;\n\n        trigger_time_ms += 800;\n        ++wave;\n    }\n",
+      "replacements": [
+        {
+          "name": "builder-pointer-take-next",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 13000;\n    while (trigger_time_ms < 0x96c8) {\n        int spawn_count = wave / 8 + 1;\n\n        spawn = builder.take_next_ptr();\n        spawn->pos = top_left;\n        spawn->heading = 1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = builder.take_next_ptr();\n        spawn->pos = top_right;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = builder.take_next_ptr();\n        spawn->pos = bottom_left;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = builder.take_next_ptr();\n        spawn->pos = bottom_right;\n        spawn->heading = 3.926991f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        trigger_time_ms += 800;\n        ++wave;\n    }\n"
+        },
+        {
+          "name": "direct-postincrement-indexing",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 13000;\n    while (trigger_time_ms < 0x96c8) {\n        int spawn_count = wave / 8 + 1;\n\n        spawn = &spawns[builder.count++];\n        spawn->pos = top_left;\n        spawn->heading = 1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = &spawns[builder.count++];\n        spawn->pos = top_right;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = &spawns[builder.count++];\n        spawn->pos = bottom_left;\n        spawn->heading = -1.04719758f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        spawn = &spawns[builder.count++];\n        spawn->pos = bottom_right;\n        spawn->heading = 3.926991f;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        trigger_time_ms += 800;\n        ++wave;\n    }\n"
+        },
+        {
+          "name": "builder-reference-take-next",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 13000;\n    while (trigger_time_ms < 0x96c8) {\n        int spawn_count = wave / 8 + 1;\n\n        quest_entry_original_t &top_left_spawn = builder.take_next_ref();\n        top_left_spawn.pos = top_left;\n        top_left_spawn.heading = 1.04719758f;\n        top_left_spawn.set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        quest_entry_original_t &top_right_spawn = builder.take_next_ref();\n        top_right_spawn.pos = top_right;\n        top_right_spawn.heading = -1.04719758f;\n        top_right_spawn.set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        quest_entry_original_t &bottom_left_spawn = builder.take_next_ref();\n        bottom_left_spawn.pos = bottom_left;\n        bottom_left_spawn.heading = -1.04719758f;\n        bottom_left_spawn.set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        quest_entry_original_t &bottom_right_spawn = builder.take_next_ref();\n        bottom_right_spawn.pos = bottom_right;\n        bottom_right_spawn.heading = 3.926991f;\n        bottom_right_spawn.set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n\n        trigger_time_ms += 800;\n        ++wave;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

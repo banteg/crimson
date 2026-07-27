@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rebind-activation-toggle",
+      "find": "        if (controls_rebind_items[i].activated) {\n            controls_rebind_capture_armed = 0;\n            if (controls_rebind_slot_index == -1) {\n                controls_rebind_slot_index = i;\n            } else {\n                controls_rebind_slot_index = -1;\n            }\n        }\n",
+      "replacements": [
+        {
+          "name": "active-first",
+          "text": "        if (controls_rebind_items[i].activated) {\n            controls_rebind_capture_armed = 0;\n            if (controls_rebind_slot_index != -1) {\n                controls_rebind_slot_index = -1;\n            } else {\n                controls_rebind_slot_index = i;\n            }\n        }\n"
+        },
+        {
+          "name": "conditional-expression",
+          "text": "        if (controls_rebind_items[i].activated) {\n            controls_rebind_capture_armed = 0;\n            controls_rebind_slot_index =\n                controls_rebind_slot_index == -1 ? i : -1;\n        }\n"
+        },
+        {
+          "name": "default-cancel-then-idle",
+          "text": "        if (controls_rebind_items[i].activated) {\n            controls_rebind_capture_armed = 0;\n            int previous_slot = controls_rebind_slot_index;\n            controls_rebind_slot_index = -1;\n            if (previous_slot == -1) {\n                controls_rebind_slot_index = i;\n            }\n        }\n"
+        },
+        {
+          "name": "idle-boolean",
+          "text": "        if (controls_rebind_items[i].activated) {\n            controls_rebind_capture_armed = 0;\n            int was_idle = controls_rebind_slot_index == -1;\n            controls_rebind_slot_index = -1;\n            if (was_idle) {\n                controls_rebind_slot_index = i;\n            }\n        }\n"
+        }
+      ]
+    }
+  ]
+}

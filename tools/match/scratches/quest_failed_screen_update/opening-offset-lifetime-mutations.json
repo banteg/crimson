@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-offset-and-result-lifetime",
+      "find": "        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n",
+      "replacements": [
+        {
+          "name": "initialize-live-cursor-directly",
+          "text": "        quest_failed_vec2_t xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n"
+        },
+        {
+          "name": "named-offset-before-panel",
+          "text": "        quest_failed_vec2_t panel_offset(180.0f, 40.0f);\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + panel_offset;\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "const-offset-before-panel",
+          "text": "        const quest_failed_vec2_t panel_offset(180.0f, 40.0f);\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + panel_offset;\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "named-offset-direct-cursor",
+          "text": "        quest_failed_vec2_t panel_offset(180.0f, 40.0f);\n        quest_failed_vec2_t xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + panel_offset;\n"
+        },
+        {
+          "name": "staged-first-sum-plus-offset",
+          "text": "        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position;\n        panel_xy += quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        }
+      ]
+    }
+  ]
+}
