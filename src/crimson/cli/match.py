@@ -797,6 +797,11 @@ def cmd_match_triage(
 def cmd_match_shard(
     workers: int = typer.Option(..., "--workers", min=1, help="number of disjoint worker claims"),
     match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    mode: Literal["recovery", "residual-audit"] = typer.Option(
+        "recovery",
+        "--mode",
+        help="queue defaults: broad recovery or semantic-complete residual audit",
+    ),
     scope: Literal["port", "all"] = typer.Option(
         matchlib.DEFAULT_MATCH_SCOPE,
         "--scope",
@@ -804,11 +809,11 @@ def cmd_match_shard(
     ),
     jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel status jobs"),
     image: str | None = typer.Option(None, "--image", help="restrict targets to one image"),
-    state: str = typer.Option("missing,wip", "--state", help="comma-separated target states"),
-    recovery: str = typer.Option(
-        "incomplete,unspecified",
+    state: str | None = typer.Option(None, "--state", help="override comma-separated target states"),
+    recovery: str | None = typer.Option(
+        None,
         "--recovery",
-        help="comma-separated scratch recovery states; missing targets are always eligible",
+        help="override comma-separated scratch recovery states; missing targets are always eligible",
     ),
     min_bytes: int = typer.Option(0, "--min-bytes", min=0, help="minimum native function bytes"),
     limit: int | None = typer.Option(None, "--limit", min=1, help="maximum targets to assign"),
@@ -816,14 +821,16 @@ def cmd_match_shard(
     as_json: bool = typer.Option(False, "--json", help="emit the complete plan"),
 ) -> None:
     """Create deterministic, disjoint target claims for a worker batch."""
-    states = _parse_csv(state) or set()
+    default_state = "wip,audit" if mode == "residual-audit" else "missing,wip"
+    default_recovery = "semantic-complete" if mode == "residual-audit" else "incomplete,unspecified"
+    states = _parse_csv(state or default_state) or set()
     unknown_states = states - {"match", "audit", "wip", "error", "missing"}
     if unknown_states:
         raise typer.BadParameter(
             f"unknown states: {', '.join(sorted(unknown_states))}",
             param_hint="--state",
         )
-    recoveries = _parse_csv(recovery) or set()
+    recoveries = _parse_csv(recovery or default_recovery) or set()
     allowed_recoveries = {"incomplete", "semantic-complete", "unspecified"}
     unknown_recoveries = recoveries - allowed_recoveries
     if unknown_recoveries:
@@ -843,14 +850,14 @@ def cmd_match_shard(
             typer.echo(f"  {path}", err=True)
         raise typer.Exit(code=1)
     statuses = matchlib.collect_scratch_statuses(match_root, jobs=jobs, scope=scope)
-    rows = matchlib.collect_triage_rows(
+    all_rows = matchlib.collect_triage_rows(
         statuses,
         images=(image,) if image is not None else None,
         scope=scope,
     )
     rows = [
         row
-        for row in rows
+        for row in all_rows
         if (
             row.state in states
             and row.target_size >= min_bytes
@@ -860,6 +867,37 @@ def cmd_match_shard(
     rows = matchlib.sort_triage_rows(rows, sort_by="fuzzy-gap")
     if limit is not None:
         rows = rows[:limit]
+    if not rows:
+        residual_targets = sum(
+            row.state in {"wip", "audit"}
+            and row.best_status is not None
+            and matchlib.scratch_recovery(row.best_status) == "semantic-complete"
+            for row in all_rows
+        )
+        suggested_command = "crimson match shard --mode residual-audit --workers <N>"
+        message = f"no targets match the {mode} shard filters"
+        if mode == "recovery" and residual_targets:
+            message += (
+                f"; {residual_targets} semantic-complete residual targets remain; "
+                f"run `{suggested_command}`"
+            )
+        if as_json:
+            typer.echo(
+                json.dumps(
+                    {
+                        "error": "empty-shard",
+                        "message": message,
+                        "mode": mode,
+                        "semantic_complete_residual_targets": residual_targets,
+                        "suggested_command": suggested_command if residual_targets else None,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+            )
+        else:
+            typer.echo(message, err=True)
+        raise typer.Exit(code=1)
     plan = matchlib.build_match_shard_plan(
         rows,
         workers=workers,
@@ -868,6 +906,7 @@ def cmd_match_shard(
         match_root=match_root,
         filters={
             "image": image,
+            "mode": mode,
             "states": sorted(states),
             "recoveries": sorted(recoveries),
             "min_bytes": min_bytes,
@@ -886,7 +925,7 @@ def cmd_match_shard(
         return
     typer.echo(
         f"scope={scope} targets={plan['target_count']} workers={workers} "
-        f"plan={plan_path}",
+        f"mode={mode} plan={plan_path}",
     )
     for assignment, claim_path in zip(plan["assignments"], claim_paths, strict=True):
         typer.echo(
@@ -1044,6 +1083,114 @@ def cmd_match_inspect(
             )
 
 
+@match_app.command("worker-outcome")
+def cmd_match_worker_outcome(
+    claim: Path = typer.Argument(..., help="worker claim JSON from `match shard`"),
+    scratch: str = typer.Argument(..., help="claimed scratches/<directory>"),
+    disposition: Literal["matched", "improved", "falsified", "blocked"] = typer.Option(
+        ...,
+        "--disposition",
+        help="result of the residual-audit work",
+    ),
+    summary: str = typer.Option(..., "--summary", help="concise result and next-step summary"),
+    hypothesis: list[str] | None = typer.Option(
+        None,
+        "--hypothesis",
+        help="tested <kind>:<description>; repeat as needed",
+    ),
+    evidence: list[str] | None = typer.Option(
+        None,
+        "--evidence",
+        help="evidence pointer or bounded negative result; repeat as needed",
+    ),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="focused status jobs"),
+    as_json: bool = typer.Option(False, "--json", help="emit the recorded outcome"),
+) -> None:
+    """Append a structured, batch-scoped outcome for one claimed target."""
+    try:
+        claim_payload = matchlib.load_match_claim(claim.resolve())
+        if claim_payload.get("kind") != matchlib.WORKER_CLAIM_KIND:
+            raise ValueError("worker-outcome requires a worker claim")
+        batch_id = claim_payload.get("batch_id")
+        if not isinstance(batch_id, str):
+            raise TypeError("worker claim predates batch-scoped outcomes; create a new shard")
+        claim_errors = matchlib.validate_match_claim(
+            claim_payload,
+            match_root=match_root,
+            scope=str(claim_payload.get("scope", "")),
+        )
+        if claim_errors:
+            raise ValueError("; ".join(claim_errors))
+        scratch_path = Path(scratch)
+        if scratch_path.is_absolute():
+            scratch_path = scratch_path.resolve().relative_to(match_root.resolve())
+        scratch_name = scratch_path.as_posix().removeprefix("./")
+        targets = [
+            target
+            for _worker, target in matchlib.match_claim_targets(claim_payload)
+            if target.get("scratch") == scratch_name
+        ]
+        if len(targets) != 1:
+            raise ValueError(f"{scratch_name!r} is not one unique target in this worker claim")
+        target = targets[0]
+        directory = match_root / scratch_name
+        config = matchlib.load_scratch_config(directory)
+        statuses = matchlib.collect_scratch_statuses(
+            match_root,
+            jobs=jobs,
+            scope=str(claim_payload["scope"]),
+            directories=[directory],
+        )
+        if len(statuses) != 1:
+            raise ValueError(f"{scratch_name} did not produce one status")
+        status = statuses[0]
+        if status.state == "error":
+            raise ValueError(f"{scratch_name} evaluation failed: {status.error}")
+        if disposition == "matched" and status.state != "match":
+            raise ValueError("matched disposition requires an exact, reference-clean status")
+        if disposition == "improved" and not matchlib.status_improves_claim_baseline(
+            status,
+            target.get("baseline"),
+        ):
+            raise ValueError("improved disposition does not beat the claim baseline")
+        hypotheses = [
+            matchlib.parse_worker_hypothesis(value)
+            for value in hypothesis or []
+        ]
+        status_payload = matchlib.scratch_status_payload(status)
+        status_payload["scratch"] = scratch_name
+        outcome = {
+            "schema": matchlib.SHARD_SCHEMA,
+            "kind": matchlib.WORKER_OUTCOME_KIND,
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "batch_id": batch_id,
+            "base_commit": claim_payload["base_commit"],
+            "worker": claim_payload["worker"],
+            "scratch": scratch_name,
+            "function": target["function"],
+            "address": target["address"],
+            "disposition": disposition,
+            "summary": summary.strip(),
+            "hypotheses": hypotheses,
+            "evidence": [item.strip() for item in evidence or []],
+            "baseline": target.get("baseline"),
+            "status": status_payload,
+        }
+        output = matchlib.write_worker_outcome(config.directory, outcome)
+    except Exception as exc:
+        typer.echo(f"worker outcome failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if as_json:
+        typer.echo(json.dumps(outcome, indent=2, sort_keys=True))
+    else:
+        typer.echo(
+            f"worker={outcome['worker']} scratch={scratch_name} "
+            f"disposition={disposition} recorded={output}",
+        )
+
+
 @match_app.command("worker-check")
 def cmd_match_worker_check(
     claim: Path = typer.Argument(..., help="worker claim JSON from `match shard`"),
@@ -1054,6 +1201,11 @@ def cmd_match_worker_check(
         False,
         "--require-handled",
         help="fail if any claimed target still has no scratch",
+    ),
+    require_outcome: bool = typer.Option(
+        False,
+        "--require-outcome",
+        help="fail unless every target has a valid outcome for this batch",
     ),
     as_json: bool = typer.Option(False, "--json", help="emit the complete report"),
 ) -> None:
@@ -1106,13 +1258,25 @@ def cmd_match_worker_check(
             for status in statuses
         }
         targets: list[dict[str, Any]] = []
+        outcome_total = 0
+        missing_outcomes = 0
         for _worker, target in matchlib.match_claim_targets(claim_payload):
             scratch = str(target["scratch"])
             status = statuses_by_directory.get(scratch)
+            outcomes, outcome_errors = matchlib.worker_outcomes_for_target(
+                claim_payload,
+                target,
+                match_root=match_root,
+            )
+            errors.extend(outcome_errors)
+            outcome_total += len(outcomes)
+            missing_outcomes += not bool(outcomes)
             targets.append(
                 {
                     **target,
                     "handled": status is not None,
+                    "outcome_count": len(outcomes),
+                    "latest_outcome": outcomes[-1] if outcomes else None,
                     "status": (
                         matchlib.scratch_status_payload(status)
                         if status is not None
@@ -1139,6 +1303,8 @@ def cmd_match_worker_check(
                 "targets": len(targets),
                 "handled": len(targets) - unhandled,
                 "unhandled": unhandled,
+                "outcomes": outcome_total,
+                "missing_outcomes": missing_outcomes,
                 "states": state_counts,
                 "errors": len(errors),
             },
@@ -1163,6 +1329,7 @@ def cmd_match_worker_check(
         typer.echo(
             f"worker={report['worker']} targets={len(targets)} "
             f"handled={len(targets) - unhandled} unhandled={unhandled} "
+            f"outcomes={outcome_total} missing_outcomes={missing_outcomes} "
             f"errors={len(errors)} report={output.resolve()}",
         )
         typer.echo(
@@ -1177,6 +1344,8 @@ def cmd_match_worker_check(
     if errors or state_counts["error"]:
         raise typer.Exit(code=1)
     if require_handled and unhandled:
+        raise typer.Exit(code=1)
+    if require_outcome and missing_outcomes:
         raise typer.Exit(code=1)
 
 

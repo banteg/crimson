@@ -192,8 +192,18 @@ for worker output.
 
 By default, sharding includes missing targets plus scratches whose recovery is
 `incomplete` or `unspecified`. Scratches marked `semantic-complete` are omitted
-even when they retain a large compiler/reference fuzzy gap. Pass
-`--recovery semantic-complete` only for an explicit residual-audit batch.
+even when they retain a large compiler/reference fuzzy gap. If that recovery
+queue is empty, the command exits without writing an inert plan and points at
+the separate residual-audit mode:
+
+```sh
+uv run crimson match shard --mode residual-audit --workers 4 \
+  --min-bytes 32 --limit 24 --out "$batch_dir"
+```
+
+Residual-audit mode defaults to `--state wip,audit` and
+`--recovery semantic-complete`. Explicit `--state` or `--recovery` values
+override either mode's defaults.
 
 `plan.json` pins the batch's starting commit. Each `worker-NN.json` assigns
 targets and their only permitted `scratches/<directory>` paths. Existing
@@ -209,7 +219,14 @@ git worktree add --detach ../crimson-worker-01 HEAD
 cd ../crimson-worker-01
 uv run crimson match inspect <claimed-function> --binja-live
 uv run crimson match scratch tools/match/scratches/<claimed-directory> --regions
+uv run crimson match worker-outcome "$batch_dir/worker-01.json" \
+  tools/match/scratches/<claimed-directory> \
+  --disposition falsified \
+  --summary "Supported profiles preserve the same scheduling residual." \
+  --hypothesis "toolchain:VC6 profile split" \
+  --evidence "experiments.jsonl: recorded profile matrix"
 uv run crimson match worker-check "$batch_dir/worker-01.json" \
+  --require-outcome \
   --out "$batch_dir/worker-01-report.json"
 ```
 
@@ -220,6 +237,14 @@ base, rejects every path outside the claim, evaluates only claimed scratches
 that exist, and emits JSON without touching the dashboard. Add
 `--require-handled` when every claimed target is expected to have a scratch
 before handoff.
+
+`worker-outcome` appends a batch-scoped record to the scratch's
+`outcomes.jsonl`. Valid dispositions are `matched`, `improved`, `falsified`,
+and `blocked`; hypotheses use the normalized `analysis`, `references`,
+`source-shape`, `toolchain`, or `unknown` categories. The command verifies
+`matched` and `improved` claims against the live scratch, while falsified and
+blocked outcomes require evidence. `worker-check --require-outcome` rejects
+missing, malformed, or stale-batch outcomes.
 
 Keep final integration coordinator-owned. A worker can export an uncommitted
 patch, including newly created scratches, with:

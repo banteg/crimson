@@ -40,6 +40,18 @@ CACHE_VERSION = 1
 SHARD_SCHEMA = 1
 SHARD_PLAN_KIND = "crimson-match-shard-plan"
 WORKER_CLAIM_KIND = "crimson-match-worker-claim"
+WORKER_OUTCOME_KIND = "crimson-match-worker-outcome"
+WORKER_OUTCOME_FILE = "outcomes.jsonl"
+WORKER_OUTCOME_DISPOSITIONS = frozenset({"matched", "improved", "falsified", "blocked"})
+WORKER_HYPOTHESIS_KINDS = frozenset(
+    {
+        "analysis",
+        "references",
+        "source-shape",
+        "toolchain",
+        "unknown",
+    },
+)
 
 IMAGE_FILE_MACHINE_I386 = 0x14C
 IMAGE_SYM_CLASS_EXTERNAL = 2
@@ -3695,6 +3707,34 @@ def _status_rank(status: ScratchStatus) -> tuple[int, float, int, int, int]:
     )
 
 
+def status_improves_claim_baseline(
+    status: ScratchStatus,
+    baseline: dict[str, Any] | None,
+) -> bool:
+    if not isinstance(baseline, dict):
+        return False
+    state = baseline.get("state")
+    state_rank = {"error": 0, "wip": 1, "audit": 2, "match": 3}.get(str(state), -1)
+    ratio = baseline.get("match_ratio")
+    references = baseline.get("references")
+    reference_debt = (
+        int(references.get("unresolved", 0)) + int(references.get("mismatch", 0))
+        if isinstance(references, dict)
+        else 0
+    )
+    baseline_rank = (
+        state_rank,
+        float(ratio) if isinstance(ratio, int | float) else -1.0,
+        -reference_debt,
+        int(baseline.get("prefix_instructions", 0)),
+        -abs(
+            int(baseline.get("candidate_instructions", 0))
+            - int(baseline.get("target_instructions", 0)),
+        ),
+    )
+    return _status_rank(status) > baseline_rank
+
+
 def collect_triage_rows(
     statuses: list[ScratchStatus],
     *,
@@ -3766,6 +3806,29 @@ def _safe_scratch_name(function: str) -> str:
     return name or "target"
 
 
+def _file_sha256(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _jsonl_record_count(path: Path) -> int:
+    if not path.is_file():
+        return 0
+    return sum(bool(line.strip()) for line in path.read_text(encoding="utf-8").splitlines())
+
+
+def scratch_claim_baseline(status: ScratchStatus) -> dict[str, Any]:
+    source_path = status.config.directory / status.config.source
+    experiments_path = status.config.directory / "experiments.jsonl"
+    payload = scratch_status_payload(status)
+    payload["scratch"] = status.config.directory.name
+    payload["source_sha256"] = _file_sha256(source_path)
+    payload["experiments_sha256"] = _file_sha256(experiments_path)
+    payload["experiment_records"] = _jsonl_record_count(experiments_path)
+    return payload
+
+
 def build_match_shard_plan(
     rows: Collection[TriageRow],
     *,
@@ -3820,19 +3883,20 @@ def build_match_shard_plan(
             if scratch in used_scratches:
                 scratch = f"{scratch}_{row.address:08x}"
             used_scratches.add(scratch)
-        assignment["targets"].append(
-            {
-                "image": row.image,
-                "function": row.function,
-                "address": row.address,
-                "target_bytes": row.target_size,
-                "state": row.state,
-                "fuzzy_gap_bytes": row.fuzzy_gap_bytes,
-                "scratch": scratch,
-            },
-        )
+        target = {
+            "image": row.image,
+            "function": row.function,
+            "address": row.address,
+            "target_bytes": row.target_size,
+            "state": row.state,
+            "fuzzy_gap_bytes": row.fuzzy_gap_bytes,
+            "scratch": scratch,
+        }
+        if row.best_status is not None:
+            target["baseline"] = scratch_claim_baseline(row.best_status)
+        assignment["targets"].append(target)
         assignment["estimated_gap_bytes"] += row.fuzzy_gap_bytes
-    return {
+    plan = {
         "schema": SHARD_SCHEMA,
         "kind": SHARD_PLAN_KIND,
         "scope": scope,
@@ -3842,6 +3906,10 @@ def build_match_shard_plan(
         "filters": filters or {},
         "assignments": assignments,
     }
+    plan["batch_id"] = hashlib.sha256(
+        json.dumps(plan, separators=(",", ":"), sort_keys=True).encode(),
+    ).hexdigest()[:16]
+    return plan
 
 
 def write_match_json(path: Path, payload: dict[str, Any]) -> None:
@@ -3872,6 +3940,7 @@ def write_match_shard_plan(
             {
                 "schema": SHARD_SCHEMA,
                 "kind": WORKER_CLAIM_KIND,
+                "batch_id": plan.get("batch_id"),
                 "scope": plan["scope"],
                 "base_commit": plan["base_commit"],
                 "worker": assignment["worker"],
@@ -3928,6 +3997,12 @@ def validate_match_claim(
     errors: list[str] = []
     if payload.get("schema") != SHARD_SCHEMA:
         errors.append(f"unsupported claim schema {payload.get('schema')!r}")
+    batch_id = payload.get("batch_id")
+    if batch_id is not None and (
+        not isinstance(batch_id, str)
+        or re.fullmatch(r"[0-9a-f]{16}", batch_id) is None
+    ):
+        errors.append("claim batch_id must be 16 lowercase hexadecimal characters")
     claim_scope = str(payload.get("scope", ""))
     if scope is not None and claim_scope != scope:
         errors.append(f"claim scope {claim_scope!r} does not match checkpoint scope {scope!r}")
@@ -4162,6 +4237,136 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
         "note": status.config.note,
         "error": status.error,
     }
+
+
+def parse_worker_hypothesis(value: str) -> dict[str, str]:
+    kind, separator, description = value.partition(":")
+    kind = kind.strip()
+    description = description.strip()
+    if not separator or kind not in WORKER_HYPOTHESIS_KINDS or not description:
+        allowed = ", ".join(sorted(WORKER_HYPOTHESIS_KINDS))
+        raise ValueError(
+            f"invalid hypothesis {value!r}; use <kind>:<description> where kind is {allowed}",
+        )
+    return {"kind": kind, "description": description}
+
+
+def load_worker_outcomes(directory: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    path = directory / WORKER_OUTCOME_FILE
+    if not path.is_file():
+        return [], []
+    outcomes: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(),
+        start=1,
+    ):
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{path}:{line_number}: invalid JSON: {exc.msg}")
+            continue
+        if not isinstance(payload, dict):
+            errors.append(f"{path}:{line_number}: outcome must be an object")
+            continue
+        outcome_errors = validate_worker_outcome(payload)
+        if outcome_errors:
+            errors.extend(f"{path}:{line_number}: {error}" for error in outcome_errors)
+            continue
+        outcomes.append(payload)
+    return outcomes, errors
+
+
+def validate_worker_outcome(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if payload.get("schema") != SHARD_SCHEMA:
+        errors.append(f"unsupported outcome schema {payload.get('schema')!r}")
+    if payload.get("kind") != WORKER_OUTCOME_KIND:
+        errors.append(f"unsupported outcome kind {payload.get('kind')!r}")
+    batch_id = payload.get("batch_id")
+    if not isinstance(batch_id, str) or re.fullmatch(r"[0-9a-f]{16}", batch_id) is None:
+        errors.append("outcome requires a 16-character lowercase hexadecimal batch_id")
+    worker = payload.get("worker")
+    if not isinstance(worker, str) or not worker:
+        errors.append("outcome requires a worker")
+    scratch = payload.get("scratch")
+    scratch_parts = Path(scratch).parts if isinstance(scratch, str) else ()
+    if (
+        not isinstance(scratch, str)
+        or Path(scratch).is_absolute()
+        or len(scratch_parts) != 2
+        or scratch_parts[0] != "scratches"
+        or scratch_parts[1] in {".", ".."}
+    ):
+        errors.append("outcome scratch must be scratches/<directory>")
+    disposition = payload.get("disposition")
+    if disposition not in WORKER_OUTCOME_DISPOSITIONS:
+        allowed = ", ".join(sorted(WORKER_OUTCOME_DISPOSITIONS))
+        errors.append(f"outcome disposition must be one of {allowed}")
+    summary = payload.get("summary")
+    if not isinstance(summary, str) or not summary.strip():
+        errors.append("outcome requires a non-empty summary")
+    hypotheses = payload.get("hypotheses")
+    if not isinstance(hypotheses, list):
+        errors.append("outcome hypotheses must be an array")
+    else:
+        for index, hypothesis in enumerate(hypotheses):
+            if not isinstance(hypothesis, dict):
+                errors.append(f"outcome hypotheses[{index}] must be an object")
+                continue
+            if hypothesis.get("kind") not in WORKER_HYPOTHESIS_KINDS:
+                errors.append(f"outcome hypotheses[{index}] has an invalid kind")
+            description = hypothesis.get("description")
+            if not isinstance(description, str) or not description.strip():
+                errors.append(f"outcome hypotheses[{index}] requires a description")
+    evidence = payload.get("evidence")
+    if (
+        not isinstance(evidence, list)
+        or any(not isinstance(item, str) or not item.strip() for item in evidence)
+    ):
+        errors.append("outcome evidence must be an array of non-empty strings")
+    if disposition == "falsified" and not hypotheses:
+        errors.append("falsified outcomes require at least one hypothesis")
+    if disposition in {"falsified", "blocked"} and not evidence:
+        errors.append(f"{disposition} outcomes require at least one evidence item")
+    status = payload.get("status")
+    if not isinstance(status, dict):
+        errors.append("outcome requires a status object")
+    elif disposition == "matched" and status.get("state") != "match":
+        errors.append("matched outcome requires status.state=match")
+    return errors
+
+
+def worker_outcomes_for_target(
+    claim: dict[str, Any],
+    target: dict[str, Any],
+    *,
+    match_root: Path = DEFAULT_MATCH_ROOT,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    scratch = str(target["scratch"])
+    outcomes, errors = load_worker_outcomes(match_root / scratch)
+    batch_id = claim.get("batch_id")
+    worker = claim.get("worker")
+    matching = [
+        outcome
+        for outcome in outcomes
+        if outcome["batch_id"] == batch_id
+        and outcome["worker"] == worker
+        and outcome["scratch"] == scratch
+    ]
+    return matching, errors
+
+
+def write_worker_outcome(directory: Path, payload: dict[str, Any]) -> Path:
+    errors = validate_worker_outcome(payload)
+    if errors:
+        raise ValueError("; ".join(errors))
+    path = directory / WORKER_OUTCOME_FILE
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, separators=(",", ":"), sort_keys=True) + "\n")
+    return path
 
 
 def probe_result_payload(result: ProbeResult) -> dict[str, Any]:

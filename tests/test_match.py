@@ -18,6 +18,8 @@ from crimson.match import (
     VC6_LOCAL_SWITCH_PARTITION_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
     WORKER_CLAIM_KIND,
+    WORKER_OUTCOME_FILE,
+    WORKER_OUTCOME_KIND,
     CoffObject,
     CoffRelocation,
     CoffSection,
@@ -1862,6 +1864,91 @@ def test_match_shard_excludes_semantic_complete_by_default(
     }
     assert payload["filters"]["recoveries"] == ["semantic-complete"]
 
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "shard",
+            "--workers",
+            "1",
+            "--match-root",
+            str(tmp_path),
+            "--mode",
+            "residual-audit",
+            "--out",
+            str(tmp_path / "residual"),
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    residual_targets = payload["assignments"][0]["targets"]
+    assert {target["function"] for target in residual_targets} == {
+        "semantic_complete_target",
+    }
+    assert payload["filters"]["mode"] == "residual-audit"
+    assert payload["filters"]["states"] == ["audit", "wip"]
+    assert payload["filters"]["recoveries"] == ["semantic-complete"]
+
+
+def test_match_shard_empty_recovery_queue_points_to_residual_audit(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    status = ScratchStatus(
+        config=ScratchConfig(
+            directory=tmp_path / "scratches" / "residual",
+            function="residual",
+            image="crimsonland.exe",
+            compiler="msvc6.5",
+            cflags="/O2",
+            source="scratch.cpp",
+            end_va=None,
+            symbol=None,
+            note="",
+            recovery="semantic-complete",
+        ),
+        address=0x401000,
+        target_size=100,
+        ratio=0.5,
+        prefix_instructions=1,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    rows = [
+        TriageRow(
+            image="crimsonland.exe",
+            function="residual",
+            address=status.address,
+            target_size=status.target_size,
+            state="wip",
+            exact_bytes=0,
+            fuzzy_weighted_bytes=status.fuzzy_weighted_bytes,
+            candidate_bytes=status.target_size,
+            scratch_count=1,
+            best_status=status,
+        ),
+    ]
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", list)
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+
+    completed = CliRunner().invoke(
+        match_app,
+        ["shard", "--workers", "1", "--match-root", str(tmp_path), "--json"],
+    )
+
+    assert completed.exit_code == 1
+    payload = json.loads(completed.output)
+    assert payload["error"] == "empty-shard"
+    assert payload["semantic_complete_residual_targets"] == 1
+    assert payload["suggested_command"] == (
+        "crimson match shard --mode residual-audit --workers <N>"
+    )
+    assert not (tmp_path / ".cache" / "shards" / "plan.json").exists()
+
 
 def test_exact_score_with_reference_debt_requires_audit() -> None:
     config = ScratchConfig(
@@ -2424,6 +2511,7 @@ def test_match_shard_plan_is_deterministic_balanced_and_disjoint(tmp_path: Path)
     ]
 
     assert plan == repeated
+    assert len(plan["batch_id"]) == 16
     assert [assignment["estimated_gap_bytes"] for assignment in plan["assignments"]] == [120.0, 110.0]
     assert len({(target["image"], target["address"]) for target in targets}) == 4
     assert len({target["scratch"] for target in targets}) == 4
@@ -2460,7 +2548,9 @@ def test_match_shard_plan_writes_worker_claims(tmp_path: Path) -> None:
 
     assert json.loads(plan_path.read_text(encoding="utf-8")) == plan
     assert len(claim_paths) == 2
-    assert json.loads(claim_paths[0].read_text(encoding="utf-8"))["kind"] == WORKER_CLAIM_KIND
+    first_claim = json.loads(claim_paths[0].read_text(encoding="utf-8"))
+    assert first_claim["kind"] == WORKER_CLAIM_KIND
+    assert first_claim["batch_id"] == plan["batch_id"]
     assert json.loads(claim_paths[1].read_text(encoding="utf-8"))["targets"] == []
     assert not stale_claim.exists()
     assert unrelated.exists()
@@ -2613,3 +2703,207 @@ def test_worker_check_writes_ignored_report_without_status(
     assert report["targets"][0]["handled"] is False
     assert not (tmp_path / "STATUS.md").exists()
     assert (tmp_path / ".cache" / "reports" / "worker-01.json").exists()
+
+
+def test_worker_outcome_records_falsification_for_claim(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "game_is_full_version"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=game_is_full_version\nRECOVERY=semantic-complete\nRESIDUAL=compiler\n",
+        encoding="utf-8",
+    )
+    (scratch / "scratch.cpp").write_text(
+        'extern "C" int game_is_full_version(void) { return 1; }\n',
+        encoding="utf-8",
+    )
+    claim_path = tmp_path / "worker-01.json"
+    claim_path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": WORKER_CLAIM_KIND,
+                "batch_id": "1" * 16,
+                "scope": "port",
+                "base_commit": "a" * 40,
+                "worker": "worker-01",
+                "targets": [
+                    {
+                        "image": "crimsonland.exe",
+                        "function": "game_is_full_version",
+                        "address": 0x0041DF40,
+                        "target_bytes": 6,
+                        "state": "wip",
+                        "fuzzy_gap_bytes": 3.0,
+                        "scratch": "scratches/game_is_full_version",
+                        "baseline": {
+                            "state": "wip",
+                            "match_ratio": 0.5,
+                            "prefix_instructions": 1,
+                            "candidate_instructions": 2,
+                            "target_instructions": 2,
+                            "references": {"unresolved": 0, "mismatch": 0},
+                        },
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+    status = ScratchStatus(
+        config=load_scratch_config(scratch),
+        address=0x0041DF40,
+        target_size=6,
+        ratio=0.5,
+        prefix_instructions=1,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        lambda *args, **kwargs: [status],
+    )
+
+    completed = CliRunner().invoke(
+        match_app,
+        [
+            "worker-outcome",
+            str(claim_path),
+            "scratches/game_is_full_version",
+            "--match-root",
+            str(tmp_path),
+            "--disposition",
+            "falsified",
+            "--summary",
+            "The alternate profile preserves the same residual.",
+            "--hypothesis",
+            "toolchain:VC6 profile split",
+            "--evidence",
+            "profiles.json: all supported profiles retain the mismatch",
+            "--json",
+        ],
+    )
+
+    assert completed.exit_code == 0
+    payload = json.loads(completed.output)
+    assert payload["kind"] == WORKER_OUTCOME_KIND
+    assert payload["disposition"] == "falsified"
+    assert payload["hypotheses"] == [
+        {"kind": "toolchain", "description": "VC6 profile split"},
+    ]
+    records = [
+        json.loads(line)
+        for line in (scratch / WORKER_OUTCOME_FILE).read_text(encoding="utf-8").splitlines()
+    ]
+    assert records == [payload]
+
+
+def test_worker_check_can_require_batch_scoped_outcomes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    scratch = tmp_path / "scratches" / "game_is_full_version"
+    scratch.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text(
+        "FUNCTION=game_is_full_version\nRECOVERY=semantic-complete\nRESIDUAL=compiler\n",
+        encoding="utf-8",
+    )
+    (scratch / "scratch.cpp").write_text(
+        'extern "C" int game_is_full_version(void) { return 1; }\n',
+        encoding="utf-8",
+    )
+    target = {
+        "image": "crimsonland.exe",
+        "function": "game_is_full_version",
+        "address": 0x0041DF40,
+        "target_bytes": 6,
+        "state": "wip",
+        "fuzzy_gap_bytes": 3.0,
+        "scratch": "scratches/game_is_full_version",
+    }
+    claim = {
+        "schema": 1,
+        "kind": WORKER_CLAIM_KIND,
+        "batch_id": "2" * 16,
+        "scope": "port",
+        "base_commit": "a" * 40,
+        "worker": "worker-01",
+        "targets": [target],
+    }
+    claim_path = tmp_path / "worker-01.json"
+    claim_path.write_text(json.dumps(claim), encoding="utf-8")
+    status = ScratchStatus(
+        config=load_scratch_config(scratch),
+        address=0x0041DF40,
+        target_size=6,
+        ratio=0.5,
+        prefix_instructions=1,
+        target_instructions=2,
+        candidate_instructions=2,
+        error=None,
+    )
+    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", lambda base_commit=None: [])
+    monkeypatch.setattr(
+        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        lambda *args, **kwargs: [status],
+    )
+
+    missing = CliRunner().invoke(
+        match_app,
+        [
+            "worker-check",
+            str(claim_path),
+            "--match-root",
+            str(tmp_path),
+            "--require-outcome",
+            "--json",
+        ],
+    )
+
+    assert missing.exit_code == 1
+    assert json.loads(missing.output)["summary"]["missing_outcomes"] == 1
+
+    outcome = {
+        "schema": 1,
+        "kind": WORKER_OUTCOME_KIND,
+        "recorded_at": "2026-07-27T00:00:00+00:00",
+        "batch_id": claim["batch_id"],
+        "base_commit": claim["base_commit"],
+        "worker": claim["worker"],
+        "scratch": target["scratch"],
+        "function": target["function"],
+        "address": target["address"],
+        "disposition": "blocked",
+        "summary": "The exact historical compiler bundle is unavailable.",
+        "hypotheses": [],
+        "evidence": ["compiler inventory contains no build-8047 bundle"],
+        "baseline": None,
+        "status": {"state": "wip"},
+    }
+    (scratch / WORKER_OUTCOME_FILE).write_text(
+        json.dumps(outcome) + "\n",
+        encoding="utf-8",
+    )
+
+    complete = CliRunner().invoke(
+        match_app,
+        [
+            "worker-check",
+            str(claim_path),
+            "--match-root",
+            str(tmp_path),
+            "--require-outcome",
+            "--json",
+        ],
+    )
+
+    assert complete.exit_code == 0
+    report = json.loads(complete.output)
+    assert report["summary"]["outcomes"] == 1
+    assert report["summary"]["missing_outcomes"] == 0
+    assert report["targets"][0]["latest_outcome"]["disposition"] == "blocked"
