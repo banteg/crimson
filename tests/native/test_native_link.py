@@ -393,8 +393,50 @@ def test_symbol_closure_keeps_exact_link_identity_and_classifies_debt(tmp_path: 
         "game_data": 1,
         "import": 1,
     }
+    assert closure["summary"]["game_function_debt"] == {}
+    assert closure["summary"]["hard_duplicate_by_section"] == {".text": 1}
     assert closure["summary"]["function_closure"] is False
     assert closure["summary"]["game_owned_closure"] is False
+
+
+def test_symbol_closure_splits_game_function_linkage_debt(tmp_path: Path) -> None:
+    function = _function("first", 0x10001000)
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x10000000, (function,)),
+        image_path=tmp_path / "grim.dll",
+        records=(
+            NativeObjectRecord(
+                function=function,
+                status=_status(tmp_path / "first", "first", function.address),
+                object_path=tmp_path / "first.obj",
+                object_symbol="?first@@YAXXZ",
+                coff=_coff(
+                    definitions=(("?first@@YAXXZ", 1),),
+                    undefined=("_first", "_missing"),
+                ),
+            ),
+        ),
+    )
+    catalog = NativeSymbolCatalog(
+        port_functions={
+            "first": ({"address": function.address, "function": "first"},),
+            "missing": ({"address": 0x10001010, "function": "missing"},),
+        },
+        excluded_functions={},
+        data={},
+        imports={},
+        exports=(),
+    )
+
+    closure = symbol_closure_payload(objects, catalog=catalog, repo_root=tmp_path)
+
+    assert closure["summary"]["game_function_debt"] == {
+        "emitted_name_mismatch": 1,
+        "missing_definition": 1,
+    }
+    assert closure["summary"]["function_closure"] is False
 
 
 def test_symbol_closure_rejects_mixed_or_non_any_comdat_duplicates(tmp_path: Path) -> None:

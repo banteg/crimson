@@ -20,7 +20,9 @@ def _audit(*, closed: bool):
             "summary": {
                 "all_references_closed": False,
                 "function_closure": True,
+                "game_function_debt": {},
                 "game_owned_closure": closed,
+                "hard_duplicate_by_section": {},
                 "hard_duplicate_symbols": 0,
                 "resolved_symbols": 39,
                 "unresolved_by_category": {"game_data": 154},
@@ -58,6 +60,7 @@ def test_native_audit_cli_reports_artifacts(monkeypatch, tmp_path: Path) -> None
     assert completed.exit_code == 0
     assert "objects=137 states={'match': 130, 'wip': 7} abi=passed" in completed.stdout
     assert "function_closed=True game_owned_closed=False" in completed.stdout
+    assert "function_debt={} duplicate_sections={}" in completed.stdout
     assert f"symbol_closure={tmp_path / 'closure.json'}" in completed.stdout
 
 

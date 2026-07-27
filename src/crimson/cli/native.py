@@ -80,6 +80,10 @@ def cmd_native_audit(
         f"categories={closure_summary['unresolved_by_category']}",
     )
     typer.echo(
+        f"function_debt={closure_summary.get('game_function_debt', {})} "
+        f"duplicate_sections={closure_summary.get('hard_duplicate_by_section', {})}",
+    )
+    typer.echo(
         f"data entries={data_summary['entry_count']} "
         f"typed={data_summary['typed_entries']} "
         f"explicit_sizes={data_summary['explicit_size_entries']} "

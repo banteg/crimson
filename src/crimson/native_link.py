@@ -35,6 +35,7 @@ KNOWN_MSVC_TOOLCHAIN_EXTERNALS = frozenset(
 
 DEFAULT_NATIVE_ANALYSIS_ROOT = matchlib.REPO_ROOT / "analysis" / "native"
 DEFAULT_ABI_CONFIGS = {
+    "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
 }
 
@@ -1036,6 +1037,7 @@ def symbol_closure_payload(
     resolved_rows: list[dict[str, Any]] = []
     unresolved_rows: list[dict[str, Any]] = []
     unresolved_counts: Counter[str] = Counter()
+    game_function_debt: Counter[str] = Counter()
     for name, references in sorted(undefined.items()):
         ordered_references = sorted(
             references,
@@ -1072,10 +1074,17 @@ def symbol_closure_payload(
             category = "toolchain"
         else:
             category = "external"
+        candidate_definitions = sorted(definitions_by_lookup.get(lookup_name, []))
         unresolved_counts[category] += 1
+        if category == "game_function":
+            game_function_debt[
+                "emitted_name_mismatch"
+                if candidate_definitions
+                else "missing_definition"
+            ] += 1
         unresolved_rows.append(
             {
-                "candidate_definitions": sorted(definitions_by_lookup.get(lookup_name, [])),
+                "candidate_definitions": candidate_definitions,
                 "catalog": list(detail),
                 "category": category,
                 "lookup_name": lookup_name,
@@ -1138,6 +1147,14 @@ def symbol_closure_payload(
     unresolved_game_data = unresolved_counts["game_data"]
     unresolved_external = unresolved_counts["external"]
     hard_duplicates = len(duplicate_rows)
+    hard_duplicate_sections: Counter[str] = Counter()
+    for row in duplicate_rows:
+        sections = {
+            str(definition["section"])
+            for definition in row["definitions"]
+        }
+        section = next(iter(sections)) if len(sections) == 1 else "mixed"
+        hard_duplicate_sections[section] += 1
     reference_exports_closed = all(
         export["definition_mapping"] is not None
         for export in export_rows
@@ -1197,6 +1214,8 @@ def symbol_closure_payload(
                 and hard_duplicates == 0
                 and reference_exports_closed
             ),
+            "game_function_debt": dict(sorted(game_function_debt.items())),
+            "hard_duplicate_by_section": dict(sorted(hard_duplicate_sections.items())),
             "hard_duplicate_symbols": hard_duplicates,
             "object_count": len(objects.records),
             "reference_exports_closed": reference_exports_closed,

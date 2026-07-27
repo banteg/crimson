@@ -52,6 +52,14 @@ all mapped game data and unclassified externals to resolve.
 functions, and toolchain/library dependencies. Game-owned closure is expected
 to remain false until real data definitions exist.
 
+`summary.game_function_debt` keeps the function gate actionable without
+weakening exact linker identity. `emitted_name_mismatch` means an object emits
+one or more same-display-name candidates, but none has the exact decorated
+name requested by the reference. `missing_definition` means no selected object
+emits even such a candidate. `summary.hard_duplicate_by_section` groups the
+still-fatal strong duplicate symbols by their COFF section; it does not
+silently coalesce repeated `.bss` ownership.
+
 The initial data report does not infer facts absent from `data_map.json`.
 Section membership comes from the IDA segment export; size, alignment, and
 initializer fields remain `null` until backed by explicit evidence.

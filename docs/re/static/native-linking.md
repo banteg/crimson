@@ -10,17 +10,19 @@ reference instruction streams. It does not prove that those objects close
 over symbols, share a compatible ABI, or can reproduce a PE image. The native
 linker track makes those remaining obligations explicit.
 
-## Grim pilot
+## Image audits
 
-`grim.dll` is the first target. Its active port scope currently has one
-canonical scratch for every owned function, and the audit keeps each function
-in its own translation unit so pooling, inlining, constructor ordering, and
-static symbol changes cannot disturb established evidence.
+Both `grim.dll` and `crimsonland.exe` have native audit tracks. Their active
+port scopes have one canonical scratch for every owned function, and the audit
+keeps each function in its own translation unit so pooling, inlining,
+constructor ordering, and static symbol changes cannot disturb established
+evidence.
 
 Generate the checked-in reports:
 
 ```bash
 just native-audit grim.dll
+just native-audit crimsonland.exe
 ```
 
 The equivalent direct command is:
@@ -57,6 +59,12 @@ not unrelated SDK or library directories. A shared audit digest detects
 mixed-generation JSON, and component hashes cover the object list and export
 definition. The report never adds fake providers.
 
+The executable audit keeps its current function closure debt explicit:
+same-display-name definitions with incompatible decorated linkage are not
+treated as resolutions, functions that emit only compiler initializer symbols
+remain missing definitions, and repeated non-COMDAT `.bss` owners remain hard
+duplicates.
+
 ## Closure gates
 
 The first native-link victory is all game-owned symbols resolving, not
@@ -76,11 +84,13 @@ failures exit with status 2.
 
 ## ABI boundary
 
-The Grim assertion unit is compiled by the same 32-bit VC6 toolchain before
-the audit succeeds. It checks the recovered C++ surface's pointer and scalar
-widths, configuration-record and interface sizes, vtable extent and selected
-slot offsets, default packing, factory signature, and representative
-`__thiscall`/variadic member types.
+Each image assertion unit is compiled by the same 32-bit VC6 toolchain before
+the audit succeeds. The Grim unit checks the recovered C++ surface's pointer
+and scalar widths, configuration-record and interface sizes, vtable extent and
+selected slot offsets, default packing, factory signature, and representative
+`__thiscall`/variadic member types. The Crimsonland unit checks the common
+scalar model, evidence-backed gameplay/UI record sizes and offsets, console
+object packing, and the recovered mod API's C++ member-pointer surface.
 
 The recovered C++ interface is the callable authority. Analyzer-oriented C
 headers preserve analysis layouts but are not a replacement SDK for native
