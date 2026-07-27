@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muzzle-flash-small-quad-coordinate-shape",
+      "find": "            half_size = sprite_size * 0.25f;\n            render_scratch_f0 =\n                camera_offset\n                + *(player_render_vec2_t *)&player_state_table\n                      [render_overlay_player_index]\n                          .pos_x\n                - half_size\n                + effect_offset;\n            sprite_size =\n                player_state_table[render_overlay_player_index].size * 0.5f;",
+      "replacements": [
+        {
+          "name": "explicit-components",
+          "text": "            half_size = sprite_size * 0.25f;\n            render_scratch_f0.x =\n                camera_offset.x\n                + player_state_table[render_overlay_player_index].pos_x\n                - half_size\n                + effect_offset.x;\n            render_scratch_f0.y =\n                camera_offset.y\n                + player_state_table[render_overlay_player_index].pos_y\n                - half_size\n                + effect_offset.y;\n            sprite_size =\n                player_state_table[render_overlay_player_index].size * 0.5f;"
+        }
+      ]
+    },
+    {
+      "name": "muzzle-flash-full-quad-coordinate-shape",
+      "find": "            half_size = sprite_size * 0.5f;\n            sprite_size =\n                player_state_table[render_overlay_player_index].size;\n            render_scratch_f0 =\n                camera_offset\n                + *(player_render_vec2_t *)&player_state_table\n                      [render_overlay_player_index]\n                          .pos_x\n                - half_size\n                + effect_offset;",
+      "replacements": [
+        {
+          "name": "explicit-components",
+          "text": "            half_size = sprite_size * 0.5f;\n            sprite_size =\n                player_state_table[render_overlay_player_index].size;\n            render_scratch_f0.x =\n                camera_offset.x\n                + player_state_table[render_overlay_player_index].pos_x\n                - half_size\n                + effect_offset.x;\n            render_scratch_f0.y =\n                camera_offset.y\n                + player_state_table[render_overlay_player_index].pos_y\n                - half_size\n                + effect_offset.y;"
+        }
+      ]
+    }
+  ]
+}

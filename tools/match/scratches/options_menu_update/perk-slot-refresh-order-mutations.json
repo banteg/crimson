@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "perk-slot-refresh-order",
+      "find": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    char *perk_description;\n    if (config_blob.violence_disabled) {\n        perk_description = perk_slot_1_desc_wrapped_alternate;\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_alternate;\n    } else {\n        perk_description = perk_slot_1_desc_wrapped_primary;\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_primary;\n    }\n    perk_meta_table[perk_id].description = perk_description;",
+      "replacements": [
+        {
+          "name": "name-first-both-branches",
+          "text": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    char *perk_description;\n    if (config_blob.violence_disabled) {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_alternate;\n        perk_description = perk_slot_1_desc_wrapped_alternate;\n    } else {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_primary;\n        perk_description = perk_slot_1_desc_wrapped_primary;\n    }\n    perk_meta_table[perk_id].description = perk_description;"
+        },
+        {
+          "name": "name-first-alternate-branch",
+          "text": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    char *perk_description;\n    if (config_blob.violence_disabled) {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_alternate;\n        perk_description = perk_slot_1_desc_wrapped_alternate;\n    } else {\n        perk_description = perk_slot_1_desc_wrapped_primary;\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_primary;\n    }\n    perk_meta_table[perk_id].description = perk_description;"
+        },
+        {
+          "name": "name-first-primary-branch",
+          "text": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    char *perk_description;\n    if (config_blob.violence_disabled) {\n        perk_description = perk_slot_1_desc_wrapped_alternate;\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_alternate;\n    } else {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_primary;\n        perk_description = perk_slot_1_desc_wrapped_primary;\n    }\n    perk_meta_table[perk_id].description = perk_description;"
+        },
+        {
+          "name": "branch-local-name-and-description",
+          "text": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    if (config_blob.violence_disabled) {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_alternate;\n        perk_meta_table[perk_id].description =\n            perk_slot_1_desc_wrapped_alternate;\n    } else {\n        perk_meta_table[perk_id].name =\n            perk_slot_1_name_wrapped_primary;\n        perk_meta_table[perk_id].description =\n            perk_slot_1_desc_wrapped_primary;\n    }"
+        },
+        {
+          "name": "common-name-and-description-stores",
+          "text": "    int perk_id = perk_id_bloody_mess_quick_learner;\n    char *perk_name;\n    char *perk_description;\n    if (config_blob.violence_disabled) {\n        perk_name = perk_slot_1_name_wrapped_alternate;\n        perk_description = perk_slot_1_desc_wrapped_alternate;\n    } else {\n        perk_name = perk_slot_1_name_wrapped_primary;\n        perk_description = perk_slot_1_desc_wrapped_primary;\n    }\n    perk_meta_table[perk_id].name = perk_name;\n    perk_meta_table[perk_id].description = perk_description;"
+        }
+      ]
+    }
+  ]
+}

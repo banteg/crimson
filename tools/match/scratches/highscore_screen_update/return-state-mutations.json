@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "return-state-restoration",
+      "find": "                quest_stage_minor = highscore_return_quest_stage_minor;\n                quest_stage_major = highscore_return_quest_stage_major;\n                player_overlay_suppressed_latch = 1;\n                config_blob.game_mode = highscore_return_game_mode_id;\n                config_blob.hardcore = highscore_return_hardcore_flag;\n                ui_transition_direction = 0;\n                game_state_pending =\n                    highscore_return_game_mode_id == GAME_MODE_QUEST\n                    ? GAME_STATE_QUEST_RESULTS\n                    : GAME_STATE_GAME_OVER;",
+      "replacements": [
+        {
+          "name": "capture-mode-and-state",
+          "text": "                game_mode_id_t return_game_mode =\n                    highscore_return_game_mode_id;\n                game_state_id_t return_game_state =\n                    return_game_mode == GAME_MODE_QUEST\n                    ? GAME_STATE_QUEST_RESULTS\n                    : GAME_STATE_GAME_OVER;\n                quest_stage_minor = highscore_return_quest_stage_minor;\n                quest_stage_major = highscore_return_quest_stage_major;\n                player_overlay_suppressed_latch = 1;\n                config_blob.game_mode = return_game_mode;\n                config_blob.hardcore = highscore_return_hardcore_flag;\n                ui_transition_direction = 0;\n                game_state_pending = return_game_state;"
+        },
+        {
+          "name": "capture-native-load-order",
+          "text": "                int return_quest_stage_minor =\n                    highscore_return_quest_stage_minor;\n                game_mode_id_t return_game_mode =\n                    highscore_return_game_mode_id;\n                int return_quest_stage_major =\n                    highscore_return_quest_stage_major;\n                game_state_id_t return_game_state =\n                    return_game_mode == GAME_MODE_QUEST\n                    ? GAME_STATE_QUEST_RESULTS\n                    : GAME_STATE_GAME_OVER;\n                quest_stage_minor = return_quest_stage_minor;\n                quest_stage_major = return_quest_stage_major;\n                player_overlay_suppressed_latch = 1;\n                config_blob.game_mode = return_game_mode;\n                config_blob.hardcore = highscore_return_hardcore_flag;\n                ui_transition_direction = 0;\n                game_state_pending = return_game_state;"
+        },
+        {
+          "name": "capture-state-only",
+          "text": "                game_state_id_t return_game_state =\n                    highscore_return_game_mode_id == GAME_MODE_QUEST\n                    ? GAME_STATE_QUEST_RESULTS\n                    : GAME_STATE_GAME_OVER;\n                quest_stage_minor = highscore_return_quest_stage_minor;\n                quest_stage_major = highscore_return_quest_stage_major;\n                player_overlay_suppressed_latch = 1;\n                config_blob.game_mode = highscore_return_game_mode_id;\n                config_blob.hardcore = highscore_return_hardcore_flag;\n                ui_transition_direction = 0;\n                game_state_pending = return_game_state;"
+        },
+        {
+          "name": "native-store-order",
+          "text": "                int return_quest_stage_minor =\n                    highscore_return_quest_stage_minor;\n                game_mode_id_t return_game_mode =\n                    highscore_return_game_mode_id;\n                int return_quest_stage_major =\n                    highscore_return_quest_stage_major;\n                game_state_id_t return_game_state =\n                    return_game_mode == GAME_MODE_QUEST\n                    ? GAME_STATE_QUEST_RESULTS\n                    : GAME_STATE_GAME_OVER;\n                quest_stage_minor = return_quest_stage_minor;\n                quest_stage_major = return_quest_stage_major;\n                unsigned char return_hardcore =\n                    highscore_return_hardcore_flag;\n                player_overlay_suppressed_latch = 1;\n                config_blob.game_mode = return_game_mode;\n                config_blob.hardcore = return_hardcore;\n                ui_transition_direction = 0;\n                game_state_pending = return_game_state;"
+        }
+      ]
+    }
+  ]
+}

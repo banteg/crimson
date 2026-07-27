@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "xp-progress-local-materialization",
+      "find": "        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, (float)(hud_y + 13));",
+      "replacements": [
+        {
+          "name": "named-int-y",
+          "text": "        int progress_y = hud_y + 13;\n        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, (float)progress_y);"
+        },
+        {
+          "name": "split-int-y",
+          "text": "        int progress_y;\n        progress_y = hud_y + 13;\n        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, (float)progress_y);"
+        },
+        {
+          "name": "named-float-y",
+          "text": "        float progress_y = (float)(hud_y + 13);\n        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, progress_y);"
+        },
+        {
+          "name": "copy-initialized-position",
+          "text": "        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, panel_alpha);\n        hud_render_vec2_t progress_position =\n+            hud_render_vec2_t(26.0f, (float)(hud_y + 13));"
+        },
+        {
+          "name": "named-alpha",
+          "text": "        float progress_alpha = panel_alpha;\n        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, progress_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, (float)(hud_y + 13));"
+        },
+        {
+          "name": "named-alpha-and-int-y",
+          "text": "        float progress_alpha = panel_alpha;\n        int progress_y = hud_y + 13;\n        hud_render_color_t progress_color(\n            0.1f, 0.3f, 0.6f, progress_alpha);\n        hud_render_vec2_t progress_position(\n            26.0f, (float)progress_y);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-local-order",
+      "find": "    int spawn_index = 2;\n    int trigger_time_ms = 5500;\n    int waves_remaining = 10;",
+      "replacements": [
+        {
+          "name": "index-waves-trigger",
+          "text": "    int spawn_index = 2;\n    int waves_remaining = 10;\n    int trigger_time_ms = 5500;"
+        },
+        {
+          "name": "trigger-index-waves",
+          "text": "    int trigger_time_ms = 5500;\n    int spawn_index = 2;\n    int waves_remaining = 10;"
+        },
+        {
+          "name": "waves-index-trigger",
+          "text": "    int waves_remaining = 10;\n    int spawn_index = 2;\n    int trigger_time_ms = 5500;"
+        }
+      ]
+    },
+    {
+      "name": "right-loop-metadata",
+      "find": "        spawns[spawn_index].set_spawn(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12,\n            trigger_time_ms,\n            2);",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;"
+        }
+      ]
+    },
+    {
+      "name": "left-loop-metadata",
+      "find": "        spawns[spawn_index].set_spawn(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12,\n            trigger_time_ms,\n            2);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n        spawns[spawn_index].trigger_time_ms = trigger_time_ms;\n        spawns[spawn_index].count = 2;"
+        }
+      ]
+    },
+    {
+      "name": "right-loop-update-order",
+      "find": "        ++spawn_index;\n        trigger_time_ms += 4000;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "trigger-before-index",
+          "text": "        trigger_time_ms += 4000;\n        ++spawn_index;"
+        }
+      ]
+    },
+    {
+      "name": "left-loop-update-order",
+      "find": "        ++spawn_index;\n        trigger_time_ms += 4000;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "trigger-before-index",
+          "text": "        trigger_time_ms += 4000;\n        ++spawn_index;"
+        }
+      ]
+    }
+  ]
+}

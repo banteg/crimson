@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "score-row-prefix-destination",
+      "find": "            (*score_line_buffer)[0] = '\\\\';\n            (*score_line_buffer)[1] = 'g';",
+      "replacements": [
+        {
+          "name": "assigned-item",
+          "text": "            (*score_line_item)[0] = '\\\\';\n            (*score_line_item)[1] = 'g';"
+        }
+      ]
+    },
+    {
+      "name": "score-row-format-destination",
+      "find": "        switch (config_blob.game_mode) {\n        case GAME_MODE_RUSH:\n            crt_sprintf(\n                *score_line_buffer + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)\n                    ->survival_elapsed_ms / 1000,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        case GAME_MODE_QUEST:\n            crt_sprintf(\n                *score_line_buffer + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)\n                    ->survival_elapsed_ms / 1000,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        default:\n            crt_sprintf(\n                *score_line_buffer + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->score_xp,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        }",
+      "replacements": [
+        {
+          "name": "assigned-item",
+          "text": "        switch (config_blob.game_mode) {\n        case GAME_MODE_RUSH:\n            crt_sprintf(\n                *score_line_item + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)\n                    ->survival_elapsed_ms / 1000,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        case GAME_MODE_QUEST:\n            crt_sprintf(\n                *score_line_item + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)\n                    ->survival_elapsed_ms / 1000,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        default:\n            crt_sprintf(\n                *score_line_item + prefix_length,\n                \"%d\\t%d\\t%s\",\n                score_number,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->score_xp,\n                HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->player_name);\n            break;\n        }"
+        }
+      ]
+    }
+  ]
+}

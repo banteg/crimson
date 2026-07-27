@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mode1-forward-frame-snapshot",
+      "find": "                move_delta.x = frame_dt * player->move_dx;\n                move_delta.y = frame_dt * player->move_dy;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "const-movement-dt",
+          "text": "                const float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        },
+        {
+          "name": "movement-dt",
+          "text": "                float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        }
+      ]
+    },
+    {
+      "name": "mode1-backward-frame-snapshot",
+      "find": "                move_delta.x = frame_dt * player->move_dx;\n                move_delta.y = frame_dt * player->move_dy;",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "const-movement-dt",
+          "text": "                const float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        },
+        {
+          "name": "movement-dt",
+          "text": "                float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        }
+      ]
+    },
+    {
+      "name": "mode1-idle-frame-snapshot",
+      "find": "                move_delta.x = frame_dt * player->move_dx;\n                move_delta.y = frame_dt * player->move_dy;",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "const-movement-dt",
+          "text": "                const float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        },
+        {
+          "name": "movement-dt",
+          "text": "                float movement_dt = frame_dt;\n                move_delta.x = movement_dt * player->move_dx;\n                move_delta.y = movement_dt * player->move_dy;"
+        }
+      ]
+    },
+    {
+      "name": "mode2-frame-snapshot",
+      "find": "            move_delta.x = frame_dt * player->move_dx;\n            move_delta.y = frame_dt * player->move_dy;",
+      "replacements": [
+        {
+          "name": "const-movement-dt",
+          "text": "            const float movement_dt = frame_dt;\n            move_delta.x = movement_dt * player->move_dx;\n            move_delta.y = movement_dt * player->move_dy;"
+        },
+        {
+          "name": "movement-dt",
+          "text": "            float movement_dt = frame_dt;\n            move_delta.x = movement_dt * player->move_dx;\n            move_delta.y = movement_dt * player->move_dy;"
+        }
+      ]
+    }
+  ]
+}

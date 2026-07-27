@@ -63,3 +63,19 @@ optimizer fixed point instead of carrying equivalent cosmetic rewrites.
 The processor-pack compiler can make this function exact, but image-wide Rich
 header evidence rejects that compiler as the canonical executable toolchain.
 That result remains a source-shape search signal, not a scratch override.
+
+## Boundary-identity and combined-condition sweep
+
+Live Binary Ninja identifies the native upper bound at `0x00484fe8`, exactly
+the one-past end of `quest_selected_meta` and the start of
+`creature_spawn_slot_table`. `unlock-end-identity-mutations.json` tested five
+equivalent spellings through both owning objects and their first fields. Stock
+VC6 canonicalized all five byte-for-byte to the 96.15% baseline, ruling out
+linker-symbol identity as the reason the native pointer test remains at the
+loop header.
+
+`unlock-combined-condition-mutations.json` then tested count-first and
+pointer-first `while`/`for` conditions plus a count-headed loop with an
+internal pointer break. All five completed without truncation. The best three
+fell to 84.62%, prefix 30, and 17 resolved references; the pointer-first forms
+also lost two instructions. No source change was retained.

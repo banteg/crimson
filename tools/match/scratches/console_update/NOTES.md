@@ -52,3 +52,14 @@ SHA-256 is
 `e927fc662fb3a1729282d8d59524e42ad626c99d43c9da20fb57264dff2da4f6`.
 Lexical pointer declaration scope therefore does not control VC6's register
 save placement, and the narrower canonical declarations remain unchanged.
+
+## Fresh profile and region recheck
+
+VC6.0, VC6.5, and VC6.6 remain byte-identical at 90.0506%, a
+89.9427-byte fuzzy gap, 297/296 instructions, a six-instruction prefix, and
+`64/0/0` references. Processor Pack falls to 82.39% and VC7 to 54.83%.
+Localized regions still form the documented cascade from the candidate's one
+extra early saved-register instruction; no independent missing call, input
+branch, or history operation appears. With the late pointer-declaration sweep
+already byte-neutral, this recheck provides no new semantic source hypothesis,
+so no additional mutation or source change is retained.

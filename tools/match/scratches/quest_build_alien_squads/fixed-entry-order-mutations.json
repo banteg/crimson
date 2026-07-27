@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fixed-entry-0-order",
+      "find": "    spawns[0].pos = quest_vec2_t(-256.0f, 256.0f);\n    spawns[0].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 1500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[0].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 1500, 1);\n    spawns[0].pos = quest_vec2_t(-256.0f, 256.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[0].pos = quest_vec2_t(-256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[0].trigger_time_ms = 1500;\n    spawns[0].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-1-order",
+      "find": "    spawns[1].pos = quest_vec2_t(-256.0f, 768.0f);\n    spawns[1].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 2500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[1].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 2500, 1);\n    spawns[1].pos = quest_vec2_t(-256.0f, 768.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[1].pos = quest_vec2_t(-256.0f, 768.0f);\n    spawns[1].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[1].trigger_time_ms = 2500;\n    spawns[1].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-2-order",
+      "find": "    spawns[2].pos = quest_vec2_t(768.0f, -256.0f);\n    spawns[2].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 5500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[2].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 5500, 1);\n    spawns[2].pos = quest_vec2_t(768.0f, -256.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[2].pos = quest_vec2_t(768.0f, -256.0f);\n    spawns[2].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[2].trigger_time_ms = 5500;\n    spawns[2].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-3-order",
+      "find": "    spawns[3].pos = quest_vec2_t(768.0f, 1280.0f);\n    spawns[3].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 8500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[3].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 8500, 1);\n    spawns[3].pos = quest_vec2_t(768.0f, 1280.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[3].pos = quest_vec2_t(768.0f, 1280.0f);\n    spawns[3].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[3].trigger_time_ms = 8500;\n    spawns[3].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-4-order",
+      "find": "    spawns[4].pos = quest_vec2_t(1280.0f, 1280.0f);\n    spawns[4].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 14500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[4].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 14500, 1);\n    spawns[4].pos = quest_vec2_t(1280.0f, 1280.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[4].pos = quest_vec2_t(1280.0f, 1280.0f);\n    spawns[4].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[4].trigger_time_ms = 14500;\n    spawns[4].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-5-order",
+      "find": "    spawns[5].pos = quest_vec2_t(1280.0f, 768.0f);\n    spawns[5].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 18500, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[5].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 18500, 1);\n    spawns[5].pos = quest_vec2_t(1280.0f, 768.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[5].pos = quest_vec2_t(1280.0f, 768.0f);\n    spawns[5].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[5].trigger_time_ms = 18500;\n    spawns[5].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-6-order",
+      "find": "    spawns[6].pos = quest_vec2_t(-256.0f, 256.0f);\n    spawns[6].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 25000, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[6].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 25000, 1);\n    spawns[6].pos = quest_vec2_t(-256.0f, 256.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[6].pos = quest_vec2_t(-256.0f, 256.0f);\n    spawns[6].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[6].trigger_time_ms = 25000;\n    spawns[6].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "fixed-entry-7-order",
+      "find": "    spawns[7].pos = quest_vec2_t(-256.0f, 768.0f);\n    spawns[7].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 30000, 1);",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[7].set_spawn(SPAWN_ID_FORMATION_RING_ALIEN_8_12, 30000, 1);\n    spawns[7].pos = quest_vec2_t(-256.0f, 768.0f);"
+        },
+        {
+          "name": "direct-metadata-after-position",
+          "text": "    spawns[7].pos = quest_vec2_t(-256.0f, 768.0f);\n    spawns[7].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;\n    spawns[7].trigger_time_ms = 30000;\n    spawns[7].count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "loop-local-order",
+      "find": "    int entry_count = 8;\n    int trigger_time_ms = 36200;",
+      "replacements": [
+        {
+          "name": "trigger-before-count",
+          "text": "    int trigger_time_ms = 36200;\n    int entry_count = 8;"
+        }
+      ]
+    }
+  ]
+}

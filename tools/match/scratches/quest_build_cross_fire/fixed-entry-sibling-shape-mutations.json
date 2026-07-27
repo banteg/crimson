@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "metadata-helper-order",
+      "find": "        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n",
+      "replacements": [
+        {
+          "name": "trigger-template-count",
+          "text": "        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n        count = spawn_count;\n"
+        },
+        {
+          "name": "template-count-trigger",
+          "text": "        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        },
+        {
+          "name": "count-template-trigger",
+          "text": "        count = spawn_count;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-0-position",
+      "find": "    spawns[0].pos = quest_vec2_t(\n        1074.0f,\n        (float)terrain_texture_height * 0.5f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].pos.x = 1074.0f;\n    spawns[0].pos.y = (float)terrain_texture_height * 0.5f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-1-position",
+      "find": "    spawns[1].pos = quest_vec2_t(-40.0f, 512.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].pos.x = -40.0f;\n    spawns[1].pos.y = 512.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-position",
+      "find": "    spawns[3].pos = quest_vec2_t(512.0f, 512.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].pos.x = 512.0f;\n    spawns[3].pos.y = 512.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-5-position",
+      "find": "    spawns[5].pos = quest_vec2_t(512.0f, 1152.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[5].pos.x = 512.0f;\n    spawns[5].pos.y = 1152.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-position",
+      "find": "    spawns[6].pos = quest_vec2_t(512.0f, -128.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[6].pos.x = 512.0f;\n    spawns[6].pos.y = -128.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-0-metadata",
+      "find": "    spawns[0].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 100, 6);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;\n    spawns[0].trigger_time_ms = 100;\n    spawns[0].count = 6;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-1-metadata",
+      "find": "    spawns[1].set_spawn(\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 5500, 4);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    spawns[1].trigger_time_ms = 5500;\n    spawns[1].count = 4;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-metadata",
+      "find": "    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP2_SPLITTER_01, 18500, 2);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[3].trigger_time_ms = 18500;\n    spawns[3].count = 2;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-5-metadata",
+      "find": "    spawns[5].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 26000, 6);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[5].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;\n    spawns[5].trigger_time_ms = 26000;\n    spawns[5].count = 6;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-metadata",
+      "find": "    spawns[6].set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 26000, 6);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[6].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;\n    spawns[6].trigger_time_ms = 26000;\n    spawns[6].count = 6;\n"
+        }
+      ]
+    }
+  ]
+}

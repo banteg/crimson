@@ -34,3 +34,14 @@ menu with four explicit associations, including the native-looking
 `pcm_data - remaining + pcm_bytes`. VC6 canonicalizes all four byte-for-byte
 to the same 99-instruction candidate, confirming that the final register-load
 swap is not controlled by expression association.
+
+## Inline-helper and argument-order bounds
+
+Two recorded helper sweeps test whether an ordinary inlined source boundary
+can preserve the native `pcm_bytes`-then-`pcm_data` loads. Three helper-local
+lifetime forms are neutral or regress, and three parameter-order forms compile
+byte-identically despite VC6's right-to-left argument evaluation. The first
+inline-helper record intentionally remains as a superseded authoring failure:
+the recovered `pcm_data` field is `void *`, and the corrected sweep adds the
+required explicit cast. No corrected variant improves the 97.98% baseline, so
+no helper is retained.

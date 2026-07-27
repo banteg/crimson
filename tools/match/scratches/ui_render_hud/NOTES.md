@@ -88,6 +88,26 @@ The record has `best_improves=false` and no winner. Because no single-site
 mutation improved, no interaction sweep was justified; the semantic source
 remains unchanged.
 
+## Popup panel-Y materialization sweep
+
+A second bounded pass selected the coherent weapon-popup tail at
+`0x0041c87b..0x0041ca49`. Live Binary Ninja disassembly shows native
+recomputing `icon_y - 12` with `lea eax, [esi-0xc]` at `0x0041c8ea`, then
+advancing only the text and icon Y values by 32 at `0x0041ca2d..0x0041ca49`.
+The candidate preserves the same panel coordinate and loop behavior, but VC6
+strength-reduces the panel Y expression into a third induction value.
+
+The schema-1 `popup-panel-y-materialization` sweep tested four natural named,
+split, direct-initialized, and const spellings. Its persisted spec SHA-256 is
+`6bafaccaf35407cd46d0311480edd37d014e10756581be74d9a027a65a9424dc`;
+the unchanged source SHA-256 is
+`69a68d8ed7fe1bd1dde1e2a1fe9222da0d0cb7f7f2ec0bab30fe0cfa8789ba74`.
+All 4/4 planned singles are byte-identical to the baseline:
+`6063.882675438596/7081` weighted bytes (`85.6359649122807%`), gap
+`1017.1173245614036`, 1,824/1,824 instructions, prefix 42, and `385/0/0`
+references. The recorded sweep has `best_improves=false`; no source change or
+interaction sweep is justified.
+
 The scratch is classified `semantic-complete` with a `compiler` residual.
 Fresh live Binary Ninja decompilation confirms the heart, weapon/ammo, Quest,
 timer, Survival XP, bonus-slot, and weapon-popup paths through the native
@@ -96,3 +116,42 @@ signature and six named helper calls. The first localized mismatch is only the
 native `[esp+0x1c]` versus candidate `[esp+0x18]` temporary slot; the next
 regions likewise preserve the same operations and audited references in
 different legal stack slots.
+
+## Survival XP progress-local materialization sweep
+
+The highest fuzzy-weighted region outside the completed popup-panel sweep is
+the Survival XP threshold/progress-bar sequence at
+`0x0041c6d6..0x0041c75b`: 93.1 weighted bytes, a 0.7 regional ratio, and
+7/0/0 regional references. Live Binary Ninja target
+`crimsonland.exe.bndb` shows the native code preserving the recovered source
+order: calculate the previous level threshold, override it with zero at level
+one, construct the RGBA progress color, convert `hud_y + 13` for the progress
+position, calculate the next threshold, divide the XP delta by the threshold
+delta, and call `ui_draw_progress_bar`.
+
+The candidate performs the same operations in the same order. The region's
+nine changed instructions are stack coloring only: native reads the long-lived
+panel alpha from `[esp+0x1c]` where the candidate uses `[esp+0x18]`, and VC6
+chooses different temporary slots for the integer-to-float conversion,
+progress-position fields, and retained `pow` result. All seven masked operands
+remain aligned, so native evidence does not justify changing the recovered XP
+semantics.
+
+The bounded schema-1 `xp-progress-local-materialization` sweep tested all 6/6
+planned single-site variants. Its persisted spec SHA-256 is
+`ca3ca914b2242059078cb5affed90b30b91b692613068624bd6d58109e8089fa`;
+the canonical source remains
+`69a68d8ed7fe1bd1dde1e2a1fe9222da0d0cb7f7f2ec0bab30fe0cfa8789ba74`.
+Named and split integer-Y forms and a named float-Y form are byte-neutral:
+6,063.882675/7,081 weighted bytes (`85.6359649122807%`), gap
+1,017.117325, 1,824/1,824 instructions, prefix 42, and `385/0/0` references.
+An explicit recorded probe of the top natural `split-int-y` spelling confirms
+an exact zero delta and source SHA-256
+`86b2e7957db56b0b58a7ff31098fdfb86db6cdc4a94a97469aed0bd6d1745585`.
+
+The two named-alpha variants regress by 11.646382 weighted bytes to
+6,052.236294 (`85.47149122807017%`), gap 1,028.763706, and 384/0/0 aligned
+references while leaving instruction count and prefix unchanged. VC6.5 rejects
+the copy-initialized position spelling at compile time. The sweep has
+`best_improves=false` and no winner, so no interaction batch or source change
+is justified.

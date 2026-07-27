@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-tint-scale-assignment",
+      "find": "                                hit_creature->tint_r *= tint_scale;\n                                hit_creature->tint_g *= tint_scale;\n                                hit_creature->tint_b *= tint_scale;",
+      "replacements": [
+        {
+          "name": "explicit-channel-times-scale",
+          "text": "                                hit_creature->tint_r =\n                                    hit_creature->tint_r * tint_scale;\n                                hit_creature->tint_g =\n                                    hit_creature->tint_g * tint_scale;\n                                hit_creature->tint_b =\n                                    hit_creature->tint_b * tint_scale;"
+        },
+        {
+          "name": "explicit-scale-times-channel",
+          "text": "                                hit_creature->tint_r =\n                                    tint_scale * hit_creature->tint_r;\n                                hit_creature->tint_g =\n                                    tint_scale * hit_creature->tint_g;\n                                hit_creature->tint_b =\n                                    tint_scale * hit_creature->tint_b;"
+        }
+      ]
+    }
+  ]
+}

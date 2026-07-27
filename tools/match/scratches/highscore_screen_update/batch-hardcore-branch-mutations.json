@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "batch-hardcore-branch",
+      "find": "            unsigned char hardcore;\n            if (config_blob.game_mode == GAME_MODE_QUEST) {\n                hardcore = config_blob.hardcore;\n            } else {\n                hardcore = 0;\n                config_blob.hardcore = 0;\n            }",
+      "replacements": [
+        {
+          "name": "non-quest-fallthrough",
+          "text": "            unsigned char hardcore;\n            if (config_blob.game_mode != GAME_MODE_QUEST) {\n                hardcore = 0;\n                config_blob.hardcore = 0;\n            } else {\n                hardcore = config_blob.hardcore;\n            }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "combined-setter-order",
+      "find": "        pos = position;\n        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "        template_id = spawn_template_id;\n        trigger_time_ms = spawn_trigger_time_ms;\n        count = spawn_count;\n        pos = position;\n"
+        },
+        {
+          "name": "trigger-before-template",
+          "text": "        pos = position;\n        trigger_time_ms = spawn_trigger_time_ms;\n        template_id = spawn_template_id;\n        count = spawn_count;\n"
+        },
+        {
+          "name": "count-before-trigger",
+          "text": "        pos = position;\n        template_id = spawn_template_id;\n        count = spawn_count;\n        trigger_time_ms = spawn_trigger_time_ms;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-0-expanded",
+      "find": "    spawns[0].set(\n        quest_vec2_t(256.0f, 512.0f),\n        SPAWN_ID_SPIDER_SP2_SPLITTER_01,\n        500,\n        1);\n",
+      "replacements": [
+        {
+          "name": "position-plus-direct-metadata",
+          "text": "    spawns[0].pos = quest_vec2_t(256.0f, 512.0f);\n    spawns[0].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-4-expanded",
+      "find": "    spawns[4].set(\n        quest_vec2_t(256.0f, 512.0f),\n        SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00,\n        30500,\n        2);\n",
+      "replacements": [
+        {
+          "name": "position-plus-direct-metadata",
+          "text": "    spawns[4].pos = quest_vec2_t(256.0f, 512.0f);\n    spawns[4].template_id = SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00;\n    spawns[4].trigger_time_ms = 30500;\n    spawns[4].count = 2;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-expanded",
+      "find": "    spawns[6].set(\n        quest_vec2_t(64.0f, 64.0f),\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C,\n        54500,\n        2);\n",
+      "replacements": [
+        {
+          "name": "position-plus-direct-metadata",
+          "text": "    spawns[6].pos = quest_vec2_t(64.0f, 64.0f);\n    spawns[6].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    spawns[6].trigger_time_ms = 54500;\n    spawns[6].count = 2;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-10-expanded",
+      "find": "    spawns[10].set(\n        quest_vec2_t(-128.0f, 512.0f),\n        SPAWN_ID_SPIDER_BOSS_3A,\n        90500,\n        6);\n",
+      "replacements": [
+        {
+          "name": "position-plus-direct-metadata",
+          "text": "    spawns[10].pos = quest_vec2_t(-128.0f, 512.0f);\n    spawns[10].template_id = SPAWN_ID_SPIDER_BOSS_3A;\n    spawns[10].trigger_time_ms = 90500;\n    spawns[10].count = 6;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-12-expanded",
+      "find": "    spawns[12].set(\n        quest_vec2_t(1152.0f, 512.0f),\n        SPAWN_ID_SPIDER_SP2_SPLITTER_01,\n        109500,\n        2);\n",
+      "replacements": [
+        {
+          "name": "position-plus-direct-metadata",
+          "text": "    spawns[12].pos = quest_vec2_t(1152.0f, 512.0f);\n    spawns[12].template_id = SPAWN_ID_SPIDER_SP2_SPLITTER_01;\n    spawns[12].trigger_time_ms = 109500;\n    spawns[12].count = 2;\n"
+        }
+      ]
+    }
+  ]
+}

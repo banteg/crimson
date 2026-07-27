@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "popup-panel-y-materialization",
+      "find": "                grim_interface_ptr->grim_begin_batch();\n                grim_interface_ptr->grim_draw_quad(\n                    -12.0f,\n                    (float)(icon_y - 12),\n                    182.0f,\n                    53.0f);",
+      "replacements": [
+        {
+          "name": "named-initialized",
+          "text": "                grim_interface_ptr->grim_begin_batch();\n                int popup_panel_y = icon_y - 12;\n                grim_interface_ptr->grim_draw_quad(\n                    -12.0f,\n                    (float)popup_panel_y,\n                    182.0f,\n                    53.0f);"
+        },
+        {
+          "name": "named-split",
+          "text": "                grim_interface_ptr->grim_begin_batch();\n                int popup_panel_y;\n                popup_panel_y = icon_y - 12;\n                grim_interface_ptr->grim_draw_quad(\n                    -12.0f,\n                    (float)popup_panel_y,\n                    182.0f,\n                    53.0f);"
+        },
+        {
+          "name": "named-direct-init",
+          "text": "                grim_interface_ptr->grim_begin_batch();\n                int popup_panel_y(icon_y - 12);\n                grim_interface_ptr->grim_draw_quad(\n                    -12.0f,\n                    (float)popup_panel_y,\n                    182.0f,\n                    53.0f);"
+        },
+        {
+          "name": "named-const",
+          "text": "                grim_interface_ptr->grim_begin_batch();\n                const int popup_panel_y = icon_y - 12;\n                grim_interface_ptr->grim_draw_quad(\n                    -12.0f,\n                    (float)popup_panel_y,\n                    182.0f,\n                    53.0f);"
+        }
+      ]
+    }
+  ]
+}

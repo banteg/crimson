@@ -116,3 +116,13 @@ The reference and pointer spellings compile byte-identically to the retained
 1.8073 fuzzy-weighted bytes at one site; their interactions do not recover the
 native spill/reload order. No variant improves the baseline, so the natural
 chained assignments remain canonical and the negative result is recorded.
+
+## Fresh profile and region recheck
+
+VC6.0, VC6.5, and VC6.6 remain byte-identical at 86.4407%, a
+50.7119-byte fuzzy gap, 118/118 instructions, a three-instruction prefix, and
+`27/0/0` references. Processor Pack falls to 52.36%; VC7 does not produce an
+evaluable candidate. The only x87 lifetime regions are still the two computed
+volume spill/reload sites already covered by the complete 24-variant sweep.
+No new semantic state-machine or call-boundary hypothesis appears, so the
+retained source and recorded mutation set remain unchanged.

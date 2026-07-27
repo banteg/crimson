@@ -52,8 +52,8 @@ extern "C" void quest_build_the_collaboration(
 
         spawn = &builder.spawns[builder.count];
         spawn->pos.x = (float)(terrain_texture_width / 2);
-        spawn->pos.y = (float)(terrain_texture_width + 64);
         ++builder.count;
+        spawn->pos.y = (float)(terrain_texture_width + 64);
         spawn->set_spawn(
             SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,
             trigger_time_ms,
@@ -77,8 +77,8 @@ extern "C" void quest_build_the_collaboration(
             trigger_time_ms,
             spawn_count);
 
-        trigger_time_ms += 11000;
         ++wave;
+        trigger_time_ms += 11000;
     }
 
     *count = builder.count;

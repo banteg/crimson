@@ -12,15 +12,18 @@ template `0x41` zombie at `(512, -64)`. The final count is 64.
 The candidate reproduces the native indexed builder, count and wave induction,
 all integer-to-float coordinate conversions, count conversion, four templates,
 loop bound, and trigger arithmetic. It has the same 86 instructions, resolves
-all seven references, and preserves a 22-instruction prefix at 77.91%.
+all seven references, and preserves a 22-instruction prefix at 86.05%.
 
 The residual is independent scheduling after the first x coordinate: VC6
 interleaves metadata stores, later coordinate conversions, count increments,
-wave bookkeeping, and the final fixed entry differently. Reversing the second
-entry's source assignments, using `pos.set(x, y)`, and moving the wave increment
-to its scheduled native location all degrade the proven x87/reference shape.
-The direct 86-instruction candidate remains an honest WIP without dependencies
-added solely to fill conversion latency.
+wave bookkeeping, and the final fixed entry differently. A bounded sweep found
+that spelling the independent update as `++wave` before the trigger increment,
+then moving the bottom entry's builder-count increment between its x and y
+assignments, reproduces more of the native latency-filling schedule. Reversing
+other assignments, changing helper store order, and moving the other count
+increments do not improve that result. The direct 86-instruction candidate
+remains an honest WIP without dependencies added solely to fill conversion
+latency.
 
 ## Recovery classification audit
 
@@ -29,3 +32,17 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler matrix leaves the VC6 family tied and VC7 worse. The six-flag
+matrix leaves `/O2 /GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied while `/G6`
+regresses. Three recorded sweeps evaluate 70 variants: the 33-variant
+source-order pass retains the wave-before-trigger update, the five helper-store
+orders all regress, and the 32 count-placement variants retain the bottom
+entry's increment-after-x spelling.
+
+Together the two source changes raise weighted bytes from
+`222.8139534883721` to `246.09302325581393`, reduce the gap from
+`63.18604651162789` to `39.90697674418607`, and preserve the exact 86
+instructions, 22-instruction prefix, and `7/0/0` references.

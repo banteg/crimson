@@ -222,17 +222,17 @@ extern "C" void options_menu_update(void)
         (ui_button_t *)&controls_button);
 
     int perk_id = perk_id_bloody_mess_quick_learner;
-    char *perk_description;
     if (config_blob.violence_disabled) {
-        perk_description = perk_slot_1_desc_wrapped_alternate;
         perk_meta_table[perk_id].name =
             perk_slot_1_name_wrapped_alternate;
+        perk_meta_table[perk_id].description =
+            perk_slot_1_desc_wrapped_alternate;
     } else {
-        perk_description = perk_slot_1_desc_wrapped_primary;
         perk_meta_table[perk_id].name =
             perk_slot_1_name_wrapped_primary;
+        perk_meta_table[perk_id].description =
+            perk_slot_1_desc_wrapped_primary;
     }
-    perk_meta_table[perk_id].description = perk_description;
 
     if (controls_button.activated) {
         ui_menu_main_click_controls();

@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-local-order",
+      "find": "    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 2000;\n    int trigger_step_ms = 2000;",
+      "replacements": [
+        {
+          "name": "cursor-step-trigger",
+          "text": "    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;\n    int trigger_step_ms = 2000;\n    int trigger_time_ms = 2000;"
+        },
+        {
+          "name": "trigger-step-cursor",
+          "text": "    int trigger_time_ms = 2000;\n    int trigger_step_ms = 2000;\n    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;"
+        },
+        {
+          "name": "step-trigger-cursor",
+          "text": "    int trigger_step_ms = 2000;\n    int trigger_time_ms = 2000;\n    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;"
+        }
+      ]
+    },
+    {
+      "name": "wave-local-order",
+      "find": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        float angle_cos = (float)cos(angle);\n        float angle_sin = (float)sin(angle);\n        quest_entry_original_t *wave_entry = cursor;\n        cursor += 4;",
+      "replacements": [
+        {
+          "name": "cursor-before-angle",
+          "text": "        quest_entry_original_t *wave_entry = cursor;\n        cursor += 4;\n        float angle = (float)(crt_rand() % 612) * 0.01f;\n        float angle_cos = (float)cos(angle);\n        float angle_sin = (float)sin(angle);"
+        },
+        {
+          "name": "cursor-between-angle-and-trig",
+          "text": "        float angle = (float)(crt_rand() % 612) * 0.01f;\n        quest_entry_original_t *wave_entry = cursor;\n        cursor += 4;\n        float angle_cos = (float)cos(angle);\n        float angle_sin = (float)sin(angle);"
+        },
+        {
+          "name": "advance-after-trig",
+          "text": "        quest_entry_original_t *wave_entry = cursor;\n        float angle = (float)(crt_rand() % 612) * 0.01f;\n        float angle_cos = (float)cos(angle);\n        float angle_sin = (float)sin(angle);\n        cursor += 4;"
+        }
+      ]
+    },
+    {
+      "name": "entry-store-shape",
+      "find": "            wave_entry->set(\n                quest_vec2_t(\n                    offset.x + 512.0f,\n                    offset.y + 512.0f),\n                SPAWN_ID_ALIEN_AI7_ORBITER_36,\n                trigger_time_ms,\n                1);",
+      "replacements": [
+        {
+          "name": "direct-position-then-metadata",
+          "text": "            wave_entry->pos = quest_vec2_t(\n                offset.x + 512.0f,\n                offset.y + 512.0f);\n            wave_entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->count = 1;"
+        },
+        {
+          "name": "direct-position-trigger-template-count",
+          "text": "            wave_entry->pos = quest_vec2_t(\n                offset.x + 512.0f,\n                offset.y + 512.0f);\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;\n            wave_entry->count = 1;"
+        }
+      ]
+    },
+    {
+      "name": "trigger-update-shape",
+      "find": "        int trigger_increment_ms = trigger_step_ms;\n        if (trigger_increment_ms < 600) {\n            trigger_increment_ms = 600;\n        }\n        trigger_step_ms -= 80;\n        trigger_time_ms += trigger_increment_ms;",
+      "replacements": [
+        {
+          "name": "update-before-step-decrement",
+          "text": "        int trigger_increment_ms = trigger_step_ms;\n        if (trigger_increment_ms < 600) {\n            trigger_increment_ms = 600;\n        }\n        trigger_time_ms += trigger_increment_ms;\n        trigger_step_ms -= 80;"
+        },
+        {
+          "name": "conditional-expression",
+          "text": "        trigger_time_ms +=\n            trigger_step_ms < 600 ? 600 : trigger_step_ms;\n        trigger_step_ms -= 80;"
+        }
+      ]
+    }
+  ]
+}

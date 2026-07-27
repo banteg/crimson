@@ -531,8 +531,9 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
-                move_delta.x = frame_dt * player->move_dx;
-                move_delta.y = frame_dt * player->move_dy;
+                const float movement_dt = frame_dt;
+                move_delta.x = movement_dt * player->move_dx;
+                move_delta.y = movement_dt * player->move_dy;
             }
 
             player_apply_move_with_spawn_avoidance(
@@ -616,8 +617,9 @@ extern "C" void player_update(void)
                 player->move_dy =
                     (float)sin(player->heading - 1.5707964f)
                     * player->move_speed * scalar * 25.0f;
-                move_delta.x = frame_dt * player->move_dx;
-                move_delta.y = frame_dt * player->move_dy;
+                const float movement_dt = frame_dt;
+                move_delta.x = movement_dt * player->move_dx;
+                move_delta.y = movement_dt * player->move_dy;
             }
 
             player_apply_move_with_spawn_avoidance(
@@ -713,8 +715,9 @@ extern "C" void player_update(void)
                     * player->move_speed * movement_heading * scalar
                     * 7.957747f;
             }
-            move_delta.x = frame_dt * player->move_dx;
-            move_delta.y = frame_dt * player->move_dy;
+            const float movement_dt = frame_dt;
+            move_delta.x = movement_dt * player->move_dx;
+            move_delta.y = movement_dt * player->move_dy;
             player_apply_move_with_spawn_avoidance(
                 render_overlay_player_index,
                 player_position,

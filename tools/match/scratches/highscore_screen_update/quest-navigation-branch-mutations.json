@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "keyboard-left-edge-branch",
+      "find": "        --quest_stage_minor;\n        if (quest_stage_minor <= 0) {\n            if (quest_stage_major < 2) {\n                quest_stage_minor = 1;\n            } else {\n                --quest_stage_major;\n                quest_stage_minor = 10;\n            }\n        }",
+      "replacements": [
+        {
+          "name": "movement-fallthrough",
+          "text": "        --quest_stage_minor;\n        if (quest_stage_minor <= 0) {\n            if (quest_stage_major >= 2) {\n                --quest_stage_major;\n                quest_stage_minor = 10;\n            } else {\n                quest_stage_minor = 1;\n            }\n        }"
+        }
+      ]
+    },
+    {
+      "name": "keyboard-right-edge-branch",
+      "find": "        if (quest_stage_minor > 10) {\n            if (quest_stage_major >= 5) {\n                quest_stage_minor = 10;\n            } else {\n                ++quest_stage_major;\n                quest_stage_minor = 1;\n            }\n        }",
+      "replacements": [
+        {
+          "name": "movement-fallthrough",
+          "text": "        if (quest_stage_minor > 10) {\n            if (quest_stage_major < 5) {\n                ++quest_stage_major;\n                quest_stage_minor = 1;\n            } else {\n                quest_stage_minor = 10;\n            }\n        }"
+        }
+      ]
+    },
+    {
+      "name": "mouse-left-edge-branch",
+      "find": "            --quest_stage_minor;\n            if (quest_stage_minor <= 0) {\n                if (quest_stage_major < 2) {\n                    quest_stage_minor = 1;\n                } else {\n                    --quest_stage_major;\n                    quest_stage_minor = 10;\n                }\n            }",
+      "replacements": [
+        {
+          "name": "movement-fallthrough",
+          "text": "            --quest_stage_minor;\n            if (quest_stage_minor <= 0) {\n                if (quest_stage_major >= 2) {\n                    --quest_stage_major;\n                    quest_stage_minor = 10;\n                } else {\n                    quest_stage_minor = 1;\n                }\n            }"
+        }
+      ]
+    },
+    {
+      "name": "mouse-right-edge-branch",
+      "find": "            if (quest_stage_minor > 10) {\n                if (quest_stage_major >= 5) {\n                    quest_stage_minor = 10;\n                } else {\n                    ++quest_stage_major;\n                    quest_stage_minor = 1;\n                }\n            }",
+      "replacements": [
+        {
+          "name": "movement-fallthrough",
+          "text": "            if (quest_stage_minor > 10) {\n                if (quest_stage_major < 5) {\n                    ++quest_stage_major;\n                    quest_stage_minor = 1;\n                } else {\n                    quest_stage_minor = 10;\n                }\n            }"
+        }
+      ]
+    }
+  ]
+}

@@ -26,9 +26,9 @@ a standalone `0xe8` subtemplate block, loads
 `ui\ui_textLevelUp.jaz`, and applies separate four-vertex prompt/text
 transforms.
 
-Current MSVC 6.5 `/O2 /GB` result: **84.74%**, with 10 exact prefix
-instructions, 1,422 native instructions versus 1,403 candidate instructions,
-and reference audit **437 resolved / 0 unresolved / 23 mismatched**. The
+Current MSVC 6.5 `/O2 /GB` result: **85.49%**, with 10 exact prefix
+instructions, 1,422 native instructions versus 1,404 candidate instructions,
+and reference audit **449 resolved / 0 unresolved / 19 mismatched**. The
 candidate has the native `0x68`-byte frame. Remaining differences are dominated
 by VC6 scheduling and temporary-slot allocation across the aggregate
 position/atlas assignments and the prompt transform. The recovered element
@@ -168,3 +168,35 @@ intended closing region.
 The retained temporary follows that native dataflow without an artificial
 dependency. It raises the result to **84.78%**, 1,404/1,422 instructions,
 prefix 10, audit **439/0/22**, and a 1,101.17-byte fuzzy gap.
+
+## Late panel position shapes
+
+A fresh reference audit localized the strongest remaining coherent residual to
+the adjacent slot 36-39 construction block. Native disassembly writes slot
+39's Y position at `0x00450df2`, its X position at `0x00450df8`, and its
+`use_offset_render` flag at `0x00450dfd`. The recorded
+`late-panel-position-shape-mutations.json` sweep evaluated all 112 planned
+single and two-site combinations of scalar order, explicit derived casts, and
+staged locals for slots 36-39. Only replacing slot 39's aggregate temporary
+with direct scalar stores changed the ranking positively; the two scalar source
+orders compiled identically. The retained Y-then-X spelling mirrors the native
+store order. It removes four candidate instructions, adds 44.60 weighted bytes,
+and moves the audit from `439/0/22` to `446/0/21`. Changes to slots 36-38 had
+no independent benefit and were rejected.
+
+The same native block also showed a source-shape omission for the controls
+panel. Native first constructs slot 14 at the wide-layout base
+`(-165, 200)`, then overwrites X with `-183` only when the screen width is at
+most 640. The port's equivalent ternary omitted that observable base store.
+`controls-panel-base-position-mutations.json` evaluated all six planned
+aggregate, scalar, branch-direction, and cast shapes. The wide-base aggregate
+and explicit-cast forms tied for best, so the clean aggregate was retained.
+It adds four candidate instructions and another 6.62 weighted bytes while
+removing two reference mismatches; the scalar forms were fuzzy-regressive and
+the narrow-base branch was weaker.
+
+Together these two native-evidenced changes raise the retained result from
+**84.78%** to **85.49%**: 6,135.83 to 6,187.05 weighted bytes, a 1,101.17 to
+1,049.95-byte gap, 1,404/1,422 instructions, prefix 10, and audit
+**449/0/19**. The full rankings and negative variants are recorded in
+`experiments.jsonl`.

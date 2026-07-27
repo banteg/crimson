@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-unlock-combined-condition",
+      "find": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                if (unlock_count > 0) {\n                    int *unlock_perk_id =\n                        &quest_selected_meta[0].unlock_perk_id;\n                    do {\n                        int perk_id;\n                        if ((int)unlock_perk_id\n                            >= (int)&quest_selected_meta[50].unlock_perk_id) {\n                            break;\n                        }\n                        perk_id = *unlock_perk_id;\n                        ++index;\n                        unlock_perk_id +=\n                            sizeof(quest_meta_t) / sizeof(int);\n                        perk_meta_table[perk_id].available = one;\n                    } while (index < unlock_count);\n                }\n",
+      "replacements": [
+        {
+          "name": "count-then-pointer-while",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                while (index < unlock_count\n                       && (int)unlock_perk_id\n                           < (int)&quest_selected_meta[50].unlock_perk_id) {\n                    int perk_id = *unlock_perk_id;\n                    ++index;\n                    unlock_perk_id +=\n                        sizeof(quest_meta_t) / sizeof(int);\n                    perk_meta_table[perk_id].available = one;\n                }\n"
+        },
+        {
+          "name": "pointer-then-count-while",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                while ((int)unlock_perk_id\n                           < (int)&quest_selected_meta[50].unlock_perk_id\n                       && index < unlock_count) {\n                    int perk_id = *unlock_perk_id;\n                    ++index;\n                    unlock_perk_id +=\n                        sizeof(quest_meta_t) / sizeof(int);\n                    perk_meta_table[perk_id].available = one;\n                }\n"
+        },
+        {
+          "name": "count-then-pointer-for",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                for (;\n                     index < unlock_count\n                         && (int)unlock_perk_id\n                             < (int)&quest_selected_meta[50].unlock_perk_id;\n                     ++index,\n                     unlock_perk_id +=\n                         sizeof(quest_meta_t) / sizeof(int)) {\n                    int perk_id = *unlock_perk_id;\n                    perk_meta_table[perk_id].available = one;\n                }\n"
+        },
+        {
+          "name": "pointer-then-count-for",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                for (;\n                     (int)unlock_perk_id\n                             < (int)&quest_selected_meta[50].unlock_perk_id\n                         && index < unlock_count;\n                     ++index,\n                     unlock_perk_id +=\n                         sizeof(quest_meta_t) / sizeof(int)) {\n                    int perk_id = *unlock_perk_id;\n                    perk_meta_table[perk_id].available = one;\n                }\n"
+        },
+        {
+          "name": "count-while-pointer-break",
+          "text": "                int unlock_count = quest_unlock_index;\n                int index = 0;\n                int *unlock_perk_id =\n                    &quest_selected_meta[0].unlock_perk_id;\n                while (index < unlock_count) {\n                    int perk_id;\n                    if ((int)unlock_perk_id\n                        >= (int)&quest_selected_meta[50].unlock_perk_id) {\n                        break;\n                    }\n                    perk_id = *unlock_perk_id;\n                    ++index;\n                    unlock_perk_id +=\n                        sizeof(quest_meta_t) / sizeof(int);\n                    perk_meta_table[perk_id].available = one;\n                }\n"
+        }
+      ]
+    }
+  ]
+}

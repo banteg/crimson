@@ -37,3 +37,20 @@ and final count. The candidate emits 106 instructions against 105 native
 instructions with `8/0/0` references. Its localized residual is entirely the
 documented register allocation and independent-store/x87 schedule, so recovery
 is `semantic-complete` with a `compiler` residual.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed the three opening entries, all fifteen paired
+waves, signed half-step count, and final count 33. MSVC 6.0, 6.5, 6.5
+Processor Pack, and 6.6 tie at 69.19431279620854%; 7.0 regresses to
+64.15094339622641%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tie, while
+`/G6` falls to 65.40284360189573%.
+
+`opening-and-wave-shape-mutations.json` (SHA-256
+`345a28651f7c5d9bba264cd11b1d7e7b944fd666e7087533d9507fde37dd338b`)
+recorded all 24 bounded single and pair variants. Opening/builder lifetime
+orders, explicit loop-local lifetimes, and direct metadata for either wave are
+all byte-identical, alone and in the evaluated interactions. No source change
+is justified. Validation remains 239.41232227488152/346 weighted bytes, a
+106.58767772511848 gap, 106/105 instructions, prefix nine, and references
+8/0/0.

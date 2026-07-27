@@ -134,3 +134,17 @@ sweep, and `scratch.cpp` remains unchanged: the native interior register is
 compiler allocation evidence, not enough evidence for a stronger original
 source-lifetime claim. The complete three-variant result is recorded in
 `experiments.jsonl`.
+
+## Follow-up stage-five stopping audit
+
+After the HUD and Quest priority passes reached stopping points, a bounded
+live Binary Ninja audit revisited the largest tutorial mismatch region at
+`0x00409171..0x0040934f`. Native retains both alternating left/right
+formations, the repeat-count-gated bonus carrier, all three creature
+placements, the blue-spider wave, and the five-way bonus ID/duration switch.
+Those operations and branches are already present in `scratch.cpp`; the
+remaining region difference is block placement, jump-table layout, and
+scheduling. No new source discrepancy or honest mutation site was found, so
+the scratch remains unchanged at `1935.207492795389/2907` weighted bytes
+(`66.57060518731989%`), gap `971.792507204611`, 693/695 instructions, prefix
+6, and `154/0/4` references.

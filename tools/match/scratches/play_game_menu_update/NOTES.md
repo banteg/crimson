@@ -85,3 +85,28 @@ bytes. Every variant retained 776 candidate instructions and `275/0/28`
 references. There were no positive singles, so no interaction was eligible.
 The complete sweep is recorded in `experiments.jsonl`; no source variant was
 applied.
+
+## Opening-position copy sweep (2026-07-27)
+
+After the Options and secret-credits passes reached stopping points, a bounded
+pass selected the largest Play Game mismatch region at
+`0x0044efce..0x0044f055`. Live Binary Ninja forms both UI-element coordinate
+sums, labels Tutorial, adds `(330, 50)`, copies the base position, and applies
+the render-offset X adjustment. Those operations and their dependencies are
+already present in the source; the mismatch is temporary placement and x87
+scheduling.
+
+The recorded schema-1 `opening-position-copy-lifetimes` sweep tested all 5/5
+planned copy, default-assignment, component, and pair-constructor forms. Its
+spec SHA-256 is
+`9d636c6f4b5ece30b8f9c5bc80715d45fd0ee5a2554a87e5ebff5ec0cab73b70`.
+Default construction followed by assignment for only `base_position` is
+byte-neutral. Default-assignment for `position` or both objects loses
+`6.74313904227256` weighted bytes, six extra instructions, four prefix
+instructions, and three resolved references. Component-copy and
+pair-constructor forms each lose `63.761328269032674` weighted bytes and four
+candidate instructions. With no positive single, the source remains unchanged
+at `2831.4256278171283/3238` weighted bytes (`87.44365743721829%`), gap
+`406.5743721828717`, 776/777 instructions, prefix 120, and `275/0/28`
+references. Its SHA-256 is
+`0074e502ced913f132686122ec0e158ed032f17c79c69ea1c483e27bc5d6c1ff`.

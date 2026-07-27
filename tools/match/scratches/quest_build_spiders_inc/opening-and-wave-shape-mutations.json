@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-opening-lifetime",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n",
+      "replacements": [
+        {
+          "name": "locals-before-builder",
+          "text": "    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n"
+        },
+        {
+          "name": "count-before-trigger",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_count = 1;\n    int initial_trigger_time_ms = 500;\n"
+        },
+        {
+          "name": "template-count-trigger-builder",
+          "text": "    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_count = 1;\n    int initial_trigger_time_ms = 500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n"
+        }
+      ]
+    },
+    {
+      "name": "loop-local-lifetime",
+      "find": "    builder.count = 3;\n    for (int trigger_time_ms = 17000, step_count = 0;\n         trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n",
+      "replacements": [
+        {
+          "name": "trigger-before-step",
+          "text": "    builder.count = 3;\n    int trigger_time_ms = 17000;\n    int step_count = 0;\n    for (; trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n"
+        },
+        {
+          "name": "step-before-trigger",
+          "text": "    builder.count = 3;\n    int step_count = 0;\n    int trigger_time_ms = 17000;\n    for (; trigger_time_ms < 107000;\n         trigger_time_ms += 6000, ++step_count) {\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-wave-metadata",
+      "find": "        wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "top-wave-metadata",
+      "find": "        wave_spawn->set_spawn(\n            SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,\n            trigger_time_ms,\n            wave_count);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        wave_spawn->template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n        wave_spawn->trigger_time_ms = trigger_time_ms;\n        wave_spawn->count = wave_count;\n"
+        }
+      ]
+    }
+  ]
+}

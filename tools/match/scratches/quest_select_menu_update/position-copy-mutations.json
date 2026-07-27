@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-copy-shape",
+      "find": "    quest_select_vec2_t position = panel_position;",
+      "replacements": [
+        {
+          "name": "component-copy-x-first",
+          "text": "    quest_select_vec2_t position;\n    position.x = panel_position.x;\n    position.y = panel_position.y;"
+        },
+        {
+          "name": "component-copy-y-first",
+          "text": "    quest_select_vec2_t position;\n    position.y = panel_position.y;\n    position.x = panel_position.x;"
+        },
+        {
+          "name": "constructor-copy",
+          "text": "    quest_select_vec2_t position(\n        panel_position.x, panel_position.y);"
+        },
+        {
+          "name": "default-then-assignment",
+          "text": "    quest_select_vec2_t position;\n    position = panel_position;"
+        }
+      ]
+    }
+  ]
+}

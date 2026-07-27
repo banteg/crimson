@@ -264,6 +264,10 @@ extern "C" void controls_menu_update(void)
         controls_move_method_list.item_count = 4;
     }
 
+    controls_vec2_t left_base =
+        *(controls_vec2_t *)&ui_element_slot_14.pos_x
+        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;
+
     char *player_items[4];
     controls_player_profile_list.items = player_items;
     player_items[0] = "Player 1";
@@ -272,11 +276,7 @@ extern "C" void controls_menu_update(void)
     player_items[3] = "Player 4";
     controls_player_profile_list.item_count = 2;
 
-    controls_vec2_t left_panel =
-        *(controls_vec2_t *)&ui_element_slot_14.pos_x
-        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x
-        + controls_vec2_t(300.0f, 40.0f);
-    controls_vec2_t left_base = left_panel;
+    left_base = left_base + controls_vec2_t(300.0f, 40.0f);
     left_base.x =
         ui_element_slot_14.render_offset_x - 32.0f - 64.0f
         + left_base.x;

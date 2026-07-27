@@ -465,3 +465,78 @@ returned-value helper, recorded under spec SHAs
 and
 `7aeb552b56083433b31e489d7a7be37c119dfb3c03e2d4b5a90dd880fc2eadd0`.
 No rejected source spelling is retained.
+
+## Particle-hit tint normalization follow-up
+
+The next coherent reference cluster is the particle-hit tint normalization at
+`0x00422a54-0x00422b8d`. Live Binary Ninja shows the native x87 stream sums
+`tint_g + tint_b + tint_r`, scales `tint_r`, `tint_g`, and `tint_b` in that
+order, then clamps `tint_r`, `tint_g`, `tint_b`, and `tint_a` to `[0, 1]`.
+The current source has the same runtime semantics and channel order, but VC6.5
+canonicalizes its sum to a different operand schedule and carries two scaled
+results through stack temporaries where the native stream reloads the fields.
+
+Three complete bounded sweeps reject natural source-shape corrections:
+
+- All five alternative sum permutations are byte-identical to the baseline.
+  The complete sweep has spec SHA
+  `62d2cb9ddb198f5b498819e6f55c6aea5cc1e9390f98c6a84de68ae7ff2c212a`.
+- Explicit `channel * scale` and `scale * channel` assignments are both
+  byte-identical. Their spec SHA is
+  `0b855d57777721cc14ed12409b98e84c2b0f701f0d2ae879cb3065bdade025e1`.
+- Replacing the four direct clamps with a native-order inline value helper
+  loses 87.837 fuzzy-weighted bytes, grows the candidate by three
+  instructions, and drops eight correctly aligned references. Although three
+  mismatch labels disappear as a side effect of the changed alignment, that
+  is not a real gain. The complete helper interaction sweep has spec SHA
+  `9a6a3fc19bcf3c89054bf7fb3b0e678c1e92d7762aaec0e7e6036d25e4c69abf`.
+
+No tint source variant is retained. The update candidate remains source SHA
+`53f5991434dba671cc095787f498ae7ff2ee1f7e338cbc02dd9a05b2b672d09d`
+at 50.0344590%, 2,150/2,203 instructions, a 4,201.602-byte fuzzy gap, and
+`356/0/27` references.
+
+## Sprite and particle movement lifetime refinement
+
+The next highest uncovered mismatch region is native
+`0x0042241c-0x00422782`: 870 target bytes with 243.181 fuzzy-weighted bytes
+matched and a 626.819-byte local gap at the starting checkpoint. Live
+disassembly from explicit target `crimsonland.exe.bndb` shows two recoverable
+source lifetimes inside that larger compiler-residual region. A fresh
+MSVC 6.5 profile check also confirms `/O2 /GB` and `/O2 /G5` remain
+byte-identical, so the difference is not a processor-flag artifact.
+
+At `0x00422476-0x0042249a`, native loads `frame_dt` once, duplicates it on
+x87, materializes the x displacement, and carries the y displacement until
+both sprite-position updates. Of five complete source variants, a staged
+`frame_dt` feeding a `vec2f_t` initializer is uniquely best. It raises the
+whole-function weighted score from 4,207.3977 to 4,213.1890 bytes, adds two
+candidate instructions, and changes references from `356/0/27` to
+`357/0/24`. The independent probe reproduces source SHA
+`f2ca8821a9cae6bb5110c52bf536c19426d3586b53dcd17d4c15fdca76e755f5`;
+the sweep spec SHA is
+`06b9bdb85bb180875bef9f95d9d8b1fe3ab323a6b3186d6b57e08463ffcc73e0`.
+
+Native begins the intensity comparisons at `0x0042253a` and `0x004225f5`
+before scheduling the shared x displacement in both particle movement arms.
+Putting the identical `move_x` declaration in each real low/high branch lets
+VC6 recover that ordering. The complete two-site interaction sweep raises the
+intermediate score by another 5.7993 weighted bytes, restores the candidate to
+2,150 instructions, and adds one aligned reference without adding a mismatch.
+The independent probe reproduces final source SHA
+`6bad34cc75c3c2bee965e2eae98958fac4a51cd219d03659d17f8c1deab4c115`;
+the sweep spec SHA is
+`6ba00241bbf33bd4a4937e6e31d3a76d561c5701bff629320d538566c2ba779b`.
+
+A separate five-variant test of shortening the cached particle style lifetime
+is rejected. Both compiling declaration-move interactions lose 194.1816
+weighted bytes and eight aligned references; no style spelling is retained.
+That complete negative sweep has spec SHA
+`0da830615973e9e4cbe51a0b243cb91de7bdd0a54579803d5029b7c9cdac1c2e`.
+
+Together the two retained refinements improve the update from 50.0344590% to
+50.1722950%, from 4,207.3977 to 4,218.9883 weighted bytes, and from
+`356/0/27` to `358/0/24` references while ending at the same 2,150/2,203
+instruction count. The final fuzzy gap is 4,190.0117 bytes. The 27-record
+`experiments.jsonl` SHA-256 is
+`20047e30dd300664f9d4b8dbbdbf6170a3eb796c24c1b833ee01cc5d98e742a6`.

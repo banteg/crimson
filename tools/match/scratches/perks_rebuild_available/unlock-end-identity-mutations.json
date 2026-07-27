@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-unlock-end-identity",
+      "find": "(int)&quest_selected_meta[50].unlock_perk_id",
+      "replacements": [
+        {
+          "name": "next-object-array",
+          "text": "(int)creature_spawn_slot_table"
+        },
+        {
+          "name": "next-object-element",
+          "text": "(int)&creature_spawn_slot_table[0]"
+        },
+        {
+          "name": "next-object-first-field",
+          "text": "(int)&creature_spawn_slot_table[0].owner"
+        },
+        {
+          "name": "quest-object-one-past",
+          "text": "(int)&quest_selected_meta[50]"
+        },
+        {
+          "name": "quest-base-byte-extent",
+          "text": "(int)((char *)quest_selected_meta + sizeof(quest_selected_meta))"
+        }
+      ]
+    }
+  ]
+}

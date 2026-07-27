@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "activate-list-parameter-ownership",
+      "find": "static __forceinline int activate_list(\n    controls_vec2_t &base,\n    const controls_vec2_t &offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base.vec2_add_out((float *)&position, (float *)&offset),\n        &list);",
+      "replacements": [
+        {
+          "name": "base-by-value",
+          "text": "static __forceinline int activate_list(\n    controls_vec2_t base,\n    const controls_vec2_t &offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base.vec2_add_out((float *)&position, (float *)&offset),\n        &list);"
+        },
+        {
+          "name": "offset-by-value",
+          "text": "static __forceinline int activate_list(\n    controls_vec2_t &base,\n    controls_vec2_t offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base.vec2_add_out((float *)&position, (float *)&offset),\n        &list);"
+        },
+        {
+          "name": "base-and-offset-by-value",
+          "text": "static __forceinline int activate_list(\n    controls_vec2_t base,\n    controls_vec2_t offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base.vec2_add_out((float *)&position, (float *)&offset),\n        &list);"
+        },
+        {
+          "name": "const-base-reference",
+          "text": "static __forceinline int activate_list(\n    const controls_vec2_t &base,\n    const controls_vec2_t &offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        ((controls_vec2_t &)base).vec2_add_out(\n            (float *)&position, (float *)&offset),\n        &list);"
+        },
+        {
+          "name": "explicit-base-copy",
+          "text": "static __forceinline int activate_list(\n    controls_vec2_t &base,\n    const controls_vec2_t &offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t base_copy = base;\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base_copy.vec2_add_out((float *)&position, (float *)&offset),\n        &list);"
+        },
+        {
+          "name": "explicit-offset-copy",
+          "text": "static __forceinline int activate_list(\n    controls_vec2_t &base,\n    const controls_vec2_t &offset,\n    ui_list_widget_t &list)\n{\n    controls_vec2_t offset_copy = offset;\n    controls_vec2_t position;\n    int selected = ui_list_widget_update(\n        base.vec2_add_out((float *)&position, (float *)&offset_copy),\n        &list);"
+        }
+      ]
+    }
+  ]
+}

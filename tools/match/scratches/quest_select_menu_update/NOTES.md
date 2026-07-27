@@ -40,9 +40,9 @@ match.
 ## Matching evidence and honest residual
 
 The verified VC6 build is 785 normalized instructions against 803 native,
-scores 71.16%, and audits 228 references as resolved, zero as unresolved, and
-10 as mismatched inside nonmatching instruction regions. Its weighted gap
-improves from 993.78 to 990.99 bytes. The broad behavior
+scores 72.0403%, and audits 235 references as resolved, zero as unresolved,
+and five as mismatched inside nonmatching instruction regions. Its weighted
+gap is 960.6952 bytes. The broad behavior
 and static-constructor sequence are recovered, but the natural reconstruction
 uses a 56-byte frame while native uses 48 bytes. Native also keeps icon Y and
 row/control constants in a different EBX/EBP/ESI allocation and lays out the
@@ -102,12 +102,42 @@ references, and first target/candidate mismatch offsets `0/0`. The record has
 `best_improves=false` and no winner. No positive single justified an
 interaction sweep, and the semantic source remains unchanged.
 
+## Position-copy lifetime correction
+
+A follow-up pass combined the entry dataflow at `0x00447d5f..0x00447dbb`
+with a live audit of the coherent selection-and-start tail at
+`0x004487e8..0x00448aa5`. The tail confirms Back routing, mouse and 1-through-0
+quick selection, Enter selection, unlock validation, and the successful
+Gameplay/Quest transition already present in the source. At entry, native
+forms and copies the working panel position with a lifetime consistent with
+default construction followed by assignment; the previous source used copy
+initialization.
+
+The schema-1 `position-copy-shape` sweep tested four complete singles. Its
+persisted spec SHA-256 is
+`42a38329c1ba1fdbc848f06e19f1ed8a203956647fbbbb283432cae3049fee82`.
+Default construction followed by `position = panel_position` is the only
+positive result and is retained. The empty default constructor followed by
+the implicit member assignment is semantically identical because both members
+are assigned before use. Its source SHA-256 is
+`b841f13bd49c4e41b95ff4b552672c7f8ea3d50d3a93e99274bb257dcb6a504e`.
+
+The retained result moves from `2445.0125944584383/3436` weighted bytes
+(`71.15869017632241%`) to `2475.304785894207/3436`
+(`72.04030226700252%`): a gain of `30.292191435768473` weighted bytes and
+`0.8816120906801062` percentage points. The gap falls from
+`990.9874055415617` to `960.6952141057932`; instruction counts and prefix stay
+785/803 and 0, while references improve from `228/0/10` to `235/0/5`.
+Constructor-copy and both component-copy spellings regress to
+`55.93434343434344%`, 781/803 instructions, and `202/0/15` references, so
+they are rejected.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
-paths, and its seven-call inventory agrees with the recovered source. All ten
+paths, and its seven-call inventory agrees with the recovered source. All five
 masked-reference mismatches occur inside nonmatching sequence alignments and
 resolve to source operations already present in the surrounding native flow.
 They remain visible and unaliased rather than being classified as separate

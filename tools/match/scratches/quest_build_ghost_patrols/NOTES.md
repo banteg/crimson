@@ -34,3 +34,14 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices confirm the existing VC6 `/O2 /GB`
+profile: the ordinary VC6 variants tie, VC7 regresses, and `/G6` is the only
+tested VC6 flag spelling that worsens the result. Recorded source-order and
+helper-store sweeps evaluate 39 variants covering loop-local order, biased
+pointer spellings, metadata fields, update order, both tail setters, and all
+helper store permutations. None improves the `270.9111111111111/334`
+weighted bytes, 90/90 instructions, 14-instruction prefix, or `5/0/0`
+references, so the source remains unchanged.

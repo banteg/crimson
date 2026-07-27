@@ -43,3 +43,20 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed all thirteen fixed entries and the absence of
+terrain-derived final coordinates. MSVC 6.0, 6.5, and 6.6 tie at
+89.55223880597015%; 6.5 Processor Pack falls to 87.31343283582089% and
+7.0 to 61.94029850746269%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tie,
+while `/G6` regresses to 62.68656716417911%.
+
+`fixed-table-sibling-shape-mutations.json` (SHA-256
+`531327bfeb241ba0af52c0063dde69b5b0577ec065ea64e3c7e5d2fa0d1905c7`)
+recorded eight representative variants. Expanding any of five calls to
+position plus direct metadata is byte-neutral. Reordering the shared setter
+loses 48.69 to 167.72 weighted bytes, confirming the existing position-first,
+template-trigger-count form. No source change is retained. Validation remains
+649.2537313432836/725 weighted bytes, a 75.74626865671644 gap, 134/134
+instructions, prefix twelve, and references 0/0/0.

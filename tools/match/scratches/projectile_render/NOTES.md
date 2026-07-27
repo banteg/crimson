@@ -271,3 +271,36 @@ spellings:
 
 No render source rewrite is retained; its final metrics remain the baseline
 above.
+
+## Native clamp branch order
+
+The first coherent residual reference cluster is a real source-order mismatch,
+not one of the surrounding cross-pass alignment artifacts. In the live
+`crimsonland.exe.bndb`, the plasma fade at `0x0042407a-0x004240a6` multiplies
+the life timer by `2.5f`, compares against `1.0f` first, substitutes `1.0f`
+when above the upper bound, and only then compares against and substitutes
+`0.0f` for the lower bound. The recovered shared clamp helper instead tested
+the lower bound first.
+
+The complete three-variant, one-site sweep in
+`clamp-order-mutations.json` (SHA-256
+`4a640aad4869a9ea82dfef56d142c6d2e08d422c56e5983ebe4e393d9e922db7`)
+found that all three upper-first source spellings compile to the same improved
+instruction stream. The retained plain upper-then-lower spelling has source
+SHA-256
+`64b3190b0e76d14d54111c6b32251cad0258aaedc818471afd5bb379dc07c73a`.
+It moves the candidate from 51.0638298% to 51.2680851%, adds 25.636
+fuzzy-weighted bytes, reduces the gap from 6,141.979 to 6,116.343 bytes, and
+changes the reference audit from `402/0/16` to `406/0/12`, without changing
+the 2,854/3,021 instruction counts.
+
+The 12 surviving reference mismatches are still isolated alignment pairings.
+For example, the audit pairs native camera x at `0x00422e16` with a later
+candidate camera y load even though the candidate object contains the proper
+x/y relocation sequence. It likewise pairs native `effect_scale * 16.0f` at
+`0x004245b8` with a candidate `* 2.5f` from a different block, and pairs the
+native 3/4/2-pixel small-billboard branches at
+`0x00425561-0x0042561e` with constants from neighboring candidate blocks.
+Both the source and the native disassembly confirm those values and field
+offsets are already correct. This leaves no second locally coherent reference
+cluster to repair honestly.

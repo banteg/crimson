@@ -106,3 +106,28 @@ the labels before table emission. Giving case 8 a separately spelled full-copy
 body adds 5 to 15 instructions and still leaves the private-table pair at
 `1/1`; the least-bad forced form falls to 93.83%. The canonical 94.36%,
 443-instruction source is retained.
+
+The object audit identifies the pair by compiler-local symbol as well as
+address. Candidate `$L44367` is the unresolved 81-byte ID lookup table paired
+with jump table `$L44368`; live Binary Ninja types the native counterparts at
+`0x10006bdc` as `uint8_t[0x51]` and `0x10006b80` as
+`uint32_t[0x17]`. This supports a matcher improvement, not a source or header
+change: canonicalize a VC6 byte lookup table through its companion jump
+targets so semantically equivalent folded dispatch entries audit as
+compiler-private. No shared matcher code is changed in this scratch.
+
+## Sparse-switch partition matcher
+
+The shared matcher now implements the bounded compiler-private audit proposed
+above. It maps each byte-table index through the companion local jump table,
+then canonicalizes destination equivalence classes by first occurrence. The
+candidate's 22-entry table and native DLL's 23-entry table produce the same
+81-byte partition; the extra native entry aliases the ordinary copy block and
+does not change dispatch behavior.
+
+Fresh matching keeps the honest source score at **94.36%**, exactly **443/443
+instructions**, and prefix **7/443**, while the reference audit improves from
+`68/1/1` to **`70/0/0`**. Unit coverage proves both the COFF table-pair
+recognition and linked-image comparison, including an extra duplicate jump
+entry with different byte indices. The remaining residual is therefore
+instruction-layout/codegen only.

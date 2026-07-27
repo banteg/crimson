@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-destination-argument-helpers",
+      "find": "#include \"crimsonland_resource.h\"\n",
+      "replacements": [
+        {
+          "name": "define-argument-helper-family",
+          "text": "#include \"crimsonland_resource.h\"\n\nstatic __forceinline char *decode_destination_data_bytes_remaining(\n    void *pcm_data,\n    unsigned int pcm_bytes,\n    unsigned int remaining)\n{\n    return (char *)((unsigned int)pcm_data + pcm_bytes - remaining);\n}\n\nstatic __forceinline char *decode_destination_bytes_data_remaining(\n    unsigned int pcm_bytes,\n    void *pcm_data,\n    unsigned int remaining)\n{\n    return (char *)(pcm_bytes - remaining + (unsigned int)pcm_data);\n}\n\nstatic __forceinline char *decode_destination_remaining_data_bytes(\n    unsigned int remaining,\n    void *pcm_data,\n    unsigned int pcm_bytes)\n{\n    return (char *)(pcm_bytes - remaining + (unsigned int)pcm_data);\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "decode-destination-argument-call",
+      "find": "            (char *)(entry->pcm_bytes - remaining +\n                (unsigned int)entry->pcm_data),\n",
+      "replacements": [
+        {
+          "name": "call-data-bytes-remaining",
+          "text": "            decode_destination_data_bytes_remaining(\n                entry->pcm_data, entry->pcm_bytes, remaining),\n"
+        },
+        {
+          "name": "call-bytes-data-remaining",
+          "text": "            decode_destination_bytes_data_remaining(\n                entry->pcm_bytes, entry->pcm_data, remaining),\n"
+        },
+        {
+          "name": "call-remaining-data-bytes",
+          "text": "            decode_destination_remaining_data_bytes(\n                remaining, entry->pcm_data, entry->pcm_bytes),\n"
+        }
+      ]
+    }
+  ]
+}

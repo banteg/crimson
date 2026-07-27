@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "count-publication-lifetime",
+      "find": "    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n",
+      "replacements": [
+        {
+          "name": "postincrement-global",
+          "text": "    int count = fx_queue_count++;\n    int offset = count * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n\n    if (fx_queue_count >= 0x80) {\n"
+        },
+        {
+          "name": "postincrement-local-index",
+          "text": "    int count = fx_queue_count;\n    int offset = count++ * sizeof(fx_queue_entry_t);\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n"
+        },
+        {
+          "name": "indexed-postincrement",
+          "text": "    int count = fx_queue_count;\n    fx_queue_entry_t *entry = &fx_queue[count++];\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n    fx_queue_count = count;\n\n    if (count >= 0x80) {\n"
+        },
+        {
+          "name": "publish-before-position",
+          "text": "    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    fx_queue_count = count;\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n\n    if (count >= 0x80) {\n"
+        },
+        {
+          "name": "publish-between-position-color",
+          "text": "    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    fx_queue_count = count;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n\n    if (count >= 0x80) {\n"
+        },
+        {
+          "name": "assign-in-limit-test",
+          "text": "    int count = fx_queue_count;\n    int offset = count * sizeof(fx_queue_entry_t);\n    ++count;\n    fx_queue_entry_t *entry = (fx_queue_entry_t *)((char *)fx_queue + offset);\n\n    entry->position = *pos;\n    entry->color = *color;\n    entry->width = width;\n    entry->height = height;\n    entry->rotation = rotation;\n    entry->effect_id = effect_id;\n\n    if ((fx_queue_count = count) >= 0x80) {\n"
+        }
+      ]
+    }
+  ]
+}

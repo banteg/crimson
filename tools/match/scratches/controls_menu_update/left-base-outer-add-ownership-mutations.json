@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-base-outer-add-ownership",
+      "find": "    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;",
+      "replacements": [
+        {
+          "name": "anchor-before-items-direct-base",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n\n    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    controls_vec2_t left_base =\n        left_panel + controls_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "anchor-before-items-assigned-base",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n    controls_vec2_t left_base;\n\n    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    left_base = left_panel + controls_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "base-anchor-before-items-in-place-add",
+          "text": "    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n\n    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    left_base = left_base + controls_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "base-anchor-before-items-field-add",
+          "text": "    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n\n    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    left_base.x += 300.0f;\n    left_base.y += 40.0f;"
+        },
+        {
+          "name": "items-before-anchor-direct-base",
+          "text": "    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n    controls_vec2_t left_base =\n        left_panel + controls_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "base-anchor-after-items-in-place-add",
+          "text": "    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n\n    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;\n    left_base = left_base + controls_vec2_t(300.0f, 40.0f);"
+        }
+      ]
+    }
+  ]
+}

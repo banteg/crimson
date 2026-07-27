@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "second-loop-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -31,3 +31,20 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed all seven fixed entries, the height-derived
+first y coordinate, and the hardcoded 1152/-128 vertical extremes. MSVC 6.0,
+6.5, 6.5 Processor Pack, and 6.6 tie at 81.57894736842105%; 7.0 falls to
+57.89473684210527% and loses one matched reference. `/GB`, `/G5`, `/G7`,
+`/Ox`, and `/Ob1` tie, while `/G6` reproduces that regression.
+
+`fixed-entry-sibling-shape-mutations.json` (SHA-256
+`5f8ced5e63fb8317a96c1ec0bfab21ac9d857bf2171acf887640fe364b17ed87`)
+recorded thirteen variants. Entry-zero direct metadata is byte-neutral;
+every helper-order, other metadata, or direct-position variant regresses by
+4.06 to 49.37 weighted bytes, often shortening the prefix or removing the
+native vector temporary. No source change is retained. Validation remains
+318.1578947368421/390 weighted bytes, a 71.84210526315792 gap, 76/76
+instructions, prefix ten, and references 2/0/0.

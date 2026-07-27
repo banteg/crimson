@@ -447,6 +447,12 @@ accepted only when the matcher proves the full handler graph: thunk to
 `__CxxFrameHandler`, FuncInfo fields, unwind-map entry, cleanup funclet stack
 offset, and call to scalar `operator delete`.
 
+Compiler-local sparse switches are audited by mapping each byte lookup entry
+through its companion absolute jump table and comparing the resulting
+destination partition. This accepts linker/compiler differences in private
+table numbering only when every lookup value still reaches the same
+function-local equivalence class.
+
 Inspect exact-score reference debt with:
 
 ```sh

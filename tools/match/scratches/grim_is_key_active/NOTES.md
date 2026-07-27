@@ -65,3 +65,14 @@ eight references. They are rejected because they destroy the 95-instruction
 exact prefix (falling to 5) and move the instruction count farther from the
 175-instruction target. The retained `if` spelling therefore remains the
 stronger local match despite its slightly lower aggregate ratio.
+
+Live Binary Ninja types `grim_joystick_state` as the standard 0x110-byte
+`DIJOYSTATE2`; `lX` through `lRz` occupy the exact six offsets
+`0x0..0x14`. The lone conflict pairs candidate `lRz` with native `lX` only
+after block alignment, so no joystick declaration correction is supported.
+
+`axis-direct-nesting-mutations.json` records three source layouts targeted at
+the native backward common tail. Direct `else if` nesting and an explicit
+remaining-axis `else` compile byte-identically at 79.20%, prefix 95, 176
+instructions, and references `7/1/0`. Inverting the first-axis test resolves
+the alignment conflict but falls to 65.53% and prefix 5. None is retained.

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "loop-local-order",
+      "find": "    int trigger_time_ms = 2500;\n    int wave = 0;",
+      "replacements": [
+        {
+          "name": "wave-before-trigger",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 2500;"
+        }
+      ]
+    },
+    {
+      "name": "loop-entry-expression",
+      "find": "        quest_entry_original_t *spawn = &spawns[wave + 1];",
+      "replacements": [
+        {
+          "name": "biased-base-plus-wave",
+          "text": "        quest_entry_original_t *spawn = &spawns[1] + wave;"
+        },
+        {
+          "name": "pointer-addition",
+          "text": "        quest_entry_original_t *spawn = spawns + wave + 1;"
+        }
+      ]
+    },
+    {
+      "name": "loop-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_FORMATION_RING_ALIEN_5_19,\n            trigger_time_ms,\n            one);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_FORMATION_RING_ALIEN_5_19;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = one;"
+        },
+        {
+          "name": "direct-trigger-template-count",
+          "text": "        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->template_id = SPAWN_ID_FORMATION_RING_ALIEN_5_19;\n        spawn->count = one;"
+        }
+      ]
+    },
+    {
+      "name": "loop-update-order",
+      "find": "        ++wave;\n        trigger_time_ms += 2500;",
+      "replacements": [
+        {
+          "name": "trigger-before-wave",
+          "text": "        trigger_time_ms += 2500;\n        ++wave;"
+        }
+      ]
+    },
+    {
+      "name": "first-tail-metadata",
+      "find": "    spawns[13].set_spawn(\n        SPAWN_ID_ALIEN_DEADLY_FAST_2B,\n        (wave - 1) * 2500,\n        one);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[13].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n    spawns[13].trigger_time_ms = (wave - 1) * 2500;\n    spawns[13].count = one;"
+        }
+      ]
+    },
+    {
+      "name": "second-tail-metadata",
+      "find": "    spawns[14].set_spawn(\n        SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18,\n        (wave * 5 + 15) * 500,\n        one);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[14].template_id = SPAWN_ID_FORMATION_GRID_ALIEN_BRONZE_18;\n    spawns[14].trigger_time_ms = (wave * 5 + 15) * 500;\n    spawns[14].count = one;"
+        }
+      ]
+    }
+  ]
+}

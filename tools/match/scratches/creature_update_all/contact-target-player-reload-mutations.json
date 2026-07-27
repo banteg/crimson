@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shield-target-player-reload",
+      "find": "                                    if (player_state_table[current_player_index].shield_timer\n                                        <= 0.0f) {",
+      "replacements": [
+        {
+          "name": "reload-signed-target-player",
+          "text": "                                    if (player_state_table[(int)*target_player].shield_timer\n                                        <= 0.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "damage-target-player-reload",
+      "find": "                                    player_take_damage(\n                                        current_player_index,\n                                        creature_pool[creature_index].contact_damage);",
+      "replacements": [
+        {
+          "name": "reload-signed-target-player",
+          "text": "                                    player_take_damage(\n                                        (int)*target_player,\n                                        creature_pool[creature_index].contact_damage);"
+        }
+      ]
+    },
+    {
+      "name": "knockback-target-player-reloads",
+      "find": "                                    creature_vec2_t contact_delta(\n                                        player_state_table[current_player_index].position.x - position->x,\n                                        player_state_table[current_player_index].position.y - position->y);\n                                    vec2_normalize_dispatch(\n                                        (vec2f_t *)&contact_delta,\n                                        (vec2f_t *)&contact_delta);\n                                    creature_vec2_t impact(\n                                        player_state_table[current_player_index].position.x\n                                            + contact_delta.x * 3.0f,\n                                        player_state_table[current_player_index].position.y\n                                            + contact_delta.y * 3.0f);",
+      "replacements": [
+        {
+          "name": "reload-signed-target-player",
+          "text": "                                    creature_vec2_t contact_delta(\n                                        player_state_table[(int)*target_player].position.x - position->x,\n                                        player_state_table[(int)*target_player].position.y - position->y);\n                                    vec2_normalize_dispatch(\n                                        (vec2f_t *)&contact_delta,\n                                        (vec2f_t *)&contact_delta);\n                                    creature_vec2_t impact(\n                                        player_state_table[(int)*target_player].position.x\n                                            + contact_delta.x * 3.0f,\n                                        player_state_table[(int)*target_player].position.y\n                                            + contact_delta.y * 3.0f);"
+        }
+      ]
+    },
+    {
+      "name": "infection-target-player-reload",
+      "find": "                                current_player_index = (int)*target_player;\n                                if (player_state_table[current_player_index].plaguebearer_active",
+      "replacements": [
+        {
+          "name": "reload-signed-target-player",
+          "text": "                                if (player_state_table[(int)*target_player].plaguebearer_active"
+        }
+      ]
+    }
+  ]
+}

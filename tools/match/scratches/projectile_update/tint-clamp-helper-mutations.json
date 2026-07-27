@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-tint-clamp-helper",
+      "find": "}\n\nextern \"C\" void projectile_update(void)",
+      "replacements": [
+        {
+          "name": "inline-value-helper",
+          "text": "}\n\nstatic __inline float projectile_update_clamp_tint(float value)\n{\n    if (value < 0.0f) {\n        return 0.0f;\n    }\n    if (value > 1.0f) {\n        return 1.0f;\n    }\n    return value;\n}\n\nextern \"C\" void projectile_update(void)"
+        }
+      ]
+    },
+    {
+      "name": "particle-hit-tint-clamp-use",
+      "find": "                                if (hit_creature->tint_r < 0.0f) {\n                                    hit_creature->tint_r = 0.0f;\n                                } else if (hit_creature->tint_r > 1.0f) {\n                                    hit_creature->tint_r = 1.0f;\n                                }\n                                if (hit_creature->tint_g < 0.0f) {\n                                    hit_creature->tint_g = 0.0f;\n                                } else if (hit_creature->tint_g > 1.0f) {\n                                    hit_creature->tint_g = 1.0f;\n                                }\n                                if (hit_creature->tint_b < 0.0f) {\n                                    hit_creature->tint_b = 0.0f;\n                                } else if (hit_creature->tint_b > 1.0f) {\n                                    hit_creature->tint_b = 1.0f;\n                                }\n                                if (hit_creature->tint_a < 0.0f) {\n                                    hit_creature->tint_a = 0.0f;\n                                } else if (hit_creature->tint_a > 1.0f) {\n                                    hit_creature->tint_a = 1.0f;\n                                }",
+      "replacements": [
+        {
+          "name": "inline-value-helper-calls",
+          "text": "                                hit_creature->tint_r =\n                                    projectile_update_clamp_tint(\n                                        hit_creature->tint_r);\n                                hit_creature->tint_g =\n                                    projectile_update_clamp_tint(\n                                        hit_creature->tint_g);\n                                hit_creature->tint_b =\n                                    projectile_update_clamp_tint(\n                                        hit_creature->tint_b);\n                                hit_creature->tint_a =\n                                    projectile_update_clamp_tint(\n                                        hit_creature->tint_a);"
+        }
+      ]
+    }
+  ]
+}

@@ -47,3 +47,14 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices retain VC6 `/O2 /GB`; VC7,
+`msvc6.5pp`, and `/G6` regress. A recorded 145-variant fixed-entry sweep
+exhausts every single and pairwise choice between setter-before-position and
+direct-metadata spellings, plus loop-local order. A five-variant helper-store
+sweep covers the remaining setter permutations. None improves the
+`455.3611111111111/507` weighted bytes, exact 108 instructions,
+ten-instruction prefix, or `0/0/0` references, so the fixed-entry source and
+the already exact repeated loop remain unchanged.

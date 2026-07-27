@@ -630,9 +630,11 @@ extern "C" void ui_menu_layout_init(void)
     ui_element_slot_13.use_offset_render = 1;
 
     copy_layer(ui_element_slot_14, ui_menu_panel_template);
-    ui_element_slot_14.pos.x =
-        config_screen_width <= 640 ? -183.0f : -165.0f;
-    ui_element_slot_14.pos.y = 200.0f;
+    ui_element_slot_14.pos =
+        ui_layout_vec2_t(-165.0f, 200.0f);
+    if (config_screen_width <= 640) {
+        ui_element_slot_14.pos.x = -183.0f;
+    }
     ui_element_slot_14.on_update = controls_menu_update;
     ui_element_slot_14.use_offset_render = 1;
 
@@ -673,7 +675,8 @@ extern "C" void ui_menu_layout_init(void)
     copy_layer(
         ui_element_slot_39,
         ui_menu_item_subtemplate_block_01);
-    ui_element_slot_39.pos = ui_layout_vec2_t(-5.0f, 185.0f);
+    ui_element_slot_39.pos.y = 185.0f;
+    ui_element_slot_39.pos.x = -5.0f;
     ui_element_slot_39.use_offset_render = 1;
 
     float right_panel_x = (float)(config_screen_width - 350);

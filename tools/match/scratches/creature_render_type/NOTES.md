@@ -129,3 +129,22 @@ is therefore classified `semantic-complete` with a `compiler` residual. The
 five visible audit mismatches are different induction anchors within the same
 proven creature records; no address is hidden with an alias and no independent
 source-reference debt remains.
+
+## Cursor-reference audit refresh
+
+A fresh masked-reference audit still has exactly five aligned mismatches, at
+native `0x00418eb0`, `0x00419171`, `0x004193d1`, `0x0041945e`, and
+`0x00419638`, with no unresolved reference. The first is representative:
+native initializes `esi` to `creature_max_health` at `0x0049bf60`, then reads
+the active byte at `esi-0x28`, type id at `esi+0x44`, and max health at
+`esi`. The current source is already written around that typed max-health
+cursor, but the candidate object rebases the same record to
+`creature_max_health+0x44`; it consequently uses `esi-0x6c`, `esi`, and
+`esi-0x44` for those same three fields.
+
+The other four audit entries are the analogous compiler-selected animation,
+hit-flash, and loop-end anchors documented above. Since the candidate object
+resolves each address into the same proven `0x98`-byte creature record, and
+the existing pointer/index/loop sweeps already reject or reproduce the natural
+alternatives, no new source or alias mutation is justified. Metrics remain
+78.4494087%, 757/765 instructions, prefix 25, and `136/0/5` references.

@@ -53,10 +53,10 @@ extern "C" void quest_build_the_gang_wars(
         spawns[spawn_index].pos = quest_vec2_t(
             1174.0f,
             (float)terrain_texture_height * 0.5f);
-        spawns[spawn_index].set_spawn(
-            SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            trigger_time_ms,
-            2);
+        spawns[spawn_index].template_id =
+            SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+        spawns[spawn_index].trigger_time_ms = trigger_time_ms;
+        spawns[spawn_index].count = 2;
         ++spawn_index;
         trigger_time_ms += 4000;
     } while (--waves_remaining != 0);
@@ -73,10 +73,10 @@ extern "C" void quest_build_the_gang_wars(
         spawns[spawn_index].pos = quest_vec2_t(
             -150.0f,
             (float)terrain_texture_height * 0.5f);
-        spawns[spawn_index].set_spawn(
-            SPAWN_ID_FORMATION_RING_ALIEN_8_12,
-            trigger_time_ms,
-            2);
+        spawns[spawn_index].template_id =
+            SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+        spawns[spawn_index].trigger_time_ms = trigger_time_ms;
+        spawns[spawn_index].count = 2;
         ++spawn_index;
         trigger_time_ms += 4000;
     } while (trigger_time_ms < 0x184AC);

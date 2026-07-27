@@ -49,3 +49,14 @@ candidate emits 67 instructions against 66 native instructions with `6/0/0`
 references. `--regions` attributes the remaining delta to VC6's loop-invariant
 template register and related allocation/scheduling, not missing quest policy.
 Recovery is `semantic-complete` with a `compiler` residual.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices retain the ordinary VC6 `/O2 /GB`
+profile; VC7, `msvc6.5pp`, and `/G6` regress. Recorded source-shape and
+helper-order sweeps evaluate 53 variants across cursor/trigger order, scalar
+versus `pos.set` ring stores, metadata fields, loop-update order, index scope,
+and independent fixed/ring helper permutations. None improves the
+`198.61654135338344/254` weighted bytes, 67/66 instructions,
+seven-instruction prefix, or `6/0/0` references. The remaining extra
+loop-invariant template register is therefore still a compiler residual.

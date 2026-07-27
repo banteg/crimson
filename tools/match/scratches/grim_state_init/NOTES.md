@@ -53,3 +53,12 @@ words at offsets `0x120..0x14c`, and current-UV destinations `0x1005b294` and
 `grim_uv_u1`, respectively. The matcher pairs them with nearby scheduled stores
 after the instruction streams diverge, but no referenced destination is
 missing or unresolved. The residual is therefore compiler-only.
+
+`config-constructor-spelling-mutations.json` closes the remaining shared-type
+hypothesis at the first divergence. Explicit `grim_config_value_t`
+construction, explicit scalar casts, and direct assignment-operator spelling
+all compile byte-identically at 78.67%, prefix 167, 414 instructions, and
+references `134/9/0` in `ok/mismatch/unresolved` order. Live Binary Ninja also
+types the native table at `0x1005cb88` as 128 16-byte
+`grim_config_value_t` records. No constructor or shared-header correction is
+supported.

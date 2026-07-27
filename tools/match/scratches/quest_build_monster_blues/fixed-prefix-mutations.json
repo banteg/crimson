@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fixed-prefix-local-lifetimes",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);\n\n    spawns[1].pos = quest_vec2_t(\n        1074.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);\n\n    spawns[2].pos = quest_vec2_t(512.0f, 1088.0f);\n    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    spawns[3].pos = quest_vec2_t(512.0f, -64.0f);\n    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    int trigger_time_ms = 27500;\n    int index = 0;",
+      "replacements": [
+        {
+          "name": "loop-locals-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 27500;\n    int index = 0;\n\n    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);\n\n    spawns[1].pos = quest_vec2_t(\n        1074.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);\n\n    spawns[2].pos = quest_vec2_t(512.0f, 1088.0f);\n    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    spawns[3].pos = quest_vec2_t(512.0f, -64.0f);\n    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);"
+        },
+        {
+          "name": "index-then-trigger-before-fixed",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int index = 0;\n    int trigger_time_ms = 27500;\n\n    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);\n\n    spawns[1].pos = quest_vec2_t(\n        1074.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);\n\n    spawns[2].pos = quest_vec2_t(512.0f, 1088.0f);\n    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    spawns[3].pos = quest_vec2_t(512.0f, -64.0f);\n    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);"
+        },
+        {
+          "name": "index-before-fixed-trigger-after",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int index = 0;\n\n    spawns[0].pos = quest_vec2_t(\n        -50.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);\n\n    spawns[1].pos = quest_vec2_t(\n        1074.0f,\n        (float)terrain_texture_height * 0.5f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);\n\n    spawns[2].pos = quest_vec2_t(512.0f, 1088.0f);\n    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    spawns[3].pos = quest_vec2_t(512.0f, -64.0f);\n    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);\n\n    int trigger_time_ms = 27500;"
+        }
+      ]
+    }
+  ]
+}

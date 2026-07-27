@@ -83,11 +83,11 @@ extern "C" projectile_render_vec2_t camera_offset;
 
 static __inline float projectile_render_clamp(float value)
 {
-    if (value < 0.0f) {
-        return 0.0f;
-    }
     if (value > 1.0f) {
         return 1.0f;
+    }
+    if (value < 0.0f) {
+        return 0.0f;
     }
     return value;
 }

@@ -37,3 +37,23 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed the opening alien, both twelve-entry columns,
+their alternating x positions, and final count 25. MSVC 6.0, 6.5, 6.5
+Processor Pack, and 6.6 tie at 74.02597402597402%; 7.0 regresses to
+65.80645161290323%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tie, while
+`/G6` falls to 66.23376623376623%.
+
+`loop-cursor-lifetime-mutations.json` (SHA-256
+`5ef198bf3c13aadf3ddc1ad0b48ccdc5d40da36443b11a0ae994459fd8d8ef53`)
+recorded four variants. Moving the second cursor declaration is byte-neutral;
+preadvance/negative-index spellings regress by 3.61 and 79.43 weighted bytes,
+confirming that the native negative offsets are optimizer presentation rather
+than source evidence. `loop-metadata-mutations.json` (SHA-256
+`002887e33f8dc81787443d2d6de12b5de45404c4ddcf1605af2e46c7fa21b83d`)
+recorded both direct-field singles and their pair; all are byte-neutral.
+No source change is retained. Validation remains 205.7922077922078/278
+weighted bytes, a 72.20779220779221 gap, 77/77 instructions, prefix fifteen,
+and references 1/0/0.

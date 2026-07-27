@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "projectile-render-clamp-branch-order",
+      "find": "static __inline float projectile_render_clamp(float value)\n{\n    if (value < 0.0f) {\n        return 0.0f;\n    }\n    if (value > 1.0f) {\n        return 1.0f;\n    }\n    return value;\n}",
+      "replacements": [
+        {
+          "name": "native-upper-then-lower",
+          "text": "static __inline float projectile_render_clamp(float value)\n{\n    if (value > 1.0f) {\n        return 1.0f;\n    }\n    if (value < 0.0f) {\n        return 0.0f;\n    }\n    return value;\n}"
+        },
+        {
+          "name": "native-upper-else-lower",
+          "text": "static __inline float projectile_render_clamp(float value)\n{\n    if (value > 1.0f) {\n        return 1.0f;\n    } else if (value < 0.0f) {\n        return 0.0f;\n    }\n    return value;\n}"
+        },
+        {
+          "name": "native-upper-first-ternary",
+          "text": "static __inline float projectile_render_clamp(float value)\n{\n    return value > 1.0f\n        ? 1.0f\n        : (value < 0.0f ? 0.0f : value);\n}"
+        }
+      ]
+    }
+  ]
+}

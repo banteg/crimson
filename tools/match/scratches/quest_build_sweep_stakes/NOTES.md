@@ -13,7 +13,7 @@ constant final count 64.
 The candidate reproduces the signed remainder, 24-byte frame, saved cosine and
 live sine, two-stage rounded vector construction, `fxch`/`fpatan` heading,
 nested loop boundaries, trigger clamp, and all seven references. It compiles
-to 75 instructions against the native 76 and scores 75.50%.
+to 75 instructions against the native 76 and scores 76.82%.
 
 The structural residual is one `add entry_cursor, 16`: the native selects
 `trigger_time_ms` as its induction base, while VC6 selects the record start for
@@ -37,3 +37,19 @@ independent-store/x87 schedule described above. Recovery is classified
 typed-cursor choices. The complete combination falls to 59.46%, and none
 improves the 75.50% baseline, confirming that the negative-field cursor would
 trade away the proven vector/x87 structure.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag profile matrices keep the VC6 `/O2 /GB` family
+best. `/G5`, `/G7`, `/Ox`, and `/Ob1` are code-identical here; `/G6` and VC7
+regress. A recorded 47-variant source-order sweep found one independent gain:
+declaring trigger time and trigger step before the entry cursor changes VC6's
+allocation without changing the quest policy. The retained ordering raises
+weighted bytes from `194.7814569536424` to `198.19867549668876`, reduces the
+gap from `63.21854304635761` to `59.801324503311236`, and preserves the
+75/76 instruction counts, six-instruction prefix, and `7/0/0` references.
+
+A five-variant helper-store-order follow-up found no additional improvement.
+The complete sweeps are recorded in `experiments.jsonl`; the remaining
+localized delta is still the native trigger-field induction anchor and x87
+scheduling described above.

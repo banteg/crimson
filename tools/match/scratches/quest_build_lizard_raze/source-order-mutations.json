@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-local-order",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 1500;\n    int wave_count = 6;",
+      "replacements": [
+        {
+          "name": "builder-wave-trigger",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave_count = 6;\n    int trigger_time_ms = 1500;"
+        },
+        {
+          "name": "trigger-wave-builder",
+          "text": "    int trigger_time_ms = 1500;\n    int wave_count = 6;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);"
+        },
+        {
+          "name": "wave-trigger-builder",
+          "text": "    int wave_count = 6;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);"
+        }
+      ]
+    },
+    {
+      "name": "right-wave-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = wave_count;"
+        }
+      ]
+    },
+    {
+      "name": "left-wave-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, wave_count);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = wave_count;"
+        }
+      ]
+    },
+    {
+      "name": "tail-local-order",
+      "find": "    int spawner_template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;\n    int spawner_trigger_time_ms = 10000;\n    int one = 1;",
+      "replacements": [
+        {
+          "name": "template-one-trigger",
+          "text": "    int spawner_template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;\n    int one = 1;\n    int spawner_trigger_time_ms = 10000;"
+        },
+        {
+          "name": "trigger-template-one",
+          "text": "    int spawner_trigger_time_ms = 10000;\n    int spawner_template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;\n    int one = 1;"
+        },
+        {
+          "name": "one-trigger-template",
+          "text": "    int one = 1;\n    int spawner_trigger_time_ms = 10000;\n    int spawner_template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;"
+        }
+      ]
+    },
+    {
+      "name": "tail-builder-increment-shape",
+      "find": "    quest_entry_original_t *spawn = &builder.spawns[builder.count++];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 256.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n\n    spawn = &builder.spawns[builder.count++];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 384.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n\n    spawn = &builder.spawns[builder.count++];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);",
+      "replacements": [
+        {
+          "name": "explicit-post-store-increments",
+          "text": "    quest_entry_original_t *spawn = &builder.spawns[builder.count];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 256.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n\n    spawn = &builder.spawns[builder.count];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 384.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;\n\n    spawn = &builder.spawns[builder.count];\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n    ++builder.count;"
+        },
+        {
+          "name": "explicit-pre-store-increments",
+          "text": "    quest_entry_original_t *spawn = &builder.spawns[builder.count];\n    ++builder.count;\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 256.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n\n    spawn = &builder.spawns[builder.count];\n    ++builder.count;\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 384.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);\n\n    spawn = &builder.spawns[builder.count];\n    ++builder.count;\n    spawn->pos.x = 128.0f;\n    spawn->pos.y = 512.0f;\n    spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);"
+        }
+      ]
+    }
+  ]
+}

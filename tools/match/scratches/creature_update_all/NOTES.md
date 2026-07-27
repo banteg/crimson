@@ -297,3 +297,47 @@ simultaneous changes. Every single-site and interaction variant is byte-neutral
 at 49.0868%, 1,290/1,338 instructions, `207/0/4` references, and 2,616.3242
 weighted bytes. VC6 therefore canonicalizes these equivalent source spellings
 before the observed x87 scheduling decision. No source change is retained.
+
+## Native frame and target-player lifetime closure
+
+A final live pass used the explicit `crimsonland.exe.bndb` target
+`3023:2:9499448411019345244`. Native opens with a `0x7c` stack frame, retains
+the creature index in 19-unit form for `*8` addressing, and materializes
+separate health, lifecycle, collision, position, cooldown, and target-player
+pointers. The canonical VC6 body opens with a `0x60` frame and converts the
+index to a 152-byte offset. A stock-compiler matrix rules out a profile
+explanation: VC6.0, VC6.5, and VC6.6 are identical under `/O2 /GB`, while
+`/G5`, `/Ob1`, and `/Ot` are byte-neutral. `/G6` falls to
+2,584.857251617815 weighted bytes (48.4964%, 1,289 instructions,
+`ok=205/mismatch=4/unresolved=0`), and `/Oy-` falls to
+2,554.675275351311 weighted bytes (47.9301%, 1,295 instructions,
+`ok=207/mismatch=2/unresolved=0`).
+
+Native-looking source lifetimes do not recover the allocation. A whole-slot
+reference loses 44.619482496195 weighted bytes, ending at
+2,571.704718417047 (48.2496%, 1,290 instructions,
+`ok=204/mismatch=5/unresolved=0`). Hoisting the phase, AI, target-distance,
+movement, animation, and corpse scalars is byte-neutral, as is naming the
+AI-kind-7 frame delta.
+
+Native reloads the target-player byte in the contact path at `0x0042721a`,
+`0x004272db`, `0x0042733a`, `0x0042734b`, `0x00427380`, and `0x004273cd`.
+The schema-1 spec `contact-target-player-reload-mutations.json` tests direct
+reloads at the shield, damage, knockback, and infection sites. Spec SHA-256 is
+`caab2e3593c5ebaa15b8b40ac43fd2c94a98968d74105b432a805374a56eb74f`.
+All 15/15 non-empty combinations were evaluated. Infection alone is
+byte-neutral because VC6 already reloads it. Every other combination changes
+the wider register allocation and regresses: damage alone loses
+505.473380615646 weighted bytes, knockback alone loses 523.264840182648,
+shield alone loses 560.699200913242, and all four lose 569.442071635675.
+A separate, semantics-preserving split between the initial selection byte and
+the post-retarget byte similarly loses 478.656141665236 weighted bytes, ending
+at 2,137.668059248006 (40.1063%, 1,295 instructions,
+`ok=163/mismatch=6/unresolved=0`).
+
+No source or compiler configuration change is retained. The canonical source
+SHA-256 remains
+`0928e121f84ed1937daeb86a57b9b0383bd0d3b2e35e395e4a491ce4bfe2eec3`,
+with 2,616.324200913242 weighted bytes out of 5,330 (49.086757990868%),
+1,290/1,338 instructions, zero prefix instructions, and
+`ok=207/mismatch=4/unresolved=0`.

@@ -27,3 +27,9 @@ mismatch is compiler scheduling and register allocation around the saved-name
 loop; it is not missing behavior. No inline assembly, volatile state, dummy
 references, forced addresses, or layout-only expressions are used, and the
 residual remains compiler-only.
+
+A fresh stock-VC6 matrix confirms the focused override. `/G5`, `/Ob1`, and
+explicit `/Ot` are byte-identical when combined with `/Oy-`; removing `/Oy-`
+falls to 77.74% with two reference conflicts, and `/G6 /Oy-` falls to 71.83%.
+The retained `/O2 /GB /Oy- /W3 /GR-` profile remains the only justified local
+configuration and keeps all 80 references exact.

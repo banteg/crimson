@@ -33,3 +33,14 @@ with the already-recovered `effect_color_t` aggregate. Recompiling
 `effects_update`, its existing exact caller, remains 85/85 with all references
 aligned after changing the parameter from a raw float pointer to the typed
 color pointer.
+
+## Count-publication lifetime sweep
+
+`count-publication-lifetime-mutations.json` records six additional natural
+forms: global and local post-increment, indexed entry selection, publication
+before the position or color copy, and assignment in the limit test. Only the
+local post-increment form is byte-identical to the 97.44% baseline. The other
+five regress, with earlier publication moving the first mismatch before the
+native color-copy boundary. This closes the ordinary counter-lifetime menu
+without retaining the unsupported Processor Pack profile or a manual partial
+aggregate copy.

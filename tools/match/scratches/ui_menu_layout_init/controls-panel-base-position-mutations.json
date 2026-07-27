@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "controls-panel-base-position",
+      "find": "    ui_element_slot_14.pos.x =\n        config_screen_width <= 640 ? -183.0f : -165.0f;\n    ui_element_slot_14.pos.y = 200.0f;",
+      "replacements": [
+        {
+          "name": "aggregate-wide-base-then-adjust",
+          "text": "    ui_element_slot_14.pos =\n        ui_layout_vec2_t(-165.0f, 200.0f);\n    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos.x = -183.0f;\n    }"
+        },
+        {
+          "name": "scalar-wide-base-x-y-then-adjust",
+          "text": "    ui_element_slot_14.pos.x = -165.0f;\n    ui_element_slot_14.pos.y = 200.0f;\n    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos.x = -183.0f;\n    }"
+        },
+        {
+          "name": "scalar-wide-base-y-x-then-adjust",
+          "text": "    ui_element_slot_14.pos.y = 200.0f;\n    ui_element_slot_14.pos.x = -165.0f;\n    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos.x = -183.0f;\n    }"
+        },
+        {
+          "name": "aggregate-narrow-base-then-else-adjust",
+          "text": "    ui_element_slot_14.pos =\n        ui_layout_vec2_t(-183.0f, 200.0f);\n    if (config_screen_width > 640) {\n        ui_element_slot_14.pos.x = -165.0f;\n    }"
+        },
+        {
+          "name": "y-before-ternary",
+          "text": "    ui_element_slot_14.pos.y = 200.0f;\n    ui_element_slot_14.pos.x =\n        config_screen_width <= 640 ? -183.0f : -165.0f;"
+        },
+        {
+          "name": "explicit-cast-wide-base-then-adjust",
+          "text": "    *(ui_layout_vec2_t *)&ui_element_slot_14.pos =\n        ui_layout_vec2_t(-165.0f, 200.0f);\n    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos.x = -183.0f;\n    }"
+        }
+      ]
+    }
+  ]
+}

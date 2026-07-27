@@ -368,15 +368,15 @@ extern "C" void highscore_screen_update(void)
         int prefix_length = 0;
         if ((*record_flags & 5) != 0
             && ((*record_flags & 2) == 0 || (*record_flags & 4) != 0)) {
-            (*score_line_buffer)[0] = '\\';
-            (*score_line_buffer)[1] = 'g';
+            (*score_line_item)[0] = '\\';
+            (*score_line_item)[1] = 'g';
             prefix_length = 2;
         }
 
         switch (config_blob.game_mode) {
         case GAME_MODE_RUSH:
             crt_sprintf(
-                *score_line_buffer + prefix_length,
+                *score_line_item + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
@@ -385,7 +385,7 @@ extern "C" void highscore_screen_update(void)
             break;
         case GAME_MODE_QUEST:
             crt_sprintf(
-                *score_line_buffer + prefix_length,
+                *score_line_item + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 (int)HIGHSCORE_RECORD_FROM_FLAGS(record_flags)
@@ -394,7 +394,7 @@ extern "C" void highscore_screen_update(void)
             break;
         default:
             crt_sprintf(
-                *score_line_buffer + prefix_length,
+                *score_line_item + prefix_length,
                 "%d\t%d\t%s",
                 score_number,
                 HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->score_xp,
@@ -810,11 +810,11 @@ play_game_done:
             highscore_batch_sync_mode = 0;
         } else if (highscore_batch_sync_mode) {
             unsigned char hardcore;
-            if (config_blob.game_mode == GAME_MODE_QUEST) {
-                hardcore = config_blob.hardcore;
-            } else {
+            if (config_blob.game_mode != GAME_MODE_QUEST) {
                 hardcore = 0;
                 config_blob.hardcore = 0;
+            } else {
+                hardcore = config_blob.hardcore;
             }
             static unsigned char batch_hardcore;
             batch_hardcore = hardcore;
@@ -911,11 +911,11 @@ play_game_done:
         && grim_interface_ptr->grim_was_key_pressed(203)) {
         --quest_stage_minor;
         if (quest_stage_minor <= 0) {
-            if (quest_stage_major < 2) {
-                quest_stage_minor = 1;
-            } else {
+            if (quest_stage_major >= 2) {
                 --quest_stage_major;
                 quest_stage_minor = 10;
+            } else {
+                quest_stage_minor = 1;
             }
         }
         if (config_blob.hardcore) {
@@ -940,11 +940,11 @@ play_game_done:
             ++quest_stage_minor;
         }
         if (quest_stage_minor > 10) {
-            if (quest_stage_major >= 5) {
-                quest_stage_minor = 10;
-            } else {
+            if (quest_stage_major < 5) {
                 ++quest_stage_major;
                 quest_stage_minor = 1;
+            } else {
+                quest_stage_minor = 10;
             }
         }
         if (config_blob.hardcore) {
@@ -970,11 +970,11 @@ play_game_done:
         if (action == -3) {
             --quest_stage_minor;
             if (quest_stage_minor <= 0) {
-                if (quest_stage_major < 2) {
-                    quest_stage_minor = 1;
-                } else {
+                if (quest_stage_major >= 2) {
                     --quest_stage_major;
                     quest_stage_minor = 10;
+                } else {
+                    quest_stage_minor = 1;
                 }
             }
             if (config_blob.hardcore) {
@@ -996,11 +996,11 @@ play_game_done:
                 ++quest_stage_minor;
             }
             if (quest_stage_minor > 10) {
-                if (quest_stage_major >= 5) {
-                    quest_stage_minor = 10;
-                } else {
+                if (quest_stage_major < 5) {
                     ++quest_stage_major;
                     quest_stage_minor = 1;
+                } else {
+                    quest_stage_minor = 10;
                 }
             }
             if (config_blob.hardcore) {

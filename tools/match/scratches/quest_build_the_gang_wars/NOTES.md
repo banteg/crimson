@@ -18,11 +18,12 @@ Zig now share an explicitly exact-position append path for this proven
 exception to the usual native quest-coordinate truncation.
 
 The candidate reproduces the exact 92-instruction body and all seven audited
-references, scoring 86.96%. An integer spawn index is strength-reduced into the
+references, scoring 89.13%. An integer spawn index is strength-reduced into the
 same native pointer anchors and improves substantially over an explicit cursor
-(70.65%). Direct metadata stores regress to 83.70% and lose a reference; the
-inlined setter remains the stronger source shape. Residuals are instruction
-scheduling around constant loads, independent metadata stores, and epilogue
+(70.65%). Whole-function direct metadata stores regress, but expanding exactly
+the two repeated side-wave setters into direct fields improves both loop
+regions while leaving the fixed-entry setters intact. Residuals are instruction
+scheduling around constant loads, independent fixed-entry stores, and epilogue
 pops. VC6.5pp and VC6.6 produce the same result as the default profile, so no
 override is justified.
 
@@ -33,3 +34,15 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices retain VC6 `/O2 /GB`; VC7 and `/G6`
+regress, while `/G5`, `/G7`, `/Ox`, and `/Ob1` tie. The first recorded
+25-variant sweep finds an additive `4.608695652173878` weighted-byte gain for
+each repeated loop setter; retaining both raises weighted bytes from
+`368.69565217391306` to `377.9130434782609` and reduces the gap from
+`55.30434782608694` to `46.086956521739125`. A 12-variant retained-source
+follow-up and five helper-store permutations find no further gain. The final
+candidate remains 92/92 instructions with a four-instruction prefix and
+`7/0/0` references.

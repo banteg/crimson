@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-hit-tint-sum-order",
+      "find": "                            if (hit_creature->tint_r\n                                    + hit_creature->tint_g\n                                    + hit_creature->tint_b\n                                > 1.6f) {",
+      "replacements": [
+        {
+          "name": "native-schedule-source-b-r-g",
+          "text": "                            if (hit_creature->tint_b\n                                    + hit_creature->tint_r\n                                    + hit_creature->tint_g\n                                > 1.6f) {"
+        },
+        {
+          "name": "source-r-b-g",
+          "text": "                            if (hit_creature->tint_r\n                                    + hit_creature->tint_b\n                                    + hit_creature->tint_g\n                                > 1.6f) {"
+        },
+        {
+          "name": "source-g-r-b",
+          "text": "                            if (hit_creature->tint_g\n                                    + hit_creature->tint_r\n                                    + hit_creature->tint_b\n                                > 1.6f) {"
+        },
+        {
+          "name": "source-g-b-r",
+          "text": "                            if (hit_creature->tint_g\n                                    + hit_creature->tint_b\n                                    + hit_creature->tint_r\n                                > 1.6f) {"
+        },
+        {
+          "name": "source-b-g-r",
+          "text": "                            if (hit_creature->tint_b\n                                    + hit_creature->tint_g\n                                    + hit_creature->tint_r\n                                > 1.6f) {"
+        }
+      ]
+    }
+  ]
+}

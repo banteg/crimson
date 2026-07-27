@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-fixed-metadata",
+      "find": "    spawns[0].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].template_id = SPAWN_ID_LIZARD_RANDOM_04;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 10;"
+        }
+      ]
+    },
+    {
+      "name": "second-fixed-metadata",
+      "find": "    spawns[1].set_spawn(SPAWN_ID_ALIEN_RANDOM_06, 7500, 10);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].template_id = SPAWN_ID_ALIEN_RANDOM_06;\n    spawns[1].trigger_time_ms = 7500;\n    spawns[1].count = 10;"
+        }
+      ]
+    },
+    {
+      "name": "third-fixed-metadata",
+      "find": "    spawns[2].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[2].template_id = SPAWN_ID_SPIDER_SP1_RANDOM_03;\n    spawns[2].trigger_time_ms = 17500;\n    spawns[2].count = 12;"
+        }
+      ]
+    },
+    {
+      "name": "fourth-fixed-metadata",
+      "find": "    spawns[3].set_spawn(SPAWN_ID_SPIDER_SP1_RANDOM_03, 17500, 12);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].template_id = SPAWN_ID_SPIDER_SP1_RANDOM_03;\n    spawns[3].trigger_time_ms = 17500;\n    spawns[3].count = 12;"
+        }
+      ]
+    }
+  ]
+}

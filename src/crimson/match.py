@@ -71,6 +71,7 @@ BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
 LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
 VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
 VC6_LOCAL_JUMP_TABLE_KEY = "compiler:vc6-local-jump-table"
+VC6_LOCAL_SWITCH_PARTITION_KEY = "compiler:vc6-local-switch-partition"
 
 
 def parse_int(value: str | int) -> int:
@@ -619,6 +620,7 @@ class ObjectRelocationReference:
     addend: int | None = None
     symbol_data: bytes | None = None
     local_target_offset: int | None = None
+    alternate_keys: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1212,24 +1214,37 @@ def _local_jump_table_key(offsets: list[int]) -> str | None:
     return f"{VC6_LOCAL_JUMP_TABLE_KEY}:" + ",".join(f"0x{offset:x}" for offset in offsets)
 
 
-def _coff_local_jump_table_key(
+def _local_switch_partition_key(indices: bytes, offsets: Collection[int]) -> str | None:
+    """Describe a sparse switch by the equivalence classes of its destinations."""
+
+    destinations = tuple(offsets)
+    if len(indices) < 4 or len(destinations) < 2 or any(index >= len(destinations) for index in indices):
+        return None
+    classes: dict[int, int] = {}
+    partition = bytes(classes.setdefault(destinations[index], len(classes)) for index in indices)
+    if len(classes) < 2:
+        return None
+    return f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:{partition.hex()}"
+
+
+def _coff_local_jump_table_offsets(
     obj: CoffObject,
     function: CoffSymbol,
     table: CoffSymbol,
     addend: int = 0,
-) -> str | None:
-    """Describe a compiler-local absolute switch table by its function-relative targets."""
+) -> tuple[int, ...]:
+    """Return a compiler-local absolute switch table's function-relative targets."""
 
     if (
         not table.name.startswith("$L")
         or function.section_number <= 0
         or table.section_number != function.section_number
     ):
-        return None
+        return ()
     section = obj.sections[table.section_number - 1]
     table_start = table.value + addend
     if table_start < function.value or table_start >= len(section.data):
-        return None
+        return ()
 
     symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
     relocations_by_offset = {relocation.virtual_address: relocation for relocation in section.relocations}
@@ -1248,7 +1263,76 @@ def _coff_local_jump_table_key(
             break
         offsets.append(destination - function.value)
         cursor += 4
-    return _local_jump_table_key(offsets)
+    return tuple(offsets)
+
+
+def _coff_local_jump_table_key(
+    obj: CoffObject,
+    function: CoffSymbol,
+    table: CoffSymbol,
+    addend: int = 0,
+) -> str | None:
+    """Describe a compiler-local absolute switch table by its function-relative targets."""
+
+    return _local_jump_table_key(list(_coff_local_jump_table_offsets(obj, function, table, addend)))
+
+
+def _coff_local_switch_partition_keys(
+    obj: CoffObject,
+    function: CoffSymbol,
+    end: int,
+) -> dict[tuple[int, int], str]:
+    """Key paired VC6 byte lookup and jump tables by their effective dispatch partition."""
+
+    if function.section_number <= 0:
+        return {}
+    section = obj.sections[function.section_number - 1]
+    symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
+    references: list[tuple[CoffSymbol, int]] = []
+    for relocation in section.relocations:
+        if not (function.value <= relocation.virtual_address < end):
+            continue
+        symbol = symbols_by_raw_index.get(relocation.symbol_index)
+        if symbol is None or relocation.virtual_address + 4 > len(section.data):
+            continue
+        addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
+        references.append((symbol, addend))
+
+    keys: dict[tuple[int, int], str] = {}
+    for table, table_addend in references:
+        offsets = _coff_local_jump_table_offsets(obj, function, table, table_addend)
+        table_start = table.value + table_addend
+        if len(offsets) < 2 or table_start < end:
+            continue
+        lookup_start = table_start + len(offsets) * 4
+        lookup_reference = next(
+            (
+                (symbol, addend)
+                for symbol, addend in references
+                if symbol.section_number == function.section_number
+                and symbol.name.startswith("$L")
+                and symbol.value + addend == lookup_start
+            ),
+            None,
+        )
+        if lookup_reference is None:
+            continue
+        lookup, lookup_addend = lookup_reference
+        lookup_end = min(
+            (
+                symbol.value
+                for symbol in obj.symbols
+                if symbol.section_number == lookup.section_number and symbol.value > lookup_start
+            ),
+            default=len(section.data),
+        )
+        available = section.data[lookup_start:lookup_end]
+        indices_end = next((index for index, value in enumerate(available) if value >= len(offsets)), len(available))
+        indices = available[:indices_end]
+        if partition_key := _local_switch_partition_key(indices, offsets):
+            keys[(table.raw_index, table_addend)] = partition_key
+            keys[(lookup.raw_index, lookup_addend)] = partition_key
+    return keys
 
 
 def _coff_trailing_jump_table_start(
@@ -1276,16 +1360,16 @@ def _coff_trailing_jump_table_start(
     return min(starts, default=None)
 
 
-def _image_local_jump_table_key(
+def _image_local_jump_table_offsets(
     image: LoadedImage | None,
     table_address: int,
     function_start: int,
     function_end: int,
-) -> str | None:
-    """Describe a linked absolute switch table by its function-relative targets."""
+) -> tuple[int, ...]:
+    """Return a linked absolute switch table's function-relative targets."""
 
     if image is None or function_end <= function_start:
-        return None
+        return ()
     offsets: list[int] = []
     for index in range(256):
         raw = _image_bytes(image, table_address + index * 4, 4)
@@ -1295,7 +1379,102 @@ def _image_local_jump_table_key(
         if destination < function_start or destination >= function_end:
             break
         offsets.append(destination - function_start)
-    return _local_jump_table_key(offsets)
+    return tuple(offsets)
+
+
+def _image_local_jump_table_key(
+    image: LoadedImage | None,
+    table_address: int,
+    function_start: int,
+    function_end: int,
+) -> str | None:
+    """Describe a linked absolute switch table by its function-relative targets."""
+
+    return _local_jump_table_key(
+        list(_image_local_jump_table_offsets(image, table_address, function_start, function_end)),
+    )
+
+
+def _image_local_switch_partition_key_from_table(
+    image: LoadedImage | None,
+    table_address: int,
+    function_start: int,
+    function_end: int,
+    reference_catalog: ReferenceCatalog | None = None,
+) -> str | None:
+    """Describe a linked VC6 sparse switch whose byte lookup follows its jump table."""
+
+    if image is None or table_address < function_end:
+        return None
+    offsets = _image_local_jump_table_offsets(image, table_address, function_start, function_end)
+    if len(offsets) < 2:
+        return None
+    lookup_address = table_address + len(offsets) * 4
+    return _image_local_switch_partition_key(
+        image,
+        lookup_address,
+        offsets,
+        reference_catalog=reference_catalog,
+    )
+
+
+def _image_local_switch_partition_key_from_lookup(
+    image: LoadedImage | None,
+    lookup_address: int,
+    function_start: int,
+    function_end: int,
+    reference_catalog: ReferenceCatalog | None = None,
+) -> str | None:
+    """Describe a linked VC6 sparse switch from a lookup table following absolute targets."""
+
+    if image is None or function_end <= function_start:
+        return None
+    reverse_offsets: list[int] = []
+    for index in range(1, 257):
+        raw = _image_bytes(image, lookup_address - index * 4, 4)
+        if raw is None:
+            break
+        destination = struct.unpack("<I", raw)[0]
+        if destination < function_start or destination >= function_end:
+            break
+        reverse_offsets.append(destination - function_start)
+    offsets = tuple(reversed(reverse_offsets))
+    if len(offsets) < 2:
+        return None
+    table_address = lookup_address - len(offsets) * 4
+    if table_address < function_end:
+        return None
+    return _image_local_switch_partition_key(
+        image,
+        lookup_address,
+        offsets,
+        reference_catalog=reference_catalog,
+    )
+
+
+def _image_local_switch_partition_key(
+    image: LoadedImage,
+    lookup_address: int,
+    offsets: Collection[int],
+    *,
+    reference_catalog: ReferenceCatalog | None,
+) -> str | None:
+    """Key a linked byte lookup, optionally bounded by the next known symbol."""
+
+    lookup_offset = lookup_address - image.image_base
+    if lookup_offset < 0 or lookup_offset >= len(image.mapped):
+        return None
+    lookup_limit = 256
+    if reference_catalog is not None:
+        next_address = min(
+            (address for address in reference_catalog.names_by_address if address > lookup_address),
+            default=None,
+        )
+        if next_address is not None:
+            lookup_limit = min(lookup_limit, next_address - lookup_address)
+    available = image.mapped[lookup_offset : lookup_offset + lookup_limit]
+    lookup_end = next((index for index, value in enumerate(available) if value >= len(offsets)), len(available))
+    return _local_switch_partition_key(available[:lookup_end], offsets)
 
 
 def _object_reference_key(symbol: CoffSymbol, addend: int) -> tuple[str | None, bool]:
@@ -1361,6 +1540,7 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
     if (jump_table_start := _coff_trailing_jump_table_start(obj, target, end)) is not None:
         end = jump_table_start
     symbols_by_raw_index = {symbol.raw_index: symbol for symbol in obj.symbols}
+    switch_partition_keys = _coff_local_switch_partition_keys(obj, target, end)
     relocation_references: list[ObjectRelocationReference] = []
     for relocation in section.relocations:
         if not (target.value <= relocation.virtual_address < end):
@@ -1379,8 +1559,16 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
             continue
         addend = struct.unpack_from("<i", section.data, relocation.virtual_address)[0]
         key, explained = _object_reference_key(symbol, addend)
+        alternate_keys: tuple[str, ...] = ()
         if compiler_key := _coff_vc6_single_delete_unwind_key(obj, symbol):
             key = compiler_key
+            explained = True
+        elif switch_partition_key := switch_partition_keys.get((symbol.raw_index, addend)):
+            if jump_table_key := _coff_local_jump_table_key(obj, target, symbol, addend):
+                key = jump_table_key
+                alternate_keys = (switch_partition_key,)
+            else:
+                key = switch_partition_key
             explained = True
         elif jump_table_key := _coff_local_jump_table_key(obj, target, symbol, addend):
             key = jump_table_key
@@ -1417,6 +1605,7 @@ def extract_object_function(obj: CoffObject, name: str | None = None) -> ObjectF
                     and target.value <= symbol.value + addend < end
                     else None
                 ),
+                alternate_keys=alternate_keys,
             ),
         )
     return ObjectFunction(
@@ -1571,6 +1760,7 @@ def disassemble_normalized_function(
                 explained=False,
             )
         keys = (reference.key,) if reference.key is not None else ()
+        keys = tuple(dict.fromkeys((*keys, *reference.alternate_keys)))
         explained = reference.explained
         symbol_data = reference.symbol_data or b""
         if reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(symbol_data)):
@@ -1623,6 +1813,23 @@ def disassemble_normalized_function(
             base_address + len(data),
         ):
             keys.append(jump_table_key)
+        switch_catalogs = (None, reference_catalog) if reference_catalog is not None else (None,)
+        for switch_catalog in switch_catalogs:
+            switch_partition_key = _image_local_switch_partition_key_from_table(
+                image,
+                value,
+                base_address,
+                base_address + len(data),
+                switch_catalog,
+            ) or _image_local_switch_partition_key_from_lookup(
+                image,
+                value,
+                base_address,
+                base_address + len(data),
+                switch_catalog,
+            )
+            if switch_partition_key:
+                keys.append(switch_partition_key)
         names = reference_catalog.names_by_address.get(value, ()) if reference_catalog is not None else ()
         return MaskedReference(
             operand_index=operand_index,

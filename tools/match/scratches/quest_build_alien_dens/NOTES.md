@@ -29,3 +29,26 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed the complete five-entry den table, including the
+player-count center den. After the retained change, MSVC 6.0, 6.5, 6.5
+Processor Pack, and 6.6 tie at 71.7948717948718%; 7.0 falls to
+51.28205128205128%. `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tie, while
+`/G6` reproduces the 7.0 regression and shortens the prefix.
+
+`local-order-and-position-mutations.json` (SHA-256
+`d309d8b32110c1c80672952f44092c9eb38330fe0bcb46e6a53eaad2c94af1d4`)
+recorded ten variants. Direct scalar stores for only entry two's fixed center
+position are the sole win; all five semantic local orders are neutral and the
+other positions regress. After retaining that change,
+`center-winner-interactions.json` (SHA-256
+`ec5afa06e2c032874b4e2c025ff0da7538fdf42350a55eb12defa32d70d134b1`)
+recorded nine follow-ups: local orders remain neutral and each additional
+direct position regresses, so the center-only form is stable.
+
+Validation improves 170.15/249 to 178.76923076923077/249 weighted bytes,
+reducing the gap from 78.85 to 70.23076923076923 and raising the match from
+68.33333333333333% to 71.7948717948718%. The result has 57/60 instructions,
+prefix four, and references 1/0/0.

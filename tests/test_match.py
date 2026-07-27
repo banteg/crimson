@@ -14,6 +14,7 @@ from crimson.match import (
     DEFAULT_FUNCTIONS_PATH,
     SHARD_PLAN_KIND,
     VC6_LOCAL_JUMP_TABLE_KEY,
+    VC6_LOCAL_SWITCH_PARTITION_KEY,
     VC6_SINGLE_DELETE_UNWIND_KEY,
     WORKER_CLAIM_KIND,
     CoffObject,
@@ -37,6 +38,7 @@ from crimson.match import (
     TriageRow,
     _coff_local_jump_table_key,
     _coff_vc6_single_delete_unwind_key,
+    _local_switch_partition_key,
     _region_hints,
     _scratch_build_key,
     _ScratchIncludeResolver,
@@ -986,6 +988,139 @@ def test_recognizes_compiler_local_jump_table_in_coff() -> None:
     assert _coff_local_jump_table_key(obj, obj.symbols[0], obj.symbols[1]) == (
         f"{VC6_LOCAL_JUMP_TABLE_KEY}:0x8,0x10,0x18"
     )
+
+
+def test_canonicalizes_vc6_sparse_switch_destination_partition() -> None:
+    candidate_key = _local_switch_partition_key(
+        bytes((0, 1, 2, 2)),
+        (0x08, 0x10, 0x18),
+    )
+    target_key = _local_switch_partition_key(
+        bytes((0, 1, 3, 2)),
+        (0x08, 0x10, 0x18, 0x18),
+    )
+
+    assert candidate_key == target_key
+    assert candidate_key == f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:00010202"
+
+
+def test_extract_object_function_keys_vc6_sparse_switch_table_pair() -> None:
+    code = (
+        bytes.fromhex("0fb680")
+        + b"\x00" * 4
+        + bytes.fromhex("ff2485")
+        + b"\x00" * 4
+        + b"\xc3"
+    )
+    obj = CoffObject(
+        sections=(
+            CoffSection(
+                name=".text",
+                data=(
+                    code
+                    + b"\x90" * (0x20 - len(code))
+                    + b"\x00" * 12
+                    + bytes((0, 1, 2, 2))
+                    + b"\x90"
+                ),
+                characteristics=0x20,
+                relocations=(
+                    CoffRelocation(3, 2, 6),
+                    CoffRelocation(10, 1, 6),
+                    CoffRelocation(0x20, 3, 6),
+                    CoffRelocation(0x24, 4, 6),
+                    CoffRelocation(0x28, 5, 6),
+                ),
+            ),
+        ),
+        symbols=(
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "$Ltable", 0x20, 1, 0, 6),
+            CoffSymbol(2, "$Llookup", 0x2C, 1, 0, 6),
+            CoffSymbol(3, "$Lcase0", 0x10, 1, 0, 6),
+            CoffSymbol(4, "$Lcase1", 0x18, 1, 0, 6),
+            CoffSymbol(5, "$Lcase2", 0x1C, 1, 0, 6),
+        ),
+    )
+
+    function = extract_object_function(obj, "_probe")
+
+    assert [reference.key for reference in function.relocation_references] == [
+        f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:00010202",
+        f"{VC6_LOCAL_JUMP_TABLE_KEY}:0x10,0x18,0x1c",
+    ]
+    assert [reference.alternate_keys for reference in function.relocation_references] == [
+        (),
+        (f"{VC6_LOCAL_SWITCH_PARTITION_KEY}:00010202",),
+    ]
+    assert all(reference.explained for reference in function.relocation_references)
+
+
+def test_match_function_audits_vc6_sparse_switch_destination_partition() -> None:
+    image_base = 0x400000
+    function_address = 0x401000
+    table_address = 0x402000
+    lookup_address = table_address + 16
+    target = (
+        bytes.fromhex("0fb680")
+        + struct.pack("<I", lookup_address)
+        + bytes.fromhex("ff2485")
+        + struct.pack("<I", table_address)
+        + b"\xc3"
+        + b"\x90" * 16
+    )
+    partition_key = _local_switch_partition_key(
+        bytes((0, 1, 2, 2)),
+        (0x08, 0x10, 0x18),
+    )
+    assert partition_key is not None
+    candidate = ObjectFunction(
+        name="_probe",
+        data=(
+            bytes.fromhex("0fb680")
+            + b"\x00" * 4
+            + bytes.fromhex("ff2485")
+            + b"\x00" * 4
+            + b"\xc3"
+            + b"\x90" * 16
+        ),
+        relocation_offsets=frozenset({3, 10}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=3,
+                symbol_name="$Llookup",
+                key=partition_key,
+                explained=True,
+            ),
+            ObjectRelocationReference(
+                offset=10,
+                symbol_name="$Ltable",
+                key=f"{VC6_LOCAL_JUMP_TABLE_KEY}:0x8,0x10,0x18",
+                explained=True,
+                alternate_keys=(partition_key,),
+            ),
+        ),
+    )
+    mapped = bytearray(0x3000)
+    mapped[0x2000:0x2010] = struct.pack(
+        "<IIII",
+        function_address + 0x08,
+        function_address + 0x10,
+        function_address + 0x18,
+        function_address + 0x18,
+    )
+    mapped[0x2010:0x2018] = bytes((0, 1, 3, 2, 0, 1, 2, 3))
+
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(bytes(mapped), image_base, len(mapped)),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog({lookup_address + 4: ("next_symbol",)}),
+    )
+
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 2
 
 
 def test_match_function_audits_local_jump_table_destinations() -> None:

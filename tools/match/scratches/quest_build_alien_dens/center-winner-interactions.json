@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "semantic-local-order",
+      "find": "    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n    int one = 1;\n    int trigger_time_ms = 1500;\n",
+      "replacements": [
+        {
+          "name": "template-trigger-one",
+          "text": "    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n    int trigger_time_ms = 1500;\n    int one = 1;\n"
+        },
+        {
+          "name": "one-template-trigger",
+          "text": "    int one = 1;\n    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n    int trigger_time_ms = 1500;\n"
+        },
+        {
+          "name": "one-trigger-template",
+          "text": "    int one = 1;\n    int trigger_time_ms = 1500;\n    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n"
+        },
+        {
+          "name": "trigger-template-one",
+          "text": "    int trigger_time_ms = 1500;\n    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n    int one = 1;\n"
+        },
+        {
+          "name": "trigger-one-template",
+          "text": "    int trigger_time_ms = 1500;\n    int one = 1;\n    int spawn_template_id = SPAWN_ID_DEN_ALIEN_BASIC_SLOWER_08;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-0-position",
+      "find": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].pos.x = 256.0f;\n    spawns[0].pos.y = 256.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-1-position",
+      "find": "    spawns[1].pos = quest_vec2_t(768.0f, 768.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[1].pos.x = 768.0f;\n    spawns[1].pos.y = 768.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-position",
+      "find": "    spawns[3].pos = quest_vec2_t(256.0f, 768.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].pos.x = 256.0f;\n    spawns[3].pos.y = 768.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-4-position",
+      "find": "    spawns[4].pos = quest_vec2_t(768.0f, 256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[4].pos.x = 768.0f;\n    spawns[4].pos.y = 256.0f;\n"
+        }
+      ]
+    }
+  ]
+}

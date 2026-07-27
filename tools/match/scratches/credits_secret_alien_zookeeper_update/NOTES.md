@@ -58,3 +58,24 @@ remain exactly 638 instructions with the exact `0x54` frame and a clean
 `153/0/0` reference audit. A temporary scalar-component rewrite of the
 initial chained panel expression was rejected: it fell from 83.70% to 76.45%,
 reduced the prefix from 15 to 3, and changed the audit to `147/0/4`.
+
+## Selected-highlight counter sweep (2026-07-27)
+
+A fresh pass selected the largest coherent mismatch region at
+`0x0040f83d..0x0040f94c`. Live Binary Ninja shows the selected-cell highlight
+using a promoted linear index, a promoted column counter, and one spilled row
+counter, then forming `(column, row) * 32 + board_position + (4, 4)` before
+drawing the 24-pixel fill and outline. The source contains that exact loop and
+coordinate behavior; only legal spill-slot coloring and nearby x87 scheduling
+differ.
+
+The recorded schema-1 `selected-highlight-counter-lifetimes` sweep tested all
+5/5 planned declaration, split-initialization, and outer-column lifetime
+forms. Its spec SHA-256 is
+`fed25a4f87c06fb05a82d8fec4d69106dad07e223c919dead099b8b78215c318`.
+Every single is byte-identical to the baseline:
+`2186.219435736677/2612` weighted bytes (`83.69905956112853%`), gap
+`425.78056426332296`, 638/638 instructions, prefix 15, and `153/0/0`
+references. The record has `best_improves=false`, so no interaction sweep or
+source change is justified. The unchanged source SHA-256 is
+`83befaeb028305ccdf28f767bb1f82a00a9bbec765dcfb060c4e5d5c99581c4f`.

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-helper-definition",
+      "find": "static inline void effect_pack_color(\n    effect_color_t *source,\n    unsigned long *result)\n{\n    EffectPackedColor packed;\n    packed.channel[3] = (unsigned char)(source->a * 255.0f);\n    packed.channel[2] = (unsigned char)(source->r * 255.0f);\n    packed.channel[1] = (unsigned char)(source->g * 255.0f);\n    packed.channel[0] = (unsigned char)(source->b * 255.0f);\n    *result = packed.value;\n}\n",
+      "replacements": [
+        {
+          "name": "return-packed-value",
+          "text": "static inline unsigned long effect_pack_color(\n    effect_color_t *source)\n{\n    EffectPackedColor packed;\n    packed.channel[3] = (unsigned char)(source->a * 255.0f);\n    packed.channel[2] = (unsigned char)(source->r * 255.0f);\n    packed.channel[1] = (unsigned char)(source->g * 255.0f);\n    packed.channel[0] = (unsigned char)(source->b * 255.0f);\n    return packed.value;\n}\n"
+        },
+        {
+          "name": "result-argument-first",
+          "text": "static inline void effect_pack_color(\n    unsigned long *result,\n    effect_color_t *source)\n{\n    EffectPackedColor packed;\n    packed.channel[3] = (unsigned char)(source->a * 255.0f);\n    packed.channel[2] = (unsigned char)(source->r * 255.0f);\n    packed.channel[1] = (unsigned char)(source->g * 255.0f);\n    packed.channel[0] = (unsigned char)(source->b * 255.0f);\n    *result = packed.value;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "color-helper-call",
+      "find": "    effect_pack_color(&entry->color, &color);\n",
+      "replacements": [
+        {
+          "name": "assign-returned-value",
+          "text": "    color = effect_pack_color(&entry->color);\n"
+        },
+        {
+          "name": "result-argument-first",
+          "text": "    effect_pack_color(&color, &entry->color);\n"
+        }
+      ]
+    }
+  ]
+}

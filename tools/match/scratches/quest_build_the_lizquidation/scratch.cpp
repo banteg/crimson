@@ -30,9 +30,10 @@ struct quest_spawn_builder_t {
 extern "C" void quest_build_the_lizquidation(
     quest_spawn_entry_t *entries, int *count)
 {
+    int wave = 0;
     quest_spawn_builder_t builder((quest_entry_original_t *)entries);
 
-    for (int wave = 0; wave < 10; ++wave) {
+    for (; wave < 10; ++wave) {
         int spawn_count = wave + 6;
         int trigger_time_ms = wave * 8000 + 1500;
         quest_entry_original_t *spawn = &builder.spawns[builder.count];

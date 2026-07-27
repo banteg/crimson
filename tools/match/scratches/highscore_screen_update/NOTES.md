@@ -214,3 +214,101 @@ spellings and rules out the five loop forms as an explanation for the
 residual without introducing artificial codegen controls. The source remains
 unchanged. The updated `experiments.jsonl` SHA-256 is
 `0c6437f16e799574f9d4e0f4edfb704e60759ea5b29f2394884b77675ac9641e`.
+
+## Native data-flow and branch-shape residual pass
+
+A fresh pass against explicit Binary Ninja target `crimsonland.exe.bndb`
+revisited the three largest residual families instead of assuming that every
+remaining mismatch was compiler noise. The incoming source SHA-256
+`0bcc139286d6cb9ed4b4ee5a870324e08e1f6f994278d329507b92b844dad7c7`
+reproduced **77.5170%**, `6221.517032551098/8026` fuzzy-weighted bytes,
+gap `1804.482967448902`, 1,959/2,004 instructions, prefix 45, and references
+`584/0/7`.
+
+### Score-row assigned-item data flow
+
+Native `0x00442b92..0x00442c41` first stores the current backing buffer through
+the `char **` item cursor, then obtains the escape-prefix and `crt_sprintf`
+destinations by loading that assigned item. The port instead bypassed the
+item table and wrote through the backing-buffer cursor directly. Both address
+the same bytes, but the latter was less precise source data flow and forced
+the item cursor out of the native EBP allocation.
+
+`score-row-destination-mutations.json` (SHA-256
+`9ac94413e2eaee896fcc22889914f0532ff768f5a53e738f9ea2d624977e13d5`)
+tested prefix-only, format-only, and combined rewrites. The singles regress by
+`0.658737` and `56.999279` weighted bytes respectively, while their
+native-evidenced interaction gains `19.804548914528` weighted bytes and three
+aligned references. The retained combined source reaches **77.7638%**,
+`6241.321581465626` weighted bytes, gap `1784.678418534374`,
+1,967/2,004 instructions, prefix 45, and `587/0/7` references.
+
+The adjacent `switch` was also challenged because native keeps distinct Rush
+and Quest formatting arms. All three natural `if`/`else if` spellings in
+`score-row-mode-mutations.json` (SHA-256
+`07691805fd5352491c6fececc0cc639c72a63c1a4e356658621e2b19c597f856`)
+compile to the same 1,966-instruction candidate and lose
+`51.403178646816` weighted bytes plus one aligned reference. The switch is
+therefore retained: its tail merge is a compiler/code-layout effect, while
+the assigned-item loads are directly visible native data flow.
+
+### Batch synchronizer fallthrough
+
+At `0x00443ae7..0x00443b23`, native branches to the Quest arm and leaves the
+non-Quest zeroing path as fallthrough. Inverting the equivalent source
+condition to `game_mode != GAME_MODE_QUEST` reproduces that layout without
+changing behavior. The one-variant
+`batch-hardcore-branch-mutations.json` sweep (SHA-256
+`37f5c8c555d53543b63cecefbbba29a5ec55e42d594cc6486c99c7da32efd5b3`)
+gains `4.042306723747` weighted bytes and one aligned reference, reaching
+**77.8142%**, `6245.363888189373` weighted bytes, gap
+`1780.636111810627`, and `588/0/7` references with instruction count and
+prefix unchanged.
+
+### Quest-navigation edge fallthrough
+
+Native repeats the same edge-control shape in keyboard-left, keyboard-right,
+mouse-left, and mouse-right handlers: the stage movement path falls through
+and the comparison branches to the edge clamp. The port expressed all four
+equivalent conditions in the opposite orientation. The complete
+`quest-navigation-branch-mutations.json` matrix (SHA-256
+`34b7d962308d3dc42876509e6fd1aba370b0ffe2775aa8c5eb5f15d55d877d52`)
+evaluated all 4 singles, 6 pairs, 4 triples, and the one four-site
+combination. Each site independently adds `4.042306723748` weighted bytes;
+the retained four-site winner adds `16.169226894988` with no reference,
+instruction-count, or prefix tradeoff.
+
+The final source SHA-256 is
+`cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595`.
+It matches **78.0156%**, `6261.533115084361/8026` weighted bytes, gap
+`1764.466884915639`, 1,967/2,004 instructions, prefix 45, and references
+`588/0/7`. Relative to the incoming baseline this is
+`+40.016082533263` weighted bytes (`+0.498580644571` percentage points),
+eight candidate instructions, and four aligned references, with no new
+reference mismatch.
+
+### Rejected lifetime probes and final profile
+
+The four recorded return-state captures in `return-state-mutations.json`
+(SHA-256
+`7e49ddb65482032150d9d248c9479718e7f98f177d008ffe8c879172bbfbd1f7`)
+found one byte-neutral spelling; the other three lose
+`117.226894988668` weighted bytes and change the audit to `575/0/13`.
+Fresh localized probes likewise reject explicit right-panel copy/update
+lifetimes (**75.5902%**, prefix 43, `570/0/13`), moving the player-count
+array ahead of its local static (**77.1090%**, prefix 1, `579/0/8`), and
+materializing a shared profile-menu position (**75.2077%**, `568/0/12`).
+Those shapes either perturb the whole-function stack lifetime map or lose
+native reference alignment, so none is retained.
+
+A recorded control probe of the accepted row-cursor source before the batch
+and navigation changes reproduces **77.7638%** and is
+`20.211533618735` weighted bytes behind the final source. A live six-profile
+matrix confirms that VC6.5 and VC6.6 produce the same final
+`6261.533115084361` weighted bytes under natural `/O2 /GB /W3 /GR-`;
+adding `/G5` or `/GX` is byte-neutral. `RECOVERY=semantic-complete` and
+`RESIDUAL=compiler` remain accurate.
+
+The final `experiments.jsonl` contains ten recorded experiments and has
+SHA-256
+`b9bf48f26ac0fab17ea553ed0006c5b46f8ad6adb09b341b77effdd09f94e93d`.

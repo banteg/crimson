@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-0-position",
+      "find": "    spawns[0].pos = quest_vec2_t(-64.0f, 256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].pos.x = -64.0f;\n    spawns[0].pos.y = 256.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-position",
+      "find": "    spawns[3].pos = quest_vec2_t(-64.0f, 768.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].pos.x = -64.0f;\n    spawns[3].pos.y = 768.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-position",
+      "find": "    spawns[6].pos = quest_vec2_t(-64.0f, 256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[6].pos.x = -64.0f;\n    spawns[6].pos.y = 256.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-9-position",
+      "find": "    spawns[9].pos = quest_vec2_t(512.0f, 1152.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[9].pos.x = 512.0f;\n    spawns[9].pos.y = 1152.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-10-position",
+      "find": "    spawns[10].pos = quest_vec2_t(512.0f, -256.0f);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[10].pos.x = 512.0f;\n    spawns[10].pos.y = -256.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-0-metadata",
+      "find": "    spawns[0].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 500, 1);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[0].template_id = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;\n    spawns[0].trigger_time_ms = 500;\n    spawns[0].count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-3-metadata",
+      "find": "    spawns[3].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 19500, 1);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[3].template_id = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    spawns[3].trigger_time_ms = 19500;\n    spawns[3].count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-6-metadata",
+      "find": "    spawns[6].set_spawn(SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16, 35500, 1);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[6].template_id = SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16;\n    spawns[6].trigger_time_ms = 35500;\n    spawns[6].count = 1;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-9-metadata",
+      "find": "    spawns[9].set_spawn(SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15, 52500, 3);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[9].template_id = SPAWN_ID_FORMATION_GRID_ALIEN_WHITE_15;\n    spawns[9].trigger_time_ms = 52500;\n    spawns[9].count = 3;\n"
+        }
+      ]
+    },
+    {
+      "name": "entry-10-metadata",
+      "find": "    spawns[10].set_spawn(SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17, 56500, 3);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "    spawns[10].template_id = SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17;\n    spawns[10].trigger_time_ms = 56500;\n    spawns[10].count = 3;\n"
+        }
+      ]
+    }
+  ]
+}

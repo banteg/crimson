@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "render-local-slot-lifetimes",
+      "find": "    unsigned long color;\n    float rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n\n    rotation = entry->rotation;\n",
+      "replacements": [
+        {
+          "name": "rotation-declared-first",
+          "text": "    float rotation;\n    unsigned long color;\n    effect_vec2_t offset;\n    float matrix[4];\n\n    rotation = entry->rotation;\n"
+        },
+        {
+          "name": "color-zero-initialized",
+          "text": "    unsigned long color = 0;\n    float rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n\n    rotation = entry->rotation;\n"
+        },
+        {
+          "name": "rotation-first-color-zero-initialized",
+          "text": "    float rotation;\n    unsigned long color = 0;\n    effect_vec2_t offset;\n    float matrix[4];\n\n    rotation = entry->rotation;\n"
+        },
+        {
+          "name": "rotation-initialized-at-declaration",
+          "text": "    unsigned long color;\n    float rotation = entry->rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n"
+        },
+        {
+          "name": "rotation-first-initialized",
+          "text": "    float rotation = entry->rotation;\n    unsigned long color;\n    effect_vec2_t offset;\n    float matrix[4];\n"
+        },
+        {
+          "name": "color-declared-after-matrix",
+          "text": "    float rotation;\n    effect_vec2_t offset;\n    float matrix[4];\n    unsigned long color;\n\n    rotation = entry->rotation;\n"
+        }
+      ]
+    }
+  ]
+}

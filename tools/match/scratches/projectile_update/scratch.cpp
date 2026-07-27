@@ -1087,10 +1087,13 @@ extern "C" void projectile_update(void)
     sprite_effect_t *sprite = sprite_effect_pool;
     do {
         if (sprite->active) {
-            float move_x = frame_dt * sprite->velocity.x;
-            float move_y = frame_dt * sprite->velocity.y;
-            sprite->position.x += move_x;
-            sprite->position.y += move_y;
+            float move_dt = frame_dt;
+            vec2f_t movement = {
+                move_dt * sprite->velocity.x,
+                move_dt * sprite->velocity.y,
+            };
+            sprite->position.x += movement.x;
+            sprite->position.y += movement.y;
             sprite->rotation += frame_dt * 3.0f;
             sprite->color_a -= frame_dt;
             if (sprite->color_a <= 0.0f) {
@@ -1110,13 +1113,14 @@ extern "C" void projectile_update(void)
                 particle->intensity -= frame_dt * 0.11f;
                 particle->spin += frame_dt * 5.0f;
                 if (particle->render_flag) {
-                    float move_x = frame_dt * particle->velocity.x;
                     if (particle->intensity <= 0.15f) {
+                        float move_x = frame_dt * particle->velocity.x;
                         particle->position.x +=
                             move_x * 0.55f * particle->intensity;
                         particle->position.y += frame_dt * particle->velocity.y
                             * 0.55f * particle->intensity;
                     } else {
+                        float move_x = frame_dt * particle->velocity.x;
                         vec2f_t movement = {
                             move_x * particle->intensity,
                             frame_dt * particle->velocity.y
@@ -1131,12 +1135,13 @@ extern "C" void projectile_update(void)
             } else {
                 particle->intensity -= frame_dt * 0.9f;
                 particle->spin += frame_dt;
-                float move_x = frame_dt * particle->velocity.x;
                 if (particle->intensity <= 0.15f) {
+                    float move_x = frame_dt * particle->velocity.x;
                     particle->position.x += move_x * 2.5f * 0.15f;
                     particle->position.y += frame_dt * particle->velocity.y
                         * 2.5f * 0.15f;
                 } else {
+                    float move_x = frame_dt * particle->velocity.x;
                     vec2f_t movement = {
                         move_x * 2.5f * particle->intensity,
                         frame_dt * particle->velocity.y * 2.5f

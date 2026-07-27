@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-local-order",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave = 0;\n    int trigger_time_ms = 1500;",
+      "replacements": [
+        {
+          "name": "builder-trigger-wave",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 1500;\n    int wave = 0;"
+        },
+        {
+          "name": "wave-trigger-builder",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);"
+        },
+        {
+          "name": "trigger-wave-builder",
+          "text": "    int trigger_time_ms = 1500;\n    int wave = 0;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);"
+        }
+      ]
+    },
+    {
+      "name": "right-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "bottom-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "left-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "top-entry-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_ZOMBIE_RANDOM_41,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;"
+        }
+      ]
+    },
+    {
+      "name": "loop-update-order",
+      "find": "        trigger_time_ms += 11000;\n        ++wave;",
+      "replacements": [
+        {
+          "name": "wave-before-trigger",
+          "text": "        ++wave;\n        trigger_time_ms += 11000;"
+        }
+      ]
+    }
+  ]
+}

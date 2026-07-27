@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-loop-cursor",
+      "find": "    do {\n        spawn->pos.y = (float)(y_offset / 12 + 128);\n        if ((index & 1) != 0) {\n            spawn->pos.x = 896.0f;\n        } else {\n            spawn->pos.x = 832.0f;\n        }\n        spawn->set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n\n        trigger_time_ms += 500;\n        y_offset += 768;\n        ++spawn;\n        ++index;\n    } while (index < 12);\n",
+      "replacements": [
+        {
+          "name": "preadvance-negative-index",
+          "text": "    do {\n        ++spawn;\n        spawn[-1].pos.y = (float)(y_offset / 12 + 128);\n        if ((index & 1) != 0) {\n            spawn[-1].pos.x = 896.0f;\n        } else {\n            spawn[-1].pos.x = 832.0f;\n        }\n        spawn[-1].set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n\n        trigger_time_ms += 500;\n        y_offset += 768;\n        ++index;\n    } while (index < 12);\n"
+        }
+      ]
+    },
+    {
+      "name": "second-loop-cursor",
+      "find": "    do {\n        spawn->pos.y = (float)(y_offset / 12 + 128);\n        if ((index & 1) != 0) {\n            spawn->pos.x = 832.0f;\n        } else {\n            spawn->pos.x = 896.0f;\n        }\n        spawn->set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n\n        ++spawn;\n        trigger_time_ms += 300;\n        ++index;\n        y_offset += 768;\n    } while (trigger_time_ms < 48600);\n",
+      "replacements": [
+        {
+          "name": "preadvance-negative-index",
+          "text": "    do {\n        ++spawn;\n        spawn[-1].pos.y = (float)(y_offset / 12 + 128);\n        if ((index & 1) != 0) {\n            spawn[-1].pos.x = 832.0f;\n        } else {\n            spawn[-1].pos.x = 896.0f;\n        }\n        spawn[-1].set_spawn(\n            SPAWN_ID_DEN_ALIEN_BASIC_07,\n            trigger_time_ms,\n            1);\n\n        trigger_time_ms += 300;\n        ++index;\n        y_offset += 768;\n    } while (trigger_time_ms < 48600);\n"
+        }
+      ]
+    },
+    {
+      "name": "second-loop-local-order",
+      "find": "    index = 0;\n    y_offset = 0;\n    trigger_time_ms = 45000;\n    spawn = &spawns[13];\n",
+      "replacements": [
+        {
+          "name": "trigger-before-induction",
+          "text": "    trigger_time_ms = 45000;\n    index = 0;\n    y_offset = 0;\n    spawn = &spawns[13];\n"
+        },
+        {
+          "name": "cursor-before-induction",
+          "text": "    spawn = &spawns[13];\n    index = 0;\n    y_offset = 0;\n    trigger_time_ms = 45000;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "style-eight-movement-branch-lifetime",
+      "find": "                if (particle->render_flag) {\n                    float move_x = frame_dt * particle->velocity.x;\n                    if (particle->intensity <= 0.15f) {\n                        particle->position.x +=\n                            move_x * 0.55f * particle->intensity;\n                        particle->position.y += frame_dt * particle->velocity.y\n                            * 0.55f * particle->intensity;\n                    } else {\n                        vec2f_t movement = {\n                            move_x * particle->intensity,\n                            frame_dt * particle->velocity.y\n                                * particle->intensity,\n                        };\n                        vec2_add(\n                            &particle->position,\n                            &movement,\n                            3.0f);\n                    }\n                }",
+      "replacements": [
+        {
+          "name": "branch-local-shared-move-x",
+          "text": "                if (particle->render_flag) {\n                    if (particle->intensity <= 0.15f) {\n                        float move_x = frame_dt * particle->velocity.x;\n                        particle->position.x +=\n                            move_x * 0.55f * particle->intensity;\n                        particle->position.y += frame_dt * particle->velocity.y\n                            * 0.55f * particle->intensity;\n                    } else {\n                        float move_x = frame_dt * particle->velocity.x;\n                        vec2f_t movement = {\n                            move_x * particle->intensity,\n                            frame_dt * particle->velocity.y\n                                * particle->intensity,\n                        };\n                        vec2_add(\n                            &particle->position,\n                            &movement,\n                            3.0f);\n                    }\n                }"
+        }
+      ]
+    },
+    {
+      "name": "default-movement-branch-lifetime",
+      "find": "                float move_x = frame_dt * particle->velocity.x;\n                if (particle->intensity <= 0.15f) {\n                    particle->position.x += move_x * 2.5f * 0.15f;\n                    particle->position.y += frame_dt * particle->velocity.y\n                        * 2.5f * 0.15f;\n                } else {\n                    vec2f_t movement = {\n                        move_x * 2.5f * particle->intensity,\n                        frame_dt * particle->velocity.y * 2.5f\n                            * particle->intensity,\n                    };\n                    vec2_add(\n                        &particle->position,\n                        &movement,\n                        3.0f);\n                }",
+      "replacements": [
+        {
+          "name": "branch-local-shared-move-x",
+          "text": "                if (particle->intensity <= 0.15f) {\n                    float move_x = frame_dt * particle->velocity.x;\n                    particle->position.x += move_x * 2.5f * 0.15f;\n                    particle->position.y += frame_dt * particle->velocity.y\n                        * 2.5f * 0.15f;\n                } else {\n                    float move_x = frame_dt * particle->velocity.x;\n                    vec2f_t movement = {\n                        move_x * 2.5f * particle->intensity,\n                        frame_dt * particle->velocity.y * 2.5f\n                            * particle->intensity,\n                    };\n                    vec2_add(\n                        &particle->position,\n                        &movement,\n                        3.0f);\n                }"
+        }
+      ]
+    }
+  ]
+}

@@ -584,9 +584,11 @@ handler from `0x00` through `0x43` (with `0x02` taking the native fallback),
 the shared root initialization, and the complete effect, difficulty, Hardcore,
 and retry tail. The sole masked-reference mismatch is the compiler-generated
 retry jump table, whose candidate offsets
-`0x35df/0x3611/0x3643/0x3672` and native offsets
+`0x35eb/0x361d/0x364f/0x367e` and native offsets
 `0x35da/0x360c/0x363e/0x366d` cover the same four cases with a uniform
-five-byte code-layout displacement. The audited table therefore carries no
+17-byte code-layout displacement. Relative to their dispatch instructions at
+candidate `0x35e4` and native `0x35d3`, all four entries have identical
+`+0x07/+0x39/+0x6b/+0x9a` displacements. The audited table therefore carries no
 independent source-reference debt and remains visible as `352/0/1` rather than
 being hidden behind an alias. The first mismatch remains the evidenced
 root-offset/zero-vector local slot permutation shown above; no gameplay source
@@ -607,3 +609,32 @@ This rules out ordinary function-local declaration order as the control for
 the native `[esp+0x10..0x18]` rotation. VC6 is assigning those slots from the
 root-offset and zero-vector use lifetimes, so the canonical declarations remain
 unchanged rather than adding an explicit byte-offset local.
+
+## Tint tail-merge sweep
+
+A live Binary Ninja and normalized-listing audit localizes the 17-byte
+reference displacement to one compiler suffix-folding decision. Native
+template `0x3f` copies tint B at `0x00433f52`, loads tint A at
+`0x00433f55`, then jumps from `0x00433f59` to the byte-identical
+template-`0x2b` suffix at `0x0043382a`. The candidate instead emits the
+remaining tint-A copy, size, damage, and common-tail jump in place. Those
+three additional candidate instructions occupy 17 extra bytes, so every later
+retry jump-table address moves by `+0x11` even though the switch topology and
+all four table-entry displacements are identical.
+
+The schema-1 spec `tint-tail-merge-mutations.json` tests natural typed-pointer,
+typed-reference, and explicit-component spellings at both `0x2b` and `0x3f`.
+Spec SHA-256 is
+`62c14b5dcdacd66e9452c022edbade8e2710065f361542cdcf6c5ee220587ac4`.
+The recorded sweep evaluates all 14/14 possible one- and two-site variants
+without truncation. Thirteen variants are byte-identical to the 86.9304%
+baseline, including every named pointer/reference combination. Explicit
+component initialization at `0x3f` alone loses 95.62 fuzzy-weighted bytes,
+drops the score to 86.2522%, and adds one candidate instruction; pairing it
+with either typed-pointer spelling at `0x2b` returns to the baseline but still
+does not induce the native fold.
+
+No variant improves, so the source remains unchanged. An explicit cross-case
+`goto` was deliberately excluded: it could force the compiler artifact but
+would not recover additional gameplay semantics or an evidenced source-level
+control-flow construct.

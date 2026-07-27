@@ -42,9 +42,9 @@ struct quest_entry_original_t {
 extern "C" void quest_build_sweep_stakes(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
     int trigger_time_ms = 2000;
     int trigger_step_ms = 2000;
+    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
 
     do {
         float angle = (float)(crt_rand() % 612) * 0.01f;

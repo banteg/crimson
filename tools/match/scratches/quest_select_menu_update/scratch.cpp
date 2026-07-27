@@ -131,7 +131,8 @@ extern "C" void quest_select_menu_update(void)
     panel_position.x += 300.0f;
 
     bool row_hovered = false;
-    quest_select_vec2_t position = panel_position;
+    quest_select_vec2_t position;
+    position = panel_position;
     position.y += 40.0f;
     position.x += 64.0f;
     position.x += ui_element_slot_37.render_offset_x;

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-base-anchor-initialization",
+      "find": "    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;",
+      "replacements": [
+        {
+          "name": "default-then-assign-anchor",
+          "text": "    controls_vec2_t left_base;\n    left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x;"
+        },
+        {
+          "name": "direct-constructor-anchor",
+          "text": "    controls_vec2_t left_base(\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x);"
+        },
+        {
+          "name": "field-assign-x-then-y",
+          "text": "    controls_vec2_t left_base;\n    left_base.x =\n        ui_element_slot_14.pos_x\n        + ui_element_slot_14.vertices[0].x;\n    left_base.y =\n        ui_element_slot_14.pos_y\n        + ui_element_slot_14.vertices[0].y;"
+        },
+        {
+          "name": "field-assign-y-then-x",
+          "text": "    controls_vec2_t left_base;\n    left_base.y =\n        ui_element_slot_14.pos_y\n        + ui_element_slot_14.vertices[0].y;\n    left_base.x =\n        ui_element_slot_14.pos_x\n        + ui_element_slot_14.vertices[0].x;"
+        },
+        {
+          "name": "construct-from-named-scalars",
+          "text": "    float left_anchor_x =\n        ui_element_slot_14.pos_x\n        + ui_element_slot_14.vertices[0].x;\n    float left_anchor_y =\n        ui_element_slot_14.pos_y\n        + ui_element_slot_14.vertices[0].y;\n    controls_vec2_t left_base(left_anchor_x, left_anchor_y);"
+        }
+      ]
+    }
+  ]
+}

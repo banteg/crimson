@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inner-ring-metadata",
+      "find": "            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "setter",
+          "text": "            spawn->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        }
+      ]
+    },
+    {
+      "name": "right-edge-metadata",
+      "find": "            spawn->set_spawn(\n                SPAWN_ID_ZOMBIE_RANDOM_41,\n                trigger_time_ms,\n                spawn_count);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "            spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "left-edge-metadata",
+      "find": "            spawn->set_spawn(\n                SPAWN_ID_ZOMBIE_RANDOM_41,\n                trigger_time_ms,\n                spawn_count);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "            spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "bottom-edge-metadata",
+      "find": "            spawn->set_spawn(\n                SPAWN_ID_ZOMBIE_RANDOM_41,\n                trigger_time_ms,\n                spawn_count);\n",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "            spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "top-edge-metadata",
+      "find": "            spawn->set_spawn(\n                SPAWN_ID_ZOMBIE_RANDOM_41,\n                trigger_time_ms,\n                spawn_count);\n",
+      "occurrence": 4,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "            spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "outer-ring-metadata",
+      "find": "            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "setter",
+          "text": "            spawn->set_spawn(\n                SPAWN_ID_DEN_SPIDER_BASIC_0A,\n                trigger_time_ms,\n                1);\n"
+        }
+      ]
+    }
+  ]
+}

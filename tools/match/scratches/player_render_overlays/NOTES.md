@@ -100,5 +100,36 @@ All four possible one-change variants were evaluated:
 No individually positive site exists, so no interaction was eligible. Both
 sweeps have complete one-change coverage, `best_improves=false`, and zero
 unevaluated planned combinations. No source variant or modern-port change was
-retained. The two complete records are in `experiments.jsonl`, whose SHA-256
-is `e58d5ddfaf83bad77636e03226b2aec95d504fe5ed709f0c06eb2d07595daab3`.
+retained. Those two complete records are the first two entries in
+`experiments.jsonl`.
+
+## Muzzle-flash lifetime follow-up
+
+The largest previously unswept local region is the two-arm muzzle-flash quad
+at native `0x004291fb-0x0042930d`. Live disassembly confirms that the
+weapon-flag-four arm retains its quarter-size value across both coordinate
+calculations, stages the output through `esp+0x34` and `esp+0x38`, and loads
+the Grim interface before the quad arguments. The other arm similarly keeps
+its half-size and full-size values in separate stack slots before both arms
+join at the virtual draw call.
+
+Two complete native-grounded sweeps reject ordinary source-shape alternatives:
+
+- `muzzle-interface-lifetime-mutations.json` tested shared and arm-local Grim
+  interface pointers before and after the half-size calculation. All three
+  variants regress by 14.341 to 30.362 fuzzy-weighted bytes and lose one or
+  two aligned references. Spec SHA-256 is
+  `48e9bf867b43a609a0c7a3708f7877e6c81d372ea44c9d2ba4b7d9ada798e676`.
+- `muzzle-coordinate-shape-mutations.json` tested explicit x/y lowering in
+  either arm and in both arms together. The complete three-variant interaction
+  sweep loses 31.035 to 64.012 weighted bytes, removes 3 to 17 candidate
+  instructions, and loses 2 to 9 aligned references. Spec SHA-256 is
+  `0bbdaee1085c7d4a20e5c960b25dd7e642a41ad52d177740db6303961466ff9a`.
+
+The existing vector-expression and direct-interface form is therefore
+retained. Final source SHA-256 remains
+`536084d3873edf98ae7516d8dff3abfab963c71683719033360850c9a17d8517`:
+83.8794233%, 3,843.355/4,582 fuzzy-weighted bytes, a 738.645-byte gap,
+1,141/1,148 instructions, prefix 9, and `326/0/0` references. The current
+four-record `experiments.jsonl` SHA-256 is
+`f501de07b8b307a96e75eb62e999c0a3dfe6f6280aca44b7206b51d59011520b`.

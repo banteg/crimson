@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sprite-effect-movement-lifetime",
+      "find": "            float move_x = frame_dt * sprite->velocity.x;\n            float move_y = frame_dt * sprite->velocity.y;\n            sprite->position.x += move_x;\n            sprite->position.y += move_y;",
+      "replacements": [
+        {
+          "name": "aggregate-initializer",
+          "text": "            vec2f_t movement = {\n                frame_dt * sprite->velocity.x,\n                frame_dt * sprite->velocity.y,\n            };\n            sprite->position.x += movement.x;\n            sprite->position.y += movement.y;"
+        },
+        {
+          "name": "aggregate-component-assignments",
+          "text": "            vec2f_t movement;\n            movement.x = frame_dt * sprite->velocity.x;\n            movement.y = frame_dt * sprite->velocity.y;\n            sprite->position.x += movement.x;\n            sprite->position.y += movement.y;"
+        },
+        {
+          "name": "velocity-copy-then-scale",
+          "text": "            vec2f_t movement = sprite->velocity;\n            movement.x *= frame_dt;\n            movement.y *= frame_dt;\n            sprite->position.x += movement.x;\n            sprite->position.y += movement.y;"
+        },
+        {
+          "name": "staged-dt-aggregate",
+          "text": "            float move_dt = frame_dt;\n            vec2f_t movement = {\n                move_dt * sprite->velocity.x,\n                move_dt * sprite->velocity.y,\n            };\n            sprite->position.x += movement.x;\n            sprite->position.y += movement.y;"
+        },
+        {
+          "name": "interleaved-scalar-updates",
+          "text": "            float move_x = frame_dt * sprite->velocity.x;\n            sprite->position.x += move_x;\n            float move_y = frame_dt * sprite->velocity.y;\n            sprite->position.y += move_y;"
+        }
+      ]
+    }
+  ]
+}

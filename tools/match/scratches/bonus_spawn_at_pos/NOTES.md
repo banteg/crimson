@@ -53,3 +53,18 @@ candidate emits 100 instructions against 99 native instructions with `14/0/0`
 references. Its localized differences are the documented saved-register
 lifetime and dependent allocation/scheduling only, so recovery is
 `semantic-complete` with a `compiler` residual.
+
+## Recorded invalid-tail check
+
+Live native disassembly confirms the allocation boundary: only `EDI` is saved
+before the complete bounds/Rush guard, and `ESI` is shrink-wrapped at
+`0x0041f805` immediately before slot allocation. The candidate saves both in
+its prologue.
+
+`invalid-tail-mutations.json` records an explicit `goto` from the unchanged
+invalid guard to a physical sentinel-return label at the function tail. The
+complete label/goto pairing and the label-only form both compile
+byte-identically at 88.44%, 100 instructions, and references `14/0/0`; the
+incomplete goto-only form fails compilation. No source variant is retained.
+Stock `/G5`, `/G6`, `/Ob1`, and `/Ot` are likewise byte-identical to `/GB`,
+while `/Oy-` regresses.

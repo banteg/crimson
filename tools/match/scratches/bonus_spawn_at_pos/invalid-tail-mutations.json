@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "invalid-guard-exit",
+      "find": "        return &bonus_pool_sentinel;\n    }\n    {\n",
+      "replacements": [
+        {
+          "name": "goto-invalid-tail",
+          "text": "        goto invalid_position;\n    }\n    {\n"
+        }
+      ]
+    },
+    {
+      "name": "invalid-tail-label",
+      "find": "        return entry;\n    }\n}\n",
+      "replacements": [
+        {
+          "name": "append-invalid-return",
+          "text": "        return entry;\n    }\n\ninvalid_position:\n    return &bonus_pool_sentinel;\n}\n"
+        }
+      ]
+    }
+  ]
+}

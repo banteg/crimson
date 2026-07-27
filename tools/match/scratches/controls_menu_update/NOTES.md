@@ -435,3 +435,85 @@ and
 `746641895ba65e4f8aa645ff24d44519b47117af79ac1b0d392c0ed12fc5b2da`.
 The updated `experiments.jsonl` SHA-256 is
 `7aaf689d28864fa1f3b83dcc710e476a56e595363c5dfcff5f5a96646819e9ac`.
+
+## Heading RHS-slot and left-base ownership refinement
+
+This slice started from **80.7202%**, 17,184.5280 fuzzy-weighted bytes, a
+4,104.4720-byte fuzzy gap, 5,409/5,421 candidate/native instructions, a
+164-instruction exact prefix, and reference audit 1,550/4/7.
+
+Live Binary Ninja evidence from explicit target
+`3023:2:9499448411019345244` identifies the remaining heading discrepancy.
+At native `0x0044cbef`, the line-offset RHS is addressed at stable entry-stack
+slot `E+28`; the result and current-position objects occupy `E+10` and `E+18`.
+The same `E+28` RHS object is reused by subsequent heading and row vector
+adds. The candidate agrees on the result and position slots but uses `E+20`
+for the RHS. Native later uses `E+20` for the persistent left base, whereas
+the candidate uses `E+28`, so this is a broader function allocation
+difference rather than a local heading-declaration spelling.
+
+`left-base-outer-add-ownership-mutations.json` found one semantics-preserving,
+native-shaped improvement. Retaining the slot-14 anchor directly in
+`left_base`, publishing the player-item array, and then applying the
+`(300, 40)` offset in place recovers **7.8630 fuzzy-weighted bytes** without
+changing the candidate instruction count or reference audit. It advances the
+first mismatch from byte 793 to byte 847 and the exact prefix from 164 to 172
+instructions. Both before-items and after-items declaration placements
+compile identically; the clearer before-items form is retained.
+
+Ten additional complete matrices, together with the retained six-variant
+matrix, cover all 88 planned variants without budget truncation:
+
+- direct initialization, lexical declaration order, object identity, named
+  offset lifetime, and separate work-storage shapes are neutral or regress;
+  the direct construction forms lose 1,045.24 weighted bytes;
+- shared-RHS and `activate_list` ownership variants either alter behavior or
+  regress. The complete behavior-preserving shared-RHS form loses 1,193.70
+  weighted bytes, while passing `activate_list`'s base by value destroys the
+  opening allocation and loses 1,214.84;
+- value-returning expression wrappers add 102 instructions and lose 1,858.55
+  weighted bytes; the narrower caller-output wrapper proves that
+  const-reference rvalues are byte-identical to the retained source, while
+  value passing adds 84 instructions and loses 2,367.73.
+
+The heading `E+20` versus native `E+28` operand remains unresolved, so no
+successor-row normalization is claimed: the row region repeats the same
+allocation discrepancy and was covered by the paired heading/row mutations.
+
+The retained source now matches **80.7572%**, with **17,192.3910
+fuzzy-weighted bytes** and a **4,096.6090-byte fuzzy gap**, 5,409 candidate
+instructions versus 5,421 native instructions, and a 172-instruction exact
+prefix. The retained mutation comparison reports reference audit 1,550/4/7;
+the final clean rerun reports **1,551 resolved / 0 unresolved / 10
+mismatched** with the same weighted score.
+
+The retained source SHA-256 is
+`128558e6177c55e30810d02641bb89390579d3df6e8c436eddee3b6adad5dd5f`.
+Recorded spec SHA-256 values are:
+
+- direct initialization:
+  `e2a534d873a6f6985374e3241d5d00bd71a8919b47f5d447ba4f98cf19ca0504`;
+- declaration order:
+  `1ac9d57f352f1207934cb6d958a18c6d9d738d2b5c4f1085f7aaf2db8f983ab5`;
+- identity lifetime:
+  `afb4bd7d1dc5e7c65f49b93bdc212fa99eeec9d08ffa12eca7bdf424db41b89c`;
+- shared RHS:
+  `2fe4ea6d1a4f481799efe4aef4cb5b4d1569f8c3634e6e8797e1d64a434eca5f`;
+- retained outer-add ownership:
+  `fab7bdfbe1342c65d96134762333eefb6b13d879eb47332c7b43b6860a9a09c5`;
+- `activate_list` ownership:
+  `bdcffceafe90ec3bb343015c6a800b2b950d2ac33bbbaeecc1dde2b5a34440b7`;
+- offset lifetime:
+  `7a65af62af555d771f52b37b4ab4bfc3b9fc724ff77eb803b15bcef6adc47640`;
+- anchor initialization:
+  `dd9b9a03674e16a47939de341a5b04a62e1a27c9d652b349d7d1117a263ae787`;
+- storage/work lifetime:
+  `e7780c11d128b78b3cab568e05241793a78ca8b00b7a44d3c5604534e9d52e99`;
+- value-returning expression temporary:
+  `d0abc1e10856d4a940f03035dcdb7ad261b9b7754ae831401430ed6ac9d03a39`;
+  and
+- caller-output expression temporary:
+  `39fd478b442b873dce4d5c9fa3078a16e2dd450b0b5206f460c98c8c85bd2fbd`.
+
+The updated `experiments.jsonl` SHA-256 is
+`58e7f2c5d1af9831afee92256a57b9c4b38491d9b6b6675adc3211c89422779a`.

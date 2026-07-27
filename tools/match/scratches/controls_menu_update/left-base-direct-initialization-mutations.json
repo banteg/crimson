@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-base-direct-initialization",
+      "find": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;",
+      "replacements": [
+        {
+          "name": "direct-copy-initialization",
+          "text": "    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "direct-constructor-initialization",
+          "text": "    controls_vec2_t left_base(\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f));"
+        },
+        {
+          "name": "default-construct-then-assign",
+          "text": "    controls_vec2_t left_base;\n    left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);"
+        }
+      ]
+    }
+  ]
+}

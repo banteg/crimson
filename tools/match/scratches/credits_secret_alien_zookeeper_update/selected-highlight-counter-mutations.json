@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "selected-highlight-counter-lifetimes",
+      "find": "    int selected_row = 0;\n    int selected_index = 0;\n    do {\n        int selected_column = 0;",
+      "replacements": [
+        {
+          "name": "index-before-row",
+          "text": "    int selected_index = 0;\n    int selected_row = 0;\n    do {\n        int selected_column = 0;"
+        },
+        {
+          "name": "split-row-and-index",
+          "text": "    int selected_row;\n    selected_row = 0;\n    int selected_index;\n    selected_index = 0;\n    do {\n        int selected_column = 0;"
+        },
+        {
+          "name": "outer-column-after-index",
+          "text": "    int selected_row = 0;\n    int selected_index = 0;\n    int selected_column;\n    do {\n        selected_column = 0;"
+        },
+        {
+          "name": "outer-column-before-index",
+          "text": "    int selected_row = 0;\n    int selected_column;\n    int selected_index = 0;\n    do {\n        selected_column = 0;"
+        },
+        {
+          "name": "outer-column-before-row",
+          "text": "    int selected_column;\n    int selected_row = 0;\n    int selected_index = 0;\n    do {\n        selected_column = 0;"
+        }
+      ]
+    }
+  ]
+}

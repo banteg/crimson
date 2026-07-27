@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-36-position-shape",
+      "find": "    ui_element_slot_36.pos = ui_layout_vec2_t(-135.0f, 122.0f);",
+      "replacements": [
+        {
+          "name": "scalar-x-then-y",
+          "text": "    ui_element_slot_36.pos.x = -135.0f;\n    ui_element_slot_36.pos.y = 122.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    ui_element_slot_36.pos.y = 122.0f;\n    ui_element_slot_36.pos.x = -135.0f;"
+        },
+        {
+          "name": "explicit-derived-cast",
+          "text": "    *(ui_layout_vec2_t *)&ui_element_slot_36.pos =\n        ui_layout_vec2_t(-135.0f, 122.0f);"
+        },
+        {
+          "name": "staged-local",
+          "text": "    ui_layout_vec2_t slot_36_position(-135.0f, 122.0f);\n    ui_element_slot_36.pos = slot_36_position;"
+        }
+      ]
+    },
+    {
+      "name": "slot-37-position-shape",
+      "find": "    ui_element_slot_37.pos = ui_layout_vec2_t(-5.0f, 185.0f);",
+      "replacements": [
+        {
+          "name": "scalar-x-then-y",
+          "text": "    ui_element_slot_37.pos.x = -5.0f;\n    ui_element_slot_37.pos.y = 185.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    ui_element_slot_37.pos.y = 185.0f;\n    ui_element_slot_37.pos.x = -5.0f;"
+        },
+        {
+          "name": "explicit-derived-cast",
+          "text": "    *(ui_layout_vec2_t *)&ui_element_slot_37.pos =\n        ui_layout_vec2_t(-5.0f, 185.0f);"
+        },
+        {
+          "name": "staged-local",
+          "text": "    ui_layout_vec2_t slot_37_position(-5.0f, 185.0f);\n    ui_element_slot_37.pos = slot_37_position;"
+        }
+      ]
+    },
+    {
+      "name": "slot-38-position-shape",
+      "find": "    ui_element_slot_38.pos = ui_layout_vec2_t(-135.0f, 122.0f);",
+      "replacements": [
+        {
+          "name": "scalar-x-then-y",
+          "text": "    ui_element_slot_38.pos.x = -135.0f;\n    ui_element_slot_38.pos.y = 122.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    ui_element_slot_38.pos.y = 122.0f;\n    ui_element_slot_38.pos.x = -135.0f;"
+        },
+        {
+          "name": "explicit-derived-cast",
+          "text": "    *(ui_layout_vec2_t *)&ui_element_slot_38.pos =\n        ui_layout_vec2_t(-135.0f, 122.0f);"
+        },
+        {
+          "name": "staged-local",
+          "text": "    ui_layout_vec2_t slot_38_position(-135.0f, 122.0f);\n    ui_element_slot_38.pos = slot_38_position;"
+        }
+      ]
+    },
+    {
+      "name": "slot-39-position-shape",
+      "find": "    ui_element_slot_39.pos = ui_layout_vec2_t(-5.0f, 185.0f);",
+      "replacements": [
+        {
+          "name": "scalar-x-then-y",
+          "text": "    ui_element_slot_39.pos.x = -5.0f;\n    ui_element_slot_39.pos.y = 185.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    ui_element_slot_39.pos.y = 185.0f;\n    ui_element_slot_39.pos.x = -5.0f;"
+        },
+        {
+          "name": "explicit-derived-cast",
+          "text": "    *(ui_layout_vec2_t *)&ui_element_slot_39.pos =\n        ui_layout_vec2_t(-5.0f, 185.0f);"
+        },
+        {
+          "name": "staged-local",
+          "text": "    ui_layout_vec2_t slot_39_position(-5.0f, 185.0f);\n    ui_element_slot_39.pos = slot_39_position;"
+        }
+      ]
+    }
+  ]
+}

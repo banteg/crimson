@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "left-base-object-identity",
+      "find": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    controls_vec2_t draw_position = left_base;",
+      "replacements": [
+        {
+          "name": "panel-with-base-reference",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t &left_base = left_panel;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    controls_vec2_t draw_position = left_base;"
+        },
+        {
+          "name": "adjust-panel-before-base-copy",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    left_panel.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_panel.x;\n    controls_vec2_t left_base = left_panel;\n    controls_vec2_t draw_position = left_base;"
+        },
+        {
+          "name": "synchronize-panel-after-base-adjustment",
+          "text": "    controls_vec2_t left_panel =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t left_base = left_panel;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    left_panel = left_base;\n    controls_vec2_t draw_position = left_base;"
+        },
+        {
+          "name": "direct-base-with-panel-reference",
+          "text": "    controls_vec2_t left_base =\n        *(controls_vec2_t *)&ui_element_slot_14.pos_x\n        + *(controls_vec2_t *)&ui_element_slot_14.vertices[0].x\n        + controls_vec2_t(300.0f, 40.0f);\n    controls_vec2_t &left_panel = left_base;\n    left_base.x =\n        ui_element_slot_14.render_offset_x - 32.0f - 64.0f\n        + left_base.x;\n    controls_vec2_t draw_position = left_base;"
+        }
+      ]
+    },
+    {
+      "name": "activate-list-base-identity",
+      "find": "    int selected = activate_list(\n        left_base,\n        controls_vec2_t(10.0f, 104.0f),\n        controls_move_method_list);\n    if (selected >= 0) {\n        controls_move_method_list.selected_index = selected;\n        config_player_mode_flags[controls_rebind_player_index] = selected + 1;\n    }\n    selected = activate_list(\n        left_base,\n        controls_vec2_t(10.0f, 62.0f),\n        controls_aim_method_list);\n    if (selected >= 0) {\n        controls_aim_method_list.selected_index = selected;\n        config_aim_scheme[controls_rebind_player_index] = selected;\n    }\n    selected = activate_list(\n        left_base,\n        controls_vec2_t(136.0f, 16.0f),\n        controls_player_profile_list);",
+      "replacements": [
+        {
+          "name": "use-left-panel",
+          "text": "    int selected = activate_list(\n        left_panel,\n        controls_vec2_t(10.0f, 104.0f),\n        controls_move_method_list);\n    if (selected >= 0) {\n        controls_move_method_list.selected_index = selected;\n        config_player_mode_flags[controls_rebind_player_index] = selected + 1;\n    }\n    selected = activate_list(\n        left_panel,\n        controls_vec2_t(10.0f, 62.0f),\n        controls_aim_method_list);\n    if (selected >= 0) {\n        controls_aim_method_list.selected_index = selected;\n        config_aim_scheme[controls_rebind_player_index] = selected;\n    }\n    selected = activate_list(\n        left_panel,\n        controls_vec2_t(136.0f, 16.0f),\n        controls_player_profile_list);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-entry-count-placement",
+      "find": "        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "increment-after-x",
+          "text": "        spawn->pos.x = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,\n            trigger_time_ms,\n            spawn_count);"
+        },
+        {
+          "name": "increment-after-metadata",
+          "text": "        spawn->pos.x = (float)(terrain_texture_width + 64);\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;"
+        }
+      ]
+    },
+    {
+      "name": "bottom-entry-count-placement",
+      "find": "        spawn->pos.x = (float)(terrain_texture_width / 2);\n        spawn->pos.y = (float)(terrain_texture_width + 64);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "increment-after-x",
+          "text": "        spawn->pos.x = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width + 64);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,\n            trigger_time_ms,\n            spawn_count);"
+        },
+        {
+          "name": "increment-after-metadata",
+          "text": "        spawn->pos.x = (float)(terrain_texture_width / 2);\n        spawn->pos.y = (float)(terrain_texture_width + 64);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;"
+        }
+      ]
+    },
+    {
+      "name": "left-entry-count-placement",
+      "find": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "increment-after-x",
+          "text": "        spawn->pos.x = -64.0f;\n        ++builder.count;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);"
+        },
+        {
+          "name": "increment-after-metadata",
+          "text": "        spawn->pos.x = -64.0f;\n        spawn->pos.y = (float)(terrain_texture_width / 2);\n        spawn->set_spawn(\n            SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;"
+        }
+      ]
+    },
+    {
+      "name": "top-entry-count-placement",
+      "find": "        spawn->pos.x = 512.0f;\n        spawn->pos.y = -64.0f;\n        ++builder.count;\n        spawn->set_spawn(\n            SPAWN_ID_ZOMBIE_RANDOM_41,\n            trigger_time_ms,\n            spawn_count);",
+      "replacements": [
+        {
+          "name": "increment-after-x",
+          "text": "        spawn->pos.x = 512.0f;\n        ++builder.count;\n        spawn->pos.y = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_ZOMBIE_RANDOM_41,\n            trigger_time_ms,\n            spawn_count);"
+        },
+        {
+          "name": "increment-after-metadata",
+          "text": "        spawn->pos.x = 512.0f;\n        spawn->pos.y = -64.0f;\n        spawn->set_spawn(\n            SPAWN_ID_ZOMBIE_RANDOM_41,\n            trigger_time_ms,\n            spawn_count);\n        ++builder.count;"
+        }
+      ]
+    }
+  ]
+}

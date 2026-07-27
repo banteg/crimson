@@ -764,3 +764,76 @@ residuals: the creature scan's field-anchored induction pointer and the
 movement-mode tail alignment. No unsupported compiler profile, artificial
 dependency, volatile access, register constraint, or layout-only control flow
 is retained.
+
+## Movement vector frame snapshots
+
+The starting build for this slice was 4,014/4,206 instructions at
+`61.8978102189781%`: 10,062.727007299270 weighted bytes, a
+6,194.272992700729-byte gap, a seven-instruction prefix, and `790/0/2`
+references. Its source SHA-256 was
+`6f3eb8ad7f0d1b6c5ea0ab826e8f0c6fd61b52594abe6a0198e8fffba50ea678`.
+
+The highest-weight remaining region, native
+`0x004168c2..0x00416b4c`, covers Multi Plasma and the following direct
+projectile cases. Live instructions show a repeated stack position at
+`+0x48/+0x4c`, but the apparent source-level explanations were false leads.
+An exhaustive 255/255 sweep replacing eight branch-local positions with the
+existing shared vector was completely byte-neutral (spec SHA
+`a2169e235b7d8b8e684dc3df1e89010a5618f5eed34f670e7c6d71c6a7322aae`).
+The 9/9 Y-before-X sweep had no winner and regressed eight cases by
+31.644--106.798 weighted bytes (spec SHA
+`02bc26cd203b983ba8939aca9753c6aba08cf8fe6b1aeb2cbcc4fccdc61983c2`);
+eight aggregate initializers were byte-neutral in the expanded 17/17 plan
+(spec SHA
+`269114a5a16f279bb13f0416369ccf6997cd3eb8ec94cff740a3d4a6c89ac92c`).
+A distinct projectile-position object lost 119.971 weighted bytes at function
+scope and 1,042.944 bytes at firing-block scope, both shortening the prefix
+from seven instructions to one. Moving the recovered spread-angle declaration
+to function scope lost another 59.332 bytes. None of those layout explanations
+is retained.
+
+The next high-impact region, native `0x00414805..0x00414ac4`, exposed an
+ordinary missing value lifetime. Native movement tails load `frame_dt` once,
+duplicate it on x87, and use the same value for both movement components. The
+mode-3 idle tail does this at `0x004143f2..0x0041440c`; all three mode-1
+tails do it independently at `0x00414624..0x00414676`,
+`0x004146f1..0x0041474b`, and `0x004147e6..0x00414834`; and the mode-2
+paths repeat the pattern before their shared call at `0x00414c57`. The
+starting candidate instead reloaded the global separately, for example at
+object offsets `0x00000fef` and `0x00001008`.
+
+The retained source snapshots `frame_dt` into an ordinary block-local
+`const float movement_dt` before scaling the two components in the mode-3
+idle arm, mode-1 idle arm, and common mode-2 tail. They preserve runtime
+semantics while preventing VC6 from collapsing native-distinct arm bodies.
+The final object contains the recovered single-load/duplicate shapes at
+candidate offsets `0x00000c74`, `0x00000f9b`, and `0x0000147c`.
+
+The first mutation plan evaluated all 8/8 one-site variants and all 80/80
+interactions through four sites (spec SHA
+`2d1dd185e285fc999bbceaf7391260b2b56d886a4de17bbac287e83cc45ab282`).
+A second add/remove plan exhaustively evaluated all 31/31 combinations around
+the stronger retained state and found no improvement (spec SHA
+`e28f633901b03bede6691893a5edc2dbcfe3aff928905045b3fdec48ab01fdbc`).
+Removing the mode-3 snapshot lost 43.665 weighted bytes and five references;
+removing the mode-1 idle snapshot lost 27.363 bytes, 13 instructions, and four
+references; removing the mode-2 snapshot lost 3.938 bytes. The mode-1
+backward snapshot was byte-neutral and was removed. Applying snapshots to all
+ten movement-vector sites lost 1.224 weighted bytes, so the unsupported broad
+form is recorded but not retained.
+
+The canonical build now has 4,051/4,206 instructions at
+`62.4924306648904%`: 10,159.394453191231 weighted bytes, a
+6,097.605546808769-byte gap, the same seven-instruction prefix, and
+`800/0/2` references. This is a gain of 96.667445891961 weighted bytes and
+0.594620445912 percentage points. A recorded zero-delta confirmation uses
+source SHA
+`3e91e771c50e0571c354b6ccb8f217298feeafeff766c9afe6a2c9e6d0d6254d`.
+
+The two audit mismatches are unchanged and remain rejected residuals. At
+native `0x00413eb2` / candidate offset 2001, native references the
+`creature_pool` record base while VC6 anchors the cursor at
+`creature_pool+0x18`. At native `0x0041419e` / candidate offset 2748, the
+aligned target load of `render_overlay_player_index` is paired with the
+candidate's later `grim_interface_ptr` load. The final audit is otherwise
+`800/0/2`; no unsupported layout trick was used to hide either mismatch.

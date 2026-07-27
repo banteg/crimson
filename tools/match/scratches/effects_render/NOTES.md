@@ -51,3 +51,21 @@ and Grim state transitions are all represented. Candidate and native each have
 repeat the documented scalar/local-slot allocation and x87 scheduling choice
 in the two equivalent passes. Recovery is therefore `semantic-complete` with a
 `compiler` residual.
+
+## Recorded first-residual sweeps
+
+Live native disassembly at `0x0042e8a6` fixes the first mismatch precisely:
+native stores rotation at `esp+0xc` and later materializes packed color at
+`esp+0x8`; stock VC6 assigns those two real four-byte locals in the opposite
+order. The matrix at `esp+0x18..0x24`, offset at `esp+0x10..0x14`, packed-byte
+staging at `esp+0x4..0x7`, instruction count, and all references agree.
+
+`render-local-slot-mutations.json` records six declaration, initialization,
+and lifetime spellings. All six compile byte-identically at 92.82%, prefix 37,
+195 instructions, references `38/0/0`, and a 53.128-byte fuzzy gap.
+
+`color-helper-shape-mutations.json` records return-value and result-first
+helper ABIs. Both complete definition/call pairings are also byte-identical;
+the six deliberately incomplete or cross-paired combinations fail
+compilation. No variant is retained. A fresh stock-VC6 matrix also leaves
+`/G5`, `/Ob1`, and `/Ot` byte-identical to `/GB`; `/G6` and `/Oy-` regress.

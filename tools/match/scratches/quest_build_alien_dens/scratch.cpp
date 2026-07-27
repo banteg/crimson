@@ -33,7 +33,8 @@ extern "C" void quest_build_alien_dens(
     spawns[1].trigger_time_ms = trigger_time_ms;
     spawns[1].count = one;
 
-    spawns[2].pos = quest_vec2_t(512.0f, 512.0f);
+    spawns[2].pos.x = 512.0f;
+    spawns[2].pos.y = 512.0f;
     spawns[2].template_id = spawn_template_id;
     spawns[2].trigger_time_ms = 23500;
     spawns[2].count = config_blob.player_count;

@@ -60,20 +60,23 @@ extern "C" void quest_build_lizard_raze(
     int spawner_trigger_time_ms = 10000;
     int one = 1;
 
-    quest_entry_original_t *spawn = &builder.spawns[builder.count++];
+    quest_entry_original_t *spawn = &builder.spawns[builder.count];
     spawn->pos.x = 128.0f;
     spawn->pos.y = 256.0f;
     spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);
+    ++builder.count;
 
-    spawn = &builder.spawns[builder.count++];
+    spawn = &builder.spawns[builder.count];
     spawn->pos.x = 128.0f;
     spawn->pos.y = 384.0f;
     spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);
+    ++builder.count;
 
-    spawn = &builder.spawns[builder.count++];
+    spawn = &builder.spawns[builder.count];
     spawn->pos.x = 128.0f;
     spawn->pos.y = 512.0f;
     spawn->set_spawn(spawner_template_id, spawner_trigger_time_ms, one);
+    ++builder.count;
 
     *count = builder.count;
 }

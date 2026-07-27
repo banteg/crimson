@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "common-result-tail",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    while (result < 16) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n        ++buffer;\n    }\n    result = rand() % 16;\n    entry->buffers[result]->Stop();\n\nplay_voice:\n    entry->buffers[result]->SetFrequency(sfx_rate_scale);\n    entry->buffers[result]->Play(0, 0, 0);\n    return result;\n",
+      "replacements": [
+        {
+          "name": "streaming-goto-common-return",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        result = 0;\n        goto playback_done;\n    }\n\n    result = 0;\n    while (result < 16) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n        ++buffer;\n    }\n    result = rand() % 16;\n    entry->buffers[result]->Stop();\n\nplay_voice:\n    entry->buffers[result]->SetFrequency(sfx_rate_scale);\n    entry->buffers[result]->Play(0, 0, 0);\nplayback_done:\n    return result;\n"
+        },
+        {
+          "name": "streaming-if-resident-else",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        result = 0;\n    } else {\n        result = 0;\n        while (result < 16) {\n            if (*buffer != 0) {\n                (*buffer)->GetStatus(&status);\n                if ((status & DSBSTATUS_PLAYING) == 0) {\n                    goto play_voice;\n                }\n            }\n            ++result;\n            ++buffer;\n        }\n        result = rand() % 16;\n        entry->buffers[result]->Stop();\n\nplay_voice:\n        entry->buffers[result]->SetFrequency(sfx_rate_scale);\n        entry->buffers[result]->Play(0, 0, 0);\n    }\n    return result;\n"
+        },
+        {
+          "name": "resident-if-streaming-else",
+          "text": "    if (entry->vorbis_stream == 0) {\n        result = 0;\n        while (result < 16) {\n            if (*buffer != 0) {\n                (*buffer)->GetStatus(&status);\n                if ((status & DSBSTATUS_PLAYING) == 0) {\n                    goto play_voice;\n                }\n            }\n            ++result;\n            ++buffer;\n        }\n        result = rand() % 16;\n        entry->buffers[result]->Stop();\n\nplay_voice:\n        entry->buffers[result]->SetFrequency(sfx_rate_scale);\n        entry->buffers[result]->Play(0, 0, 0);\n    } else {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        result = 0;\n    }\n    return result;\n"
+        },
+        {
+          "name": "streaming-set-result-before-play",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        result = 0;\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        goto playback_done;\n    }\n\n    result = 0;\n    while (result < 16) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n        ++buffer;\n    }\n    result = rand() % 16;\n    entry->buffers[result]->Stop();\n\nplay_voice:\n    entry->buffers[result]->SetFrequency(sfx_rate_scale);\n    entry->buffers[result]->Play(0, 0, 0);\nplayback_done:\n    return result;\n"
+        }
+      ]
+    }
+  ]
+}

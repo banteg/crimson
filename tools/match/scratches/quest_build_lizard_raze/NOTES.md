@@ -19,8 +19,10 @@ work in a different order. Direct fields and a metadata-only setter produce
 the same best result. Builder post-increment, `pos.set(x, y)`, a five-argument
 entry setter, and the established vector-temporary entry setter were checked;
 they move the counter too early, alter register allocation, or introduce
-temporary copies. The 79.22% candidate remains an honest WIP without volatile
-state, dummy dependencies, or other scheduler steering.
+temporary copies. Splitting each tail `count++` expression into an indexed
+lookup followed by an explicit post-store increment improves the epilogue
+schedule. The 80.52% candidate remains an honest WIP without volatile state,
+dummy dependencies, or other scheduler steering.
 
 ## Recovery classification audit
 
@@ -29,3 +31,13 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices retain VC6 `/O2 /GB`; VC7 and `/G6`
+regress, with the other tested VC6 spellings tied. A recorded 48-variant
+source-order sweep retains only the explicit post-store tail increments,
+raising weighted bytes from `201.22077922077924` to `204.51948051948054` and
+reducing the gap from `52.779220779220765` to `49.48051948051946`. Five
+helper-store permutations then all regress. The final candidate preserves
+77/77 instructions, a 16-instruction prefix, and `3/0/0` references.

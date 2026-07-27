@@ -41,3 +41,14 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Exact-tail follow-up (2026-07-27)
+
+The five-compiler and six-flag matrices retain VC6 `/O2 /GB`; VC7 and `/G6`
+regress, while `/G5`, `/G7`, `/Ox`, and `/Ob1` are code-identical to the
+baseline. Three recorded fixed-prefix sweeps evaluate 18 variants: moving the
+loop locals ahead of the four fixed entries regresses, individual and paired
+direct metadata spellings are at best neutral, and all helper store
+permutations are neutral or worse. The exact repeated loop remains untouched,
+and the source stays at `285.7263157894737/348` weighted bytes, 95/95
+instructions, a nine-instruction prefix, and `2/0/0` references.

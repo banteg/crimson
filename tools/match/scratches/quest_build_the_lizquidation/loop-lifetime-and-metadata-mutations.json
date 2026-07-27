@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-wave-lifetime",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n\n    for (int wave = 0; wave < 10; ++wave) {\n",
+      "replacements": [
+        {
+          "name": "wave-before-builder",
+          "text": "    int wave = 0;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n\n    for (; wave < 10; ++wave) {\n"
+        },
+        {
+          "name": "wave-after-builder",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int wave = 0;\n\n    for (; wave < 10; ++wave) {\n"
+        }
+      ]
+    },
+    {
+      "name": "wave-local-order",
+      "find": "        int spawn_count = wave + 6;\n        int trigger_time_ms = wave * 8000 + 1500;\n",
+      "replacements": [
+        {
+          "name": "trigger-before-count",
+          "text": "        int trigger_time_ms = wave * 8000 + 1500;\n        int spawn_count = wave + 6;\n"
+        }
+      ]
+    },
+    {
+      "name": "right-wave-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "left-wave-metadata",
+      "find": "        spawn->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_2E, trigger_time_ms, spawn_count);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "        spawn->template_id = SPAWN_ID_LIZARD_RANDOM_2E;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = spawn_count;\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-wave-metadata",
+      "find": "            spawn->set_spawn(\n                SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);\n",
+      "replacements": [
+        {
+          "name": "direct-fields",
+          "text": "            spawn->template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;\n            spawn->trigger_time_ms = 1500;\n            spawn->count = 2;\n"
+        }
+      ]
+    }
+  ]
+}

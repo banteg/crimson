@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "loop-local-order",
+      "find": "    quest_entry_original_t *cursor = &spawns[3];\n    int trigger_time_ms = 1500;",
+      "replacements": [
+        {
+          "name": "trigger-before-cursor",
+          "text": "    int trigger_time_ms = 1500;\n    quest_entry_original_t *cursor = &spawns[3];"
+        }
+      ]
+    },
+    {
+      "name": "ring-store-shape",
+      "find": "        cursor->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        cursor->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_31,\n            trigger_time_ms,\n            1);",
+      "replacements": [
+        {
+          "name": "scalar-position-and-direct-metadata",
+          "text": "        cursor->pos.x = (float)cos(angle) * 256.0f + 512.0f;\n        cursor->pos.y = (float)sin(angle) * 256.0f + 512.0f;\n        cursor->template_id = SPAWN_ID_LIZARD_RANDOM_31;\n        cursor->trigger_time_ms = trigger_time_ms;\n        cursor->count = 1;"
+        },
+        {
+          "name": "set-position-and-direct-metadata",
+          "text": "        cursor->pos.set(\n            (float)cos(angle) * 256.0f + 512.0f,\n            (float)sin(angle) * 256.0f + 512.0f);\n        cursor->template_id = SPAWN_ID_LIZARD_RANDOM_31;\n        cursor->trigger_time_ms = trigger_time_ms;\n        cursor->count = 1;"
+        },
+        {
+          "name": "scalar-position-and-setter",
+          "text": "        cursor->pos.x = (float)cos(angle) * 256.0f + 512.0f;\n        cursor->pos.y = (float)sin(angle) * 256.0f + 512.0f;\n        cursor->set_spawn(\n            SPAWN_ID_LIZARD_RANDOM_31,\n            trigger_time_ms,\n            1);"
+        }
+      ]
+    },
+    {
+      "name": "loop-update-order",
+      "find": "        ++cursor;\n        trigger_time_ms += 900;",
+      "replacements": [
+        {
+          "name": "trigger-before-cursor",
+          "text": "        trigger_time_ms += 900;\n        ++cursor;"
+        }
+      ]
+    },
+    {
+      "name": "for-loop-form",
+      "find": "    for (int angle_index = 0; angle_index < 28; ++angle_index) {",
+      "replacements": [
+        {
+          "name": "predeclared-index",
+          "text": "    int angle_index;\n    for (angle_index = 0; angle_index < 28; ++angle_index) {"
+        }
+      ]
+    }
+  ]
+}

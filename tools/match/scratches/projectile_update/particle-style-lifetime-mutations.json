@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "particle-initial-style-lifetime",
+      "find": "            unsigned char style_id = particle->style_id;\n            if (style_id == 8) {",
+      "replacements": [
+        {
+          "name": "direct-initial-field-read",
+          "text": "            if (particle->style_id == 8) {"
+        },
+        {
+          "name": "movement-scoped-style-copy",
+          "text": "            unsigned char movement_style_id = particle->style_id;\n            if (movement_style_id == 8) {"
+        }
+      ]
+    },
+    {
+      "name": "particle-tail-style-reload",
+      "find": "            }\n\n            if ((style_id == 0 && particle->intensity <= 0.0f)",
+      "replacements": [
+        {
+          "name": "reload-after-movement",
+          "text": "            }\n\n            unsigned char style_id = particle->style_id;\n            if ((style_id == 0 && particle->intensity <= 0.0f)"
+        }
+      ]
+    }
+  ]
+}

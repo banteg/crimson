@@ -37,3 +37,19 @@ present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native and all masked references resolved; its
 localized residual is compiler scheduling/allocation only. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 focused family pass
+
+Live Binary Ninja reconfirmed both rings, every four-edge wave, and the
+hardcore player-count restore paths. MSVC 6.0, 6.5, 6.5 Processor Pack, and
+6.6 tie at 80.21978021978022%; 7.0 regresses to 75.06849315068493%.
+`/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tie, while `/G6` falls to
+79.12087912087912% and shortens the prefix.
+
+`phase-metadata-shape-mutations.json` (SHA-256
+`a656d52650447f821bad3097d938fc70364515e55c33386ea0f630a5481d17c2`)
+recorded all 21 single and pair sibling-shape variants. Ring setters and
+direct fields for every edge entry are all byte-identical, including their
+pair interactions. No source change is justified. Validation remains
+492.54945054945057/614 weighted bytes, a 121.45054945054943 gap,
+182/182 instructions, prefix 31, and references 25/0/0.

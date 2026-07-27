@@ -30,3 +30,13 @@ alternatives are neutral or worse, so no source mutation is retained.
 Recovery is classified `semantic-complete` with an `analysis` residual for the
 unknown source shape. No volatile state, dummy dependencies, register forcing,
 or artificial control flow is retained.
+
+## Common-result tail sweep
+
+Live disassembly shows the streaming arm using immediate zero arguments while
+still saving `ESI` in the common prologue; the resident arm initializes `ESI`
+only after the streaming test. `common-result-tail-mutations.json` tested four
+single-result formulations using a common return, an explicit join, and both
+branch polarities. Each emitted 92 instructions instead of the native 93 and
+moved the first mismatch to the prologue; the best fell to 68.11%. The
+canonical 93-instruction source therefore remains unchanged.

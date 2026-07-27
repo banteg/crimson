@@ -85,3 +85,18 @@ not missing semantics. The scratch therefore retains its original source and
 remains `semantic-complete` with a `compiler` residual, without raw owner
 offsets, dummy aliases, volatility, fake arithmetic, assembly, or register
 forcing.
+
+## Follow-up request/receive stopping audit
+
+After the HUD and Quest priority passes reached stopping points, a bounded
+live Binary Ninja audit revisited the largest worker mismatch region at
+`0x0042d3cc..0x0042d5eb`. Native retains the `InternetOpenA`,
+`InternetConnectA`, `HttpOpenRequestA`, and `HttpSendRequestA` sequence, the
+bytewise `scores.crimsonland.com` and `/scoring_v2_7.php` setup, and the
+`InternetReadFile` loop with `0x400` chunks and the `0x8000` response guard.
+The source already contains the same request and receive behavior; its natural
+string initializers and stack-slot order account for the localized compiler
+shape. No new source discrepancy or honest mutation site was found, so the
+scratch remains unchanged at `1195.664739884393/1970` weighted bytes
+(`60.69364161849711%`), gap `774.3352601156071`, 519/519 instructions, prefix
+19, and `102/0/0` references.
