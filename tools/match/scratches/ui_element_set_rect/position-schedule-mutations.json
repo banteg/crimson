@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "position-schedule",
+      "find": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    float bottom = height - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);",
+      "replacements": [
+        {
+          "name": "top-pair-before-bottom",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n\n    float bottom = height - 1.0f;\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);"
+        },
+        {
+          "name": "native-interleaved-top-pair",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n\n    float bottom = height - 1.0f;\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);"
+        },
+        {
+          "name": "top-right-before-bottom",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n\n    vertices[1].position = ui_vec2_t(right, 1.0f);\n    float bottom = height - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);"
+        },
+        {
+          "name": "top-right-temporary-before-bottom",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    ui_vec2_t top_right(right, 1.0f);\n    float bottom = height - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[1].position = top_right;\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);"
+        },
+        {
+          "name": "direct-top-right-before-bottom",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;\n    float inv_height = 1.0f / height;\n    float right = width - 1.0f;\n    vertices[1].position.x = right;\n    vertices[1].position.y = 1.0f;\n    float bottom = height - 1.0f;\n\n    vertices[0].position = ui_vec2_t(1.0f, 1.0f);\n    vertices[3].position = ui_vec2_t(1.0f, bottom);\n    vertices[2].position = ui_vec2_t(right, bottom);"
+        }
+      ]
+    }
+  ]
+}

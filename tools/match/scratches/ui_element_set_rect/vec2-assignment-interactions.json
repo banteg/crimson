@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-assignment-operator",
+      "find": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)",
+      "replacements": [
+        {
+          "name": "direct-x-then-y",
+          "text": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator=(const ui_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)"
+        },
+        {
+          "name": "two-results-then-copy",
+          "text": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator=(const ui_vec2_t &other)\n    {\n        float result_x = other.x;\n        float result_y = other.y;\n        x = result_x;\n        y = result_y;\n        return *this;\n    }\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)"
+        },
+        {
+          "name": "x-temporary-then-direct-y",
+          "text": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator=(const ui_vec2_t &other)\n    {\n        float result_x = other.x;\n        x = result_x;\n        y = other.y;\n        return *this;\n    }\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)"
+        },
+        {
+          "name": "direct-x-then-y-temporary",
+          "text": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator=(const ui_vec2_t &other)\n    {\n        x = other.x;\n        float result_y = other.y;\n        y = result_y;\n        return *this;\n    }\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)"
+        },
+        {
+          "name": "assignment-by-value",
+          "text": "    ui_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_vec2_t &operator=(ui_vec2_t other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    ui_vec2_t &operator+=(const ui_vec2_t &other)"
+        }
+      ]
+    },
+    {
+      "name": "uv-slot-two-assignment",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;",
+      "replacements": [
+        {
+          "name": "aggregate-temporary",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv = ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);"
+        },
+        {
+          "name": "named-aggregate",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    vertices[2].uv = uv_two;"
+        }
+      ]
+    }
+  ]
+}

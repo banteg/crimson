@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv-bottom-pair",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);",
+      "replacements": [
+        {
+          "name": "native-component-interleave",
+          "text": "    vertices[3].uv.x = inv_width;\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[3].uv.y = 1.0f - inv_height;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "slot-three-then-two-components",
+          "text": "    vertices[3].uv.x = inv_width;\n    vertices[3].uv.y = 1.0f - inv_height;\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "slot-two-then-three-aggregates",
+          "text": "    vertices[2].uv =\n        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);"
+        },
+        {
+          "name": "declare-three-two-then-assign",
+          "text": "    ui_vec2_t uv_three(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    vertices[3].uv = uv_three;\n    vertices[2].uv = uv_two;"
+        },
+        {
+          "name": "declare-two-three-then-assign",
+          "text": "    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_three(inv_width, 1.0f - inv_height);\n    vertices[3].uv = uv_three;\n    vertices[2].uv = uv_two;"
+        },
+        {
+          "name": "late-bottom-inset",
+          "text": "    float uv_bottom = 1.0f - inv_height;\n    vertices[3].uv = ui_vec2_t(inv_width, uv_bottom);\n    vertices[2].uv = ui_vec2_t(1.0f - inv_width, uv_bottom);"
+        },
+        {
+          "name": "mixed-three-aggregate-two-components",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        }
+      ]
+    }
+  ]
+}

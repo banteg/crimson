@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "depth-early-declaration",
+      "find": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;",
+      "replacements": [
+        {
+          "name": "remove-early-declaration",
+          "text": "    float inv_width = 1.0f / width;"
+        },
+        {
+          "name": "early-aggregate-initialization",
+          "text": "    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};\n    float inv_width = 1.0f / width;"
+        }
+      ]
+    },
+    {
+      "name": "depth-initialization-point",
+      "find": "    depth.z = 0.5f;\n    depth.rhw = 1.0f;",
+      "replacements": [
+        {
+          "name": "late-separate-initialization",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        },
+        {
+          "name": "late-aggregate-initialization",
+          "text": "    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};"
+        },
+        {
+          "name": "remove-late-initialization",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

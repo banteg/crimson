@@ -400,3 +400,19 @@ Three bounded follow-up matrices reject broader lifetime hoisting:
 Those negative results keep the simpler branch-local declarations and narrow
 the remaining `0x48` frame deficit to other native temporary groups rather
 than these later effect vectors.
+
+Two additional native-shape probes also reject superficially closer spellings:
+
+- At `0x00420f3f..0x00420fa9`, native writes the effect template metadata and
+  RGBA components directly. Replacing the semantic color aggregate with those
+  direct component stores nevertheless removes eight candidate instructions
+  and loses up to 3.88 weighted bytes; a component-local-then-copy form is
+  byte-neutral. The six-variant sweep is recorded with spec SHA
+  `743a41ebe99f52f5599143d01b692a2e1cd4ace0ede5e3fd0a7b074e63153073`.
+- The Bloody Mess double impact at `0x004210e2..0x00421183` uses distinct
+  native vector slots, but splitting the reused source aggregate loses 119.91
+  weighted bytes and activating function-scope copies loses 205.00. Mere
+  function-scope declarations are byte-neutral, so the simpler reused
+  aggregate remains. The complete 17-variant interaction sweep is recorded
+  with spec SHA
+  `f8836b8b398ef179e60e4a0b86463a1a06d05447739e4bc42bf7e31ee9d57fa5`.

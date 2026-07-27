@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-add-sequencing",
+      "find": "        float result_x = x + other.x;\n        float result_y = y + other.y;\n        x = result_x;\n        y = result_y;",
+      "replacements": [
+        {
+          "name": "sequential-x-then-y-temporaries",
+          "text": "        float result_x = x + other.x;\n        x = result_x;\n        float result_y = y + other.y;\n        y = result_y;"
+        },
+        {
+          "name": "scoped-x-then-y-temporaries",
+          "text": "        {\n            float result_x = x + other.x;\n            x = result_x;\n        }\n        {\n            float result_y = y + other.y;\n            y = result_y;\n        }"
+        },
+        {
+          "name": "x-temporary-then-direct-y",
+          "text": "        float result_x = x + other.x;\n        x = result_x;\n        y += other.y;"
+        },
+        {
+          "name": "direct-x-then-y-temporary",
+          "text": "        x += other.x;\n        float result_y = y + other.y;\n        y = result_y;"
+        },
+        {
+          "name": "sequenced-comma-expression",
+          "text": "        (x += other.x), (y += other.y);"
+        },
+        {
+          "name": "component-pointer-cursor",
+          "text": "        float *component = &x;\n        *component += other.x;\n        ++component;\n        *component += other.y;"
+        },
+        {
+          "name": "sequential-y-then-x-temporaries",
+          "text": "        float result_y = y + other.y;\n        y = result_y;\n        float result_x = x + other.x;\n        x = result_x;"
+        }
+      ]
+    }
+  ]
+}

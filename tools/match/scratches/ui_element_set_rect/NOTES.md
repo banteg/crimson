@@ -3,11 +3,11 @@
 Native target: `crimsonland.exe` at `0x00419ba0..0x00419cfc` (348 bytes).
 
 This is an evidence-backed semantic reconstruction, not an exact match.
-Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` produces 93 normalized
-instructions against 91 native instructions, with 77.17% similarity, a
-20-instruction exact prefix, and masked references `6/0/0`. The earlier full
-compiler/flag sweep found no exact profile flip, so the mutation pass retained
-the stock VC6.5 `/O2 /GB` profile.
+Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` produces 88 normalized
+instructions against 91 native instructions, with 87.15% similarity, a
+57-instruction exact prefix, and masked references `6/0/0`. A fresh 30-profile
+compiler/flag sweep found no profile flip, so the mutation pass retained the
+stock VC6.5 `/O2 /GB` profile.
 
 ## Recovered source shape
 
@@ -30,23 +30,26 @@ the stock VC6.5 `/O2 /GB` profile.
 - Native x87 stores establish the source assignment order for the bottom
   vertices as slot 3 followed by slot 2. That order keeps the candidate's
   floating-point evaluation and store schedule closest to the executable.
-- Declaring both inverse dimensions and the real `right`/`bottom` edge scalars
-  before the vertex stores is semantically direct and recovers the native
-  12-byte frame. VC6 schedules the first 20 normalized instructions exactly
-  even though the source declarations precede the first position assignment.
+- Declaring both inverse dimensions and `right` before the top position pair,
+  then materializing `bottom` before the lower pair, recovers the native
+  lifetime boundary and 12-byte frame. VC6 now schedules the first 57
+  normalized instructions exactly.
+- In the offset loop, assigning the computed X value before evaluating Y
+  reproduces the native load/add/store sequence on both axes. The loop body is
+  instruction-identical apart from the branch displacement caused by the
+  shorter preceding UV schedule.
 
 ## Remaining mismatch
 
 Native and candidate now both reserve 12 local bytes and have identical
-prologues and epilogues. The candidate has two extra normalized instructions.
-The first residual region begins after the 20-instruction prefix and contains
-equivalent x87 stores for `right`, `bottom`, and the four position aggregates.
-The second is UV/depth temporary scheduling. The last is the four-vertex loop:
-the two-result source makes VC6 load both vertex coordinates before their
-offsets, but it calculates Y before X and keeps both results live until the
-post-increment stores. Native calculates and stores X before calculating Y.
-The color, depth copy, offset loads, stride, trip count, and values are
-unchanged.
+prologues and epilogues. The candidate is three normalized instructions
+shorter. Its first 57 instructions match exactly; the remaining substantive
+region is UV/depth temporary scheduling. Native copies the lower-right UV
+components through stack temporaries before loading the shared depth constants.
+The best natural source keeps the lower-left UV as an aggregate but writes the
+lower-right UV components directly, so VC6 removes those three copy moves and
+schedules the following depth stores differently. The color, depth values,
+offset loads, loop stride, trip count, and geometry are unchanged.
 
 No inline assembly, volatile state, dummy reference, forced address, or
 layout-only arithmetic is used.
@@ -101,10 +104,51 @@ native 12-byte frame, instruction count, prefix, or reference audit. Its
 source SHA-256 is
 `1e04d60d1711e24f2778516f7fed1b4828d250188fa404e3945206072b368be7`.
 
+### Native scheduling follow-up
+
+Three further complete mutation sweeps retain successively narrower source
+lifetime and store-order changes:
+
+| source | match | candidate/native | prefix | fuzzy-weighted bytes | refs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| prior baseline | 77.17% | 93/91 | 20 | 268.57 | `6/0/0` |
+| X temporary, then direct Y | 79.35% | 93/91 | 20 | 276.13 | `6/0/0` |
+| top position pair before `bottom` | 85.25% | 92/91 | 57 | 296.66 | `6/0/0` |
+| lower-left aggregate, lower-right components | 87.15% | 88/91 | 57 | 303.28 | `6/0/0` |
+
+- `vec2-add-sequencing-mutations.json` evaluates seven complete loop-add
+  schedules. The retained X-temporary/direct-Y form is tied with the symmetric
+  Y-temporary spelling, improves the weighted score by 7.57 bytes, and makes
+  the native X load/add/store precede the Y load/add/store. Spec SHA-256:
+  `5d4f4e7bdb4d13df9a0d2456c02a902d3ac338cd0abde48583a94102fee94e90`.
+- `position-schedule-mutations.json` evaluates five placement and
+  materialization schedules. Moving only the real `bottom` calculation after
+  the top position pair removes one candidate instruction, extends the exact
+  prefix from 20 to 57, and gains 20.53 weighted bytes. Spec SHA-256:
+  `91321244a607c6fee5ccf5a3ee0e13b6a59d61ba4df233f3e32fac661d23f79d`.
+- `uv-bottom-pair-mutations.json` evaluates seven lower-pair storage shapes.
+  Keeping slot 3 as an aggregate and writing slot 2 through its two named
+  components removes four candidate instructions and gains another 6.63
+  weighted bytes. Spec SHA-256:
+  `2a9044aad5b2658624d1dd909ee60794b119322821ac46252176e461d9bbb131`.
+
+Three recorded negative matrices bound the remaining three-instruction tail.
+The 11-variant depth-lifetime interaction sweep is byte-neutral at best (spec
+SHA `b61099cc508093b5be89afaa7ecd80f4a453299693aaf0ff28c94ba57d35e4de`);
+the seven slot-2 scalar/local copy forms are also neutral at best (spec SHA
+`642123d4699ffc1bfb36a2342ca2fd9281f2d8bc2aa293dc6c2e034d3deef5ba`);
+and all 17 explicit assignment-operator interactions regress, with even the
+implicit aggregate-only form returning to 85.25% (spec SHA
+`b823a7f89feec5ed6001199704bbcfdc0a196acf2cc9f227ba49b2d0a2995894`).
+
+A 30-profile matrix covered MSVC 6.0, 6.5, 6.5pp, 6.6, and 7.0 with `/O2 /GB`,
+`/G5`, `/G6`, `/Oy-`, `/O1`, and `/Ox`. Stock VC6.0/6.5/6.6 `/O2 /GB`, `/G5`,
+and `/Ox` tie at the retained 87.15%; no per-function override is supported.
+
 ## Recovery classification audit
 
-A fresh focused `--regions` run confirms **77.17%**, 93/91 candidate/native
-instructions, prefix 20, and `6/0/0` references. The anti-fakematch validator
+A fresh focused `--regions` run confirms **87.15%**, 88/91 candidate/native
+instructions, prefix 57, and `6/0/0` references. The anti-fakematch validator
 passes. Live Binary Ninja on `crimsonland.exe.bndb` confirms the four inset
 positions and UVs, the shared white/depth values, the native 12-byte local
 frame, and the four-step offset loop.

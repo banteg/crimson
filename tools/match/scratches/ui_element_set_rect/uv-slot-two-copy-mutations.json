@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "uv-slot-two-copy-shape",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;",
+      "replacements": [
+        {
+          "name": "component-built-local-then-copy",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two;\n    uv_two.x = 1.0f - inv_width;\n    uv_two.y = 1.0f - inv_height;\n    vertices[2].uv = uv_two;"
+        },
+        {
+          "name": "constructed-local-then-copy",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    vertices[2].uv = uv_two;"
+        },
+        {
+          "name": "scalar-pair-then-direct-components",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    float uv_two_x = 1.0f - inv_width;\n    float uv_two_y = 1.0f - inv_height;\n    vertices[2].uv.x = uv_two_x;\n    vertices[2].uv.y = uv_two_y;"
+        },
+        {
+          "name": "direct-x-temporary-y",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    float uv_two_y = 1.0f - inv_height;\n    vertices[2].uv.y = uv_two_y;"
+        },
+        {
+          "name": "temporary-x-direct-y",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    float uv_two_x = 1.0f - inv_width;\n    vertices[2].uv.x = uv_two_x;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "constructed-local-component-copy",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = uv_two.x;\n    vertices[2].uv.y = uv_two.y;"
+        },
+        {
+          "name": "component-built-local-component-copy",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two;\n    uv_two.x = 1.0f - inv_width;\n    uv_two.y = 1.0f - inv_height;\n    vertices[2].uv.x = uv_two.x;\n    vertices[2].uv.y = uv_two.y;"
+        }
+      ]
+    }
+  ]
+}

@@ -10,9 +10,8 @@ struct ui_vec2_t {
     ui_vec2_t &operator+=(const ui_vec2_t &other)
     {
         float result_x = x + other.x;
-        float result_y = y + other.y;
         x = result_x;
-        y = result_y;
+        y += other.y;
         return *this;
     }
 };
@@ -45,18 +44,19 @@ extern "C" void ui_element_set_rect(
     float inv_width = 1.0f / width;
     float inv_height = 1.0f / height;
     float right = width - 1.0f;
-    float bottom = height - 1.0f;
 
     vertices[0].position = ui_vec2_t(1.0f, 1.0f);
     vertices[1].position = ui_vec2_t(right, 1.0f);
+
+    float bottom = height - 1.0f;
     vertices[3].position = ui_vec2_t(1.0f, bottom);
     vertices[2].position = ui_vec2_t(right, bottom);
 
     vertices[0].uv = ui_vec2_t(inv_width, inv_height);
     vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);
     vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);
-    vertices[2].uv =
-        ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);
+    vertices[2].uv.x = 1.0f - inv_width;
+    vertices[2].uv.y = 1.0f - inv_height;
 
     depth.z = 0.5f;
     depth.rhw = 1.0f;

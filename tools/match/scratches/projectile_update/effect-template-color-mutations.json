@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "effect-template-color-write",
+      "find": "                                    effect_color_t effect_color = {\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                        1.0f,\n                                    };\n                                    effect_template.color = effect_color;\n                                    effect_template.flags = 0x59;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;",
+      "replacements": [
+        {
+          "name": "direct-rgba-then-metadata",
+          "text": "                                    effect_template.color.r = 1.0f;\n                                    effect_template.color.g = 1.0f;\n                                    effect_template.color.b = 1.0f;\n                                    effect_template.color.a = 1.0f;\n                                    effect_template.flags = 0x59;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;"
+        },
+        {
+          "name": "direct-native-order",
+          "text": "                                    effect_template.color.g = 1.0f;\n                                    effect_template.color.r = 1.0f;\n                                    effect_template.flags = 0x59;\n                                    effect_template.color.b = 1.0f;\n                                    effect_template.color.a = 1.0f;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;"
+        },
+        {
+          "name": "direct-grba-then-metadata",
+          "text": "                                    effect_template.color.g = 1.0f;\n                                    effect_template.color.r = 1.0f;\n                                    effect_template.color.b = 1.0f;\n                                    effect_template.color.a = 1.0f;\n                                    effect_template.flags = 0x59;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;"
+        },
+        {
+          "name": "metadata-then-direct-rgba",
+          "text": "                                    effect_template.flags = 0x59;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;\n                                    effect_template.color.r = 1.0f;\n                                    effect_template.color.g = 1.0f;\n                                    effect_template.color.b = 1.0f;\n                                    effect_template.color.a = 1.0f;"
+        },
+        {
+          "name": "native-order-with-alpha-local",
+          "text": "                                    float effect_alpha = 1.0f;\n                                    effect_template.color.g = 1.0f;\n                                    effect_template.color.r = 1.0f;\n                                    effect_template.flags = 0x59;\n                                    effect_template.color.b = 1.0f;\n                                    effect_template.color.a = effect_alpha;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;"
+        },
+        {
+          "name": "component-local-then-copy",
+          "text": "                                    effect_color_t effect_color;\n                                    effect_color.r = 1.0f;\n                                    effect_color.g = 1.0f;\n                                    effect_color.b = 1.0f;\n                                    effect_color.a = 1.0f;\n                                    effect_template.color = effect_color;\n                                    effect_template.flags = 0x59;\n                                    effect_template.lifetime = 0.35f;\n                                    effect_template.age = 0.0f;\n                                    effect_template.half_extent.x = 4.0f;\n                                    effect_template.half_extent.y = 4.0f;"
+        }
+      ]
+    }
+  ]
+}

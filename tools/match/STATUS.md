@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **294846/341963** code bytes (**86.2%**).
+Fuzzy-weighted alignment is **294881/341963** code bytes (**86.2%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274896/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274931/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 19950/21158 | 94.3% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **274896/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **274931/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -316,7 +316,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | terrain_render | 0x004188a0 | 693 | 693/693 | 0 | 200/200 | 100.00% | 200/200 | 32/0/0 |  | terrain-backbuffer-render |
 | wip | creature_render_type | 0x00418b60 | 2834 | 2223/2834 | 611 | 757/765 | 78.45% | 25/765 | 136/0/5 |  | creature-atlas-animation-tint-and-lifecycle-rendering |
 | match | creature_render_all | 0x00419680 | 1302 | 1302/1302 | 0 | 349/349 | 100.00% | 349/349 | 87/0/0 |  | creature-overlay-species-and-freeze-render-passes |
-| wip | ui_element_set_rect | 0x00419ba0 | 348 | 269/348 | 79 | 93/91 | 77.17% | 20/91 | 6/0/0 |  | ui-subtemplate-quad-geometry |
+| wip | ui_element_set_rect | 0x00419ba0 | 348 | 303/348 | 45 | 88/91 | 87.15% | 57/91 | 6/0/0 |  | ui-subtemplate-quad-geometry |
 | match | ui_element_load | 0x00419d00 | 207 | 207/207 | 0 | 67/67 | 100.00% | 67/67 | 10/0/0 |  | ui-element-texture-load |
 | audit | ui_menu_assets_init | 0x00419dd0 | 551 | 551/551 | 0 | 110/110 | 100.00% | 110/110 | 64/0/2 |  | ui-menu-template-assets |
 | match | j___cfltcvt_init_3 | 0x0041a000 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-global-initializer |
