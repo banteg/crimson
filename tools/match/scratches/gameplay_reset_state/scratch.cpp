@@ -10,6 +10,8 @@ struct reset_vec2_t {
     reset_vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}
 };
 
+void player_reset_all(void);
+
 extern "C" {
 
 extern IGrim2D_cpp *grim_interface_ptr;
@@ -99,7 +101,6 @@ void weapon_refresh_available(void);
 void perks_rebuild_available(void);
 void effect_defaults_reset(void);
 void projectile_reset_pools(void);
-void player_reset_all(void);
 void terrain_generate_random(void);
 int crt_rand(void);
 

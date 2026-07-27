@@ -15,6 +15,35 @@ void ui_template_slot_cpp_t::construct(void)
 {
 }
 
+class effect_vertex_cpp_t {
+public:
+    void construct(void);
+
+    float x;
+    float y;
+    float z;
+    float rhw;
+    unsigned int color;
+    float u;
+    float v;
+};
+
+void effect_vertex_cpp_t::construct(void)
+{
+}
+
+class ui_vec2_cpp_t {
+public:
+    void construct(void);
+
+    float x;
+    float y;
+};
+
+void ui_vec2_cpp_t::construct(void)
+{
+}
+
 class ui_template_block_cpp_t {
 public:
     ui_template_slot_cpp_t slots[8];

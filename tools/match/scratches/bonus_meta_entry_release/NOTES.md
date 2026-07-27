@@ -14,3 +14,10 @@ The authoritative name map now preserves the same
 `bonus_meta_cpp_t * __thiscall` boundary. Replaying it no longer degrades the
 destructor receiver to an unrelated `int *`, so both owned strings remain
 named in native HLIL.
+
+The selected object also emits the true `perk_meta_cpp_t` destructor identity.
+Native xrefs from both perk array helpers at `0x0042faa0` and `0x0042faf0`
+resolve to this same implementation at `0x00412410`; both 20-byte record types
+own two string pointers in the same order. The two natural destructor bodies
+therefore give the linker both decorated class identities while retaining the
+configured bonus destructor at 16/16 instructions and `2/0/0` references.

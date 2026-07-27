@@ -103,3 +103,11 @@ byte-identical at 99.02%, 307/307, prefix 165, and `213/0/0`. Thus an inlined
 source abstraction cannot move the two flag stores ahead of `rep stosd` or
 interleave the auxiliary clear with the vector temporary. No source change is
 retained.
+
+## Linkage closure
+
+`player_reset_all` is a C++ free function in its selected object
+(`?player_reset_all@@YAXXZ`). Moving only this declaration outside the
+surrounding `extern "C"` block makes the consumer request that exact identity.
+The body remains 99.02%, 307/307 instructions, prefix 165, and `213/0/0`
+references; the change affects only the COFF relocation name.

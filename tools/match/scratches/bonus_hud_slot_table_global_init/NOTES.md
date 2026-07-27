@@ -2,11 +2,13 @@
 
 Native target: `crimsonland.exe` at `0x0041a7d0` (56 bytes).
 
-Defining the 16-entry global C++ array makes VC6 emit the native inlined
-default-constructor loop. Each slot starts inactive at x = 0 with the label
-`"Empty"`, icon 1, scalar fields 1 and 5; the timer pointers retain their
-static null initialization. The compiler-generated `_$E1` helper matches all
-13 instructions and both static references exactly.
+The named provider placement-constructs a 16-entry wrapper over the external
+C++ array. Static storage makes the array non-null; expressing that invariant
+lets VC6 emit the native inlined default-constructor loop. Each slot starts
+inactive at x = 0 with the label `"Empty"`, icon 1, scalar fields 1 and 5; the
+timer pointers retain their static null initialization. The externally
+linkable `_bonus_hud_slot_table_global_init` provider matches all 13
+instructions and both static references exactly.
 
 The constructor view now derives from the canonical `bonus_hud_slot_t` instead
 of duplicating its active byte, padding, and slide block. This preserves the

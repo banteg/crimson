@@ -5,9 +5,9 @@ tools/match/scratches/invoke_callback_n/build/msvc6.5/4b7cd0f992fb8320/scratch.o
 tools/match/scratches/console_cmd_arg_get/build/msvc6.5/9ab869c9b2808e0d/scratch.obj
 tools/match/scratches/console_cmd_argc_get/build/msvc6.5/819f0bbba5ea3940/scratch.obj
 tools/match/scratches/console_global_construct_and_register/build/msvc6.5/d278a8255d94ebc1/scratch.obj
-tools/match/scratches/console_global_init/build/msvc6.5/ed42ba5378589c4e/scratch.obj
+tools/match/scratches/console_global_init/build/msvc6.5/22dd2f4fc894b7ea/scratch.obj
 tools/match/scratches/console_register_global_destructor_atexit/build/msvc6.5/392a2f464b259055/scratch.obj
-tools/match/scratches/console_global_destroy/build/msvc6.5/2a2dd4b7fab3948d/scratch.obj
+tools/match/scratches/console_global_destroy/build/msvc6.5/3061d455aab98e10/scratch.obj
 tools/match/scratches/console_clear_log/build/msvc6.5/2ee004cf23150827/scratch.obj
 tools/match/scratches/console_log_node_free/build/msvc6.5/28614460f85e4bb2/scratch.obj
 tools/match/scratches/console_cmd_quit/build/msvc6.5/c77360a24e68bd49/scratch.obj
@@ -109,7 +109,7 @@ tools/match/scratches/credits_back_button_destroy/build/msvc6.5/3f4bd6fee02ab9f6
 tools/match/scratches/j_nullsub_105/build/msvc6.5/f8eb621d2ccfce31/scratch.obj
 tools/match/scratches/nullsub_105/build/msvc6.5/70d0c904087b6763/scratch.obj
 tools/match/scratches/j_mod_api_init/build/msvc6.5/18a93c110c2f984d/scratch.obj
-tools/match/scratches/mod_api_init/build/msvc6.5/a004b9cafb743a86/scratch.obj
+tools/match/scratches/mod_api_init/build/msvc6.5/aad282e543ba4d15/scratch.obj
 tools/match/scratches/mod_api_core_printf/build/msvc6.5/5012138e40ac07ce/scratch.obj
 tools/match/scratches/mod_api_debug_printf/build/msvc6.5/bfb47e9eba726aea/scratch.obj
 tools/match/scratches/mod_api_core_get_var/build/msvc6.5/5b03415eba62e893/scratch.obj
@@ -182,7 +182,7 @@ tools/match/scratches/gameplay_run_state_init/build/msvc6.5/7988ad3eadf4dc13/scr
 tools/match/scratches/j_nullsub_107/build/msvc6.5/d2bb64b548655da9/scratch.obj
 tools/match/scratches/nullsub_107/build/msvc6.5/0d9dff5c57533178/scratch.obj
 tools/match/scratches/quest_meta_global_construct_and_register/build/msvc6.5/3ede504847b3ca76/scratch.obj
-tools/match/scratches/quest_meta_init/build/msvc6.5/e10de5fe96966d60/scratch.obj
+tools/match/scratches/quest_meta_init/build/msvc6.5/670c49004a65275c/scratch.obj
 tools/match/scratches/quest_meta_entry_init/build/msvc6.5/6648874ebff123e1/scratch.obj
 tools/match/scratches/quest_meta_entry_release/build/msvc6.5/92a1326701f94037/scratch.obj
 tools/match/scratches/quest_meta_register_atexit/build/msvc6.5/cca38dcd2a2a9ebe/scratch.obj
@@ -196,7 +196,7 @@ tools/match/scratches/game_status_global_init/build/msvc6.5/f698a3cf52b1cef9/scr
 tools/match/scratches/j_highscore_init_sentinels/build/msvc6.5/ae3175c920eb46ca/scratch.obj
 tools/match/scratches/highscore_init_sentinels/build/msvc6.5/f875bd59d4cda3dc/scratch.obj
 tools/match/scratches/bonus_meta_global_construct_and_register/build/msvc6.5/58c08f4923e9a01d/scratch.obj
-tools/match/scratches/bonus_meta_table_init/build/msvc6.5/901e07df751e029c/scratch.obj
+tools/match/scratches/bonus_meta_table_init/build/msvc6.5/8f1df0e4bc146b1c/scratch.obj
 tools/match/scratches/bonus_meta_entry_init/build/msvc6.5/24ee9abc0602bfdc/scratch.obj
 tools/match/scratches/bonus_meta_entry_release/build/msvc6.5/f6665fe066eb360f/scratch.obj
 tools/match/scratches/bonus_meta_register_atexit/build/msvc6.5/454dcbfb3ab95ee8/scratch.obj
@@ -237,7 +237,7 @@ tools/match/scratches/ui_render_aim_enhancement/build/msvc6.5/3f3cfebbf7926f38/s
 tools/match/scratches/ui_elements_update_and_render/build/msvc6.5/ef8a5ededf02d1cf/scratch.obj
 tools/match/scratches/ui_draw_progress_bar/build/msvc6.5/2bd57a3843ec3c25/scratch.obj
 tools/match/scratches/bonus_hud_slot_table_global_init_thunk/build/msvc6.5/7460e645b15e0742/scratch.obj
-tools/match/scratches/bonus_hud_slot_table_global_init/build/msvc6.5/d9be05321bf6838b/scratch.obj
+tools/match/scratches/bonus_hud_slot_table_global_init/build/msvc6.5/1520d5f6fae4264d/scratch.obj
 tools/match/scratches/bonus_hud_slot_activate/build/msvc6.5/55421f3d2cc8b2da/scratch.obj
 tools/match/scratches/bonus_hud_slot_update_and_render/build/msvc6.5/dc0ee10f9b345d26/scratch.obj
 tools/match/scratches/ui_render_hud/build/msvc6.5/2710cb374767c2df/scratch.obj
@@ -398,7 +398,7 @@ tools/match/scratches/effect_spawn_splitter_hit_burst/build/msvc6.5/ad38790ae7cf
 tools/match/scratches/effect_spawn_ion_hit_sparks/build/msvc6.5/be59e45e22120107/scratch.obj
 tools/match/scratches/effect_spawn_explosion_burst/build/msvc6.5/5166647e40482392/scratch.obj
 tools/match/scratches/perk_meta_global_construct_and_register/build/msvc6.5/9893288240cd41fc/scratch.obj
-tools/match/scratches/perk_meta_table_init/build/msvc6.5/0a20594b55882236/scratch.obj
+tools/match/scratches/perk_meta_table_init/build/msvc6.5/453d14055e297fa6/scratch.obj
 tools/match/scratches/perk_meta_entry_init/build/msvc6.5/f4b2f2954c489a9b/scratch.obj
 tools/match/scratches/perk_meta_register_atexit/build/msvc6.5/35e06bcd295637bc/scratch.obj
 tools/match/scratches/perk_meta_table_destroy/build/msvc6.5/76f98a7f54ce5282/scratch.obj
@@ -664,7 +664,7 @@ tools/match/scratches/ui_menu_main_click_buy_full_version/build/msvc6.5/ec60c1db
 tools/match/scratches/ui_menu_main_click_recheck_full_version/build/msvc6.5/c725e2cd30f37ce0/scratch.obj
 tools/match/scratches/ui_menu_layout_init/build/msvc6.5/9ffef2a321d86fbb/scratch.obj
 tools/match/scratches/weapon_table_defaults_global_init_thunk/build/msvc6.5/7d27405d140cc262/scratch.obj
-tools/match/scratches/weapon_table_defaults_global_init/build/msvc6.5/ac2fa1b615f82d94/scratch.obj
+tools/match/scratches/weapon_table_defaults_global_init/build/msvc6.5/73cd3ce4cf4c58cd/scratch.obj
 tools/match/scratches/weapon_table_init/build/msvc6.5/a1cf5e5fd6958463/scratch.obj
 tools/match/scratches/weapon_pick_random_available/build/msvc6.5/252c893a93b896f0/scratch.obj
 tools/match/scratches/weapon_assign_player/build/msvc6.5/b71dce29eb8c1e42/scratch.obj

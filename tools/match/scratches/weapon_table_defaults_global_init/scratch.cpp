@@ -1,3 +1,4 @@
+#include <new.h>
 #include <string.h>
 
 #include "crimsonland_gameplay.h"
@@ -22,4 +23,14 @@ public:
 
 };
 
-weapon_storage_entry_cpp_t weapon_ammo_class[0x40];
+struct weapon_storage_array_t {
+    weapon_storage_entry_cpp_t entries[0x40];
+};
+
+extern weapon_storage_entry_cpp_t weapon_ammo_class[0x40];
+
+extern "C" void weapon_table_defaults_global_init(void)
+{
+    __assume(weapon_ammo_class != 0);
+    new (weapon_ammo_class) weapon_storage_array_t;
+}

@@ -19,3 +19,22 @@ console_log_node_t *console_log_node_t::release(unsigned char free_self)
     }
     return this;
 }
+
+console_history_entry_t *console_history_entry_t::release(
+    unsigned char free_self)
+{
+    if (line != 0) {
+        crt_free(line);
+    }
+    line = 0;
+
+    if (next != 0) {
+        next->release(1);
+    }
+    next = 0;
+
+    if ((free_self & 1) != 0) {
+        crt_free(this);
+    }
+    return this;
+}

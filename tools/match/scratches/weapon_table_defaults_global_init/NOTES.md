@@ -17,13 +17,16 @@ a single record. The constructor's 64-iteration countdown and 0x7c induction
 stride establish that bound; the hidden ammo-class word remains the separate
 address immediately before the first public row.
 
-Defining the rows as a real C++ global array reproduces the compiler-generated
-initializer exactly, including VC6's induction pointer at `damage_scale` and
-the inlined `strcpy` schedule. This is stronger source-shape evidence than a
+Placement-constructing a 64-entry wrapper over the real external C++ array
+reproduces the compiler-generated initializer exactly, including VC6's
+induction pointer at `damage_scale` and the inlined `strcpy` schedule. The
+static array's non-null invariant removes only placement-new's otherwise
+redundant null branch. This is stronger source-shape evidence than a
 handwritten loop with the same assignments.
 
 The C++ constructor view now derives from the shared
 `weapon_storage_entry_t`. That canonical record starts at the ammo-class word
 and explains the native 0x7c construction stride alongside the shifted public
 `weapon_stats_t` view. The initializer remains exact at 47/47 with both
-references.
+references, and the object now defines the externally linkable
+`_weapon_table_defaults_global_init` identity directly.
