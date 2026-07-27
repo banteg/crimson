@@ -97,3 +97,11 @@ buffer size loaded for both initialization and registration. The shared data
 map now assigns those exact source identities, resolving all four uses without
 a local alias. The final audit is `393/0/2`, so recovery is classified
 `semantic-complete` with a `compiler` residual.
+
+`binding-inline-helper-mutations.json` adds eleven complete single and paired
+forms around a typed persisted-to-runtime binding copier. Named-field helpers
+lose 30.90 weighted bytes when called; axis-relative and pointer-loop forms
+regress by at least 75.25 bytes and can move the first mismatch back from
+instruction 684 to 27. Live native induction remains based at persisted
+`axis_move_x`, but an inline helper does not make supported VC6.5 select that
+base without disturbing earlier allocation. No source change is retained.

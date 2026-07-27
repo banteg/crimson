@@ -682,23 +682,25 @@ extern "C" void creature_update_all(void)
                                         & CREATURE_FLAG_ANIM_PING_PONG) == 0
                                     || (creature_pool[creature_index].flags
                                         & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
+                                    float corpse_size =
+                                        creature_pool[creature_index].size;
+                                    float corpse_heading =
+                                        creature_pool[creature_index].heading;
                                     corpse_queued = fx_queue_add_rotated(
                                         creature_vec2_t(
-                                            position->x
-                                                - creature_pool[creature_index].size * 0.5f,
-                                            position->y
-                                                - creature_pool[creature_index].size * 0.5f),
+                                            position->x - corpse_size * 0.5f,
+                                            position->y - corpse_size * 0.5f),
                                         &creature_pool[creature_index].color,
-                                        creature_pool[creature_index].heading,
-                                        creature_pool[creature_index].size,
+                                        corpse_heading,
+                                        corpse_size,
                                         creature_pool[creature_index].type_id);
                                 } else {
+                                    float corpse_half_size =
+                                        creature_pool[creature_index].size * 0.5f;
                                     corpse_queued = fx_queue_add_rotated(
                                         creature_vec2_t(
-                                            position->x
-                                                - creature_pool[creature_index].size * 0.5f,
-                                            position->y
-                                                - creature_pool[creature_index].size * 0.5f),
+                                            position->x - corpse_half_size,
+                                            position->y - corpse_half_size),
                                         &creature_pool[creature_index].color,
                                         creature_pool[creature_index].heading,
                                         creature_pool[creature_index].size,

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ping-pong-corpse-queue-arguments",
+      "find": "                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x\n                                                - creature_pool[creature_index].size * 0.5f,\n                                            position->y\n                                                - creature_pool[creature_index].size * 0.5f),\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        7);",
+      "replacements": [
+        {
+          "name": "field-aliases",
+          "text": "                                    float corpse_size =\n                                        creature_pool[creature_index].size;\n                                    float corpse_heading =\n                                        creature_pool[creature_index].heading;\n                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x - corpse_size * 0.5f,\n                                            position->y - corpse_size * 0.5f),\n                                        &creature_pool[creature_index].color,\n                                        corpse_heading,\n                                        corpse_size,\n                                        7);"
+        },
+        {
+          "name": "half-size-local",
+          "text": "                                    float corpse_half_size =\n                                        creature_pool[creature_index].size * 0.5f;\n                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x - corpse_half_size,\n                                            position->y - corpse_half_size),\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        7);"
+        },
+        {
+          "name": "named-position-temporary",
+          "text": "                                    creature_vec2_t corpse_position(\n                                        position->x\n                                            - creature_pool[creature_index].size * 0.5f,\n                                        position->y\n                                            - creature_pool[creature_index].size * 0.5f);\n                                    corpse_queued = fx_queue_add_rotated(\n                                        corpse_position,\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        7);"
+        }
+      ]
+    },
+    {
+      "name": "ordinary-corpse-queue-arguments",
+      "find": "                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x\n                                                - creature_pool[creature_index].size * 0.5f,\n                                            position->y\n                                                - creature_pool[creature_index].size * 0.5f),\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        creature_pool[creature_index].type_id);",
+      "replacements": [
+        {
+          "name": "field-aliases",
+          "text": "                                    int corpse_type_id =\n                                        creature_pool[creature_index].type_id;\n                                    float corpse_size =\n                                        creature_pool[creature_index].size;\n                                    float corpse_heading =\n                                        creature_pool[creature_index].heading;\n                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x - corpse_size * 0.5f,\n                                            position->y - corpse_size * 0.5f),\n                                        &creature_pool[creature_index].color,\n                                        corpse_heading,\n                                        corpse_size,\n                                        corpse_type_id);"
+        },
+        {
+          "name": "half-size-local",
+          "text": "                                    float corpse_half_size =\n                                        creature_pool[creature_index].size * 0.5f;\n                                    corpse_queued = fx_queue_add_rotated(\n                                        creature_vec2_t(\n                                            position->x - corpse_half_size,\n                                            position->y - corpse_half_size),\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        creature_pool[creature_index].type_id);"
+        },
+        {
+          "name": "named-position-temporary",
+          "text": "                                    creature_vec2_t corpse_position(\n                                        position->x\n                                            - creature_pool[creature_index].size * 0.5f,\n                                        position->y\n                                            - creature_pool[creature_index].size * 0.5f);\n                                    corpse_queued = fx_queue_add_rotated(\n                                        corpse_position,\n                                        &creature_pool[creature_index].color,\n                                        creature_pool[creature_index].heading,\n                                        creature_pool[creature_index].size,\n                                        creature_pool[creature_index].type_id);"
+        }
+      ]
+    }
+  ]
+}

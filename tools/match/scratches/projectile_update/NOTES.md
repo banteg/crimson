@@ -540,3 +540,70 @@ Together the two retained refinements improve the update from 50.0344590% to
 instruction count. The final fuzzy gap is 4,190.0117 bytes. The 27-record
 `experiments.jsonl` SHA-256 is
 `20047e30dd300664f9d4b8dbbdbf6170a3eb796c24c1b833ee01cc5d98e742a6`.
+
+## Secondary-impact control-flow and lifetime recovery
+
+A fresh live Binary Ninja pass against target
+`3023:2:9499448411019345244` selected the previously unworked secondary
+projectile phase at `0x00421d68-0x00422435`. Two complete negative matrices
+first bounded the tempting trail-local hypotheses:
+
+- Native `0x00421d68-0x00421da6` clears the two velocity sign bits before
+  updating the trail timer. All 11 scalar, bit-local, and inline-helper
+  spellings either compile byte-identically or lose at least 139.9093
+  weighted bytes. The recorded spec SHA is
+  `367ee16aa2e715a41b98b73b72098fe5b6ba5a9291a74815195087b9e47da9a5`.
+- Native `0x00421db7-0x00421e39` stages the trail-position trigonometry through
+  stack temporaries. Seven named-scalar and aggregate spellings are
+  byte-identical at best; the byte-neutral forms worsen reference alignment,
+  while the aggregate forms lose more than 208 weighted bytes. The recorded
+  spec SHA is
+  `4e6ef65f83095db0fe33adee7f60f64440c383d697df043f141f1e7d39255a33`.
+
+No trail source change is retained. The next native regions instead exposed
+several source-precision corrections:
+
+- At `0x004220b9`, native loads `frame_dt` and emits `fdivr 1.0f`. Staging the
+  denominator before taking its reciprocal reproduces that instruction pair.
+  Four equivalent float spellings tie at +3.8635 weighted bytes; the shortest
+  two-step spelling is retained. The five-variant spec SHA is
+  `8453493c91cf8c881ef4418766f140e86c7daed6b863d8d321a1ac3f1295b184`.
+- Native reloads the secondary projectile type at `0x0042200f` before damage
+  selection and again at `0x004220f0` after `creature_apply_damage`. Restoring
+  both reads adds 13.5370 weighted bytes, removes two candidate instructions,
+  and adds one aligned reference. Either reload alone is a large regression,
+  so the complete three-variant interaction result is essential evidence.
+  Its spec SHA is
+  `62fe51121e9bbeef5568731000cc68164a22df29eebab6f977cc7ad65e0a60f3`.
+- From `0x004220ff` through the three rocket-type arms, native places each
+  freeze-shard path first and branches to the decal path. Rewriting the three
+  semantic-equivalent tests as positive `bonus_freeze_timer` checks recovers
+  139.1515 weighted bytes in the full seven-variant matrix. The spec SHA is
+  `8f522bf2429a8009131688d06ad3448196b226800794a99ef3ba54f17a154007`.
+- The earlier hit-entry split at `0x00421e9f` has the same native branch
+  order. Reordering it and spelling the native detail threshold as
+  `config_detail_preset >= 3` adds another 77.3064 weighted bytes. Both
+  changes are independently positive; the complete interaction spec SHA is
+  `f17a2a43385a381fa6e801abfc0c1327cbb671e15e4d82e3f73acbbf04899e38`.
+- Native reloads `bonus_freeze_timer` inside each selected type arm rather
+  than keeping one value across the dispatch. Replacing all three uses and
+  deleting the dead hoisted local adds 11.5960 weighted bytes, improves the
+  aligned audit from `367/0/29` to `375/0/24`, and keeps the instruction
+  count unchanged. The full seven-variant spec SHA is
+  `59dc5a33c1ec2282fd17febfe9272dcfd1d7c37855f9e61da834328b717a2c0a`.
+- In the final impact burst at `0x004223ec-0x00422412`, native materializes
+  both trigonometric results before scaling the velocity. Naming both scalars
+  is the unique best semantic form: +8.7587 weighted bytes and one fewer
+  candidate instruction, with no reference delta. The six-variant spec SHA
+  is
+  `a514d0eb6c8f872e804c2e3ab7f5e243e39b963365206a33fb305a05eb2f7ba6`.
+
+All 49 planned variants across the eight sweeps completed without truncation.
+Together the retained changes raise `projectile_update` from
+`4218.9883/8409` to `4473.2014/8409` fuzzy-weighted bytes
+(`50.1722950%` to `53.1954023%`), reduce the fuzzy gap by `254.2131` bytes to
+`3935.7986`, and move the candidate from 2,150 to 2,147 instructions.
+References improve from `358/0/24` to `375/0/24`. The final source SHA-256 is
+`c9357403c5b816fc757f83171d17cb8de7358ec60444b401508e70b769ff066d`;
+the 35-record `experiments.jsonl` SHA-256 is
+`e73023e3e525f6c66fdc802262bcb018054cd0c8da49cac85078a3353d4aeb7e`.

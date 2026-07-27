@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "lower-uv-value-reuse",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;\n",
+      "replacements": [
+        {
+          "name": "reuse-upper-right-and-lower-left-components",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = vertices[1].uv.x;\n    vertices[2].uv.y = vertices[3].uv.y;\n"
+        },
+        {
+          "name": "construct-from-existing-components",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv = ui_vec2_t(vertices[1].uv.x, vertices[3].uv.y);\n"
+        },
+        {
+          "name": "copy-upper-right-then-lower-y",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv = vertices[1].uv;\n    vertices[2].uv.y = vertices[3].uv.y;\n"
+        },
+        {
+          "name": "named-copy-upper-right-then-lower-y",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t lower_right = vertices[1].uv;\n    lower_right.y = vertices[3].uv.y;\n    vertices[2].uv = lower_right;\n"
+        },
+        {
+          "name": "cache-lower-v-for-both",
+          "text": "    float lower_v = 1.0f - inv_height;\n    vertices[3].uv = ui_vec2_t(inv_width, lower_v);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = lower_v;\n"
+        },
+        {
+          "name": "cache-both-lower-endpoints",
+          "text": "    float lower_u = 1.0f - inv_width;\n    float lower_v = 1.0f - inv_height;\n    vertices[3].uv = ui_vec2_t(inv_width, lower_v);\n    vertices[2].uv.x = lower_u;\n    vertices[2].uv.y = lower_v;\n"
+        }
+      ]
+    }
+  ]
+}

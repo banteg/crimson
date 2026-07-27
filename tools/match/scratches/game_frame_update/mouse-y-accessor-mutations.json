@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mouse-y-accessor-definition",
+      "find": "extern \"C\" unsigned char game_frame_update(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-direct-accessor",
+          "text": "static __forceinline float frame_mouse_y(void)\n{\n    return ui_mouse_y;\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "inline-direct-accessor",
+          "text": "static __inline float frame_mouse_y(void)\n{\n    return ui_mouse_y;\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "forceinline-pointer-accessor",
+          "text": "static __forceinline float frame_mouse_y(void)\n{\n    const float *mouse_y = &ui_mouse_y;\n    return *mouse_y;\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "mouse-y-accessor-call",
+      "find": "            aim[1] = ui_mouse_y;\n",
+      "replacements": [
+        {
+          "name": "call-mouse-y-accessor",
+          "text": "            aim[1] = frame_mouse_y();\n"
+        }
+      ]
+    }
+  ]
+}

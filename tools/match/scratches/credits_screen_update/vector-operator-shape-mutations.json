@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "credits-vector-operator-shape",
+      "find": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n\n    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n",
+      "replacements": [
+        {
+          "name": "plus-named-result",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result(x + other.x, y + other.y);\n        return result;\n    }\n\n    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "plus-default-result-components",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        credits_vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }\n\n    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "plus-parameter-by-value",
+          "text": "    credits_vec2_t operator+(credits_vec2_t other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n\n    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "plus-nonconst-method",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n\n    credits_vec2_t &operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "plus-equals-void-return",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n\n    void operator+=(const credits_vec2_t &other) {\n        x += other.x;\n        y += other.y;\n    }\n"
+        },
+        {
+          "name": "plus-equals-parameter-by-value",
+          "text": "    credits_vec2_t operator+(const credits_vec2_t &other) const {\n        return credits_vec2_t(x + other.x, y + other.y);\n    }\n\n    credits_vec2_t &operator+=(credits_vec2_t other) {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

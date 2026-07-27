@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "partial-step-helper-definition",
+      "find": "extern \"C\" float angle_approach(float *angle, float target, float rate)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-direct-product",
+          "text": "static __forceinline float angle_partial_step(float amount)\n{\n    return frame_dt * amount;\n}\n\nextern \"C\" float angle_approach(float *angle, float target, float rate)\n{"
+        },
+        {
+          "name": "inline-direct-product",
+          "text": "static __inline float angle_partial_step(float amount)\n{\n    return frame_dt * amount;\n}\n\nextern \"C\" float angle_approach(float *angle, float target, float rate)\n{"
+        },
+        {
+          "name": "forceinline-local-product",
+          "text": "static __forceinline float angle_partial_step(float amount)\n{\n    float step = frame_dt;\n    step *= amount;\n    return step;\n}\n\nextern \"C\" float angle_approach(float *angle, float target, float rate)\n{"
+        }
+      ]
+    },
+    {
+      "name": "partial-step-helper-use",
+      "find": "    float step;\n    if (direct > wrapped) {\n        step = frame_dt * amount;\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        step = frame_dt * amount;\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step * rate;\n",
+      "replacements": [
+        {
+          "name": "shared-helper-step",
+          "text": "    float step;\n    if (direct > wrapped) {\n        step = angle_partial_step(amount);\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        step = angle_partial_step(amount);\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    *angle = *angle - step * rate;\n"
+        },
+        {
+          "name": "branch-local-helper-step",
+          "text": "    if (direct > wrapped) {\n        float step = angle_partial_step(amount);\n        if (target < *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n        *angle = *angle - step * rate;\n        return amount;\n    } else {\n        float step = angle_partial_step(amount);\n        if (target > *angle) {\n            *angle = step * rate + *angle;\n            return amount;\n        }\n        *angle = *angle - step * rate;\n        return amount;\n    }\n"
+        },
+        {
+          "name": "inner-and-fallback-helper-step",
+          "text": "    if (direct > wrapped) {\n        if (target < *angle) {\n            float step = angle_partial_step(amount);\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    } else {\n        if (target > *angle) {\n            float step = angle_partial_step(amount);\n            *angle = step * rate + *angle;\n            return amount;\n        }\n    }\n    float step = angle_partial_step(amount);\n    *angle = *angle - step * rate;\n"
+        }
+      ]
+    }
+  ]
+}

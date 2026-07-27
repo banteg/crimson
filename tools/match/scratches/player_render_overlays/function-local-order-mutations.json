@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "function-local-order",
+      "find": "    float transition_alpha = ui_transition_alpha;\n    float half_size;\n    float sprite_size;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;",
+      "replacements": [
+        {
+          "name": "vectors-before-scalars",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;\n    float half_size;\n    float sprite_size;"
+        },
+        {
+          "name": "direction-effect-scalars",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    player_render_vec2_t direction;\n    player_render_vec2_t effect_offset;\n    float half_size;\n    float sprite_size;"
+        },
+        {
+          "name": "scalars-direction-effect",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    float half_size;\n    float sprite_size;\n    player_render_vec2_t direction;\n    player_render_vec2_t effect_offset;"
+        },
+        {
+          "name": "swapped-scalars",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    float sprite_size;\n    float half_size;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;"
+        },
+        {
+          "name": "half-vectors-sprite",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    float half_size;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;\n    float sprite_size;"
+        },
+        {
+          "name": "effect-scalars-direction",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    player_render_vec2_t effect_offset;\n    float half_size;\n    float sprite_size;\n    player_render_vec2_t direction;"
+        },
+        {
+          "name": "direction-scalars-effect",
+          "text": "    float transition_alpha = ui_transition_alpha;\n    player_render_vec2_t direction;\n    float half_size;\n    float sprite_size;\n    player_render_vec2_t effect_offset;"
+        },
+        {
+          "name": "initialized-alpha-after-locals",
+          "text": "    float half_size;\n    float sprite_size;\n    player_render_vec2_t effect_offset;\n    player_render_vec2_t direction;\n    float transition_alpha = ui_transition_alpha;"
+        }
+      ]
+    }
+  ]
+}

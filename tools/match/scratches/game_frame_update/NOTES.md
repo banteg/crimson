@@ -136,3 +136,10 @@ The ordinary source-pointer component forms are byte-neutral. Direct aggregate
 assignment and `memcpy` materially regress the instruction and reference
 alignment, so none improves the **99.45%**, 905/905, `317/0/0` baseline.
 No source change is retained.
+
+`mouse-y-accessor-mutations.json` tests three inline/force-inline accessors
+and their interaction with the second aim-component store. Direct accessors
+compile byte-identically at 99.45%; a pointer-backed accessor moves an earlier
+region, loses 285.45 fuzzy-weighted bytes and three resolved references, and
+does not recover the native X-store-before-Y-load order. The accessor boundary
+is recorded as a negative and no source change is retained.

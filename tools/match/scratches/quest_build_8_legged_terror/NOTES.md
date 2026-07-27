@@ -48,6 +48,13 @@ the exact prefix drops from 14 to 2 instructions. The plan SHA-256 is
 A fresh flag matrix leaves `/GB`, `/G5`, `/G7`, `/Ox`, and `/Ob1` tied and
 confirms `/G6` is worse.
 
+`far-edge-publication-mutations.json` then tests four natural placements of
+the opening far-edge value and its publication relative to the metadata
+stores. All four compile byte-identically at 95.59%, 68/68 instructions, and
+`4/0/0` references. No artificial ordering dependency is retained. The spec
+SHA-256 is
+`f7d3b25583d2a12fb0431fbca775618bb2f919f5eede9f595f83bbf1d1b781af`.
+
 ## Recovery classification audit
 
 The preceding BN recovery accounts for the complete control-flow, call (where

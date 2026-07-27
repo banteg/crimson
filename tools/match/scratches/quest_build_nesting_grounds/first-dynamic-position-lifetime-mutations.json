@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-dynamic-position-lifetime",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.x = (float)(terrain_texture_width / 2);\n    spawns[0].pos.y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n",
+      "replacements": [
+        {
+          "name": "float-position-locals",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    float first_x = (float)(terrain_texture_width / 2);\n    float first_y = (float)(terrain_texture_height + 64);\n\n    spawns[0].pos.x = first_x;\n    spawns[0].pos.y = first_y;\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "integer-position-locals",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int first_x = terrain_texture_width / 2;\n    int first_y = terrain_texture_height + 64;\n\n    spawns[0].pos.x = (float)first_x;\n    spawns[0].pos.y = (float)first_y;\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "typed-position-pointer",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_vec2_t *first_pos = &spawns[0].pos;\n\n    first_pos->x = (float)(terrain_texture_width / 2);\n    first_pos->y = (float)(terrain_texture_height + 64);\n    spawns[0].set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    spawns[0].count = config_blob.player_count * 2 + 6;\n"
+        },
+        {
+          "name": "typed-record-pointer",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_entry_original_t *first_spawn = &spawns[0];\n\n    first_spawn->pos.x = (float)(terrain_texture_width / 2);\n    first_spawn->pos.y = (float)(terrain_texture_height + 64);\n    first_spawn->set_spawn(SPAWN_ID_ALIEN_RANDOM_1D, 1500);\n    first_spawn->count = config_blob.player_count * 2 + 6;\n"
+        }
+      ]
+    }
+  ]
+}

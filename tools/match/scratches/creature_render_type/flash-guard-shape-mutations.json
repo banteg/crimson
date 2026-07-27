@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "flash-entry-guards",
+      "find": "            creature_t *creature = &creature_pool[creature_index];\n            if (!creature->active\n                || creature->type_id != type_id\n                || creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }",
+      "replacements": [
+        {
+          "name": "split-guards",
+          "text": "            creature_t *creature = &creature_pool[creature_index];\n            if (!creature->active) {\n                continue;\n            }\n            if (creature->type_id != type_id) {\n                continue;\n            }\n            if (creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }"
+        },
+        {
+          "name": "named-creature-type",
+          "text": "            creature_t *creature = &creature_pool[creature_index];\n            int creature_type_id = creature->type_id;\n            if (!creature->active\n                || creature_type_id != type_id\n                || creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }"
+        },
+        {
+          "name": "named-creature-type-split-guards",
+          "text": "            creature_t *creature = &creature_pool[creature_index];\n            int creature_type_id = creature->type_id;\n            if (!creature->active) {\n                continue;\n            }\n            if (creature_type_id != type_id) {\n                continue;\n            }\n            if (creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }"
+        },
+        {
+          "name": "named-requested-type",
+          "text": "            creature_t *creature = &creature_pool[creature_index];\n            int requested_type_id = type_id;\n            if (!creature->active\n                || creature->type_id != requested_type_id\n                || creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }"
+        },
+        {
+          "name": "named-both-types-split-guards",
+          "text": "            creature_t *creature = &creature_pool[creature_index];\n            int creature_type_id = creature->type_id;\n            int requested_type_id = type_id;\n            if (!creature->active) {\n                continue;\n            }\n            if (creature_type_id != requested_type_id) {\n                continue;\n            }\n            if (creature->hit_flash_timer <= 0.0f) {\n                continue;\n            }"
+        }
+      ]
+    }
+  ]
+}

@@ -148,3 +148,49 @@ resolves each address into the same proven `0x98`-byte creature record, and
 the existing pointer/index/loop sweeps already reject or reproduce the natural
 alternatives, no new source or alias mutation is justified. Metrics remain
 78.4494087%, 757/765 instructions, prefix 25, and `136/0/5` references.
+
+## Detail-pointer and flash-loop mutation refresh
+
+A fresh live read explicitly selected Binary Ninja target
+`3023:2:9499448411019345244` (`crimsonland.exe.bndb`) and re-established the
+2,834-byte native body at `0x00418b60`. The honest baseline is unchanged:
+78.4494086728%, 2,223.2562417871 fuzzy-weighted bytes, a
+610.7437582129-byte gap, 757/765 instructions, prefix 25, and `136/0/5`
+references. The tested source SHA-256 is
+`8764235bae69d4c6e5601f075daf937b8db7b1fcc5d0c9e2a56ecf431a04412c`.
+
+The first material allocation difference is still the detail-pass tint
+lifetime. Native forms the tint cursor in `ebp` at `0x00418c23`, copies it to
+`eax` at `0x00418c29`, and later uses the still-live cursor for the position-y
+read at `0x00418df9` before restoring the type argument to `ebp` at
+`0x00418e37`. The candidate folds the tint address into `eax` and uses its
+record cursor for both position components. The schema-1 spec
+`detail-tint-lifetime-mutations.json` (SHA-256
+`3796c2a700ffbf36d3ecbdbc34d8aae1747024213293673b00c3a12469129474`)
+exhaustively tested 19/19 one- and two-site declaration-order, pointer,
+reference, and containing-object spellings. Nine were byte-identical, six
+position-y-only owner spellings added two instructions and regressed by
+43.8284202648 weighted bytes, and four intentionally cross-combined reference
+forms failed compilation. Nothing improved.
+
+The later violence pass has a stronger native cursor clue. Native initializes
+`esi` to lifecycle stage at `0x0041945e`, tests active/type/hit-flash fields at
+`0x00419463..0x0041948b`, then advances and bounds that cursor at
+`0x00419632..0x0041963e`. The candidate instead anchors the same `0x98`-byte
+records at hit-flash timer. The paired do-loop experiment in
+`flash-lifecycle-cursor-mutations.json` (SHA-256
+`5eca737aa1f0ce32555eb9537188e3df9f48115e0962c88579a1bfa4b34b1f6d`)
+tested all 3/3 generated variants. The only complete header-plus-tail form did
+move one aligned reference into agreement (`136/0/5` to `136/0/4`), but added
+one instruction and regressed to 77.7413000657%, or 2,203.1884438608 weighted
+bytes. That negative shows that forcing the correct record anchor alone loses
+more surrounding scheduling than it recovers.
+
+Finally, `flash-guard-shape-mutations.json` (SHA-256
+`f44f85a16d81f3e9b289d53f12acd9902449e38ab4d8b6758a6a027f2f251509`)
+tested all 5/5 combined, split, and named-type guard spellings around
+`0x00419463..0x0041948b`; every form was byte-identical to baseline. A fresh
+five-profile matrix also confirmed identical best output from MSVC 6.0, 6.5,
+and 6.6, while `msvc6.5pp` and MSVC 7.0 regressed to 59.67% and 46.03%.
+Across 27 recorded mutations and five compiler profiles, no locally
+corroborated improvement was found, so `scratch.cpp` remains unchanged.

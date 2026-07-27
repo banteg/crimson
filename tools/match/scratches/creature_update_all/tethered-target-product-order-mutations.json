@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "tethered-target-product-order",
+      "find": "                                float target_distance =\n                                    (float)sqrt(\n                                        dx * dx + target_delta_y * target_delta_y);",
+      "replacements": [
+        {
+          "name": "y-product-first-in-source",
+          "text": "                                float target_distance =\n                                    (float)sqrt(\n                                        target_delta_y * target_delta_y + dx * dx);"
+        }
+      ]
+    }
+  ]
+}

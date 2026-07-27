@@ -56,3 +56,12 @@ twelve bounded direction, product-lifetime, and control-flow variants. The
 split-final-rate form is the only material improvement; explicit labels,
 asymmetric products, branch-local fallback duplication, and the remaining
 shared-product spellings are byte-neutral or regress.
+
+`partial-step-helper-interactions.json` adds complete two-site coverage for
+three inline/force-inline partial-product helpers and three use-site control
+flows. Shared helper calls are byte-identical at 94.53%; branch-local helpers
+lose one instruction and 4.57 weighted bytes. Moving the helper into the inner
+conditions advances the prefix by six but adds four instructions and loses
+11.35 weighted bytes. VC6 still cannot preserve the native duplicated
+branch-local `frame_dt * amount` schedule through an inline boundary, so no
+source change is retained.

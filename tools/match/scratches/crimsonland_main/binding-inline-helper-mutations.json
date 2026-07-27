@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "binding-helper-definition",
+      "find": "extern \"C\" int WINAPI crimsonland_main(\n",
+      "replacements": [
+        {
+          "name": "forceinline-named-fields",
+          "text": "static __forceinline void copy_player_bindings(\n    player_input_t *runtime, const player_input_config_t *persisted)\n{\n    runtime->move_key_forward = persisted->move_key_forward;\n    runtime->move_key_backward = persisted->move_key_backward;\n    runtime->turn_key_left = persisted->turn_key_left;\n    runtime->turn_key_right = persisted->turn_key_right;\n    runtime->fire_key = persisted->fire_key;\n    runtime->key_reserved_0 = persisted->key_reserved_0;\n    runtime->key_reserved_1 = persisted->key_reserved_1;\n    runtime->aim_key_left = persisted->aim_key_left;\n    runtime->aim_key_right = persisted->aim_key_right;\n    runtime->axis_aim_y = persisted->axis_aim_y;\n    runtime->axis_aim_x = persisted->axis_aim_x;\n    runtime->axis_move_y = persisted->axis_move_y;\n    runtime->axis_move_x = persisted->axis_move_x;\n}\n\nextern \"C\" int WINAPI crimsonland_main(\n"
+        },
+        {
+          "name": "inline-named-fields",
+          "text": "static __inline void copy_player_bindings(\n    player_input_t *runtime, const player_input_config_t *persisted)\n{\n    runtime->move_key_forward = persisted->move_key_forward;\n    runtime->move_key_backward = persisted->move_key_backward;\n    runtime->turn_key_left = persisted->turn_key_left;\n    runtime->turn_key_right = persisted->turn_key_right;\n    runtime->fire_key = persisted->fire_key;\n    runtime->key_reserved_0 = persisted->key_reserved_0;\n    runtime->key_reserved_1 = persisted->key_reserved_1;\n    runtime->aim_key_left = persisted->aim_key_left;\n    runtime->aim_key_right = persisted->aim_key_right;\n    runtime->axis_aim_y = persisted->axis_aim_y;\n    runtime->axis_aim_x = persisted->axis_aim_x;\n    runtime->axis_move_y = persisted->axis_move_y;\n    runtime->axis_move_x = persisted->axis_move_x;\n}\n\nextern \"C\" int WINAPI crimsonland_main(\n"
+        },
+        {
+          "name": "forceinline-axis-relative-fields",
+          "text": "static __forceinline void copy_player_bindings(\n    player_input_t *runtime, const player_input_config_t *persisted)\n{\n    const int *axis_move_x = &persisted->axis_move_x;\n    runtime->move_key_forward = axis_move_x[-12];\n    runtime->move_key_backward = axis_move_x[-11];\n    runtime->turn_key_left = axis_move_x[-10];\n    runtime->turn_key_right = axis_move_x[-9];\n    runtime->fire_key = axis_move_x[-8];\n    runtime->key_reserved_0 = axis_move_x[-7];\n    runtime->key_reserved_1 = axis_move_x[-6];\n    runtime->aim_key_left = axis_move_x[-5];\n    runtime->aim_key_right = axis_move_x[-4];\n    runtime->axis_aim_y = axis_move_x[-3];\n    runtime->axis_aim_x = axis_move_x[-2];\n    runtime->axis_move_y = axis_move_x[-1];\n    runtime->axis_move_x = axis_move_x[0];\n}\n\nextern \"C\" int WINAPI crimsonland_main(\n"
+        }
+      ]
+    },
+    {
+      "name": "binding-helper-call-loop",
+      "find": "    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_table[player_index].input.move_key_forward =\n            config_blob.input_config[player_index].move_key_forward;\n        player_state_table[player_index].input.move_key_backward =\n            config_blob.input_config[player_index].move_key_backward;\n        player_state_table[player_index].input.turn_key_left =\n            config_blob.input_config[player_index].turn_key_left;\n        player_state_table[player_index].input.turn_key_right =\n            config_blob.input_config[player_index].turn_key_right;\n        player_state_table[player_index].input.fire_key =\n            config_blob.input_config[player_index].fire_key;\n        player_state_table[player_index].input.key_reserved_0 =\n            config_blob.input_config[player_index].key_reserved_0;\n        player_state_table[player_index].input.key_reserved_1 =\n            config_blob.input_config[player_index].key_reserved_1;\n        player_state_table[player_index].input.aim_key_left =\n            config_blob.input_config[player_index].aim_key_left;\n        player_state_table[player_index].input.aim_key_right =\n            config_blob.input_config[player_index].aim_key_right;\n        player_state_table[player_index].input.axis_aim_y =\n            config_blob.input_config[player_index].axis_aim_y;\n        player_state_table[player_index].input.axis_aim_x =\n            config_blob.input_config[player_index].axis_aim_x;\n        player_state_table[player_index].input.axis_move_y =\n            config_blob.input_config[player_index].axis_move_y;\n        player_state_table[player_index].input.axis_move_x =\n            config_blob.input_config[player_index].axis_move_x;\n    }\n",
+      "replacements": [
+        {
+          "name": "indexed-helper-call",
+          "text": "    for (int player_index = 0; player_index < 2; ++player_index) {\n        copy_player_bindings(\n            &player_state_table[player_index].input,\n            &config_blob.input_config[player_index]);\n    }\n"
+        },
+        {
+          "name": "pointer-helper-loop",
+          "text": "    player_input_t *runtime_input = &player_state_table[0].input;\n    const player_input_config_t *persisted_input = &config_blob.input_config[0];\n    do {\n        copy_player_bindings(runtime_input, persisted_input);\n        runtime_input = (player_input_t *)\n            ((char *)runtime_input + sizeof(player_state_t));\n        ++persisted_input;\n    } while (persisted_input < &config_blob.input_config[2]);\n"
+        }
+      ]
+    }
+  ]
+}

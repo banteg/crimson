@@ -171,12 +171,36 @@ it, and clamps only below one. The canonical source therefore keeps the
 evidenced pre-decrement form and records the scorer-local post-decrement result
 as rejected rather than writing it.
 
+## Native row-unlock branch shape (2026-07-27)
+
+Live disassembly at `0x00448515..0x00448631` shows the two unlock modes joining
+an out-of-line unlocked-row body: Hardcore compares
+`quest_unlock_index_full` with the row index, while normal mode compares
+`quest_unlock_index`; either smaller value enters the locked-row body. The
+retained source spells those two native locked predicates explicitly and
+jumps to the shared unlocked row otherwise.
+
+`row-unlock-branch-shape-mutations.json` evaluated four equivalent predicate
+and flag shapes. Only `locked-label` improves: it raises the weighted score
+from `2642.083907326237/3436` to `2693.720726361929/3436`, a gain of
+`51.63681903569204` bytes, and the ratio from `76.89417658108955%` to
+`78.39699436443331%`. The instruction count remains 794. The audit changes
+from `237/0/4` to `246/0/7`; all seven mismatches remain in already
+nonmatching sequence alignments, while the source retains the same two proven
+globals and no alias is added. The native predicate polarity and control-flow
+layout, rather than aggregate score alone, support retaining the change.
+
+The spec SHA-256 is
+`e3fb276f05facc037873462e01e0f17b437075c97d62149e605bad5e22b19a8b`;
+the retained source SHA-256 reported by the sweep is
+`eedf5a2cfb41e68f1082671cc84b9dbfd1190a86ebd4f6190958cba9ab91bc81`.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
-paths, and its seven-call inventory agrees with the recovered source. All four
+paths, and its seven-call inventory agrees with the recovered source. All seven
 masked-reference mismatches occur inside nonmatching sequence alignments and
 resolve to source operations already present in the surrounding native flow.
 They remain visible and unaliased rather than being classified as separate

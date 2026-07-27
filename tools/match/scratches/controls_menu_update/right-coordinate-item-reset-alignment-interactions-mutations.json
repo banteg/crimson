@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-heading-coordinate-lifetime",
+      "find": "    float right_y_before_subtract = right_base.y + 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_y_before_subtract - 38.0f;\n",
+      "replacements": [
+        {
+          "name": "in-place-y-x-around-call",
+          "text": "    right_base.y += 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y -= 38.0f;\n"
+        },
+        {
+          "name": "in-place-assigned-y-x-around-call",
+          "text": "    right_base.y = right_base.y + 4.0f;\n    right_base.x = right_base.x + 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_base.y - 38.0f;\n"
+        },
+        {
+          "name": "staged-y-and-x",
+          "text": "    float right_y_before_subtract = right_base.y + 4.0f;\n    float right_x = right_base.x + 16.0f;\n    right_base.x = right_x;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_y_before_subtract - 38.0f;\n"
+        },
+        {
+          "name": "staged-vector-components",
+          "text": "    controls_vec2_t right_adjusted(\n        right_base.x + 16.0f,\n        right_base.y + 4.0f);\n    right_base.x = right_adjusted.x;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_adjusted.y - 38.0f;\n"
+        },
+        {
+          "name": "assigned-y-temporary",
+          "text": "    float right_y_before_subtract;\n    right_y_before_subtract = right_base.y + 4.0f;\n    right_base.x += 16.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    right_base.y = right_y_before_subtract - 38.0f;\n"
+        }
+      ]
+    },
+    {
+      "name": "per-frame-item-reset-native-member-bound",
+      "find": "        } while (item < controls_rebind_items + 15);",
+      "replacements": [
+        {
+          "name": "signed-activated-member-bound",
+          "text": "        } while ((int)&item->activated\n            < (int)&controls_rebind_items[15].activated);"
+        },
+        {
+          "name": "not-equal-activated-member-bound",
+          "text": "        } while (&item->activated\n            != &controls_rebind_items[15].activated);"
+        }
+      ]
+    }
+  ]
+}

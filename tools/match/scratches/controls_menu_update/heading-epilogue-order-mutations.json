@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rebind-heading-epilogue-order",
+      "find": "    position.y += 18.0f;\n    position.x += 8.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n",
+      "replacements": [
+        {
+          "name": "color-y-x",
+          "text": "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.y += 18.0f;\n    position.x += 8.0f;\n"
+        },
+        {
+          "name": "color-x-y",
+          "text": "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.x += 8.0f;\n    position.y += 18.0f;\n"
+        },
+        {
+          "name": "y-color-x",
+          "text": "    position.y += 18.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.x += 8.0f;\n"
+        },
+        {
+          "name": "x-color-y",
+          "text": "    position.x += 8.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.y += 18.0f;\n"
+        },
+        {
+          "name": "x-y-color",
+          "text": "    position.x += 8.0f;\n    position.y += 18.0f;\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n"
+        }
+      ]
+    }
+  ]
+}

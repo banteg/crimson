@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-freeze-branch-order",
+      "find": "                    if (bonus_freeze_timer <= 0.0f) {\n                        vec2f_t decal_offset_1 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_1 = {\n                            decal_offset_1.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_1.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_1);\n\n                        vec2f_t decal_offset_2 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_2 = {\n                            decal_offset_2.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_2.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_2);\n\n                        vec2f_t decal_offset_3 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_3 = {\n                            decal_offset_3.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_3.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_3);\n                    } else {\n                        int count = 4;\n                        do {\n                            effect_spawn_freeze_shard(\n                                &secondary->position,\n                                (float)(crt_rand() % 612) * 0.01f);\n                            --count;\n                        } while (count != 0);\n                    }",
+      "replacements": [
+        {
+          "name": "positive-shard-fallthrough",
+          "text": "                    if (bonus_freeze_timer > 0.0f) {\n                        int count = 4;\n                        do {\n                            effect_spawn_freeze_shard(\n                                &secondary->position,\n                                (float)(crt_rand() % 612) * 0.01f);\n                            --count;\n                        } while (count != 0);\n                    } else {\n                        vec2f_t decal_offset_1 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_1 = {\n                            decal_offset_1.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_1.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_1);\n\n                        vec2f_t decal_offset_2 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_2 = {\n                            decal_offset_2.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_2.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_2);\n\n                        vec2f_t decal_offset_3 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_3 = {\n                            decal_offset_3.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_3.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_3);\n                    }"
+        }
+      ]
+    },
+    {
+      "name": "explosion-detail-threshold",
+      "find": "                        if (config_detail_preset > 2) {",
+      "replacements": [
+        {
+          "name": "native-inclusive-three",
+          "text": "                        if (config_detail_preset >= 3) {"
+        }
+      ]
+    }
+  ]
+}

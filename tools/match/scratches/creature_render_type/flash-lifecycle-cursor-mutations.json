@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "flash-loop-lifecycle-header",
+      "find": "        grim_interface_ptr->grim_begin_batch();\n        for (int creature_index = 0; creature_index < 384; creature_index++) {\n            creature_t *creature = &creature_pool[creature_index];\n            if (!creature->active\n                || creature->type_id != type_id\n                || creature->hit_flash_timer <= 0.0f) {",
+      "replacements": [
+        {
+          "name": "lifecycle-do-header",
+          "text": "        grim_interface_ptr->grim_begin_batch();\n        float *lifecycle_stage = &creature_pool[0].lifecycle_stage;\n        do {\n            creature_t *creature = (creature_t *)((char *)lifecycle_stage\n                - offsetof(creature_t, lifecycle_stage));\n            if (!creature->active\n                || creature->type_id != type_id\n                || creature->hit_flash_timer <= 0.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "flash-loop-lifecycle-tail",
+      "find": "            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);\n        }\n\n        grim_interface_ptr->grim_end_batch();",
+      "replacements": [
+        {
+          "name": "lifecycle-do-tail",
+          "text": "            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x, draw_pos.y, creature->size, creature->size);\n            lifecycle_stage += sizeof(creature_t) / sizeof(float);\n        } while ((int)lifecycle_stage\n            < (int)&creature_pool[384].lifecycle_stage);\n\n        grim_interface_ptr->grim_end_batch();"
+        }
+      ]
+    }
+  ]
+}

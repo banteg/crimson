@@ -95,3 +95,11 @@ forms. An X-then-Y body and a multiline initializer list are byte-neutral at
 99.02%; reversing the body stores regresses to 97.39% and introduces a
 reference mismatch. Constructor syntax therefore does not recover the
 remaining temporary-store schedule.
+
+`clear-helper-interactions.json` evaluates all eleven single, paired, and
+three-site combinations of inline/force-inline wrappers around the weapon
+usage and player auxiliary clears. Every compile-valid combination is
+byte-identical at 99.02%, 307/307, prefix 165, and `213/0/0`. Thus an inlined
+source abstraction cannot move the two flag stores ahead of `rep stosd` or
+interleave the auxiliary clear with the vector temporary. No source change is
+retained.

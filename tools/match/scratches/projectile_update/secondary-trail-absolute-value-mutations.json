@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "absolute-value-helper",
+      "find": "#include <math.h>\n\n#include \"crimsonland_gameplay.h\"\n",
+      "replacements": [
+        {
+          "name": "inline-sign-bit-helper",
+          "text": "#include <math.h>\n\n#include \"crimsonland_gameplay.h\"\n\nstatic __inline float abs_bits(float value)\n{\n    unsigned int bits = *(unsigned int *)&value;\n    bits &= 0x7fffffff;\n    return *(float *)&bits;\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "secondary-trail-absolute-sum",
+      "find": "                secondary->pos.vx.vy.trail_timer -=\n                    ((float)fabs(secondary->pos.vx.vel_x)\n                        + (float)fabs(secondary->pos.vx.vy.vel_y))\n                    * frame_dt * 0.01f;",
+      "replacements": [
+        {
+          "name": "inline-helper-calls",
+          "text": "                float abs_vel_x =\n                    abs_bits(secondary->pos.vx.vel_x);\n                float abs_vel_y =\n                    abs_bits(secondary->pos.vx.vy.vel_y);\n                secondary->pos.vx.vy.trail_timer -=\n                    (abs_vel_x + abs_vel_y) * frame_dt * 0.01f;"
+        },
+        {
+          "name": "float-locals-in-place-mask",
+          "text": "                float abs_vel_x = secondary->pos.vx.vel_x;\n                float abs_vel_y = secondary->pos.vx.vy.vel_y;\n                *(unsigned int *)&abs_vel_x &= 0x7fffffff;\n                *(unsigned int *)&abs_vel_y &= 0x7fffffff;\n                secondary->pos.vx.vy.trail_timer -=\n                    (abs_vel_x + abs_vel_y) * frame_dt * 0.01f;"
+        },
+        {
+          "name": "unsigned-bit-locals",
+          "text": "                unsigned int abs_vel_x =\n                    *(unsigned int *)&secondary->pos.vx.vel_x;\n                unsigned int abs_vel_y =\n                    *(unsigned int *)&secondary->pos.vx.vy.vel_y;\n                abs_vel_x &= 0x7fffffff;\n                abs_vel_y &= 0x7fffffff;\n                secondary->pos.vx.vy.trail_timer -=\n                    (*(float *)&abs_vel_x + *(float *)&abs_vel_y)\n                    * frame_dt * 0.01f;"
+        },
+        {
+          "name": "bit-locals-then-float-copies",
+          "text": "                unsigned int abs_vel_x_bits =\n                    *(unsigned int *)&secondary->pos.vx.vel_x;\n                unsigned int abs_vel_y_bits =\n                    *(unsigned int *)&secondary->pos.vx.vy.vel_y;\n                abs_vel_x_bits &= 0x7fffffff;\n                abs_vel_y_bits &= 0x7fffffff;\n                float abs_vel_x = *(float *)&abs_vel_x_bits;\n                float abs_vel_y = *(float *)&abs_vel_y_bits;\n                secondary->pos.vx.vy.trail_timer -=\n                    (abs_vel_x + abs_vel_y) * frame_dt * 0.01f;"
+        },
+        {
+          "name": "float-copies-then-bit-locals",
+          "text": "                float abs_vel_x = secondary->pos.vx.vel_x;\n                float abs_vel_y = secondary->pos.vx.vy.vel_y;\n                unsigned int abs_vel_x_bits =\n                    *(unsigned int *)&abs_vel_x & 0x7fffffff;\n                unsigned int abs_vel_y_bits =\n                    *(unsigned int *)&abs_vel_y & 0x7fffffff;\n                secondary->pos.vx.vy.trail_timer -=\n                    (*(float *)&abs_vel_x_bits + *(float *)&abs_vel_y_bits)\n                    * frame_dt * 0.01f;"
+        }
+      ]
+    }
+  ]
+}

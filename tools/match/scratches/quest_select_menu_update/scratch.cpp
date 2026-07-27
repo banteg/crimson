@@ -283,13 +283,15 @@ extern "C" void quest_select_menu_update(void)
 
         int quest_index = row + quest_select_stage_major * 10 - 10;
         if (config_hardcore) {
-            if (quest_unlock_index_full >= quest_index) {
-                goto unlocked_row;
+            if (quest_unlock_index_full < quest_index) {
+                goto locked_row;
             }
-        } else if (quest_unlock_index >= quest_index) {
-            goto unlocked_row;
+        } else if (quest_unlock_index < quest_index) {
+            goto locked_row;
         }
+        goto unlocked_row;
 
+locked_row:
         next_row = row + 1;
         {
             float row_y = position.y;

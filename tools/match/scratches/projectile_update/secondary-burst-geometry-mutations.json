@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-burst-velocity-geometry",
+      "find": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        vec2f_t velocity = {\n                            (float)(cos(angle) * magnitude),\n                            (float)(sin(angle) * magnitude),\n                        };",
+      "replacements": [
+        {
+          "name": "named-cosine",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float burst_cos = (float)cos(angle);\n                        vec2f_t velocity = {\n                            burst_cos * magnitude,\n                            (float)(sin(angle) * magnitude),\n                        };"
+        },
+        {
+          "name": "named-sine",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float burst_sin = (float)sin(angle);\n                        vec2f_t velocity = {\n                            (float)(cos(angle) * magnitude),\n                            burst_sin * magnitude,\n                        };"
+        },
+        {
+          "name": "named-cosine-and-sine",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float burst_cos = (float)cos(angle);\n                        float burst_sin = (float)sin(angle);\n                        vec2f_t velocity = {\n                            burst_cos * magnitude,\n                            burst_sin * magnitude,\n                        };"
+        },
+        {
+          "name": "named-x-component",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float velocity_x =\n                            (float)cos(angle) * magnitude;\n                        vec2f_t velocity = {\n                            velocity_x,\n                            (float)(sin(angle) * magnitude),\n                        };"
+        },
+        {
+          "name": "named-cosine-and-x-component",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float burst_cos = (float)cos(angle);\n                        float velocity_x = burst_cos * magnitude;\n                        vec2f_t velocity = {\n                            velocity_x,\n                            (float)(sin(angle) * magnitude),\n                        };"
+        },
+        {
+          "name": "sequential-components-with-named-cosine",
+          "text": "                        float angle =\n                            (float)burst_index * 0.62831855f;\n                        float burst_cos = (float)cos(angle);\n                        vec2f_t velocity;\n                        velocity.x = burst_cos * magnitude;\n                        velocity.y =\n                            (float)sin(angle) * magnitude;"
+        }
+      ]
+    }
+  ]
+}

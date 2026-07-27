@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scripted-spawn-helper-definition",
+      "find": "extern \"C\" void survival_update(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-survival-vector",
+          "text": "static __forceinline void survival_spawn_at(\n    int spawn_id, float x, float y)\n{\n    survival_vec2_t pos;\n    pos.x = x;\n    pos.y = y;\n    creature_spawn_template(\n        spawn_id, (const vec2f_t *)&pos, 3.14159274f);\n}\n\nextern \"C\" void survival_update(void)\n{"
+        },
+        {
+          "name": "inline-survival-vector",
+          "text": "static __inline void survival_spawn_at(\n    int spawn_id, float x, float y)\n{\n    survival_vec2_t pos;\n    pos.x = x;\n    pos.y = y;\n    creature_spawn_template(\n        spawn_id, (const vec2f_t *)&pos, 3.14159274f);\n}\n\nextern \"C\" void survival_update(void)\n{"
+        },
+        {
+          "name": "forceinline-canonical-vector",
+          "text": "static __forceinline void survival_spawn_at(\n    int spawn_id, float x, float y)\n{\n    vec2f_t pos;\n    pos.x = x;\n    pos.y = y;\n    creature_spawn_template(spawn_id, &pos, 3.14159274f);\n}\n\nextern \"C\" void survival_update(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "first-scripted-spawn-helper-calls",
+      "find": "        survival_vec2_t pos;\n        if (survival_spawn_stage == 0) {\n        if (player_state_table[0].level <= 4) {\n            goto update_wave_spawns;\n        }\n        survival_spawn_stage = 1;\n        pos.x = -164.0f;\n        pos.y = 512.0f;\n        creature_spawn_template(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12,\n            (const vec2f_t *)&pos,\n            3.14159274f\n        );\n        pos.x = 1188.0f;\n        pos.y = 512.0f;\n        creature_spawn_template(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12,\n            (const vec2f_t *)&pos,\n            3.14159274f\n        );\n        }\n\n        if (survival_spawn_stage == 1) {\n        if (player_state_table[0].level <= 8) {\n            goto update_wave_spawns;\n        }\n        survival_spawn_stage = 2;\n        pos.x = 1088.0f;\n        pos.y = 512.0f;\n        creature_spawn_template(\n            SPAWN_ID_ALIEN_CONST_RED_BOSS_2C,\n            (const vec2f_t *)&pos,\n            3.14159274f\n        );\n        }\n",
+      "replacements": [
+        {
+          "name": "call-scripted-spawn-helper",
+          "text": "        if (survival_spawn_stage == 0) {\n        if (player_state_table[0].level <= 4) {\n            goto update_wave_spawns;\n        }\n        survival_spawn_stage = 1;\n        survival_spawn_at(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12, -164.0f, 512.0f);\n        survival_spawn_at(\n            SPAWN_ID_FORMATION_RING_ALIEN_8_12, 1188.0f, 512.0f);\n        }\n\n        if (survival_spawn_stage == 1) {\n        if (player_state_table[0].level <= 8) {\n            goto update_wave_spawns;\n        }\n        survival_spawn_stage = 2;\n        survival_spawn_at(\n            SPAWN_ID_ALIEN_CONST_RED_BOSS_2C, 1088.0f, 512.0f);\n        }\n"
+        }
+      ]
+    }
+  ]
+}

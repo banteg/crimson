@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-health-lifetime",
+      "find": "    if (player->health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }",
+      "replacements": [
+        {
+          "name": "float-entry-health",
+          "text": "    float entry_health = player->health;\n    if (entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        },
+        {
+          "name": "const-float-entry-health",
+          "text": "    const float entry_health = player->health;\n    if (entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        },
+        {
+          "name": "split-float-entry-health",
+          "text": "    float entry_health;\n    entry_health = player->health;\n    if (entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        },
+        {
+          "name": "health-pointer",
+          "text": "    float *entry_health = &player->health;\n    if (*entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        },
+        {
+          "name": "const-health-pointer",
+          "text": "    const float *entry_health = &player->health;\n    if (*entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        },
+        {
+          "name": "const-health-reference",
+          "text": "    const float &entry_health = player->health;\n    if (entry_health <= 0.0f) {\n        player->death_timer = player->death_timer - frame_dt * 20.0f;\n        return;\n    }"
+        }
+      ]
+    }
+  ]
+}

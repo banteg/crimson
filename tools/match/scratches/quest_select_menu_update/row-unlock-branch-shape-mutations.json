@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-unlock-branch-shape",
+      "find": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;\n",
+      "replacements": [
+        {
+          "name": "locked-label",
+          "text": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full < quest_index) {\n                goto locked_row;\n            }\n        } else if (quest_unlock_index < quest_index) {\n            goto locked_row;\n        }\n        goto unlocked_row;\n\nlocked_row:\n        next_row = row + 1;\n"
+        },
+        {
+          "name": "named-unlocked-flag",
+          "text": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        bool row_unlocked;\n        if (config_hardcore) {\n            row_unlocked = quest_unlock_index_full >= quest_index;\n        } else {\n            row_unlocked = quest_unlock_index >= quest_index;\n        }\n        if (row_unlocked) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;\n"
+        },
+        {
+          "name": "ternary-unlocked-flag",
+          "text": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        bool row_unlocked = config_hardcore\n            ? quest_unlock_index_full >= quest_index\n            : quest_unlock_index >= quest_index;\n        if (row_unlocked) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;\n"
+        },
+        {
+          "name": "explicit-unlocked-flag",
+          "text": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        bool row_unlocked = false;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                row_unlocked = true;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            row_unlocked = true;\n        }\n        if (row_unlocked) {\n            goto unlocked_row;\n        }\n\n        next_row = row + 1;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-31-aggregate-lifetime",
+      "find": "    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_element_slot_31.hover_max.x =\n        ui_element_slot_31.hover_min.x + 280.0f;\n    ui_element_slot_31.hover_max.y =\n        ui_element_slot_31.hover_min.y + 180.0f;\n    ui_element_slot_31.pos = ui_layout_vec2_t(-45.0f, 210.0f);\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;",
+      "replacements": [
+        {
+          "name": "position-before-copy-hover-after",
+          "text": "    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);\n    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_layout_vec2_t slot_31_hover_max(\n        ui_element_slot_31.hover_min.x + 280.0f,\n        ui_element_slot_31.hover_min.y + 180.0f);\n    ui_element_slot_31.pos = slot_31_position;\n    ui_element_slot_31.hover_max = slot_31_hover_max;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;"
+        },
+        {
+          "name": "position-after-copy-hover-after",
+          "text": "    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);\n    ui_layout_vec2_t slot_31_hover_max(\n        ui_element_slot_31.hover_min.x + 280.0f,\n        ui_element_slot_31.hover_min.y + 180.0f);\n    ui_element_slot_31.pos = slot_31_position;\n    ui_element_slot_31.hover_max = slot_31_hover_max;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;"
+        },
+        {
+          "name": "position-before-copy-hover-scalars",
+          "text": "    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);\n    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    float slot_31_hover_max_x =\n        ui_element_slot_31.hover_min.x + 280.0f;\n    float slot_31_hover_max_y =\n        ui_element_slot_31.hover_min.y + 180.0f;\n    ui_element_slot_31.pos = slot_31_position;\n    ui_element_slot_31.hover_max.y = slot_31_hover_max_y;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.hover_max.x = slot_31_hover_max_x;\n    ui_element_slot_31.use_offset_render = 1;"
+        },
+        {
+          "name": "position-before-copy-direct-hover-after-position",
+          "text": "    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);\n    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_element_slot_31.pos = slot_31_position;\n    ui_element_slot_31.hover_max.x =\n        ui_element_slot_31.hover_min.x + 280.0f;\n    ui_element_slot_31.hover_max.y =\n        ui_element_slot_31.hover_min.y + 180.0f;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;"
+        },
+        {
+          "name": "aggregate-position-only",
+          "text": "    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);\n    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_element_slot_31.hover_max.x =\n        ui_element_slot_31.hover_min.x + 280.0f;\n    ui_element_slot_31.hover_max.y =\n        ui_element_slot_31.hover_min.y + 180.0f;\n    ui_element_slot_31.pos = slot_31_position;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;"
+        },
+        {
+          "name": "aggregate-hover-only",
+          "text": "    copy_layer(ui_element_slot_31, ui_menu_panel_template);\n    ui_layout_vec2_t slot_31_hover_max(\n        ui_element_slot_31.hover_min.x + 280.0f,\n        ui_element_slot_31.hover_min.y + 180.0f);\n    ui_element_slot_31.pos = ui_layout_vec2_t(-45.0f, 210.0f);\n    ui_element_slot_31.hover_max = slot_31_hover_max;\n    ui_element_slot_31.on_activate = 0;\n    ui_element_slot_31.on_update = options_menu_update;\n    ui_element_slot_31.use_offset_render = 1;"
+        }
+      ]
+    }
+  ]
+}

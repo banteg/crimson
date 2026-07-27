@@ -94,13 +94,14 @@ extern "C" void quest_failed_screen_update(void)
     ui_elements_update_and_render();
     perk_prompt_update_and_render();
 
+    quest_failed_vec2_t xy;
     do {
         quest_failed_vec2_t panel_xy =
             *(quest_failed_vec2_t *)&ui_element_slot_35.pos
             + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position
             + quest_failed_vec2_t(180.0f, 40.0f);
 
-        quest_failed_vec2_t xy = panel_xy;
+        xy = panel_xy;
         xy.x =
             ui_element_slot_35.render_offset_x + xy.x + 44.0f - 10.0f;
 

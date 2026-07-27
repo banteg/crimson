@@ -63,3 +63,11 @@ combinations: adding the unused type is neutral, but materializing the vector
 has the same 93.26% regression. The recorded `compound-final-y-confirmation`
 probe is neutral. No source change was retained; final remains **98.87%**,
 177/177, prefix 158, `57/0/0`.
+
+`final-quad-inline-helper-mutations.json` adds complete two-site coverage for
+four inline/force-inline draw helpers and the closing quad call. All four
+complete helper uses are byte-identical at 98.87%, 177/177, prefix 158, and
+`57/0/0`. Live native code computes Y before both size pushes, whereas VC6
+continues to inline the helpers into the same constant-push/vtable-load
+schedule. The helper boundary is therefore another recorded compiler-only
+negative.

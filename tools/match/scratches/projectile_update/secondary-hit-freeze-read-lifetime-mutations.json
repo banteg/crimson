@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rocket-freeze-read",
+      "find": "                        secondary->pos.vx.vy.vel_y = 1.0f;\n                        if (freeze_timer > 0.0f) {",
+      "replacements": [
+        {
+          "name": "branch-local-global-read",
+          "text": "                        secondary->pos.vx.vy.vel_y = 1.0f;\n                        if (bonus_freeze_timer > 0.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "seeker-freeze-read",
+      "find": "                        secondary->pos.vx.vy.vel_y = 0.35f;\n                        if (freeze_timer > 0.0f) {",
+      "replacements": [
+        {
+          "name": "branch-local-global-read",
+          "text": "                        secondary->pos.vx.vy.vel_y = 0.35f;\n                        if (bonus_freeze_timer > 0.0f) {"
+        }
+      ]
+    },
+    {
+      "name": "minigun-freeze-read",
+      "find": "                        secondary->pos.vx.vy.vel_y = 0.25f;\n                        if (freeze_timer > 0.0f) {",
+      "replacements": [
+        {
+          "name": "branch-local-global-read",
+          "text": "                        secondary->pos.vx.vy.vel_y = 0.25f;\n                        if (bonus_freeze_timer > 0.0f) {"
+        }
+      ]
+    }
+  ]
+}

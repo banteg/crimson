@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "controls-panel-narrow-position",
+      "find": "    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos.x = -183.0f;\n    }",
+      "replacements": [
+        {
+          "name": "aggregate-preserve-y",
+          "text": "    if (config_screen_width <= 640) {\n        ui_element_slot_14.pos = ui_layout_vec2_t(\n            -183.0f,\n            ui_element_slot_14.pos.y);\n    }"
+        },
+        {
+          "name": "staged-y-x-then-y",
+          "text": "    if (config_screen_width <= 640) {\n        float slot_14_position_y = ui_element_slot_14.pos.y;\n        ui_element_slot_14.pos.x = -183.0f;\n        ui_element_slot_14.pos.y = slot_14_position_y;\n    }"
+        },
+        {
+          "name": "staged-y-y-then-x",
+          "text": "    if (config_screen_width <= 640) {\n        float slot_14_position_y = ui_element_slot_14.pos.y;\n        ui_element_slot_14.pos.y = slot_14_position_y;\n        ui_element_slot_14.pos.x = -183.0f;\n    }"
+        },
+        {
+          "name": "aggregate-local",
+          "text": "    if (config_screen_width <= 640) {\n        ui_layout_vec2_t slot_14_narrow_position(\n            -183.0f,\n            ui_element_slot_14.pos.y);\n        ui_element_slot_14.pos = slot_14_narrow_position;\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -877,7 +877,15 @@ extern "C" void projectile_update(void)
                         ++highscore_record_shots_hit;
                     }
 
-                    if (bonus_freeze_timer <= 0.0f) {
+                    if (bonus_freeze_timer > 0.0f) {
+                        int count = 4;
+                        do {
+                            effect_spawn_freeze_shard(
+                                &secondary->position,
+                                (float)(crt_rand() % 612) * 0.01f);
+                            --count;
+                        } while (count != 0);
+                    } else {
                         vec2f_t decal_offset_1 = {
                             (float)(crt_rand() % 20 - 10),
                             (float)(crt_rand() % 20 - 10),
@@ -913,20 +921,13 @@ extern "C" void projectile_update(void)
                                 + creature_pool[hit_id].position.y,
                         };
                         fx_queue_add_random(&decal_pos_3);
-                    } else {
-                        int count = 4;
-                        do {
-                            effect_spawn_freeze_shard(
-                                &secondary->position,
-                                (float)(crt_rand() % 612) * 0.01f);
-                            --count;
-                        } while (count != 0);
                     }
 
+                    type_id = secondary->pos.vx.vy.type_id;
                     float damage = 150.0f;
                     if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
                         damage = secondary->life_timer * 50.0f + 500.0f;
-                        if (config_detail_preset > 2) {
+                        if (config_detail_preset >= 3) {
                             effect_spawn_explosion_burst(
                                 &secondary->position,
                                 0.4f);
@@ -950,7 +951,8 @@ extern "C" void projectile_update(void)
                             1.0f);
                     }
 
-                    float inverse_dt = 1.0f / frame_dt;
+                    float inverse_dt = frame_dt;
+                    inverse_dt = 1.0f / inverse_dt;
                     creature_pool[hit_id].state_flag = 1;
                     vec2f_t impulse = {
                         inverse_dt * secondary->pos.vx.vel_x,
@@ -962,13 +964,21 @@ extern "C" void projectile_update(void)
                         3,
                         &impulse);
 
-                    float freeze_timer = bonus_freeze_timer;
+                    type_id = secondary->pos.vx.vy.type_id;
                     if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
                         secondary->pos.vx.vy.type_id =
                             SECONDARY_PROJECTILE_TYPE_EXPLODING;
                         secondary->pos.vx.vel_x = 0.0f;
                         secondary->pos.vx.vy.vel_y = 1.0f;
-                        if (freeze_timer <= 0.0f) {
+                        if (bonus_freeze_timer > 0.0f) {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &secondary->position,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        } else {
                             int count = 20;
                             do {
                                 float angle =
@@ -983,14 +993,6 @@ extern "C" void projectile_update(void)
                                 fx_queue_add_random(&decal_pos);
                                 --count;
                             } while (count != 0);
-                        } else {
-                            int count = 8;
-                            do {
-                                effect_spawn_freeze_shard(
-                                    &secondary->position,
-                                    (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
                         }
                     } else if (type_id
                         == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
@@ -998,7 +1000,15 @@ extern "C" void projectile_update(void)
                             SECONDARY_PROJECTILE_TYPE_EXPLODING;
                         secondary->pos.vx.vel_x = 0.0f;
                         secondary->pos.vx.vy.vel_y = 0.35f;
-                        if (freeze_timer <= 0.0f) {
+                        if (bonus_freeze_timer > 0.0f) {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &secondary->position,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        } else {
                             int count = 10;
                             do {
                                 float angle =
@@ -1013,14 +1023,6 @@ extern "C" void projectile_update(void)
                                 fx_queue_add_random(&decal_pos);
                                 --count;
                             } while (count != 0);
-                        } else {
-                            int count = 8;
-                            do {
-                                effect_spawn_freeze_shard(
-                                    &secondary->position,
-                                    (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
                         }
                     } else if (type_id
                         == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
@@ -1028,7 +1030,15 @@ extern "C" void projectile_update(void)
                             SECONDARY_PROJECTILE_TYPE_EXPLODING;
                         secondary->pos.vx.vel_x = 0.0f;
                         secondary->pos.vx.vy.vel_y = 0.25f;
-                        if (freeze_timer <= 0.0f) {
+                        if (bonus_freeze_timer > 0.0f) {
+                            int count = 8;
+                            do {
+                                effect_spawn_freeze_shard(
+                                    &creature_pool[hit_id].position,
+                                    (float)(crt_rand() % 612) * 0.01f);
+                                --count;
+                            } while (count != 0);
+                        } else {
                             int count = 3;
                             do {
                                 float angle =
@@ -1043,14 +1053,6 @@ extern "C" void projectile_update(void)
                                 fx_queue_add_random(&decal_pos);
                                 --count;
                             } while (count != 0);
-                        } else {
-                            int count = 8;
-                            do {
-                                effect_spawn_freeze_shard(
-                                    &creature_pool[hit_id].position,
-                                    (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
                         }
                     }
 
@@ -1060,9 +1062,11 @@ extern "C" void projectile_update(void)
                             (float)(crt_rand() % 800) * 0.1f;
                         float angle =
                             (float)burst_index * 0.62831855f;
+                        float burst_cos = (float)cos(angle);
+                        float burst_sin = (float)sin(angle);
                         vec2f_t velocity = {
-                            (float)(cos(angle) * magnitude),
-                            (float)(sin(angle) * magnitude),
+                            burst_cos * magnitude,
+                            burst_sin * magnitude,
                         };
                         int effect_id = fx_spawn_sprite(
                             &secondary->position,

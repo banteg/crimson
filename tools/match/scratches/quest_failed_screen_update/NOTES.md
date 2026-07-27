@@ -1,8 +1,8 @@
 # `quest_failed_screen_update`
 
-High-value recovery for the 1,261-byte quest-failure screen at `0x004107e0`.
-The current scratch reconstructs the complete native screen flow and retains
-an honest compiler residual rather than forcing an exact match.
+Exact recovery for the 1,261-byte quest-failure screen at `0x004107e0`.
+The scratch reconstructs the complete native screen flow and matches all
+292 instructions and 151 audited references.
 
 ## Recovered source shape
 
@@ -35,7 +35,7 @@ The VC6 object relocation table proves the corresponding local symbols:
 button objects, the function-local guard, and the three empty destructor thunks
 to those proven native identities.
 
-## Remaining mismatch
+## Former compiler residual
 
 The recovered cumulative `xy.y += 98.0f` update makes the panel slot naturally
 available for the text-input vector, collapsing the candidate from a 32-byte
@@ -43,14 +43,15 @@ frame to the native 24-byte frame. Together with the chained-vector expression,
 the function now has the native 292 instructions and all 151 references, at
 99.32%.
 
-Only two instructions differ: VC6 stores and reloads the hidden first-addition
-Y temporary at `[esp+0x20]` in the target and `[esp+0x10]` in the candidate.
-Equivalent declaration and initialization forms retained that stack-coloring
-choice or worsened scheduling. The residual is recorded instead of forcing a
-register or stack slot.
+The last two differing instructions were VC6 storing and reloading the hidden
+first-addition Y temporary at `[esp+0x20]` in the target and `[esp+0x10]` in
+the candidate. Earlier declaration and initialization menus retained that
+stack-coloring choice or worsened scheduling.
 
 The panel expression now uses the recovered UI element and vertex position
-aggregates. It remains a 292-instruction, 151-reference build at 99.32%.
+aggregates. Extending only the working `xy` vector's lifetime across the
+single-iteration body gives VC6 the native `[esp+0x20]` allocation without
+changing behavior.
 
 ## Recovery classification audit
 
@@ -121,3 +122,21 @@ partial transformations fail compilation. A recorded
 retained; baseline and final remain **99.32%**, 292/292, prefix 30,
 `151/0/0`. After these appended records, `experiments.jsonl` is
 `43f42db83c3ed24eada717d441ea1ae565d39ca2438a43e19fdedbf61b0ca618`.
+
+## Exact lifetime recovery (2026-07-27)
+
+`panel-working-lifetime-mutations.json` evaluated four bounded lifetime
+placements for the panel working vector. Three variants are exact. The
+smallest retained change declares only `xy` immediately before the
+single-iteration `do` body and assigns `panel_xy` inside it. This is the
+native-supported source explanation for the final stack-coloring difference:
+the hidden chained-add Y temporary moves from `[esp+0x10]` to native
+`[esp+0x20]`.
+
+The retained `working-before-do` variant is **100.00%**, 292/292 instructions,
+prefix 292, and `151/0/0` references, improving the weighted score by
+8.636986 bytes. Its source SHA-256 is
+`78a8bc5e989487bcdc8fbede7b31323210f4886f7601a58bf9227ede24171932`;
+the recorded spec SHA-256 is
+`67e09f4bd65f16ecba15be49b9fd260e4f523e1d4a60a22b99bb6f58dfafb40e`.
+The former compiler-residual classification is removed.

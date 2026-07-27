@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "color-copy-helper-definition",
+      "find": "extern \"C\" unsigned char fx_queue_add(\n",
+      "replacements": [
+        {
+          "name": "forceinline-direct-assignment",
+          "text": "static __forceinline void fx_copy_color(\n    effect_color_t *destination, const effect_color_t *source)\n{\n    *destination = *source;\n}\n\nextern \"C\" unsigned char fx_queue_add(\n"
+        },
+        {
+          "name": "inline-direct-assignment",
+          "text": "static __inline void fx_copy_color(\n    effect_color_t *destination, const effect_color_t *source)\n{\n    *destination = *source;\n}\n\nextern \"C\" unsigned char fx_queue_add(\n"
+        },
+        {
+          "name": "forceinline-local-copy",
+          "text": "static __forceinline void fx_copy_color(\n    effect_color_t *destination, const effect_color_t *source)\n{\n    effect_color_t copy = *source;\n    *destination = copy;\n}\n\nextern \"C\" unsigned char fx_queue_add(\n"
+        },
+        {
+          "name": "forceinline-reference-aliases",
+          "text": "static __forceinline void fx_copy_color(\n    effect_color_t *destination, const effect_color_t *source)\n{\n    effect_color_t &destination_ref = *destination;\n    const effect_color_t &source_ref = *source;\n    destination_ref = source_ref;\n}\n\nextern \"C\" unsigned char fx_queue_add(\n"
+        }
+      ]
+    },
+    {
+      "name": "color-copy-helper-call",
+      "find": "    entry->color = *color;\n",
+      "replacements": [
+        {
+          "name": "call-color-copy-helper",
+          "text": "    fx_copy_color(&entry->color, color);\n"
+        }
+      ]
+    }
+  ]
+}

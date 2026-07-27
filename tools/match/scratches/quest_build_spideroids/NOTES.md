@@ -41,3 +41,10 @@ and
 `b995511a540ec5d4809b661b41accd20f3952b12ba128b71838dae65d3f4796b`.
 MSVC 6.0/6.5/6.5 Processor Pack/6.6 tie, MSVC 7.0 regresses, and `/G5`,
 `/G7`, `/Ox`, and `/Ob1` are byte-neutral while `/G6` regresses.
+
+`first-position-construction-mutations.json` evaluates eight constructor,
+temporary, and named-position variants, including all bounded two-site
+interactions. Constructor definitions alone are byte-neutral; the temporary
+and named-position assignment forms regress or fail compilation. No source
+change is retained. The spec SHA-256 is
+`e533054f22356b8cec1461e870164b56ac4a5d82c2e7c136e30fed35dd430b16`.

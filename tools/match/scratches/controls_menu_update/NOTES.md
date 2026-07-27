@@ -580,3 +580,61 @@ Recorded spec SHA-256 values are:
 
 The updated `experiments.jsonl` SHA-256 is
 `fe8d7108f04171ac84db6144a1b6ce1f4198f08387e26bf377a84f98eb072bd6`.
+
+## Heading epilogues and inherited inline-body alignment
+
+This bounded slice started and ended at **81.0117%**, with **17,246.5858
+fuzzy-weighted bytes** and a **4,042.4142-byte fuzzy gap**, 5,412 candidate
+instructions versus 5,421 native instructions, a 172-instruction exact prefix,
+and reference audit **1,554/0/9**. No source mutation met the retention bar.
+
+The shared heading epilogue has mixed native schedules. The Aiming instance at
+`0x0044cc20..0x0044cc5e` updates position before the final `set_color`, while
+the Moving instance at `0x0044cfc6..0x0044d010` and Misc instance at
+`0x0044d69c..0x0044d6f1` issue `set_color` before the position updates.
+`heading-epilogue-order-mutations.json` evaluated all five alternative
+statement orders without truncation. `color-y-x` was a small aggregate
+near-win (+4.6758 weighted bytes, +0.0220 percentage points), but it added two
+candidate instructions and three reference mismatches and contradicts the
+Aiming instance. It is therefore recorded but not retained; the shared source
+does not justify selecting one compiler schedule from aggregate score alone.
+
+The apparent 701-byte mismatch beginning at `0x00449d03` is not a distinct
+policy-body recovery problem. Native `0x00449d03..0x0044a2b2` and the
+candidate inline `input_key_name` body have the same 1,455-byte extent and
+instruction content, with the candidate inherited at a +7-byte/+2-instruction
+offset. The offset is already +3 after the right-heading geometry at
+`0x0044936e..0x004493ac`, then grows to +7 at the per-frame item reset at
+`0x004494af..0x004494c3`.
+
+The native reset loop uses an `activated`-member cursor: it writes enabled at
+`[eax+1]`, clears activated at `[eax]`, advances by 0x10, and performs a signed
+member-address comparison. Replaying all six bounded reset forms confirms
+that the locally native-looking member bound is not independently retainable:
+both signed and unsigned activated-member forms lose 3,744.4228 weighted bytes
+and 270 resolved references. The native right-heading sequence stages
+`y + 4`, advances X by 16, and stores the final `y - 38` around the color call.
+The complete 17-variant right-coordinate/reset interaction matrix evaluated
+every single and pair without truncation. Two equivalent right-coordinate
+spellings are neutral; all other singles and every interaction regress. This
+rules out those source spellings as the missing upstream alignment correction.
+
+Native `0x0044de07` also confirms the final per-frame enabled/disabled reset
+and open-list policy already represented by the scratch, so that tail was not
+expanded into another mutation family.
+
+This slice recorded **28 variants** across three complete sweeps. Spec
+SHA-256 values are:
+
+- heading epilogue order:
+  `a79d999e6a08366ba110308ccf5cc8e3fbbdcdd3dd8885171351a98c62655864`;
+- replayed item-reset bound:
+  `b717c4c8d4132bd85318c8690891ae938cb3044e1e7591cd2144d38eda3adca2`;
+  and
+- right-coordinate/item-reset interactions:
+  `94df05a6aa675be3a91399923146e81c8aeb093686573741e3fe39b0d263301c`.
+
+The unchanged source SHA-256 is
+`7c425f58640eb8c79f06b87894c91ac216211960ad7225b768d1c30429a15789`.
+The updated `experiments.jsonl` SHA-256 is
+`bdea8c6c628b83742b8a22d52b2f5349ff12350dcf05ed2e405d0e68603db10f`.

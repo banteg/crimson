@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-hit-inverse-dt",
+      "find": "                    float inverse_dt = 1.0f / frame_dt;\n                    creature_pool[hit_id].state_flag = 1;",
+      "replacements": [
+        {
+          "name": "initialize-denominator-then-reciprocal",
+          "text": "                    float inverse_dt = frame_dt;\n                    inverse_dt = 1.0f / inverse_dt;\n                    creature_pool[hit_id].state_flag = 1;"
+        },
+        {
+          "name": "declare-assign-denominator-then-reciprocal",
+          "text": "                    float inverse_dt;\n                    inverse_dt = frame_dt;\n                    inverse_dt = 1.0f / inverse_dt;\n                    creature_pool[hit_id].state_flag = 1;"
+        },
+        {
+          "name": "named-denominator",
+          "text": "                    float inverse_dt_denominator = frame_dt;\n                    float inverse_dt = 1.0f / inverse_dt_denominator;\n                    creature_pool[hit_id].state_flag = 1;"
+        },
+        {
+          "name": "named-denominator-after-declarations",
+          "text": "                    float inverse_dt_denominator;\n                    float inverse_dt;\n                    inverse_dt_denominator = frame_dt;\n                    inverse_dt = 1.0f / inverse_dt_denominator;\n                    creature_pool[hit_id].state_flag = 1;"
+        },
+        {
+          "name": "double-reciprocal-after-denominator",
+          "text": "                    float inverse_dt = frame_dt;\n                    inverse_dt = (float)(1.0 / inverse_dt);\n                    creature_pool[hit_id].state_flag = 1;"
+        }
+      ]
+    }
+  ]
+}

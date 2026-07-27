@@ -656,7 +656,7 @@ extern "C" void player_update(void)
                     || (config_player_count == 1
                         && grim_interface_ptr->grim_is_key_active(
                             player_alt_turn_key_left))) {
-                    movement_heading = 5.497787f;
+                    movement_heading = 5.4977875f;
                 } else if (grim_interface_ptr->grim_is_key_active(
                                player->input.turn_key_right)
                     || (config_player_count == 1

@@ -367,3 +367,75 @@ SHA-256 and metrics remain
 `0928e121f84ed1937daeb86a57b9b0383bd0d3b2e35e395e4a491ce4bfe2eec3`,
 2,616.324200913242/5,330 (49.086757990868%), 1,290/1,338 instructions,
 zero prefix instructions, and `207/0/4` references.
+
+## Corpse-queue argument-lifetime sweep
+
+Live Binary Ninja target `3023:2:9499448411019345244` bounds the corpse queue
+to native `0x0042748f..0x0042756a`. The native arms intentionally differ:
+ping-pong, non-long-strip creatures enqueue effect 7, while the ordinary arm
+enqueues the creature type. Both form the same centered position temporary and
+join at the `fx_queue_add_rotated` call at `0x00427558`.
+
+The schema-1 spec `corpse-queue-argument-lifetime-mutations.json` has SHA-256
+`6f3dd90288214ac2fd030a15979ed6fef7f2bfa1e5159a298d9ea6b8f0cf8b15`.
+It exhausts all 15/15 single-arm variants and cross-arm interactions for
+field aliases, half-size staging, and named position temporaries. The winning
+asymmetric interaction stages the effect-7 half-size while naming the ordinary
+arm's type, size, and heading values. That is consistent with the native
+right-to-left argument preparation and retains identical gameplay semantics.
+
+The first-stage winner improves the whole body by 148.878989364009 weighted
+bytes, from 2,616.324200913242/5,330 (49.086757990868%) to
+2,765.203190277251/5,330 (51.879984808204%). The gap falls from
+2,713.675799086758 to 2,564.796809722750 bytes, candidate instructions move
+from 1,290 to 1,295 against 1,338 native, and the reference audit improves
+from `207/0/4` to `217/0/3`.
+
+The gain is a compiler-lifetime cascade rather than a falsely claimed local
+exact match. Native `0x0042684c..0x00426a85` improves from 160.03125 weighted
+bytes (28.125%, `11/0/1` references) to 284.5 (50.0%, `20/0/0`), and
+`0x0042731d..0x004273df` gains 17.798165137615 weighted bytes. The enclosing
+queue region `0x004273d3..0x0042757d` itself loses 8.644273685179 weighted
+bytes while gaining one aligned reference. The change is retained because the
+dominant native-aligned lifetime and reference improvements are explicit and
+the source introduces no volatile state, dead work, fake aliases, or semantic
+change.
+
+The follow-up `corpse-type-arm-alias-subset-mutations.json` (SHA-256
+`54065ab70ef20acdcb3203f9e2ec6f796725bcc1064e5e6eee02dd4a696edfe1`)
+exhausts seven proper subsets of the ordinary arm's type, size, and heading
+aliases while holding the effect-7 half-size staging fixed. Dropping only the
+type-id alias gains another 25.351520968950 weighted bytes and removes one
+candidate instruction. Every subset missing size or heading instead loses
+131.603798411040 to 163.028285334285 weighted bytes and up to ten aligned
+references, confirming that the paired float lifetimes are the operative
+source shape.
+
+The final result is 2,790.554711246200/5,330 (52.355623100304%), a
+2,539.445288753800-byte gap and a total improvement of 174.230510332958
+weighted bytes over the original 49.086758% baseline. It has 1,294/1,338
+instructions, zero prefix instructions, and `217/0/3` references. The retained
+source SHA-256 is
+`a76c476f0c412e182f0fcc7d4d8aea08e7db1d49fe8887b6c707c2ada9d62a72`.
+
+## Tethered-link distance-lifetime closure
+
+The improved `0x0042684c..0x00426a85` alignment still differs in the live
+tethered-link distance kernel: native retains both target deltas on x87, while
+the candidate spills one delta. Two recorded specs close the ordinary
+source-shape search around that exact expression.
+
+`tethered-target-distance-lifetime-mutations.json` (SHA-256
+`e1fd2a91b49f0b9445f1a81854e4e2b5c27a8619045d70a34b3e98a77473a862`)
+tests four scoped, direct, vector, and assignment-in-condition forms. Scoped
+delta scalars are byte-identical. The vector local loses
+129.555639954425 weighted bytes and nine aligned references, while the direct
+field expression loses 146.744572205876 weighted bytes, fourteen aligned
+references, and adds one instruction. The assignment-in-condition spelling is
+not accepted by this VC6 compile.
+
+`tethered-target-product-order-mutations.json` (SHA-256
+`6bb81aebaafef0471f34cfacdfa22a891d8167e54c5247c7b2539bca5da49989`)
+records the remaining commuted product order; it is byte-identical. The
+current `dx` plus named Y-delta source is retained, and the residual spill is
+classified as backend lifetime scheduling rather than incomplete recovery.

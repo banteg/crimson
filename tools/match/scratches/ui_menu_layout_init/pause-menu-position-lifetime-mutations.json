@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-23-position-lifetime",
+      "find": "    copy_layer(ui_element_slot_23, ui_menu_item_element);\n    ui_element_slot_23.pos = ui_layout_vec2_t(-60.0f, 210.0f);",
+      "replacements": [
+        {
+          "name": "local-before-copy",
+          "text": "    ui_layout_vec2_t slot_23_position(-60.0f, 210.0f);\n    copy_layer(ui_element_slot_23, ui_menu_item_element);\n    ui_element_slot_23.pos = slot_23_position;"
+        },
+        {
+          "name": "local-after-copy",
+          "text": "    copy_layer(ui_element_slot_23, ui_menu_item_element);\n    ui_layout_vec2_t slot_23_position(-60.0f, 210.0f);\n    ui_element_slot_23.pos = slot_23_position;"
+        },
+        {
+          "name": "scalar-x-then-y",
+          "text": "    copy_layer(ui_element_slot_23, ui_menu_item_element);\n    ui_element_slot_23.pos.x = -60.0f;\n    ui_element_slot_23.pos.y = 210.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    copy_layer(ui_element_slot_23, ui_menu_item_element);\n    ui_element_slot_23.pos.y = 210.0f;\n    ui_element_slot_23.pos.x = -60.0f;"
+        }
+      ]
+    },
+    {
+      "name": "slot-24-position-lifetime",
+      "find": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = ui_layout_vec2_t(-80.0f, 270.0f);",
+      "replacements": [
+        {
+          "name": "local-before-copy",
+          "text": "    ui_layout_vec2_t slot_24_position(-80.0f, 270.0f);\n    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = slot_24_position;"
+        },
+        {
+          "name": "local-after-copy",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_layout_vec2_t slot_24_position(-80.0f, 270.0f);\n    ui_element_slot_24.pos = slot_24_position;"
+        },
+        {
+          "name": "scalar-x-then-y",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos.x = -80.0f;\n    ui_element_slot_24.pos.y = 270.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos.y = 270.0f;\n    ui_element_slot_24.pos.x = -80.0f;"
+        }
+      ]
+    },
+    {
+      "name": "slot-25-position-lifetime",
+      "find": "    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos = ui_layout_vec2_t(-100.0f, 330.0f);",
+      "replacements": [
+        {
+          "name": "local-before-copy",
+          "text": "    ui_layout_vec2_t slot_25_position(-100.0f, 330.0f);\n    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos = slot_25_position;"
+        },
+        {
+          "name": "local-after-copy",
+          "text": "    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_layout_vec2_t slot_25_position(-100.0f, 330.0f);\n    ui_element_slot_25.pos = slot_25_position;"
+        },
+        {
+          "name": "scalar-x-then-y",
+          "text": "    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos.x = -100.0f;\n    ui_element_slot_25.pos.y = 330.0f;"
+        },
+        {
+          "name": "scalar-y-then-x",
+          "text": "    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos.y = 330.0f;\n    ui_element_slot_25.pos.x = -100.0f;"
+        }
+      ]
+    }
+  ]
+}

@@ -89,3 +89,10 @@ fuzzy-weighted bytes. Its SHA-256 is
 `fb81a462be22f2b5c4f1f8b1aa4035c528732b595bd536db0a304ab38c97f3c4`.
 A fresh compiler/flag matrix confirms MSVC 6.0/6.5/6.6 tie, Processor Pack and
 MSVC 7.0 regress, and only `/G6` regresses among the tested VC6 flag variants.
+
+`first-dynamic-position-lifetime-mutations.json` evaluates four typed and
+scalar lifetimes around the first dynamic position. The typed record and
+position pointers are byte-neutral; float locals lose 63.51 weighted bytes and
+integer locals lose 127.01. The final `mov ebx, 9`/`push edi` scheduling swap
+therefore remains an honest compiler residual. The spec SHA-256 is
+`0b0ae8da91b8097b4c179f6ca3770aa568e00ef4d9aeff1b9758b6e84651ca18`.

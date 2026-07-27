@@ -166,3 +166,12 @@ instructions and regress; removing the depth storage loses two instructions;
 the remaining incomplete site combinations fail compilation as expected.
 No natural interaction restores the native three-copy schedule, so no source
 change is retained.
+
+`uv-value-reuse-mutations.json` tests six ways to derive the lower-right UV
+from already written endpoints. Reusing the upper-right X and lower-left Y
+raises the aggregate score by 5.61 weighted bytes, but is rejected: it reads
+vertex fields while native reads stack-held UV temporaries, moves the first
+mismatch earlier, drops the exact prefix from 57 to 48, and shortens the
+candidate from 88 to 87 against 91 native instructions. The other five forms
+regress. This is recorded as a misleading aggregate-only improvement rather
+than retained as source evidence.

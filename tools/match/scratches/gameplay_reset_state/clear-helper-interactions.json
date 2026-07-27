@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "reset-clear-helper-definitions",
+      "find": "void gameplay_reset_state(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-clear-helpers",
+          "text": "static __forceinline void reset_weapon_usage_time(void)\n{\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n}\n\nstatic __forceinline void reset_player_aux_timers(void)\n{\n    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n}\n\nvoid gameplay_reset_state(void)\n{"
+        },
+        {
+          "name": "inline-clear-helpers",
+          "text": "static __inline void reset_weapon_usage_time(void)\n{\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n}\n\nstatic __inline void reset_player_aux_timers(void)\n{\n    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n}\n\nvoid gameplay_reset_state(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "weapon-usage-clear-call",
+      "find": "    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n",
+      "replacements": [
+        {
+          "name": "call-weapon-clear-helper",
+          "text": "    reset_weapon_usage_time();\n"
+        }
+      ]
+    },
+    {
+      "name": "player-aux-clear-call",
+      "find": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n",
+      "replacements": [
+        {
+          "name": "call-player-aux-clear-helper",
+          "text": "    reset_player_aux_timers();\n"
+        }
+      ]
+    }
+  ]
+}

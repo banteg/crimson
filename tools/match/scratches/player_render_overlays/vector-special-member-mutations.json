@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-special-members",
+      "find": "    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n};",
+      "replacements": [
+        {
+          "name": "empty-destructor",
+          "text": "    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n\n    ~player_render_vec2_t() {}\n};"
+        },
+        {
+          "name": "explicit-copy-constructor",
+          "text": "    player_render_vec2_t(const player_render_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n};"
+        },
+        {
+          "name": "explicit-assignment-operator",
+          "text": "    player_render_vec2_t &operator=(\n        const player_render_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n};"
+        },
+        {
+          "name": "copy-and-assignment",
+          "text": "    player_render_vec2_t(const player_render_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    player_render_vec2_t &operator=(\n        const player_render_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n\n    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n};"
+        },
+        {
+          "name": "copy-and-destructor",
+          "text": "    player_render_vec2_t(const player_render_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }\n\n    ~player_render_vec2_t() {}\n};"
+        }
+      ]
+    }
+  ]
+}

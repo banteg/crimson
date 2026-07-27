@@ -531,12 +531,13 @@ extern "C" void ui_menu_layout_init(void)
         main_menu_full_version_layout_latch = 1;
     }
 
+    ui_layout_vec2_t slot_31_position(-45.0f, 210.0f);
     copy_layer(ui_element_slot_31, ui_menu_panel_template);
-    ui_element_slot_31.hover_max.x =
-        ui_element_slot_31.hover_min.x + 280.0f;
-    ui_element_slot_31.hover_max.y =
-        ui_element_slot_31.hover_min.y + 180.0f;
-    ui_element_slot_31.pos = ui_layout_vec2_t(-45.0f, 210.0f);
+    ui_layout_vec2_t slot_31_hover_max(
+        ui_element_slot_31.hover_min.x + 280.0f,
+        ui_element_slot_31.hover_min.y + 180.0f);
+    ui_element_slot_31.pos = slot_31_position;
+    ui_element_slot_31.hover_max = slot_31_hover_max;
     ui_element_slot_31.on_activate = 0;
     ui_element_slot_31.on_update = options_menu_update;
     ui_element_slot_31.use_offset_render = 1;

@@ -200,3 +200,44 @@ Together these two native-evidenced changes raise the retained result from
 1,049.95-byte gap, 1,404/1,422 instructions, prefix 10, and audit
 **449/0/19**. The full rankings and negative variants are recorded in
 `experiments.jsonl`.
+
+## Slot 31 aggregate lifetime
+
+Live native disassembly at `0x004506e0` through `0x00450774` materializes the
+slot 31 position `(-45, 210)` before the `0xe8`-byte template copy, then
+constructs the derived hover maximum `(hover_min.x + 280,
+hover_min.y + 180)` as a second aggregate temporary. The six-variant
+`slot-31-aggregate-lifetime-mutations.json` sweep covered the evidenced
+before/after-copy lifetime choices and scalar alternatives. Three aggregate
+spellings tied for best; the retained position-before-copy/hover-after-copy
+form mirrors the observed native schedule.
+
+That one source-shape correction adds four candidate instructions and
+**195.83 fuzzy-weighted bytes**, moving the result from **85.49%** to
+**88.20%**. The gap falls from 1,049.95 to **854.12 bytes**, and the reference
+audit improves from `449/0/19` to **`474/0/11`**.
+
+The neighboring pause-menu elements do not share this lifetime shape.
+`pause-menu-position-lifetime-mutations.json` exhaustively evaluated all 60
+planned one- and two-site variants for slots 23, 24, and 25. Every variant
+regressed, with the least-bad result losing 47.30 weighted bytes. No source
+change was retained; the complete negative sweep is recorded so those
+interactions do not need to be revisited.
+
+Native also interleaves the next element's position constants across the
+slot-24/25/26 layer copies and timeline updates. The 15-variant
+`pause-cross-element-lifetime-mutations.json` sweep reconstructed those split
+lifetimes independently and together, but every spelling regressed; the best
+lost 62.67 weighted bytes and five resolved references. Likewise, native's
+narrow-width controls-panel path restores the unchanged Y component after
+overwriting X. All four direct aggregate and staged-source reconstructions in
+`controls-panel-narrow-vector-mutations.json` lost at least 128.68 weighted
+bytes and did not improve the reference audit. Both complete negative sweeps
+are recorded, and neither source shape is retained.
+
+Finally, `atlas-row-store-order-mutations.json` challenged the slot 32 UV
+construction against native `0x004507c5..0x0045086c`. Four scalar and
+named-aggregate spellings covered the observed store order. All regress by at
+least 61.37 weighted bytes; scalar stores also delete 16 constructor-shaped
+instructions present in native. The existing four aggregate assignments remain
+the best evidenced source shape.

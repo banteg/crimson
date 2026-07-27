@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "acceleration-loop-form",
+      "find": "    for (int acceleration = 0; acceleration < 1500; acceleration += 15) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "while-loop",
+          "text": "    int acceleration = 0;\n    while (acceleration < 1500) {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n        acceleration += 15;\n    }\n"
+        },
+        {
+          "name": "do-while-loop",
+          "text": "    int acceleration = 0;\n    do {\n        builder.add(\n            quest_vec2_t(1088.0f, 512.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        builder.add(\n            quest_vec2_t(512.0f, -64.0f),\n            SPAWN_ID_ALIEN_RANDOM_GREEN_20,\n            trigger_time_ms,\n            2);\n\n        trigger_time_ms += 2000 - acceleration;\n        if (trigger_time_ms < 1000) {\n            trigger_time_ms = 1000;\n        }\n        acceleration += 15;\n    } while (acceleration < 1500);\n"
+        }
+      ]
+    }
+  ]
+}

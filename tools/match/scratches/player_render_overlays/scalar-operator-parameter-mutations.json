@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "scalar-subtract-parameter",
+      "find": "    player_render_vec2_t operator-(float value) const\n    {\n        return player_render_vec2_t(x - value, y - value);\n    }",
+      "replacements": [
+        {
+          "name": "const-float-reference",
+          "text": "    player_render_vec2_t operator-(const float &value) const\n    {\n        return player_render_vec2_t(x - value, y - value);\n    }"
+        }
+      ]
+    },
+    {
+      "name": "scalar-multiply-parameter",
+      "find": "    player_render_vec2_t operator*(float scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }",
+      "replacements": [
+        {
+          "name": "const-float-reference",
+          "text": "    player_render_vec2_t operator*(const float &scale) const\n    {\n        return player_render_vec2_t(x * scale, y * scale);\n    }"
+        }
+      ]
+    }
+  ]
+}

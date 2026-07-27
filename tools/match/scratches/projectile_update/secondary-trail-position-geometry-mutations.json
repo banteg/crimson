@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-trail-position-geometry",
+      "find": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - (float)cos(trail_heading) * 9.0f,\n                        secondary->position.y\n                            - (float)sin(trail_heading) * 9.0f,\n                    };",
+      "replacements": [
+        {
+          "name": "named-cosine",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    float trail_position_cos =\n                        (float)cos(trail_heading);\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - trail_position_cos * 9.0f,\n                        secondary->position.y\n                            - (float)sin(trail_heading) * 9.0f,\n                    };"
+        },
+        {
+          "name": "named-x-offset",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    float trail_position_x_offset =\n                        (float)cos(trail_heading) * 9.0f;\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - trail_position_x_offset,\n                        secondary->position.y\n                            - (float)sin(trail_heading) * 9.0f,\n                    };"
+        },
+        {
+          "name": "named-cosine-and-x-offset",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    float trail_position_cos =\n                        (float)cos(trail_heading);\n                    float trail_position_x_offset =\n                        trail_position_cos * 9.0f;\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - trail_position_x_offset,\n                        secondary->position.y\n                            - (float)sin(trail_heading) * 9.0f,\n                    };"
+        },
+        {
+          "name": "named-cosine-and-sine",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    float trail_position_cos =\n                        (float)cos(trail_heading);\n                    float trail_position_sin =\n                        (float)sin(trail_heading);\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - trail_position_cos * 9.0f,\n                        secondary->position.y\n                            - trail_position_sin * 9.0f,\n                    };"
+        },
+        {
+          "name": "direction-aggregate",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    vec2f_t trail_direction = {\n                        (float)cos(trail_heading),\n                        (float)sin(trail_heading),\n                    };\n                    vec2f_t trail_pos = {\n                        secondary->position.x\n                            - trail_direction.x * 9.0f,\n                        secondary->position.y\n                            - trail_direction.y * 9.0f,\n                    };"
+        },
+        {
+          "name": "offset-aggregate",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    vec2f_t trail_offset = {\n                        (float)cos(trail_heading) * 9.0f,\n                        (float)sin(trail_heading) * 9.0f,\n                    };\n                    vec2f_t trail_pos = {\n                        secondary->position.x - trail_offset.x,\n                        secondary->position.y - trail_offset.y,\n                    };"
+        },
+        {
+          "name": "sequential-position-components",
+          "text": "                    float trail_heading =\n                        secondary->angle - 1.5707964f;\n                    vec2f_t trail_pos;\n                    trail_pos.x = secondary->position.x\n                        - (float)cos(trail_heading) * 9.0f;\n                    trail_pos.y = secondary->position.y\n                        - (float)sin(trail_heading) * 9.0f;"
+        }
+      ]
+    }
+  ]
+}

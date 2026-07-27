@@ -44,3 +44,13 @@ five regress, with earlier publication moving the first mismatch before the
 native color-copy boundary. This closes the ordinary counter-lifetime menu
 without retaining the unsupported Processor Pack profile or a manual partial
 aggregate copy.
+
+## Exact-tail helper audit (2026-07-27)
+
+`color-copy-helper-mutations.json` tests four inline/force-inline aggregate
+copy helpers and their call-site interaction. The ordinary direct-assignment
+and reference forms are byte-identical at 97.44%; materializing a local color
+copy falls to 41.46% and moves the first mismatch into the prologue. Live
+native disassembly still places `fx_queue_count` between the final color load
+and store, so an inline source boundary cannot reproduce the Processor Pack
+schedule under supported VC6.5. No source change is retained.

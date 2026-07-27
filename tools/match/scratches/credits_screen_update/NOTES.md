@@ -80,3 +80,10 @@ An explicit user copy constructor or component-wise position construction
 removes six instructions, moves the first mismatch to the prologue, and falls
 to 73.61%. The implicit copy source therefore remains the best evidenced
 shape.
+
+`vector-operator-shape-mutations.json` adds six return, parameter, constness,
+and `operator+=` variants. Non-const `operator+`, a void `operator+=`, and a
+by-value `operator+=` are byte-identical at 98.90%. Naming the returned vector
+adds six instructions and loses 186.78 weighted bytes; taking the operand by
+value adds four instructions and loses 187.24. None induces the native panel-Y
+temporary slot, so the canonical operators remain unchanged.

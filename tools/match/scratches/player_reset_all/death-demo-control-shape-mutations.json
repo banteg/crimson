@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "death-demo-control-shape",
+      "find": "            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }",
+      "replacements": [
+        {
+          "name": "compare-demo-with-zero",
+          "text": "            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (demo_mode_active == 0) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }"
+        },
+        {
+          "name": "compare-zero-with-demo",
+          "text": "            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (0 == demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }"
+        },
+        {
+          "name": "death-after-demo-branch",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            player_state_table[reset_index].death_timer = 16.0f;"
+        },
+        {
+          "name": "death-after-equality-branch",
+          "text": "            if (demo_mode_active == 0) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            player_state_table[reset_index].death_timer = 16.0f;"
+        },
+        {
+          "name": "inverted-empty-demo-arm",
+          "text": "            player_state_table[reset_index].death_timer = 16.0f;\n\n            if (demo_mode_active) {\n            } else {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }"
+        },
+        {
+          "name": "death-after-inverted-arm",
+          "text": "            if (demo_mode_active) {\n            } else {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            }\n\n            player_state_table[reset_index].death_timer = 16.0f;"
+        },
+        {
+          "name": "death-in-both-demo-arms",
+          "text": "            if (!demo_mode_active) {\n                player_state_table[reset_index].death_timer = 16.0f;\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n            } else {\n                player_state_table[reset_index].death_timer = 16.0f;\n            }"
+        },
+        {
+          "name": "death-last-in-both-demo-arms",
+          "text": "            if (!demo_mode_active) {\n                reset_vec2_t mouse_pos(320.0f, 140.0f);\n                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;\n                player_state_table[reset_index].death_timer = 16.0f;\n            } else {\n                player_state_table[reset_index].death_timer = 16.0f;\n            }"
+        }
+      ]
+    }
+  ]
+}

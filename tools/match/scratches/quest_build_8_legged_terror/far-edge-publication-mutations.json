@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "far-edge-publication",
+      "find": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge = 1049.0f;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n",
+      "replacements": [
+        {
+          "name": "split-before-position",
+          "text": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge;\n    far_edge = 1049.0f;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "initialize-after-opening-x",
+          "text": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n    float far_edge;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    far_edge = 1049.0f;\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "declare-after-opening-x",
+          "text": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    float far_edge = 1049.0f;\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "declare-after-opening-position",
+          "text": "    float near_edge = -25.0f;\n    int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;\n\n    cursor->pos_x = (float)(terrain_texture_width - 256);\n    cursor->pos_y = (float)(terrain_texture_width / 2);\n    float far_edge = 1049.0f;\n"
+        }
+      ]
+    }
+  ]
+}

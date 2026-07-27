@@ -43,3 +43,9 @@ regress sharply.
 MSVC 6.0, 6.5, 6.5 Processor Pack, and 6.6 tie at the retained score; MSVC 7.0
 regresses. `/G5`, `/G7`, `/Ox`, and `/Ob1` are byte-neutral against `/GB`,
 while `/G6` regresses.
+
+`loop-form-mutations.json` tests equivalent `while` and `do while` spellings
+for the 100-iteration paired-spawn loop. Both are byte-neutral at 97.92%,
+48/48 instructions, confirming that loop syntax does not move the remaining
+counter/constant scheduling swap. The spec SHA-256 is
+`1baa6632ca8e7c6e5f29c31a486b0023cd213f2cf6044d9508a65ad99dda9947`.

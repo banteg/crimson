@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-working-vector-lifetime",
+      "find": "    gameplay_render_world();\n    ui_elements_update_and_render();\n    perk_prompt_update_and_render();\n\n    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n",
+      "replacements": [
+        {
+          "name": "both-before-do",
+          "text": "    gameplay_render_world();\n    ui_elements_update_and_render();\n    perk_prompt_update_and_render();\n\n    quest_failed_vec2_t panel_xy;\n    quest_failed_vec2_t xy;\n    do {\n        panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n"
+        },
+        {
+          "name": "both-before-screen-work",
+          "text": "    quest_failed_vec2_t panel_xy;\n    quest_failed_vec2_t xy;\n    gameplay_render_world();\n    ui_elements_update_and_render();\n    perk_prompt_update_and_render();\n\n    do {\n        panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n"
+        },
+        {
+          "name": "panel-before-do",
+          "text": "    gameplay_render_world();\n    ui_elements_update_and_render();\n    perk_prompt_update_and_render();\n\n    quest_failed_vec2_t panel_xy;\n    do {\n        panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "working-before-do",
+          "text": "    gameplay_render_world();\n    ui_elements_update_and_render();\n    perk_prompt_update_and_render();\n\n    quest_failed_vec2_t xy;\n    do {\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n"
+        }
+      ]
+    }
+  ]
+}

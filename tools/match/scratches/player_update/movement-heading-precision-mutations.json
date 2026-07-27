@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "forward-left-heading-precision",
+      "find": "                    movement_heading = 5.497787f;",
+      "replacements": [
+        {
+          "name": "native-rounded-5_4977875f",
+          "text": "                    movement_heading = 5.4977875f;"
+        },
+        {
+          "name": "native-rounded-5_4977874f",
+          "text": "                    movement_heading = 5.4977874f;"
+        },
+        {
+          "name": "seven-eighth-turn-product",
+          "text": "                    movement_heading = 7.0f * 0.7853982f;"
+        }
+      ]
+    }
+  ]
+}

@@ -80,3 +80,24 @@ Caching the flag or moving the clear inside the existing scope while retaining
 the global index is byte-neutral. Reusing the scoped reset index disturbs the
 earlier allocation boundary and regresses. Baseline remains **91.83%**,
 130/127 instructions, prefix 94, references `57/0/1`.
+
+## Death/demo control-shape follow-up
+
+Live native instructions `0x0041fe3a..0x0041fe62` keep the demo flag in
+`CL`, perform the final reset stores, compare it with zero, write
+`death_timer = 16.0f`, and then reuse the still-live player offset in `EAX`
+for the perk clear. The candidate's behaviorally equivalent schedule uses
+`AL` and recomputes that offset.
+
+`death-demo-control-shape-mutations.json` evaluated all eight equality-order,
+empty-arm inversion, moved-write, and duplicated-write variants (spec
+SHA-256
+`6070aacbf928626c8625517504b16649a1ce58f23dec57aa8eefb74648958771`).
+Equality and inverted-control spellings were byte-identical. Moving or
+duplicating the death-timer write disturbed the exact prefix and regressed to
+roughly 62.79%--64.34%, with only 34--35 aligned references and three or four
+reference mismatches. No source change was retained. Final metrics remain
+91.82879377431906%, a 47.719844357976626-byte fuzzy gap, 130/127
+instructions, prefix 94, and `57/0/1` references. The final four-record
+`experiments.jsonl` SHA-256 is
+`48bb4d8731cba8cf4626b3e7409860c1b3126df9f5101ed72d159c8c7e877c7d`.

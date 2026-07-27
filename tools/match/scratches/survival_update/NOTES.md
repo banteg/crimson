@@ -77,3 +77,11 @@ condition, formation, RNG call, coordinate, or reference is absent.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
 and after classification remain 98.21%, prefix 102/504, 504/504
 instructions, and references 139/0/0.
+
+`scripted-spawn-inline-helper-mutations.json` tests three inline/force-inline
+coordinate helpers and their interaction with the first three scripted
+spawns. Helper definitions alone are neutral, but every complete helper use
+falls to 83.33% and moves the first mismatch into the prologue while retaining
+the 504-instruction count and all 139 references. Inlining a helper local does
+not reproduce native reuse of the dead centroid slot, so no source change is
+retained.

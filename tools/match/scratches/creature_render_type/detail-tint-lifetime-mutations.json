@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "detail-tint-declaration-order",
+      "find": "            int flags = creature->flags;\n            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            color = *tint;\n            color.a *= 0.4f;",
+      "replacements": [
+        {
+          "name": "tint-before-flags",
+          "text": "            creature_render_color_t *tint =\n                (creature_render_color_t *)&creature->color;\n            int flags = creature->flags;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "const-tint-before-flags",
+          "text": "            const creature_render_color_t *tint =\n                (const creature_render_color_t *)&creature->color;\n            int flags = creature->flags;\n            color = *tint;\n            color.a *= 0.4f;"
+        },
+        {
+          "name": "tint-reference-before-flags",
+          "text": "            creature_render_color_t &tint =\n                *(creature_render_color_t *)&creature->color;\n            int flags = creature->flags;\n            color = tint;\n            color.a *= 0.4f;"
+        }
+      ]
+    },
+    {
+      "name": "detail-draw-position-from-tint",
+      "find": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&creature->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;",
+      "replacements": [
+        {
+          "name": "inline-tint-owner-y",
+          "text": "            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x,\n                    ((creature_t *)((char *)tint\n                        - offsetof(creature_t, color)))->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;"
+        },
+        {
+          "name": "named-tint-owner-y",
+          "text": "            creature_t *tint_owner = (creature_t *)((char *)tint\n                - offsetof(creature_t, color));\n            draw_pos =\n                camera_offset\n                + creature_render_vec2_t(\n                    creature->position.x, tint_owner->position.y)\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;"
+        },
+        {
+          "name": "named-tint-owner-position",
+          "text": "            creature_t *tint_owner = (creature_t *)((char *)tint\n                - offsetof(creature_t, color));\n            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&tint_owner->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;"
+        },
+        {
+          "name": "inline-tint-owner-position",
+          "text": "            draw_pos =\n                camera_offset\n                + *(creature_render_vec2_t *)&((creature_t *)((char *)tint\n                    - offsetof(creature_t, color)))->position\n                - creature_render_vec2_t(\n                    creature->size * 0.5f + 0.7f,\n                    creature->size * 0.5f + 0.7f);\n            float draw_size = creature->size * 1.07f;"
+        }
+      ]
+    }
+  ]
+}

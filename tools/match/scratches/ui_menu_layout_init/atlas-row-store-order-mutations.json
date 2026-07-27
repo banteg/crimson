@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "atlas-row-store-order",
+      "find": "    *(ui_layout_vec2_t *)&atlas.slot_00.u =\n        ui_layout_vec2_t(0.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_01.u =\n        ui_layout_vec2_t(1.0f, top);\n    *(ui_layout_vec2_t *)&atlas.slot_02.u =\n        ui_layout_vec2_t(1.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u =\n        ui_layout_vec2_t(0.0f, bottom);",
+      "replacements": [
+        {
+          "name": "native-scalar-store-order",
+          "text": "    atlas.slot_00.u = 0.0f;\n    atlas.slot_00.v = top;\n    atlas.slot_01.v = top;\n    atlas.slot_01.u = 1.0f;\n    atlas.slot_02.u = 1.0f;\n    atlas.slot_03.u = 0.0f;\n    atlas.slot_02.v = bottom;\n    atlas.slot_03.v = bottom;"
+        },
+        {
+          "name": "four-named-aggregates",
+          "text": "    ui_layout_vec2_t atlas_slot_0(0.0f, top);\n    ui_layout_vec2_t atlas_slot_1(1.0f, top);\n    ui_layout_vec2_t atlas_slot_2(1.0f, bottom);\n    ui_layout_vec2_t atlas_slot_3(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_00.u = atlas_slot_0;\n    *(ui_layout_vec2_t *)&atlas.slot_01.u = atlas_slot_1;\n    *(ui_layout_vec2_t *)&atlas.slot_02.u = atlas_slot_2;\n    *(ui_layout_vec2_t *)&atlas.slot_03.u = atlas_slot_3;"
+        },
+        {
+          "name": "four-named-aggregates-reverse-stores",
+          "text": "    ui_layout_vec2_t atlas_slot_0(0.0f, top);\n    ui_layout_vec2_t atlas_slot_1(1.0f, top);\n    ui_layout_vec2_t atlas_slot_2(1.0f, bottom);\n    ui_layout_vec2_t atlas_slot_3(0.0f, bottom);\n    *(ui_layout_vec2_t *)&atlas.slot_03.u = atlas_slot_3;\n    *(ui_layout_vec2_t *)&atlas.slot_02.u = atlas_slot_2;\n    *(ui_layout_vec2_t *)&atlas.slot_01.u = atlas_slot_1;\n    *(ui_layout_vec2_t *)&atlas.slot_00.u = atlas_slot_0;"
+        },
+        {
+          "name": "scalar-paired-order",
+          "text": "    atlas.slot_00.u = 0.0f;\n    atlas.slot_00.v = top;\n    atlas.slot_01.u = 1.0f;\n    atlas.slot_01.v = top;\n    atlas.slot_02.u = 1.0f;\n    atlas.slot_02.v = bottom;\n    atlas.slot_03.u = 0.0f;\n    atlas.slot_03.v = bottom;"
+        }
+      ]
+    }
+  ]
+}

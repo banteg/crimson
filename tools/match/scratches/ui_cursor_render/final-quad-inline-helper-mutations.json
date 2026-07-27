@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-quad-helper-definition",
+      "find": "extern \"C\" void ui_cursor_render(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-direct-draw",
+          "text": "static __forceinline void ui_draw_cursor_quad(float x, float y)\n{\n    grim_interface_ptr->grim_draw_quad(x, y, 32.0f, 32.0f);\n}\n\nextern \"C\" void ui_cursor_render(void)\n{"
+        },
+        {
+          "name": "inline-direct-draw",
+          "text": "static __inline void ui_draw_cursor_quad(float x, float y)\n{\n    grim_interface_ptr->grim_draw_quad(x, y, 32.0f, 32.0f);\n}\n\nextern \"C\" void ui_cursor_render(void)\n{"
+        },
+        {
+          "name": "forceinline-local-receiver",
+          "text": "static __forceinline void ui_draw_cursor_quad(float x, float y)\n{\n    IGrim2D_cpp *renderer = grim_interface_ptr;\n    renderer->grim_draw_quad(x, y, 32.0f, 32.0f);\n}\n\nextern \"C\" void ui_cursor_render(void)\n{"
+        },
+        {
+          "name": "forceinline-y-first-locals",
+          "text": "static __forceinline void ui_draw_cursor_quad(float x_value, float y_value)\n{\n    float y = y_value;\n    float x = x_value;\n    grim_interface_ptr->grim_draw_quad(x, y, 32.0f, 32.0f);\n}\n\nextern \"C\" void ui_cursor_render(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "final-quad-helper-call",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        ui_mouse_x - 2.0f, ui_mouse_y - 2.0f, 32.0f, 32.0f);\n",
+      "replacements": [
+        {
+          "name": "call-final-quad-helper",
+          "text": "    ui_draw_cursor_quad(ui_mouse_x - 2.0f, ui_mouse_y - 2.0f);\n"
+        }
+      ]
+    }
+  ]
+}

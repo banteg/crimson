@@ -130,6 +130,33 @@ The existing vector-expression and direct-interface form is therefore
 retained. Final source SHA-256 remains
 `536084d3873edf98ae7516d8dff3abfab963c71683719033360850c9a17d8517`:
 83.8794233%, 3,843.355/4,582 fuzzy-weighted bytes, a 738.645-byte gap,
-1,141/1,148 instructions, prefix 9, and `326/0/0` references. The current
-four-record `experiments.jsonl` SHA-256 is
+1,141/1,148 instructions, prefix 9, and `326/0/0` references. That
+four-record `experiments.jsonl` prefix had SHA-256
 `f501de07b8b307a96e75eb62e999c0a3dfe6f6280aca44b7206b51d59011520b`.
+
+## Additional frame-layout controls
+
+Four more bounded sweeps tested the ordinary source mechanisms most likely to
+explain the remaining reusable-local and target-trail layouts:
+
+- all eight declaration-order permutations were byte-identical
+  (`function-local-order-mutations.json`, spec SHA-256
+  `d8445517e6dc8e9b8487a381ff62cf1e77a43acc3480d7a2c6db8b442df04bf0`);
+- five vector copy/destructor/assignment variants found neutral explicit-copy
+  forms, while explicit assignment regressed by 552.172 weighted bytes
+  (`vector-special-member-mutations.json`, spec SHA-256
+  `7934c3ccde32029c89994dc20f61d6205d8794c7c3bef5afd906b158520fad1b`);
+- all three const-reference scalar-operator parameter variants were
+  byte-identical (`scalar-operator-parameter-mutations.json`, spec SHA-256
+  `9ab3e2c4c13b45c403eccf5d36a4c3a63fd8b6de704b61020f851f83c241f8dc`);
+- four named target-creature, reference, and index lifetimes all regressed by
+  about 92 to 94 weighted bytes and introduced a reference mismatch
+  (`target-creature-lifetime-mutations.json`, spec SHA-256
+  `2e767f4b5053e9aee2a3049bd864df08f58edc3f4174eef8bfc1057d2fb0d7c1`).
+
+All 20 planned variants were evaluated. No native-supported improvement
+exists in these families, no source change was retained, and final metrics
+remain 83.8794233%, a 738.645-byte fuzzy gap, 1,141/1,148 instructions,
+prefix 9, and `326/0/0` references. The final eight-record
+`experiments.jsonl` SHA-256 is
+`7581c8c2d39f5fb69f6971dd4b8f7f1d168603621c64e3d319e03e1e7a3526cb`.

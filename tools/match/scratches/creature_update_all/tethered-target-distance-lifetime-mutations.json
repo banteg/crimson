@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "tethered-target-distance-lifetime",
+      "find": "                                dx = creature_pool[creature_index].target_x - position->x;\n                                target_delta_y =\n                                    creature_pool[creature_index].target_y - position->y;\n                                float target_distance =\n                                    (float)sqrt(\n                                        dx * dx + target_delta_y * target_delta_y);\n                                if (target_distance <= 64.0f) {\n                                    move_scale = target_distance * 0.015625f;\n                                }",
+      "replacements": [
+        {
+          "name": "scoped-delta-scalars",
+          "text": "                                float target_delta_x =\n                                    creature_pool[creature_index].target_x - position->x;\n                                float target_delta_y_local =\n                                    creature_pool[creature_index].target_y - position->y;\n                                float target_distance =\n                                    (float)sqrt(\n                                        target_delta_x * target_delta_x\n                                        + target_delta_y_local * target_delta_y_local);\n                                if (target_distance <= 64.0f) {\n                                    move_scale = target_distance * 0.015625f;\n                                }"
+        },
+        {
+          "name": "direct-field-expression",
+          "text": "                                float target_distance = (float)sqrt(\n                                    (creature_pool[creature_index].target_x - position->x)\n                                        * (creature_pool[creature_index].target_x - position->x)\n                                    + (creature_pool[creature_index].target_y - position->y)\n                                        * (creature_pool[creature_index].target_y - position->y));\n                                if (target_distance <= 64.0f) {\n                                    move_scale = target_distance * 0.015625f;\n                                }"
+        },
+        {
+          "name": "vector-delta-local",
+          "text": "                                creature_vec2_t target_delta(\n                                    creature_pool[creature_index].target_x - position->x,\n                                    creature_pool[creature_index].target_y - position->y);\n                                float target_distance = (float)sqrt(\n                                    target_delta.x * target_delta.x\n                                    + target_delta.y * target_delta.y);\n                                if (target_distance <= 64.0f) {\n                                    move_scale = target_distance * 0.015625f;\n                                }"
+        },
+        {
+          "name": "assignment-in-condition",
+          "text": "                                dx = creature_pool[creature_index].target_x - position->x;\n                                target_delta_y =\n                                    creature_pool[creature_index].target_y - position->y;\n                                float target_distance;\n                                if ((target_distance = (float)sqrt(\n+                                        dx * dx + target_delta_y * target_delta_y))\n+                                    <= 64.0f) {\n                                    move_scale = target_distance * 0.015625f;\n                                }"
+        }
+      ]
+    }
+  ]
+}

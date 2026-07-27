@@ -888,3 +888,34 @@ operator definitions were neutral and every used form regressed (spec SHA-256
 `d1f6430b1f8534f312e8bd9a59e00617ff834145d164fe7b9d029e9f40a09b06`).
 These negative records rule out the tempting pointer, x87-expression, and
 return-by-value explanations without weakening the native-supported source.
+
+## Entry-health scheduling and movement-heading precision
+
+The first substantive entry divergence remains the scheduling around
+`0x004136f3..0x0041370b`: native stores both previous-position components
+before comparing health, while VC6 schedules the equivalent x87 comparison
+through those stores. `entry-health-lifetime-mutations.json` exhaustively
+tested six short-lived float, split-float, pointer, const-pointer, and
+const-reference spellings. All six variants were byte-identical, so none was
+retained. The recorded spec SHA-256 is
+`98c5de36f61acf8d175399e1294a48368e4b86be1556fb185b10e6957595d4b8`.
+
+A later BN-guided check found one genuine source-precision error inside the
+large movement region. Native `0x004149ba` stores float bits `0x40afede0`
+(`5.4977874755859375`) for the diagonal heading, while the former
+`5.497787f` spelling compiled to `0x40afeddf`. The
+`movement-heading-precision-mutations.json` sweep tested three exact-rounding
+source spellings (spec SHA-256
+`8e638044008c27dfdc2d837757a7d0f070ac3253c4b68e3d69ca895aadce0002`);
+`5.4977875f` is retained because an object dump confirms that it emits the
+native `0x40afede0` immediate. Python, Zig, and their parity tests already use
+the same exact binary32 value.
+
+This one-byte correction lies inside an already structurally mismatched
+region, so aggregate fuzzy metrics are unchanged: 4,051/4,206 instructions,
+`62.5166525372411%`, 10,163.332202979289 weighted bytes, a
+6,093.667797020711-byte gap, prefix 7, and `800/0/2` references. No
+score-only source change was retained. The final source SHA-256 is
+`511f6e20a5f868e673511573252e1676416a3ca69f2884132d0e872cb5278929`;
+the 38-record `experiments.jsonl` SHA-256 is
+`727aa640c532445e4559235d1884d3791087f3421d99242d4d12840002579923`.

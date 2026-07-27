@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "damage-type-reload",
+      "find": "                    float damage = 150.0f;\n                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {",
+      "replacements": [
+        {
+          "name": "reload-before-damage",
+          "text": "                    type_id = secondary->pos.vx.vy.type_id;\n                    float damage = 150.0f;\n                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {"
+        }
+      ]
+    },
+    {
+      "name": "impact-type-reload",
+      "find": "                    float freeze_timer = bonus_freeze_timer;\n                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {",
+      "replacements": [
+        {
+          "name": "reload-before-freeze-timer",
+          "text": "                    type_id = secondary->pos.vx.vy.type_id;\n                    float freeze_timer = bonus_freeze_timer;\n                    if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {"
+        }
+      ]
+    }
+  ]
+}

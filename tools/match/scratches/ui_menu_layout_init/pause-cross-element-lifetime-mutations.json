@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-24-to-25-position-lifetime",
+      "find": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = ui_layout_vec2_t(-80.0f, 270.0f);\n    ui_element_slot_24.layers[1] =\n        ui_element_slot_footer_variant_b.layers[1];\n    ui_element_slot_24.on_activate = ui_menu_pause_click_main_menu;\n    ui_element_slot_24.timeline_end_ms += 200;\n    ui_element_slot_24.timeline_start_ms += 200;\n\n    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos = ui_layout_vec2_t(-100.0f, 330.0f);",
+      "replacements": [
+        {
+          "name": "native-split-next-position",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = ui_layout_vec2_t(-80.0f, 270.0f);\n    float slot_25_position_x = -100.0f;\n    ui_element_slot_24.layers[1] =\n        ui_element_slot_footer_variant_b.layers[1];\n    ui_element_slot_24.on_activate = ui_menu_pause_click_main_menu;\n    ui_element_slot_24.timeline_end_ms += 200;\n    ui_element_slot_24.timeline_start_ms += 200;\n\n    float slot_25_position_y = 330.0f;\n    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos.x = slot_25_position_x;\n    ui_element_slot_25.pos.y = slot_25_position_y;"
+        },
+        {
+          "name": "native-next-aggregate-before-layer-copy",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = ui_layout_vec2_t(-80.0f, 270.0f);\n    ui_layout_vec2_t slot_25_position(-100.0f, 330.0f);\n    ui_element_slot_24.layers[1] =\n        ui_element_slot_footer_variant_b.layers[1];\n    ui_element_slot_24.on_activate = ui_menu_pause_click_main_menu;\n    ui_element_slot_24.timeline_end_ms += 200;\n    ui_element_slot_24.timeline_start_ms += 200;\n\n    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos = slot_25_position;"
+        },
+        {
+          "name": "native-next-x-before-layer-y-before-copy",
+          "text": "    copy_layer(ui_element_slot_24, ui_menu_item_element);\n    ui_element_slot_24.pos = ui_layout_vec2_t(-80.0f, 270.0f);\n    float slot_25_position_x = -100.0f;\n    ui_element_slot_24.layers[1] =\n        ui_element_slot_footer_variant_b.layers[1];\n    ui_element_slot_24.on_activate = ui_menu_pause_click_main_menu;\n    ui_element_slot_24.timeline_end_ms += 200;\n    ui_element_slot_24.timeline_start_ms += 200;\n\n    copy_layer(ui_element_slot_25, ui_menu_item_element);\n    ui_element_slot_25.pos.x = slot_25_position_x;\n    ui_element_slot_25.pos.y = 330.0f;"
+        }
+      ]
+    },
+    {
+      "name": "slot-25-to-26-position-lifetime",
+      "find": "    ui_element_slot_25.layers[1] =\n        ui_element_slot_32_layout_c.layers[1];\n    ui_element_slot_25.timeline_end_ms += 300;\n    ui_element_slot_25.timeline_start_ms += 300;\n    ui_element_slot_25.on_activate = ui_menu_pause_click_resume;\n    ui_element_slot_25.label_id = 48;\n\n    ui_element_slot_26.pos = ui_layout_vec2_t(-175.0f, 45.0f);\n    ui_element_slot_26.use_offset_render = 1;",
+      "replacements": [
+        {
+          "name": "native-split-next-position",
+          "text": "    float slot_26_position_x = -175.0f;\n    ui_element_slot_25.layers[1] =\n        ui_element_slot_32_layout_c.layers[1];\n    float slot_26_position_y = 45.0f;\n    ui_element_slot_25.timeline_end_ms += 300;\n    ui_element_slot_26.pos.x = slot_26_position_x;\n    ui_element_slot_25.timeline_start_ms += 300;\n    ui_element_slot_26.pos.y = slot_26_position_y;\n    ui_element_slot_25.on_activate = ui_menu_pause_click_resume;\n    ui_element_slot_25.label_id = 48;\n    ui_element_slot_26.use_offset_render = 1;"
+        },
+        {
+          "name": "next-aggregate-before-layer-copy",
+          "text": "    ui_layout_vec2_t slot_26_position(-175.0f, 45.0f);\n    ui_element_slot_25.layers[1] =\n        ui_element_slot_32_layout_c.layers[1];\n    ui_element_slot_25.timeline_end_ms += 300;\n    ui_element_slot_25.timeline_start_ms += 300;\n    ui_element_slot_25.on_activate = ui_menu_pause_click_resume;\n    ui_element_slot_25.label_id = 48;\n\n    ui_element_slot_26.pos = slot_26_position;\n    ui_element_slot_26.use_offset_render = 1;"
+        },
+        {
+          "name": "next-x-before-layer-y-after-copy",
+          "text": "    float slot_26_position_x = -175.0f;\n    ui_element_slot_25.layers[1] =\n        ui_element_slot_32_layout_c.layers[1];\n    ui_element_slot_25.timeline_end_ms += 300;\n    float slot_26_position_y = 45.0f;\n    ui_element_slot_25.timeline_start_ms += 300;\n    ui_element_slot_25.on_activate = ui_menu_pause_click_resume;\n    ui_element_slot_25.label_id = 48;\n\n    ui_element_slot_26.pos.x = slot_26_position_x;\n    ui_element_slot_26.pos.y = slot_26_position_y;\n    ui_element_slot_26.use_offset_render = 1;"
+        }
+      ]
+    }
+  ]
+}
