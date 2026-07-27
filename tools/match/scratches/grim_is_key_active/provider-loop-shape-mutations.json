@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "provider-loop-shape",
+      "find": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n            base += 5;\n            ++player;\n        }\n        return 0;",
+      "replacements": [
+        {
+          "name": "nested-for-action-first",
+          "text": "        for (player = 0, base = 0x16d;\n             base < 0x17c;\n             base += 5, ++player) {\n            for (action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n        }\n        return 0;"
+        },
+        {
+          "name": "nested-for-mapped-first",
+          "text": "        for (player = 0, base = 0x16d;\n             base < 0x17c;\n             ++player, base += 5) {\n            for (action = 0, mapped = base;\n                 action < 5;\n                 ++mapped, ++action) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n        }\n        return 0;"
+        },
+        {
+          "name": "outer-do-inner-for",
+          "text": "        player = 0;\n        base = 0x16d;\n        do {\n            for (action = 0, mapped = base;\n                 action < 5;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base += 5;\n            ++player;\n        } while (base < 0x17c);\n        return 0;"
+        },
+        {
+          "name": "mapped-limit-inner-loop",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            while (mapped < base + 5) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            }\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "mapped-end-local",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int mapped_end = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "mapped-first-body-increments",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++mapped;\n                ++action;\n            } while (action < 5);\n            base += 5;\n            ++player;\n        }\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

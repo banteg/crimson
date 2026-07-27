@@ -89,16 +89,15 @@ unsigned char IGrim2D_cpp::grim_is_key_active(int key)
         player = 0;
         base = 0x16d;
         while (base < 0x17c) {
-            action = 0;
-            mapped = base;
-            do {
+            int mapped_end = base + 5;
+            for (action = 0, mapped = base;
+                 mapped < mapped_end;
+                 ++action, ++mapped) {
                 if (key == mapped) {
                     return provider->is_active(player, action);
                 }
-                ++action;
-                ++mapped;
-            } while (action < 5);
-            base += 5;
+            }
+            base = mapped;
             ++player;
         }
         return 0;

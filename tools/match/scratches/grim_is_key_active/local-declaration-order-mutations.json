@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "local-declaration-order",
+      "find": "    int button;\n    int player;\n    int base;\n    int action;\n    int mapped;\n    GrimInputProvider *provider;",
+      "replacements": [
+        {
+          "name": "base-player-action-mapped",
+          "text": "    int button;\n    int base;\n    int player;\n    int action;\n    int mapped;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "base-mapped-action-player",
+          "text": "    int button;\n    int base;\n    int mapped;\n    int action;\n    int player;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "mapped-base-action-player",
+          "text": "    int button;\n    int mapped;\n    int base;\n    int action;\n    int player;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "action-mapped-base-player",
+          "text": "    int button;\n    int action;\n    int mapped;\n    int base;\n    int player;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "action-base-mapped-player",
+          "text": "    int button;\n    int action;\n    int base;\n    int mapped;\n    int player;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "player-action-mapped-base",
+          "text": "    int button;\n    int player;\n    int action;\n    int mapped;\n    int base;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "provider-first",
+          "text": "    GrimInputProvider *provider;\n    int button;\n    int player;\n    int base;\n    int action;\n    int mapped;"
+        },
+        {
+          "name": "provider-before-loop-locals",
+          "text": "    int button;\n    GrimInputProvider *provider;\n    int player;\n    int base;\n    int action;\n    int mapped;"
+        },
+        {
+          "name": "single-int-declaration",
+          "text": "    int button, player, base, action, mapped;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "loop-locals-single-declaration",
+          "text": "    int button;\n    int player, base, action, mapped;\n    GrimInputProvider *provider;"
+        },
+        {
+          "name": "provider-between-groups",
+          "text": "    int button;\n    int player;\n    int base;\n    GrimInputProvider *provider;\n    int action;\n    int mapped;"
+        },
+        {
+          "name": "mapped-action-player-base",
+          "text": "    int button;\n    int mapped;\n    int action;\n    int player;\n    int base;\n    GrimInputProvider *provider;"
+        }
+      ]
+    }
+  ]
+}

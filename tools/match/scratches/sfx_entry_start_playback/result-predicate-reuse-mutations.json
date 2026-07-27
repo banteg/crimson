@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "result-predicate-reuse",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n",
+      "replacements": [
+        {
+          "name": "boolean-predicate-then-reset",
+          "text": "    result = entry->vorbis_stream != 0;\n    if (result != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "boolean-predicate-direct-condition",
+          "text": "    result = entry->vorbis_stream != 0;\n    if (result) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "assignment-in-condition",
+          "text": "    if ((result = entry->vorbis_stream != 0) != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "pointer-truth-predicate",
+          "text": "    result = entry->vorbis_stream ? 1 : 0;\n    if (result) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-predicate-inverted",
+          "text": "    result = entry->vorbis_stream == 0;\n    if (!result) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "boolean-predicate-direct-primary",
+          "text": "    result = entry->vorbis_stream != 0;\n    if (result) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        }
+      ]
+    }
+  ]
+}

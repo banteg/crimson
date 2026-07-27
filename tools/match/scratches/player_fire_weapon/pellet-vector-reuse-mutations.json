@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pellet-position-vector",
+      "find": "                    typo_fire_vec_add(\n                        &effect_velocity, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_velocity,",
+      "replacements": [
+        {
+          "name": "reuse-effect-position",
+          "text": "                    typo_fire_vec_add(\n                        &effect_position, player_position, &local_offset);\n                    int projectile_index = projectile_spawn(\n                        &effect_position,"
+        }
+      ]
+    }
+  ]
+}

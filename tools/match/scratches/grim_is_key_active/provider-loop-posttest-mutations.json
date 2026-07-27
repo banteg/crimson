@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "provider-loop-posttest",
+      "find": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base;\n                 mapped < mapped_end;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;",
+      "replacements": [
+        {
+          "name": "do-increments-in-condition",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            } while (++action, ++mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "do-comma-three-operands",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            action = 0;\n            mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            } while (++action, ++mapped, mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "infinite-for-break-after-increment",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base; ; ) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n                if (mapped >= mapped_end) {\n                    break;\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "infinite-while-break-after-increment",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            action = 0;\n            mapped = base;\n            while (1) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n                if (mapped >= mapped_end) {\n                    break;\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "for-break-before-increment",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base; ; ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                if (mapped + 1 >= mapped_end) {\n                    ++mapped;\n                    break;\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "do-action-first-declarations",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            action = 0, mapped = base;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action, ++mapped;\n            } while (mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "do-mapped-first-declarations",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            mapped = base, action = 0;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++mapped, ++action;\n            } while (mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

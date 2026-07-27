@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-threshold-layout",
+      "find": "        if (key == 0x13f) {\n            return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;\n        }\n        if (key == 0x140) {\n            return fabs((float)grim_joystick_state.lY * 0.001f) > 0.5;\n        }\n        if (key == 0x141) {\n            return fabs((float)grim_joystick_state.lZ * 0.001f) > 0.5;\n        }\n        if (key == 0x153) {\n            return fabs((float)grim_joystick_state.lRx * 0.001f) > 0.5;\n        }\n        if (key == 0x154) {\n            return fabs((float)grim_joystick_state.lRy * 0.001f) > 0.5;\n        }\n        if (key == 0x155) {\n            return fabs((float)grim_joystick_state.lRz * 0.001f) > 0.5;\n        }\n\n",
+      "replacements": [
+        {
+          "name": "float-shared-tail-after-x",
+          "text": "        float axis_value;\n        if (key != 0x13f) {\n            goto check_axis_y;\n        }\n        axis_value = (float)grim_joystick_state.lX;\naxis_threshold:\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_axis_y:\n        if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n            goto axis_threshold;\n        }\n        if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n            goto axis_threshold;\n        }\n        if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n            goto axis_threshold;\n        }\n        if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n            goto axis_threshold;\n        }\n        if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n            goto axis_threshold;\n        }\n\n"
+        },
+        {
+          "name": "double-shared-tail-after-x",
+          "text": "        double axis_value;\n        if (key != 0x13f) {\n            goto check_axis_y;\n        }\n        axis_value = (float)grim_joystick_state.lX;\naxis_threshold:\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_axis_y:\n        if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n            goto axis_threshold;\n        }\n        if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n            goto axis_threshold;\n        }\n        if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n            goto axis_threshold;\n        }\n        if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n            goto axis_threshold;\n        }\n        if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n            goto axis_threshold;\n        }\n\n"
+        },
+        {
+          "name": "long-double-shared-tail-after-x",
+          "text": "        long double axis_value;\n        if (key != 0x13f) {\n            goto check_axis_y;\n        }\n        axis_value = (float)grim_joystick_state.lX;\naxis_threshold:\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_axis_y:\n        if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n            goto axis_threshold;\n        }\n        if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n            goto axis_threshold;\n        }\n        if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n            goto axis_threshold;\n        }\n        if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n            goto axis_threshold;\n        }\n        if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n            goto axis_threshold;\n        }\n\n"
+        }
+      ]
+    }
+  ]
+}

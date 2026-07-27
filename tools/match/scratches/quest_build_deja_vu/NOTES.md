@@ -12,17 +12,28 @@ final count 72.
 The key source-shape recovery is the two-stage vector construction. A rounded
 radial offset is constructed first and then translated by `(512, 512)`. This
 reproduces the native 24-byte frame and its x87 sequence, including the saved
-cosine, live sine, rounded x product, and copied final position words. The VC6
-candidate scores 83.20% with 62 instructions against 63. Its remaining gap is
-the optimizer's induction base (`entry` versus `entry.trigger_time_ms`) and
-the placement of independent template, trigger, and count stores. No aliasing
-or artificial dependency is added to force those choices.
+cosine, live sine, rounded x product, and copied final position words. The typed
+trigger-field cursor recovered by the mutation sweep makes the native induction
+base explicit without changing the record layout. It improves the VC6
+candidate from 83.20% to 84.13%, restores the native 63/63 instruction count,
+and advances the exact prefix from 1 to 7 instructions. Its remaining gap is
+register allocation and the placement of independent template, trigger, and
+count stores. No aliasing or artificial dependency is added to force those
+choices.
 
 ## Recovery classification audit
 
 The live Binary Ninja loop accounts for all 18 waves, random-angle reduction,
 four radii, translated vector construction, trigger recurrence, metadata, and
-the constant count 72. All four references resolve. The 62/63 instruction
-delta is confined to the documented induction-base and independent-store/x87
-scheduling choice, so recovery is `semantic-complete` with a `compiler`
-residual.
+the constant count 72. All four references resolve. The remaining 63/63 delta
+is confined to independent-store/x87 scheduling, so recovery is
+`semantic-complete` with a `compiler` residual.
+
+## Recorded mutation evidence
+
+`trigger-cursor-mutations.json` evaluated four record/field cursor forms. The
+retained typed current-record cursor adds 1.94 weighted bytes and is the only
+improving form. Thirteen declaration/lifetime combinations and four
+entry-store boundary forms were then exhaustively checked; they were neutral,
+failed to compile, or regressed. Their complete scores are recorded in
+`experiments.jsonl`.

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "streaming-resident-lifetime",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n",
+      "replacements": [
+        {
+          "name": "resident-index-after-streaming",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-index-after-direct-primary",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-index-after-named-primary",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        LPDIRECTSOUNDBUFFER primary = *buffer;\n        primary->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "resident-arm-else-streaming",
+          "text": "    if (entry->vorbis_stream == 0) {\n        result = 0;\n    } else {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n"
+        },
+        {
+          "name": "resident-arm-else-direct-primary",
+          "text": "    if (entry->vorbis_stream == 0) {\n        result = 0;\n    } else {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n"
+        },
+        {
+          "name": "resident-index-for-initializer",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    result = 0;\n"
+        }
+      ]
+    }
+  ]
+}

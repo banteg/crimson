@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "provider-loop-refinement",
+      "find": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int mapped_end = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;",
+      "replacements": [
+        {
+          "name": "action-limit-next-base",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int next_base = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n            base = next_base;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "action-limit-mapped-base",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int mapped_end = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (action < 5);\n            base = mapped_end;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "mapped-not-equal-end",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int mapped_end = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped != mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "mapped-end-from-mapped",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            int mapped_end = mapped + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped < mapped_end);\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "increment-base-before-inner",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            action = 0;\n            mapped = base;\n            base += 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped < base);\n            ++player;\n        }\n        return 0;"
+        },
+        {
+          "name": "next-base-outer-condition",
+          "text": "        player = 0;\n        base = 0x16d;\n        do {\n            action = 0;\n            mapped = base;\n            int next_base = base + 5;\n            do {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n                ++action;\n                ++mapped;\n            } while (mapped < next_base);\n            base = next_base;\n            ++player;\n        } while (base < 0x17c);\n        return 0;"
+        },
+        {
+          "name": "for-mapped-to-end",
+          "text": "        player = 0;\n        base = 0x16d;\n        while (base < 0x17c) {\n            int mapped_end = base + 5;\n            for (action = 0, mapped = base;\n                 mapped < mapped_end;\n                 ++action, ++mapped) {\n                if (key == mapped) {\n                    return provider->is_active(player, action);\n                }\n            }\n            base = mapped;\n            ++player;\n        }\n        return 0;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-shape",
+      "find": "    spawns[0].set(\n        quest_vec2_t(256.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        2000,\n        1);\n    spawns[1].set(\n        quest_vec2_t(768.0f, 256.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        12000,\n        1);\n    spawns[2].set(\n        quest_vec2_t(256.0f, 768.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        22000,\n        1);\n    spawns[3].set(\n        quest_vec2_t(768.0f, 768.0f),\n        SPAWN_ID_ALIEN_SPAWNER_RING_24_0E,\n        32000,\n        1);",
+      "replacements": [
+        {
+          "name": "aggregate-then-direct-metadata",
+          "text": "    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[0].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[0].trigger_time_ms = 2000;\n    spawns[0].count = 1;\n    spawns[1].pos = quest_vec2_t(768.0f, 256.0f);\n    spawns[1].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[1].trigger_time_ms = 12000;\n    spawns[1].count = 1;\n    spawns[2].pos = quest_vec2_t(256.0f, 768.0f);\n    spawns[2].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[2].trigger_time_ms = 22000;\n    spawns[2].count = 1;\n    spawns[3].pos = quest_vec2_t(768.0f, 768.0f);\n    spawns[3].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[3].trigger_time_ms = 32000;\n    spawns[3].count = 1;"
+        },
+        {
+          "name": "direct-components-then-metadata",
+          "text": "    spawns[0].pos.x = 256.0f;\n    spawns[0].pos.y = 256.0f;\n    spawns[0].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[0].trigger_time_ms = 2000;\n    spawns[0].count = 1;\n    spawns[1].pos.x = 768.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[1].trigger_time_ms = 12000;\n    spawns[1].count = 1;\n    spawns[2].pos.x = 256.0f;\n    spawns[2].pos.y = 768.0f;\n    spawns[2].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[2].trigger_time_ms = 22000;\n    spawns[2].count = 1;\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;\n    spawns[3].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[3].trigger_time_ms = 32000;\n    spawns[3].count = 1;"
+        },
+        {
+          "name": "metadata-before-aggregate",
+          "text": "    spawns[0].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[0].trigger_time_ms = 2000;\n    spawns[0].count = 1;\n    spawns[0].pos = quest_vec2_t(256.0f, 256.0f);\n    spawns[1].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[1].trigger_time_ms = 12000;\n    spawns[1].count = 1;\n    spawns[1].pos = quest_vec2_t(768.0f, 256.0f);\n    spawns[2].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[2].trigger_time_ms = 22000;\n    spawns[2].count = 1;\n    spawns[2].pos = quest_vec2_t(256.0f, 768.0f);\n    spawns[3].template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    spawns[3].trigger_time_ms = 32000;\n    spawns[3].count = 1;\n    spawns[3].pos = quest_vec2_t(768.0f, 768.0f);"
+        },
+        {
+          "name": "shared-template-and-count",
+          "text": "    int spawn_template_id = SPAWN_ID_ALIEN_SPAWNER_RING_24_0E;\n    int spawn_count = 1;\n    spawns[0].set(quest_vec2_t(256.0f, 256.0f), spawn_template_id, 2000, spawn_count);\n    spawns[1].set(quest_vec2_t(768.0f, 256.0f), spawn_template_id, 12000, spawn_count);\n    spawns[2].set(quest_vec2_t(256.0f, 768.0f), spawn_template_id, 22000, spawn_count);\n    spawns[3].set(quest_vec2_t(768.0f, 768.0f), spawn_template_id, 32000, spawn_count);"
+        },
+        {
+          "name": "aggregate-cursor",
+          "text": "    quest_entry_original_t *spawn = spawns;\n    spawn->set(quest_vec2_t(256.0f, 256.0f), SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 2000, 1);\n    ++spawn;\n    spawn->set(quest_vec2_t(768.0f, 256.0f), SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 12000, 1);\n    ++spawn;\n    spawn->set(quest_vec2_t(256.0f, 768.0f), SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 22000, 1);\n    ++spawn;\n    spawn->set(quest_vec2_t(768.0f, 768.0f), SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 32000, 1);"
+        },
+        {
+          "name": "reused-position",
+          "text": "    quest_vec2_t position(256.0f, 256.0f);\n    spawns[0].set(position, SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 2000, 1);\n    position.x = 768.0f;\n    spawns[1].set(position, SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 12000, 1);\n    position.x = 256.0f;\n    position.y = 768.0f;\n    spawns[2].set(position, SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 22000, 1);\n    position.x = 768.0f;\n    spawns[3].set(position, SPAWN_ID_ALIEN_SPAWNER_RING_24_0E, 32000, 1);"
+        }
+      ]
+    }
+  ]
+}

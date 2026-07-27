@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "constant-declaration-order",
+      "find": "    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;\n    int trigger_time_ms = 2000;",
+      "replacements": [
+        {
+          "name": "cursor-trigger-template-count",
+          "text": "    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;\n    int trigger_time_ms = 2000;\n    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n    int spawn_count = 1;"
+        },
+        {
+          "name": "cursor-trigger-count-template",
+          "text": "    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;\n    int trigger_time_ms = 2000;\n    int spawn_count = 1;\n    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;"
+        },
+        {
+          "name": "template-count-cursor-trigger",
+          "text": "    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n    int spawn_count = 1;\n    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;\n    int trigger_time_ms = 2000;"
+        },
+        {
+          "name": "count-template-cursor-trigger",
+          "text": "    int spawn_count = 1;\n    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;\n    int trigger_time_ms = 2000;"
+        },
+        {
+          "name": "trigger-template-count-cursor",
+          "text": "    int trigger_time_ms = 2000;\n    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n    int spawn_count = 1;\n    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;"
+        },
+        {
+          "name": "trigger-count-template-cursor",
+          "text": "    int trigger_time_ms = 2000;\n    int spawn_count = 1;\n    int spawn_template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n    int *wave_trigger =\n        &((quest_entry_original_t *)entries)->trigger_time_ms;"
+        }
+      ]
+    },
+    {
+      "name": "named-set-constants",
+      "find": "                SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D,\n                trigger_time_ms,\n                1);",
+      "replacements": [
+        {
+          "name": "named-template-and-count",
+          "text": "                spawn_template_id,\n                trigger_time_ms,\n                spawn_count);"
+        }
+      ]
+    }
+  ]
+}

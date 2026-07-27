@@ -103,3 +103,7 @@ metadata-only change is byte-neutral: before and after are 99.45%, prefix
 orders around the two-player aim copy. None improved the score or reference
 audit, so the canonical scalar-pointer spelling remains unchanged and the
 negative result is recorded in `experiments.jsonl`.
+
+`aim-copy-typed-view-mutations.json` additionally evaluated six typed
+player/vector cursor views. They are byte-neutral or regress the same localized
+region, so the scalar pointer remains the best evidenced source.

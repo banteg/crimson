@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "streaming-resident-loop-interaction",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    while (result < 16) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n        ++buffer;\n    }\n",
+      "replacements": [
+        {
+          "name": "for-index-pointer",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    for (result = 0; result < 16; ++result, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "for-index-pointer-direct-primary",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    for (result = 0; result < 16; ++result, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "for-index-body-increments",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    for (result = 0; result < 16;) {\n        if (*buffer != 0) {\n            (*buffer)->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n        ++buffer;\n    }\n"
+        },
+        {
+          "name": "for-index-entry-array",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    for (result = 0; result < 16; ++result) {\n        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "for-index-named-voice",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    for (result = 0; result < 16; ++result) {\n        LPDIRECTSOUNDBUFFER voice = entry->buffers[result];\n        if (voice != 0) {\n            voice->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "while-index-entry-array",
+          "text": "    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n    result = 0;\n    while (result < 16) {\n        if (entry->buffers[result] != 0) {\n            entry->buffers[result]->GetStatus(&status);\n            if ((status & DSBSTATUS_PLAYING) == 0) {\n                goto play_voice;\n            }\n        }\n        ++result;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

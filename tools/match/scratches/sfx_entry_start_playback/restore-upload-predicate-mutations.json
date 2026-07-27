@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "restore-upload-predicate",
+      "find": "    if (dsound_restore_buffer(*buffer)) {\n        if (entry->vorbis_stream == 0) {\n            sfx_entry_upload_buffer(entry);\n        }\n    }",
+      "replacements": [
+        {
+          "name": "conjunction-eq-zero",
+          "text": "    if (dsound_restore_buffer(*buffer) &&\n        entry->vorbis_stream == 0) {\n        sfx_entry_upload_buffer(entry);\n    }"
+        },
+        {
+          "name": "conjunction-not",
+          "text": "    if (dsound_restore_buffer(*buffer) && !entry->vorbis_stream) {\n        sfx_entry_upload_buffer(entry);\n    }"
+        },
+        {
+          "name": "conjunction-null",
+          "text": "    if (dsound_restore_buffer(*buffer) &&\n        entry->vorbis_stream == NULL) {\n        sfx_entry_upload_buffer(entry);\n    }"
+        },
+        {
+          "name": "negated-disjunction",
+          "text": "    if (!(!dsound_restore_buffer(*buffer) || entry->vorbis_stream != 0)) {\n        sfx_entry_upload_buffer(entry);\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -12,3 +12,7 @@ differences are three independent VC6 scheduling choices around the inlined
 position constructor/setter and the saved `esi` register. No dummy dependency
 or synthetic control flow is used to reorder them, so this is intentionally
 kept as a WIP.
+
+`entry-shape-mutations.json` records six aggregate, direct-field, and shared
+constant spellings. Shared constants are byte-neutral and every structural
+rewrite regresses, so the canonical four-entry source remains unchanged.

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-store-boundary",
+      "find": "            wave_entry->set(\n                quest_vec2_t(\n                    offset.x + 512.0f,\n                    offset.y + 512.0f),\n                SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D,\n                trigger_time_ms,\n                1);",
+      "replacements": [
+        {
+          "name": "aggregate-position-direct-metadata",
+          "text": "            wave_entry->pos = quest_vec2_t(\n                offset.x + 512.0f,\n                offset.y + 512.0f);\n            wave_entry->template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->count = 1;"
+        },
+        {
+          "name": "named-position-direct-metadata",
+          "text": "            quest_vec2_t position(\n                offset.x + 512.0f,\n                offset.y + 512.0f);\n            wave_entry->pos = position;\n            wave_entry->template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->count = 1;"
+        },
+        {
+          "name": "direct-position-components-then-metadata",
+          "text": "            wave_entry->pos.x = offset.x + 512.0f;\n            wave_entry->pos.y = offset.y + 512.0f;\n            wave_entry->template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->count = 1;"
+        },
+        {
+          "name": "metadata-then-aggregate-position",
+          "text": "            wave_entry->template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;\n            wave_entry->trigger_time_ms = trigger_time_ms;\n            wave_entry->count = 1;\n            wave_entry->pos = quest_vec2_t(\n                offset.x + 512.0f,\n                offset.y + 512.0f);"
+        }
+      ]
+    }
+  ]
+}

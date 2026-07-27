@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "result-streaming-flag-reuse",
+      "find": "    result = 0;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, DSBPLAY_LOOPING);\n        return 0;\n    }\n\n",
+      "replacements": [
+        {
+          "name": "result-as-looping-flag",
+          "text": "    result = DSBPLAY_LOOPING;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, result);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "result-as-looping-flag-direct-primary",
+          "text": "    result = DSBPLAY_LOOPING;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        entry->buffers[0]->Play(0, 0, result);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "conditional-result-flag",
+          "text": "    result = entry->vorbis_stream != 0\n        ? DSBPLAY_LOOPING\n        : 0;\n    if (result != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, result);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "status-as-looping-flag",
+          "text": "    status = DSBPLAY_LOOPING;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, status);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "named-looping-flag",
+          "text": "    DWORD play_flags = DSBPLAY_LOOPING;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, play_flags);\n        return 0;\n    }\n    result = 0;\n\n"
+        },
+        {
+          "name": "result-as-unsigned-looping-flag",
+          "text": "    result = (int)(unsigned int)DSBPLAY_LOOPING;\n    if (entry->vorbis_stream != 0) {\n        sfx_entry_seek(entry, 0);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        music_stream_fill(entry);\n        (*buffer)->Play(0, 0, (DWORD)result);\n        return 0;\n    }\n    result = 0;\n\n"
+        }
+      ]
+    }
+  ]
+}

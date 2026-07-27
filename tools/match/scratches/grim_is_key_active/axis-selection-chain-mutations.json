@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "axis-selection-chain",
+      "find": "        if (key == 0x13f) {\n            return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;\n        }\n        if (key == 0x140) {\n            return fabs((float)grim_joystick_state.lY * 0.001f) > 0.5;\n        }\n        if (key == 0x141) {\n            return fabs((float)grim_joystick_state.lZ * 0.001f) > 0.5;\n        }\n        if (key == 0x153) {\n            return fabs((float)grim_joystick_state.lRx * 0.001f) > 0.5;\n        }\n        if (key == 0x154) {\n            return fabs((float)grim_joystick_state.lRy * 0.001f) > 0.5;\n        }\n        if (key == 0x155) {\n            return fabs((float)grim_joystick_state.lRz * 0.001f) > 0.5;\n        }\n\n        provider = grim_input_provider;",
+      "replacements": [
+        {
+          "name": "float-else-if-chain",
+          "text": "        float axis_value;\n        if (key == 0x13f) {\n            axis_value = (float)grim_joystick_state.lX;\n        } else if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n        } else if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n        } else if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n        } else if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n        } else if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n        } else {\n            goto check_input_provider;\n        }\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_input_provider:\n        provider = grim_input_provider;"
+        },
+        {
+          "name": "double-else-if-chain",
+          "text": "        double axis_value;\n        if (key == 0x13f) {\n            axis_value = (float)grim_joystick_state.lX;\n        } else if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n        } else if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n        } else if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n        } else if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n        } else if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n        } else {\n            goto check_input_provider;\n        }\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_input_provider:\n        provider = grim_input_provider;"
+        },
+        {
+          "name": "long-double-else-if-chain",
+          "text": "        long double axis_value;\n        if (key == 0x13f) {\n            axis_value = (float)grim_joystick_state.lX;\n        } else if (key == 0x140) {\n            axis_value = (float)grim_joystick_state.lY;\n        } else if (key == 0x141) {\n            axis_value = (float)grim_joystick_state.lZ;\n        } else if (key == 0x153) {\n            axis_value = (float)grim_joystick_state.lRx;\n        } else if (key == 0x154) {\n            axis_value = (float)grim_joystick_state.lRy;\n        } else if (key == 0x155) {\n            axis_value = (float)grim_joystick_state.lRz;\n        } else {\n            goto check_input_provider;\n        }\n        return fabs(axis_value * 0.001f) > 0.5;\n\ncheck_input_provider:\n        provider = grim_input_provider;"
+        }
+      ]
+    }
+  ]
+}

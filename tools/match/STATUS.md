@@ -6,7 +6,7 @@ Regenerate with `uv run crimson match checkpoint`.
 
 **687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **294977/341963** code bytes (**86.3%**).
+Fuzzy-weighted alignment is **295003/341963** code bytes (**86.3%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274961/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
-| grim.dll | 130/137 | 14153/21158 | 66.9% | 20015/21158 | 94.6% | 137/137 | 21159/21158 | 100.0% | 130/137 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274963/320805 | 85.7% | 671/671 | 320805/320805 | 100.0% | 557/671 |
+| grim.dll | 130/137 | 14153/21158 | 66.9% | 20039/21158 | 94.7% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**557/671** functions, **112904/320805** bytes (**35.2%**), **274961/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **274963/320805** fuzzy-weighted bytes (**85.7%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -536,7 +536,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | quest_build_everred_pastures | 0x004375a0 | 367 | 338/367 | 29 | 114/114 | 92.11% | 30/114 | 7/0/0 |  | quest-everred-pastures-cardinal-waves |
 | wip | quest_build_lizard_kings | 0x00437710 | 254 | 199/254 | 55 | 67/66 | 78.20% | 7/66 | 6/0/0 |  | quest-lizard-kings-builder |
 | wip | quest_build_sweep_stakes | 0x00437810 | 258 | 195/258 | 63 | 75/76 | 75.50% | 6/76 | 7/0/0 |  | quest-sweep-stakes-builder |
-| wip | quest_build_deja_vu | 0x00437920 | 209 | 174/209 | 35 | 62/63 | 83.20% | 1/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
+| wip | quest_build_deja_vu | 0x00437920 | 209 | 176/209 | 33 | 63/63 | 84.13% | 7/63 | 4/0/0 |  | quest-deja-vu-radial-waves |
 | wip | quest_build_target_practice | 0x00437a00 | 240 | 216/240 | 24 | 69/69 | 89.86% | 23/69 | 8/0/0 |  | quest-target-practice-radial-builder |
 | wip | quest_build_major_alien_breach | 0x00437af0 | 167 | 160/167 | 7 | 48/48 | 95.83% | 12/48 | 0/0/0 |  | quest-major-alien-breach-builder |
 | wip | quest_build_land_of_lizards | 0x00437ba0 | 204 | 191/204 | 13 | 46/46 | 93.48% | 8/46 | 0/0/0 |  | quest-land-of-lizards |
@@ -761,7 +761,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 ## grim.dll
 
-**130/137** functions, **14153/21158** bytes (**66.9%**), **20015/21158** fuzzy-weighted bytes (**94.6%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
+**130/137** functions, **14153/21158** bytes (**66.9%**), **20039/21158** fuzzy-weighted bytes (**94.7%**), **137/137** source candidates covering **21159/21158** bytes (**100.0%**), **130/137** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -829,7 +829,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | grim_joystick_down_active | 0x10006ef0 | 74 | 74/74 | 0 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_left_active | 0x10006f40 | 78 | 78/78 | 0 | 23/23 | 100.00% | 23/23 | 3/0/0 |  | grim-joystick-direction |
 | match | grim_joystick_right_active | 0x10006f90 | 74 | 74/74 | 0 | 21/21 | 100.00% | 21/21 | 3/0/0 |  | grim-joystick-direction |
-| wip | grim_is_key_active | 0x10006fe0 | 456 | 337/456 | 119 | 174/175 | 73.93% | 2/175 | 7/0/1 |  | grim-input-key-router |
+| wip | grim_is_key_active | 0x10006fe0 | 456 | 361/456 | 95 | 176/175 | 79.20% | 95/175 | 7/0/1 |  | grim-input-key-router |
 | match | grim_get_config_float | 0x100071b0 | 264 | 264/264 | 0 | 88/88 | 100.00% | 88/88 | 13/0/0 |  | grim-input-float-router |
 | match | grim_get_slot_float | 0x100072c0 | 14 | 14/14 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |
 | match | grim_get_slot_int | 0x100072d0 | 14 | 14/14 | 0 | 3/3 | 100.00% | 3/3 | 1/0/0 |  | grim-slot-state |

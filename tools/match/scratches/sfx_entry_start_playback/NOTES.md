@@ -20,6 +20,13 @@ Moving `result = 0` into the resident arm, nesting it under the streaming
 stock VC6 and SP6. They regress the prefix and instruction shape, so the natural
 source lifetime is retained.
 
+Five broader mutation sweeps now record the streaming/resident lifetime, loop
+shape, restore predicate, and result-reuse alternatives. The only numeric
+aggregate improvement (`conditional-result-flag`, 80.00%) emits 97
+instructions against the native 93 and introduces an extra reference match by
+duplicating structure; the region evidence rejects it. All 93-instruction
+alternatives are neutral or worse, so no source mutation is retained.
+
 Recovery is classified `semantic-complete` with an `analysis` residual for the
 unknown source shape. No volatile state, dummy dependencies, register forcing,
 or artificial control flow is retained.

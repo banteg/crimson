@@ -32,3 +32,8 @@ instructions against 76 native instructions with `7/0/0` references. The
 localized regions reflect only the trigger-field induction anchor and
 independent-store/x87 schedule described above. Recovery is classified
 `semantic-complete` with a `compiler` residual.
+
+`typed-trigger-cursor-mutations.json` records all fifteen single and combined
+typed-cursor choices. The complete combination falls to 59.46%, and none
+improves the 75.50% baseline, confirming that the negative-field cursor would
+trade away the proven vector/x87 structure.

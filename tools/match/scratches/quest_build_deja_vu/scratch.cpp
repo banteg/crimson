@@ -32,7 +32,8 @@ struct quest_entry_original_t {
 extern "C" void quest_build_deja_vu(
     quest_spawn_entry_t *entries, int *count)
 {
-    quest_entry_original_t *cursor = (quest_entry_original_t *)entries;
+    int *wave_trigger =
+        &((quest_entry_original_t *)entries)->trigger_time_ms;
     int trigger_time_ms = 2000;
 
     for (int trigger_step_ms = 2000;
@@ -41,13 +42,15 @@ extern "C" void quest_build_deja_vu(
         float angle = (float)(crt_rand() % 612) * 0.01f;
         float angle_cos = (float)cos(angle);
         float angle_sin = (float)sin(angle);
-        quest_entry_original_t *wave_entry = cursor;
-        cursor += 4;
+        int *entry_trigger = wave_trigger;
+        wave_trigger += 24;
 
         for (int radius = 84; radius < 252; radius += 42) {
             quest_vec2_t offset(
                 (float)radius * angle_cos,
                 (float)radius * angle_sin);
+            quest_entry_original_t *wave_entry =
+                (quest_entry_original_t *)(entry_trigger - 4);
             wave_entry->set(
                 quest_vec2_t(
                     offset.x + 512.0f,
@@ -55,7 +58,7 @@ extern "C" void quest_build_deja_vu(
                 SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D,
                 trigger_time_ms,
                 1);
-            ++wave_entry;
+            entry_trigger += 6;
         }
 
         trigger_time_ms += trigger_step_ms;

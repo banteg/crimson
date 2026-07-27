@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "two-component-aim-copy-typed-view",
+      "find": "            float *aim = &player_aim_screen_x[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;\n",
+      "replacements": [
+        {
+          "name": "typed-pointer-components",
+          "text": "            frame_vec2_t *aim =\n                (frame_vec2_t *)&player_aim_screen_x[aim_index];\n            aim->x = ui_mouse_x;\n            aim->y = ui_mouse_y;\n"
+        },
+        {
+          "name": "typed-reference-components",
+          "text": "            frame_vec2_t &aim =\n                *(frame_vec2_t *)&player_aim_screen_x[aim_index];\n            aim.x = ui_mouse_x;\n            aim.y = ui_mouse_y;\n"
+        },
+        {
+          "name": "typed-pointer-set",
+          "text": "            frame_vec2_t *aim =\n                (frame_vec2_t *)&player_aim_screen_x[aim_index];\n            aim->set(ui_mouse_x, ui_mouse_y);\n"
+        },
+        {
+          "name": "typed-reference-set",
+          "text": "            frame_vec2_t &aim =\n                *(frame_vec2_t *)&player_aim_screen_x[aim_index];\n            aim.set(ui_mouse_x, ui_mouse_y);\n"
+        },
+        {
+          "name": "direct-indexed-components",
+          "text": "            player_aim_screen_x[aim_index] = ui_mouse_x;\n            player_aim_screen_x[aim_index + 1] = ui_mouse_y;\n"
+        },
+        {
+          "name": "typed-aggregate-assignment",
+          "text": "            frame_vec2_t *aim =\n                (frame_vec2_t *)&player_aim_screen_x[aim_index];\n            *aim = frame_vec2_t(ui_mouse_x, ui_mouse_y);\n"
+        }
+      ]
+    }
+  ]
+}

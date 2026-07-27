@@ -71,3 +71,7 @@ from the function.
 orders around the shotgun vector. Swapping the declarations was byte-neutral
 and the heading reorders regressed, so none supplied evidence for changing the
 recovered source. The stack-coloring residual remains explicit.
+
+`pellet-vector-reuse-mutations.json` also tested reusing the existing
+effect-position aggregate for each pellet. It regresses 99.21% to 96.03%, so
+the dedicated semantic projectile vector is retained.
