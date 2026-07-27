@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import struct
 import subprocess
@@ -29,6 +30,7 @@ from crimson.match import (
     MaskedOperandAuditEntry,
     MaskedReference,
     MatchResult,
+    NativeLinkStatus,
     ObjectFunction,
     ObjectRelocationReference,
     ProbeResult,
@@ -46,6 +48,7 @@ from crimson.match import (
     build_match_shard_plan,
     claimed_scratch_paths,
     collect_image_totals,
+    collect_native_link_statuses,
     collect_scratch_statuses,
     collect_triage_rows,
     common_prefix_length,
@@ -68,6 +71,7 @@ from crimson.match import (
     normalize_function,
     parse_coff_object,
     render_image_total_rows,
+    render_native_link_status_markdown,
     render_probe_result,
     render_profile_table,
     render_status_markdown,
@@ -1378,6 +1382,259 @@ def test_render_status_rows_includes_prefix() -> None:
     assert (
         "| wip | foo | 0x00401000 | 10 | 5/10 | 5 | 5/4 | 50.00% | "
         "2/4 | 0/0/0 |  | branch |"
+    ) in markdown
+
+
+def _write_native_link_fixture(
+    repo_root: Path,
+    *,
+    image: str = "grim.dll",
+) -> tuple[Path, Path]:
+    evidence = repo_root / "evidence.bin"
+    evidence.write_bytes(b"native audit input")
+    evidence_sha256 = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    canonical = repo_root / "canonical.cpp"
+    canonical.write_bytes(b"void recovered() {}")
+    canonical_sha256 = hashlib.sha256(canonical.read_bytes()).hexdigest()
+    object_list = "canonical.obj\n"
+    export_definition = "EXPORTS\n"
+    input_row = {
+        "path": "evidence.bin",
+        "repository_relative": True,
+        "sha256": evidence_sha256,
+    }
+    artifact_dir = repo_root / "analysis" / "native" / image
+    artifact_dir.mkdir(parents=True)
+    objects = {
+        "schema": 2,
+        "kind": "crimson-native-object-manifest",
+        "image": image,
+        "scope": "port",
+        "reference_image": "evidence.bin",
+        "reference_image_sha256": evidence_sha256,
+        "function_count": 3,
+        "object_count": 2,
+        "object_list_sha256": hashlib.sha256(object_list.encode()).hexdigest(),
+        "translation_units": {
+            "cluster_count": 1,
+            "isolated_count": 1,
+        },
+        "abi_assertions": {
+            "status": "passed",
+            "compile_inputs": [input_row],
+        },
+        "objects": [
+            {
+                "source": "canonical.cpp",
+                "source_sha256": canonical_sha256,
+                "config": "canonical.cpp",
+                "config_sha256": canonical_sha256,
+                "compile_inputs": [input_row],
+                "functions": [
+                    {
+                        "canonical_source": "canonical.cpp",
+                        "canonical_source_sha256": canonical_sha256,
+                        "canonical_config": "canonical.cpp",
+                        "canonical_config_sha256": canonical_sha256,
+                    },
+                ],
+            },
+        ],
+        "provenance": {
+            "selection_inputs": [input_row],
+            "toolchain": {
+                "cl_wrapper": input_row,
+                "wibo": input_row,
+                "compiler_bundles": [],
+            },
+        },
+    }
+    closure = {
+        "schema": 2,
+        "kind": "crimson-native-symbol-closure",
+        "image": image,
+        "scope": "port",
+        "export_definition_sha256": hashlib.sha256(export_definition.encode()).hexdigest(),
+        "source": {
+            "catalog_inputs": [input_row],
+        },
+        "summary": {
+            "function_count": 3,
+            "object_count": 2,
+            "function_closure": True,
+            "game_owned_closure": False,
+            "all_references_closed": False,
+            "hard_duplicate_symbols": 0,
+            "resolved_symbols": 7,
+            "unresolved_symbols": 5,
+            "unresolved_by_category": {
+                "import": 2,
+                "game_data": 3,
+            },
+        },
+    }
+    data = {
+        "schema": 1,
+        "kind": "crimson-native-data-manifest",
+        "image": image,
+        "source": {
+            "data_map": "evidence.bin",
+            "data_map_sha256": evidence_sha256,
+            "segments": "evidence.bin",
+            "segments_sha256": evidence_sha256,
+        },
+        "summary": {
+            "entry_count": 11,
+            "typed_entries": 8,
+            "explicit_size_entries": 2,
+            "explicit_alignment_entries": 1,
+            "explicit_initializer_entries": 4,
+        },
+    }
+    audit_digest = hashlib.sha256(
+        json.dumps(
+            {
+                "data_manifest": data,
+                "object_manifest": objects,
+                "symbol_closure": closure,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode(),
+    ).hexdigest()
+    for payload in (objects, closure, data):
+        payload["audit_digest"] = audit_digest
+    for name, payload in (
+        ("objects.json", objects),
+        ("closure.json", closure),
+        ("data.json", data),
+    ):
+        (artifact_dir / name).write_text(
+            json.dumps(payload, sort_keys=True),
+            encoding="utf-8",
+        )
+    (artifact_dir / "objects.txt").write_text(object_list, encoding="utf-8")
+    (artifact_dir / "exports.def").write_text(export_definition, encoding="utf-8")
+    return artifact_dir, canonical
+
+
+def test_native_link_status_reads_current_audit_and_renders_debt(tmp_path: Path) -> None:
+    analysis_dir, _ = _write_native_link_fixture(tmp_path)
+
+    statuses = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )
+
+    assert statuses == [
+        NativeLinkStatus(
+            image="grim.dll",
+            artifact_state="current",
+            artifact_note="audited inputs and artifact digest agree",
+            function_count=3,
+            object_count=2,
+            translation_unit_clusters=1,
+            abi_status="passed",
+            function_closure=True,
+            game_owned_closure=False,
+            all_references_closed=False,
+            hard_duplicate_symbols=0,
+            resolved_symbols=7,
+            unresolved_symbols=5,
+            unresolved_by_category=(("game_data", 3), ("import", 2)),
+            data_entries=11,
+            typed_data_entries=8,
+            explicit_size_entries=2,
+            explicit_alignment_entries=1,
+            explicit_initializer_entries=4,
+        ),
+    ]
+    markdown = "\n".join(render_native_link_status_markdown(statuses))
+    assert (
+        "| grim.dll | current | 3 | 2 | 1 | passed | yes | no | no | 0 | 7 | 5 |"
+    ) in markdown
+    assert (
+        "| grim.dll | game_data=3, import=2 | 3 | 11 | 8 | 2 | 1 | 4 |"
+    ) in markdown
+    assert "Artifact freshness issues:" not in markdown
+
+
+def test_native_link_status_labels_changed_or_mixed_artifacts_stale(tmp_path: Path) -> None:
+    analysis_dir, canonical_source = _write_native_link_fixture(tmp_path)
+    canonical_source.write_bytes(b"changed after audit")
+    data_path = analysis_dir / "data.json"
+    data = json.loads(data_path.read_text(encoding="utf-8"))
+    data["audit_digest"] = "b" * 64
+    data_path.write_text(json.dumps(data, sort_keys=True), encoding="utf-8")
+
+    status = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+
+    assert status.artifact_state == "stale"
+    assert "artifact audit digests disagree" in status.artifact_note
+    assert "1 recorded file inputs changed or missing" in status.artifact_note
+    markdown = "\n".join(render_native_link_status_markdown([status]))
+    assert "Gate values in `stale` rows are historical snapshots" in markdown
+    assert "`grim.dll`: **stale**" in markdown
+
+
+def test_native_link_status_detects_report_content_changed_without_digest(
+    tmp_path: Path,
+) -> None:
+    analysis_dir, _ = _write_native_link_fixture(tmp_path)
+    closure_path = analysis_dir / "closure.json"
+    closure = json.loads(closure_path.read_text(encoding="utf-8"))
+    closure["summary"]["resolved_symbols"] = 99
+    closure_path.write_text(json.dumps(closure, sort_keys=True), encoding="utf-8")
+
+    status = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+
+    assert status.artifact_state == "stale"
+    assert "artifact content does not match audit digest" in status.artifact_note
+
+
+def test_native_link_status_detects_changed_companion_artifact(tmp_path: Path) -> None:
+    analysis_dir, _ = _write_native_link_fixture(tmp_path)
+    (analysis_dir / "objects.txt").write_text("different.obj\n", encoding="utf-8")
+
+    status = collect_native_link_statuses(
+        analysis_root=analysis_dir.parent,
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+
+    assert status.artifact_state == "stale"
+    assert "1 generated linker artifacts changed or missing" in status.artifact_note
+
+
+def test_native_link_status_reports_missing_artifacts_without_claiming_metrics(
+    tmp_path: Path,
+) -> None:
+    status = collect_native_link_statuses(
+        analysis_root=tmp_path / "analysis" / "native",
+        repo_root=tmp_path,
+        scope="port",
+        images=("grim.dll",),
+    )[0]
+
+    assert status.artifact_state == "missing"
+    assert status.artifact_note == "missing objects.json, closure.json, data.json"
+    markdown = "\n".join(render_native_link_status_markdown([status]))
+    assert (
+        "| grim.dll | missing | unknown | unknown | unknown | unknown | unknown | "
+        "unknown | unknown | unknown | unknown | unknown |"
     ) in markdown
 
 

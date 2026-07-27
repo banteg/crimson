@@ -255,6 +255,12 @@ The checkpoint rejects duplicate scratch targets and configs outside the port
 scope, evaluates the corpus, rewrites `tools/match/STATUS.md`, runs
 `git diff --check`, and reports the current scratch change count. Both staged
 and unstaged diffs are checked. `just match-checkpoint` is the short form.
+The dashboard also summarizes the checked-in native object, closure, and data
+manifests. A linker row is marked current only while the three reports share
+and reproduce one audit digest, their recorded source, selection, toolchain,
+and reference inputs still hash to the live repository, and the generated
+`objects.txt` and `exports.def` companions match their recorded hashes;
+otherwise it is explicitly labeled stale, missing, or invalid.
 
 Each status row includes fuzzy-weighted bytes and its remaining fuzzy gap in
 addition to exact-match state. Keep the canonical Markdown board complete, but

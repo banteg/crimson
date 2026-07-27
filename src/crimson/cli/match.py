@@ -713,7 +713,12 @@ def cmd_match_status(
     if write is not None:
         write.parent.mkdir(parents=True, exist_ok=True)
         write.write_text(
-            matchlib.render_status_markdown(statuses, totals, scope=scope),
+            matchlib.render_status_markdown(
+                statuses,
+                totals,
+                scope=scope,
+                native_statuses=matchlib.collect_native_link_statuses(scope=scope),
+            ),
             encoding="utf-8",
         )
     if check and any(status.state == "error" for status in statuses):
@@ -1234,7 +1239,12 @@ def cmd_match_checkpoint(
     totals = matchlib.collect_image_totals(statuses, scope=scope)
     write.parent.mkdir(parents=True, exist_ok=True)
     write.write_text(
-        matchlib.render_status_markdown(statuses, totals, scope=scope),
+        matchlib.render_status_markdown(
+            statuses,
+            totals,
+            scope=scope,
+            native_statuses=matchlib.collect_native_link_statuses(scope=scope),
+        ),
         encoding="utf-8",
     )
 

@@ -10,6 +10,20 @@ Fuzzy-weighted alignment is **299643/341963** code bytes (**87.6%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
+## Native linking
+
+Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact state is `current` only when all three reports share and reproduce one audit digest, their recorded inputs still match the repository, and the generated `objects.txt` and `exports.def` companions still match their recorded hashes. Gate values in `stale` rows are historical snapshots, not current pass claims.
+
+| image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
+|---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
+| crimsonland.exe | current | 671 | 662 | 3 | passed | yes | no | no | 0 | 516 | 935 |
+| grim.dll | current | 137 | 137 | 0 | passed | yes | no | no | 0 | 39 | 205 |
+
+| image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
+|---|---|---:|---:|---:|---:|---:|---:|
+| crimsonland.exe | excluded_function=70, external=3, game_data=836, import=25, toolchain=1 | 836 | 1547 | 707 | 0 | 0 | 0 |
+| grim.dll | excluded_function=36, external=1, game_data=154, import=12, toolchain=2 | 154 | 273 | 182 | 0 | 0 | 0 |
+
 ## Function dispositions
 
 57 audited functions (48 platform-replaced, 9 third-party) are omitted from this score and from default shards. Their analysis and archived scratches remain available with `--scope all`.

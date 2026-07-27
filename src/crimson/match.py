@@ -26,6 +26,7 @@ DEFAULT_IMAGE_PATH = DEFAULT_GAME_DIR / DEFAULT_IMAGE_NAME
 DEFAULT_DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"
 DEFAULT_NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
 DEFAULT_MATCHING_SCOPE_PATH = REPO_ROOT / "analysis" / "matching_scope.json"
+DEFAULT_NATIVE_ANALYSIS_ROOT = REPO_ROOT / "analysis" / "native"
 DEFAULT_MATCH_SCOPE = "port"
 MATCH_SCOPE_SCHEMA = 2
 MATCH_SCOPE_FUNCTION_DISPOSITIONS = frozenset(
@@ -2465,6 +2466,29 @@ class ImageTotals:
 
 
 @dataclass(frozen=True, slots=True)
+class NativeLinkStatus:
+    image: str
+    artifact_state: str
+    artifact_note: str
+    function_count: int | None = None
+    object_count: int | None = None
+    translation_unit_clusters: int | None = None
+    abi_status: str | None = None
+    function_closure: bool | None = None
+    game_owned_closure: bool | None = None
+    all_references_closed: bool | None = None
+    hard_duplicate_symbols: int | None = None
+    resolved_symbols: int | None = None
+    unresolved_symbols: int | None = None
+    unresolved_by_category: tuple[tuple[str, int], ...] = ()
+    data_entries: int | None = None
+    typed_data_entries: int | None = None
+    explicit_size_entries: int | None = None
+    explicit_alignment_entries: int | None = None
+    explicit_initializer_entries: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class TriageRow:
     image: str
     function: str
@@ -4417,6 +4441,527 @@ def _overall_totals(totals: list[ImageTotals]) -> ImageTotals:
     )
 
 
+_NATIVE_ARTIFACT_FILES = ("objects.json", "closure.json", "data.json")
+_NATIVE_ARTIFACT_KINDS = {
+    "objects.json": "crimson-native-object-manifest",
+    "closure.json": "crimson-native-symbol-closure",
+    "data.json": "crimson-native-data-manifest",
+}
+_NATIVE_ARTIFACT_SCHEMAS = {
+    "objects.json": 2,
+    "closure.json": 2,
+    "data.json": 1,
+}
+
+
+def _native_required_mapping(value: Any, label: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise TypeError(f"{label} must be an object")
+    return value
+
+
+def _native_required_int(mapping: dict[str, Any], key: str, label: str) -> int:
+    value = mapping.get(key)
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise TypeError(f"{label}.{key} must be an integer")
+    return value
+
+
+def _native_required_bool(mapping: dict[str, Any], key: str, label: str) -> bool:
+    value = mapping.get(key)
+    if not isinstance(value, bool):
+        raise TypeError(f"{label}.{key} must be a boolean")
+    return value
+
+
+def _native_file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _native_tree_set_sha256(root: Path, trees: tuple[str, ...]) -> str:
+    digest = hashlib.sha256()
+    files: list[Path] = []
+    for tree_name in trees:
+        tree = root / tree_name
+        if not tree.is_dir():
+            raise FileNotFoundError(tree)
+        files.extend(candidate for candidate in tree.rglob("*") if candidate.is_file())
+    for path in sorted(files):
+        relative = path.relative_to(root).as_posix().encode()
+        digest.update(len(relative).to_bytes(4, "little"))
+        digest.update(relative)
+        contents = path.read_bytes()
+        digest.update(len(contents).to_bytes(8, "little"))
+        digest.update(contents)
+    return digest.hexdigest()
+
+
+def _native_input_records(
+    objects: dict[str, Any],
+    closure: dict[str, Any],
+    data: dict[str, Any],
+) -> tuple[list[tuple[str, str, bool]], list[tuple[str, tuple[str, ...], str]]]:
+    files: list[tuple[str, str, bool]] = []
+
+    def add_file_rows(rows: Any, label: str) -> None:
+        if not isinstance(rows, list):
+            raise TypeError(f"{label} must be an array")
+        for index, raw_row in enumerate(rows):
+            row = _native_required_mapping(raw_row, f"{label}[{index}]")
+            path = row.get("path")
+            sha256 = row.get("sha256")
+            repository_relative = row.get("repository_relative")
+            if not isinstance(path, str) or not path:
+                raise ValueError(f"{label}[{index}].path must be a non-empty string")
+            if not isinstance(sha256, str) or len(sha256) != 64:
+                raise ValueError(f"{label}[{index}].sha256 must be a SHA-256 digest")
+            if not isinstance(repository_relative, bool):
+                raise TypeError(f"{label}[{index}].repository_relative must be a boolean")
+            files.append((path, sha256, repository_relative))
+
+    def add_direct_file(
+        row: dict[str, Any],
+        path_key: str,
+        sha256_key: str,
+        label: str,
+    ) -> None:
+        path = row.get(path_key)
+        sha256 = row.get(sha256_key)
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"{label}.{path_key} must be a non-empty string")
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError(f"{label}.{sha256_key} must be a SHA-256 digest")
+        files.append((path, sha256, True))
+
+    raw_objects = objects.get("objects")
+    if not isinstance(raw_objects, list):
+        raise TypeError("objects.json.objects must be an array")
+    for index, raw_object in enumerate(raw_objects):
+        label = f"objects.json.objects[{index}]"
+        row = _native_required_mapping(raw_object, label)
+        add_direct_file(row, "source", "source_sha256", label)
+        add_direct_file(row, "config", "config_sha256", label)
+        add_file_rows(
+            row.get("compile_inputs"),
+            f"{label}.compile_inputs",
+        )
+        raw_functions = row.get("functions")
+        if not isinstance(raw_functions, list):
+            raise TypeError(f"{label}.functions must be an array")
+        for function_index, raw_function in enumerate(raw_functions):
+            function_label = f"{label}.functions[{function_index}]"
+            function = _native_required_mapping(raw_function, function_label)
+            add_direct_file(
+                function,
+                "canonical_source",
+                "canonical_source_sha256",
+                function_label,
+            )
+            add_direct_file(
+                function,
+                "canonical_config",
+                "canonical_config_sha256",
+                function_label,
+            )
+
+    abi = _native_required_mapping(objects.get("abi_assertions"), "objects.json.abi_assertions")
+    add_file_rows(abi.get("compile_inputs"), "objects.json.abi_assertions.compile_inputs")
+    provenance = _native_required_mapping(objects.get("provenance"), "objects.json.provenance")
+    add_file_rows(
+        provenance.get("selection_inputs"),
+        "objects.json.provenance.selection_inputs",
+    )
+    toolchain = _native_required_mapping(provenance.get("toolchain"), "objects.json.provenance.toolchain")
+    for key in ("cl_wrapper", "wibo"):
+        row = _native_required_mapping(toolchain.get(key), f"objects.json.provenance.toolchain.{key}")
+        add_file_rows([row], f"objects.json.provenance.toolchain.{key}")
+
+    reference_image = objects.get("reference_image")
+    reference_image_sha256 = objects.get("reference_image_sha256")
+    if not isinstance(reference_image, str) or not reference_image:
+        raise ValueError("objects.json.reference_image must be a non-empty string")
+    if not isinstance(reference_image_sha256, str) or len(reference_image_sha256) != 64:
+        raise ValueError("objects.json.reference_image_sha256 must be a SHA-256 digest")
+    files.append((reference_image, reference_image_sha256, True))
+
+    closure_source = _native_required_mapping(closure.get("source"), "closure.json.source")
+    add_file_rows(closure_source.get("catalog_inputs"), "closure.json.source.catalog_inputs")
+
+    data_source = _native_required_mapping(data.get("source"), "data.json.source")
+    for key in ("data_map", "segments"):
+        path = data_source.get(key)
+        sha256 = data_source.get(f"{key}_sha256")
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"data.json.source.{key} must be a non-empty string")
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError(f"data.json.source.{key}_sha256 must be a SHA-256 digest")
+        files.append((path, sha256, True))
+
+    raw_bundles = toolchain.get("compiler_bundles")
+    if not isinstance(raw_bundles, list):
+        raise TypeError("objects.json.provenance.toolchain.compiler_bundles must be an array")
+    bundles: list[tuple[str, tuple[str, ...], str]] = []
+    for index, raw_bundle in enumerate(raw_bundles):
+        bundle = _native_required_mapping(
+            raw_bundle,
+            f"objects.json.provenance.toolchain.compiler_bundles[{index}]",
+        )
+        root = bundle.get("root")
+        raw_trees = bundle.get("included_trees")
+        sha256 = bundle.get("bundle_sha256")
+        if not isinstance(root, str) or not root:
+            raise ValueError(
+                f"objects.json.provenance.toolchain.compiler_bundles[{index}].root "
+                "must be a non-empty string",
+            )
+        if not isinstance(raw_trees, list) or not all(
+            isinstance(tree, str) and tree for tree in raw_trees
+        ):
+            raise ValueError(
+                f"objects.json.provenance.toolchain.compiler_bundles[{index}].included_trees "
+                "must be an array of strings",
+            )
+        if not isinstance(sha256, str) or len(sha256) != 64:
+            raise ValueError(
+                f"objects.json.provenance.toolchain.compiler_bundles[{index}].bundle_sha256 "
+                "must be a SHA-256 digest",
+            )
+        bundles.append((root, tuple(raw_trees), sha256))
+    return files, bundles
+
+
+def _native_input_staleness(
+    objects: dict[str, Any],
+    closure: dict[str, Any],
+    data: dict[str, Any],
+    *,
+    repo_root: Path,
+) -> list[str]:
+    file_rows, bundle_rows = _native_input_records(objects, closure, data)
+    expected_files: dict[str, str] = {}
+    conflicting_files: set[str] = set()
+    non_repository_files = 0
+    for path, sha256, repository_relative in file_rows:
+        if not repository_relative:
+            non_repository_files += 1
+            continue
+        previous = expected_files.setdefault(path, sha256)
+        if previous != sha256:
+            conflicting_files.add(path)
+
+    root = repo_root.resolve()
+    changed_files = 0
+    escaped_files = 0
+    for label, expected_sha256 in sorted(expected_files.items()):
+        path = (root / label).resolve()
+        try:
+            path.relative_to(root)
+        except ValueError:
+            escaped_files += 1
+            continue
+        try:
+            actual_sha256 = _native_file_sha256(path)
+        except OSError:
+            changed_files += 1
+            continue
+        if actual_sha256 != expected_sha256:
+            changed_files += 1
+
+    expected_bundles: dict[tuple[str, tuple[str, ...]], str] = {}
+    conflicting_bundles: set[tuple[str, tuple[str, ...]]] = set()
+    for label, trees, sha256 in bundle_rows:
+        key = (label, trees)
+        previous = expected_bundles.setdefault(key, sha256)
+        if previous != sha256:
+            conflicting_bundles.add(key)
+    changed_bundles = 0
+    for (label, trees), expected_sha256 in sorted(expected_bundles.items()):
+        path = (root / label).resolve()
+        try:
+            path.relative_to(root)
+        except ValueError:
+            changed_bundles += 1
+            continue
+        try:
+            actual_sha256 = _native_tree_set_sha256(path, trees)
+        except (OSError, ValueError):
+            changed_bundles += 1
+            continue
+        if actual_sha256 != expected_sha256:
+            changed_bundles += 1
+
+    reasons: list[str] = []
+    if changed_files:
+        reasons.append(f"{changed_files} recorded file inputs changed or missing")
+    if conflicting_files:
+        reasons.append(f"{len(conflicting_files)} file inputs have conflicting digests")
+    if non_repository_files:
+        reasons.append(f"{non_repository_files} file inputs are not repository-relative")
+    if escaped_files:
+        reasons.append(f"{escaped_files} file inputs escape the repository")
+    if changed_bundles:
+        reasons.append(f"{changed_bundles} compiler bundles changed or missing")
+    if conflicting_bundles:
+        reasons.append(f"{len(conflicting_bundles)} compiler bundles have conflicting digests")
+    return reasons
+
+
+def _native_audit_digest(payloads: dict[str, dict[str, Any]]) -> str:
+    digest_payload = {
+        "data_manifest": {
+            key: value
+            for key, value in payloads["data.json"].items()
+            if key != "audit_digest"
+        },
+        "object_manifest": {
+            key: value
+            for key, value in payloads["objects.json"].items()
+            if key != "audit_digest"
+        },
+        "symbol_closure": {
+            key: value
+            for key, value in payloads["closure.json"].items()
+            if key != "audit_digest"
+        },
+    }
+    return hashlib.sha256(
+        json.dumps(
+            digest_payload,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode(),
+    ).hexdigest()
+
+
+def _native_companion_staleness(
+    objects: dict[str, Any],
+    closure: dict[str, Any],
+    *,
+    artifact_directory: Path,
+) -> list[str]:
+    expected_outputs = (
+        ("objects.txt", objects.get("object_list_sha256")),
+        ("exports.def", closure.get("export_definition_sha256")),
+    )
+    changed = 0
+    for filename, expected_sha256 in expected_outputs:
+        if not isinstance(expected_sha256, str) or len(expected_sha256) != 64:
+            raise ValueError(f"{filename} audit digest must be a SHA-256 digest")
+        try:
+            actual_sha256 = _native_file_sha256(artifact_directory / filename)
+        except OSError:
+            changed += 1
+            continue
+        if actual_sha256 != expected_sha256:
+            changed += 1
+    if changed:
+        return [f"{changed} generated linker artifacts changed or missing"]
+    return []
+
+
+def collect_native_link_statuses(
+    *,
+    analysis_root: Path = DEFAULT_NATIVE_ANALYSIS_ROOT,
+    repo_root: Path = REPO_ROOT,
+    scope: str = DEFAULT_MATCH_SCOPE,
+    images: Collection[str] = TRACKED_IMAGE_NAMES,
+) -> list[NativeLinkStatus]:
+    statuses: list[NativeLinkStatus] = []
+    for image in images:
+        directory = analysis_root / image
+        paths = {name: directory / name for name in _NATIVE_ARTIFACT_FILES}
+        missing = [name for name in _NATIVE_ARTIFACT_FILES if not paths[name].is_file()]
+        if missing:
+            statuses.append(
+                NativeLinkStatus(
+                    image=image,
+                    artifact_state="missing",
+                    artifact_note="missing " + ", ".join(missing),
+                ),
+            )
+            continue
+
+        try:
+            payloads = {
+                name: _native_required_mapping(
+                    json.loads(path.read_text(encoding="utf-8")),
+                    name,
+                )
+                for name, path in paths.items()
+            }
+            for name, payload in payloads.items():
+                if payload.get("kind") != _NATIVE_ARTIFACT_KINDS[name]:
+                    raise ValueError(f"{name}.kind is not {_NATIVE_ARTIFACT_KINDS[name]!r}")
+                if payload.get("schema") != _NATIVE_ARTIFACT_SCHEMAS[name]:
+                    raise ValueError(
+                        f"{name}.schema is not {_NATIVE_ARTIFACT_SCHEMAS[name]}",
+                    )
+                if payload.get("image") != image:
+                    raise ValueError(f"{name}.image is not {image!r}")
+
+            objects = payloads["objects.json"]
+            closure = payloads["closure.json"]
+            data = payloads["data.json"]
+            closure_summary = _native_required_mapping(
+                closure.get("summary"),
+                "closure.json.summary",
+            )
+            data_summary = _native_required_mapping(data.get("summary"), "data.json.summary")
+            translation_units = _native_required_mapping(
+                objects.get("translation_units"),
+                "objects.json.translation_units",
+            )
+            abi = _native_required_mapping(
+                objects.get("abi_assertions"),
+                "objects.json.abi_assertions",
+            )
+            abi_status = abi.get("status")
+            if not isinstance(abi_status, str) or not abi_status:
+                raise ValueError("objects.json.abi_assertions.status must be a non-empty string")
+            raw_categories = _native_required_mapping(
+                closure_summary.get("unresolved_by_category"),
+                "closure.json.summary.unresolved_by_category",
+            )
+            categories = {
+                str(category): _native_required_int(
+                    raw_categories,
+                    str(category),
+                    "closure.json.summary.unresolved_by_category",
+                )
+                for category in raw_categories
+            }
+            categories.setdefault("game_data", 0)
+
+            function_count = _native_required_int(objects, "function_count", "objects.json")
+            object_count = _native_required_int(objects, "object_count", "objects.json")
+            reasons: list[str] = []
+            raw_digests = [payload.get("audit_digest") for payload in payloads.values()]
+            if any(
+                not isinstance(digest, str) or len(digest) != 64
+                for digest in raw_digests
+            ):
+                raise ValueError("artifact audit digest must be a SHA-256 digest")
+            digests = set(raw_digests)
+            if len(digests) != 1:
+                reasons.append("artifact audit digests disagree")
+            elif next(iter(digests)) != _native_audit_digest(payloads):
+                reasons.append("artifact content does not match audit digest")
+            object_scope = objects.get("scope")
+            closure_scope = closure.get("scope")
+            if object_scope != scope or closure_scope != scope:
+                reasons.append(
+                    f"artifact scope is {object_scope!r}/{closure_scope!r}, expected {scope!r}",
+                )
+            if (
+                _native_required_int(closure_summary, "function_count", "closure.json.summary")
+                != function_count
+                or _native_required_int(closure_summary, "object_count", "closure.json.summary")
+                != object_count
+            ):
+                reasons.append("object and closure counts disagree")
+            reasons.extend(
+                _native_input_staleness(
+                    objects,
+                    closure,
+                    data,
+                    repo_root=repo_root,
+                ),
+            )
+            reasons.extend(
+                _native_companion_staleness(
+                    objects,
+                    closure,
+                    artifact_directory=directory,
+                ),
+            )
+            state = "stale" if reasons else "current"
+            note = "; ".join(reasons) if reasons else "audited inputs and artifact digest agree"
+            statuses.append(
+                NativeLinkStatus(
+                    image=image,
+                    artifact_state=state,
+                    artifact_note=note,
+                    function_count=function_count,
+                    object_count=object_count,
+                    translation_unit_clusters=_native_required_int(
+                        translation_units,
+                        "cluster_count",
+                        "objects.json.translation_units",
+                    ),
+                    abi_status=abi_status,
+                    function_closure=_native_required_bool(
+                        closure_summary,
+                        "function_closure",
+                        "closure.json.summary",
+                    ),
+                    game_owned_closure=_native_required_bool(
+                        closure_summary,
+                        "game_owned_closure",
+                        "closure.json.summary",
+                    ),
+                    all_references_closed=_native_required_bool(
+                        closure_summary,
+                        "all_references_closed",
+                        "closure.json.summary",
+                    ),
+                    hard_duplicate_symbols=_native_required_int(
+                        closure_summary,
+                        "hard_duplicate_symbols",
+                        "closure.json.summary",
+                    ),
+                    resolved_symbols=_native_required_int(
+                        closure_summary,
+                        "resolved_symbols",
+                        "closure.json.summary",
+                    ),
+                    unresolved_symbols=_native_required_int(
+                        closure_summary,
+                        "unresolved_symbols",
+                        "closure.json.summary",
+                    ),
+                    unresolved_by_category=tuple(sorted(categories.items())),
+                    data_entries=_native_required_int(
+                        data_summary,
+                        "entry_count",
+                        "data.json.summary",
+                    ),
+                    typed_data_entries=_native_required_int(
+                        data_summary,
+                        "typed_entries",
+                        "data.json.summary",
+                    ),
+                    explicit_size_entries=_native_required_int(
+                        data_summary,
+                        "explicit_size_entries",
+                        "data.json.summary",
+                    ),
+                    explicit_alignment_entries=_native_required_int(
+                        data_summary,
+                        "explicit_alignment_entries",
+                        "data.json.summary",
+                    ),
+                    explicit_initializer_entries=_native_required_int(
+                        data_summary,
+                        "explicit_initializer_entries",
+                        "data.json.summary",
+                    ),
+                ),
+            )
+        except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            statuses.append(
+                NativeLinkStatus(
+                    image=image,
+                    artifact_state="invalid",
+                    artifact_note=str(exc).splitlines()[0],
+                ),
+            )
+    return statuses
+
+
 def _image_summary(total: ImageTotals) -> str:
     return (
         f"{total.image}: {total.matched_functions}/{total.function_count} functions, "
@@ -4462,11 +5007,115 @@ def render_status_table(
     return "\n".join(lines)
 
 
+def _native_status_value(value: object | None) -> str:
+    if value is None:
+        return "unknown"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return str(value)
+
+
+def render_native_link_status_markdown(statuses: Collection[NativeLinkStatus]) -> list[str]:
+    if not statuses:
+        return []
+    ordered = sorted(
+        statuses,
+        key=lambda status: (
+            TRACKED_IMAGE_NAMES.index(status.image)
+            if status.image in TRACKED_IMAGE_NAMES
+            else len(TRACKED_IMAGE_NAMES),
+            status.image,
+        ),
+    )
+    lines = [
+        "## Native linking",
+        "",
+        (
+            "Generated from `analysis/native/<image>/{objects,closure,data}.json`. "
+            "Artifact state is `current` only when all three reports share and reproduce one "
+            "audit digest, their recorded inputs still match the repository, and the generated "
+            "`objects.txt` and `exports.def` companions still match their recorded hashes. "
+            "Gate values in `stale` rows are historical snapshots, not current pass claims."
+        ),
+        "",
+        (
+            "| image | artifacts | functions | objects | TU clusters | ABI | "
+            "function closure | game-owned closure | all refs closed | hard duplicates | "
+            "resolved | unresolved |"
+        ),
+        "|---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|",
+    ]
+    for status in ordered:
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    status.image,
+                    status.artifact_state,
+                    _native_status_value(status.function_count),
+                    _native_status_value(status.object_count),
+                    _native_status_value(status.translation_unit_clusters),
+                    _native_status_value(status.abi_status),
+                    _native_status_value(status.function_closure),
+                    _native_status_value(status.game_owned_closure),
+                    _native_status_value(status.all_references_closed),
+                    _native_status_value(status.hard_duplicate_symbols),
+                    _native_status_value(status.resolved_symbols),
+                    _native_status_value(status.unresolved_symbols),
+                ),
+            )
+            + " |",
+        )
+    lines.extend(
+        [
+            "",
+            (
+                "| image | unresolved by category | game-data unresolved | data entries | typed | "
+                "explicit sizes | explicit alignments | explicit initializers |"
+            ),
+            "|---|---|---:|---:|---:|---:|---:|---:|",
+        ],
+    )
+    for status in ordered:
+        categories = ", ".join(
+            f"{category}={count}"
+            for category, count in status.unresolved_by_category
+        )
+        if not categories:
+            categories = "unknown"
+        game_data = dict(status.unresolved_by_category).get("game_data")
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    status.image,
+                    categories,
+                    _native_status_value(game_data),
+                    _native_status_value(status.data_entries),
+                    _native_status_value(status.typed_data_entries),
+                    _native_status_value(status.explicit_size_entries),
+                    _native_status_value(status.explicit_alignment_entries),
+                    _native_status_value(status.explicit_initializer_entries),
+                ),
+            )
+            + " |",
+        )
+    non_current = [status for status in ordered if status.artifact_state != "current"]
+    if non_current:
+        lines.extend(["", "Artifact freshness issues:"])
+        for status in non_current:
+            note = status.artifact_note.replace("|", "\\|")
+            lines.append(f"- `{status.image}`: **{status.artifact_state}** — {note}")
+    lines.append("")
+    return lines
+
+
 def render_status_markdown(
     statuses: list[ScratchStatus],
     totals: list[ImageTotals],
     *,
     scope: str = DEFAULT_MATCH_SCOPE,
+    native_statuses: Collection[NativeLinkStatus] = (),
 ) -> str:
     overall = _overall_totals(totals)
     dispositions = matching_scope_function_disposition_payloads(scope)
@@ -4492,6 +5141,7 @@ def render_status_markdown(
         "matches and WIPs; it does not claim byte identity."),
         "",
     ]
+    lines.extend(render_native_link_status_markdown(native_statuses))
     if dispositions:
         disposition_counts = Counter(row["disposition"] for row in dispositions)
         disposition_summary = ", ".join(
