@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "texture-stage-shared-tail-entry",
+      "find": "    case 26:\n        if (!grim_set_texture_stage_ops(value.words[0])) {\n            return;\n        }\n        break;\n",
+      "replacements": [
+        {
+          "name": "direct-word-zero-then-join",
+          "text": "    case 26:\n        if (!grim_set_texture_stage_ops(value.words[0])) {\n            return;\n        }\n        grim_config_values[id].words[0] = value.words[0];\n        goto copy_config_tail;\n"
+        },
+        {
+          "name": "named-mode-word-zero-then-join",
+          "text": "    case 26: {\n        unsigned int mode = value.words[0];\n        if (!grim_set_texture_stage_ops(mode)) {\n            return;\n        }\n        grim_config_values[id].words[0] = mode;\n        goto copy_config_tail;\n    }\n"
+        },
+        {
+          "name": "positive-test-word-zero-then-join",
+          "text": "    case 26:\n        if (grim_set_texture_stage_ops(value.words[0])) {\n            grim_config_values[id].words[0] = value.words[0];\n            goto copy_config_tail;\n        }\n        return;\n"
+        },
+        {
+          "name": "named-mode-positive-test-then-join",
+          "text": "    case 26: {\n        unsigned int mode = value.words[0];\n        if (grim_set_texture_stage_ops(mode)) {\n            grim_config_values[id].words[0] = mode;\n            goto copy_config_tail;\n        }\n        return;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "generic-words-one-through-three-tail",
+      "find": "    default:\n        break;\n    }\n\n    grim_config_value_t *config = &grim_config_values[id];\n    config->words[0] = value.words[0];\n    config->words[1] = value.words[1];\n    config->words[2] = value.words[2];\n    config->words[3] = value.words[3];\n",
+      "replacements": [
+        {
+          "name": "direct-slots",
+          "text": "    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail:\n    grim_config_values[id].words[1] = value.words[1];\n    grim_config_values[id].words[2] = value.words[2];\n    grim_config_values[id].words[3] = value.words[3];\n"
+        },
+        {
+          "name": "named-config-after-label",
+          "text": "    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "named-destination-after-label",
+          "text": "    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n        unsigned int *destination = grim_config_values[id].words;\n        destination[1] = value.words[1];\n        destination[2] = value.words[2];\n        destination[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "named-config-and-source-after-label",
+          "text": "    default:\n        break;\n    }\n\n    grim_config_values[id].words[0] = value.words[0];\ncopy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        unsigned int *source = value.words;\n        config->words[1] = source[1];\n        config->words[2] = source[2];\n        config->words[3] = source[3];\n    }\n"
+        }
+      ]
+    }
+  ]
+}

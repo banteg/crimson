@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "flags-camera-usage-clear-order",
+      "find": "    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);",
+      "replacements": [
+        {
+          "name": "camera-flags-clear",
+          "text": "    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);\n    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));"
+        },
+        {
+          "name": "camera-clear-flags",
+          "text": "    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;"
+        },
+        {
+          "name": "flags-camera-clear",
+          "text": "    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;\n    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);\n    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));"
+        },
+        {
+          "name": "clear-camera-flags",
+          "text": "    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);\n    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;"
+        },
+        {
+          "name": "clear-flags-camera",
+          "text": "    memset(weapon_usage_time, 0, sizeof(weapon_usage_time));\n    perk_choices_dirty = 1;\n    bonus_spawn_guard = 0;\n    camera_offset = reset_vec2_t(\n        terrain_texture_width * 0.5f,\n        terrain_texture_height * 0.5f);"
+        }
+      ]
+    },
+    {
+      "name": "aux-clear-move-target-lifetime",
+      "find": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target =\n            reset_vec2_t(-1.0f, -1.0f);\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }",
+      "replacements": [
+        {
+          "name": "clear-then-named-target",
+          "text": "    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n    reset_vec2_t move_target(-1.0f, -1.0f);\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target = move_target;\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }"
+        },
+        {
+          "name": "named-target-then-clear",
+          "text": "    reset_vec2_t move_target(-1.0f, -1.0f);\n    memset(player_aux_timer, 0, sizeof(player_aux_timer));\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target = move_target;\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }"
+        },
+        {
+          "name": "split-clear-around-target",
+          "text": "    player_aux_timer[0] = 0.0f;\n    reset_vec2_t move_target(-1.0f, -1.0f);\n    player_aux_timer[1] = 0.0f;\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target = move_target;\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }"
+        },
+        {
+          "name": "scalar-clear-then-target",
+          "text": "    player_aux_timer[0] = 0.0f;\n    player_aux_timer[1] = 0.0f;\n    reset_vec2_t move_target(-1.0f, -1.0f);\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target = move_target;\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }"
+        },
+        {
+          "name": "target-then-scalar-clear",
+          "text": "    reset_vec2_t move_target(-1.0f, -1.0f);\n    player_aux_timer[0] = 0.0f;\n    player_aux_timer[1] = 0.0f;\n\n    for (int player_index = 0; player_index < 2; ++player_index) {\n        player_state_t *player = &player_state_table[player_index];\n        *(reset_vec2_t *)&player->move_target = move_target;\n        player->low_health_timer = 100.0f;\n        player->fire_bullets_timer = 0.0f;\n    }"
+        }
+      ]
+    }
+  ]
+}

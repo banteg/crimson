@@ -15,8 +15,8 @@ C++ method ABI and uses the normal Direct3D 8 interface; it contains no
 inline assembly, padding, volatile state, forced registers, dummy
 dependencies, or fake references.
 
-Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` now produces a `90.12%`
-candidate with `438/443` normalized instructions and references `69/1/1`.
+Microsoft Visual C++ 6.5 with `/O2 /GB /W3 /GR-` now produces a `94.36%`
+candidate with `443/443` normalized instructions and references `68/1/1`.
 The audit identifies the only unresolved/mismatched pair as the compiler's
 private sparse-switch lookup and jump tables; all externally meaningful
 references resolve. The residual is block placement and shared-tail shaping,
@@ -48,3 +48,28 @@ bringing the composed result to **90.12%** with a 151.48-byte fuzzy gap.
 byte-neutral and the named-config form regresses, so none was retained. A
 five-profile diagnostic matrix likewise keeps stock VC6 `/GB` tied for best;
 no compiler override is justified.
+
+## Shared record-copy tail
+
+Raw native disassembly at `0x100065b3..0x100065e8` and
+`0x10006b42..0x10006b7e` shows that texture-stage configuration ID 26
+publishes word zero and then joins the ordinary router's word-one-through-three
+tail. `shared-copy-tail-mutations.json` evaluated all 24 singles and pairs
+across that entry and the common destination. Eight natural two-site forms
+compile identically and improve the baseline.
+
+The retained negative-test form mirrors the native failure branch, stores word
+zero, and enters an explicit shared tail. It adds five previously missing
+instructions, **64.92 fuzzy-weighted bytes**, and three exact prefix
+instructions. The result is **94.36%**, with an **86.57-byte fuzzy gap**,
+exactly **443/443 instructions**, prefix **7/443**, and references
+**68/1/1**.
+
+Four follow-up searches bound the remaining local residual. Replaying the
+resource-path lifetime menu is byte-neutral. Explicitly spelling the proven
+case-16 index before the intervening resource lookup removes three
+instructions and regresses by 19.40 weighted bytes. Six scalar source-load
+orders and six destination pointer/reference shapes either collapse to the
+retained object or regress. The native DLL's imported `_strdup` also motivated
+an ABI-profile check: `/MD` reproduces dynamic-CRT call lowering but scores
+93.57%, below the canonical `/GB` result, so no flag override is retained.

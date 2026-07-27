@@ -82,3 +82,10 @@ or unresolved field.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. Before
 and after classification remain 99.02%, prefix 165/307, 307/307
 instructions, and references 213/0/0.
+
+`reset-schedule-interactions-mutations.json` subsequently evaluated all 35
+single and pair combinations across the flag/camera/weapon-clear ordering and
+the auxiliary-clear/move-target lifetime. Two alternative orderings are
+byte-neutral; every temporary or scalar interaction regresses. Complete
+two-site coverage therefore confirms that the remaining 16.02-byte gap is not
+hidden behind an untested interaction between the two mismatch regions.

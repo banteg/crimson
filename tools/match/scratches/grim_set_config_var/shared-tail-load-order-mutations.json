@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-tail-source-lifetimes",
+      "find": "copy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n",
+      "replacements": [
+        {
+          "name": "preload-three-then-config",
+          "text": "copy_config_tail: {\n        unsigned int word1 = value.words[1];\n        unsigned int word2 = value.words[2];\n        unsigned int word3 = value.words[3];\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = word1;\n        config->words[2] = word2;\n        config->words[3] = word3;\n    }\n"
+        },
+        {
+          "name": "config-then-preload-three",
+          "text": "copy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        unsigned int word1 = value.words[1];\n        unsigned int word2 = value.words[2];\n        unsigned int word3 = value.words[3];\n        config->words[1] = word1;\n        config->words[2] = word2;\n        config->words[3] = word3;\n    }\n"
+        },
+        {
+          "name": "preload-three-direct-slots",
+          "text": "copy_config_tail: {\n        unsigned int word1 = value.words[1];\n        unsigned int word2 = value.words[2];\n        unsigned int word3 = value.words[3];\n        grim_config_values[id].words[1] = word1;\n        grim_config_values[id].words[2] = word2;\n        grim_config_values[id].words[3] = word3;\n    }\n"
+        },
+        {
+          "name": "preload-copy-record",
+          "text": "copy_config_tail: {\n        grim_config_value_t copy = value;\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = copy.words[1];\n        config->words[2] = copy.words[2];\n        config->words[3] = copy.words[3];\n    }\n"
+        },
+        {
+          "name": "reverse-declarations-forward-stores",
+          "text": "copy_config_tail: {\n        unsigned int word3 = value.words[3];\n        unsigned int word2 = value.words[2];\n        unsigned int word1 = value.words[1];\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = word1;\n        config->words[2] = word2;\n        config->words[3] = word3;\n    }\n"
+        },
+        {
+          "name": "preload-three-reverse-stores",
+          "text": "copy_config_tail: {\n        unsigned int word1 = value.words[1];\n        unsigned int word2 = value.words[2];\n        unsigned int word3 = value.words[3];\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[3] = word3;\n        config->words[2] = word2;\n        config->words[1] = word1;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

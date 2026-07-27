@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shared-tail-destination-shape",
+      "find": "copy_config_tail: {\n        grim_config_value_t *config = &grim_config_values[id];\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n",
+      "replacements": [
+        {
+          "name": "record-reference",
+          "text": "copy_config_tail: {\n        grim_config_value_t &config = grim_config_values[id];\n        config.words[1] = value.words[1];\n        config.words[2] = value.words[2];\n        config.words[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "array-plus-index",
+          "text": "copy_config_tail: {\n        grim_config_value_t *config = grim_config_values + id;\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "base-then-add-index",
+          "text": "copy_config_tail: {\n        grim_config_value_t *config = grim_config_values;\n        config += id;\n        config->words[1] = value.words[1];\n        config->words[2] = value.words[2];\n        config->words[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "word-zero-address",
+          "text": "copy_config_tail: {\n        unsigned int *config = &grim_config_values[id].words[0];\n        config[1] = value.words[1];\n        config[2] = value.words[2];\n        config[3] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "first-tail-word-address",
+          "text": "copy_config_tail: {\n        unsigned int *config = &grim_config_values[id].words[1];\n        config[0] = value.words[1];\n        config[1] = value.words[2];\n        config[2] = value.words[3];\n    }\n"
+        },
+        {
+          "name": "byte-base-pointer",
+          "text": "copy_config_tail: {\n        unsigned char *base =\n            (unsigned char *)&grim_config_values[id];\n        *(unsigned int *)(base + 4) = value.words[1];\n        *(unsigned int *)(base + 8) = value.words[2];\n        *(unsigned int *)(base + 12) = value.words[3];\n    }\n"
+        }
+      ]
+    }
+  ]
+}

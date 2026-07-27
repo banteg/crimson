@@ -244,3 +244,18 @@ bytes**, while also correcting the missing native right-heading coordinates.
 The existing left-panel lifetime menu was replayed against the current post-staging source. None of its six variants improved the 80.1625% baseline: four were byte-identical, one lost 11.80 weighted bytes, and the scalar form lost 1027.28. Recorded spec SHA: `cdfbe1fe76105490210d88db25c68fc2ba835282030c48eb94b63f604cc267ae`.
 
 A second five-variant sweep predeclared and regrouped the player-item publication and opening vectors. All five variants were byte-identical, showing that these opening locals are also placed from use sites rather than declaration order. Recorded spec SHA: `34e1998c665348f26f8300c2c1ce4d731914ef5fc75bcead329dec5061cc4c93`.
+
+## Runtime-binding symbol-anchor negative
+
+The persisted and live input-record layouts were re-audited before another
+mutation pass: `player_input_config_t` is `0x40` bytes with `axis_move_x` at
+`0x30`, while `crimson_cfg_t::input_config` begins at `0x1c8`. The candidate's
+apparent `config_blob + 0x1cc` base is therefore VC6 induction-variable
+rebasing to `move_key_backward`, not a bad field offset.
+
+`runtime-binding-symbol-anchors-mutations.json` tested five typed and
+linker-symbol source/destination cursor spellings around that copy. Every
+variant preserves the 164-instruction prefix but loses at least 1,000.27
+fuzzy-weighted bytes; the best falls from 80.16% to 75.46%. The named aggregate
+anchors are not the missing source shape, so the typed interior cursor remains
+canonical.

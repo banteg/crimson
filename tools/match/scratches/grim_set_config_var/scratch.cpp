@@ -33,7 +33,8 @@ void IGrim2D_cpp::grim_set_config_var(
         if (!grim_set_texture_stage_ops(value.words[0])) {
             return;
         }
-        break;
+        grim_config_values[id].words[0] = value.words[0];
+        goto copy_config_tail;
 
     case 27: {
         grim_config_values[id] = value;
@@ -233,9 +234,11 @@ void IGrim2D_cpp::grim_set_config_var(
         break;
     }
 
-    grim_config_value_t *config = &grim_config_values[id];
-    config->words[0] = value.words[0];
-    config->words[1] = value.words[1];
-    config->words[2] = value.words[2];
-    config->words[3] = value.words[3];
+    grim_config_values[id].words[0] = value.words[0];
+copy_config_tail: {
+        grim_config_value_t *config = &grim_config_values[id];
+        config->words[1] = value.words[1];
+        config->words[2] = value.words[2];
+        config->words[3] = value.words[3];
+    }
 }
