@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-y-declaration",
+      "find": "    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;",
+      "replacements": [
+        {
+          "name": "scalar-direct-initializer",
+          "text": "    float panel_y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "scalar-staged-assignment",
+          "text": "    float panel_y;\n    panel_y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "named-scalar-direct-initializer",
+          "text": "    float panel_position_y =\n        (float)config_screen_height - 128.0f;"
+        }
+      ]
+    },
+    {
+      "name": "panel-y-uses",
+      "find": "    grim_interface_ptr->grim_draw_quad(\n        -1.0f, panel_position.y - 16.0f, 182.0f, 53.0f);\n    grim_interface_ptr->grim_end_batch();\n    grim_interface_ptr->grim_set_config_var(0x15, (unsigned int)2);\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n\n    panel_position.y += 1.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        6.0f,\n        panel_position.y,\n        console_prompt_format,\n        typo_input_buffer);\n\n    float caret_alpha = 1.0f;\n    if ((float)sin(game_time_s * 4.0f) > 0.0f) {\n        caret_alpha = 0.4f;\n    }\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, caret_alpha);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        (float)grim_interface_ptr->grim_measure_text_width(typo_input_buffer)\n            + 14.0f,\n        panel_position.y,\n        console_caret_string);",
+      "replacements": [
+        {
+          "name": "scalar-panel-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        -1.0f, panel_y - 16.0f, 182.0f, 53.0f);\n    grim_interface_ptr->grim_end_batch();\n    grim_interface_ptr->grim_set_config_var(0x15, (unsigned int)2);\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n\n    panel_y += 1.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        6.0f,\n        panel_y,\n        console_prompt_format,\n        typo_input_buffer);\n\n    float caret_alpha = 1.0f;\n    if ((float)sin(game_time_s * 4.0f) > 0.0f) {\n        caret_alpha = 0.4f;\n    }\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, caret_alpha);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        (float)grim_interface_ptr->grim_measure_text_width(typo_input_buffer)\n            + 14.0f,\n        panel_y,\n        console_caret_string);"
+        },
+        {
+          "name": "named-scalar-panel-y",
+          "text": "    grim_interface_ptr->grim_draw_quad(\n        -1.0f, panel_position_y - 16.0f, 182.0f, 53.0f);\n    grim_interface_ptr->grim_end_batch();\n    grim_interface_ptr->grim_set_config_var(0x15, (unsigned int)2);\n    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n\n    panel_position_y += 1.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        6.0f,\n        panel_position_y,\n        console_prompt_format,\n        typo_input_buffer);\n\n    float caret_alpha = 1.0f;\n    if ((float)sin(game_time_s * 4.0f) > 0.0f) {\n        caret_alpha = 0.4f;\n    }\n    grim_interface_ptr->grim_set_color(\n        1.0f, 1.0f, 1.0f, caret_alpha);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        (float)grim_interface_ptr->grim_measure_text_width(typo_input_buffer)\n            + 14.0f,\n        panel_position_y,\n        console_caret_string);"
+        }
+      ]
+    }
+  ]
+}

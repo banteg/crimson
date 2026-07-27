@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "reusable-left-position-declaration",
+      "find": "    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;",
+      "replacements": [
+        {
+          "name": "left-before-panel",
+          "text": "    typo_vec2_t left_pos;\n    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "panel-before-left",
+          "text": "    typo_vec2_t panel_position;\n    typo_vec2_t left_pos;\n    panel_position.y = (float)config_screen_height - 128.0f;"
+        },
+        {
+          "name": "plain-vector-left-before-panel",
+          "text": "    vec2f_t left_pos;\n    typo_vec2_t panel_position;\n    panel_position.y = (float)config_screen_height - 128.0f;"
+        }
+      ]
+    },
+    {
+      "name": "left-position-reuse",
+      "find": "        typo_vec2_t left_pos(\n            -64.0f,\n            (float)terrain_texture_height * 0.5f\n                + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);",
+      "replacements": [
+        {
+          "name": "assign-reusable-components",
+          "text": "        left_pos.x = -64.0f;\n        left_pos.y = (float)terrain_texture_height * 0.5f\n            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;"
+        }
+      ]
+    }
+  ]
+}

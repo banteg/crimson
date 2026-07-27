@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-color-helper-definition",
+      "find": "extern \"C\" unsigned char game_frame_update(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-direct-call",
+          "text": "static __forceinline void frame_restore_text_color(\n    IGrim2D_cpp *interface_ptr)\n{\n    interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "inline-direct-call",
+          "text": "static inline void frame_restore_text_color(\n    IGrim2D_cpp *interface_ptr)\n{\n    interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "forceinline-named-interface",
+          "text": "static __forceinline void frame_restore_text_color(\n    IGrim2D_cpp *interface_ptr)\n{\n    IGrim2D_cpp *grim = interface_ptr;\n    grim->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "forceinline-named-components",
+          "text": "static __forceinline void frame_restore_text_color(\n    IGrim2D_cpp *interface_ptr)\n{\n    float red = 1.0f;\n    float green = 1.0f;\n    float blue = 1.0f;\n    float alpha = 0.6f;\n    interface_ptr->grim_set_color(red, green, blue, alpha);\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "final-color-helper-call",
+      "find": "        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.6f);\n    }\n\n    console_log_queue.render();",
+      "replacements": [
+        {
+          "name": "restore-through-helper",
+          "text": "        frame_restore_text_color(grim_interface_ptr);\n    }\n\n    console_log_queue.render();"
+        }
+      ]
+    }
+  ]
+}

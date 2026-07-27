@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "aim-copy-helper-definition",
+      "find": "extern \"C\" unsigned char game_frame_update(void)\n{",
+      "replacements": [
+        {
+          "name": "forceinline-indexed-copy",
+          "text": "static __forceinline void frame_copy_aim(\n    float *destination, const float *source)\n{\n    destination[0] = source[0];\n    destination[1] = source[1];\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "inline-indexed-copy",
+          "text": "static inline void frame_copy_aim(\n    float *destination, const float *source)\n{\n    destination[0] = source[0];\n    destination[1] = source[1];\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "forceinline-advanced-copy",
+          "text": "static __forceinline void frame_copy_aim(\n    float *destination, const float *source)\n{\n    *destination++ = *source++;\n    *destination = *source;\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        },
+        {
+          "name": "forceinline-named-components",
+          "text": "static __forceinline void frame_copy_aim(\n    float *destination, const float *source)\n{\n    float source_x = source[0];\n    destination[0] = source_x;\n    float source_y = source[1];\n    destination[1] = source_y;\n}\n\nextern \"C\" unsigned char game_frame_update(void)\n{"
+        }
+      ]
+    },
+    {
+      "name": "aim-copy-helper-call",
+      "find": "            float *aim = &player_aim_screen_x[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;",
+      "replacements": [
+        {
+          "name": "direct-source-pointer",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            frame_copy_aim(aim, &ui_mouse_x);"
+        },
+        {
+          "name": "named-source-pointer",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            const float *mouse = &ui_mouse_x;\n            frame_copy_aim(aim, mouse);"
+        }
+      ]
+    }
+  ]
+}

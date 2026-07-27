@@ -40,7 +40,8 @@ extern "C" void quest_build_nesting_grounds(
     spawns[2].set_spawn(
         SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,
         13000);
-    spawns[2].count = 1;
+    int *entry_two_count = &spawns[2].count;
+    *entry_two_count = 1;
 
     spawns[3].pos.x = 768.0f;
     spawns[3].pos.y = 768.0f;

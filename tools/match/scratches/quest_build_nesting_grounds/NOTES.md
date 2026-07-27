@@ -33,10 +33,15 @@ the x87 position conversions rather than constraining those stores artificially.
 The typed pointer removes the third scheduling cluster without a barrier,
 volatile access, or artificial dependency.
 
-Two independent scheduling clusters remain: the template-register load and
-`edi` save are swapped, and VC6 hoists the shared `768.0f` load across one
-metadata setter. The values, addresses, conversions, and final count are
-otherwise exact.
+A second recorded boundary sweep found that naming only the entry-two count
+pointer preserves another natural typed member lifetime. The retained form
+raises the match to **99.28%**, still with the exact 138-instruction body and
+all fifteen audited references. It eliminates the shared `768.0f` scheduling
+cluster without changing any value or store.
+
+Only one two-instruction scheduling cluster remains: native loads template 9
+into `ebx` before saving `edi`, while VC6 emits those independent instructions
+in the opposite order. The remaining body is byte-identical.
 Attempts to model the positions as vector temporaries introduce 42 extra
 instructions; fixed-position setters retain the same score while regressing
 other scheduling. The direct position fields plus shared metadata setter are
@@ -62,3 +67,17 @@ Their SHA-256 values are
 `b519e29a17081168087280e0a116d6b70ce6b0a9e2bc09da16f6a9e015480fc4`
 and
 `2002ffa7ab7dd3cb07d707c36f9269d23a4c46476bd76cc87929ab580e2bfb9f`.
+
+`entry-two-metadata-boundary-mutations.json` evaluates eight typed record,
+position, count, cursor, and direct-field forms. The minimal `int *` count
+pointer adds **4.54 fuzzy-weighted bytes** and is retained. Its SHA-256 is
+`5d1aef7879c46fd3bca2fd823146570673281fc357ef37732803546392f512d5`.
+
+`first-fixed-entry-order-mutations.json` then evaluates eight natural
+statement-order and member-lifetime forms against the 99.28% result; every
+variant regresses. Six shared-constant declaration-order shadow probes are
+also byte-neutral, with a representative result recorded in
+`experiments.jsonl`. MSVC 6.5 and 6.6 tie, the processor-pack compiler
+regresses, and the `/G5`, `/G7`, `/Ox`, and `/Ob1` flag probes are neutral.
+The final order matrix SHA-256 is
+`3a4622c8060f2ab40ab5c2960a0ef4733a742aa4b016c9a77a11951c98dc785f`.

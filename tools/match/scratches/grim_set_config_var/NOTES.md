@@ -73,3 +73,18 @@ orders and six destination pointer/reference shapes either collapse to the
 retained object or regress. The native DLL's imported `_strdup` also motivated
 an ABI-profile check: `/MD` reproduces dynamic-CRT call lowering but scores
 93.57%, below the canonical `/GB` result, so no flag override is retained.
+
+Two recorded import-spelling matrices test the native case-16 `_strdup`
+pointer lifetime directly. `strdup-import-lifetime-mutations.json` evaluates
+five declaration and call spellings: the `_strdup` spelling is byte-neutral,
+while explicit `dllimport` redeclarations conflict with the CRT headers and
+fail compilation. Its SHA-256 is
+`f8b49fba0c91e2dd06b3b45e6ed447e6048df96a05514a9850cc62a314c55e4f`.
+
+`strdup-iat-symbol-mutations.json` evaluates three explicit IAT-symbol
+combinations. The pointer declaration alone is byte-neutral; routing both
+calls through it compiles but regresses by 6.93 fuzzy-weighted bytes, and the
+call-only partial form fails compilation. The native import-pointer hoist
+cannot be recovered through an honest source-level declaration under the
+current CRT headers, so no import spelling is retained. The plan SHA-256 is
+`147c5fe7379f0cc416f334900cdb9c37e81ff6002d01909c1c32304571611061`.

@@ -107,3 +107,17 @@ negative result is recorded in `experiments.jsonl`.
 `aim-copy-typed-view-mutations.json` additionally evaluated six typed
 player/vector cursor views. They are byte-neutral or regress the same localized
 region, so the scalar pointer remains the best evidenced source.
+
+`aim-copy-inline-helper-mutations.json` broadens that search to fourteen
+one- and two-site inline-helper and call-boundary combinations. Alias-aware
+indexed forms are byte-neutral; named-component helper forms move an earlier
+region and regress by about 293 fuzzy-weighted bytes. No helper form improves
+the native schedule. The plan SHA-256 is
+`060418acba5fbec508268f889cf5015caf08ea02d9d251bf8a4e0c4680a5e071`.
+
+`final-color-inline-helper-mutations.json` evaluates nine inline,
+force-inline, interface-lifetime, component-lifetime, and restored-helper
+forms around the final `set_color` call. Every complete form is byte-neutral,
+which bounds the remaining call-order residual to VC6 scheduling rather than a
+missing source-level helper. Its SHA-256 is
+`19e5f0079dc9ee5720343e25ab7e88390d943fc33ea6e8e33079467e1b2ee9df`.

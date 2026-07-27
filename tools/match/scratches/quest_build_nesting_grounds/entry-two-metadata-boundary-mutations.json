@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-two-metadata-boundary",
+      "find": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;",
+      "replacements": [
+        {
+          "name": "typed-record-pointer",
+          "text": "    quest_entry_original_t *entry_two = &spawns[2];\n    entry_two->pos.x = 512.0f;\n    entry_two->pos.y = 512.0f;\n    entry_two->set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    entry_two->count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "typed-record-reference",
+          "text": "    quest_entry_original_t &entry_two = spawns[2];\n    entry_two.pos.x = 512.0f;\n    entry_two.pos.y = 512.0f;\n    entry_two.set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    entry_two.count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "typed-position-pointer",
+          "text": "    quest_vec2_t *entry_two_pos = &spawns[2].pos;\n    entry_two_pos->x = 512.0f;\n    entry_two_pos->y = 512.0f;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "typed-count-pointer",
+          "text": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    int *entry_two_count = &spawns[2].count;\n    *entry_two_count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "direct-metadata-fields",
+          "text": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    spawns[2].template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    spawns[2].trigger_time_ms = 13000;\n    spawns[2].count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "metadata-cursor-fields",
+          "text": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    int *entry_two_template = &spawns[2].template_id;\n    entry_two_template[0] = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    entry_two_template[1] = 13000;\n    entry_two_template[2] = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "record-pointer-after-position",
+          "text": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    quest_entry_original_t *entry_two = &spawns[2];\n    entry_two->set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    entry_two->count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        },
+        {
+          "name": "record-pointer-after-metadata",
+          "text": "    spawns[2].pos.x = 512.0f;\n    spawns[2].pos.y = 512.0f;\n    spawns[2].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        13000);\n    quest_entry_original_t *entry_two = &spawns[2];\n    entry_two->count = 1;\n\n    spawns[3].pos.x = 768.0f;\n    spawns[3].pos.y = 768.0f;"
+        }
+      ]
+    }
+  ]
+}

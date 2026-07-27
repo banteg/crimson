@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-fixed-entry-order",
+      "find": "    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    spawns[1].count = 1;",
+      "replacements": [
+        {
+          "name": "metadata-before-position",
+          "text": "    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].count = 1;"
+        },
+        {
+          "name": "metadata-and-count-before-position",
+          "text": "    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    spawns[1].count = 1;\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;"
+        },
+        {
+          "name": "position-count-metadata",
+          "text": "    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].count = 1;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);"
+        },
+        {
+          "name": "count-position-metadata",
+          "text": "    spawns[1].count = 1;\n    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);"
+        },
+        {
+          "name": "typed-record-pointer",
+          "text": "    quest_entry_original_t *entry_one = &spawns[1];\n    entry_one->pos.x = 256.0f;\n    entry_one->pos.y = 256.0f;\n    entry_one->set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    entry_one->count = 1;"
+        },
+        {
+          "name": "typed-template-pointer",
+          "text": "    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    int *entry_one_template = &spawns[1].template_id;\n    entry_one_template[0] = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    entry_one_template[1] = 8000;\n    entry_one_template[2] = 1;"
+        },
+        {
+          "name": "typed-count-pointer",
+          "text": "    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].set_spawn(\n        SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09,\n        8000);\n    int *entry_one_count = &spawns[1].count;\n    *entry_one_count = 1;"
+        },
+        {
+          "name": "direct-metadata-fields",
+          "text": "    spawns[1].pos.x = 256.0f;\n    spawns[1].pos.y = 256.0f;\n    spawns[1].template_id = SPAWN_ID_DEN_ALIEN_WEAK_SMALL_09;\n    spawns[1].trigger_time_ms = 8000;\n    spawns[1].count = 1;"
+        }
+      ]
+    }
+  ]
+}

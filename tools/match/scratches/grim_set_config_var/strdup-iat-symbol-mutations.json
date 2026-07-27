@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "strdup-iat-declaration",
+      "find": "enum { D3DSGR_NO_CALIBRATION = 1 };",
+      "replacements": [
+        {
+          "name": "cdecl-iat-pointer",
+          "text": "extern \"C\" char *(__cdecl *_imp__strdup)(\n    const char *source);\n\nenum { D3DSGR_NO_CALIBRATION = 1 };"
+        }
+      ]
+    },
+    {
+      "name": "strdup-iat-calls",
+      "find": "            grim_config_values[id].words[3] =\n                (unsigned int)strdup(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        char *stored = (char *)grim_config_values[id].words[3];\n        if (stored != 0) {\n            delete stored;\n        }\n        grim_config_values[id].words[3] = (unsigned int)strdup(path);",
+      "replacements": [
+        {
+          "name": "call-iat-pointer",
+          "text": "            grim_config_values[id].words[3] =\n                (unsigned int)_imp__strdup(&grim_empty_string);\n            grim_lookup_blob_loaded = 0;\n        }\n\n        grim_lookup_blob_loaded = grim_lookup_blob_load(path);\n\n        char *stored = (char *)grim_config_values[id].words[3];\n        if (stored != 0) {\n            delete stored;\n        }\n        grim_config_values[id].words[3] = (unsigned int)_imp__strdup(path);"
+        }
+      ]
+    }
+  ]
+}

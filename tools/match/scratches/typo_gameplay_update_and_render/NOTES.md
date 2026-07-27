@@ -85,3 +85,19 @@ caret behavior. Candidate and native each have 508 instructions with
 `194/0/0` references. `--regions` confines all remaining differences to the
 two ordinary vector-local slot assignments and their x87 loads/stores, so
 recovery is `semantic-complete` with a `compiler` residual.
+
+## Recorded local-lifetime evidence
+
+`local-vector-lifetime-mutations.json` evaluates seven declaration-order,
+aggregate-type, and reuse combinations for the left spawn vector. All six
+complete variants are byte-neutral at 98.43%; the isolated reuse mutation is
+intentionally incomplete and fails compilation. This rules out a reusable
+function-scope vector as the source of the local-slot swap. The plan SHA-256 is
+`0167262718b8194dd92d4db2d3eacfb7defa9ba1b05ca49370329dcdfb642404`.
+
+`panel-y-scalar-lifetime-mutations.json` evaluates eleven scalar declaration
+and use combinations for the UI panel position. The three complete pairings
+all regress to 88.98%, lose the exact prefix, and change the reference audit;
+the partial combinations fail compilation. The aggregate panel vector is
+therefore retained as the evidenced source shape. The plan SHA-256 is
+`8ec1d0778c5189c0bd31c664721cb04e7244f55aaf416ce1bf1a5ba610ccb79a`.
