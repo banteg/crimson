@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-impact-vector-declarations",
+      "find": "                                        int count = 6;\n                                        do {\n                                            float speed =",
+      "replacements": [
+        {
+          "name": "loop-scope-vectors",
+          "text": "                                        int count = 6;\n                                        do {\n                                            vec2f_t primary_impulse_pos;\n                                            vec2f_t primary_zero;\n                                            vec2f_t primary_shard_pos;\n                                            vec2f_t primary_decal_pos;\n                                            float speed ="
+        }
+      ]
+    },
+    {
+      "name": "primary-impact-impulse-zero-use",
+      "find": "                                            vec2f_t impulse_pos = {\n                                                creature_pool[hit_id].position.x\n                                                    + offset_x,\n                                                creature_pool[hit_id].position.y\n                                                    + offset_y,\n                                            };\n                                            vec2f_t zero = {0.0f, 0.0f};\n                                            vec2_add_inplace(\n                                                hit_id,\n                                                &impulse_pos,\n                                                &zero);",
+      "replacements": [
+        {
+          "name": "assign-loop-scope-impulse-zero",
+          "text": "                                            primary_impulse_pos.x =\n                                                creature_pool[hit_id].position.x\n                                                + offset_x;\n                                            primary_impulse_pos.y =\n                                                creature_pool[hit_id].position.y\n                                                + offset_y;\n                                            primary_zero.x = 0.0f;\n                                            primary_zero.y = 0.0f;\n                                            vec2_add_inplace(\n                                                hit_id,\n                                                &primary_impulse_pos,\n                                                &primary_zero);"
+        }
+      ]
+    },
+    {
+      "name": "primary-impact-shard-use",
+      "find": "                                                vec2f_t shard_pos = {\n                                                    projectile->position.x\n                                                        + offset_x,\n                                                    projectile->position.y\n                                                        + offset_y,\n                                                };\n                                                effect_spawn_freeze_shard(\n                                                    &shard_pos,\n                                                    impact_heading\n                                                        + (float)(\n                                                            crt_rand() % 100)\n                                                            * 0.01f);",
+      "replacements": [
+        {
+          "name": "assign-loop-scope-shard",
+          "text": "                                                primary_shard_pos.x =\n                                                    projectile->position.x\n                                                    + offset_x;\n                                                primary_shard_pos.y =\n                                                    projectile->position.y\n                                                    + offset_y;\n                                                effect_spawn_freeze_shard(\n                                                    &primary_shard_pos,\n                                                    impact_heading\n                                                        + (float)(\n                                                            crt_rand() % 100)\n                                                            * 0.01f);"
+        }
+      ]
+    },
+    {
+      "name": "primary-impact-decal-use",
+      "find": "                                            vec2f_t decal_pos = {\n                                                creature_pool[hit_id].position.x\n                                                    + offset_x,\n                                                creature_pool[hit_id].position.y\n                                                    + offset_y,\n                                            };\n                                            fx_queue_add_random(&decal_pos);",
+      "replacements": [
+        {
+          "name": "assign-loop-scope-decal",
+          "text": "                                            primary_decal_pos.x =\n                                                creature_pool[hit_id].position.x\n                                                + offset_x;\n                                            primary_decal_pos.y =\n                                                creature_pool[hit_id].position.y\n                                                + offset_y;\n                                            fx_queue_add_random(\n                                                &primary_decal_pos);"
+        }
+      ]
+    }
+  ]
+}

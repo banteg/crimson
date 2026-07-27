@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-decal-declaration-order",
+      "find": "extern \"C\" void projectile_update(void)\n{\n    int step_count;",
+      "replacements": [
+        {
+          "name": "function-scope-ordered-pairs",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    vec2f_t decal_offset_1;\n    vec2f_t decal_pos_1;\n    vec2f_t decal_offset_2;\n    vec2f_t decal_pos_2;\n    vec2f_t decal_offset_3;\n    vec2f_t decal_pos_3;\n    int step_count;"
+        },
+        {
+          "name": "function-scope-offsets-then-positions",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    vec2f_t decal_offset_1;\n    vec2f_t decal_offset_2;\n    vec2f_t decal_offset_3;\n    vec2f_t decal_pos_1;\n    vec2f_t decal_pos_2;\n    vec2f_t decal_pos_3;\n    int step_count;"
+        },
+        {
+          "name": "function-scope-reverse-pairs",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    vec2f_t decal_pos_3;\n    vec2f_t decal_offset_3;\n    vec2f_t decal_pos_2;\n    vec2f_t decal_offset_2;\n    vec2f_t decal_pos_1;\n    vec2f_t decal_offset_1;\n    int step_count;"
+        }
+      ]
+    },
+    {
+      "name": "secondary-decal-use",
+      "find": "                        vec2f_t decal_offset_1 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_1 = {\n                            decal_offset_1.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_1.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_1);\n\n                        vec2f_t decal_offset_2 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_2 = {\n                            decal_offset_2.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_2.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_2);\n\n                        vec2f_t decal_offset_3 = {\n                            (float)(crt_rand() % 20 - 10),\n                            (float)(crt_rand() % 20 - 10),\n                        };\n                        vec2f_t decal_pos_3 = {\n                            decal_offset_3.x\n                                + creature_pool[hit_id].position.x,\n                            decal_offset_3.y\n                                + creature_pool[hit_id].position.y,\n                        };\n                        fx_queue_add_random(&decal_pos_3);",
+      "replacements": [
+        {
+          "name": "assign-function-scope-vectors",
+          "text": "                        decal_offset_1.x =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_offset_1.y =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_pos_1.x = decal_offset_1.x\n                            + creature_pool[hit_id].position.x;\n                        decal_pos_1.y = decal_offset_1.y\n                            + creature_pool[hit_id].position.y;\n                        fx_queue_add_random(&decal_pos_1);\n\n                        decal_offset_2.x =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_offset_2.y =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_pos_2.x = decal_offset_2.x\n                            + creature_pool[hit_id].position.x;\n                        decal_pos_2.y = decal_offset_2.y\n                            + creature_pool[hit_id].position.y;\n                        fx_queue_add_random(&decal_pos_2);\n\n                        decal_offset_3.x =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_offset_3.y =\n                            (float)(crt_rand() % 20 - 10);\n                        decal_pos_3.x = decal_offset_3.x\n                            + creature_pool[hit_id].position.x;\n                        decal_pos_3.y = decal_offset_3.y\n                            + creature_pool[hit_id].position.y;\n                        fx_queue_add_random(&decal_pos_3);"
+        }
+      ]
+    }
+  ]
+}

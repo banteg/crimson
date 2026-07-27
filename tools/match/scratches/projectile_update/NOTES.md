@@ -362,3 +362,41 @@ candidate grows from 2,141 to 2,145 instructions, reduces the rounded fuzzy
 gap from 4,375 to 4,363 bytes, and preserves the `351/0/25` reference audit.
 Both the single-site and exhaustive 15-variant interaction sweeps are recorded
 in `experiments.jsonl`.
+
+## Native movement-local lifetime sweep
+
+Live Binary Ninja maps the early movement locals to five distinct native frame
+slots: `step_y` at `-0xf4`, `step_count` at `-0xdc`, `step_x` at `-0xd0`,
+`delta` at `-0xcc`, and `step` at `-0xc4`. Their values are still computed at
+the same control-flow points, but declaring the aggregates and scalars at
+function scope exposes the longer native lexical lifetimes to VC6.5. All seven
+tested declaration orders compile byte-identically once paired with the real
+use-site assignments. The retained source order raises the weighted match from
+`4045.91/8409` to `4200.63/8409` bytes (`48.1141%` to `49.9540%`), reduces
+the fuzzy gap by `154.72` bytes, and grows the natural frame from `0xa8` to
+`0xac` toward the native `0xf4`. The instruction count remains
+2,145/2,203; references move from `351/0/25` to `357/0/27`. The complete
+15-variant sweep is recorded with spec SHA
+`37ebe5035facae9888454c6d14becb46fe21c675bb0a9b6d3107ec75ebf1fa43`.
+
+Three bounded follow-up matrices reject broader lifetime hoisting:
+
+- Hoisting the six direct secondary-hit decal vectors to function scope loses
+  `185.66` weighted bytes in every activated ordering. The seven-variant
+  sweep is recorded with spec SHA
+  `8390093cc213a658c3f7526c8658b8daa6dae5343689f2be129a32c0b30240b9`.
+- At the secondary explosion block `0x00421a52..0x00421a9e`, hoisting only
+  the scalar extent is byte-neutral, while activating the four-float color
+  loses `181.80` weighted bytes. The complete 19-variant sweep is recorded
+  with spec SHA
+  `2801d46a17e72cadaacd081794a74a53c978f3564a682227cfdee39ff895393d`.
+- Native `0x004217df..0x004218d9` uses distinct physical slots for the
+  primary impact impulse, zero, freeze-shard, and decal vectors. Moving any
+  subset to the surrounding Gauss/Fire loop scope nevertheless compiles
+  byte-identically for all eight valid interactions. The full 15-variant
+  matrix is recorded with spec SHA
+  `f1b82ba3ca88f57380aa3eb99cb517c14e3d3bf4997e9d6a5714e4f50be801e8`.
+
+Those negative results keep the simpler branch-local declarations and narrow
+the remaining `0x48` frame deficit to other native temporary groups rather
+than these later effect vectors.

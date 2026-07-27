@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "movement-local-declaration-order",
+      "find": "extern \"C\" void projectile_update(void)\n{\n    float ion_damage_scale = 1.0f;",
+      "replacements": [
+        {
+          "name": "function-scope-source-order",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    int step_count;\n    float step_x;\n    float step_y;\n    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-native-slot-order",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    float step_y;\n    int step_count;\n    float step_x;\n    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-reverse-native-order",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    int step;\n    vec2f_t delta;\n    float step_x;\n    int step_count;\n    float step_y;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-aggregate-first",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    vec2f_t delta;\n    int step;\n    int step_count;\n    float step_x;\n    float step_y;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-integrals-first",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    int step_count;\n    int step;\n    vec2f_t delta;\n    float step_x;\n    float step_y;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-axes-first",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    float step_x;\n    float step_y;\n    int step_count;\n    vec2f_t delta;\n    int step;\n    float ion_damage_scale = 1.0f;"
+        },
+        {
+          "name": "function-scope-step-y-last",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    int step_count;\n    float step_x;\n    vec2f_t delta;\n    int step;\n    float step_y;\n    float ion_damage_scale = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "movement-local-use",
+      "find": "                    int step_count =\n                        (int)projectile->pos.tail.vy.travel_budget;\n                    float heading = projectile->angle - 1.5707964f;\n                    float step_x =\n                        (float)cos(heading) * frame_dt * 20.0f;\n                    float step_y =\n                        (float)sin(heading) * frame_dt * 20.0f;\n\n                    if (perk_count_get(perk_id_barrel_greaser) != 0\n                        && projectile->pos.tail.vy.owner_id < 0) {\n                        step_count *= 2.0f;\n                    }\n\n                    vec2f_t delta = {0.0f, 0.0f};\n                    int step = 0;",
+      "replacements": [
+        {
+          "name": "assign-function-scope-locals",
+          "text": "                    step_count =\n                        (int)projectile->pos.tail.vy.travel_budget;\n                    float heading = projectile->angle - 1.5707964f;\n                    step_x =\n                        (float)cos(heading) * frame_dt * 20.0f;\n                    step_y =\n                        (float)sin(heading) * frame_dt * 20.0f;\n\n                    if (perk_count_get(perk_id_barrel_greaser) != 0\n                        && projectile->pos.tail.vy.owner_id < 0) {\n                        step_count *= 2.0f;\n                    }\n\n                    delta.x = 0.0f;\n                    delta.y = 0.0f;\n                    step = 0;"
+        }
+      ]
+    }
+  ]
+}

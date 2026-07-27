@@ -60,6 +60,11 @@ vec2f_t *__stdcall vec2_normalize_dispatch(
 
 extern "C" void projectile_update(void)
 {
+    int step_count;
+    float step_x;
+    float step_y;
+    vec2f_t delta;
+    int step;
     float ion_damage_scale = 1.0f;
 
     ++projectile_update_tick;
@@ -123,12 +128,12 @@ extern "C" void projectile_update(void)
                         < projectile->position.y) {
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                 } else {
-                    int step_count =
+                    step_count =
                         (int)projectile->pos.tail.vy.travel_budget;
                     float heading = projectile->angle - 1.5707964f;
-                    float step_x =
+                    step_x =
                         (float)cos(heading) * frame_dt * 20.0f;
-                    float step_y =
+                    step_y =
                         (float)sin(heading) * frame_dt * 20.0f;
 
                     if (perk_count_get(perk_id_barrel_greaser) != 0
@@ -136,8 +141,9 @@ extern "C" void projectile_update(void)
                         step_count *= 2.0f;
                     }
 
-                    vec2f_t delta = {0.0f, 0.0f};
-                    int step = 0;
+                    delta.x = 0.0f;
+                    delta.y = 0.0f;
+                    step = 0;
                     if (step_count > 0) {
                         do {
                             delta.x += step_x

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-explosion-declarations",
+      "find": "extern \"C\" void projectile_update(void)\n{\n    int step_count;",
+      "replacements": [
+        {
+          "name": "function-scope-color-then-extent",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    effect_color_t secondary_color;\n    float secondary_extent;\n    int step_count;"
+        },
+        {
+          "name": "function-scope-extent-then-color",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    float secondary_extent;\n    effect_color_t secondary_color;\n    int step_count;"
+        },
+        {
+          "name": "function-scope-color-only",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    effect_color_t secondary_color;\n    int step_count;"
+        },
+        {
+          "name": "function-scope-extent-only",
+          "text": "extern \"C\" void projectile_update(void)\n{\n    float secondary_extent;\n    int step_count;"
+        }
+      ]
+    },
+    {
+      "name": "secondary-explosion-use",
+      "find": "                    float extent = secondary->pos.vx.vy.vel_y * 256.0f;\n                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n                    fx_queue_add(\n                        0x10,\n                        &secondary->position,\n                        extent,\n                        extent,\n                        0.0f,\n                        &color);",
+      "replacements": [
+        {
+          "name": "assign-color-and-extent",
+          "text": "                    secondary_extent =\n                        secondary->pos.vx.vy.vel_y * 256.0f;\n                    secondary_color.r = 0.0f;\n                    secondary_color.g = 0.0f;\n                    secondary_color.b = 0.0f;\n                    secondary_color.a = 0.25f;\n                    fx_queue_add(\n                        0x10,\n                        &secondary->position,\n                        secondary_extent,\n                        secondary_extent,\n                        0.0f,\n                        &secondary_color);"
+        },
+        {
+          "name": "assign-color-only",
+          "text": "                    float extent =\n                        secondary->pos.vx.vy.vel_y * 256.0f;\n                    secondary_color.r = 0.0f;\n                    secondary_color.g = 0.0f;\n                    secondary_color.b = 0.0f;\n                    secondary_color.a = 0.25f;\n                    fx_queue_add(\n                        0x10,\n                        &secondary->position,\n                        extent,\n                        extent,\n                        0.0f,\n                        &secondary_color);"
+        },
+        {
+          "name": "assign-extent-only",
+          "text": "                    secondary_extent =\n                        secondary->pos.vx.vy.vel_y * 256.0f;\n                    effect_color_t color = {\n                        0.0f,\n                        0.0f,\n                        0.0f,\n                        0.25f,\n                    };\n                    fx_queue_add(\n                        0x10,\n                        &secondary->position,\n                        secondary_extent,\n                        secondary_extent,\n                        0.0f,\n                        &color);"
+        }
+      ]
+    }
+  ]
+}
