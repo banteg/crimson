@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-03-speed-roll-lifetime",
+      "find": "                } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_03) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP1;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "block-roll-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_03) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP1;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "direct-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_SPIDER_SP1_RANDOM_03) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP1;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-05-speed-roll-lifetime",
+      "find": "                } else if (template_id == SPAWN_ID_SPIDER_SP2_RANDOM_05) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP2;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "block-roll-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_SPIDER_SP2_RANDOM_05) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP2;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "direct-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_SPIDER_SP2_RANDOM_05) {\n                    creature->type_id = CREATURE_TYPE_SPIDER_SP2;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-06-speed-roll-lifetime",
+      "find": "                } else if (template_id == SPAWN_ID_ALIEN_RANDOM_06) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "block-roll-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_RANDOM_06) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "direct-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_RANDOM_06) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.6f;\n                    creature->color.g = 0.6f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    }
+  ]
+}

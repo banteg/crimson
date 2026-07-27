@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-arc-point-sequencing",
+      "find": "                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip0 =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + side * 10.0f;\n                    projectile_render_vec2_t strip2 =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - side * 10.0f;",
+      "replacements": [
+        {
+          "name": "sequential-end",
+          "text": "                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + side * 10.0f;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - side * 10.0f;"
+        },
+        {
+          "name": "copy-mutate-sequential",
+          "text": "                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start;\n                    projectile_render_vec2_t strip1 = start;\n                    strip0 -= side * 10.0f;\n                    strip1 += side * 10.0f;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 = end;\n                    projectile_render_vec2_t strip3 = end;\n                    strip2 += side * 10.0f;\n                    strip3 -= side * 10.0f;"
+        },
+        {
+          "name": "named-width-sequential",
+          "text": "                    projectile_render_vec2_t width = side * 10.0f;\n                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start - width;\n                    projectile_render_vec2_t strip1 = start + width;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 = end + width;\n                    projectile_render_vec2_t strip3 = end - width;"
+        },
+        {
+          "name": "named-width-copy-mutate",
+          "text": "                    projectile_render_vec2_t width = side * 10.0f;\n                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t strip0 = start;\n                    projectile_render_vec2_t strip1 = start;\n                    strip0 -= width;\n                    strip1 += width;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 = end;\n                    projectile_render_vec2_t strip3 = end;\n                    strip2 += width;\n                    strip3 -= width;"
+        }
+      ]
+    },
+    {
+      "name": "ion-arc-perpendicular",
+      "find": "                    projectile_render_vec2_t side(-arc.y, arc.x);\n                    side = side * effect_scale;",
+      "replacements": [
+        {
+          "name": "assigned-side",
+          "text": "                    projectile_render_vec2_t side;\n                    side.x = -arc.y;\n                    side.y = arc.x;\n                    side = side * effect_scale;"
+        },
+        {
+          "name": "scaled-constructor",
+          "text": "                    projectile_render_vec2_t side(\n                        -arc.y * effect_scale,\n                        arc.x * effect_scale);"
+        },
+        {
+          "name": "inplace-arc-then-scale",
+          "text": "                    float old_arc_x = arc.x;\n                    arc.x = -arc.y;\n                    arc.y = old_arc_x;\n                    projectile_render_vec2_t side = arc * effect_scale;"
+        },
+        {
+          "name": "inplace-arc-scaled-members",
+          "text": "                    float old_arc_x = arc.x;\n                    arc.x = -arc.y * effect_scale;\n                    arc.y = old_arc_x * effect_scale;\n                    projectile_render_vec2_t &side = arc;"
+        }
+      ]
+    }
+  ]
+}

@@ -638,3 +638,71 @@ The unchanged source SHA-256 is
 `7c425f58640eb8c79f06b87894c91ac216211960ad7225b768d1c30429a15789`.
 The updated `experiments.jsonl` SHA-256 is
 `bdea8c6c628b83742b8a22d52b2f5349ff12350dcf05ed2e405d0e68603db10f`.
+
+## Per-instance heading epilogue recovery
+
+This slice revisited the preceding shared-helper result from live native
+evidence rather than accepting its aggregate near-win. It started at
+**81.0117%**, with **17,246.5858 fuzzy-weighted bytes** and a
+**4,042.4142-byte fuzzy gap**, 5,412 candidate instructions versus 5,421
+native instructions, a 172-instruction exact prefix, and reference audit
+**1,554/0/9**.
+
+The three inlined heading instances have three distinct native schedules:
+
+- Aiming at `0x0044cc20..0x0044cc5e` performs Y, then X, then the final
+  `set_color`;
+- Moving at `0x0044cfc6..0x0044d010` performs `set_color`, then X, then Y;
+  and
+- Misc at `0x0044d69c..0x0044d6f1` performs `set_color`, then Y, then X.
+
+Those orders are explicit in the x87 operations and constants: native Moving
+adds `8.0f` at `0x0044cfe8..0x0044cfff` before adding `18.0f` at
+`0x0044d003..0x0044d010`, while native Misc adds `18.0f` at
+`0x0044d6be..0x0044d6d2` before adding `8.0f` at
+`0x0044d6d6..0x0044d6e5`. The formerly shared source therefore erased a real
+per-instance scheduling distinction.
+
+Three complete recorded sweeps evaluated 33 variants without truncation.
+First, specializing Moving and Misc together to color/Y/X recovered 135.9593
+weighted bytes, but left two new reference mismatches. Four natural helper
+spellings then showed that compound assignment, direct assignment, and staged
+scalars compile byte-identically. The color/X/Y form recovered the Moving
+instance's two references but regressed Misc, confirming that the residual was
+not arbitrary compiler noise. Finally, a split matrix gave Moving its native
+color/X/Y helper and Misc its native color/Y/X helper. The winning triple
+recovered another 15.7201 weighted bytes over the shared specialized helper,
+resolved both reference mismatches, and added two resolved references. Adding
+the unused helper is neutral; switching Misc without defining it fails to
+compile; and changing the still-shared helper to X/Y without splitting Misc
+loses 3.9300 weighted bytes. All seven split variants were evaluated.
+
+The intended correlation is localized and direct. After the retained split,
+the prior Moving mismatch region beginning at native `0x0044cfd6` disappears
+from `--regions`, and the remaining neighboring region begins earlier in the
+heading's temporary-vector setup at `0x0044cf7e`. The corresponding Misc
+epilogue also disappears; its next reported mismatch begins after the heading
+at `0x0044d6ef`.
+
+The final source matches **81.7242%**, with **17,398.2653
+fuzzy-weighted bytes** and a **3,890.7347-byte fuzzy gap**, 5,413 candidate
+instructions versus 5,421 native instructions, the same 172-instruction exact
+prefix, and reference audit **1,559/0/9**. Relative to the slice baseline,
+this recovers **151.6795 weighted bytes** and **0.7125 percentage points**,
+adds one candidate instruction and five resolved references, and introduces
+no net reference debt.
+
+The retained source SHA-256 is
+`377d5fc3a10b21f64307532ef9f4c60d53bbff2ee6546d317807895f9bde7964`.
+Recorded spec SHA-256 values are:
+
+- initial Moving/Misc specialization:
+  `9ac52fb92d5679a5f85a917c294109063ca053a21b6cfcd02dbc1c9f5d0c8651`;
+- helper-shape refinement:
+  `992baf02b2bcd83808c2fe2df5cf660d95c5df89d62bcfdb864e0adc12cc1586`;
+  and
+- split per-instance schedules:
+  `aee95a25e37e8a7ce3520e8a49a6e1d4e7a4549440b3f2c96447af9ff3a32dbc`.
+
+The updated `experiments.jsonl` SHA-256 is
+`51d326e6bea9dd518fdd8421f73f5dc658b68672991f4177b7a75f0557019b3d`.

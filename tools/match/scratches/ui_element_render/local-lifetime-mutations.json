@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "transform-shadow-declaration",
+      "find": "        if (element->use_offset_render == 0) {\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
+      "replacements": [
+        {
+          "name": "mode-scope",
+          "text": "        if (element->use_offset_render == 0) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
+        }
+      ]
+    },
+    {
+      "name": "offset-shadow-declaration",
+      "find": "        } else if (element->use_offset_render == 1) {\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();\n\n                ui_render_vec2_t shadow_pos;",
+      "replacements": [
+        {
+          "name": "mode-scope",
+          "text": "        } else if (element->use_offset_render == 1) {\n            ui_render_vec2_t shadow_pos;\n            if (config_blob.fx_detail_flag0) {\n                grim_interface_ptr->grim_set_config_var(0x13, 1u);\n                grim_interface_ptr->grim_begin_batch();"
+        }
+      ]
+    },
+    {
+      "name": "panel-position-declaration",
+      "find": "            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            ui_render_vec2_t render_pos;\n            render_pos.x =",
+      "replacements": [
+        {
+          "name": "before-render-state",
+          "text": "            ui_render_vec2_t render_pos;\n            grim_interface_ptr->grim_set_config_var(0x13, 5u);\n            grim_interface_ptr->grim_begin_batch();\n            render_pos.x ="
+        }
+      ]
+    },
+    {
+      "name": "counter-position-declaration",
+      "find": "        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform(",
+      "replacements": [
+        {
+          "name": "counter-scope",
+          "text": "        ui_render_vec2_t counter_render_pos;\n        grim_interface_ptr->grim_begin_batch();\n        if (!element->use_offset_render) {\n            grim_interface_ptr->grim_submit_vertices_transform("
+        }
+      ]
+    },
+    {
+      "name": "counter-position-use",
+      "find": "        } else {\n            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "counter-scope",
+          "text": "        } else {\n            counter_render_pos.x =\n                element->render_offset_x + element->pos_x;\n            counter_render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &counter_render_pos.x);"
+        }
+      ]
+    }
+  ]
+}

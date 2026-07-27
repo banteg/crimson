@@ -919,3 +919,85 @@ score-only source change was retained. The final source SHA-256 is
 `511f6e20a5f868e673511573252e1676416a3ca69f2884132d0e872cb5278929`;
 the 38-record `experiments.jsonl` SHA-256 is
 `727aa640c532445e4559235d1884d3791087f3421d99242d4d12840002579923`.
+
+## Alternate Weapon pointer lifetimes and Fire Cough product tree
+
+This slice started from 4,051/4,206 instructions at
+`62.5166525372411%`: 10,163.332202979289 weighted bytes, a
+6,093.667797020711-byte fuzzy gap, prefix 7, and `800/0/2` references.
+
+Live Binary Ninja exposes three address lifetimes in Alternate Weapon. Native
+materializes `&player->shot_cooldown` in `EBP` at `0x0041573b`, uses it for
+both readiness comparisons, carries it across the swap, and uses it again for
+the `+0.1f` penalty at `0x004158d1..0x004158dd`. Native separately
+materializes `&player->reload_timer` in `ECX` at `0x00415875` and performs the
+current/alternate exchange through that pointer at
+`0x00415881..0x0041588f`. Representing both as ordinary source pointers
+preserves the gameplay fields and changes VC6's swap schedule in the native
+direction.
+
+The shot-cooldown plan exhaustively evaluated all `15/15` subsets through four
+sites (spec SHA-256
+`2877afd9f646c30145070c2d5ebd438b5d07cc3467748817bd0eea0c5e29500e`).
+Its minimal winning interaction was pointer introduction plus the swap use,
+worth `+7.875499576117` weighted bytes. The complete evidenced lifetime has
+the same score and is retained. The adjacent three-site field-pointer plan
+evaluated all `7/7` subsets (spec SHA-256
+`54b75a67049eac0a5f294e4d6a29c16fda1d0c4dea7705c439ae09498b6e30d2`).
+Only the reload-timer pointer won, by another `+7.875499576117` weighted
+bytes. A current-weapon pointer, its reload-SFX use, and both interactions
+were neutral. Across the two retained changes, Alternate Weapon's original
+361-byte comparison region rises from 102 to 120 fuzzy bytes.
+
+The Fire Cough spread calculation supplied a smaller but exact x87-tree
+correction. Native `0x00413b43..0x00413b57` converts the second random value,
+loads the saved spread radius, multiplies radius by the selected player's
+spread heat, combines those values with `fmulp`, and finally multiplies by
+`0.001953125f`. The retained source spells this as
+`random * (radius * spread_heat) * 0.001953125f`. The four-way product plan
+(spec SHA-256
+`fe6ecd2a0228b16dac74841837ad8cf474d553d136a864337a76f38b6dd6c861`)
+found that native grouping and the equivalent
+`(radius * spread_heat) * random` spelling tied at
+`+2.704639960992` weighted bytes and one aligned instruction. The
+random-first form is retained because it directly follows native evaluation
+order.
+
+The resulting canonical build is 4,052/4,206 instructions at
+`62.6301767982562%`: 10,181.787842092515 weighted bytes, a
+6,075.212157907485-byte gap, prefix 7, and unchanged `800/0/2` references.
+This is a total gain of `+18.455639113226` weighted bytes and
+`+0.113524261015` percentage points. A recorded zero-delta confirmation uses
+source SHA-256
+`8970ab7e19f674b8d773907959adfe097de8cb628d26c246d646abcd0359ffad`.
+
+Seven additional native-guided families were recorded and rejected:
+
+- the six mode-2 turn-scale forms were neutral or lost
+  `16.981724776231` weighted bytes (spec SHA-256
+  `8acad352815f5b20beeb49795ec20a031e13d696ab40ca683bdbd4d3b84046b1`);
+- eight typed inlined-swap variants lost 173.562--193.289 bytes and 21
+  references when used (spec SHA-256
+  `570c776728605c23318466e6fbff1d5b200e1f1d022b6d807acec54049e97649`);
+- four auto-target aim pointer/reference forms and three Multi Plasma
+  block-local position forms each produced the same one-instruction,
+  `16.981724776231`-byte allocation regression (spec SHA-256 values
+  `fea54fbd0e047a1777463a61b9974646c606de82d44ea87a554374da84f8e5b9`
+  and
+  `b98354bafb8fdfe7764fc1e791e3cd1cb047a30b605b599203c38d3c28cf9657`);
+- three Fire Cough selected-player/aim schedules were byte-neutral, while a
+  split trig temporary lost 41.833 bytes and four references (spec SHA-256
+  `3828daeb252c82fbb868003f195594b656195581c1ca35a3e36806d25c928317`);
+- the eight Fire Cough position-pointer/receiver variants lost
+  16.980--63.960 bytes, with receiver interactions also adding two reference
+  mismatches (spec SHA-256
+  `3d0756e0a43bd6bec9a90d7e84ca61d45539dcf4f9be72024f731db4392f7452`);
+- the three Fire Cough Y-before-X axis-order variants were neutral or lost
+  3.937 weighted bytes (spec SHA-256
+  `2775a078cbba658c19ade480ddf4d42b264f2e6b0c288f63579279884d949c8c`).
+
+All of those sweeps were exhaustive within their bounded plans. No volatile
+access, artificial dependency, dummy reference, or layout-only control flow is
+retained. The append-only experiment log now contains 49 records; its final
+SHA-256 is
+`832662202270490f82842839b40701779cf383b9a6961eaacaaa75a005cbdc0e`.

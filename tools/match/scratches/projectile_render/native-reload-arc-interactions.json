@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "pulse-fade-life-reload",
+      "find": "                float fade = projectile_render_clamp(life * 2.5f);",
+      "replacements": [
+        {
+          "name": "direct-primary-life",
+          "text": "                float fade = projectile_render_clamp(\n                    primary->vy.life_timer * 2.5f);"
+        }
+      ]
+    },
+    {
+      "name": "ion-live-head-type-reload",
+      "find": "            if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-primary-type",
+          "text": "            if (primary->vy.type_id\n                == PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    },
+    {
+      "name": "ion-fade-trail-type-reload",
+      "find": "                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-primary-type",
+          "text": "                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    },
+    {
+      "name": "ion-arc-perpendicular-lifetime",
+      "find": "                    projectile_render_vec2_t side(-arc.y, arc.x);\n                    side = side * effect_scale;\n                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip0 =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + side * 10.0f;\n                    projectile_render_vec2_t strip2 =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - side * 10.0f;",
+      "replacements": [
+        {
+          "name": "inplace-direct-scaled-side",
+          "text": "                    float old_arc_x = arc.x;\n                    arc.x = -arc.y;\n                    arc.y = old_arc_x;\n                    projectile_render_vec2_t start =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)&projectile->position;\n                    projectile_render_vec2_t side = arc * effect_scale;\n                    projectile_render_vec2_t strip0 =\n                        start - side * 10.0f;\n                    projectile_render_vec2_t strip1 =\n                        start + side * 10.0f;\n                    projectile_render_vec2_t end =\n                        camera_offset\n                        + *(projectile_render_vec2_t *)\n                             &creature_pool[creature_index].pos_x;\n                    projectile_render_vec2_t strip2 =\n                        end + side * 10.0f;\n                    projectile_render_vec2_t strip3 =\n                        end - side * 10.0f;"
+        }
+      ]
+    }
+  ]
+}

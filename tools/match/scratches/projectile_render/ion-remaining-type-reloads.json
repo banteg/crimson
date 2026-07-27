@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ion-live-trail-color-type-reload",
+      "find": "                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "direct-primary-type",
+          "text": "                if (primary->vy.type_id\n                    == PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    },
+    {
+      "name": "ion-fade-effect-scale-type-reload",
+      "find": "            float effect_scale;\n            if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {\n                effect_scale = 1.05f;\n            } else if (type_id == PROJECTILE_TYPE_ION_RIFLE) {\n                effect_scale = 2.2f;\n            } else {\n                effect_scale = 0.8f;\n                if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {\n                    effect_scale = 3.5f;\n                }\n            }",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-primary-type",
+          "text": "            float effect_scale;\n            if (primary->vy.type_id\n                == PROJECTILE_TYPE_ION_MINIGUN) {\n                effect_scale = 1.05f;\n            } else if (primary->vy.type_id\n                == PROJECTILE_TYPE_ION_RIFLE) {\n                effect_scale = 2.2f;\n            } else {\n                effect_scale = 0.8f;\n                if (primary->vy.type_id\n                    != PROJECTILE_TYPE_FIRE_BULLETS) {\n                    effect_scale = 3.5f;\n                }\n            }"
+        }
+      ]
+    },
+    {
+      "name": "ion-arc-gate-type-reload",
+      "find": "            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS) {",
+      "occurrence": 3,
+      "replacements": [
+        {
+          "name": "direct-primary-type",
+          "text": "            if (primary->vy.type_id\n                != PROJECTILE_TYPE_FIRE_BULLETS) {"
+        }
+      ]
+    }
+  ]
+}

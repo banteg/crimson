@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "shot-cooldown-pointer-introduction",
+      "find": "    normal_fire_ready = false;\n    perk_fire_ready = false;",
+      "replacements": [
+        {
+          "name": "pointer-after-aim-heading",
+          "text": "    float *shot_cooldown = &player->shot_cooldown;\n    normal_fire_ready = (bool)0;\n    perk_fire_ready = false;"
+        }
+      ]
+    },
+    {
+      "name": "shot-cooldown-readiness-uses",
+      "find": "    if (player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {\n        normal_fire_ready = true;\n        player->reload_active = 0;\n    }\n    if (player->shot_cooldown <= 0.0f\n        && player->experience > 0",
+      "replacements": [
+        {
+          "name": "pointer-readiness-tests",
+          "text": "    if (*shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {\n        normal_fire_ready = true;\n        player->reload_active = 0;\n    }\n    if (*shot_cooldown <= 0.0f\n        && player->experience > 0"
+        }
+      ]
+    },
+    {
+      "name": "shot-cooldown-swap-use",
+      "find": "            float swap_shot_cooldown = player->alt_shot_cooldown;\n            player->alt_shot_cooldown = player->shot_cooldown;\n            player->shot_cooldown = swap_shot_cooldown;",
+      "replacements": [
+        {
+          "name": "pointer-current-shot-cooldown",
+          "text": "            float swap_shot_cooldown = player->alt_shot_cooldown;\n            player->alt_shot_cooldown = *shot_cooldown;\n            *shot_cooldown = swap_shot_cooldown;"
+        }
+      ]
+    },
+    {
+      "name": "shot-cooldown-penalty-use",
+      "find": "            player->shot_cooldown = player->shot_cooldown + 0.1f;",
+      "replacements": [
+        {
+          "name": "pointer-penalty",
+          "text": "            *shot_cooldown = *shot_cooldown + 0.1f;"
+        }
+      ]
+    }
+  ]
+}

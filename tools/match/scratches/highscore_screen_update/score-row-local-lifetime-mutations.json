@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-loop-local-order",
+      "find": "    int score_number = 1;\n    int selected_score = -1;\n    int score_count = 0;\n    char **score_line_item = score_line_items;\n    position.y += 16.0f;\n    position.y += 1.0f;\n    unsigned char *record_flags = &highscore_table[0].flags;\n    char (*score_line_buffer)[164] = score_line_buffers;",
+      "replacements": [
+        {
+          "name": "native-statement-order",
+          "text": "    position.y += 16.0f;\n    int score_number = 1;\n    int selected_score = -1;\n    int score_count = 0;\n    char **score_line_item = score_line_items;\n    position.y += 1.0f;\n    unsigned char *record_flags = &highscore_table[0].flags;\n    char (*score_line_buffer)[164] = score_line_buffers;"
+        },
+        {
+          "name": "declare-then-native-assign",
+          "text": "    int score_number;\n    int selected_score;\n    int score_count;\n    char **score_line_item;\n    unsigned char *record_flags;\n    char (*score_line_buffer)[164];\n    position.y += 16.0f;\n    score_number = 1;\n    selected_score = -1;\n    score_count = 0;\n    score_line_item = score_line_items;\n    position.y += 1.0f;\n    record_flags = &highscore_table[0].flags;\n    score_line_buffer = score_line_buffers;"
+        },
+        {
+          "name": "declare-cursors-after-first-y",
+          "text": "    int score_number;\n    int selected_score;\n    int score_count;\n    position.y += 16.0f;\n    score_number = 1;\n    selected_score = -1;\n    score_count = 0;\n    char **score_line_item = score_line_items;\n    position.y += 1.0f;\n    unsigned char *record_flags = &highscore_table[0].flags;\n    char (*score_line_buffer)[164] = score_line_buffers;"
+        },
+        {
+          "name": "both-y-before-locals",
+          "text": "    position.y += 16.0f;\n    position.y += 1.0f;\n    int score_number = 1;\n    int selected_score = -1;\n    int score_count = 0;\n    char **score_line_item = score_line_items;\n    unsigned char *record_flags = &highscore_table[0].flags;\n    char (*score_line_buffer)[164] = score_line_buffers;"
+        },
+        {
+          "name": "cursor-declarations-before-counts",
+          "text": "    char **score_line_item;\n    unsigned char *record_flags;\n    char (*score_line_buffer)[164];\n    int score_number;\n    int selected_score;\n    int score_count;\n    position.y += 16.0f;\n    score_number = 1;\n    selected_score = -1;\n    score_count = 0;\n    score_line_item = score_line_items;\n    position.y += 1.0f;\n    record_flags = &highscore_table[0].flags;\n    score_line_buffer = score_line_buffers;"
+        },
+        {
+          "name": "native-order-buffer-before-flags",
+          "text": "    position.y += 16.0f;\n    int score_number = 1;\n    int selected_score = -1;\n    int score_count = 0;\n    char **score_line_item = score_line_items;\n    position.y += 1.0f;\n    char (*score_line_buffer)[164] = score_line_buffers;\n    unsigned char *record_flags = &highscore_table[0].flags;"
+        }
+      ]
+    },
+    {
+      "name": "prefix-local-lifetime",
+      "find": "        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }\n\n        int prefix_length = 0;",
+      "replacements": [
+        {
+          "name": "initialize-before-empty-check",
+          "text": "        int prefix_length = 0;\n        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }"
+        },
+        {
+          "name": "split-before-empty-check",
+          "text": "        int prefix_length;\n        prefix_length = 0;\n        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }"
+        },
+        {
+          "name": "declare-before-assign-after",
+          "text": "        int prefix_length;\n        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }\n        prefix_length = 0;"
+        },
+        {
+          "name": "unsigned-before-empty-check",
+          "text": "        unsigned int prefix_length = 0;\n        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }"
+        },
+        {
+          "name": "direct-init-after-empty-check",
+          "text": "        if (HIGHSCORE_RECORD_FROM_FLAGS(record_flags)->survival_elapsed_ms == 0) {\n            break;\n        }\n\n        int prefix_length(0);"
+        }
+      ]
+    }
+  ]
+}

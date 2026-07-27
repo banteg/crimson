@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "popup-row-origin",
+      "find": "    int text_y = (int)bonus_y + 1;\n    int icon_y = (int)bonus_y - 5;",
+      "replacements": [
+        {
+          "name": "staged-increment-derived-icon",
+          "text": "    int text_y = (int)bonus_y;\n    ++text_y;\n    int icon_y = text_y - 6;"
+        },
+        {
+          "name": "derived-icon",
+          "text": "    int text_y = (int)bonus_y + 1;\n    int icon_y = text_y - 6;"
+        },
+        {
+          "name": "split-derived-icon",
+          "text": "    int text_y = (int)bonus_y + 1;\n    int icon_y;\n    icon_y = text_y - 6;"
+        },
+        {
+          "name": "staged-add-derived-icon",
+          "text": "    int text_y = (int)bonus_y;\n    text_y += 1;\n    int icon_y = text_y - 6;"
+        }
+      ]
+    }
+  ]
+}

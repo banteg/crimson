@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "billboard-type-reload",
+      "find": "        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        if (type_id == PROJECTILE_TYPE_PISTOL) {",
+      "replacements": [
+        {
+          "name": "reassign-after-rotation",
+          "text": "        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        type_id = projectile->pos.tail.vy.type_id;\n        if (type_id == PROJECTILE_TYPE_PISTOL) {"
+        },
+        {
+          "name": "new-local-after-rotation",
+          "text": "        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        projectile_type_id_t draw_type_id =\n            projectile->pos.tail.vy.type_id;\n        if (draw_type_id == PROJECTILE_TYPE_PISTOL) {"
+        },
+        {
+          "name": "direct-field-after-rotation",
+          "text": "        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        if (projectile->pos.tail.vy.type_id\n            == PROJECTILE_TYPE_PISTOL) {"
+        }
+      ]
+    },
+    {
+      "name": "billboard-second-type-use",
+      "find": "        } else if ((int)type_id == 4) {",
+      "replacements": [
+        {
+          "name": "draw-local",
+          "text": "        } else if ((int)draw_type_id == 4) {"
+        },
+        {
+          "name": "direct-field",
+          "text": "        } else if ((int)projectile->pos.tail.vy.type_id == 4) {"
+        }
+      ]
+    }
+  ]
+}

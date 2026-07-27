@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-34-speed-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-remainder-alpha",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-before-remainder",
+          "text": "                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-remainder-alpha-before-conversion",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-34-tint-roll-lifetime",
+      "find": "                    creature->color.r = 0.5f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.5f;",
+      "replacements": [
+        {
+          "name": "direct-remainder-red-blue-before-conversion",
+          "text": "                    int random_tint_remainder = crt_rand() % 0x28;\n                    creature->color.r = 0.5f;\n                    creature->color.b = 0.5f;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        },
+        {
+          "name": "block-remainder-red-blue-before-conversion",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder = random_tint_roll % 0x28;\n                    creature->color.r = 0.5f;\n                    creature->color.b = 0.5f;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        },
+        {
+          "name": "block-roll-red-blue-before-remainder",
+          "text": "                    int random_tint_roll = crt_rand();\n                    creature->color.r = 0.5f;\n                    creature->color.b = 0.5f;\n                    int random_tint_remainder = random_tint_roll % 0x28;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        }
+      ]
+    },
+    {
+      "name": "template-35-speed-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.b = 0.8f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "direct-remainder-alpha-blue",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.b = 0.8f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-remainder-alpha-blue",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.b = 0.8f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        },
+        {
+          "name": "block-roll-alpha-blue-before-remainder",
+          "text": "                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->color.b = 0.8f;\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-35-tint-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->color.g, 0x14, 0.01f, 0.8f);\n                    creature->color.r = 0.8f;",
+      "replacements": [
+        {
+          "name": "block-roll-red-before-remainder",
+          "text": "                    int random_tint_roll = crt_rand();\n                    creature->color.r = 0.8f;\n                    int random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        },
+        {
+          "name": "split-remainder-red-before-assignment",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder;\n                    creature->color.r = 0.8f;\n                    random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        },
+        {
+          "name": "block-remainder-red-before-conversion",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.r = 0.8f;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        }
+      ]
+    }
+  ]
+}

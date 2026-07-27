@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-quad-pointer",
+      "find": "static __inline float *ui_element_quad(\n    ui_element_t *element,\n    int vertex_index)\n{\n    return &element->vertices[vertex_index].x;\n}",
+      "replacements": [
+        {
+          "name": "force-inline",
+          "text": "static __forceinline float *ui_element_quad(\n    ui_element_t *element,\n    int vertex_index)\n{\n    return &element->vertices[vertex_index].x;\n}"
+        },
+        {
+          "name": "record-cast",
+          "text": "static __inline float *ui_element_quad(\n    ui_element_t *element,\n    int vertex_index)\n{\n    return (float *)&element->vertices[vertex_index];\n}"
+        },
+        {
+          "name": "position-member",
+          "text": "static __inline float *ui_element_quad(\n    ui_element_t *element,\n    int vertex_index)\n{\n    return &element->vertices[vertex_index].position.x;\n}"
+        },
+        {
+          "name": "base-plus-stride",
+          "text": "static __inline float *ui_element_quad(\n    ui_element_t *element,\n    int vertex_index)\n{\n    return &element->vertices[0].x + vertex_index * 7;\n}"
+        }
+      ]
+    },
+    {
+      "name": "counter-quad-pointer",
+      "find": "static __inline float *ui_element_counter_quad(ui_element_t *element)\n{\n    return &element->overlay_vertices[0].x;\n}",
+      "replacements": [
+        {
+          "name": "force-inline",
+          "text": "static __forceinline float *ui_element_counter_quad(ui_element_t *element)\n{\n    return &element->overlay_vertices[0].x;\n}"
+        },
+        {
+          "name": "record-cast",
+          "text": "static __inline float *ui_element_counter_quad(ui_element_t *element)\n{\n    return (float *)&element->overlay_vertices[0];\n}"
+        },
+        {
+          "name": "position-member",
+          "text": "static __inline float *ui_element_counter_quad(ui_element_t *element)\n{\n    return &element->overlay_vertices[0].position.x;\n}"
+        }
+      ]
+    }
+  ]
+}

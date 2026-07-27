@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-type-shape",
+      "find": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n",
+      "replacements": [
+        {
+          "name": "class-public-fields",
+          "text": "class ui_layout_vec2_t {\npublic:\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "constructor-body",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "explicit-copy-constructor",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t(const ui_layout_vec2_t &other)\n        : x(other.x), y(other.y) {}\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "named-operator-result",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        ui_layout_vec2_t result(other.x + x, other.y + y);\n        return result;\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "nonconst-operator-parameter",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t operator+(ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "nonconst-member-operator",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other)\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "forceinline-members",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    __forceinline ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    __forceinline ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    __forceinline ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "explicit-inline-members",
+          "text": "struct ui_layout_vec2_t {\n    float x;\n    float y;\n\n    inline ui_layout_vec2_t(float x_value, float y_value)\n        : x(x_value), y(y_value) {}\n\n    inline ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    inline ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        },
+        {
+          "name": "vec2-base",
+          "text": "struct ui_layout_vec2_t : vec2f_t {\n    ui_layout_vec2_t(float x_value, float y_value)\n    {\n        x = x_value;\n        y = y_value;\n    }\n\n    ui_layout_vec2_t operator+(const ui_layout_vec2_t &other) const\n    {\n        return ui_layout_vec2_t(other.x + x, other.y + y);\n    }\n\n    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n};\n"
+        }
+      ]
+    }
+  ]
+}

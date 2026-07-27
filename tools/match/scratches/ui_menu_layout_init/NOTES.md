@@ -241,3 +241,39 @@ named-aggregate spellings covered the observed store order. All regress by at
 least 61.37 weighted bytes; scalar stores also delete 16 constructor-shaped
 instructions present in native. The existing four aggregate assignments remain
 the best evidenced source shape.
+
+## Native branch, prompt UV, and timeline ordering
+
+Three fresh coherent regions produced native-supported source-order gains.
+First, native implements the right-panel X adjustment at
+`0x00450e36..0x00450e6f` as a descending branch tree: widths above 800 use
+`right_panel_x - 65`, widths above 640 use `right_panel_x - 30`, and the
+remaining path uses `right_panel_x + 10`. The five-variant
+`right-panel-branch-shape-mutations.json` sweep found the nested native shape
+and its equivalent descending-threshold spelling tied for best. The nested
+shape was retained, adding **10.23 fuzzy-weighted bytes** and resolving two
+reference mismatches.
+
+Second, native stores the prompt U coordinates in slot order 0, 1, 3, 2 at
+`0x00451701`, `0x0045170b`, `0x00451715`, and `0x0045171f`.
+`prompt-uv-store-order-mutations.json` covered six plausible schedules; the
+native order was the sole winner, adding **5.11 fuzzy-weighted bytes** and one
+resolved reference. The six prompt setup schedule variants were byte- and
+reference-neutral, so none was retained.
+
+Finally, native loads slot 30's timeline end before its timeline start at
+`0x00450b8c` and `0x00450b98`, then stores start and end at `0x00450bb9` and
+`0x00450bcb`. Reordering the two independent source updates to end-then-start
+is fuzzy-weighted neutral, but improves the reference audit by four resolved
+references and removes four mismatches. The staged alternatives in
+`slot-30-timeline-order-mutations.json` each lost 122.75 weighted bytes.
+
+The retained result moves from **88.19788%** to **88.40989%**:
+6,382.88 to **6,398.22 weighted bytes**, an 854.12 to **838.78-byte gap**,
+1,408/1,422 instructions, prefix 10, and audit **`482/0/5`** versus
+`474/0/11`. `right-panel-conversion-lifetime-mutations.json` recorded eight
+conversion-lifetime variants; the only nominal weighted improvement
+(0.60 bytes) worsened the reference audit and contradicted native's
+stack-local branch dataflow, so it was rejected. All 24 main-menu position
+lifetime variants regressed, with the best losing 25.57 weighted bytes. Every
+ranking, including these negative results, is recorded in `experiments.jsonl`.

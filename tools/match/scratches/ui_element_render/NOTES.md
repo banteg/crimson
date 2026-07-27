@@ -84,3 +84,34 @@ update callback.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Recorded submit-scheduling sweeps
+
+Fresh live Binary Ninja disassembly anchors the first residual at
+`0x00446e19..0x00446ec7`. Native and candidate compute the same three
+`position + 7.0f` vectors, reuse the same two stack slots, pass the same
+vertex windows/matrix/color, and issue the same virtual calls. The mismatch is
+only the interleaving of `fstp` stores with right-to-left argument pushes.
+The later regions at `0x00446faf..0x00447079` and
+`0x004470b9..0x004471d7` repeat that exact scheduler pattern for offset
+submits.
+
+Three exhaustive mutation sweeps record 74 additional variants with no
+winner:
+
+- `render-position-mutations.json` evaluates 24 panel/counter aggregate,
+  record-type, assignment-order, and array spellings. Natural compiling
+  forms are byte-neutral; reversing the panel component assignments loses
+  17.284 weighted bytes. Five variants that changed only the first panel use
+  to an array are rejected because later uses in that deliberately bounded
+  span still require record members.
+- `local-lifetime-mutations.json` evaluates all 31 combinations of moving
+  vector declarations across render-state and mode scopes. All useful forms
+  are byte-neutral except widening the transform-shadow lifetime, which loses
+  20.741 weighted bytes.
+- `quad-pointer-mutations.json` evaluates all 19 record-cast, named-position,
+  base-plus-stride, and force-inline helper combinations. Every variant is
+  byte-identical to baseline.
+
+The final verified result therefore remains **91.1708%**, a 159.013-byte
+fuzzy gap, 521/521 instructions, prefix 145, and references `65/0/0`.

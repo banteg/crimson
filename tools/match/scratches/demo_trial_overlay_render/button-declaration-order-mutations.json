@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "button-vector-declarations",
+      "find": "    {\n        demo_trial_vec2_t button_position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {\n            demo_trial_vec2_t position;",
+      "replacements": [
+        {
+          "name": "purchase-declared-first",
+          "text": "    {\n        demo_trial_vec2_t position;\n        demo_trial_vec2_t button_position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {"
+        },
+        {
+          "name": "purchase-declared-after-origin",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        demo_trial_vec2_t position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n\n        {"
+        },
+        {
+          "name": "purchase-declared-after-anchors",
+          "text": "    {\n        demo_trial_vec2_t button_position;\n        button_position.x = xy[0] + 22.0f;\n        float button_y = xy[1] + 212.0f;\n        demo_trial_vec2_t position;\n\n        {"
+        }
+      ]
+    }
+  ]
+}

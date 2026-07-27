@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ammo-texture-dispatch",
+      "find": "            if (ammo_class == 1) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indFire.jaz\"),\n                    0);\n            } else if (ammo_class == 0) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indBullet.jaz\"),\n                    0);\n            } else if (ammo_class == 2) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indRocket.jaz\"),\n                    0);\n            } else {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            }",
+      "replacements": [
+        {
+          "name": "switch-1-0-2-default",
+          "text": "            switch (ammo_class) {\n            case 1:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indFire.jaz\"),\n                    0);\n                break;\n            case 0:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indBullet.jaz\"),\n                    0);\n                break;\n            case 2:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indRocket.jaz\"),\n                    0);\n                break;\n            default:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n                break;\n            }"
+        },
+        {
+          "name": "switch-0-1-2-default",
+          "text": "            switch (ammo_class) {\n            case 0:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indBullet.jaz\"),\n                    0);\n                break;\n            case 1:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indFire.jaz\"),\n                    0);\n                break;\n            case 2:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indRocket.jaz\"),\n                    0);\n                break;\n            default:\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n                break;\n            }"
+        },
+        {
+          "name": "nested-final-pair",
+          "text": "            if (ammo_class == 1) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indFire.jaz\"),\n                    0);\n            } else if (ammo_class == 0) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indBullet.jaz\"),\n                    0);\n            } else {\n                if (ammo_class == 2) {\n                    grim_interface_ptr->grim_bind_texture(\n                        grim_interface_ptr->grim_get_texture_handle(\n                            \"ui\\\\ui_indRocket.jaz\"),\n                        0);\n                } else {\n                    grim_interface_ptr->grim_bind_texture(\n                        grim_interface_ptr->grim_get_texture_handle(\n                            \"ui\\\\ui_indElectric.jaz\"),\n                        0);\n                }\n            }"
+        },
+        {
+          "name": "selected-name-switch",
+          "text": "            const char *ammo_texture_name;\n            switch (ammo_class) {\n            case 1:\n                ammo_texture_name = \"ui\\\\ui_indFire.jaz\";\n                break;\n            case 0:\n                ammo_texture_name = \"ui\\\\ui_indBullet.jaz\";\n                break;\n            case 2:\n                ammo_texture_name = \"ui\\\\ui_indRocket.jaz\";\n                break;\n            default:\n                ammo_texture_name = \"ui\\\\ui_indElectric.jaz\";\n                break;\n            }\n            grim_interface_ptr->grim_bind_texture(\n                grim_interface_ptr->grim_get_texture_handle(\n                    ammo_texture_name),\n                0);"
+        },
+        {
+          "name": "selected-name-if-chain",
+          "text": "            const char *ammo_texture_name;\n            if (ammo_class == 1) {\n                ammo_texture_name = \"ui\\\\ui_indFire.jaz\";\n            } else if (ammo_class == 0) {\n                ammo_texture_name = \"ui\\\\ui_indBullet.jaz\";\n            } else if (ammo_class == 2) {\n                ammo_texture_name = \"ui\\\\ui_indRocket.jaz\";\n            } else {\n                ammo_texture_name = \"ui\\\\ui_indElectric.jaz\";\n            }\n            grim_interface_ptr->grim_bind_texture(\n                grim_interface_ptr->grim_get_texture_handle(\n                    ammo_texture_name),\n                0);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-30-timeline-order",
+      "find": "    ui_element_slot_30.timeline_start_ms += 100;\n    ui_element_slot_30.timeline_end_ms += 100;",
+      "replacements": [
+        {
+          "name": "native-end-then-start",
+          "text": "    ui_element_slot_30.timeline_end_ms += 100;\n    ui_element_slot_30.timeline_start_ms += 100;"
+        },
+        {
+          "name": "staged-end-then-start",
+          "text": "    int slot_30_timeline_end =\n        ui_element_slot_30.timeline_end_ms + 100;\n    int slot_30_timeline_start =\n        ui_element_slot_30.timeline_start_ms + 100;\n    ui_element_slot_30.timeline_end_ms = slot_30_timeline_end;\n    ui_element_slot_30.timeline_start_ms = slot_30_timeline_start;"
+        },
+        {
+          "name": "staged-load-end-store-start-first",
+          "text": "    int slot_30_timeline_end =\n        ui_element_slot_30.timeline_end_ms + 100;\n    int slot_30_timeline_start =\n        ui_element_slot_30.timeline_start_ms + 100;\n    ui_element_slot_30.timeline_start_ms = slot_30_timeline_start;\n    ui_element_slot_30.timeline_end_ms = slot_30_timeline_end;"
+        }
+      ]
+    }
+  ]
+}

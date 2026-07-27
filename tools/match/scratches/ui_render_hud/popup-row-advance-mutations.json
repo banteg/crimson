@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "popup-row-advance",
+      "find": "                text_y += 32;\n                icon_y += 32;",
+      "replacements": [
+        {
+          "name": "advance-text-derive-icon",
+          "text": "                text_y += 32;\n                icon_y = text_y - 6;"
+        },
+        {
+          "name": "advance-icon-derive-text",
+          "text": "                icon_y += 32;\n                text_y = icon_y + 6;"
+        },
+        {
+          "name": "increment-spelling",
+          "text": "                text_y = text_y + 32;\n                icon_y = icon_y + 32;"
+        },
+        {
+          "name": "reverse-order",
+          "text": "                icon_y += 32;\n                text_y += 32;"
+        }
+      ]
+    }
+  ]
+}

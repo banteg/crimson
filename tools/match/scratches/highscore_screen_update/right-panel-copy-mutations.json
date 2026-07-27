@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-panel-construction",
+      "find": "    highscore_vec2_t right_panel =\n        *(highscore_vec2_t *)&ui_element_slot_33.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    right_panel += highscore_vec2_t(300.0f, 40.0f);",
+      "replacements": [
+        {
+          "name": "chained-sum",
+          "text": "    highscore_vec2_t right_panel =\n        *(highscore_vec2_t *)&ui_element_slot_33.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x\n        + highscore_vec2_t(300.0f, 40.0f);"
+        },
+        {
+          "name": "component-updates",
+          "text": "    highscore_vec2_t right_panel =\n        *(highscore_vec2_t *)&ui_element_slot_33.pos_x\n        + *(highscore_vec2_t *)&ui_element_slot_33.vertices[0].x;\n    right_panel.x += 300.0f;\n    right_panel.y += 40.0f;"
+        },
+        {
+          "name": "direct-components",
+          "text": "    highscore_vec2_t right_panel(\n        ui_element_slot_33.pos_x\n            + ui_element_slot_33.vertices[0].x + 300.0f,\n        ui_element_slot_33.pos_y\n            + ui_element_slot_33.vertices[0].y + 40.0f);"
+        }
+      ]
+    },
+    {
+      "name": "position-from-right-panel",
+      "find": "    position.x =\n        ui_element_slot_33.render_offset_x - 16.0f + right_panel.x - 224.0f;\n    position.y = right_panel.y + 10.0f;",
+      "replacements": [
+        {
+          "name": "copy-then-panel-expression",
+          "text": "    position = right_panel;\n    position.x =\n        ui_element_slot_33.render_offset_x - 16.0f + right_panel.x - 224.0f;\n    position.y += 10.0f;"
+        },
+        {
+          "name": "copy-then-compound",
+          "text": "    position = right_panel;\n    position.x += ui_element_slot_33.render_offset_x - 16.0f;\n    position.x -= 224.0f;\n    position.y += 10.0f;"
+        },
+        {
+          "name": "copy-then-split-x",
+          "text": "    position = right_panel;\n    position.x += ui_element_slot_33.render_offset_x;\n    position.x -= 16.0f;\n    position.x -= 224.0f;\n    position.y += 10.0f;"
+        }
+      ]
+    },
+    {
+      "name": "right-panel-from-position",
+      "find": "    right_panel.x = position.x - 16.0f;\n    right_panel.y = position.y - 8.0f;",
+      "replacements": [
+        {
+          "name": "copy-then-components",
+          "text": "    right_panel = position;\n    right_panel.x -= 16.0f;\n    right_panel.y -= 8.0f;"
+        },
+        {
+          "name": "copy-then-vector-update",
+          "text": "    right_panel = position;\n    right_panel += highscore_vec2_t(-16.0f, -8.0f);"
+        },
+        {
+          "name": "temporary-value",
+          "text": "    right_panel = highscore_vec2_t(\n        position.x - 16.0f, position.y - 8.0f);"
+        }
+      ]
+    }
+  ]
+}

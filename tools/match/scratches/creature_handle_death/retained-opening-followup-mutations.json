@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "retained-flag-and-pointer-order",
+      "find": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n",
+      "replacements": [
+        {
+          "name": "pointer-then-direct-flags",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    int creature_flags = creature_pool[creature_id].flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n"
+        },
+        {
+          "name": "pointer-then-indexed-flags",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    int creature_flags = (&creature_pool[creature_id])->flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n"
+        },
+        {
+          "name": "direct-flags-then-pointer-addition",
+          "text": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = creature_pool + creature_id;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n"
+        },
+        {
+          "name": "direct-unsigned-flags-then-pointer",
+          "text": "    unsigned int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n"
+        }
+      ]
+    },
+    {
+      "name": "retained-recent-death-lifetime",
+      "find": "        if (survival_recent_death_count < 3) {\n            survival_recent_death_pos[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_pos[survival_recent_death_count].y =\n                creature->position.y;\n        }\n",
+      "replacements": [
+        {
+          "name": "single-position-pointer",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t *death_pos =\n                &survival_recent_death_pos[survival_recent_death_count];\n            death_pos->x = creature->position.x;\n            death_pos->y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "aggregate-position-copy",
+          "text": "        if (survival_recent_death_count < 3) {\n            survival_recent_death_pos[survival_recent_death_count] =\n                creature->position;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

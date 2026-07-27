@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-overlay-pos-y-cursor",
+      "find": "        projectile_t *projectile = &projectile_pool[projectile_index];\n        if (projectile->active\n            && projectile->pos.tail.vy.type_id\n                == PROJECTILE_TYPE_FIRE_BULLETS\n            && projectile->pos.tail.vy.life_timer == 0.4f) {\n            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n                64.0f,\n                64.0f);",
+      "replacements": [
+        {
+          "name": "explicit-pos-y-cursor",
+          "text": "        projectile_t *projectile = &projectile_pool[projectile_index];\n        projectile_pos_y_block_t *fire = &projectile->pos;\n        if (projectile->active\n            && fire->tail.vy.type_id == PROJECTILE_TYPE_FIRE_BULLETS\n            && fire->tail.vy.life_timer == 0.4f) {\n            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + fire->pos_y - 32.0f,\n                64.0f,\n                64.0f);"
+        }
+      ]
+    }
+  ]
+}

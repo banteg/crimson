@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "weapon-id-pointer-swap",
+      "find": "            int swap_weapon_id = player->weapon_id;\n            player->weapon_id = player->alt_weapon_id;\n            player->alt_weapon_id = swap_weapon_id;",
+      "replacements": [
+        {
+          "name": "pointer-current-weapon-id",
+          "text": "            int *weapon_id = &player->weapon_id;\n            int swap_weapon_id = *weapon_id;\n            *weapon_id = player->alt_weapon_id;\n            player->alt_weapon_id = swap_weapon_id;"
+        }
+      ]
+    },
+    {
+      "name": "weapon-id-pointer-sfx-use",
+      "find": "                weapon_table[player->weapon_id].reload_sfx_id,",
+      "replacements": [
+        {
+          "name": "pointer-reload-sfx-index",
+          "text": "                weapon_table[*weapon_id].reload_sfx_id,"
+        }
+      ]
+    },
+    {
+      "name": "reload-timer-pointer-swap",
+      "find": "            float swap_reload_timer = player->alt_reload_timer;\n            player->alt_reload_timer = player->reload_timer;\n            player->reload_timer = swap_reload_timer;",
+      "replacements": [
+        {
+          "name": "pointer-current-reload-timer",
+          "text": "            float *reload_timer = &player->reload_timer;\n            float swap_reload_timer = player->alt_reload_timer;\n            player->alt_reload_timer = *reload_timer;\n            *reload_timer = swap_reload_timer;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-20-tint-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;",
+      "replacements": [
+        {
+          "name": "block-roll-blue-before-expression",
+          "text": "                    int random_tint_roll = crt_rand();\n                    creature->color.b = 0.3f;\n                    creature->color.g =\n                        (float)(random_tint_roll % 0x28) * 0.01f + 0.6f;"
+        },
+        {
+          "name": "block-remainder-blue-before-conversion",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder = random_tint_roll % 0x28;\n                    creature->color.b = 0.3f;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        },
+        {
+          "name": "block-roll-blue-before-remainder",
+          "text": "                    int random_tint_roll = crt_rand();\n                    creature->color.b = 0.3f;\n                    int random_tint_remainder = random_tint_roll % 0x28;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        },
+        {
+          "name": "split-remainder-blue-before-assignment",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder;\n                    creature->color.b = 0.3f;\n                    random_tint_remainder = random_tint_roll % 0x28;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.6f;"
+        },
+        {
+          "name": "shared-roll-blue-before-expression",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.b = 0.3f;\n                    creature->color.g =\n                        (float)(random_heading_roll % 0x28) * 0.01f + 0.6f;"
+        }
+      ]
+    }
+  ]
+}

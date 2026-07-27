@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "upgrade-tail-helpers",
+      "find": "extern \"C\" void demo_trial_overlay_render(float *xy, float alpha) {",
+      "replacements": [
+        {
+          "name": "forceinline-fixed-tails",
+          "text": "static __forceinline void demo_trial_draw_quest_upgrade_tail(demo_trial_vec2_t &position) {\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, \"The full version features unrestricted access to all 3\");\n    position.y += 18.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y,\n        \"game modes and be able to post your scores on the Internet. Why not buy\");\n    position.y += 18.0f;\n}\n\nstatic __forceinline void demo_trial_draw_expired_upgrade_tail(demo_trial_vec2_t &position) {\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, \"Buy the full version to gain unrestricted access to all 3\");\n    position.y += 18.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y,\n        \"game modes and be able to post your scores on the Internet. Why not buy\");\n    position.y += 18.0f;\n}\n\nextern \"C\" void demo_trial_overlay_render(float *xy, float alpha) {"
+        },
+        {
+          "name": "inline-fixed-tails",
+          "text": "static inline void demo_trial_draw_quest_upgrade_tail(demo_trial_vec2_t &position) {\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, \"The full version features unrestricted access to all 3\");\n    position.y += 18.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y,\n        \"game modes and be able to post your scores on the Internet. Why not buy\");\n    position.y += 18.0f;\n}\n\nstatic inline void demo_trial_draw_expired_upgrade_tail(demo_trial_vec2_t &position) {\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, \"Buy the full version to gain unrestricted access to all 3\");\n    position.y += 18.0f;\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y,\n        \"game modes and be able to post your scores on the Internet. Why not buy\");\n    position.y += 18.0f;\n}\n\nextern \"C\" void demo_trial_overlay_render(float *xy, float alpha) {"
+        }
+      ]
+    },
+    {
+      "name": "quest-upgrade-tail",
+      "find": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, position.y, \"The full version features unrestricted access to all 3\");\n            position.y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, position.y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y += 18.0f;",
+      "replacements": [
+        {
+          "name": "helper-call",
+          "text": "            demo_trial_draw_quest_upgrade_tail(position);"
+        }
+      ]
+    },
+    {
+      "name": "expired-upgrade-tail",
+      "find": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, position.y,\n                \"Buy the full version to gain unrestricted access to all 3\");\n            position.y += 18.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x, position.y,\n                \"game modes and be able to post your scores on the Internet. Why not buy\");\n            position.y += 18.0f;",
+      "replacements": [
+        {
+          "name": "helper-call",
+          "text": "            demo_trial_draw_expired_upgrade_tail(position);"
+        }
+      ]
+    }
+  ]
+}

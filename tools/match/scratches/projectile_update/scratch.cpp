@@ -491,16 +491,34 @@ extern "C" void projectile_update(void)
                                             > 0.0f) {
                                         projectile->pos.tail.vy.damage_pool -=
                                             1.0f;
-                                        float impulse_axis = (float)(
-                                            cos(projectile->angle - 1.5707964f)
+                                        float impulse_cosine = (float)cos(
+                                            projectile->angle - 1.5707964f);
+                                        float impulse_x = impulse_cosine
                                             * projectile->pos.tail.vy
-                                                .speed_scale);
+                                                .speed_scale;
 
                                         if (projectile->pos.tail.vy.damage_pool
-                                            <= 0.0f) {
+                                            > 0.0f) {
                                             vec2f_t impulse = {
-                                                impulse_axis,
-                                                impulse_axis,
+                                                impulse_x,
+                                                impulse_cosine
+                                                    * projectile->pos.tail.vy
+                                                        .speed_scale,
+                                            };
+                                            creature_apply_damage(
+                                                hit_id,
+                                                projectile->pos.tail.vy
+                                                    .damage_pool,
+                                                1,
+                                                &impulse);
+                                            projectile->pos.tail.vy.damage_pool -=
+                                                creature_pool[hit_id].health;
+                                        } else {
+                                            vec2f_t impulse = {
+                                                impulse_x,
+                                                impulse_cosine
+                                                    * projectile->pos.tail.vy
+                                                        .speed_scale,
                                             };
                                             creature_apply_damage(
                                                 hit_id,
@@ -513,29 +531,18 @@ extern "C" void projectile_update(void)
                                                 projectile->pos.tail.vy
                                                     .life_timer = 0.25f;
                                             }
-                                        } else {
-                                            vec2f_t impulse = {
-                                                impulse_axis,
-                                                impulse_axis,
-                                            };
-                                            creature_apply_damage(
-                                                hit_id,
-                                                projectile->pos.tail.vy
-                                                    .damage_pool,
-                                                1,
-                                                &impulse);
-                                            projectile->pos.tail.vy.damage_pool -=
-                                                creature_pool[hit_id].health;
                                         }
                                     }
 
                                     if (projectile->pos.tail.vy.damage_pool
                                         == 1.0f) {
-                                        float life_timer =
-                                            projectile->pos.tail.vy.life_timer;
-                                        projectile->pos.tail.vy.damage_pool =
-                                            0.0f;
-                                        if (life_timer != 0.25f) {
+                                        if (projectile->pos.tail.vy.life_timer
+                                            == 0.25f) {
+                                            projectile->pos.tail.vy.damage_pool =
+                                                0.0f;
+                                        } else {
+                                            projectile->pos.tail.vy.damage_pool =
+                                                0.0f;
                                             projectile->pos.tail.vy.life_timer =
                                                 0.25f;
                                         }
@@ -615,7 +622,14 @@ extern "C" void projectile_update(void)
                                             fx_queue_add_random(&decal_pos);
                                             --count;
                                         } while (count != 0);
-                                    } else if (bonus_freeze_timer <= 0.0f) {
+                                    } else if (bonus_freeze_timer > 0.0f) {
+                                        effect_spawn_freeze_shard(
+                                            position,
+                                            projectile->angle
+                                                - 1.5707964f
+                                                + (float)(crt_rand() % 100)
+                                                    * 0.01f);
+                                    } else {
                                         int count = 3;
                                         do {
                                             float impact_heading =
@@ -635,38 +649,31 @@ extern "C" void projectile_update(void)
                                                 &creature_pool[hit_id].position;
                                             fx_queue_add_random(creature_pos);
 
-                                            vec2f_t decal_pos = {
+                                            vec2f_t decal_pos_1 = {
                                                 creature_pos->x
                                                     + offset_x * 1.5f,
                                                 creature_pos->y
                                                     + offset_y * 1.5f,
                                             };
-                                            fx_queue_add_random(&decal_pos);
+                                            fx_queue_add_random(&decal_pos_1);
 
-                                            decal_pos.x =
+                                            vec2f_t decal_pos_2 = {
                                                 creature_pos->x
-                                                + offset_x * 2.0f;
-                                            decal_pos.y =
+                                                    + offset_x * 2.0f,
                                                 creature_pos->y
-                                                + offset_y * 2.0f;
-                                            fx_queue_add_random(&decal_pos);
+                                                    + offset_y * 2.0f,
+                                            };
+                                            fx_queue_add_random(&decal_pos_2);
 
-                                            decal_pos.x =
+                                            vec2f_t decal_pos_3 = {
                                                 creature_pos->x
-                                                + offset_x * 2.5f;
-                                            decal_pos.y =
+                                                    + offset_x * 2.5f,
                                                 creature_pos->y
-                                                + offset_y * 2.5f;
-                                            fx_queue_add_random(&decal_pos);
+                                                    + offset_y * 2.5f,
+                                            };
+                                            fx_queue_add_random(&decal_pos_3);
                                             --count;
                                         } while (count != 0);
-                                    } else {
-                                        effect_spawn_freeze_shard(
-                                            position,
-                                            projectile->angle
-                                                - 1.5707964f
-                                                + (float)(crt_rand() % 100)
-                                                    * 0.01f);
                                     }
 
                                     if (!demo_mode_active

@@ -63,3 +63,31 @@ byte-identical; the two partial forms correctly fail because they omit the
 required default constructor. The recorded `predeclared-minimum-confirmation`
 probe is neutral at 86/86 instructions and `6/0/0` references. No canonical
 source change was retained; baseline and final remain **97.67%**, prefix 32.
+
+## Native-scheduled residual matrix (2026-07-27)
+
+Fresh live Binary Ninja evidence localized the residual to exactly two
+instruction-order differences. In the leading-bound sequence, native publishes
+`hover_min.x` before completing the adjacent x87 store while the candidate
+delays that integer copy. In the trailing-bound sequence, native loads
+`direction_flag` before the adjacent x87 store while the candidate delays the
+byte load. The calculations, constants, fields, references, and control flow
+remain identical.
+
+Four recorded, non-truncated mutation sweeps tested 111 native-grounded
+variants:
+
+- `assignment-helper-mutations.json`: 4/4 explicit assignment-operator forms
+  regressed sharply by changing helper lowering from the function prologue.
+- `residual-lifetime-mutations.json`: 63/63 width, height, publication, and
+  direction-snapshot lifetime combinations were neutral or worse.
+- `explicit-native-vector-mutations.json`: 35/35 native-ordered aggregate and
+  component-store forms were neutral or worse; component stores disturbed
+  alias-driven lowering from the start of the function.
+- `vector-type-shape-mutations.json`: 9/9 class, constructor, copy, return,
+  inline, and inherited-vector shapes were byte-identical to the baseline.
+
+No source mutation was retained. The final result remains **97.67%**
+(`281.3023/288` weighted bytes, 6.6977-byte gap), 86/86 instructions, prefix
+32, and `6/0/0` references. The recorded negative evidence strengthens the
+existing `RECOVERY=semantic-complete`, `RESIDUAL=compiler` classification.

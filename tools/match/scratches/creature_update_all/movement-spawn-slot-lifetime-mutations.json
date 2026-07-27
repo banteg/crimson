@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ping-pong-turn-rate-order",
+      "find": "4.0f * (creature_pool[creature_index].move_speed\n                                        * 0.33333334f)",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "speed-third-fourth",
+          "text": "creature_pool[creature_index].move_speed\n                                        * 0.33333334f * 4.0f"
+        }
+      ]
+    },
+    {
+      "name": "ordinary-turn-rate-order",
+      "find": "4.0f * (creature_pool[creature_index].move_speed\n                                    * 0.33333334f)",
+      "replacements": [
+        {
+          "name": "speed-third-fourth",
+          "text": "(creature_pool[creature_index].move_speed\n                                    * 0.33333334f) * 4.0f"
+        }
+      ]
+    },
+    {
+      "name": "ping-pong-velocity-lifetime",
+      "find": "                                creature_pool[creature_index].vel_x =\n                                    (float)cos(movement_heading) * frame_dt * move_scale\n                                    * creature_pool[creature_index].move_speed * 30.0f;\n                                creature_pool[creature_index].vel_y =\n                                    (float)sin(movement_heading) * frame_dt * move_scale\n                                    * creature_pool[creature_index].move_speed * 30.0f;",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "final-result-cast",
+          "text": "                                creature_pool[creature_index].vel_x = (float)(\n                                    cos(movement_heading) * frame_dt * move_scale\n                                    * creature_pool[creature_index].move_speed * 30.0f);\n                                creature_pool[creature_index].vel_y = (float)(\n                                    sin(movement_heading) * frame_dt * move_scale\n                                    * creature_pool[creature_index].move_speed * 30.0f);"
+        },
+        {
+          "name": "frame-scale-group",
+          "text": "                                creature_pool[creature_index].vel_x = (float)(\n                                    cos(movement_heading) * (frame_dt * move_scale)\n                                    * creature_pool[creature_index].move_speed * 30.0f);\n                                creature_pool[creature_index].vel_y = (float)(\n                                    sin(movement_heading) * (frame_dt * move_scale)\n                                    * creature_pool[creature_index].move_speed * 30.0f);"
+        },
+        {
+          "name": "sequenced-double-components",
+          "text": "                                double ping_velocity_x = cos(movement_heading);\n                                ping_velocity_x *= frame_dt;\n                                ping_velocity_x *= move_scale;\n                                ping_velocity_x *= creature_pool[creature_index].move_speed;\n                                ping_velocity_x *= 30.0f;\n                                creature_pool[creature_index].vel_x = (float)ping_velocity_x;\n                                double ping_velocity_y = sin(movement_heading);\n                                ping_velocity_y *= frame_dt;\n                                ping_velocity_y *= move_scale;\n                                ping_velocity_y *= creature_pool[creature_index].move_speed;\n                                ping_velocity_y *= 30.0f;\n                                creature_pool[creature_index].vel_y = (float)ping_velocity_y;"
+        },
+        {
+          "name": "shared-double-scale",
+          "text": "                                double ping_velocity_scale = frame_dt * move_scale\n                                    * creature_pool[creature_index].move_speed * 30.0f;\n                                creature_pool[creature_index].vel_x =\n                                    (float)(cos(movement_heading) * ping_velocity_scale);\n                                creature_pool[creature_index].vel_y =\n                                    (float)(sin(movement_heading) * ping_velocity_scale);"
+        }
+      ]
+    },
+    {
+      "name": "ordinary-velocity-lifetime",
+      "find": "                            creature_pool[creature_index].vel_x =\n                                (float)cos(movement_heading) * frame_dt * move_scale\n                                * creature_pool[creature_index].move_speed * 30.0f;\n                            creature_pool[creature_index].vel_y =\n                                (float)sin(movement_heading) * frame_dt * move_scale\n                                * creature_pool[creature_index].move_speed * 30.0f;",
+      "replacements": [
+        {
+          "name": "final-result-cast",
+          "text": "                            creature_pool[creature_index].vel_x = (float)(\n                                (cos(movement_heading) * frame_dt) * move_scale\n                                * creature_pool[creature_index].move_speed * 30.0f);\n                            creature_pool[creature_index].vel_y = (float)(\n                                (sin(movement_heading) * frame_dt) * move_scale\n                                * creature_pool[creature_index].move_speed * 30.0f);"
+        },
+        {
+          "name": "frame-scale-group",
+          "text": "                            creature_pool[creature_index].vel_x = (float)(\n                                cos(movement_heading) * (frame_dt * move_scale)\n                                * (creature_pool[creature_index].move_speed * 30.0f));\n                            creature_pool[creature_index].vel_y = (float)(\n                                sin(movement_heading) * (frame_dt * move_scale)\n                                * (creature_pool[creature_index].move_speed * 30.0f));"
+        },
+        {
+          "name": "sequenced-double-components",
+          "text": "                            double ordinary_velocity_x = cos(movement_heading);\n                            ordinary_velocity_x *= frame_dt;\n                            ordinary_velocity_x *= move_scale;\n                            ordinary_velocity_x *= creature_pool[creature_index].move_speed;\n                            ordinary_velocity_x *= 30.0f;\n                            creature_pool[creature_index].vel_x = (float)ordinary_velocity_x;\n                            double ordinary_velocity_y = sin(movement_heading);\n                            ordinary_velocity_y *= frame_dt;\n                            ordinary_velocity_y *= move_scale;\n                            ordinary_velocity_y *= creature_pool[creature_index].move_speed;\n                            ordinary_velocity_y *= 30.0f;\n                            creature_pool[creature_index].vel_y = (float)ordinary_velocity_y;"
+        },
+        {
+          "name": "shared-double-scale",
+          "text": "                            double ordinary_velocity_scale = (frame_dt * move_scale)\n                                * creature_pool[creature_index].move_speed * 30.0f;\n                            creature_pool[creature_index].vel_x =\n                                (float)(cos(movement_heading) * ordinary_velocity_scale);\n                            creature_pool[creature_index].vel_y =\n                                (float)(sin(movement_heading) * ordinary_velocity_scale);"
+        }
+      ]
+    },
+    {
+      "name": "spawn-slot-access-lifetime",
+      "find": "                            slot_index = creature_pool[creature_index].link_index;\n                            creature_spawn_slot_table[slot_index].timer_s -= frame_dt;\n                            if (creature_spawn_slot_table[slot_index].timer_s < 0.0f) {\n                                int spawn_count =\n                                    creature_spawn_slot_table[slot_index].count;\n                                spawn_limit = creature_spawn_slot_table[slot_index].limit;\n                                creature_spawn_slot_table[slot_index].timer_s +=\n                                    creature_spawn_slot_table[slot_index].interval_s;\n                                if (spawn_count < spawn_limit) {\n                                    creature_spawn_slot_table[slot_index].count =\n                                        spawn_count + 1;\n                                    creature_spawn_template(\n                                        creature_spawn_slot_table[slot_index].template_id,\n                                        position,\n                                        -100.0f);\n                                }\n                            }",
+      "replacements": [
+        {
+          "name": "pointer-repeated-field-flow",
+          "text": "                            slot_index = creature_pool[creature_index].link_index;\n                            creature_spawn_slot_t *spawn_slot =\n                                &creature_spawn_slot_table[slot_index];\n                            spawn_slot->timer_s -= frame_dt;\n                            if (spawn_slot->timer_s < 0.0f) {\n                                int spawn_count = spawn_slot->count;\n                                spawn_limit = spawn_slot->limit;\n                                spawn_slot->timer_s += spawn_slot->interval_s;\n                                if (spawn_count < spawn_limit) {\n                                    spawn_slot->count = spawn_count + 1;\n                                    creature_spawn_template(\n                                        spawn_slot->template_id,\n                                        position,\n                                        -100.0f);\n                                }\n                            }"
+        },
+        {
+          "name": "pointer-retained-timer",
+          "text": "                            slot_index = creature_pool[creature_index].link_index;\n                            creature_spawn_slot_t *active_spawn_slot =\n                                &creature_spawn_slot_table[slot_index];\n                            float spawn_timer = active_spawn_slot->timer_s - frame_dt;\n                            active_spawn_slot->timer_s = spawn_timer;\n                            if (spawn_timer < 0.0f) {\n                                int spawn_count = active_spawn_slot->count;\n                                spawn_limit = active_spawn_slot->limit;\n                                spawn_timer += active_spawn_slot->interval_s;\n                                active_spawn_slot->timer_s = spawn_timer;\n                                if (spawn_count < spawn_limit) {\n                                    active_spawn_slot->count = spawn_count + 1;\n                                    creature_spawn_template(\n                                        active_spawn_slot->template_id,\n                                        position,\n                                        -100.0f);\n                                }\n                            }"
+        },
+        {
+          "name": "reference-repeated-field-flow",
+          "text": "                            slot_index = creature_pool[creature_index].link_index;\n                            creature_spawn_slot_t &owner_spawn_slot =\n                                creature_spawn_slot_table[slot_index];\n                            owner_spawn_slot.timer_s -= frame_dt;\n                            if (owner_spawn_slot.timer_s < 0.0f) {\n                                int spawn_count = owner_spawn_slot.count;\n                                spawn_limit = owner_spawn_slot.limit;\n                                owner_spawn_slot.timer_s += owner_spawn_slot.interval_s;\n                                if (spawn_count < spawn_limit) {\n                                    owner_spawn_slot.count = spawn_count + 1;\n                                    creature_spawn_template(\n                                        owner_spawn_slot.template_id,\n                                        position,\n                                        -100.0f);\n                                }\n                            }"
+        },
+        {
+          "name": "pointer-limit-first",
+          "text": "                            slot_index = creature_pool[creature_index].link_index;\n                            creature_spawn_slot_t *firing_spawn_slot =\n                                &creature_spawn_slot_table[slot_index];\n                            firing_spawn_slot->timer_s -= frame_dt;\n                            if (firing_spawn_slot->timer_s < 0.0f) {\n                                spawn_limit = firing_spawn_slot->limit;\n                                int spawn_count = firing_spawn_slot->count;\n                                firing_spawn_slot->timer_s +=\n                                    firing_spawn_slot->interval_s;\n                                if (spawn_count < spawn_limit) {\n                                    firing_spawn_slot->count = spawn_count + 1;\n                                    creature_spawn_template(\n                                        firing_spawn_slot->template_id,\n                                        position,\n                                        -100.0f);\n                                }\n                            }"
+        }
+      ]
+    }
+  ]
+}

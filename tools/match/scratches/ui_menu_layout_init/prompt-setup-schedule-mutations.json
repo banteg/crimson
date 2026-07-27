@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-setup-schedule",
+      "find": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(\n        &ui_perk_prompt_levelup_element,\n        \"ui\\\\ui_textLevelUp.jaz\");",
+      "replacements": [
+        {
+          "name": "levelup-pointer-before-copy",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    ui_menu_item_subtemplate_block_t *levelup_element =\n        &ui_perk_prompt_levelup_element;\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(levelup_element, \"ui\\\\ui_textLevelUp.jaz\");"
+        },
+        {
+          "name": "path-before-copy",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    char *levelup_path = \"ui\\\\ui_textLevelUp.jaz\";\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(&ui_perk_prompt_levelup_element, levelup_path);"
+        },
+        {
+          "name": "both-arguments-before-copy",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    ui_menu_item_subtemplate_block_t *levelup_element =\n        &ui_perk_prompt_levelup_element;\n    char *levelup_path = \"ui\\\\ui_textLevelUp.jaz\";\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(levelup_element, levelup_path);"
+        },
+        {
+          "name": "callback-after-copy",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(\n        &ui_perk_prompt_levelup_element,\n        \"ui\\\\ui_textLevelUp.jaz\");"
+        },
+        {
+          "name": "callback-after-uv",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_on_activate = ui_callback_noop;\n\n    ui_element_load(\n        &ui_perk_prompt_levelup_element,\n        \"ui\\\\ui_textLevelUp.jaz\");"
+        },
+        {
+          "name": "callback-after-copy-levelup-pointer",
+          "text": "    ui_element_init_defaults(&ui_perk_prompt_element);\n    ui_menu_item_subtemplate_block_t *levelup_element =\n        &ui_perk_prompt_levelup_element;\n    copy_layer(ui_perk_prompt_element, ui_menu_item_element);\n    ui_perk_prompt_on_activate = ui_callback_noop;\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n\n    ui_element_load(levelup_element, \"ui\\\\ui_textLevelUp.jaz\");"
+        }
+      ]
+    }
+  ]
+}

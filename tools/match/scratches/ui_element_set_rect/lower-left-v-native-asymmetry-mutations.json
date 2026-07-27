@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "lower-left-v-native-asymmetry",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;",
+      "replacements": [
+        {
+          "name": "mixed-aggregate-and-components",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_width);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "two-aggregates",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_width);\n    vertices[2].uv = ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);"
+        },
+        {
+          "name": "all-components",
+          "text": "    vertices[3].uv.x = inv_width;\n    vertices[3].uv.y = 1.0f - inv_width;\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "interleaved-components",
+          "text": "    vertices[3].uv.x = inv_width;\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[3].uv.y = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "lower-right-aggregate-first",
+          "text": "    vertices[2].uv = ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);\n    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_width);"
+        },
+        {
+          "name": "named-lower-u",
+          "text": "    float lower_u = 1.0f - inv_width;\n    vertices[3].uv = ui_vec2_t(inv_width, lower_u);\n    vertices[2].uv.x = lower_u;\n    vertices[2].uv.y = 1.0f - inv_height;"
+        },
+        {
+          "name": "named-lower-u-two-aggregates",
+          "text": "    float lower_u = 1.0f - inv_width;\n    vertices[3].uv = ui_vec2_t(inv_width, lower_u);\n    vertices[2].uv = ui_vec2_t(lower_u, 1.0f - inv_height);"
+        }
+      ]
+    }
+  ]
+}

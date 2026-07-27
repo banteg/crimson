@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "purchase-position-construction",
+      "find": "        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {",
+      "replacements": [
+        {
+          "name": "direct-constructor",
+          "text": "        {\n            demo_trial_vec2_t position(button_position.x + 6.0f, button_y + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "copy-initialized-temporary",
+          "text": "        {\n            demo_trial_vec2_t position = demo_trial_vec2_t(button_position.x + 6.0f,\n                                                            button_y + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "constructor-after-declaration",
+          "text": "        {\n            demo_trial_vec2_t position;\n            position = demo_trial_vec2_t(button_position.x + 6.0f, button_y + 6.0f);\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        },
+        {
+          "name": "field-order-y-first",
+          "text": "        {\n            demo_trial_vec2_t position;\n            position.y = button_y + 6.0f;\n            position.x = button_position.x + 6.0f;\n            if (ui_button_update((float *)&position, (ui_button_t *)&purchase_button)) {"
+        }
+      ]
+    }
+  ]
+}

@@ -623,8 +623,8 @@ extern "C" void ui_menu_layout_init(void)
         ui_element_slot_30,
         ui_menu_item_subtemplate_block_01);
     ui_element_slot_30.pos = ui_layout_vec2_t(-45.0f, 110.0f);
-    ui_element_slot_30.timeline_start_ms += 100;
     ui_element_slot_30.timeline_end_ms += 100;
+    ui_element_slot_30.timeline_start_ms += 100;
     ui_element_slot_30.use_offset_render = 1;
 
     ui_element_slot_13.pos = ui_layout_vec2_t(-180.0f, 135.0f);
@@ -684,14 +684,14 @@ extern "C" void ui_menu_layout_init(void)
     copy_layer(ui_element_slot_33, ui_menu_panel_template);
     ui_element_slot_33.pos =
         ui_layout_vec2_t(right_panel_x, 200.0f);
-    if (config_screen_width <= 800) {
-        if (config_screen_width <= 640) {
-            ui_element_slot_33.pos.x = right_panel_x + 10.0f;
-        } else {
-            ui_element_slot_33.pos.x = right_panel_x - 30.0f;
-        }
-    } else {
+    if (config_screen_width > 800) {
         ui_element_slot_33.pos.x = right_panel_x - 65.0f;
+    } else {
+        if (config_screen_width > 640) {
+            ui_element_slot_33.pos.x = right_panel_x - 30.0f;
+        } else {
+            ui_element_slot_33.pos.x = right_panel_x + 10.0f;
+        }
     }
     ui_element_slot_33.use_offset_render = 1;
     ui_element_slot_33.direction_flag = 1;
@@ -774,8 +774,8 @@ extern "C" void ui_menu_layout_init(void)
     copy_layer(ui_perk_prompt_element, ui_menu_item_element);
     ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;
     ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;
-    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;
     ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;
+    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;
 
     ui_element_load(
         &ui_perk_prompt_levelup_element,

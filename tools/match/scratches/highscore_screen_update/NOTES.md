@@ -349,3 +349,47 @@ profile change is retained. The canonical source SHA-256 remains
 `cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595`;
 `experiments.jsonl` now contains eleven recorded experiments and has SHA-256
 `ea76587be5f7b2cb7dccefb11dd3c03e8bcb422930bcd7788f58640dc9a62aee`.
+
+## Row, pool, panel, and return-state interaction sweeps
+
+Four further bounded sweeps exhaust 139 natural variants while preserving the
+retained **78.0156%** baseline as the winner.
+
+`score-row-local-lifetime-mutations.json` (SHA-256
+`3af40e0176bad02e0979218d646f11bf400b94085ff86fd7c287c8d6e6ca1395`)
+tests six declaration/statement schedules and five escape-prefix lifetimes,
+including all 41 singles and cross-site pairs. The neutral leaders reproduce
+the baseline exactly; the other schedules regress. This rules out ordinary
+row-local declaration order as the cause of the native
+`0x00442b4d..0x00442c79` allocation.
+
+Native uses signed `jl` bounds in all five return-to-results pool clears.
+`pool-reset-signed-interaction-mutations.json` (SHA-256
+`faa1c29b25dd63898c63a5450c93dd4253e5c354d1f772e24a691eb47961b558`)
+therefore tests every nonempty combination of explicit signed pointer bounds:
+5 singles, 10 pairs, 10 triples, 5 four-site variants, and the all-five
+interaction. VC6 canonicalizes all 31 variants to the same candidate bytes.
+The branch condition remains a compiler lowering choice, not recoverable
+source imprecision.
+
+The native right-panel block at `0x004431b8..0x0044328a` visibly materializes
+the aggregate and copies its components before the scalar adjustments.
+`right-panel-copy-mutations.json` (SHA-256
+`4e6b65df688b1bad38cec414673c266ba1744103827d400a0abdd0e71c4d515d`)
+exhausts 63 construction, position-copy, and panel-copy combinations. Only a
+component-wise spelling is byte-neutral. Explicit aggregate copies add
+instructions but worsen the whole-function alignment and reference audit; the
+best non-neutral construction loses `0.889124` weighted bytes. The current
+expression remains the strongest compiler-compatible representation.
+
+Finally, `return-state-schedule-mutations.json` (SHA-256
+`db8c83ad26f521d82c99ac547e5b58170851c5c2a3d1b9604ec64dbe9ca80287`)
+tests four native-load-order schedules for the restored quest stage, mode,
+Hardcore flag, and pending state. VC6 emits the same regressing allocation for
+all four: `-117.226895` weighted bytes and references `576/0/13`. No source
+change is retained.
+
+The canonical source SHA-256 is still
+`cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595`.
+`experiments.jsonl` now contains fifteen complete records and has SHA-256
+`47aae4f551dc287b415ae7b977b334efcd6e66faac65c9aff05e0c920df723b4`.

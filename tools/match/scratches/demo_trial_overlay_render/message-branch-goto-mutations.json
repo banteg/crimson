@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-branch-exit",
+      "find": "            position.y += 18.0f;\n        } else if (minutes <= 0 && seconds <= 0) {",
+      "replacements": [
+        {
+          "name": "explicit-goto",
+          "text": "            position.y += 18.0f;\n            goto demo_trial_message_done;\n        }\n        if (minutes <= 0 && seconds <= 0) {"
+        }
+      ]
+    },
+    {
+      "name": "expired-branch-exit",
+      "find": "            position.y += 18.0f;\n        } else {\n            position.y -= 7.0f;",
+      "replacements": [
+        {
+          "name": "explicit-goto",
+          "text": "            position.y += 18.0f;\n            goto demo_trial_message_done;\n        }\n        {\n            position.y -= 7.0f;"
+        }
+      ]
+    },
+    {
+      "name": "message-done-label",
+      "find": "        grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,\n                                                     \"it now? You'll have a great time!\");",
+      "replacements": [
+        {
+          "name": "label",
+          "text": "    demo_trial_message_done:\n        grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,\n                                                     \"it now? You'll have a great time!\");"
+        }
+      ]
+    }
+  ]
+}

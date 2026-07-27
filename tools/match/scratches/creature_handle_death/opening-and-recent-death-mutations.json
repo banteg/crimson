@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "creature-pointer-init",
+      "find": "    creature_t *creature = &creature_pool[creature_id];\n",
+      "replacements": [
+        {
+          "name": "split-declaration",
+          "text": "    creature_t *creature;\n    creature = &creature_pool[creature_id];\n"
+        },
+        {
+          "name": "pointer-addition",
+          "text": "    creature_t *creature = creature_pool + creature_id;\n"
+        },
+        {
+          "name": "base-zero-addition",
+          "text": "    creature_t *creature = &creature_pool[0] + creature_id;\n"
+        },
+        {
+          "name": "increment-after-base",
+          "text": "    creature_t *creature = creature_pool;\n    creature += creature_id;\n"
+        }
+      ]
+    },
+    {
+      "name": "bonus-on-death-call-shape",
+      "find": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n",
+      "replacements": [
+        {
+          "name": "named-flags",
+          "text": "    int creature_flags = creature->flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "stage-call-right-to-left",
+          "text": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        int duration_override = creature->bonus_args.duration_override;\n        bonus_id_t bonus_id = (bonus_id_t)creature->bonus_args.bonus_id;\n        vec2f_t *bonus_pos = &creature->position;\n        bonus_spawn_at(bonus_pos, bonus_id, duration_override);\n    }\n"
+        },
+        {
+          "name": "stage-call-left-to-right",
+          "text": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        vec2f_t *bonus_pos = &creature->position;\n        bonus_id_t bonus_id = (bonus_id_t)creature->bonus_args.bonus_id;\n        int duration_override = creature->bonus_args.duration_override;\n        bonus_spawn_at(bonus_pos, bonus_id, duration_override);\n    }\n"
+        },
+        {
+          "name": "stage-signed-arguments",
+          "text": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        int bonus_id = creature->bonus_args.bonus_id;\n        int duration_override = creature->bonus_args.duration_override;\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)bonus_id,\n            duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "stage-position-first",
+          "text": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        vec2f_t *bonus_pos = &creature->position;\n        bonus_spawn_at(\n            bonus_pos,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "flat-call",
+          "text": "    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(&creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override);\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "recent-death-position-lifetime",
+      "find": "        if (survival_recent_death_count < 3) {\n            survival_recent_death_pos[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_pos[survival_recent_death_count].y =\n                creature->position.y;\n        }\n",
+      "replacements": [
+        {
+          "name": "single-position-pointer",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t *death_pos =\n                &survival_recent_death_pos[survival_recent_death_count];\n            death_pos->x = creature->position.x;\n            death_pos->y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "reassigned-position-pointer",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t *death_pos;\n            death_pos = &survival_recent_death_pos[survival_recent_death_count];\n            death_pos->x = creature->position.x;\n            death_pos = &survival_recent_death_pos[survival_recent_death_count];\n            death_pos->y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "separate-position-pointer-scopes",
+          "text": "        if (survival_recent_death_count < 3) {\n            {\n                vec2f_t *death_pos =\n                    &survival_recent_death_pos[survival_recent_death_count];\n                death_pos->x = creature->position.x;\n            }\n            {\n                vec2f_t *death_pos =\n                    &survival_recent_death_pos[survival_recent_death_count];\n                death_pos->y = creature->position.y;\n            }\n        }\n"
+        },
+        {
+          "name": "position-array-alias",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t *recent_deaths = survival_recent_death_pos;\n            recent_deaths[survival_recent_death_count].x = creature->position.x;\n            recent_deaths[survival_recent_death_count].y = creature->position.y;\n        }\n"
+        },
+        {
+          "name": "aggregate-via-local",
+          "text": "        if (survival_recent_death_count < 3) {\n            vec2f_t death_position = creature->position;\n            survival_recent_death_pos[survival_recent_death_count] =\n                death_position;\n        }\n"
+        }
+      ]
+    }
+  ]
+}

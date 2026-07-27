@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "minimum-width-lifetime",
+      "find": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n",
+      "replacements": [
+        {
+          "name": "const-width",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    const float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "split-width-after-minimum",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width;\n    width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "predeclare-width-before-minimum",
+          "text": "    float width;\n    ui_layout_vec2_t min_position = position + vertex_0;\n    width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "publish-minimum-before-width",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min = min_position;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "predeclare-publish-then-width",
+          "text": "    float width;\n    ui_layout_vec2_t min_position = position + vertex_0;\n    hover_min = min_position;\n    width = vertex_2.x - vertex_0.x;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "predeclare-width-and-height",
+          "text": "    float width;\n    float height;\n    ui_layout_vec2_t min_position = position + vertex_0;\n    width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "const-width-and-height",
+          "text": "    ui_layout_vec2_t min_position = position + vertex_0;\n    const float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    const float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        }
+      ]
+    },
+    {
+      "name": "direction-scalar-lifetime",
+      "find": "    hover_max = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n",
+      "replacements": [
+        {
+          "name": "const-unsigned-char",
+          "text": "    hover_max = position + vertex_2;\n    const unsigned char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "plain-char",
+          "text": "    hover_max = position + vertex_2;\n    char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "signed-char",
+          "text": "    hover_max = position + vertex_2;\n    signed char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "bool",
+          "text": "    hover_max = position + vertex_2;\n    bool direction_flag = element->direction_flag != 0;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "predeclare-then-assign",
+          "text": "    unsigned char direction_flag;\n    hover_max = position + vertex_2;\n    direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "const-reference",
+          "text": "    hover_max = position + vertex_2;\n    const unsigned char &direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n"
+        },
+        {
+          "name": "explicit-address-read",
+          "text": "    hover_max = position + vertex_2;\n    unsigned char direction_flag = *(&element->direction_flag);\n    hover_max.x -= width * 0.05f;\n"
+        }
+      ]
+    }
+  ]
+}

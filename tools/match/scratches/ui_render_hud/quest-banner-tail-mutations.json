@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-banner-tail",
+      "find": "        } else if (quest_stage_banner_timer_ms < 2000) {\n            banner_fade =\n                1.0f\n                - (float)(\n                    quest_stage_banner_timer_ms * 2 - 3000)\n                    * 0.001f;\n        } else {\n            banner_fade = 0.0f;\n        }",
+      "replacements": [
+        {
+          "name": "explicit-2500-zero-window",
+          "text": "        } else if (quest_stage_banner_timer_ms < 2000) {\n            banner_fade =\n                1.0f\n                - (float)(\n                    quest_stage_banner_timer_ms * 2 - 3000)\n                    * 0.001f;\n        } else if (quest_stage_banner_timer_ms < 2500) {\n            banner_fade = 0.0f;\n        } else {\n            banner_fade = 0.0f;\n        }"
+        },
+        {
+          "name": "explicit-2500-reversed-window",
+          "text": "        } else if (quest_stage_banner_timer_ms < 2000) {\n            banner_fade =\n                1.0f\n                - (float)(\n                    quest_stage_banner_timer_ms * 2 - 3000)\n                    * 0.001f;\n        } else if (quest_stage_banner_timer_ms >= 2500) {\n            banner_fade = 0.0f;\n        } else {\n            banner_fade = 0.0f;\n        }"
+        },
+        {
+          "name": "explicit-2500-ternary",
+          "text": "        } else if (quest_stage_banner_timer_ms < 2000) {\n            banner_fade =\n                1.0f\n                - (float)(\n                    quest_stage_banner_timer_ms * 2 - 3000)\n                    * 0.001f;\n        } else {\n            banner_fade =\n                quest_stage_banner_timer_ms < 2500\n                    ? 0.0f\n                    : 0.0f;\n        }"
+        }
+      ]
+    }
+  ]
+}

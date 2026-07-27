@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-position-pointer",
+      "find": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = (float)(crt_rand() & 0x1ff)\n                * (spread_radius * fire_player->spread_heat)\n                * 0.001953125f;",
+      "replacements": [
+        {
+          "name": "vec2-method-pointer",
+          "text": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            vec2_t *fire_position = (vec2_t *)&fire_player->position;\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_position->x;\n            move_delta.y = random_offset.y - fire_position->y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = (float)(crt_rand() & 0x1ff)\n                * (spread_radius * fire_player->spread_heat)\n                * 0.001953125f;"
+        },
+        {
+          "name": "typed-position-pointer",
+          "text": "            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            player_update_vec2_t *fire_position = &fire_player->position;\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            move_delta.x = random_offset.x - fire_position->x;\n            move_delta.y = random_offset.y - fire_position->y;\n            float spread_radius = vec2_length(&move_delta) * 0.5f;\n            float spread_angle =\n                (float)(crt_rand() & 0x1ff) * 0.012271847f;\n            spread_radius = (float)(crt_rand() & 0x1ff)\n                * (spread_radius * fire_player->spread_heat)\n                * 0.001953125f;"
+        }
+      ]
+    },
+    {
+      "name": "fire-cough-position-receiver",
+      "find": "            ((vec2_t *)player_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);",
+      "replacements": [
+        {
+          "name": "cast-shared-position",
+          "text": "            ((vec2_t *)fire_position)->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);"
+        },
+        {
+          "name": "direct-method-position",
+          "text": "            fire_position->vec2_sub(\n                &scratch_pos.x,\n                &random_offset.x);"
+        }
+      ]
+    }
+  ]
+}

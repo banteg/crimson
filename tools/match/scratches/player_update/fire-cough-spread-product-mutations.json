@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-spread-product",
+      "find": "            spread_radius = spread_radius * fire_player->spread_heat\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;",
+      "replacements": [
+        {
+          "name": "random-times-grouped-radius-heat",
+          "text": "            spread_radius = (float)(crt_rand() & 0x1ff)\n                * (spread_radius * fire_player->spread_heat)\n                * 0.001953125f;"
+        },
+        {
+          "name": "grouped-radius-heat-times-random",
+          "text": "            spread_radius =\n                (spread_radius * fire_player->spread_heat)\n                * (float)(crt_rand() & 0x1ff) * 0.001953125f;"
+        },
+        {
+          "name": "radius-times-grouped-heat-random",
+          "text": "            spread_radius = spread_radius\n                * (fire_player->spread_heat\n                    * (float)(crt_rand() & 0x1ff))\n                * 0.001953125f;"
+        },
+        {
+          "name": "random-radius-heat-left-associative",
+          "text": "            spread_radius = (float)(crt_rand() & 0x1ff)\n                * spread_radius * fire_player->spread_heat\n                * 0.001953125f;"
+        }
+      ]
+    }
+  ]
+}

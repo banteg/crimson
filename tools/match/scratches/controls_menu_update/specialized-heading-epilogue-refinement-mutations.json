@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "add-specialized-heading-helper",
+      "find": "static __forceinline void draw_rebind_row(\n",
+      "replacements": [
+        {
+          "name": "color-y-x-compound",
+          "text": "static __forceinline void draw_rebind_heading_specialized(\n    controls_vec2_t &position,\n    char *label,\n    controls_color_t &tint)\n{\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, label);\n    grim_interface_ptr->grim_set_color_ptr((float *)&tint);\n\n    controls_vec2_t line_offset(0.0f, 13.0f);\n    controls_vec2_t line_position;\n    grim_interface_ptr->grim_draw_rect_outline(\n        position.vec2_add_out(\n            (float *)&line_position,\n            (float *)&line_offset),\n        228.0f,\n        1.0f);\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.y += 18.0f;\n    position.x += 8.0f;\n}\n\nstatic __forceinline void draw_rebind_row(\n"
+        },
+        {
+          "name": "color-y-x-assignment",
+          "text": "static __forceinline void draw_rebind_heading_specialized(\n    controls_vec2_t &position,\n    char *label,\n    controls_color_t &tint)\n{\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, label);\n    grim_interface_ptr->grim_set_color_ptr((float *)&tint);\n\n    controls_vec2_t line_offset(0.0f, 13.0f);\n    controls_vec2_t line_position;\n    grim_interface_ptr->grim_draw_rect_outline(\n        position.vec2_add_out(\n            (float *)&line_position,\n            (float *)&line_offset),\n        228.0f,\n        1.0f);\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.y = position.y + 18.0f;\n    position.x = position.x + 8.0f;\n}\n\nstatic __forceinline void draw_rebind_row(\n"
+        },
+        {
+          "name": "color-x-y-compound",
+          "text": "static __forceinline void draw_rebind_heading_specialized(\n    controls_vec2_t &position,\n    char *label,\n    controls_color_t &tint)\n{\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, label);\n    grim_interface_ptr->grim_set_color_ptr((float *)&tint);\n\n    controls_vec2_t line_offset(0.0f, 13.0f);\n    controls_vec2_t line_position;\n    grim_interface_ptr->grim_draw_rect_outline(\n        position.vec2_add_out(\n            (float *)&line_position,\n            (float *)&line_offset),\n        228.0f,\n        1.0f);\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    position.x += 8.0f;\n    position.y += 18.0f;\n}\n\nstatic __forceinline void draw_rebind_row(\n"
+        },
+        {
+          "name": "color-y-x-staged-scalars",
+          "text": "static __forceinline void draw_rebind_heading_specialized(\n    controls_vec2_t &position,\n    char *label,\n    controls_color_t &tint)\n{\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);\n    grim_interface_ptr->grim_draw_text_small_fmt(\n        position.x, position.y, label);\n    grim_interface_ptr->grim_set_color_ptr((float *)&tint);\n\n    controls_vec2_t line_offset(0.0f, 13.0f);\n    controls_vec2_t line_position;\n    grim_interface_ptr->grim_draw_rect_outline(\n        position.vec2_add_out(\n            (float *)&line_position,\n            (float *)&line_offset),\n        228.0f,\n        1.0f);\n\n    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);\n    float next_y = position.y + 18.0f;\n    float next_x = position.x + 8.0f;\n    position.y = next_y;\n    position.x = next_x;\n}\n\nstatic __forceinline void draw_rebind_row(\n"
+        }
+      ]
+    },
+    {
+      "name": "moving-heading-specialization",
+      "find": "    draw_position.x -= 8.0f;\n    draw_rebind_heading(draw_position, \"Moving\", section_tint);\n",
+      "replacements": [
+        {
+          "name": "specialized",
+          "text": "    draw_position.x -= 8.0f;\n    draw_rebind_heading_specialized(\n        draw_position, \"Moving\", section_tint);\n"
+        }
+      ]
+    },
+    {
+      "name": "misc-heading-specialization",
+      "find": "        draw_rebind_heading(draw_position, \"Misc\", section_tint);\n",
+      "replacements": [
+        {
+          "name": "specialized",
+          "text": "        draw_rebind_heading_specialized(\n            draw_position, \"Misc\", section_tint);\n"
+        }
+      ]
+    }
+  ]
+}

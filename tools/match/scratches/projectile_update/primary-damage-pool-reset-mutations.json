@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-damage-pool-reset-lifetime",
+      "find": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        float life_timer =\n                                            projectile->pos.tail.vy.life_timer;\n                                        projectile->pos.tail.vy.damage_pool =\n                                            0.0f;\n                                        if (life_timer != 0.25f) {\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                        }\n                                    }",
+      "replacements": [
+        {
+          "name": "direct-field-after-clear",
+          "text": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        projectile->pos.tail.vy.damage_pool =\n                                            0.0f;\n                                        if (projectile->pos.tail.vy.life_timer\n                                            != 0.25f) {\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                        }\n                                    }"
+        },
+        {
+          "name": "direct-field-before-clear",
+          "text": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        if (projectile->pos.tail.vy.life_timer\n                                            != 0.25f) {\n                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                        } else {\n                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n                                        }\n                                    }"
+        },
+        {
+          "name": "direct-field-then-clear",
+          "text": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        if (projectile->pos.tail.vy.life_timer\n                                            != 0.25f) {\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                        }\n                                        projectile->pos.tail.vy.damage_pool =\n                                            0.0f;\n                                    }"
+        },
+        {
+          "name": "equal-arm-first",
+          "text": "                                    if (projectile->pos.tail.vy.damage_pool\n                                        == 1.0f) {\n                                        if (projectile->pos.tail.vy.life_timer\n                                            == 0.25f) {\n                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n                                        } else {\n                                            projectile->pos.tail.vy.damage_pool =\n                                                0.0f;\n                                            projectile->pos.tail.vy.life_timer =\n                                                0.25f;\n                                        }\n                                    }"
+        }
+      ]
+    }
+  ]
+}

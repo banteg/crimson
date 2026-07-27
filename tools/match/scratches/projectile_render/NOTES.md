@@ -355,3 +355,67 @@ unresolved references. The two extra Sharpshooter pairings are the expected
 alignment cost of the native-evidenced object order, while the higher-priority
 byte score improves. `crimson match validate` accepts the retained source, and
 the complete records are appended to `experiments.jsonl`.
+
+## Ion and secondary-projectile native-lifetime wave
+
+The fresh Binary Ninja bundle from target
+`3023:2:9499448411019345244` is saved as
+`/tmp/wave6-projectile-render-bn-bundle.json` with SHA-256
+`a395bc39ec795836ea1add24dea60e39dd614f54edbdaa52e121e190f772362a`.
+It resolves four additional lifetime and construction-order details:
+
+- The live ion head reloads the projectile type at `0x00424562`, after the
+  normalization call, rather than preserving the earlier cached type.
+- The fading ion trail reloads the type for its color arm at `0x004249b2`.
+  The other apparent reload sites at `0x00424684` and `0x0042489a` do not
+  compose positively with those two sites and are not retained.
+- After normalizing the ion arc at `0x00424bfb`, native rotates that same
+  vector perpendicular in place at `0x00424c00-0x00424c12`. It constructs the
+  projectile-space start at `0x00424c16-0x00424c58`, scales the perpendicular,
+  emits the first two strip points, and only then constructs the creature-space
+  end at `0x00424cee-0x00424d2e`. The source now preserves that order.
+- The secondary main-sprite pass tests the live exploding type at
+  `0x00425869`, calls `grim_set_rotation` at
+  `0x00425872-0x0042587e`, and reloads the type at `0x00425884` before its
+  ordered `1`, `2`, and `4` draw arms. The source now has the same lifetime.
+
+The first three changes were selected by the complete 15-variant interaction
+sweep in `native-reload-arc-interactions.json` (SHA-256
+`f5b8794a4e3796e147935dfe7d3943639e36c4b19b2a069b16d4941228ed1c0d`).
+Together they add 20.262 fuzzy-weighted bytes. The complete three-variant
+`secondary-bloom-type-lifetime-mutations.json` sweep (SHA-256
+`cfeda77185cd88b8db3b01a81855f6a4d6cc04e5dc5a3e80ea160807535a5483`)
+then finds all three reload spellings byte-identical at another +15.984 bytes;
+the direct gate followed by the post-call reload is retained because it is the
+smallest spelling of the observed native order.
+
+The wave also records useful negative evidence:
+
+- `ion-arc-sequencing-mutations.json` and
+  `ion-arc-native-operator-mutations.json` cover 24 and 14 variants,
+  respectively. Their isolated winners were superseded by the complete
+  interaction result above.
+- `ion-type-reload-mutations.json` records both a 25-variant bounded pass and
+  all 31 possible interactions. `ion-remaining-type-reloads.json` covers the
+  seven remaining combinations; none improves the retained baseline.
+- A direct primary-life reload gains 4.273 bytes alone, but loses 26.730 bytes
+  when composed with the retained native ion shape, so it is rejected.
+- The full 80-variant, one- through four-site interaction sweep of
+  `vector-operator-lifetime-mutations.json` contains no improvement.
+- The fire-overlay position, billboard type-reload, and secondary main
+  draw-position sweeps cover 3, 11, and 4 variants. Aggregate fire geometry
+  loses at least 767.6 bytes, billboard reloads lose at least 22.46 bytes, and
+  the natural secondary component spellings are neutral or regress. A
+  position-cursor spelling compiles byte-identically. None is retained.
+
+Against source SHA-256
+`70f2cd4d66e04eb6c7d35eb725d462ebc86604af832d2038cf762b1c7dbadab2`,
+the retained source SHA-256
+`42ab3c4c4db525b99d67b1528fb8ab91d898bf3bcd42f6194fd20fe2e62602f8`
+moves the ratio from 51.4042553% to 51.6930407%, adds 36.245
+fuzzy-weighted bytes, and reduces the gap from 6,099.252 to 6,063.006 bytes.
+The candidate grows from 2,854 to 2,856 instructions against 3,021 native
+instructions. References remain `407/0/13`, so the improvement does not trade
+bytes for reference debt. Thirteen complete mutation records were appended in
+this wave; `experiments.jsonl` now has SHA-256
+`0ccae8857489a84d963e55b7183efbf526dd622a5aa17fd7c53f507e127ac70d`.

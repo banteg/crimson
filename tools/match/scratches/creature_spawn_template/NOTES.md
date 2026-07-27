@@ -697,3 +697,71 @@ Four additional recorded sweeps close nearby source-shape hypotheses:
 The full live native disassembly used for these decisions has SHA-256
 `84208879854802967cf4fe8bac46cbda58ed4464dbe111bf4f709446482b3881`.
 Only the measured template-`0x31` lifetime improvement is retained.
+
+## Raw RNG remainder-lifetime sweep
+
+A second live Binary Ninja pass against target
+`3023:2:9499448411019345244` followed the same source-level control into the
+random-template cluster. The native handlers repeatedly preserve a raw RNG
+result or signed remainder while one or more independent tint stores are
+scheduled around `idiv`: template `0x04` at
+`0x00432c0d..0x00432c44`, template `0x20` at
+`0x0043287c..0x004328e1`, templates `0x03/0x05/0x06` around
+`0x00432941`, `0x00432aa7`, and `0x00432cb2`, template `0x34` at
+`0x004327f0..0x0043281c`, and template `0x35` at
+`0x00432e18..0x00432e7d`. Replacing only the corresponding macro expansions
+with natural block-local roll/remainder lifetimes reproduces more of that VC6
+scheduling without changing behavior or instruction count.
+
+The retained, fully recorded sweeps are:
+
+- `template-04-speed-roll-lifetime-mutations.json`
+  (`c7ead45d279264198059eed462ace6fd98f894909252318712cc2c0acde12340`)
+  evaluates 6/6 variants and gains 17.846835443039 weighted bytes. Several
+  source spellings tie at the machine-code level; the retained direct
+  block-local remainder is the smallest equivalent form.
+- `template-20-speed-roll-lifetime-mutations.json`
+  (`79faccf9b18e4f4cbe2b20d12e370839d550c473e33227b8289d773f1d722362`)
+  evaluates 5/5 variants and gains 8.923417721518 weighted bytes.
+- `templates-03-05-06-speed-roll-lifetime-mutations.json`
+  (`237513ef71a608d4d23cc73d7494002e773bfacd99f43d02d65e353edd352bb5`)
+  evaluates all 26/26 one-, two-, and three-site variants. The three
+  independently additive direct-remainder sites gain 40.155379746837 weighted
+  bytes together.
+- `template-20-tint-roll-lifetime-mutations.json`
+  (`f2bc36de4f2a844bc7341db62eeab80881f28d7f7590cce16779ca9542779f85`)
+  evaluates 5/5 variants and gains 4.461708860759 weighted bytes by keeping the
+  tint roll live across the constant-blue store.
+- `templates-34-35-roll-lifetime-mutations.json`
+  (`565c358b961857b799044f23d44615f1700d0fbc041cef2eadb31838e9ad9615`)
+  evaluates all 66/66 one- and two-site variants. The retained template-`0x34`
+  tint remainder and template-`0x35` speed remainder are independently
+  positive and gain 26.770253164557 weighted bytes as a pair.
+- `template-35-tint-roll-lifetime-mutations.json`
+  (`0487023676fd3d09de9791057e2430817cea97788e5216962f224c829010484e`)
+  re-evaluates all 3/3 tint spellings on top of the retained pair and gains a
+  further 4.461708860759 weighted bytes.
+
+The same wave records four bounded negative controls. The template-`0x09`
+spawn-slot sweep
+(`bbf7a38dbf68a8828e3298feddc880fa9c8096d97d355eb0373dba0c76a3a4c0`,
+5/5), template-`0x0f` tint/stat ordering sweep
+(`0e013183db830093a09cf2986e9e89356ec2a482bffbb89a207e2992e1404efa`,
+8/8), and grid-child position-lifetime sweep
+(`c1ed35aea7500518ece3bc852391c2c2683ec328aa419fe9669c1d7b0b8494cf`,
+8/8) find only byte-neutral or regressing shapes. The template-`0x33`
+two-site roll sweep
+(`b31f86a6d5d9962d90189203dc4c1ac8818b849e9a20c34977ecbcec576be3c0`)
+evaluates all 15/15 combinations without a winner. In the larger
+template-`0x34/0x35` matrix, all three template-`0x34` speed-lifetime
+spellings add one instruction and lose 95.632046 weighted bytes, so none is
+retained.
+
+Together the nine retained lifetime seams improve this scratch by
+102.619303797470 weighted bytes: from
+12,260.775949367087/14,099 (86.962025316456%) to
+12,363.395253164557/14,099 (87.689873417722%), reducing the fuzzy gap from
+1,838.224050632913 to 1,735.604746835443. Candidate/native instructions remain
+3,161/3,159, the prefix remains 23, and references remain `352/0/1`. The
+retained source SHA-256 is
+`3f88469321f30e59528c6d061a1402ab306d549f153db3ee27faa71b13860b16`.

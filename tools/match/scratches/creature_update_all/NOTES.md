@@ -439,3 +439,51 @@ not accepted by this VC6 compile.
 records the remaining commuted product order; it is byte-identical. The
 current `dx` plus named Y-delta source is retained, and the residual spill is
 classified as backend lifetime scheduling rather than incomplete recovery.
+
+## Spawn-slot aggregate, branch polarity, and animation factor order
+
+Live Binary Ninja target `3023:2:9499448411019345244` bounds a fresh coherent
+region from the ping-pong movement tail through animation advancement. Native
+`0x00426cfd..0x00426d51` materializes the linked spawn-slot aggregate once,
+updates its timer, loads count and limit, and branches with
+`cmp edx,eax; jle` at `0x00426d38..0x00426d3d`.
+
+The schema-1 spec `movement-spawn-slot-lifetime-mutations.json` has SHA-256
+`5f162660d3f774ab293bd280a9a2a8207ea9c59365a0a1837f183803f27c7ba2`
+and exhausts all 87/87 one- and two-site variants. All four natural pointer or
+reference aliases for the repeated spawn-slot fields compile identically and
+gain 89.103343465046 weighted bytes. The retained pointer spelling is the
+simplest representation of the native aggregate lifetime. It moves the result
+from 2,790.554711246200/5,330 (52.355623100304%) to
+2,879.658054711246/5,330 (54.027355623100%), drops the gap from
+2,539.445288753800 to 2,450.341945288754 bytes, and improves references from
+`217/0/3` to `225/0/2` without changing the 1,294 candidate instructions.
+The movement turn-rate and velocity factor-order variants are byte-neutral or
+reduce that aggregate gain, so no movement spelling change is retained.
+
+The follow-up `spawn-slot-branch-schedule-mutations.json` has SHA-256
+`9514634c2a444ee5c60f8beee1f6807a6327317283493e5e2acbab441a5027eb`
+and exhausts all 14/14 variants. Expressing the semantic condition as
+`spawn_limit > spawn_count` gains another 4.050151975684 weighted bytes and
+produces the native `cmp edx,eax; jle` polarity. Its negated equivalent is
+byte-identical; the direct comparison is retained. Four natural count-store
+and template-load schedules are all byte-neutral, leaving their residual
+instruction ordering classified as backend scheduling.
+
+Native animation arms at `0x00426e57..0x00426e77` and
+`0x00426ed5..0x00426ef5` keep `anim_scale` on x87 while computing
+`anim_rate * move_speed * frame_dt`, then merge them with `fmulp`. The
+schema-1 `animation-factor-order-mutations.json` (SHA-256
+`2e1c90f5f5f80708af37f59d3af83e535ccd584e45c56e180eb23793034a9af1`)
+exhausts all 24/24 single-arm spellings and two-arm interactions. Every
+natural grouped spelling gains 4.050151975684 bytes per arm; retaining
+`anim_scale * (anim_rate * move_speed * frame_dt)` in both arms gains
+8.100303951368 total and makes the local normalized x87 order match through
+`fmul frame_dt; fmulp; fmul move_scale`.
+
+The final result is 2,891.808510638298/5,330 (54.255319148936%), a
+2,438.191489361702-byte gap and a total improvement of 101.253799392098
+weighted bytes over this wave's 52.355623100304% baseline. Candidate
+instructions remain 1,294/1,338, the prefix remains zero, and references are
+`225/0/2`. The retained source SHA-256 is
+`6418804572316ca99c8d7928d0b3f2810e32d89468ac7b982f80372db2bff5b2`.

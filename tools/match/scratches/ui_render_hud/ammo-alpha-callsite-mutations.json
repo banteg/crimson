@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ammo-alpha-callsite",
+      "find": "                    float ammo_alpha =\n                        bar_index < ammo\n                            ? transition_alpha\n                            : transition_alpha * 0.3f;\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 1.0f, 1.0f, ammo_alpha);",
+      "replacements": [
+        {
+          "name": "inline-ternary",
+          "text": "                    grim_interface_ptr->grim_set_color(\n                        1.0f,\n                        1.0f,\n                        1.0f,\n                        bar_index < ammo\n                            ? transition_alpha\n                            : transition_alpha * 0.3f);"
+        },
+        {
+          "name": "inline-reversed-ternary",
+          "text": "                    grim_interface_ptr->grim_set_color(\n                        1.0f,\n                        1.0f,\n                        1.0f,\n                        bar_index >= ammo\n                            ? transition_alpha * 0.3f\n                            : transition_alpha);"
+        },
+        {
+          "name": "split-assignment",
+          "text": "                    float ammo_alpha;\n                    if (bar_index < ammo) {\n                        ammo_alpha = transition_alpha;\n                    } else {\n                        ammo_alpha = transition_alpha * 0.3f;\n                    }\n                    grim_interface_ptr->grim_set_color(\n                        1.0f, 1.0f, 1.0f, ammo_alpha);"
+        },
+        {
+          "name": "duplicated-call",
+          "text": "                    if (bar_index < ammo) {\n                        grim_interface_ptr->grim_set_color(\n                            1.0f, 1.0f, 1.0f, transition_alpha);\n                    } else {\n                        grim_interface_ptr->grim_set_color(\n                            1.0f,\n                            1.0f,\n                            1.0f,\n                            transition_alpha * 0.3f);\n                    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-35-tint-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->color.g, 0x14, 0.01f, 0.8f);\n                    creature->color.r = 0.8f;",
+      "replacements": [
+        {
+          "name": "block-roll-red-before-remainder",
+          "text": "                    int random_tint_roll = crt_rand();\n                    creature->color.r = 0.8f;\n                    int random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        },
+        {
+          "name": "split-remainder-red-before-assignment",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder;\n                    creature->color.r = 0.8f;\n                    random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        },
+        {
+          "name": "block-remainder-red-before-conversion",
+          "text": "                    int random_tint_roll = crt_rand();\n                    int random_tint_remainder = random_tint_roll % 0x14;\n                    creature->color.r = 0.8f;\n                    creature->color.g =\n                        (float)random_tint_remainder * 0.01f + 0.8f;"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "secondary-bloom-type-lifetime",
+      "find": "        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (!projectile->active\n            || type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }\n        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {",
+      "replacements": [
+        {
+          "name": "direct-gate-reload-after-rotation",
+          "text": "        if (!projectile->active\n            || projectile->pos.vx.vy.type_id\n                == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }\n        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {"
+        },
+        {
+          "name": "split-gate-reload-after-rotation",
+          "text": "        if (!projectile->active) {\n            continue;\n        }\n        if (projectile->pos.vx.vy.type_id\n            == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }\n        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {"
+        },
+        {
+          "name": "cached-gate-reassign-after-rotation",
+          "text": "        secondary_projectile_type_id_t type_id =\n            projectile->pos.vx.vy.type_id;\n        if (!projectile->active\n            || type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {\n            continue;\n        }\n        grim_interface_ptr->grim_set_rotation(projectile->angle);\n        type_id = projectile->pos.vx.vy.type_id;\n        if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {"
+        }
+      ]
+    }
+  ]
+}

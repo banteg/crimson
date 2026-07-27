@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "bonus-pool-signed-bound",
+      "find": "                bonus_entry_t *bonus = bonus_pool;\n                do {\n                    bonus->bonus_id = BONUS_ID_NONE;\n                    ++bonus;\n                } while (bonus < bonus_pool + 16);",
+      "replacements": [
+        {
+          "name": "signed-bound",
+          "text": "                bonus_entry_t *bonus = bonus_pool;\n                do {\n                    bonus->bonus_id = BONUS_ID_NONE;\n                    ++bonus;\n                } while ((int)bonus < (int)(bonus_pool + 16));"
+        }
+      ]
+    },
+    {
+      "name": "projectile-pool-signed-bound",
+      "find": "                projectile_t *projectile = projectile_pool;\n                do {\n                    projectile->active = 0;\n                    ++projectile;\n                } while (projectile < projectile_pool + 0x60);",
+      "replacements": [
+        {
+          "name": "signed-bound",
+          "text": "                projectile_t *projectile = projectile_pool;\n                do {\n                    projectile->active = 0;\n                    ++projectile;\n                } while ((int)projectile\n                    < (int)(projectile_pool + 0x60));"
+        }
+      ]
+    },
+    {
+      "name": "sprite-effect-pool-signed-bound",
+      "find": "                sprite_effect_t *sprite = sprite_effect_pool;\n                do {\n                    sprite->active = 0;\n                    ++sprite;\n                } while (sprite < sprite_effect_pool + 0x180);",
+      "replacements": [
+        {
+          "name": "signed-bound",
+          "text": "                sprite_effect_t *sprite = sprite_effect_pool;\n                do {\n                    sprite->active = 0;\n                    ++sprite;\n                } while ((int)sprite\n                    < (int)(sprite_effect_pool + 0x180));"
+        }
+      ]
+    },
+    {
+      "name": "secondary-projectile-pool-signed-bound",
+      "find": "                secondary_projectile_t *secondary = secondary_projectile_pool;\n                do {\n                    secondary->active = 0;\n                    ++secondary;\n                } while (secondary < secondary_projectile_pool + 0x40);",
+      "replacements": [
+        {
+          "name": "signed-bound",
+          "text": "                secondary_projectile_t *secondary = secondary_projectile_pool;\n                do {\n                    secondary->active = 0;\n                    ++secondary;\n                } while ((int)secondary\n                    < (int)(secondary_projectile_pool + 0x40));"
+        }
+      ]
+    },
+    {
+      "name": "creature-pool-signed-bound",
+      "find": "                creature_t *creature = creature_pool;\n                do {\n                    creature->active = 0;\n                    ++creature;\n                } while (creature < creature_pool + 384);",
+      "replacements": [
+        {
+          "name": "signed-bound",
+          "text": "                creature_t *creature = creature_pool;\n                do {\n                    creature->active = 0;\n                    ++creature;\n                } while ((int)creature < (int)(creature_pool + 384));"
+        }
+      ]
+    }
+  ]
+}

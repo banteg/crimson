@@ -444,18 +444,17 @@ extern "C" void creature_update_all(void)
                             }
 
                             slot_index = creature_pool[creature_index].link_index;
-                            creature_spawn_slot_table[slot_index].timer_s -= frame_dt;
-                            if (creature_spawn_slot_table[slot_index].timer_s < 0.0f) {
-                                int spawn_count =
-                                    creature_spawn_slot_table[slot_index].count;
-                                spawn_limit = creature_spawn_slot_table[slot_index].limit;
-                                creature_spawn_slot_table[slot_index].timer_s +=
-                                    creature_spawn_slot_table[slot_index].interval_s;
-                                if (spawn_count < spawn_limit) {
-                                    creature_spawn_slot_table[slot_index].count =
-                                        spawn_count + 1;
+                            creature_spawn_slot_t *spawn_slot =
+                                &creature_spawn_slot_table[slot_index];
+                            spawn_slot->timer_s -= frame_dt;
+                            if (spawn_slot->timer_s < 0.0f) {
+                                int spawn_count = spawn_slot->count;
+                                spawn_limit = spawn_slot->limit;
+                                spawn_slot->timer_s += spawn_slot->interval_s;
+                                if (spawn_limit > spawn_count) {
+                                    spawn_slot->count = spawn_count + 1;
                                     creature_spawn_template(
-                                        creature_spawn_slot_table[slot_index].template_id,
+                                        spawn_slot->template_id,
                                         position,
                                         -100.0f);
                                 }
@@ -494,22 +493,22 @@ extern "C" void creature_update_all(void)
                             if (creature_pool[creature_index].ai_mode
                                 != CREATURE_AI_HOLD_TIMER) {
                                 creature_pool[creature_index].anim_phase +=
-                                    creature_type_table[
+                                    anim_scale * (creature_type_table[
                                         creature_pool[creature_index].type_id
                                     ].anim_rate
                                     * creature_pool[creature_index].move_speed
-                                    * frame_dt * anim_scale * move_scale * 25.0f;
+                                    * frame_dt) * move_scale * 25.0f;
                                 while (creature_pool[creature_index].anim_phase > 31.0f) {
                                     creature_pool[creature_index].anim_phase -= 31.0f;
                                 }
                             }
                         } else {
                             creature_pool[creature_index].anim_phase +=
-                                creature_type_table[
+                                anim_scale * (creature_type_table[
                                     creature_pool[creature_index].type_id
                                 ].anim_rate
                                 * creature_pool[creature_index].move_speed
-                                * frame_dt * anim_scale * move_scale * 22.0f;
+                                * frame_dt) * move_scale * 22.0f;
                             if (creature_pool[creature_index].anim_phase > 15.0f) {
                                 do {
                                     creature_pool[creature_index].anim_phase -= 15.0f;

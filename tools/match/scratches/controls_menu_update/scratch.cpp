@@ -184,6 +184,54 @@ static __forceinline void draw_rebind_heading(
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
 }
 
+static __forceinline void draw_rebind_heading_specialized(
+    controls_vec2_t &position,
+    char *label,
+    controls_color_t &tint)
+{
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+    grim_interface_ptr->grim_draw_text_small_fmt(
+        position.x, position.y, label);
+    grim_interface_ptr->grim_set_color_ptr((float *)&tint);
+
+    controls_vec2_t line_offset(0.0f, 13.0f);
+    controls_vec2_t line_position;
+    grim_interface_ptr->grim_draw_rect_outline(
+        position.vec2_add_out(
+            (float *)&line_position,
+            (float *)&line_offset),
+        228.0f,
+        1.0f);
+
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+    position.x += 8.0f;
+    position.y += 18.0f;
+}
+
+static __forceinline void draw_rebind_heading_misc(
+    controls_vec2_t &position,
+    char *label,
+    controls_color_t &tint)
+{
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+    grim_interface_ptr->grim_draw_text_small_fmt(
+        position.x, position.y, label);
+    grim_interface_ptr->grim_set_color_ptr((float *)&tint);
+
+    controls_vec2_t line_offset(0.0f, 13.0f);
+    controls_vec2_t line_position;
+    grim_interface_ptr->grim_draw_rect_outline(
+        position.vec2_add_out(
+            (float *)&line_position,
+            (float *)&line_offset),
+        228.0f,
+        1.0f);
+
+    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+    position.y += 18.0f;
+    position.x += 8.0f;
+}
+
 static __forceinline void draw_rebind_row(
     controls_vec2_t &position,
     char *label,
@@ -471,7 +519,8 @@ extern "C" void controls_menu_update(void)
     draw_position.y += 8.0f;
 
     draw_position.x -= 8.0f;
-    draw_rebind_heading(draw_position, "Moving", section_tint);
+    draw_rebind_heading_specialized(
+        draw_position, "Moving", section_tint);
     if (config_player_mode_flags[controls_rebind_player_index] == 2) {
         draw_rebind_row(draw_position, "Move Up:", 0);
         draw_rebind_row(draw_position, "Move Down:", 1);
@@ -495,7 +544,8 @@ extern "C" void controls_menu_update(void)
     draw_position.x -= 8.0f;
 
     if (controls_rebind_player_index == 0) {
-        draw_rebind_heading(draw_position, "Misc", section_tint);
+        draw_rebind_heading_misc(
+            draw_position, "Misc", section_tint);
         draw_rebind_row(draw_position, "Level Up:", 13);
         if (config_player_mode_flags[controls_rebind_player_index] != 4) {
             draw_rebind_row(draw_position, "Reload:", 14);

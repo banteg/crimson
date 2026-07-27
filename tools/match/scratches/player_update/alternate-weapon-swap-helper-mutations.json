@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "typed-swap-helper",
+      "find": "static __inline void player_apply_move_speed_cap(player_state_t *player)\n{\n    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n        player->move_speed = 0.8f;\n    }\n}\n\nextern \"C\" void player_update(void)",
+      "replacements": [
+        {
+          "name": "inline-reference-overloads",
+          "text": "static __inline void player_apply_move_speed_cap(player_state_t *player)\n{\n    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n        player->move_speed = 0.8f;\n    }\n}\n\nstatic __inline void player_swap_field(int &lhs, int &rhs)\n{\n    int value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nstatic __inline void player_swap_field(float &lhs, float &rhs)\n{\n    float value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nstatic __inline void player_swap_field(unsigned char &lhs, unsigned char &rhs)\n{\n    unsigned char value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nextern \"C\" void player_update(void)"
+        },
+        {
+          "name": "forceinline-reference-overloads",
+          "text": "static __inline void player_apply_move_speed_cap(player_state_t *player)\n{\n    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n        player->move_speed = 0.8f;\n    }\n}\n\nstatic __forceinline void player_swap_field(int &lhs, int &rhs)\n{\n    int value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nstatic __forceinline void player_swap_field(float &lhs, float &rhs)\n{\n    float value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nstatic __forceinline void player_swap_field(unsigned char &lhs, unsigned char &rhs)\n{\n    unsigned char value = lhs;\n    lhs = rhs;\n    rhs = value;\n}\n\nextern \"C\" void player_update(void)"
+        }
+      ]
+    },
+    {
+      "name": "alternate-weapon-helper-calls",
+      "find": "            int swap_weapon_id = player->weapon_id;\n            player->weapon_id = player->alt_weapon_id;\n            player->alt_weapon_id = swap_weapon_id;\n\n            float swap_clip_size = player->alt_clip_size;\n            player->alt_clip_size = player->clip_size;\n            player->clip_size = swap_clip_size;\n\n            unsigned char swap_reload_active = player->alt_reload_active;\n            player->alt_reload_active = player->reload_active;\n            player->reload_active = swap_reload_active;\n\n            float swap_ammo = player->alt_ammo;\n            player->alt_ammo = player->ammo;\n            player->ammo = swap_ammo;\n\n            float *reload_timer = &player->reload_timer;\n            float swap_reload_timer = player->alt_reload_timer;\n            player->alt_reload_timer = *reload_timer;\n            *reload_timer = swap_reload_timer;\n\n            float swap_shot_cooldown = player->alt_shot_cooldown;\n            player->alt_shot_cooldown = *shot_cooldown;\n            *shot_cooldown = swap_shot_cooldown;\n\n            float swap_reload_timer_max = player->alt_reload_timer_max;\n            player->alt_reload_timer_max = player->reload_timer_max;\n            player->reload_timer_max = swap_reload_timer_max;",
+      "replacements": [
+        {
+          "name": "all-fields-current-first",
+          "text": "            player_swap_field(player->weapon_id, player->alt_weapon_id);\n            player_swap_field(player->clip_size, player->alt_clip_size);\n            player_swap_field(\n                player->reload_active,\n                player->alt_reload_active);\n            player_swap_field(player->ammo, player->alt_ammo);\n            player_swap_field(player->reload_timer, player->alt_reload_timer);\n            player_swap_field(\n                player->shot_cooldown,\n                player->alt_shot_cooldown);\n            player_swap_field(\n                player->reload_timer_max,\n                player->alt_reload_timer_max);"
+        },
+        {
+          "name": "all-fields-native-orientation",
+          "text": "            player_swap_field(player->weapon_id, player->alt_weapon_id);\n            player_swap_field(player->alt_clip_size, player->clip_size);\n            player_swap_field(\n                player->alt_reload_active,\n                player->reload_active);\n            player_swap_field(player->alt_ammo, player->ammo);\n            player_swap_field(player->alt_reload_timer, player->reload_timer);\n            player_swap_field(\n                player->alt_shot_cooldown,\n                player->shot_cooldown);\n            player_swap_field(\n                player->alt_reload_timer_max,\n                player->reload_timer_max);"
+        }
+      ]
+    }
+  ]
+}

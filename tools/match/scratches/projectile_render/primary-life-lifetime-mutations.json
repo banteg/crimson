@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-life-declaration",
+      "find": "        projectile_type_id_t type_id = primary->vy.type_id;\n        float life = primary->vy.life_timer;",
+      "replacements": [
+        {
+          "name": "type-only",
+          "text": "        projectile_type_id_t type_id = primary->vy.type_id;"
+        }
+      ]
+    },
+    {
+      "name": "pulse-fade-life",
+      "find": "                float fade = projectile_render_clamp(life * 2.5f);",
+      "replacements": [
+        {
+          "name": "direct-primary-life",
+          "text": "                float fade = projectile_render_clamp(\n                    primary->vy.life_timer * 2.5f);"
+        },
+        {
+          "name": "direct-projectile-life",
+          "text": "                float fade = projectile_render_clamp(\n                    projectile->pos.tail.vy.life_timer * 2.5f);"
+        }
+      ]
+    },
+    {
+      "name": "ion-fade-life",
+      "find": "            float fade = projectile_render_clamp(life * 2.5f);",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "direct-primary-life",
+          "text": "            float fade = projectile_render_clamp(\n                primary->vy.life_timer * 2.5f);"
+        },
+        {
+          "name": "direct-projectile-life",
+          "text": "            float fade = projectile_render_clamp(\n                projectile->pos.tail.vy.life_timer * 2.5f);"
+        }
+      ]
+    }
+  ]
+}

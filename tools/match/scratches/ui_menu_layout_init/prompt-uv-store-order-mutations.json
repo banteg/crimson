@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "prompt-uv-store-order",
+      "find": "    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;",
+      "replacements": [
+        {
+          "name": "native-slot-0-1-3-2",
+          "text": "    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;"
+        },
+        {
+          "name": "ones-then-zeros",
+          "text": "    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;"
+        },
+        {
+          "name": "zeros-then-ones",
+          "text": "    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;"
+        },
+        {
+          "name": "paired-outside-in",
+          "text": "    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;"
+        },
+        {
+          "name": "reverse-native",
+          "text": "    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;"
+        },
+        {
+          "name": "slot-3-2-0-1",
+          "text": "    ui_perk_prompt_element.layers[0].slot_03.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_02.u = 0.0f;\n    ui_perk_prompt_element.layers[0].slot_00.u = 1.0f;\n    ui_perk_prompt_element.layers[0].slot_01.u = 0.0f;"
+        }
+      ]
+    }
+  ]
+}

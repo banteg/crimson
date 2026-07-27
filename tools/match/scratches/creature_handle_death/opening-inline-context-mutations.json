@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inline-context",
+      "find": "extern void fx_queue_add_random(vec2f_t *pos);\n",
+      "replacements": [
+        {
+          "name": "inline-creature-at",
+          "text": "extern void fx_queue_add_random(vec2f_t *pos);\n\nstatic __inline creature_t *creature_at(int creature_id)\n{\n    return &creature_pool[creature_id];\n}\n"
+        },
+        {
+          "name": "forceinline-creature-at",
+          "text": "extern void fx_queue_add_random(vec2f_t *pos);\n\nstatic __forceinline creature_t *creature_at(int creature_id)\n{\n    return &creature_pool[creature_id];\n}\n"
+        },
+        {
+          "name": "inline-bonus-on-death",
+          "text": "extern void fx_queue_add_random(vec2f_t *pos);\n\nstatic __inline void creature_try_bonus_on_death(creature_t *creature)\n{\n    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n}\n"
+        },
+        {
+          "name": "forceinline-bonus-on-death",
+          "text": "extern void fx_queue_add_random(vec2f_t *pos);\n\nstatic __forceinline void creature_try_bonus_on_death(creature_t *creature)\n{\n    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n}\n"
+        }
+      ]
+    },
+    {
+      "name": "opening-body-context",
+      "find": "    creature_t *creature = &creature_pool[creature_id];\n    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n",
+      "replacements": [
+        {
+          "name": "flags-before-pointer",
+          "text": "    int creature_flags = creature_pool[creature_id].flags;\n    creature_t *creature = &creature_pool[creature_id];\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "pointer-before-named-flags",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    int creature_flags = creature->flags;\n    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "inline-creature-at-call",
+          "text": "    creature_t *creature = creature_at(creature_id);\n    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {\n        bonus_spawn_at(\n            &creature->position,\n            (bonus_id_t)creature->bonus_args.bonus_id,\n            creature->bonus_args.duration_override\n        );\n    }\n"
+        },
+        {
+          "name": "inline-bonus-on-death-call",
+          "text": "    creature_t *creature = &creature_pool[creature_id];\n    creature_try_bonus_on_death(creature);\n"
+        }
+      ]
+    }
+  ]
+}

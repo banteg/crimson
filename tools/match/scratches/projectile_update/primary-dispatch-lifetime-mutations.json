@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "plasma-child-position-lifetime",
+      "find": "                                            vec2f_t child_pos;\n                                            child_pos.x =\n                                                (float)(cos(child_angle)\n                                                    * child_radius)\n                                                + projectile->position.x;\n                                            child_pos.y =\n                                                (float)(sin(child_angle)\n                                                    * child_radius)\n                                                + projectile->position.y;",
+      "replacements": [
+        {
+          "name": "stage-native-y-product",
+          "text": "                                            float child_y =\n                                                (float)(sin(child_angle)\n                                                    * child_radius);\n                                            vec2f_t child_pos;\n                                            child_pos.x =\n                                                (float)(cos(child_angle)\n                                                    * child_radius)\n                                                + projectile->position.x;\n                                            child_pos.y =\n                                                child_y\n                                                + projectile->position.y;"
+        },
+        {
+          "name": "stage-x-product",
+          "text": "                                            float child_x =\n                                                (float)(cos(child_angle)\n                                                    * child_radius);\n                                            vec2f_t child_pos;\n                                            child_pos.x =\n                                                child_x\n                                                + projectile->position.x;\n                                            child_pos.y =\n                                                (float)(sin(child_angle)\n                                                    * child_radius)\n                                                + projectile->position.y;"
+        },
+        {
+          "name": "stage-both-products",
+          "text": "                                            float child_x =\n                                                (float)(cos(child_angle)\n                                                    * child_radius);\n                                            float child_y =\n                                                (float)(sin(child_angle)\n                                                    * child_radius);\n                                            vec2f_t child_pos;\n                                            child_pos.x =\n                                                child_x\n                                                + projectile->position.x;\n                                            child_pos.y =\n                                                child_y\n                                                + projectile->position.y;"
+        },
+        {
+          "name": "stage-sine-value-and-y-product",
+          "text": "                                            float child_sin =\n                                                (float)sin(child_angle);\n                                            float child_y =\n                                                child_sin * child_radius;\n                                            vec2f_t child_pos;\n                                            child_pos.x =\n                                                (float)(cos(child_angle)\n                                                    * child_radius)\n                                                + projectile->position.x;\n                                            child_pos.y =\n                                                child_y\n                                                + projectile->position.y;"
+        }
+      ]
+    },
+    {
+      "name": "pulse-gun-displacement-lifetime",
+      "find": "                                        creature_pool[hit_id].position.x +=\n                                            delta.x * 3.0f;\n                                        creature_pool[hit_id].position.y +=\n                                            delta.y * 3.0f;",
+      "replacements": [
+        {
+          "name": "stage-native-y-scale",
+          "text": "                                        float pulse_y = delta.y * 3.0f;\n                                        creature_pool[hit_id].position.x +=\n                                            delta.x * 3.0f;\n                                        creature_pool[hit_id].position.y +=\n                                            pulse_y;"
+        },
+        {
+          "name": "stage-x-scale",
+          "text": "                                        float pulse_x = delta.x * 3.0f;\n                                        creature_pool[hit_id].position.x +=\n                                            pulse_x;\n                                        creature_pool[hit_id].position.y +=\n                                            delta.y * 3.0f;"
+        },
+        {
+          "name": "stage-both-scales",
+          "text": "                                        float pulse_x = delta.x * 3.0f;\n                                        float pulse_y = delta.y * 3.0f;\n                                        creature_pool[hit_id].position.x +=\n                                            pulse_x;\n                                        creature_pool[hit_id].position.y +=\n                                            pulse_y;"
+        }
+      ]
+    }
+  ]
+}

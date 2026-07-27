@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "panel-render-position",
+      "find": "            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "aggregate-initializer",
+          "text": "            ui_render_vec2_t render_pos = {\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y\n            };\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        },
+        {
+          "name": "float-array",
+          "text": "            float render_pos[2];\n            render_pos[0] =\n                element->render_offset_x + element->pos_x;\n            render_pos[1] =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos[0]);"
+        },
+        {
+          "name": "y-then-x",
+          "text": "            ui_render_vec2_t render_pos;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        },
+        {
+          "name": "vec2f-type",
+          "text": "            vec2f_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_quad(element, 0), 4, &render_pos.x);"
+        }
+      ]
+    },
+    {
+      "name": "counter-render-position",
+      "find": "            ui_render_vec2_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);",
+      "replacements": [
+        {
+          "name": "aggregate-initializer",
+          "text": "            ui_render_vec2_t render_pos = {\n                element->render_offset_x + element->pos_x,\n                element->render_offset_y + element->pos_y\n            };\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);"
+        },
+        {
+          "name": "float-array",
+          "text": "            float render_pos[2];\n            render_pos[0] =\n                element->render_offset_x + element->pos_x;\n            render_pos[1] =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos[0]);"
+        },
+        {
+          "name": "y-then-x",
+          "text": "            ui_render_vec2_t render_pos;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);"
+        },
+        {
+          "name": "vec2f-type",
+          "text": "            vec2f_t render_pos;\n            render_pos.x =\n                element->render_offset_x + element->pos_x;\n            render_pos.y =\n                element->render_offset_y + element->pos_y;\n            grim_interface_ptr->grim_submit_vertices_offset(\n                ui_element_counter_quad(element), 4, &render_pos.x);"
+        }
+      ]
+    }
+  ]
+}

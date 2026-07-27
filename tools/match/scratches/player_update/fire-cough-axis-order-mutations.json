@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-aim-axis-order",
+      "find": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;",
+      "replacements": [
+        {
+          "name": "load-y-before-x",
+          "text": "            random_offset.y = fire_player->aim.y;\n            random_offset.x = fire_player->aim.x;"
+        }
+      ]
+    },
+    {
+      "name": "fire-cough-delta-axis-order",
+      "find": "            move_delta.x = random_offset.x - fire_player->position.x;\n            move_delta.y = random_offset.y - fire_player->position.y;",
+      "replacements": [
+        {
+          "name": "compute-y-before-x",
+          "text": "            move_delta.y = random_offset.y - fire_player->position.y;\n            move_delta.x = random_offset.x - fire_player->position.x;"
+        }
+      ]
+    }
+  ]
+}

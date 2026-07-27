@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "recent-death-storage-declaration",
+      "find": "extern vec2f_t survival_recent_death_pos[3];\nextern int survival_recent_death_count;\n",
+      "replacements": [
+        {
+          "name": "aggregate-position-and-count",
+          "text": "typedef struct survival_recent_death_state_t {\n    vec2f_t positions[3];\n    int count;\n} survival_recent_death_state_t;\nextern survival_recent_death_state_t survival_recent_death_pos;\n#define survival_recent_death_positions survival_recent_death_pos.positions\n#define survival_recent_death_count survival_recent_death_pos.count\n"
+        }
+      ]
+    },
+    {
+      "name": "recent-death-position-name",
+      "find": "            survival_recent_death_pos[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_pos[survival_recent_death_count].y =\n                creature->position.y;\n",
+      "replacements": [
+        {
+          "name": "aggregate-position-field",
+          "text": "            survival_recent_death_positions[survival_recent_death_count].x =\n                creature->position.x;\n            survival_recent_death_positions[survival_recent_death_count].y =\n                creature->position.y;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ammo-class-four",
+      "find": "            } else {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            }\n            grim_interface_ptr->grim_begin_batch();",
+      "replacements": [
+        {
+          "name": "explicit-four-with-fallback",
+          "text": "            } else if (ammo_class == 4) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            } else {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            }\n            grim_interface_ptr->grim_begin_batch();"
+        },
+        {
+          "name": "explicit-four-empty-fallback",
+          "text": "            } else if (ammo_class == 4) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            } else {\n            }\n            grim_interface_ptr->grim_begin_batch();"
+        },
+        {
+          "name": "explicit-four-only",
+          "text": "            } else if (ammo_class == 4) {\n                grim_interface_ptr->grim_bind_texture(\n                    grim_interface_ptr->grim_get_texture_handle(\n                        \"ui\\\\ui_indElectric.jaz\"),\n                    0);\n            }\n            grim_interface_ptr->grim_begin_batch();"
+        }
+      ]
+    }
+  ]
+}

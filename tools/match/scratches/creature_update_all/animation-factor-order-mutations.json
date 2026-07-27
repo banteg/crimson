@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ordinary-animation-factor-order",
+      "find": "creature_type_table[\n                                        creature_pool[creature_index].type_id\n                                    ].anim_rate\n                                    * creature_pool[creature_index].move_speed\n                                    * frame_dt * anim_scale * move_scale * 25.0f",
+      "replacements": [
+        {
+          "name": "motion-product-before-scale",
+          "text": "(creature_type_table[\n                                        creature_pool[creature_index].type_id\n                                    ].anim_rate\n                                    * creature_pool[creature_index].move_speed\n                                    * frame_dt) * anim_scale * move_scale * 25.0f"
+        },
+        {
+          "name": "scale-times-motion-product",
+          "text": "anim_scale * (creature_type_table[\n                                        creature_pool[creature_index].type_id\n                                    ].anim_rate\n                                    * creature_pool[creature_index].move_speed\n                                    * frame_dt) * move_scale * 25.0f"
+        },
+        {
+          "name": "grouped-rate-speed-then-frame",
+          "text": "((creature_type_table[\n                                        creature_pool[creature_index].type_id\n                                    ].anim_rate\n                                    * creature_pool[creature_index].move_speed)\n                                    * frame_dt) * anim_scale * move_scale * 25.0f"
+        },
+        {
+          "name": "grouped-scale-motion-product",
+          "text": "(anim_scale * (creature_type_table[\n                                        creature_pool[creature_index].type_id\n                                    ].anim_rate\n                                    * creature_pool[creature_index].move_speed\n                                    * frame_dt)) * move_scale * 25.0f"
+        }
+      ]
+    },
+    {
+      "name": "ping-pong-animation-factor-order",
+      "find": "creature_type_table[\n                                    creature_pool[creature_index].type_id\n                                ].anim_rate\n                                * creature_pool[creature_index].move_speed\n                                * frame_dt * anim_scale * move_scale * 22.0f",
+      "replacements": [
+        {
+          "name": "motion-product-before-scale",
+          "text": "(creature_type_table[\n                                    creature_pool[creature_index].type_id\n                                ].anim_rate\n                                * creature_pool[creature_index].move_speed\n                                * frame_dt) * anim_scale * move_scale * 22.0f"
+        },
+        {
+          "name": "scale-times-motion-product",
+          "text": "anim_scale * (creature_type_table[\n                                    creature_pool[creature_index].type_id\n                                ].anim_rate\n                                * creature_pool[creature_index].move_speed\n                                * frame_dt) * move_scale * 22.0f"
+        },
+        {
+          "name": "grouped-rate-speed-then-frame",
+          "text": "((creature_type_table[\n                                    creature_pool[creature_index].type_id\n                                ].anim_rate\n                                * creature_pool[creature_index].move_speed)\n                                * frame_dt) * anim_scale * move_scale * 22.0f"
+        },
+        {
+          "name": "grouped-scale-motion-product",
+          "text": "(anim_scale * (creature_type_table[\n                                    creature_pool[creature_index].type_id\n                                ].anim_rate\n                                * creature_pool[creature_index].move_speed\n                                * frame_dt)) * move_scale * 22.0f"
+        }
+      ]
+    }
+  ]
+}

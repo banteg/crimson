@@ -607,3 +607,68 @@ References improve from `358/0/24` to `375/0/24`. The final source SHA-256 is
 `c9357403c5b816fc757f83171d17cb8de7358ec60444b401508e70b769ff066d`;
 the 35-record `experiments.jsonl` SHA-256 is
 `e73023e3e525f6c66fdc802262bcb018054cd0c8da49cac85078a3353d4aeb7e`.
+
+## Primary-impact control flow and destination lifetimes
+
+The next live Binary Ninja slice selected the largest untouched primary-impact
+region at `0x004212ff-0x00421667`: 872 native bytes, 318.5761
+fuzzy-weighted bytes, and a 553.4239-byte local gap at the starting
+checkpoint. The native disassembly artifact has SHA-256
+`a8884ec43c287a1b150de3a7b39cb0ff85d895b16015ccf8b1017b2cfe6523d3`.
+
+Four source-level corrections are retained:
+
+- At `0x004214d9-0x004215a7`, native handles the positive remaining-damage
+  branch first. It keeps the raw cosine and its first speed-scaled component
+  live across the comparison, then scales the same cosine again for the
+  second impulse component. Spelling that control flow and lifetime directly
+  adds 10.5572 weighted bytes and one aligned reference after the presentation
+  branch correction. Float and double cosine locals compile byte-identically;
+  the float form is retained. The complete seven-variant matrix was repeated
+  after the independent branch change and has spec SHA
+  `1feb3525f418443512e439cb4f5deea5db76e236f7f1ad356bb5b4ed3489089d`.
+- At `0x004215a7-0x004215c6`, native loads `life_timer` directly, compares its
+  word to `0.25f`, clears `damage_pool`, and skips the lifetime write on the
+  equal arm. Removing the recovered float copy and expressing that equal arm
+  first adds 16.5062 weighted bytes and removes one candidate instruction.
+  The four-variant spec SHA is
+  `1907259452289551b78978684ed3e31f39e72ffca4038584bd8b4c8c854e3eec`.
+- At `0x004215e7-0x0042174e`, native emits the positive Freeze-shard arm
+  before the three-decal arm. Restoring that semantic branch order adds
+  46.3945 weighted bytes and four aligned references without changing the
+  instruction count. The one-variant spec SHA is
+  `4824249352cd201ac701f44f02f93cbcc9652b9b68aa693136da5db9c4aef012`.
+- At `0x004216a2`, `0x004216dc`, and `0x00421716`, native materializes the
+  1.5x, 2x, and 2.5x decal positions in three distinct vectors (`pos_3`,
+  `pos_2`, and `pos`) before the queue calls. Replacing the reused source
+  destination with those three real objects is the dominant geometry gain.
+  Two equivalent initializer/component spellings tie at +54.4661 weighted
+  bytes over the intermediate aggregate candidate; the shorter initializer
+  form is retained. This leaves the final source 81.1903 bytes above the
+  pre-geometry checkpoint, removes one reference mismatch, and adds three
+  aligned references. The four-variant destination spec SHA is
+  `4d775ddebbaa2c5a406abbe0f99342c4e3ca9e514516449a08d1aa35486d18b5`.
+
+The complete 63-variant precursor matrix showed that temporary scale vectors
+for the 2x and 2.5x calls could add 26.7242 weighted bytes while the source
+still reused one destination. The distinct-destination sweep superseded that
+intermediate shape: keeping both scale and destination aggregates regressed,
+while three destinations with direct scale expressions produced the final
+best result. That interaction record has spec SHA
+`a01ac81e87e707a822aecff8f8c3c6e588f0888f64e04adb032e26222f54e558`.
+
+A separate complete 19-variant matrix rejected Plasma Cannon child-position
+and Pulse Gun displacement scalar staging. The native-looking single-site
+forms compile byte-identically; broader aggregate interactions only worsen
+reference alignment. No such source change is retained. Its spec SHA is
+`0c9fc7383bd79968e64fb355e5b60156a4088f97d507872812ef66be256c67b3`.
+
+Across the seven recorded sweeps, the retained source raises
+`projectile_update` from `4473.2014/8409` to `4627.8497/8409`
+fuzzy-weighted bytes (`53.1954023%` to `55.0344828%`), reducing the fuzzy gap
+by `154.6483` bytes to `3781.1503`. The final candidate remains
+2,147/2,203 instructions; references improve from `375/0/24` to `384/0/22`.
+The final source SHA-256 is
+`9167b70853189b69596734e8f7cd7d981989846ff8286cc6a45923015cf8e14f`;
+the 42-record `experiments.jsonl` SHA-256 is
+`a243427f9fd9e3fad30978a7d25e272a0c37a73d37950279c3ba9c31ed7d9be9`.

@@ -54,9 +54,8 @@ extern "C" void ui_element_set_rect(
 
     vertices[0].uv = ui_vec2_t(inv_width, inv_height);
     vertices[1].uv = ui_vec2_t(1.0f - inv_width, inv_height);
-    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);
-    vertices[2].uv.x = 1.0f - inv_width;
-    vertices[2].uv.y = 1.0f - inv_height;
+    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_width);
+    vertices[2].uv = ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);
 
     depth.z = 0.5f;
     depth.rhw = 1.0f;

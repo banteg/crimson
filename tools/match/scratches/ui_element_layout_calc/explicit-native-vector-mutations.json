@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "minimum-native-vector-form",
+      "find": "    ui_layout_vec2_t min_position = position + vertex_0;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n",
+      "replacements": [
+        {
+          "name": "native-ordered-constructor-x-width-y",
+          "text": "    ui_layout_vec2_t min_position(\n        vertex_0.x + position.x,\n        vertex_0.y + position.y);\n    hover_min.x = min_position.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position.y;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "member-ordered-constructor-x-width-y",
+          "text": "    ui_layout_vec2_t min_position(\n        position.x + vertex_0.x,\n        position.y + vertex_0.y);\n    hover_min.x = min_position.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position.y;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "native-ordered-scalars-x-width-y",
+          "text": "    float min_position_x = vertex_0.x + position.x;\n    float min_position_y = vertex_0.y + position.y;\n    hover_min.x = min_position_x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position_y;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "native-ordered-staged-y-x-width",
+          "text": "    float min_position_y = vertex_0.y + position.y;\n    hover_min.x = vertex_0.x + position.x;\n    float width = vertex_2.x - vertex_0.x;\n    hover_min.y = min_position_y;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        },
+        {
+          "name": "native-ordered-constructor-aggregate",
+          "text": "    ui_layout_vec2_t min_position(\n        vertex_0.x + position.x,\n        vertex_0.y + position.y);\n    float width = vertex_2.x - vertex_0.x;\n    hover_min = min_position;\n    hover_min.x += width * 0.54f;\n    float height = vertex_2.y - vertex_0.y;\n    hover_min.y += height * 0.28f;\n"
+        }
+      ]
+    },
+    {
+      "name": "maximum-native-vector-form",
+      "find": "    hover_max = position + vertex_2;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n",
+      "replacements": [
+        {
+          "name": "native-ordered-constructor-x-flag-y",
+          "text": "    ui_layout_vec2_t max_position(\n        vertex_2.x + position.x,\n        vertex_2.y + position.y);\n    hover_max.x = max_position.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = max_position.y;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n"
+        },
+        {
+          "name": "member-ordered-constructor-x-flag-y",
+          "text": "    ui_layout_vec2_t max_position(\n        position.x + vertex_2.x,\n        position.y + vertex_2.y);\n    hover_max.x = max_position.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = max_position.y;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n"
+        },
+        {
+          "name": "native-ordered-scalars-x-flag-y",
+          "text": "    float max_position_x = vertex_2.x + position.x;\n    float max_position_y = vertex_2.y + position.y;\n    hover_max.x = max_position_x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = max_position_y;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n"
+        },
+        {
+          "name": "native-ordered-staged-y-x-flag",
+          "text": "    float max_position_y = vertex_2.y + position.y;\n    hover_max.x = vertex_2.x + position.x;\n    unsigned char direction_flag = element->direction_flag;\n    hover_max.y = max_position_y;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n"
+        },
+        {
+          "name": "native-ordered-constructor-aggregate",
+          "text": "    ui_layout_vec2_t max_position(\n        vertex_2.x + position.x,\n        vertex_2.y + position.y);\n    unsigned char direction_flag = element->direction_flag;\n    hover_max = max_position;\n    hover_max.x -= width * 0.05f;\n    hover_max.y -= height * 0.1f;\n"
+        }
+      ]
+    }
+  ]
+}

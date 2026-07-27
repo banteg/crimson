@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "ammo-bar-local-lifetime",
+      "find": "            int bar_index = 0;\n            if (bar_count > 0) {\n                int bar_x = 0;\n                do {",
+      "replacements": [
+        {
+          "name": "bar-x-before-index",
+          "text": "            int bar_x = 0;\n            int bar_index = 0;\n            if (bar_count > 0) {\n                do {"
+        },
+        {
+          "name": "bar-x-after-index",
+          "text": "            int bar_index = 0;\n            int bar_x = 0;\n            if (bar_count > 0) {\n                do {"
+        },
+        {
+          "name": "outer-declaration-inner-assignment",
+          "text": "            int bar_x;\n            int bar_index = 0;\n            if (bar_count > 0) {\n                bar_x = 0;\n                do {"
+        },
+        {
+          "name": "split-bar-index",
+          "text": "            int bar_index;\n            bar_index = 0;\n            if (bar_count > 0) {\n                int bar_x = 0;\n                do {"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "complete-fade-lifetime",
+      "find": "        if (quest_transition_timer_ms > 0) {\n            float complete_fade;\n            if (quest_transition_timer_ms < 500) {\n                complete_fade =\n                    (float)quest_transition_timer_ms * 0.002f;\n            } else if (quest_transition_timer_ms < 1500) {\n                complete_fade = 1.0f;\n            } else if (quest_transition_timer_ms < 2500) {\n                complete_fade =\n                    (float)(\n                        2000 - quest_transition_timer_ms)\n                        * 0.002f\n                    + 1.0f;\n            } else {\n                complete_fade = 0.0f;\n            }",
+      "replacements": [
+        {
+          "name": "cached-timer",
+          "text": "        int complete_timer_ms = quest_transition_timer_ms;\n        if (complete_timer_ms > 0) {\n            float complete_fade;\n            if (complete_timer_ms < 500) {\n                complete_fade =\n                    (float)complete_timer_ms * 0.002f;\n            } else if (complete_timer_ms < 1500) {\n                complete_fade = 1.0f;\n            } else if (complete_timer_ms < 2500) {\n                complete_fade =\n                    (float)(2000 - complete_timer_ms) * 0.002f\n                    + 1.0f;\n            } else {\n                complete_fade = 0.0f;\n            }"
+        },
+        {
+          "name": "split-cached-timer",
+          "text": "        int complete_timer_ms;\n        complete_timer_ms = quest_transition_timer_ms;\n        if (complete_timer_ms > 0) {\n            float complete_fade;\n            if (complete_timer_ms < 500) {\n                complete_fade =\n                    (float)complete_timer_ms * 0.002f;\n            } else if (complete_timer_ms < 1500) {\n                complete_fade = 1.0f;\n            } else if (complete_timer_ms < 2500) {\n                complete_fade =\n                    (float)(2000 - complete_timer_ms) * 0.002f\n                    + 1.0f;\n            } else {\n                complete_fade = 0.0f;\n            }"
+        },
+        {
+          "name": "outer-fade-declaration",
+          "text": "        float complete_fade;\n        if (quest_transition_timer_ms > 0) {\n            if (quest_transition_timer_ms < 500) {\n                complete_fade =\n                    (float)quest_transition_timer_ms * 0.002f;\n            } else if (quest_transition_timer_ms < 1500) {\n                complete_fade = 1.0f;\n            } else if (quest_transition_timer_ms < 2500) {\n                complete_fade =\n                    (float)(\n                        2000 - quest_transition_timer_ms)\n                        * 0.002f\n                    + 1.0f;\n            } else {\n                complete_fade = 0.0f;\n            }"
+        },
+        {
+          "name": "named-fade-delta",
+          "text": "        if (quest_transition_timer_ms > 0) {\n            float complete_fade;\n            if (quest_transition_timer_ms < 500) {\n                complete_fade =\n                    (float)quest_transition_timer_ms * 0.002f;\n            } else if (quest_transition_timer_ms < 1500) {\n                complete_fade = 1.0f;\n            } else if (quest_transition_timer_ms < 2500) {\n                int complete_delta_ms =\n                    2000 - quest_transition_timer_ms;\n                complete_fade =\n                    (float)complete_delta_ms * 0.002f + 1.0f;\n            } else {\n                complete_fade = 0.0f;\n            }"
+        }
+      ]
+    }
+  ]
+}

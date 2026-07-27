@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "spawn-limit-condition-polarity",
+      "find": "                                if (spawn_count < spawn_limit) {",
+      "replacements": [
+        {
+          "name": "limit-greater-than-count",
+          "text": "                                if (spawn_limit > spawn_count) {"
+        },
+        {
+          "name": "negated-limit-not-greater",
+          "text": "                                if (!(spawn_limit <= spawn_count)) {"
+        }
+      ]
+    },
+    {
+      "name": "spawn-count-and-template-schedule",
+      "find": "                                    spawn_slot->count = spawn_count + 1;\n                                    creature_spawn_template(\n                                        spawn_slot->template_id,\n                                        position,\n                                        -100.0f);",
+      "replacements": [
+        {
+          "name": "increment-local-then-store",
+          "text": "                                    ++spawn_count;\n                                    spawn_slot->count = spawn_count;\n                                    creature_spawn_template(\n                                        spawn_slot->template_id,\n                                        position,\n                                        -100.0f);"
+        },
+        {
+          "name": "stage-template-after-store",
+          "text": "                                    spawn_slot->count = spawn_count + 1;\n                                    int spawn_template_id = spawn_slot->template_id;\n                                    creature_spawn_template(\n                                        spawn_template_id,\n                                        position,\n                                        -100.0f);"
+        },
+        {
+          "name": "increment-field",
+          "text": "                                    ++spawn_slot->count;\n                                    creature_spawn_template(\n                                        spawn_slot->template_id,\n                                        position,\n                                        -100.0f);"
+        },
+        {
+          "name": "postincrement-field",
+          "text": "                                    spawn_slot->count++;\n                                    creature_spawn_template(\n                                        spawn_slot->template_id,\n                                        position,\n                                        -100.0f);"
+        }
+      ]
+    }
+  ]
+}

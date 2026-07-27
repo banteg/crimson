@@ -14,8 +14,9 @@ extern void fx_queue_add_random(vec2f_t *pos);
 
 void creature_handle_death(int creature_id, unsigned char keep_corpse)
 {
+    int creature_flags = creature_pool[creature_id].flags;
     creature_t *creature = &creature_pool[creature_id];
-    if ((creature->flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {
+    if ((creature_flags & CREATURE_FLAG_BONUS_ON_DEATH) != 0) {
         bonus_spawn_at(
             &creature->position,
             (bonus_id_t)creature->bonus_args.bonus_id,

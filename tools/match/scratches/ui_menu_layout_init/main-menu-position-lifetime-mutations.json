@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "slot-04-position-lifetime",
+      "find": "    copy_layer(\n        ui_element_slot_04_main_menu_options,\n        ui_menu_item_element);\n    ui_element_slot_04_main_menu_options.pos =\n        ui_layout_vec2_t(-60.0f, 330.0f);\n    set_rect(\n        ui_element_slot_04_main_menu_options,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);",
+      "replacements": [
+        {
+          "name": "position-before-copy",
+          "text": "    ui_layout_vec2_t slot_04_position(-60.0f, 330.0f);\n    copy_layer(\n        ui_element_slot_04_main_menu_options,\n        ui_menu_item_element);\n    ui_element_slot_04_main_menu_options.pos = slot_04_position;\n    set_rect(\n        ui_element_slot_04_main_menu_options,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);"
+        },
+        {
+          "name": "position-after-copy-local",
+          "text": "    copy_layer(\n        ui_element_slot_04_main_menu_options,\n        ui_menu_item_element);\n    ui_layout_vec2_t slot_04_position(-60.0f, 330.0f);\n    ui_element_slot_04_main_menu_options.pos = slot_04_position;\n    set_rect(\n        ui_element_slot_04_main_menu_options,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);"
+        },
+        {
+          "name": "position-and-offset-before-copy",
+          "text": "    ui_layout_vec2_t slot_04_position(-60.0f, 330.0f);\n    ui_layout_vec2_t slot_04_offset(270.0f, -38.0f);\n    copy_layer(\n        ui_element_slot_04_main_menu_options,\n        ui_menu_item_element);\n    ui_element_slot_04_main_menu_options.pos = slot_04_position;\n    ui_element_set_rect(\n        &ui_element_slot_04_main_menu_options.layers[1],\n        124.0f,\n        30.0f,\n        &slot_04_offset.x);"
+        },
+        {
+          "name": "position-before-offset-after-copy",
+          "text": "    ui_layout_vec2_t slot_04_position(-60.0f, 330.0f);\n    copy_layer(\n        ui_element_slot_04_main_menu_options,\n        ui_menu_item_element);\n    ui_layout_vec2_t slot_04_offset(270.0f, -38.0f);\n    ui_element_slot_04_main_menu_options.pos = slot_04_position;\n    ui_element_set_rect(\n        &ui_element_slot_04_main_menu_options.layers[1],\n        124.0f,\n        30.0f,\n        &slot_04_offset.x);"
+        }
+      ]
+    },
+    {
+      "name": "slot-05-position-lifetime",
+      "find": "    copy_layer(\n        ui_element_slot_05_main_menu_statistics,\n        ui_menu_item_element);\n    ui_element_slot_05_main_menu_statistics.pos =\n        ui_layout_vec2_t(-60.0f, 390.0f);\n    set_rect(\n        ui_element_slot_05_main_menu_statistics,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);",
+      "replacements": [
+        {
+          "name": "position-before-copy",
+          "text": "    ui_layout_vec2_t slot_05_position(-60.0f, 390.0f);\n    copy_layer(\n        ui_element_slot_05_main_menu_statistics,\n        ui_menu_item_element);\n    ui_element_slot_05_main_menu_statistics.pos = slot_05_position;\n    set_rect(\n        ui_element_slot_05_main_menu_statistics,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);"
+        },
+        {
+          "name": "position-after-copy-local",
+          "text": "    copy_layer(\n        ui_element_slot_05_main_menu_statistics,\n        ui_menu_item_element);\n    ui_layout_vec2_t slot_05_position(-60.0f, 390.0f);\n    ui_element_slot_05_main_menu_statistics.pos = slot_05_position;\n    set_rect(\n        ui_element_slot_05_main_menu_statistics,\n        124.0f,\n        30.0f,\n        270.0f,\n        -38.0f);"
+        },
+        {
+          "name": "position-and-offset-before-copy",
+          "text": "    ui_layout_vec2_t slot_05_position(-60.0f, 390.0f);\n    ui_layout_vec2_t slot_05_offset(270.0f, -38.0f);\n    copy_layer(\n        ui_element_slot_05_main_menu_statistics,\n        ui_menu_item_element);\n    ui_element_slot_05_main_menu_statistics.pos = slot_05_position;\n    ui_element_set_rect(\n        &ui_element_slot_05_main_menu_statistics.layers[1],\n        124.0f,\n        30.0f,\n        &slot_05_offset.x);"
+        },
+        {
+          "name": "position-before-offset-after-copy",
+          "text": "    ui_layout_vec2_t slot_05_position(-60.0f, 390.0f);\n    copy_layer(\n        ui_element_slot_05_main_menu_statistics,\n        ui_menu_item_element);\n    ui_layout_vec2_t slot_05_offset(270.0f, -38.0f);\n    ui_element_slot_05_main_menu_statistics.pos = slot_05_position;\n    ui_element_set_rect(\n        &ui_element_slot_05_main_menu_statistics.layers[1],\n        124.0f,\n        30.0f,\n        &slot_05_offset.x);"
+        }
+      ]
+    }
+  ]
+}

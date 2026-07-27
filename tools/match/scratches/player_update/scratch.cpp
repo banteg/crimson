@@ -272,8 +272,9 @@ extern "C" void player_update(void)
             float spread_radius = vec2_length(&move_delta) * 0.5f;
             float spread_angle =
                 (float)(crt_rand() & 0x1ff) * 0.012271847f;
-            spread_radius = spread_radius * fire_player->spread_heat
-                * (float)(crt_rand() & 0x1ff) * 0.001953125f;
+            spread_radius = (float)(crt_rand() & 0x1ff)
+                * (spread_radius * fire_player->spread_heat)
+                * 0.001953125f;
             random_offset.x = (float)cos(spread_angle) * spread_radius
                 + random_offset.x;
             random_offset.y = (float)sin(spread_angle) * spread_radius
@@ -1011,13 +1012,14 @@ extern "C" void player_update(void)
             player_position->x - player->aim.x)
         - 1.5707964f;
 
+    float *shot_cooldown = &player->shot_cooldown;
     normal_fire_ready = false;
     perk_fire_ready = false;
-    if (player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {
+    if (*shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {
         normal_fire_ready = true;
         player->reload_active = 0;
     }
-    if (player->shot_cooldown <= 0.0f
+    if (*shot_cooldown <= 0.0f
         && player->experience > 0
         && (perk_count_get(perk_id_regression_bullets) != 0
             || perk_count_get(perk_id_ammunition_within) != 0)) {
@@ -1046,13 +1048,14 @@ extern "C" void player_update(void)
             player->alt_ammo = player->ammo;
             player->ammo = swap_ammo;
 
+            float *reload_timer = &player->reload_timer;
             float swap_reload_timer = player->alt_reload_timer;
-            player->alt_reload_timer = player->reload_timer;
-            player->reload_timer = swap_reload_timer;
+            player->alt_reload_timer = *reload_timer;
+            *reload_timer = swap_reload_timer;
 
             float swap_shot_cooldown = player->alt_shot_cooldown;
-            player->alt_shot_cooldown = player->shot_cooldown;
-            player->shot_cooldown = swap_shot_cooldown;
+            player->alt_shot_cooldown = *shot_cooldown;
+            *shot_cooldown = swap_shot_cooldown;
 
             float swap_reload_timer_max = player->alt_reload_timer_max;
             player->alt_reload_timer_max = player->reload_timer_max;
@@ -1062,7 +1065,7 @@ extern "C" void player_update(void)
                 weapon_table[player->weapon_id].reload_sfx_id,
                 player_position,
                 1.0f);
-            player->shot_cooldown = player->shot_cooldown + 0.1f;
+            *shot_cooldown = *shot_cooldown + 0.1f;
             player_alt_weapon_swap_cooldown_ms = 200;
         } else if (!grim_interface_ptr->grim_is_key_active(config_key_reload)) {
             player_alt_weapon_swap_cooldown_ms = 0;

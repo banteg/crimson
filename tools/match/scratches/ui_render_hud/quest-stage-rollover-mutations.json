@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-stage-rollover",
+      "find": "            if (stage_minor > 10) {\n                stage_minor -= 10;\n                ++quest_stage_major;\n                quest_stage_minor = stage_minor;\n            }",
+      "replacements": [
+        {
+          "name": "increment-major-first",
+          "text": "            if (stage_minor > 10) {\n                ++quest_stage_major;\n                stage_minor -= 10;\n                quest_stage_minor = stage_minor;\n            }"
+        },
+        {
+          "name": "store-minor-before-local",
+          "text": "            if (stage_minor > 10) {\n                ++quest_stage_major;\n                quest_stage_minor = stage_minor - 10;\n                stage_minor = quest_stage_minor;\n            }"
+        },
+        {
+          "name": "update-global-minor-first",
+          "text": "            if (stage_minor > 10) {\n                quest_stage_minor = stage_minor - 10;\n                ++quest_stage_major;\n                stage_minor = quest_stage_minor;\n            }"
+        }
+      ]
+    }
+  ]
+}

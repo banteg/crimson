@@ -155,3 +155,79 @@ references while leaving instruction count and prefix unchanged. VC6.5 rejects
 the copy-initialized position spelling at compile time. The sweep has
 `best_improves=false` and no winner, so no interaction batch or source change
 is justified.
+
+## Native-guided ammo, quest-banner, and popup wave
+
+Fresh live Binary Ninja evidence was taken from target
+`3023:2:9499448411019345244`, native `ui_render_hud` at
+`0x0041aed0` (7,081 bytes, 1,824 instructions). This wave began at
+6,063.882675438596/7,081 weighted bytes (`85.6359649122807%`), gap
+1,017.1173245614036, 1,824/1,824 instructions, prefix 42, and `385/0/0`
+references. Five bounded, recorded changes recovered native source structure:
+
+- The ammo-bar alpha now duplicates the `grim_set_color` call across the
+  filled/unfilled branch. Native `0x0041b7a9..0x0041b7d9` loads the interface
+  and virtual call target before branching on the bar index, then merges the
+  two call paths. The named ternary hid that source shape. The
+  `ammo-alpha-callsite/duplicated-call` winner gained 32.72823764064651
+  weighted bytes and one aligned reference while removing one candidate
+  instruction.
+- The weapon-popup row now advances `icon_y` and derives
+  `text_y = icon_y + 6`. This preserves the exact invariant established by
+  `text_y = (int)bonus_y + 1` and `icon_y = (int)bonus_y - 5`, while matching
+  the native related row origins and its `icon_y - 12` panel calculation. The
+  `popup-row-advance/advance-icon-derive-text` winner gained
+  43.366571819165074 weighted bytes and removed five candidate instructions.
+- Quest stage rollover now increments and stores the major stage before
+  subtracting and storing the minor stage. Native `0x0041bf63..0x0041bf7d`
+  has that order. The `quest-stage-rollover/increment-major-first` winner
+  gained 11.665568369027824 weighted bytes and two aligned references.
+- The ammo texture router now recovers the native explicit class-four branch,
+  while retaining the same Electric-texture fallback for out-of-range values.
+  Native `0x0041b6da..0x0041b72c` compares classes 1, 0, and 2, then executes
+  `cmp eax, 4` at `0x0041b722` before binding the Electric texture. The old
+  port omitted that test. `ammo-class-four/explicit-four-with-fallback` gained
+  78.70472511983735 weighted bytes, four candidate instructions, and two
+  aligned references; the dispatch mismatch regions disappeared.
+- The quest-banner fade now preserves the native explicit 2,000--2,500 ms
+  zero window. On the banner-only path, native `0x0041c079` compares the timer
+  with `0x9c4` after the `< 2000` fade branch, then stores zero. The completed
+  fade path at `0x0041c025` does not enter that block.
+  `quest-banner-tail/explicit-2500-zero-window` gained
+  13.824417938473744 weighted bytes and one candidate instruction.
+
+These are source-recovery corrections supported by native branches and
+statement order, not inert padding or register forcing. The retained
+`scratch.cpp` SHA-256 is
+`ee637eb004ded284c63b80e3b24ea9e70dd2e7fd87113be2244894c716be0782`.
+The final score is 6,244.172196325747/7,081 weighted bytes
+(`88.18206745270085%`), gap 836.8278036742531, 1,823/1,824 instructions,
+prefix 42, and `390/0/0` references. Relative to the wave baseline, this is
++180.289520887151 weighted bytes, +2.54610254042015 percentage points, and
+five additional aligned references.
+
+All new sweeps were persisted to `experiments.jsonl`. Their spec SHA-256
+values are:
+
+| Spec | SHA-256 |
+| --- | --- |
+| `ammo-texture-dispatch-mutations.json` | `857ca1422164d17d4bf72541a8fed89f47e6e2a924f90bb1fcb9ce40ec883491` |
+| `ammo-alpha-callsite-mutations.json` | `ca6c2af1e26b4c1413f10060a0e72c7595a0d4a053298782558da4da213a9c64` |
+| `popup-row-origin-mutations.json` | `cf5d79a965245f421c27a906a00ee20ab4c4c3a860563ecc2a56a96e724b7014` |
+| `popup-row-advance-mutations.json` | `6f8c053992cd1c7d91bba935679f0e19dd458ad6562e11944aaccda584c39a20` |
+| `complete-fade-lifetime-mutations.json` | `fc3d62ac3d7ff6f930e07e86dd0767e2e0b1f0c19b4092fb3532006ec569b2b8` |
+| `quest-stage-rollover-mutations.json` | `11d545067abd79ef45954edf266a9f01af660d0826af847309868bacf5bedecd` |
+| `ammo-bar-local-lifetime-mutations.json` | `4b120625e5442ea77dbbdbed38cf0db2001583db9a5538ba4e985b9f111906e9` |
+| `ammo-class-four-mutations.json` | `71a87d87562f0a56fd50b0e66fb18b48ef25f4bb16aa7aceb5ccf0691d13f1f6` |
+| `quest-banner-tail-mutations.json` | `05d8a270b2d56e7af5f8fe80a6419c83a2e67d9b152a233c82a65c6850a79f19` |
+
+Useful recorded negatives further narrow the compiler residual. Both switch
+forms for the ammo router lost 31.05701754385973 weighted bytes and introduced
+one mismatched reference; selected-name forms did not compile under VC6.5.
+Complete-fade outer declarations and named deltas were neutral, while cached
+timer forms lost 5.572873 weighted bytes and one reference. All four ammo-bar
+local-lifetime variants were byte-neutral. At the final retained baseline,
+all four popup-row-origin variants lose 7.766383328763368 weighted bytes and
+one reference, so the remaining popup-origin difference is not improved by a
+natural single-site lifetime spelling. The scratch remains
+`semantic-complete` with only a `compiler` residual.

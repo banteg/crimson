@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-panel-branch-shape",
+      "find": "    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }",
+      "replacements": [
+        {
+          "name": "native-descending-thresholds",
+          "text": "    if (config_screen_width > 800) {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    } else if (config_screen_width > 640) {\n        ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n    }"
+        },
+        {
+          "name": "native-outer-inner-low",
+          "text": "    if (config_screen_width > 800) {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    } else {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    }"
+        },
+        {
+          "name": "native-outer-inner-high",
+          "text": "    if (config_screen_width > 800) {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    } else {\n        if (config_screen_width > 640) {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        }\n    }"
+        },
+        {
+          "name": "adjustment-local-descending",
+          "text": "    float right_panel_adjustment;\n    if (config_screen_width > 800) {\n        right_panel_adjustment = -65.0f;\n    } else if (config_screen_width > 640) {\n        right_panel_adjustment = -30.0f;\n    } else {\n        right_panel_adjustment = 10.0f;\n    }\n    ui_element_slot_33.pos.x =\n        right_panel_x + right_panel_adjustment;"
+        },
+        {
+          "name": "adjusted-x-local-descending",
+          "text": "    float adjusted_right_panel_x;\n    if (config_screen_width > 800) {\n        adjusted_right_panel_x = right_panel_x - 65.0f;\n    } else if (config_screen_width > 640) {\n        adjusted_right_panel_x = right_panel_x - 30.0f;\n    } else {\n        adjusted_right_panel_x = right_panel_x + 10.0f;\n    }\n    ui_element_slot_33.pos.x = adjusted_right_panel_x;"
+        }
+      ]
+    }
+  ]
+}

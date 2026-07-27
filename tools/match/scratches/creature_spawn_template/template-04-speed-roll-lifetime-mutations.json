@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-04-speed-roll-lifetime",
+      "find": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);",
+      "replacements": [
+        {
+          "name": "block-roll-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x12) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        },
+        {
+          "name": "shared-roll-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x12) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        },
+        {
+          "name": "block-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        },
+        {
+          "name": "direct-remainder-before-tint",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        },
+        {
+          "name": "split-shared-roll",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    random_heading_roll = crt_rand();\n                    int random_speed_remainder;\n                    random_speed_remainder = random_heading_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        },
+        {
+          "name": "block-roll-alpha-before-remainder",
+          "text": "                } else if (template_id == SPAWN_ID_LIZARD_RANDOM_04) {\n                    creature->type_id = CREATURE_TYPE_LIZARD;\n                    RAND_FIELD_INT_BASE(creature->size, 0x0f, 0x26);\n                    creature->health = creature->size * 1.1428572f + 20.0f;\n                    int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.r = 0.67f;\n                    creature->color.g = 0.67f;\n                    creature->color.b = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);"
+        }
+      ]
+    }
+  ]
+}

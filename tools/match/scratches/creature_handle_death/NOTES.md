@@ -2,8 +2,8 @@
 
 Native target: `crimsonland.exe` at `0x0041e910` (834 bytes).
 
-Current honest VC6.5 result: 84.73% normalized match, 5/204-instruction exact prefix,
-202/204 candidate instructions, and 80/0/1 reference audit.
+Current honest VC6.5 result: 87.96% normalized match, 6/204-instruction exact prefix,
+203/204 candidate instructions, and 82/0/0 reference audit.
 
 Binary Ninja and the MSVC candidate establish:
 
@@ -39,9 +39,19 @@ populate the three stored survival positions, advance the capped six-death
 counter, and clear the two reward gates when the counter reaches three.
 
 The indexed child-record form and direct freeze-effect arguments recover the
-native copy/register and stack-argument shapes. The honest residual is confined
-to the opening register allocation and two recent-death-count reloads that this
-typed array candidate coalesces; their absence shifts later branch labels.
+native copy/register and stack-argument shapes. Reading the opening flags
+through `creature_pool[creature_id]` before binding the record pointer is also
+intentional: native IL keeps the flags access as an indexed pool expression
+while later fields use the recovered record pointer. This natural split raises
+the normalized score from 84.73% to 87.96%, moves the exact prefix from 5 to 6
+instructions, adds one candidate instruction, and clears the reference audit
+from 80/0/1 to 82/0/0.
+
+The honest residual is now confined to two related compiler choices. The
+candidate common-subexpressions the byte-scaled creature offset with `shl`,
+where native retains the element index for two scaled memory operands. It also
+coalesces the two recent-death-count reloads; their absence shifts later branch
+labels.
 MSVC 6.5pp, MSVC 7.0, `/G6`, and volatility experiments diverged elsewhere and
 were rejected rather than retained as matching aids.
 
@@ -65,23 +75,20 @@ in bug-preserving mode; corrected mode deliberately keeps last-hit-owner XP.
 
 The preceding native recovery accounts for every guard, call, RNG draw,
 constant, record mutation, XP branch, and effect path. The focused mismatch
-regions reduce to the opening register choice plus two native reloads of
-`survival_recent_death_count` that VC6 coalesces in this translation unit.
+regions reduce to the opening indexed-address common-subexpression plus two
+native reloads of `survival_recent_death_count` that VC6 coalesces in this
+translation unit.
 
-The apparent reference mismatch is an alignment artifact, not unresolved
-ownership. Native stores centroid X to `survival_recent_death_pos` at
-`0x0041e958` and Y to `survival_recent_death_pos+4` at `0x0041e968`, with a
-count reload between them. The candidate object stores the same pair at
-offsets `+0x48` and `+0x52`; because it omits that reload, SequenceMatcher
-pairs native X with candidate Y and reports `80/0/1`. Both real operands are
-independently explained and correct.
+Native stores centroid X to `survival_recent_death_pos` at `0x0041e958` and Y
+to `survival_recent_death_pos+4` at `0x0041e968`, with a count reload between
+them. The retained opening source shape gives the matcher enough aligned
+context to pair both operands correctly, so the current reference audit is
+clean at `82/0/0`.
 
-Classification is therefore `RECOVERY=semantic-complete`,
-`RESIDUAL=compiler`. The classification-only change is byte-neutral:
-before and after are 84.73%, prefix 5/204, 202/204 candidate instructions,
-and references 80/0/1.
+Classification remains `RECOVERY=semantic-complete`,
+`RESIDUAL=compiler`.
 
-## Recorded recent-death lifetime search
+## Recorded mutation searches
 
 `recent-death-index-lifetime-mutations.json` records four natural forms around
 the two stored Survival coordinates. Named and separately scoped indices plus
@@ -89,3 +96,26 @@ aggregate assignment are byte-neutral. A named destination pointer restores
 the 204-instruction count and an `81/0/0` reference audit, but worsens the
 normalized score to 84.31%, so it is not retained over the direct indexed
 source shown by native HLIL.
+
+The new bounded searches record:
+
+- 89 opening/call/recent-death lifetime variants in
+  `opening-and-recent-death-mutations.json`; declaration, pointer, argument
+  staging, and aggregate-copy forms were neutral, while pointer forms that
+  force reloads regressed;
+- three storage-layout variants in
+  `recent-death-storage-layout-mutations.json`; modeling the adjacent 24-byte
+  position array and count at `+0x18` as one aggregate restored instructions
+  but lost 44.35 weighted bytes, so the port keeps the independently evidenced
+  globals;
+- 24 inline-context variants in `opening-inline-context-mutations.json`; the
+  direct pool flag read was the sole winner, adding 26.95 weighted bytes and
+  clearing the audit;
+- 14 post-retention combinations in
+  `retained-opening-followup-mutations.json`; pointer/declaration ordering and
+  aggregate position copying were neutral, while the reload-restoring pointer
+  form lost 3.59 weighted bytes.
+
+The two pre-retention opening specs intentionally preserve the source spans
+used for their recorded historical sweeps. The post-retention spec is the
+current reusable scaffold.

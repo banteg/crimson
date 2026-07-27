@@ -57,3 +57,29 @@ temporary-slot scheduling induced by that merge, not missing behavior.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## 2026-07-27 mutation audit
+
+A fresh live Binary Ninja comparison localized the 20-instruction deficit more
+precisely. Native keeps separate, otherwise instruction-identical upgrade tails
+for the Quest arm (`0x00404c6c..0x00404cb9`) and expired arm
+(`0x00404d55..0x00404da2`), including an `add esp, 0x10` after each text call.
+VC6.5 merges both tails at candidate offset `0x55a`. Structured nesting,
+explicit `goto` exits, and fixed-string inline/force-inline wrappers all
+normalized back to the same 616-instruction candidate, establishing that this
+is an optimizer tail-merge rather than missing source behavior.
+
+The native button tail also confirms the Purchase coordinate at `esp+0x10`,
+the long-lived row origin at `esp+0x1c`, and shared y at `esp+0x18`
+(`0x00405047..0x004050d6`). Extending the body-position lifetime to reuse the
+Purchase slot produced 631 instructions but regressed fuzzy-weighted bytes by
+205.95 and introduced six reference mismatches. Declaration-order variants
+were neutral; direct and copy-initialized constructors were neutral; y-first
+field assignment regressed by 3.85 bytes. No source change was retained.
+
+Five exhaustive, non-truncated mutation sweeps are recorded in
+`experiments.jsonl` (28 variants total). A narrow flag check found `/Ox` raised
+the raw ratio to 95.25% but created 33 unresolved references, so the
+reference-clean `/O2 /GB` baseline remains canonical at **94.25%**,
+2274.23/2413 fuzzy-weighted bytes, 616/636 instructions, prefix 205, and
+`171/0/0` references.

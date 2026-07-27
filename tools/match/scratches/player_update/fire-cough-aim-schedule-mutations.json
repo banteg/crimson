@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-cough-aim-schedule",
+      "find": "            float aim_heading = player->aim_heading;\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;\n\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;",
+      "replacements": [
+        {
+          "name": "snapshot-before-muzzle",
+          "text": "            float aim_heading = player->aim_heading;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;"
+        },
+        {
+          "name": "pointer-before-muzzle-snapshot-after",
+          "text": "            float aim_heading = player->aim_heading;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;\n\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;"
+        },
+        {
+          "name": "snapshot-between-muzzle-components",
+          "text": "            float aim_heading = player->aim_heading;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            movement_input.x = (float)cos(muzzle_heading) * 16.0f;\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;"
+        },
+        {
+          "name": "snapshot-between-trig-and-scale",
+          "text": "            float aim_heading = player->aim_heading;\n            player_state_t *fire_player =\n                &player_state_table[render_overlay_player_index];\n            float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;\n            scalar = (float)cos(muzzle_heading);\n            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            movement_input.x = scalar * 16.0f;\n            movement_input.y = (float)sin(muzzle_heading) * 16.0f;"
+        }
+      ]
+    }
+  ]
+}

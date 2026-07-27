@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "mode2-turn-scale-shape",
+      "find": "                movement_heading = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * movement_heading * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * movement_heading * scalar\n                    * 7.957747f;",
+      "replacements": [
+        {
+          "name": "block-local-float",
+          "text": "                float mode2_turn_scale = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * mode2_turn_scale * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * mode2_turn_scale * scalar\n                    * 7.957747f;"
+        },
+        {
+          "name": "block-local-const",
+          "text": "                const float mode2_turn_scale = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * mode2_turn_scale * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * mode2_turn_scale * scalar\n                    * 7.957747f;"
+        },
+        {
+          "name": "block-local-scale-first",
+          "text": "                float mode2_turn_scale = 3.1415927f - angle_step;\n                player->move_dx = mode2_turn_scale * player->move_speed\n                    * (float)cos(player->heading - 1.5707964f) * scalar\n                    * 7.957747f;\n                player->move_dy = mode2_turn_scale * player->move_speed\n                    * (float)sin(player->heading - 1.5707964f) * scalar\n                    * 7.957747f;"
+        },
+        {
+          "name": "block-local-grouped-scale",
+          "text": "                float mode2_turn_scale = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * (player->move_speed * mode2_turn_scale) * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * (player->move_speed * mode2_turn_scale) * scalar\n                    * 7.957747f;"
+        },
+        {
+          "name": "direct-turn-expression",
+          "text": "                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * (3.1415927f - angle_step) * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * (3.1415927f - angle_step) * scalar\n                    * 7.957747f;"
+        },
+        {
+          "name": "reuse-angle-step",
+          "text": "                angle_step = 3.1415927f - angle_step;\n                player->move_dx =\n                    (float)cos(player->heading - 1.5707964f)\n                    * player->move_speed * angle_step * scalar\n                    * 7.957747f;\n                player->move_dy =\n                    (float)sin(player->heading - 1.5707964f)\n                    * player->move_speed * angle_step * scalar\n                    * 7.957747f;"
+        }
+      ]
+    }
+  ]
+}

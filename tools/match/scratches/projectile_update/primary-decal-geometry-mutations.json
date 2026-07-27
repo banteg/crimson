@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "primary-decal-one-point-five-geometry",
+      "find": "                                            vec2f_t decal_pos = {\n                                                creature_pos->x\n                                                    + offset_x * 1.5f,\n                                                creature_pos->y\n                                                    + offset_y * 1.5f,\n                                            };\n                                            fx_queue_add_random(&decal_pos);",
+      "replacements": [
+        {
+          "name": "stage-y-scale",
+          "text": "                                            float decal_y_1 =\n                                                offset_y * 1.5f;\n                                            vec2f_t decal_pos = {\n                                                creature_pos->x\n                                                    + offset_x * 1.5f,\n                                                creature_pos->y\n                                                    + decal_y_1,\n                                            };\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-both-scales",
+          "text": "                                            float decal_x_1 =\n                                                offset_x * 1.5f;\n                                            float decal_y_1 =\n                                                offset_y * 1.5f;\n                                            vec2f_t decal_pos = {\n                                                creature_pos->x + decal_x_1,\n                                                creature_pos->y + decal_y_1,\n                                            };\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-scaled-vector",
+          "text": "                                            vec2f_t decal_scale_1 = {\n                                                offset_x * 1.5f,\n                                                offset_y * 1.5f,\n                                            };\n                                            vec2f_t decal_pos = {\n                                                creature_pos->x\n                                                    + decal_scale_1.x,\n                                                creature_pos->y\n                                                    + decal_scale_1.y,\n                                            };\n                                            fx_queue_add_random(&decal_pos);"
+        }
+      ]
+    },
+    {
+      "name": "primary-decal-two-geometry",
+      "find": "                                            decal_pos.x =\n                                                creature_pos->x\n                                                + offset_x * 2.0f;\n                                            decal_pos.y =\n                                                creature_pos->y\n                                                + offset_y * 2.0f;\n                                            fx_queue_add_random(&decal_pos);",
+      "replacements": [
+        {
+          "name": "stage-y-scale",
+          "text": "                                            float decal_y_2 =\n                                                offset_y * 2.0f;\n                                            decal_pos.x =\n                                                creature_pos->x\n                                                + offset_x * 2.0f;\n                                            decal_pos.y =\n                                                creature_pos->y + decal_y_2;\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-both-scales",
+          "text": "                                            float decal_x_2 =\n                                                offset_x * 2.0f;\n                                            float decal_y_2 =\n                                                offset_y * 2.0f;\n                                            decal_pos.x =\n                                                creature_pos->x + decal_x_2;\n                                            decal_pos.y =\n                                                creature_pos->y + decal_y_2;\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-scaled-vector",
+          "text": "                                            vec2f_t decal_scale_2 = {\n                                                offset_x * 2.0f,\n                                                offset_y * 2.0f,\n                                            };\n                                            decal_pos.x = creature_pos->x\n                                                + decal_scale_2.x;\n                                            decal_pos.y = creature_pos->y\n                                                + decal_scale_2.y;\n                                            fx_queue_add_random(&decal_pos);"
+        }
+      ]
+    },
+    {
+      "name": "primary-decal-two-point-five-geometry",
+      "find": "                                            decal_pos.x =\n                                                creature_pos->x\n                                                + offset_x * 2.5f;\n                                            decal_pos.y =\n                                                creature_pos->y\n                                                + offset_y * 2.5f;\n                                            fx_queue_add_random(&decal_pos);",
+      "replacements": [
+        {
+          "name": "stage-y-scale",
+          "text": "                                            float decal_y_3 =\n                                                offset_y * 2.5f;\n                                            decal_pos.x =\n                                                creature_pos->x\n                                                + offset_x * 2.5f;\n                                            decal_pos.y =\n                                                creature_pos->y + decal_y_3;\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-both-scales",
+          "text": "                                            float decal_x_3 =\n                                                offset_x * 2.5f;\n                                            float decal_y_3 =\n                                                offset_y * 2.5f;\n                                            decal_pos.x =\n                                                creature_pos->x + decal_x_3;\n                                            decal_pos.y =\n                                                creature_pos->y + decal_y_3;\n                                            fx_queue_add_random(&decal_pos);"
+        },
+        {
+          "name": "stage-scaled-vector",
+          "text": "                                            vec2f_t decal_scale_3 = {\n                                                offset_x * 2.5f,\n                                                offset_y * 2.5f,\n                                            };\n                                            decal_pos.x = creature_pos->x\n                                                + decal_scale_3.x;\n                                            decal_pos.y = creature_pos->y\n                                                + decal_scale_3.y;\n                                            fx_queue_add_random(&decal_pos);"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-20-speed-roll-lifetime",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.3f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;",
+      "replacements": [
+        {
+          "name": "direct-remainder-alpha-red",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.3f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;"
+        },
+        {
+          "name": "block-roll-remainder-alpha-red",
+          "text": "                    int random_speed_roll = crt_rand();\n                    int random_speed_remainder = random_speed_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.3f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;"
+        },
+        {
+          "name": "shared-roll-remainder-alpha-red",
+          "text": "                    random_heading_roll = crt_rand();\n                    int random_speed_remainder = random_heading_roll % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.3f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;"
+        },
+        {
+          "name": "direct-remainder-red-alpha",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.r = 0.3f;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;"
+        },
+        {
+          "name": "direct-remainder-alpha-only",
+          "text": "                    int random_speed_remainder = crt_rand() % 0x12;\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)random_speed_remainder * 0.1f + 1.1f;\n                    creature->color.r = 0.3f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);\n                    creature->color.b = 0.3f;"
+        }
+      ]
+    }
+  ]
+}

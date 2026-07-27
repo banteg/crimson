@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "right-panel-conversion-lifetime",
+      "find": "    float right_panel_x = (float)(config_screen_width - 350);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos =\n        ui_layout_vec2_t(right_panel_x, 200.0f);\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }",
+      "replacements": [
+        {
+          "name": "aggregate-before-copy-local-after",
+          "text": "    ui_layout_vec2_t right_panel_position(\n        (float)(config_screen_width - 350), 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    float right_panel_x = right_panel_position.x;\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }"
+        },
+        {
+          "name": "aggregate-before-copy-local-before",
+          "text": "    ui_layout_vec2_t right_panel_position(\n        (float)(config_screen_width - 350), 200.0f);\n    float right_panel_x = right_panel_position.x;\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }"
+        },
+        {
+          "name": "float-and-aggregate-before-copy",
+          "text": "    float right_panel_x = (float)(config_screen_width - 350);\n    ui_layout_vec2_t right_panel_position(right_panel_x, 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }"
+        },
+        {
+          "name": "integer-and-aggregate-before-copy",
+          "text": "    int right_panel_x_integer = config_screen_width - 350;\n    ui_layout_vec2_t right_panel_position(\n        (float)right_panel_x_integer, 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    float right_panel_x = right_panel_position.x;\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }"
+        },
+        {
+          "name": "aggregate-before-copy-position-member",
+          "text": "    ui_layout_vec2_t right_panel_position(\n        (float)(config_screen_width - 350), 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_position.x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_position.x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_position.x - 65.0f;\n    }"
+        },
+        {
+          "name": "aggregate-before-copy-greater-than-tree",
+          "text": "    ui_layout_vec2_t right_panel_position(\n        (float)(config_screen_width - 350), 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    float right_panel_x = right_panel_position.x;\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width > 800) {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    } else if (config_screen_width > 640) {\n        ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n    }"
+        },
+        {
+          "name": "aggregate-before-copy-adjust-position",
+          "text": "    ui_layout_vec2_t right_panel_position(\n        (float)(config_screen_width - 350), 200.0f);\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    ui_element_slot_33.pos = right_panel_position;\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x += 10.0f;\n        } else {\n            ui_element_slot_33.pos.x -= 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x -= 65.0f;\n    }"
+        },
+        {
+          "name": "integer-local-before-copy-float-after",
+          "text": "    int right_panel_x_integer = config_screen_width - 350;\n    copy_layer(ui_element_slot_33, ui_menu_panel_template);\n    float right_panel_x = (float)right_panel_x_integer;\n    ui_element_slot_33.pos =\n        ui_layout_vec2_t(right_panel_x, 200.0f);\n    if (config_screen_width <= 800) {\n        if (config_screen_width <= 640) {\n            ui_element_slot_33.pos.x = right_panel_x + 10.0f;\n        } else {\n            ui_element_slot_33.pos.x = right_panel_x - 30.0f;\n        }\n    } else {\n        ui_element_slot_33.pos.x = right_panel_x - 65.0f;\n    }"
+        }
+      ]
+    }
+  ]
+}

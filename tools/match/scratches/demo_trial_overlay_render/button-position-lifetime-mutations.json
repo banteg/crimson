@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "body-position-lifetime",
+      "find": "    {\n        demo_trial_vec2_t position = *(demo_trial_vec2_t *)xy;\n        position.x += 26.0f;",
+      "replacements": [
+        {
+          "name": "outer-direct-copy",
+          "text": "    demo_trial_vec2_t position = *(demo_trial_vec2_t *)xy;\n    {\n        position.x += 26.0f;"
+        },
+        {
+          "name": "outer-copy-assignment",
+          "text": "    demo_trial_vec2_t position;\n    {\n        position = *(demo_trial_vec2_t *)xy;\n        position.x += 26.0f;"
+        }
+      ]
+    },
+    {
+      "name": "purchase-position",
+      "find": "        {\n            demo_trial_vec2_t position;\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;",
+      "replacements": [
+        {
+          "name": "reuse-body-position",
+          "text": "        {\n            position.x = button_position.x + 6.0f;\n            position.y = button_y + 6.0f;"
+        }
+      ]
+    }
+  ]
+}

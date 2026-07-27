@@ -715,7 +715,8 @@ extern "C" void projectile_render(float transition_alpha)
                 direction.x * direction.x
                 + direction.y * direction.y);
             vec2_normalize_dispatch(&direction, &direction);
-            if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+            if (primary->vy.type_id
+                == PROJECTILE_TYPE_FIRE_BULLETS) {
                 grim_interface_ptr->grim_set_color(
                     1.0f, 0.6f, 0.1f, transition_alpha);
             } else {
@@ -815,7 +816,8 @@ extern "C" void projectile_render(float transition_alpha)
                 float alpha = (along - first) / span
                     * fade
                     * transition_alpha;
-                if (type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
+                if (primary->vy.type_id
+                    == PROJECTILE_TYPE_FIRE_BULLETS) {
                     grim_interface_ptr->grim_set_color(
                         1.0f, 0.6f, 0.1f, alpha);
                 } else {
@@ -857,19 +859,21 @@ extern "C" void projectile_render(float transition_alpha)
                         - *(projectile_render_vec2_t *)&projectile->position;
                     vec2_normalize_dispatch(
                         (vec2f_t *)&arc, (const vec2f_t *)&arc);
-                    projectile_render_vec2_t side(-arc.y, arc.x);
-                    side = side * effect_scale;
+                    float old_arc_x = arc.x;
+                    arc.x = -arc.y;
+                    arc.y = old_arc_x;
                     projectile_render_vec2_t start =
                         camera_offset
                         + *(projectile_render_vec2_t *)&projectile->position;
-                    projectile_render_vec2_t end =
-                        camera_offset
-                        + *(projectile_render_vec2_t *)
-                             &creature_pool[creature_index].pos_x;
+                    projectile_render_vec2_t side = arc * effect_scale;
                     projectile_render_vec2_t strip0 =
                         start - side * 10.0f;
                     projectile_render_vec2_t strip1 =
                         start + side * 10.0f;
+                    projectile_render_vec2_t end =
+                        camera_offset
+                        + *(projectile_render_vec2_t *)
+                             &creature_pool[creature_index].pos_x;
                     projectile_render_vec2_t strip2 =
                         end + side * 10.0f;
                     projectile_render_vec2_t strip3 =
@@ -1116,13 +1120,14 @@ extern "C" void projectile_render(float transition_alpha)
          ++secondary_index) {
         secondary_projectile_t *projectile =
             &secondary_projectile_pool[secondary_index];
-        secondary_projectile_type_id_t type_id =
-            projectile->pos.vx.vy.type_id;
         if (!projectile->active
-            || type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+            || projectile->pos.vx.vy.type_id
+                == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
             continue;
         }
         grim_interface_ptr->grim_set_rotation(projectile->angle);
+        secondary_projectile_type_id_t type_id =
+            projectile->pos.vx.vy.type_id;
         if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
             projectile_render_vec2_t draw_pos =
                 camera_offset

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "rocket-draw-position-lifetime",
+      "find": "            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            grim_interface_ptr->grim_set_color(\n                0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);\n            draw_pos -= 7.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                14.0f,\n                14.0f);",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "component-assignment-before-color",
+          "text": "            projectile_render_vec2_t draw_pos;\n            draw_pos.x = camera_offset_x + projectile->position.x;\n            draw_pos.y = camera_offset_y + projectile->position.y;\n            grim_interface_ptr->grim_set_color(\n                0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);\n            draw_pos.x -= 7.0f;\n            draw_pos.y -= 7.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                14.0f,\n                14.0f);"
+        },
+        {
+          "name": "component-locals-before-color",
+          "text": "            float draw_x = camera_offset_x + projectile->position.x;\n            float draw_y = camera_offset_y + projectile->position.y;\n            grim_interface_ptr->grim_set_color(\n                0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);\n            draw_x -= 7.0f;\n            draw_y -= 7.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_x,\n                draw_y,\n                14.0f,\n                14.0f);"
+        },
+        {
+          "name": "constructor-before-color-component-subtract",
+          "text": "            projectile_render_vec2_t draw_pos(\n                camera_offset_x + projectile->position.x,\n                camera_offset_y + projectile->position.y);\n            grim_interface_ptr->grim_set_color(\n                0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);\n            draw_pos.x -= 7.0f;\n            draw_pos.y -= 7.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                14.0f,\n                14.0f);"
+        },
+        {
+          "name": "aggregate-before-color-component-subtract",
+          "text": "            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            grim_interface_ptr->grim_set_color(\n                0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);\n            draw_pos.x -= 7.0f;\n            draw_pos.y -= 7.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                14.0f,\n                14.0f);"
+        }
+      ]
+    }
+  ]
+}

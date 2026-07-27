@@ -290,6 +290,11 @@ extern "C" void ui_render_hud(float transition_alpha)
                     grim_interface_ptr->grim_get_texture_handle(
                         "ui\\ui_indRocket.jaz"),
                     0);
+            } else if (ammo_class == 4) {
+                grim_interface_ptr->grim_bind_texture(
+                    grim_interface_ptr->grim_get_texture_handle(
+                        "ui\\ui_indElectric.jaz"),
+                    0);
             } else {
                 grim_interface_ptr->grim_bind_texture(
                     grim_interface_ptr->grim_get_texture_handle(
@@ -314,12 +319,16 @@ extern "C" void ui_render_hud(float transition_alpha)
             if (bar_count > 0) {
                 int bar_x = 0;
                 do {
-                    float ammo_alpha =
-                        bar_index < ammo
-                            ? transition_alpha
-                            : transition_alpha * 0.3f;
-                    grim_interface_ptr->grim_set_color(
-                        1.0f, 1.0f, 1.0f, ammo_alpha);
+                    if (bar_index < ammo) {
+                        grim_interface_ptr->grim_set_color(
+                            1.0f, 1.0f, 1.0f, transition_alpha);
+                    } else {
+                        grim_interface_ptr->grim_set_color(
+                            1.0f,
+                            1.0f,
+                            1.0f,
+                            transition_alpha * 0.3f);
+                    }
                     grim_interface_ptr->grim_draw_quad(
                         ammo_position.x + (float)bar_x,
                         ammo_position.y
@@ -464,6 +473,8 @@ extern "C" void ui_render_hud(float transition_alpha)
                 - (float)(
                     quest_stage_banner_timer_ms * 2 - 3000)
                     * 0.001f;
+        } else if (quest_stage_banner_timer_ms < 2500) {
+            banner_fade = 0.0f;
         } else {
             banner_fade = 0.0f;
         }
@@ -512,8 +523,8 @@ extern "C" void ui_render_hud(float transition_alpha)
 
             int stage_minor = quest_stage_minor;
             if (stage_minor > 10) {
-                stage_minor -= 10;
                 ++quest_stage_major;
+                stage_minor -= 10;
                 quest_stage_minor = stage_minor;
             }
             crt_sprintf(
@@ -819,8 +830,8 @@ extern "C" void ui_render_hud(float transition_alpha)
                             .weapon_id]
                         .name);
 
-                text_y += 32;
                 icon_y += 32;
+                text_y = icon_y + 6;
             }
             ++render_overlay_player_index;
         } while (render_overlay_player_index < config_player_count);

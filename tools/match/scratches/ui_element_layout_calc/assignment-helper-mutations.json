@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-assignment-lowering",
+      "find": "    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n",
+      "replacements": [
+        {
+          "name": "explicit-ref-x-y",
+          "text": "    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    ui_layout_vec2_t &operator=(const ui_layout_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "explicit-ref-y-x",
+          "text": "    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    ui_layout_vec2_t &operator=(const ui_layout_vec2_t &other)\n    {\n        y = other.y;\n        x = other.x;\n        return *this;\n    }\n"
+        },
+        {
+          "name": "explicit-ref-void-x-y",
+          "text": "    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    void operator=(const ui_layout_vec2_t &other)\n    {\n        x = other.x;\n        y = other.y;\n    }\n"
+        },
+        {
+          "name": "explicit-value-x-y",
+          "text": "    ui_layout_vec2_t &operator+=(const ui_layout_vec2_t &other)\n    {\n        x += other.x;\n        y += other.y;\n        return *this;\n    }\n\n    ui_layout_vec2_t &operator=(ui_layout_vec2_t other)\n    {\n        x = other.x;\n        y = other.y;\n        return *this;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

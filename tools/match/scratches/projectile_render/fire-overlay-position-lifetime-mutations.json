@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fire-overlay-position-lifetime",
+      "find": "            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            grim_interface_ptr->grim_draw_quad(\n                camera_offset_x + projectile->pos_x - 32.0f,\n                camera_offset_y + projectile->pos.pos_y - 32.0f,\n                64.0f,\n                64.0f);",
+      "replacements": [
+        {
+          "name": "aggregate-then-subtract",
+          "text": "            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            draw_pos -= 32.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                64.0f,\n                64.0f);"
+        },
+        {
+          "name": "aggregate-expression-subtract",
+          "text": "            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            projectile_render_vec2_t draw_pos =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position\n                - 32.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                64.0f,\n                64.0f);"
+        },
+        {
+          "name": "assigned-components",
+          "text": "            grim_interface_ptr->grim_set_rotation(projectile->angle);\n            projectile_render_vec2_t draw_pos;\n            draw_pos.x = camera_offset_x + projectile->pos_x - 32.0f;\n            draw_pos.y = camera_offset_y + projectile->pos.pos_y - 32.0f;\n            grim_interface_ptr->grim_draw_quad(\n                draw_pos.x,\n                draw_pos.y,\n                64.0f,\n                64.0f);"
+        }
+      ]
+    }
+  ]
+}
