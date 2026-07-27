@@ -4,7 +4,7 @@
 
 extern "C" char *crt_strtok(char *str, char *delimiters);
 
-extern "C" void __stdcall console_tokenize_line(char *line)
+void console_queue_t::console_tokenize_line(char *line)
 {
     console_cmd_argc = 0;
     if (line == 0) {

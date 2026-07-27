@@ -7,14 +7,14 @@
 extern IGrim2D_cpp *grim_interface_ptr;
 extern int player_name_length;
 
-char *game_build_path(char *filename);
+extern "C" char *game_build_path(char *filename);
 FILE *crt_fopen(char *path, char *mode);
 int crt_fseek(FILE *fp, long offset, int origin);
 long crt_ftell(FILE *fp);
 unsigned int crt_fread(
     void *ptr, unsigned int size, unsigned int count, FILE *fp);
 int crt_fclose(FILE *fp);
-bool config_sync_from_grim(void);
+extern "C" bool config_sync_from_grim(void);
 
 extern "C" bool config_load_presets(bool skip_grim_settings)
 {

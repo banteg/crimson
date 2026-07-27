@@ -1,7 +1,11 @@
+#include <stdio.h>
 #include <string.h>
+
+extern "C" unsigned char resource_pack_read_cstring(FILE *fp);
 
 #include "crimsonland_resource.h"
 
+// Resource callers use the C++ free-function identity.
 unsigned char resource_open_read(char *path, unsigned int *size_out)
 {
     if (resource_pack_enabled) {

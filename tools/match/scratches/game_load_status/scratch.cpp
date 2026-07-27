@@ -4,17 +4,17 @@
 
 extern game_status_t game_status_blob;
 
-char *game_build_path(char *filename);
+extern "C" char *game_build_path(char *filename);
 FILE *crt_fopen(char *path, char *mode);
 int crt_fseek(FILE *fp, long offset, int origin);
 long crt_ftell(FILE *fp);
 unsigned int crt_fread(
     void *ptr, unsigned int size, unsigned int count, FILE *fp);
 int crt_fclose(FILE *fp);
-void game_save_status(void);
-void game_sequence_load(void);
+extern "C" void game_save_status(void);
+extern "C" void game_sequence_load(void);
 
-void game_load_status(void)
+extern "C" void game_load_status(void)
 {
     FILE *fp;
     int checksum_file;

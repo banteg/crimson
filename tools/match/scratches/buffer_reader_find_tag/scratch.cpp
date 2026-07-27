@@ -1,5 +1,6 @@
 #include "crimsonland_resource.h"
 
+// The native callers use the C++ free-function identity.
 unsigned char buffer_reader_find_tag(char *tag, int tag_len)
 {
     int scan;

@@ -1,5 +1,5 @@
 {
-  "audit_digest": "8829b3ca6543c38c3d292689d30845ba6e66f3eb2ae46e70ec6ab29e0673d9a0",
+  "audit_digest": "75e2d06c75ab1317b4061ba8ab56aca019c475bf852d79d697e42ccb03ce0ab2",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -1480,7 +1480,7 @@
           "function": "resource_open_read",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -1493,7 +1493,7 @@
           "function": "resource_pack_set",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -26865,12 +26865,12 @@
         "tools/match/scratches/bonus_spawn_at_pos/build/msvc6.5/b565c47d1cca14ee/scratch.obj",
         "tools/match/scratches/bonus_try_spawn_on_kill/build/msvc6.5/2660dfd2a554437e/scratch.obj",
         "tools/match/scratches/bonus_update/build/msvc6.5/fecc36305441bdba/scratch.obj",
-        "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-        "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
-        "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj",
-        "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj",
-        "tools/match/scratches/buffer_reader_seek/build/msvc6.5/96c0f381610df8e4/scratch.obj",
-        "tools/match/scratches/buffer_reader_skip/build/msvc6.5/dedb059b76052fe4/scratch.obj",
+        "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
+        "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
+        "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+        "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
+        "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj",
+        "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj",
         "tools/match/scratches/camera_update/build/msvc6.5/650f82c6d784b9fe/scratch.obj",
         "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/a6a032fd2c754315/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/95597a046c191374/scratch.obj",
@@ -26921,7 +26921,7 @@
         "tools/match/scratches/console_register_global_destructor_atexit/build/msvc6.5/392a2f464b259055/scratch.obj",
         "tools/match/scratches/console_render/build/msvc6.5/65bef78cc3e92fa7/scratch.obj",
         "tools/match/scratches/console_set_open/build/msvc6.5/c3b9d8259efb6744/scratch.obj",
-        "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+        "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
         "tools/match/scratches/console_update/build/msvc6.5/c6d7ef3e4c3a695b/scratch.obj",
         "tools/match/scratches/console_vars/build/msvc6.5/ec3602a198987913/scratch.obj",
         "tools/match/scratches/controls_menu_update/build/msvc6.5/acd73c3916bf763e/scratch.obj",
@@ -27339,10 +27339,10 @@
         "tools/match/scratches/register_core_cvars/build/msvc6.5/435df9ac5fa67a63/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/d1ca19765b0a5050/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init_thunk/build/msvc6.5/9add5073adfc07b8/scratch.obj",
-        "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj",
-        "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+        "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
+        "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
         "tools/match/scratches/resource_pack_read_cstring/build/msvc6.5/8ca98636d7a8368c/scratch.obj",
-        "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+        "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
         "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
         "tools/match/scratches/rush_mode_update/build/msvc6.5/9c49e16ee7abd878/scratch.obj",
         "tools/match/scratches/secondary_projectile_pool_global_init/build/msvc6.5/695a6ab86801e367/scratch.obj",
@@ -27480,7 +27480,7 @@
         "tools/match/scratches/unused_particle_pool_suffix_color_global_init_thunk/build/msvc6.5/efaa8c45373b22c2/scratch.obj",
         "tools/match/scratches/vec2_add/build/msvc6.5/9d0d2d5e9d374ae4/scratch.obj",
         "tools/match/scratches/vec2_add_inplace/build/msvc6.5/5e51a31cf79162f0/scratch.obj",
-        "tools/match/scratches/vec2_add_out/build/msvc6.5/d0c26dee081995d0/scratch.obj",
+        "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj",
         "tools/match/scratches/vec2_length/build/msvc6.5/ed5132d059fe411a/scratch.obj",
         "tools/match/scratches/vec2_sub/build/msvc6.5/6414dfbe1f3a4664/scratch.obj",
         "tools/match/scratches/vorbis_mem_close/build/msvc6.5/61d6bb5bcdf7b01d/scratch.obj",
@@ -27542,12 +27542,12 @@
         "tools/match/scratches/bonus_spawn_at_pos/build/msvc6.5/b565c47d1cca14ee/scratch.obj",
         "tools/match/scratches/bonus_try_spawn_on_kill/build/msvc6.5/2660dfd2a554437e/scratch.obj",
         "tools/match/scratches/bonus_update/build/msvc6.5/fecc36305441bdba/scratch.obj",
-        "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-        "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
-        "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj",
-        "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj",
-        "tools/match/scratches/buffer_reader_seek/build/msvc6.5/96c0f381610df8e4/scratch.obj",
-        "tools/match/scratches/buffer_reader_skip/build/msvc6.5/dedb059b76052fe4/scratch.obj",
+        "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
+        "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
+        "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+        "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
+        "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj",
+        "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj",
         "tools/match/scratches/camera_update/build/msvc6.5/650f82c6d784b9fe/scratch.obj",
         "tools/match/scratches/cfltcvt_init_3/build/msvc6.5/a6a032fd2c754315/scratch.obj",
         "tools/match/scratches/config_apply_detail_preset/build/msvc6.5/95597a046c191374/scratch.obj",
@@ -27598,7 +27598,7 @@
         "tools/match/scratches/console_register_global_destructor_atexit/build/msvc6.5/392a2f464b259055/scratch.obj",
         "tools/match/scratches/console_render/build/msvc6.5/65bef78cc3e92fa7/scratch.obj",
         "tools/match/scratches/console_set_open/build/msvc6.5/c3b9d8259efb6744/scratch.obj",
-        "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+        "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
         "tools/match/scratches/console_update/build/msvc6.5/c6d7ef3e4c3a695b/scratch.obj",
         "tools/match/scratches/console_vars/build/msvc6.5/ec3602a198987913/scratch.obj",
         "tools/match/scratches/controls_menu_update/build/msvc6.5/acd73c3916bf763e/scratch.obj",
@@ -28016,10 +28016,10 @@
         "tools/match/scratches/register_core_cvars/build/msvc6.5/435df9ac5fa67a63/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init/build/msvc6.5/d1ca19765b0a5050/scratch.obj",
         "tools/match/scratches/render_tint_color_global_init_thunk/build/msvc6.5/9add5073adfc07b8/scratch.obj",
-        "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj",
-        "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+        "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
+        "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
         "tools/match/scratches/resource_pack_read_cstring/build/msvc6.5/8ca98636d7a8368c/scratch.obj",
-        "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+        "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
         "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
         "tools/match/scratches/rush_mode_update/build/msvc6.5/9c49e16ee7abd878/scratch.obj",
         "tools/match/scratches/secondary_projectile_pool_global_init/build/msvc6.5/695a6ab86801e367/scratch.obj",
@@ -28157,7 +28157,7 @@
         "tools/match/scratches/unused_particle_pool_suffix_color_global_init_thunk/build/msvc6.5/efaa8c45373b22c2/scratch.obj",
         "tools/match/scratches/vec2_add/build/msvc6.5/9d0d2d5e9d374ae4/scratch.obj",
         "tools/match/scratches/vec2_add_inplace/build/msvc6.5/5e51a31cf79162f0/scratch.obj",
-        "tools/match/scratches/vec2_add_out/build/msvc6.5/d0c26dee081995d0/scratch.obj",
+        "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj",
         "tools/match/scratches/vec2_length/build/msvc6.5/ed5132d059fe411a/scratch.obj",
         "tools/match/scratches/vec2_sub/build/msvc6.5/6414dfbe1f3a4664/scratch.obj",
         "tools/match/scratches/vorbis_mem_close/build/msvc6.5/61d6bb5bcdf7b01d/scratch.obj",
@@ -30046,7 +30046,7 @@
           "function": "resource_open_read",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -30059,7 +30059,7 @@
           "function": "resource_pack_set",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -30196,7 +30196,7 @@
           "function": "console_tokenize_line",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -57254,6 +57254,114 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_find_tag@@YAEPADH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_find_tag",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_find_tag@@YAEPADH@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_init@@YAXPAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_init",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_init@@YAXPAXH@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_read_u16@@YAGXZ",
+          "comdat_selection": 1,
+          "function": "buffer_reader_read_u16",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_read_u16@@YAGXZ"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_read_u32@@YAIXZ",
+          "comdat_selection": 1,
+          "function": "buffer_reader_read_u32",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_read_u32@@YAIXZ"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_seek@@YAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_seek",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_seek@@YAXH@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_skip@@YAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_skip",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_skip@@YAXH@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?close@vorbis_stream_t@@QAEXXZ",
           "comdat_selection": 1,
           "function": "vorbis_mem_close",
@@ -57501,6 +57609,24 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?console_tokenize_line@console_queue_t@@QAEXPAD@Z",
+          "comdat_selection": 1,
+          "function": "console_tokenize_line",
+          "kind": "section",
+          "logical_section_size": 176,
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?console_tokenize_line@console_queue_t@@QAEXPAD@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?construct@ui_template_slot_cpp_t@@QAEXXZ",
           "comdat_selection": 1,
           "function": "ui_menu_template_pool_init",
@@ -57549,24 +57675,6 @@
         }
       ],
       "name": "?flush_log@console_queue_t@@QAEEPAD@Z"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "?game_load_status@@YAXXZ",
-          "comdat_selection": 1,
-          "function": "game_load_status",
-          "kind": "section",
-          "logical_section_size": 432,
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "?game_load_status@@YAXXZ"
     },
     {
       "definitions": [
@@ -58391,6 +58499,60 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?resource_close@@YAXXZ",
+          "comdat_selection": 1,
+          "function": "resource_close",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_close@@YAXXZ"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?resource_open_read@@YAEPADPAI@Z",
+          "comdat_selection": 1,
+          "function": "resource_open_read",
+          "kind": "section",
+          "logical_section_size": 240,
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_open_read@@YAEPADPAI@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?resource_pack_set@@YAEPAD@Z",
+          "comdat_selection": 1,
+          "function": "resource_pack_set",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_pack_set@@YAEPAD@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?resource_read_alloc@@YAEPADPAPAXPAI@Z",
           "comdat_selection": 1,
           "function": "resource_read_alloc",
@@ -58427,54 +58589,18 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "?vec2_add@@YAHPAUvec2f_t@@PBU1@@Z",
-          "comdat_selection": 1,
-          "function": "vec2_add",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/vec2_add/build/msvc6.5/9d0d2d5e9d374ae4/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "?vec2_add@@YAHPAUvec2f_t@@PBU1@@Z"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "?vec2_add_inplace@@YAHHPAUvec2f_t@@PBU1@@Z",
-          "comdat_selection": 1,
-          "function": "vec2_add_inplace",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/vec2_add_inplace/build/msvc6.5/5e51a31cf79162f0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "?vec2_add_inplace@@YAHHPAUvec2f_t@@PBU1@@Z"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "?vec2_add_out@vec2_t@@QAEPAMPAM0@Z",
+          "comdat_key": "?vec2_add_out@controls_vec2_t@@QAEPAMPAM0@Z",
           "comdat_selection": 1,
           "function": "vec2_add_out",
           "kind": "section",
           "logical_section_size": 32,
-          "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/d0c26dee081995d0/scratch.obj",
+          "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
         }
       ],
-      "name": "?vec2_add_out@vec2_t@@QAEPAMPAM0@Z"
+      "name": "?vec2_add_out@controls_vec2_t@@QAEPAMPAM0@Z"
     },
     {
       "definitions": [
@@ -78666,114 +78792,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_find_tag",
-          "comdat_selection": 1,
-          "function": "buffer_reader_find_tag",
-          "kind": "section",
-          "logical_section_size": 96,
-          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_find_tag"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_init",
-          "comdat_selection": 1,
-          "function": "buffer_reader_init",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_init"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_read_u16",
-          "comdat_selection": 1,
-          "function": "buffer_reader_read_u16",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_read_u16"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_read_u32",
-          "comdat_selection": 1,
-          "function": "buffer_reader_read_u32",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_read_u32"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_seek",
-          "comdat_selection": 1,
-          "function": "buffer_reader_seek",
-          "kind": "section",
-          "logical_section_size": 16,
-          "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/96c0f381610df8e4/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_seek"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_buffer_reader_skip",
-          "comdat_selection": 1,
-          "function": "buffer_reader_skip",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/dedb059b76052fe4/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_buffer_reader_skip"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_camera_update",
           "comdat_selection": 1,
           "function": "camera_update",
@@ -79314,24 +79332,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_console_tokenize_line@4",
-          "comdat_selection": 1,
-          "function": "console_tokenize_line",
-          "kind": "section",
-          "logical_section_size": 176,
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_console_tokenize_line@4"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_console_vars",
           "comdat_selection": 1,
           "function": "console_vars",
@@ -79660,7 +79660,7 @@
           "comdat_selection": 1,
           "function": "creature_update_all",
           "kind": "section",
-          "logical_section_size": 5120,
+          "logical_section_size": 5136,
           "object": "tools/match/scratches/creature_update_all/build/msvc6.5/8c8f12287628984d/scratch.obj",
           "section": ".text",
           "size": null,
@@ -80928,6 +80928,24 @@
         }
       ],
       "name": "_game_is_full_version"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_game_load_status",
+          "comdat_selection": 1,
+          "function": "game_load_status",
+          "kind": "section",
+          "logical_section_size": 432,
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_game_load_status"
     },
     {
       "definitions": [
@@ -84484,7 +84502,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8096,
+          "logical_section_size": 8080,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -86028,42 +86046,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_resource_close",
-          "comdat_selection": 1,
-          "function": "resource_close",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_resource_close"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_resource_open_read",
-          "comdat_selection": 1,
-          "function": "resource_open_read",
-          "kind": "section",
-          "logical_section_size": 240,
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_resource_open_read"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_resource_pack_read_cstring",
           "comdat_selection": 1,
           "function": "resource_pack_read_cstring",
@@ -86076,24 +86058,6 @@
         }
       ],
       "name": "_resource_pack_read_cstring"
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_resource_pack_set",
-          "comdat_selection": 1,
-          "function": "resource_pack_set",
-          "kind": "section",
-          "logical_section_size": 96,
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_resource_pack_set"
     },
     {
       "definitions": [
@@ -87490,7 +87454,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7184,
+          "logical_section_size": 7200,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/9ffef2a321d86fbb/scratch.obj",
           "section": ".text",
           "size": null,
@@ -88440,6 +88404,42 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_vec2_add",
+          "comdat_selection": 1,
+          "function": "vec2_add",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/vec2_add/build/msvc6.5/9d0d2d5e9d374ae4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_vec2_add"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_vec2_add_inplace",
+          "comdat_selection": 1,
+          "function": "vec2_add_inplace",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/vec2_add_inplace/build/msvc6.5/5e51a31cf79162f0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_vec2_add_inplace"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_vec2_length",
           "comdat_selection": 1,
           "function": "vec2_length",
@@ -88946,42 +88946,42 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/96c0f381610df8e4/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/dedb059b76052fe4/scratch.obj"
+      "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj"
     },
     {
       "directives": [
@@ -89344,7 +89344,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj"
+      "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj"
     },
     {
       "directives": [
@@ -92410,14 +92410,14 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj"
+      "object": "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj"
+      "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj"
     },
     {
       "directives": [
@@ -92431,7 +92431,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj"
+      "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj"
     },
     {
       "directives": [
@@ -93471,7 +93471,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/d0c26dee081995d0/scratch.obj"
+      "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj"
     },
     {
       "directives": [
@@ -94578,6 +94578,156 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_find_tag@@YAEPADH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_find_tag",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_find_tag@@YAEPADH@Z",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_init@@YAXPAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_init",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_init@@YAXPAXH@Z",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_read_u16@@YAGXZ",
+          "comdat_selection": 1,
+          "function": "buffer_reader_read_u16",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_read_u16@@YAGXZ",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_read_u32@@YAIXZ",
+          "comdat_selection": 1,
+          "function": "buffer_reader_read_u32",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_read_u32@@YAIXZ",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_seek@@YAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_seek",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_seek@@YAXH@Z",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?buffer_reader_skip@@YAXH@Z",
+          "comdat_selection": 1,
+          "function": "buffer_reader_skip",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?buffer_reader_skip@@YAXH@Z",
+      "referenced_by": [
+        {
+          "function": "wav_parse_into_entry",
+          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?close@vorbis_stream_t@@QAEXXZ",
           "comdat_selection": 1,
           "function": "vorbis_mem_close",
@@ -95197,6 +95347,36 @@
         {
           "function": "game_startup_init",
           "object": "tools/match/scratches/game_startup_init/build/msvc6.5/e73c18fe4152ee7d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?console_tokenize_line@console_queue_t@@QAEXPAD@Z",
+          "comdat_selection": 1,
+          "function": "console_tokenize_line",
+          "kind": "section",
+          "logical_section_size": 176,
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?console_tokenize_line@console_queue_t@@QAEXPAD@Z",
+      "referenced_by": [
+        {
+          "function": "console_exec_line",
+          "object": "tools/match/scratches/console_exec_line/build/msvc6.5/af74b47f44784f37/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "console_update",
+          "object": "tools/match/scratches/console_update/build/msvc6.5/c6d7ef3e4c3a695b/scratch.obj",
           "weak": false
         }
       ]
@@ -96366,6 +96546,106 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "?resource_close@@YAXXZ",
+          "comdat_selection": 1,
+          "function": "resource_close",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_close@@YAXXZ",
+      "referenced_by": [
+        {
+          "function": "music_entry_load_ogg",
+          "object": "tools/match/scratches/music_entry_load_ogg/build/msvc6.5/2189086a6560ea90/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "resource_read_alloc",
+          "object": "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "sfx_entry_load_ogg",
+          "object": "tools/match/scratches/sfx_entry_load_ogg/build/msvc6.5/b00a96afb3155a8c/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?resource_open_read@@YAEPADPAI@Z",
+          "comdat_selection": 1,
+          "function": "resource_open_read",
+          "kind": "section",
+          "logical_section_size": 240,
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_open_read@@YAEPADPAI@Z",
+      "referenced_by": [
+        {
+          "function": "music_entry_load_ogg",
+          "object": "tools/match/scratches/music_entry_load_ogg/build/msvc6.5/2189086a6560ea90/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "resource_read_alloc",
+          "object": "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "sfx_entry_load_ogg",
+          "object": "tools/match/scratches/sfx_entry_load_ogg/build/msvc6.5/b00a96afb3155a8c/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?resource_pack_set@@YAEPAD@Z",
+          "comdat_selection": 1,
+          "function": "resource_pack_set",
+          "kind": "section",
+          "logical_section_size": 96,
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?resource_pack_set@@YAEPAD@Z",
+      "referenced_by": [
+        {
+          "function": "audio_init_music",
+          "object": "tools/match/scratches/audio_init_music/build/msvc6.5/eed93a6d60c161ee/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "audio_init_sfx",
+          "object": "tools/match/scratches/audio_init_sfx/build/msvc6.5/1f61da8a79df0705/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "?resource_read_alloc@@YAEPADPAPAXPAI@Z",
           "comdat_selection": 1,
           "function": "resource_read_alloc",
@@ -96412,6 +96692,31 @@
         {
           "function": "game_startup_init",
           "object": "tools/match/scratches/game_startup_init/build/msvc6.5/e73c18fe4152ee7d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?vec2_add_out@controls_vec2_t@@QAEPAMPAM0@Z",
+          "comdat_selection": 1,
+          "function": "vec2_add_out",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?vec2_add_out@controls_vec2_t@@QAEPAMPAM0@Z",
+      "referenced_by": [
+        {
+          "function": "controls_menu_update",
+          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/acd73c3916bf763e/scratch.obj",
           "weak": false
         }
       ]
@@ -97349,6 +97654,11 @@
       ],
       "name": "_config_sync_from_grim",
       "referenced_by": [
+        {
+          "function": "config_load_presets",
+          "object": "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
+          "weak": false
+        },
         {
           "function": "crimsonland_main",
           "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
@@ -98800,7 +99110,7 @@
           "comdat_selection": 1,
           "function": "creature_update_all",
           "kind": "section",
-          "logical_section_size": 5120,
+          "logical_section_size": 5136,
           "object": "tools/match/scratches/creature_update_all/build/msvc6.5/8c8f12287628984d/scratch.obj",
           "section": ".text",
           "size": null,
@@ -100340,6 +100650,11 @@
           "weak": false
         },
         {
+          "function": "config_load_presets",
+          "object": "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
+          "weak": false
+        },
+        {
           "function": "config_sync_from_grim",
           "object": "tools/match/scratches/config_sync_from_grim/build/msvc6.5/6315932917e5058f/scratch.obj",
           "weak": false
@@ -100347,6 +100662,11 @@
         {
           "function": "console_flush_log",
           "object": "tools/match/scratches/console_flush_log/build/msvc6.5/5e4c1847b8820d81/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_load_status",
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
           "weak": false
         },
         {
@@ -100501,6 +100821,36 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_game_load_status",
+          "comdat_selection": 1,
+          "function": "game_load_status",
+          "kind": "section",
+          "logical_section_size": 432,
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_game_load_status",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_save_status",
+          "object": "tools/match/scratches/game_save_status/build/msvc6.5/3824ce7f51d8a67e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_game_mode_label",
           "comdat_selection": 1,
           "function": "game_mode_label",
@@ -100567,6 +100917,11 @@
         {
           "function": "crimsonland_main",
           "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_load_status",
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
           "weak": false
         },
         {
@@ -100637,6 +100992,11 @@
         {
           "function": "crimsonland_main",
           "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "game_load_status",
+          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
           "weak": false
         },
         {
@@ -103900,7 +104260,7 @@
           "comdat_selection": 1,
           "function": "projectile_update",
           "kind": "section",
-          "logical_section_size": 8096,
+          "logical_section_size": 8080,
           "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "section": ".text",
           "size": null,
@@ -105541,7 +105901,7 @@
       "referenced_by": [
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         }
       ]
@@ -108165,7 +108525,7 @@
           "comdat_selection": 1,
           "function": "ui_menu_layout_init",
           "kind": "section",
-          "logical_section_size": 7184,
+          "logical_section_size": 7200,
           "object": "tools/match/scratches/ui_menu_layout_init/build/msvc6.5/9ffef2a321d86fbb/scratch.obj",
           "section": ".text",
           "size": null,
@@ -109176,6 +109536,61 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_vec2_add",
+          "comdat_selection": 1,
+          "function": "vec2_add",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/vec2_add/build/msvc6.5/9d0d2d5e9d374ae4/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_vec2_add",
+      "referenced_by": [
+        {
+          "function": "projectile_update",
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_vec2_add_inplace",
+          "comdat_selection": 1,
+          "function": "vec2_add_inplace",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/vec2_add_inplace/build/msvc6.5/5e51a31cf79162f0/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_vec2_add_inplace",
+      "referenced_by": [
+        {
+          "function": "creature_update_all",
+          "object": "tools/match/scratches/creature_update_all/build/msvc6.5/8c8f12287628984d/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "projectile_update",
+          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_vec2_length",
           "comdat_selection": 1,
           "function": "vec2_length",
@@ -109584,7 +109999,7 @@
     "defined_symbols": 2313,
     "function_closure": false,
     "game_function_debt": {
-      "emitted_name_mismatch": 22,
+      "emitted_name_mismatch": 4,
       "missing_definition": 13
     },
     "game_owned_closure": false,
@@ -109594,16 +110009,16 @@
     "hard_duplicate_symbols": 4,
     "object_count": 671,
     "reference_exports_closed": true,
-    "resolved_symbols": 497,
+    "resolved_symbols": 511,
     "unresolved_by_category": {
       "excluded_function": 70,
       "external": 3,
-      "game_data": 833,
-      "game_function": 35,
+      "game_data": 832,
+      "game_function": 17,
       "import": 25,
       "toolchain": 1
     },
-    "unresolved_symbols": 967
+    "unresolved_symbols": 948
   },
   "unresolved": [
     {
@@ -109836,43 +110251,35 @@
       ]
     },
     {
-      "candidate_definitions": [
-        "_buffer_reader_find_tag"
-      ],
+      "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4438240,
-          "function": "buffer_reader_find_tag"
+          "address": 4996208,
+          "name": "buffer_reader_data"
         }
       ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_find_tag",
-      "name": "?buffer_reader_find_tag@@YAEPADH@Z",
+      "category": "game_data",
+      "lookup_name": "buffer_reader_data",
+      "name": "?buffer_reader_data@@3PADA",
       "referenced_by": [
         {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_find_tag",
+          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_buffer_reader_init"
-      ],
-      "catalog": [
+        },
         {
-          "address": 4438096,
-          "function": "buffer_reader_init"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_init",
-      "name": "?buffer_reader_init@@YAXPAXH@Z",
-      "referenced_by": [
+          "function": "buffer_reader_init",
+          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
+          "weak": false
+        },
         {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_read_u16",
+          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "buffer_reader_read_u32",
+          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
           "weak": false
         }
       ]
@@ -109890,47 +110297,35 @@
       "name": "?buffer_reader_offset@@3HA",
       "referenced_by": [
         {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_find_tag",
+          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_buffer_reader_read_u16"
-      ],
-      "catalog": [
+        },
         {
-          "address": 4438144,
-          "function": "buffer_reader_read_u16"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_read_u16",
-      "name": "?buffer_reader_read_u16@@YAGXZ",
-      "referenced_by": [
-        {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_init",
+          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_buffer_reader_read_u32"
-      ],
-      "catalog": [
+        },
         {
-          "address": 4438176,
-          "function": "buffer_reader_read_u32"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_read_u32",
-      "name": "?buffer_reader_read_u32@@YAIXZ",
-      "referenced_by": [
+          "function": "buffer_reader_read_u16",
+          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/dd0248a5a9d5c593/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "buffer_reader_read_u32",
+          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/1a1bf3fc0e8f30c4/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "buffer_reader_seek",
+          "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/8152066977e799ae/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "buffer_reader_skip",
+          "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/254d0a1b5b0f63f5/scratch.obj",
+          "weak": false
+        },
         {
           "function": "wav_parse_into_entry",
           "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
@@ -109939,43 +110334,25 @@
       ]
     },
     {
-      "candidate_definitions": [
-        "_buffer_reader_seek"
-      ],
+      "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4438128,
-          "function": "buffer_reader_seek"
+          "address": 4996212,
+          "name": "buffer_reader_size"
         }
       ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_seek",
-      "name": "?buffer_reader_seek@@YAXH@Z",
+      "category": "game_data",
+      "lookup_name": "buffer_reader_size",
+      "name": "?buffer_reader_size@@3HA",
       "referenced_by": [
         {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_find_tag",
+          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/790979346917d758/scratch.obj",
           "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_buffer_reader_skip"
-      ],
-      "catalog": [
+        },
         {
-          "address": 4438208,
-          "function": "buffer_reader_skip"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "buffer_reader_skip",
-      "name": "?buffer_reader_skip@@YAXH@Z",
-      "referenced_by": [
-        {
-          "function": "wav_parse_into_entry",
-          "object": "tools/match/scratches/wav_parse_into_entry/build/msvc6.5/fd7f83b127553d74/scratch.obj",
+          "function": "buffer_reader_init",
+          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/0c55c997fb4f5026/scratch.obj",
           "weak": false
         }
       ]
@@ -110144,27 +110521,6 @@
       ]
     },
     {
-      "candidate_definitions": [
-        "_config_sync_from_grim"
-      ],
-      "catalog": [
-        {
-          "address": 4320352,
-          "function": "config_sync_from_grim"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "config_sync_from_grim",
-      "name": "?config_sync_from_grim@@YA_NXZ",
-      "referenced_by": [
-        {
-          "function": "config_load_presets",
-          "object": "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
       "candidate_definitions": [],
       "catalog": [
         {
@@ -110179,32 +110535,6 @@
         {
           "function": "input_primary_just_pressed",
           "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/359699c3b4223afd/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_console_tokenize_line@4"
-      ],
-      "catalog": [
-        {
-          "address": 4203904,
-          "function": "console_tokenize_line"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "console_tokenize_line",
-      "name": "?console_tokenize_line@console_queue_t@@QAEXPAD@Z",
-      "referenced_by": [
-        {
-          "function": "console_exec_line",
-          "object": "tools/match/scratches/console_exec_line/build/msvc6.5/af74b47f44784f37/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "console_update",
-          "object": "tools/match/scratches/console_update/build/msvc6.5/c6d7ef3e4c3a695b/scratch.obj",
           "weak": false
         }
       ]
@@ -110444,74 +110774,6 @@
         {
           "function": "sfx_entry_create_buffers",
           "object": "tools/match/scratches/sfx_entry_create_buffers/build/msvc6.5/2dac738db44cb6dc/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_game_build_path"
-      ],
-      "catalog": [
-        {
-          "address": 4205520,
-          "function": "game_build_path"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "game_build_path",
-      "name": "?game_build_path@@YAPADPAD@Z",
-      "referenced_by": [
-        {
-          "function": "config_load_presets",
-          "object": "tools/match/scratches/config_load_presets/build/msvc6.5/33f205d3cdf74c4f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_load_status",
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_game_save_status"
-      ],
-      "catalog": [
-        {
-          "address": 4270720,
-          "function": "game_save_status"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "game_save_status",
-      "name": "?game_save_status@@YAXXZ",
-      "referenced_by": [
-        {
-          "function": "game_load_status",
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "_game_sequence_load"
-      ],
-      "catalog": [
-        {
-          "address": 4270608,
-          "function": "game_sequence_load"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "game_sequence_load",
-      "name": "?game_sequence_load@@YAXXZ",
-      "referenced_by": [
-        {
-          "function": "game_load_status",
-          "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
           "weak": false
         }
       ]
@@ -111459,22 +111721,30 @@
       ]
     },
     {
-      "candidate_definitions": [
-        "_resource_close"
-      ],
+      "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4438736,
-          "function": "resource_close"
+          "address": 4996200,
+          "name": "resource_fp"
         }
       ],
-      "category": "game_function",
-      "lookup_name": "resource_close",
-      "name": "?resource_close@@YAXXZ",
+      "category": "game_data",
+      "lookup_name": "resource_fp",
+      "name": "?resource_fp@@3PAU_iobuf@@A",
       "referenced_by": [
         {
           "function": "music_entry_load_ogg",
           "object": "tools/match/scratches/music_entry_load_ogg/build/msvc6.5/2189086a6560ea90/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "resource_close",
+          "object": "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": "resource_open_read",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
@@ -111493,84 +111763,65 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4996200,
-          "name": "resource_fp"
+          "address": 4996204,
+          "name": "resource_pack_enabled"
         }
       ],
       "category": "game_data",
-      "lookup_name": "resource_fp",
-      "name": "?resource_fp@@3PAU_iobuf@@A",
+      "lookup_name": "resource_pack_enabled",
+      "name": "?resource_pack_enabled@@3EA",
       "referenced_by": [
         {
-          "function": "music_entry_load_ogg",
-          "object": "tools/match/scratches/music_entry_load_ogg/build/msvc6.5/2189086a6560ea90/scratch.obj",
+          "function": "resource_open_read",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
-          "function": "resource_read_alloc",
-          "object": "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "sfx_entry_load_ogg",
-          "object": "tools/match/scratches/sfx_entry_load_ogg/build/msvc6.5/b00a96afb3155a8c/scratch.obj",
+          "function": "resource_pack_set",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "weak": false
         }
       ]
     },
     {
-      "candidate_definitions": [
-        "_resource_open_read"
-      ],
+      "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4438496,
-          "function": "resource_open_read"
+          "address": 4995688,
+          "name": "resource_pack_entry_name_buf"
         }
       ],
-      "category": "game_function",
-      "lookup_name": "resource_open_read",
-      "name": "?resource_open_read@@YAEPADPAI@Z",
+      "category": "game_data",
+      "lookup_name": "resource_pack_entry_name_buf",
+      "name": "?resource_pack_entry_name_buf@@3PADA",
       "referenced_by": [
         {
-          "function": "music_entry_load_ogg",
-          "object": "tools/match/scratches/music_entry_load_ogg/build/msvc6.5/2189086a6560ea90/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "resource_read_alloc",
-          "object": "tools/match/scratches/resource_read_alloc/build/msvc6.5/fd761be580c16d67/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "sfx_entry_load_ogg",
-          "object": "tools/match/scratches/sfx_entry_load_ogg/build/msvc6.5/b00a96afb3155a8c/scratch.obj",
+          "function": "resource_open_read",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         }
       ]
     },
     {
-      "candidate_definitions": [
-        "_resource_pack_set"
-      ],
+      "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4438400,
-          "function": "resource_pack_set"
+          "address": 4995432,
+          "name": "resource_pack_path_buf"
         }
       ],
-      "category": "game_function",
-      "lookup_name": "resource_pack_set",
-      "name": "?resource_pack_set@@YAEPAD@Z",
+      "category": "game_data",
+      "lookup_name": "resource_pack_path_buf",
+      "name": "?resource_pack_path_buf@@3PADA",
       "referenced_by": [
         {
-          "function": "audio_init_music",
-          "object": "tools/match/scratches/audio_init_music/build/msvc6.5/eed93a6d60c161ee/scratch.obj",
+          "function": "resource_open_read",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
-          "function": "audio_init_sfx",
-          "object": "tools/match/scratches/audio_init_sfx/build/msvc6.5/1f61da8a79df0705/scratch.obj",
+          "function": "resource_pack_set",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "weak": false
         }
       ]
@@ -111859,27 +112110,6 @@
         {
           "function": "statistics_update_check_worker",
           "object": "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/c0825a88c32e68e7/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "?vec2_add_out@vec2_t@@QAEPAMPAM0@Z"
-      ],
-      "catalog": [
-        {
-          "address": 4517104,
-          "function": "vec2_add_out"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "vec2_add_out",
-      "name": "?vec2_add_out@controls_vec2_t@@QAEPAMPAM0@Z",
-      "referenced_by": [
-        {
-          "function": "controls_menu_update",
-          "object": "tools/match/scratches/controls_menu_update/build/msvc6.5/acd73c3916bf763e/scratch.obj",
           "weak": false
         }
       ]
@@ -113357,7 +113587,7 @@
         },
         {
           "function": "vec2_add_out",
-          "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/d0c26dee081995d0/scratch.obj",
+          "object": "tools/match/scratches/vec2_add_out/build/msvc6.5/f5ae54d381cd0227/scratch.obj",
           "weak": false
         },
         {
@@ -114332,7 +114562,7 @@
       "referenced_by": [
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         }
       ]
@@ -115657,108 +115887,6 @@
         {
           "function": "typo_gameplay_update_and_render",
           "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/53d65b0c63d3b783/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4996208,
-          "name": "buffer_reader_data"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "buffer_reader_data",
-      "name": "_buffer_reader_data",
-      "referenced_by": [
-        {
-          "function": "buffer_reader_find_tag",
-          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_init",
-          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_read_u16",
-          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_read_u32",
-          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4996216,
-          "name": "buffer_reader_offset"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "buffer_reader_offset",
-      "name": "_buffer_reader_offset",
-      "referenced_by": [
-        {
-          "function": "buffer_reader_find_tag",
-          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_init",
-          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_read_u16",
-          "object": "tools/match/scratches/buffer_reader_read_u16/build/msvc6.5/ccbf8811a88983a7/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_read_u32",
-          "object": "tools/match/scratches/buffer_reader_read_u32/build/msvc6.5/b2ddb7c6fb0ca706/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_seek",
-          "object": "tools/match/scratches/buffer_reader_seek/build/msvc6.5/96c0f381610df8e4/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_skip",
-          "object": "tools/match/scratches/buffer_reader_skip/build/msvc6.5/dedb059b76052fe4/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4996212,
-          "name": "buffer_reader_size"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "buffer_reader_size",
-      "name": "_buffer_reader_size",
-      "referenced_by": [
-        {
-          "function": "buffer_reader_find_tag",
-          "object": "tools/match/scratches/buffer_reader_find_tag/build/msvc6.5/6b74353cbbbc4f6f/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "buffer_reader_init",
-          "object": "tools/match/scratches/buffer_reader_init/build/msvc6.5/e19df5cb4299c3ec/scratch.obj",
           "weak": false
         }
       ]
@@ -117284,7 +117412,7 @@
         },
         {
           "function": "console_tokenize_line",
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
           "weak": false
         }
       ]
@@ -117323,7 +117451,7 @@
         },
         {
           "function": "console_tokenize_line",
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
           "weak": false
         }
       ]
@@ -117848,7 +117976,7 @@
         },
         {
           "function": "console_tokenize_line",
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
           "weak": false
         }
       ]
@@ -120104,7 +120232,7 @@
       "referenced_by": [
         {
           "function": "console_tokenize_line",
-          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/d5e6fb94088fb100/scratch.obj",
+          "object": "tools/match/scratches/console_tokenize_line/build/msvc6.5/5df33305c371d6ba/scratch.obj",
           "weak": false
         }
       ]
@@ -121834,17 +121962,17 @@
         },
         {
           "function": "resource_close",
-          "object": "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj",
+          "object": "tools/match/scratches/resource_close/build/msvc6.5/c50d83d1810ed298/scratch.obj",
           "weak": false
         },
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
           "function": "resource_pack_set",
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "weak": false
         }
       ]
@@ -121995,12 +122123,12 @@
         },
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
           "function": "resource_pack_set",
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
+          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/ee094cfafabbfe23/scratch.obj",
           "weak": false
         }
       ]
@@ -122346,7 +122474,7 @@
         },
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         },
         {
@@ -122381,7 +122509,7 @@
         },
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         }
       ]
@@ -122401,7 +122529,7 @@
       "referenced_by": [
         {
           "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
+          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/8e9b7e20d0b9a737/scratch.obj",
           "weak": false
         }
       ]
@@ -122725,32 +122853,6 @@
         {
           "function": "game_build_path",
           "object": "tools/match/scratches/game_build_path/build/msvc6.5/c86ed03a01eebe4d/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "?game_load_status@@YAXXZ"
-      ],
-      "catalog": [
-        {
-          "address": 4271120,
-          "function": "game_load_status"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "game_load_status",
-      "name": "_game_load_status",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "game_save_status",
-          "object": "tools/match/scratches/game_save_status/build/msvc6.5/3824ce7f51d8a67e/scratch.obj",
           "weak": false
         }
       ]
@@ -130882,54 +130984,6 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4996200,
-          "name": "resource_fp"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "resource_fp",
-      "name": "_resource_fp",
-      "referenced_by": [
-        {
-          "function": "resource_close",
-          "object": "tools/match/scratches/resource_close/build/msvc6.5/30cd1cef332fe56d/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4996204,
-          "name": "resource_pack_enabled"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "resource_pack_enabled",
-      "name": "_resource_pack_enabled",
-      "referenced_by": [
-        {
-          "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "resource_pack_set",
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
           "address": 4995688,
           "name": "resource_pack_entry_name_buf"
         }
@@ -130939,37 +130993,8 @@
       "name": "_resource_pack_entry_name_buf",
       "referenced_by": [
         {
-          "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "resource_pack_read_cstring",
           "object": "tools/match/scratches/resource_pack_read_cstring/build/msvc6.5/8ca98636d7a8368c/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4995432,
-          "name": "resource_pack_path_buf"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "resource_pack_path_buf",
-      "name": "_resource_pack_path_buf",
-      "referenced_by": [
-        {
-          "function": "resource_open_read",
-          "object": "tools/match/scratches/resource_open_read/build/msvc6.5/dbd51f2b34b91dc0/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "resource_pack_set",
-          "object": "tools/match/scratches/resource_pack_set/build/msvc6.5/1238408732ba44a7/scratch.obj",
           "weak": false
         }
       ]
@@ -139565,53 +139590,6 @@
         {
           "function": "statistics_menu_update",
           "object": "tools/match/scratches/statistics_menu_update/build/msvc6.5/8971fddbd25cca43/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "?vec2_add@@YAHPAUvec2f_t@@PBU1@@Z"
-      ],
-      "catalog": [
-        {
-          "address": 4317808,
-          "function": "vec2_add"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "vec2_add",
-      "name": "_vec2_add",
-      "referenced_by": [
-        {
-          "function": "projectile_update",
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [
-        "?vec2_add_inplace@@YAHHPAUvec2f_t@@PBU1@@Z"
-      ],
-      "catalog": [
-        {
-          "address": 4318208,
-          "function": "vec2_add_inplace"
-        }
-      ],
-      "category": "game_function",
-      "lookup_name": "vec2_add_inplace",
-      "name": "_vec2_add_inplace",
-      "referenced_by": [
-        {
-          "function": "creature_update_all",
-          "object": "tools/match/scratches/creature_update_all/build/msvc6.5/8c8f12287628984d/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "projectile_update",
-          "object": "tools/match/scratches/projectile_update/build/msvc6.5/9ccf244e59cb145e/scratch.obj",
           "weak": false
         }
       ]

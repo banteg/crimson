@@ -2,6 +2,7 @@
 
 #include "crimsonland_resource.h"
 
+// Resource callers use the C++ free-function identity.
 unsigned char resource_pack_set(char *path)
 {
     FILE *fp = fopen(path, "rb");
