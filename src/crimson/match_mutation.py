@@ -83,6 +83,10 @@ class MutationEvaluation:
             return None
         return self.status.ratio - self.baseline.ratio
 
+    @property
+    def tradeoffs(self) -> tuple[str, ...]:
+        return matchlib.fuzzy_score_tradeoffs(self.baseline, self.status)
+
 
 @dataclass(frozen=True, slots=True)
 class MutationSweep:
@@ -404,6 +408,7 @@ def mutation_evaluation_payload(evaluation: MutationEvaluation) -> dict[str, Any
     return {
         "label": evaluation.variant.label,
         "source_sha256": evaluation.variant.source_sha256,
+        "tradeoffs": list(evaluation.tradeoffs),
         "mutations": [
             {
                 "site": choice.site,
@@ -472,6 +477,8 @@ def mutation_sweep_payload(sweep: MutationSweep, *, limit: int | None = None) ->
         "truncated": sweep.truncated,
         "stop_reason": sweep.stop_reason,
         "best_improves": sweep.best_improves,
+        "best_tradeoffs": list(sweep.best.tradeoffs) if sweep.best is not None else [],
+        "tradeoff_variants": sum(bool(evaluation.tradeoffs) for evaluation in sweep.evaluations),
         "winner": winner,
         "baseline": matchlib.scratch_status_payload(sweep.baseline),
         "results": [
@@ -507,13 +514,15 @@ def render_mutation_sweep(sweep: MutationSweep, *, limit: int = 20) -> str:
             f"variants: evaluated={len(sweep.evaluations)} possible={sweep.possible_variants} "
             f"truncated={'yes' if sweep.truncated else 'no'} "
             f"best_improves={'yes' if sweep.best_improves else 'no'} "
+            f"tradeoffs={sum(bool(evaluation.tradeoffs) for evaluation in sweep.evaluations)} "
+            f"best_warnings={','.join(sweep.best.tradeoffs) if sweep.best and sweep.best.tradeoffs else '-'} "
             f"stop={sweep.stop_reason or '-'}"
         ),
         (
             f"coverage (evaluated/planned/possible): {coverage}; "
             f"combinations never evaluated={sweep.unevaluated_interactions}"
         ),
-        "rank  state  fuzzy delta  match    prefix     first target       refs       mutations",
+        "rank  state  fuzzy delta  match    prefix     first target       refs       mutations / warnings",
     ]
     for rank, evaluation in enumerate(sweep.evaluations[:limit], start=1):
         status = evaluation.status
@@ -524,12 +533,17 @@ def render_mutation_sweep(sweep: MutationSweep, *, limit: int = 20) -> str:
             f"{f'0x{before_offset:x}' if before_offset is not None else '-'}"
             f"->{f'0x{after_offset:x}' if after_offset is not None else '-'}"
         )
+        warning_suffix = (
+            f" [warn:{','.join(evaluation.tradeoffs)}]"
+            if evaluation.tradeoffs
+            else ""
+        )
         lines.append(
             f"{rank:<4}  {status.state:<5}  {status.fuzzy_weighted_bytes:>5.0f} "
             f"{evaluation.fuzzy_delta_bytes:>+5.0f}  {ratio:>7}  "
             f"{status.prefix_instructions:>4}/{status.target_instructions:<4}  "
             f"{first_mismatch:<18} "
             f"{status.masked_ok}/{status.masked_unresolved}/{status.masked_mismatches:<3}  "
-            f"{evaluation.variant.label}",
+            f"{evaluation.variant.label}{warning_suffix}",
         )
     return "\n".join(lines)

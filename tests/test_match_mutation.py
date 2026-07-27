@@ -20,6 +20,8 @@ from crimson.match_mutation import (
     evaluate_mutation_sweep,
     generate_mutation_variants,
     load_mutation_spec,
+    mutation_evaluation_payload,
+    mutation_sweep_payload,
 )
 
 
@@ -200,6 +202,66 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
     assert sweep.best is not None
     assert sweep.best.variant.label == "sum/commuted"
     assert sweep.best.fuzzy_delta_bytes == 25
+
+
+def test_mutation_payload_warns_when_fuzzy_gain_regresses_other_metrics(
+    tmp_path: Path,
+) -> None:
+    config = _config(tmp_path)
+    baseline = _status(
+        config,
+        0.5,
+        prefix=4,
+        first_target_offset=0x20,
+        first_candidate_offset=0x20,
+    )
+    candidate = replace(
+        _status(
+            replace(config, directory=Path("/tmp/shadow")),
+            0.6,
+            prefix=2,
+            first_target_offset=0x10,
+            first_candidate_offset=0x10,
+        ),
+        candidate_instructions=12,
+        masked_ok=3,
+        masked_mismatches=1,
+    )
+    variant = MutationVariant(
+        label="shape/alternate",
+        source_text="alternate",
+        source_sha256="variant",
+        choices=(
+            MutationChoice(
+                site="shape",
+                replacement="alternate",
+                replacement_index=1,
+            ),
+        ),
+    )
+    evaluation = MutationEvaluation(
+        variant=variant,
+        status=candidate,
+        baseline=baseline,
+    )
+    sweep = MutationSweep(
+        spec=MutationSpec(sites=(), sha256="spec"),
+        baseline=baseline,
+        evaluations=(evaluation,),
+        possible_by_changes=(1,),
+        planned_by_changes=(1,),
+    )
+
+    assert mutation_evaluation_payload(evaluation)["tradeoffs"] == [
+        "reference-debt-increased",
+        "resolved-references-decreased",
+        "prefix-regressed",
+        "first-mismatch-earlier",
+        "instruction-count-further-from-target",
+    ]
+    payload = mutation_sweep_payload(sweep)
+    assert payload["tradeoff_variants"] == 1
+    assert payload["best_tradeoffs"] == mutation_evaluation_payload(evaluation)["tradeoffs"]
 
 
 def test_mutate_cli_writes_only_an_improving_winner(

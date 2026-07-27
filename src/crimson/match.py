@@ -4239,6 +4239,39 @@ def scratch_status_payload(status: ScratchStatus) -> dict[str, Any]:
     }
 
 
+def fuzzy_score_tradeoffs(
+    baseline: ScratchStatus,
+    candidate: ScratchStatus,
+) -> tuple[str, ...]:
+    if candidate.fuzzy_weighted_bytes <= baseline.fuzzy_weighted_bytes:
+        return ()
+
+    warnings: list[str] = []
+    baseline_debt = baseline.masked_unresolved + baseline.masked_mismatches
+    candidate_debt = candidate.masked_unresolved + candidate.masked_mismatches
+    if candidate_debt > baseline_debt:
+        warnings.append("reference-debt-increased")
+    if candidate.masked_ok < baseline.masked_ok:
+        warnings.append("resolved-references-decreased")
+    if candidate.prefix_instructions < baseline.prefix_instructions:
+        warnings.append("prefix-regressed")
+    if (
+        baseline.first_target_mismatch_offset is not None
+        and candidate.first_target_mismatch_offset is not None
+        and candidate.first_target_mismatch_offset < baseline.first_target_mismatch_offset
+    ):
+        warnings.append("first-mismatch-earlier")
+    baseline_instruction_gap = abs(
+        baseline.candidate_instructions - baseline.target_instructions,
+    )
+    candidate_instruction_gap = abs(
+        candidate.candidate_instructions - candidate.target_instructions,
+    )
+    if candidate_instruction_gap > baseline_instruction_gap:
+        warnings.append("instruction-count-further-from-target")
+    return tuple(warnings)
+
+
 def parse_worker_hypothesis(value: str) -> dict[str, str]:
     kind, separator, description = value.partition(":")
     kind = kind.strip()
@@ -4376,6 +4409,7 @@ def probe_result_payload(result: ProbeResult) -> dict[str, Any]:
     return {
         "label": result.label,
         "source_sha256": result.source_sha256,
+        "tradeoffs": list(fuzzy_score_tradeoffs(result.baseline, result.probe)),
         "baseline": baseline,
         "probe": probe,
         "delta": {
@@ -4407,19 +4441,21 @@ def render_probe_result(result: ProbeResult) -> str:
         )
 
     ratio_delta = f"{result.ratio_delta:+.2%}" if result.ratio_delta is not None else "-"
-    return "\n".join(
-        (
-            status_line("baseline", result.baseline),
-            status_line("probe", result.probe),
-            (f"delta: match={ratio_delta} fuzzy={result.fuzzy_delta_bytes:+.0f} "
+    tradeoffs = fuzzy_score_tradeoffs(result.baseline, result.probe)
+    lines = [
+        status_line("baseline", result.baseline),
+        status_line("probe", result.probe),
+        (f"delta: match={ratio_delta} fuzzy={result.fuzzy_delta_bytes:+.0f} "
             f"insns={result.probe.candidate_instructions - result.baseline.candidate_instructions:+d} "
             f"prefix={result.probe.prefix_instructions - result.baseline.prefix_instructions:+d} "
             f"refs={result.probe.masked_ok - result.baseline.masked_ok:+d}/"
             f"{result.probe.masked_unresolved - result.baseline.masked_unresolved:+d}/"
             f"{result.probe.masked_mismatches - result.baseline.masked_mismatches:+d}"),
-            f"source_sha256={result.source_sha256}",
-        ),
-    )
+        f"source_sha256={result.source_sha256}",
+    ]
+    if tradeoffs:
+        lines.append(f"warnings={','.join(tradeoffs)}")
+    return "\n".join(lines)
 
 
 def sort_profile_statuses(statuses: list[ScratchStatus]) -> list[ScratchStatus]:

@@ -1,0 +1,444 @@
+from __future__ import annotations
+
+import json
+from collections import Counter
+from collections.abc import Collection
+from pathlib import Path
+from typing import Any, cast
+
+EXPERIMENT_FILE = "experiments.jsonl"
+EXPERIMENT_SCHEMA = 1
+EXPERIMENT_SORTS = frozenset(
+    {
+        "no-improvement",
+        "records",
+        "repeats",
+        "scratch",
+        "variants",
+    },
+)
+
+
+def _experiment_kind(record: dict[str, Any]) -> str:
+    kind = record.get("kind")
+    if isinstance(kind, str) and kind:
+        return kind
+    if isinstance(record.get("baseline"), dict) and isinstance(record.get("probe"), dict):
+        return "probe"
+    return "unknown"
+
+
+def _non_negative_int(value: object) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+        return value
+    return None
+
+
+def _number(value: object) -> float | None:
+    if isinstance(value, int | float) and not isinstance(value, bool):
+        return float(value)
+    return None
+
+
+def load_experiment_log(path: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    records: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(),
+        start=1,
+    ):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{path}:{line_number}: invalid JSON: {exc.msg}")
+            continue
+        if not isinstance(record, dict):
+            errors.append(f"{path}:{line_number}: experiment must be an object")
+            continue
+        records.append(record)
+    return records, errors
+
+
+def find_experiment_logs(
+    match_root: Path,
+    scratches: Collection[str] = (),
+) -> list[Path]:
+    root = match_root.resolve()
+    if not scratches:
+        return sorted(root.glob(f"scratches/*/{EXPERIMENT_FILE}"))
+
+    paths: set[Path] = set()
+    for value in scratches:
+        supplied = Path(value)
+        candidates = [supplied]
+        if not supplied.is_absolute():
+            candidates.extend((root / supplied, root / "scratches" / supplied))
+        path = next((candidate.resolve() for candidate in candidates if candidate.exists()), None)
+        if path is None:
+            raise FileNotFoundError(f"scratch or experiment log not found: {value}")
+        if path.is_dir():
+            path /= EXPERIMENT_FILE
+        if path.name != EXPERIMENT_FILE or not path.is_file():
+            raise FileNotFoundError(f"experiment log not found: {path}")
+        paths.add(path)
+    return sorted(paths)
+
+
+def _relative_scratch(path: Path, match_root: Path) -> str:
+    try:
+        return path.parent.resolve().relative_to(match_root.resolve()).as_posix()
+    except ValueError:
+        return str(path.parent.resolve())
+
+
+def _first_mismatch_tradeoff(result: dict[str, Any]) -> bool:
+    delta = result.get("delta")
+    if not isinstance(delta, dict):
+        return False
+    first = delta.get("first_mismatch")
+    if not isinstance(first, dict):
+        return False
+    baseline = _non_negative_int(first.get("baseline_target_offset"))
+    probe = _non_negative_int(first.get("probe_target_offset"))
+    return baseline is not None and probe is not None and probe < baseline
+
+
+def _inferred_tradeoffs(
+    result: dict[str, Any],
+    baseline: dict[str, Any] | None,
+) -> tuple[str, ...]:
+    explicit = result.get("tradeoffs")
+    if isinstance(explicit, list):
+        explicit_strings = [item for item in explicit if isinstance(item, str)]
+        if len(explicit_strings) == len(explicit):
+            return tuple(dict.fromkeys(explicit_strings))
+
+    delta = result.get("delta")
+    if not isinstance(delta, dict) or (_number(delta.get("fuzzy_weighted_bytes")) or 0.0) <= 0:
+        return ()
+
+    warnings: list[str] = []
+    references = delta.get("references")
+    if isinstance(references, dict):
+        unresolved = _number(references.get("unresolved")) or 0.0
+        mismatch = _number(references.get("mismatch")) or 0.0
+        if unresolved + mismatch > 0:
+            warnings.append("reference-debt-increased")
+        if (_number(references.get("ok")) or 0.0) < 0:
+            warnings.append("resolved-references-decreased")
+    if (_number(delta.get("prefix_instructions")) or 0.0) < 0:
+        warnings.append("prefix-regressed")
+    if _first_mismatch_tradeoff(result):
+        warnings.append("first-mismatch-earlier")
+
+    status = result.get("status")
+    if isinstance(baseline, dict) and isinstance(status, dict):
+        baseline_candidate = _non_negative_int(baseline.get("candidate_instructions"))
+        baseline_target = _non_negative_int(baseline.get("target_instructions"))
+        candidate = _non_negative_int(status.get("candidate_instructions"))
+        target = _non_negative_int(status.get("target_instructions"))
+        if (
+            baseline_candidate is not None
+            and baseline_target is not None
+            and candidate is not None
+            and target is not None
+            and abs(candidate - target) > abs(baseline_candidate - baseline_target)
+        ):
+            warnings.append("instruction-count-further-from-target")
+    return tuple(warnings)
+
+
+def _variant_key(result: dict[str, Any]) -> tuple[str, str, str] | None:
+    source_sha256 = result.get("source_sha256")
+    status = result.get("status")
+    if not isinstance(source_sha256, str) or not source_sha256:
+        return None
+    compiler = str(status.get("compiler", "")) if isinstance(status, dict) else ""
+    cflags = str(status.get("cflags", "")) if isinstance(status, dict) else ""
+    return source_sha256, compiler, cflags
+
+
+def _recorded_function(record: dict[str, Any]) -> tuple[str | None, str | None]:
+    baseline = record.get("baseline")
+    if not isinstance(baseline, dict):
+        return None, None
+    function = baseline.get("function")
+    image = baseline.get("image")
+    return (
+        function if isinstance(function, str) else None,
+        image if isinstance(image, str) else None,
+    )
+
+
+def summarize_experiment_log(
+    path: Path,
+    *,
+    match_root: Path,
+) -> tuple[dict[str, Any], list[str]]:
+    records, errors = load_experiment_log(path)
+    kinds: Counter[str] = Counter()
+    mutation_improvements: list[bool] = []
+    spec_shas: Counter[str] = Counter()
+    variant_keys: Counter[tuple[str, str, str]] = Counter()
+    latest_recorded_at: str | None = None
+    function: str | None = None
+    image: str | None = None
+    evaluated_variants = 0
+    improving_variants = 0
+    neutral_variants = 0
+    degrading_variants = 0
+    tradeoff_variants = 0
+    improving_sweeps = 0
+    improving_probes = 0
+    exact_winners = 0
+
+    for record_index, record in enumerate(records, start=1):
+        context = f"{path}:{record_index}"
+        schema = record.get("schema")
+        if schema is not None and schema != EXPERIMENT_SCHEMA:
+            errors.append(f"{context}: unsupported experiment schema {schema!r}")
+        kind = _experiment_kind(record)
+        kinds[kind] += 1
+        recorded_at = record.get("recorded_at")
+        if isinstance(recorded_at, str) and (latest_recorded_at is None or recorded_at > latest_recorded_at):
+            latest_recorded_at = recorded_at
+        recorded_function, recorded_image = _recorded_function(record)
+        function = recorded_function or function
+        image = recorded_image or image
+
+        if kind == "mutation-sweep":
+            results = record.get("results")
+            if not isinstance(results, list):
+                errors.append(f"{context}: mutation-sweep results must be an array")
+                continue
+            declared = _non_negative_int(record.get("evaluated_variants"))
+            if declared is None:
+                errors.append(f"{context}: mutation-sweep evaluated_variants must be non-negative")
+            elif declared != len(results):
+                errors.append(
+                    f"{context}: evaluated_variants={declared} does not match {len(results)} recorded results",
+                )
+            spec_sha = record.get("spec_sha256")
+            if isinstance(spec_sha, str) and spec_sha:
+                spec_shas[spec_sha] += 1
+            raw_best_improves = record.get("best_improves")
+            if not isinstance(raw_best_improves, bool):
+                errors.append(f"{context}: mutation-sweep best_improves must be boolean")
+            best_improves = raw_best_improves is True
+            mutation_improvements.append(best_improves)
+            improving_sweeps += best_improves
+            winner = record.get("winner")
+            if best_improves and not isinstance(winner, dict):
+                errors.append(f"{context}: improving mutation-sweep requires a winner")
+            elif not best_improves and winner is not None:
+                errors.append(f"{context}: non-improving mutation-sweep cannot have a winner")
+            if (
+                isinstance(winner, dict)
+                and isinstance(winner.get("status"), dict)
+                and winner["status"].get("state") == "match"
+            ):
+                exact_winners += 1
+
+            baseline = record.get("baseline")
+            baseline_status = cast(dict[str, Any], baseline) if isinstance(baseline, dict) else None
+            for result_index, result in enumerate(results, start=1):
+                if not isinstance(result, dict):
+                    errors.append(f"{context}: result {result_index} must be an object")
+                    continue
+                typed_result = cast(dict[str, Any], result)
+                evaluated_variants += 1
+                key = _variant_key(typed_result)
+                if key is None:
+                    errors.append(f"{context}: result {result_index} requires source_sha256")
+                else:
+                    variant_keys[key] += 1
+                delta = typed_result.get("delta")
+                fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
+                if fuzzy_delta is None:
+                    errors.append(
+                        f"{context}: result {result_index} requires a fuzzy byte delta",
+                    )
+                elif fuzzy_delta > 0:
+                    improving_variants += 1
+                elif fuzzy_delta == 0:
+                    neutral_variants += 1
+                else:
+                    degrading_variants += 1
+                tradeoff_variants += bool(
+                    _inferred_tradeoffs(typed_result, baseline_status),
+                )
+        elif kind == "probe":
+            delta = record.get("delta")
+            fuzzy_delta = _number(delta.get("fuzzy_weighted_bytes")) if isinstance(delta, dict) else None
+            improving_probes += fuzzy_delta is not None and fuzzy_delta > 0
+
+    no_improvement_streak = 0
+    for improved in reversed(mutation_improvements):
+        if improved:
+            break
+        no_improvement_streak += 1
+    repeated_variants = sum(count - 1 for count in variant_keys.values())
+    repeated_spec_runs = sum(count - 1 for count in spec_shas.values())
+    flags: list[str] = []
+    if repeated_variants:
+        flags.append("repeated-variants")
+    if repeated_spec_runs:
+        flags.append("repeated-specs")
+    if no_improvement_streak >= 3:
+        flags.append("stalled")
+    if tradeoff_variants:
+        flags.append("metric-tradeoffs")
+    if errors:
+        flags.append("malformed")
+
+    return (
+        {
+            "scratch": _relative_scratch(path, match_root),
+            "function": function,
+            "image": image,
+            "records": len(records),
+            "kinds": dict(sorted(kinds.items())),
+            "mutation_sweeps": kinds["mutation-sweep"],
+            "probes": kinds["probe"],
+            "evaluated_variants": evaluated_variants,
+            "unique_variants": len(variant_keys),
+            "repeated_variants": repeated_variants,
+            "improving_variants": improving_variants,
+            "neutral_variants": neutral_variants,
+            "degrading_variants": degrading_variants,
+            "tradeoff_variants": tradeoff_variants,
+            "improving_sweeps": improving_sweeps,
+            "improving_probes": improving_probes,
+            "exact_winners": exact_winners,
+            "no_improvement_sweeps": len(mutation_improvements) - improving_sweeps,
+            "no_improvement_streak": no_improvement_streak,
+            "unique_specs": len(spec_shas),
+            "repeated_spec_runs": repeated_spec_runs,
+            "latest_recorded_at": latest_recorded_at,
+            "flags": flags,
+            "errors": len(errors),
+        },
+        errors,
+    )
+
+
+def sort_experiment_rows(
+    rows: list[dict[str, Any]],
+    *,
+    sort_by: str,
+) -> list[dict[str, Any]]:
+    if sort_by not in EXPERIMENT_SORTS:
+        raise ValueError(f"unknown experiment sort {sort_by!r}")
+    if sort_by == "scratch":
+        return sorted(rows, key=lambda row: str(row["scratch"]))
+    fields = {
+        "no-improvement": ("no_improvement_streak", "no_improvement_sweeps"),
+        "records": ("records", "evaluated_variants"),
+        "repeats": ("repeated_variants", "repeated_spec_runs"),
+        "variants": ("evaluated_variants", "records"),
+    }[sort_by]
+    return sorted(
+        rows,
+        key=lambda row: (
+            *(int(row[field]) for field in fields),
+            str(row["scratch"]),
+        ),
+        reverse=True,
+    )
+
+
+def summarize_experiments(
+    match_root: Path,
+    *,
+    scratches: Collection[str] = (),
+    sort_by: str = "variants",
+) -> dict[str, Any]:
+    paths = find_experiment_logs(match_root, scratches)
+    rows: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for path in paths:
+        row, row_errors = summarize_experiment_log(path, match_root=match_root)
+        rows.append(row)
+        errors.extend(row_errors)
+    rows = sort_experiment_rows(rows, sort_by=sort_by)
+    kinds: Counter[str] = Counter()
+    for row in rows:
+        kinds.update(row["kinds"])
+    return {
+        "schema": EXPERIMENT_SCHEMA,
+        "kind": "crimson-match-experiment-summary",
+        "sort": sort_by,
+        "summary": {
+            "files": len(paths),
+            "records": sum(int(row["records"]) for row in rows),
+            "kinds": dict(sorted(kinds.items())),
+            "evaluated_variants": sum(int(row["evaluated_variants"]) for row in rows),
+            "unique_variants": sum(int(row["unique_variants"]) for row in rows),
+            "repeated_variants": sum(int(row["repeated_variants"]) for row in rows),
+            "improving_variants": sum(int(row["improving_variants"]) for row in rows),
+            "neutral_variants": sum(int(row["neutral_variants"]) for row in rows),
+            "degrading_variants": sum(int(row["degrading_variants"]) for row in rows),
+            "tradeoff_variants": sum(int(row["tradeoff_variants"]) for row in rows),
+            "improving_sweeps": sum(int(row["improving_sweeps"]) for row in rows),
+            "improving_probes": sum(int(row["improving_probes"]) for row in rows),
+            "exact_winners": sum(int(row["exact_winners"]) for row in rows),
+            "stalled_scratches": sum("stalled" in row["flags"] for row in rows),
+            "errors": len(errors),
+        },
+        "errors": errors,
+        "rows": rows,
+    }
+
+
+def render_experiment_summary(payload: dict[str, Any]) -> str:
+    rows: list[tuple[str, ...]] = [
+        (
+            "scratch",
+            "logs",
+            "sweeps",
+            "probes",
+            "variants",
+            "better/same/worse",
+            "repeats",
+            "wins",
+            "exact",
+            "streak",
+            "flags",
+        ),
+    ]
+    for row in payload["rows"]:
+        rows.append(
+            (
+                str(row["scratch"]).removeprefix("scratches/"),
+                str(row["records"]),
+                str(row["mutation_sweeps"]),
+                str(row["probes"]),
+                str(row["evaluated_variants"]),
+                (f"{row['improving_variants']}/{row['neutral_variants']}/{row['degrading_variants']}"),
+                str(row["repeated_variants"]),
+                str(row["improving_sweeps"]),
+                str(row["exact_winners"]),
+                str(row["no_improvement_streak"]),
+                ",".join(row["flags"]) or "-",
+            ),
+        )
+    widths = [max(len(row[column]) for row in rows) for column in range(len(rows[0]))]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
+    summary = payload["summary"]
+    lines.append(
+        (
+            f"\nfiles={summary['files']} records={summary['records']} "
+            f"kinds="
+            + "/".join(f"{kind}:{count}" for kind, count in summary["kinds"].items())
+            + f"; variants={summary['evaluated_variants']} "
+            f"unique={summary['unique_variants']} repeats={summary['repeated_variants']} "
+            f"better/same/worse={summary['improving_variants']}/"
+            f"{summary['neutral_variants']}/{summary['degrading_variants']} "
+            f"tradeoffs={summary['tradeoff_variants']} "
+            f"sweep-wins={summary['improving_sweeps']} exact={summary['exact_winners']} "
+            f"stalled={summary['stalled_scratches']} errors={summary['errors']}"
+        ),
+    )
+    return "\n".join(lines)

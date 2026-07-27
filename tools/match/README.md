@@ -318,6 +318,9 @@ JSON document to stdout, so their output can be piped directly to tools such as
 Probe a source-shape experiment without editing the tracked scratch. The
 baseline and shadow build use the same selected compiler profile, and the
 report shows deltas for fuzzy bytes, instruction count, prefix, and references.
+When fuzzy bytes improve while reference debt, resolved-reference coverage,
+prefix, first mismatch, or instruction-count shape regresses, the report
+labels the result with explicit tradeoff warnings.
 
 ```sh
 uv run crimson match probe tools/match/scratches/player_update \
@@ -378,6 +381,20 @@ evaluated result set, spec SHA-256, coverage, scores, and improving winner to
 the scratch's `experiments.jsonl`. `--top` limits display only, not the recorded
 evidence. As with probe recording, do not run concurrent recording commands
 against the same scratch.
+
+Summarize the append-only experiment corpus before scheduling more sweeps:
+
+```sh
+uv run crimson match experiments --sort no-improvement --limit 20
+uv run crimson match experiments --scratch player_update --json --check
+```
+
+The summary counts improving, byte-neutral, and degrading variants, repeated
+source/profile evaluations, repeated specs, exact winners, metric tradeoffs,
+and each scratch's trailing no-improvement streak. `stalled` means at least
+three recorded mutation sweeps since the last improving sweep; it is a prompt
+to change or falsify the current hypothesis, not a claim that the function is
+unmatchable. `--check` rejects malformed or internally inconsistent JSONL.
 
 The tracked scratch is never edited.
 `--write-best /tmp/winner.cpp` writes a candidate only when it beats the

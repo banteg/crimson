@@ -2158,6 +2158,8 @@ def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     assert payload["delta"]["fuzzy_weighted_bytes"] == 2.5
     assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
     recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
+    assert recorded["schema"] == 1
+    assert recorded["kind"] == "probe"
     assert recorded["recorded_at"].endswith("+00:00")
     assert recorded["label"] == "trial"
     assert (scratch / "scratch.cpp").read_text(encoding="utf-8") == "baseline\n"

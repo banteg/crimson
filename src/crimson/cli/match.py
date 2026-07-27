@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 import typer
 
-from .. import library_match, match_mutation
+from .. import library_match, match_experiments, match_mutation
 from .. import library_provenance as provenance
 from .. import match as matchlib
 
@@ -462,6 +462,8 @@ def cmd_match_probe(
     if record:
         record_path = config.directory / "experiments.jsonl"
         record_payload = {
+            "schema": match_experiments.EXPERIMENT_SCHEMA,
+            "kind": "probe",
             "recorded_at": datetime.now(UTC).isoformat(),
             **payload,
         }
@@ -577,6 +579,49 @@ def cmd_match_mutate(
     ):
         raise typer.Exit(code=2)
     if (write_best is not None or require_improvement) and not sweep.best_improves:
+        raise typer.Exit(code=1)
+
+
+@match_app.command("experiments")
+def cmd_match_experiments(
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    scratch: list[str] | None = typer.Option(
+        None,
+        "--scratch",
+        help="scratch name, directory, or experiments.jsonl; repeat to restrict",
+    ),
+    sort_by: Literal[
+        "no-improvement",
+        "records",
+        "repeats",
+        "scratch",
+        "variants",
+    ] = typer.Option("variants", "--sort", help="row ranking"),
+    limit: int | None = typer.Option(None, "--limit", min=1, help="maximum rows to display"),
+    as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    check: bool = typer.Option(False, "--check", help="fail when any log record is malformed"),
+) -> None:
+    """Summarize recorded probes and mutation sweeps across scratch logs."""
+    try:
+        payload = match_experiments.summarize_experiments(
+            match_root,
+            scratches=scratch or (),
+            sort_by=sort_by,
+        )
+    except Exception as exc:
+        typer.echo(f"experiment summary failed: {str(exc).splitlines()[0]}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if limit is not None:
+        payload["rows"] = payload["rows"][:limit]
+    payload["selected_rows"] = len(payload["rows"])
+    if as_json:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        typer.echo(match_experiments.render_experiment_summary(payload))
+        for error in payload["errors"]:
+            typer.echo(str(error), err=True)
+    if check and payload["errors"]:
         raise typer.Exit(code=1)
 
 
