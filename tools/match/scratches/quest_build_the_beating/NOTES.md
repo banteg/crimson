@@ -79,3 +79,11 @@ Fresh scratch recomputation improved 441.78915662650604/649 to
 73.78048780487805%, with the gap falling from 207.21084337349396 to
 170.16463414634148. The validated result has 162/166 instructions, preserves
 the 37-instruction prefix, and preserves references 7/0/0.
+
+## First-line cursor/offset ordering audit
+
+Live native disassembly advances both the entry cursor and x offset inside the
+first coordinate-conversion window. `first-line-advance-order-mutations.json`
+(SHA-256 `df2bdeabb596459e7475753725fff7e720e9d199df7c6aac99f89d207fbf09c8`)
+tested the remaining cursor-before-offset source order. VC6 emitted identical
+bytes, so the canonical smaller ordering and 73.7805% score remain unchanged.

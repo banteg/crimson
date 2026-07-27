@@ -39,8 +39,8 @@ extern "C" void quest_build_the_spanking_of_the_dead(
     spawns[1].pos = quest_vec2_t(768.0f, 512.0f);
     spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);
 
-    int trigger_time_ms = 5000;
     int step_index = 0;
+    int trigger_time_ms = 5000;
     while (trigger_time_ms < 0xA988) {
         float step = (float)step_index;
         float angle = step * 0.333333343f;

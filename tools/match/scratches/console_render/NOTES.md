@@ -67,3 +67,11 @@ addition. All 24 variants are byte-identical to the **99.50%**, 400/400,
 `61/0/0` baseline. A recorded `two-pre-decrements-confirmation` probe is also
 exactly neutral. No source rewrite was retained; baseline and final metrics are
 unchanged.
+
+`unsigned-line-adjustment-mutations.json` closes the remaining unsigned
+constant spelling family. Its 15 complete single/paired variants cover
+`0xfffffffeu`, `~1u`, and a cast negative at both native sites; every variant
+is byte-identical to baseline. The recorded spec SHA is
+`54aab9197fcba724952722ce74ecda8a21b6044afc530a765e8f73d74263df72`.
+This leaves no evidenced C/C++ arithmetic spelling that selects native
+`add eax, -2`; the canonical source remains unchanged.

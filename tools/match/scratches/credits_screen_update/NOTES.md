@@ -71,3 +71,12 @@ forms fall to 88.84% and introduce one reference mismatch. The recorded
 `predeclared-panel-position-confirmation` probe is neutral. No source change
 was retained; baseline and final remain **98.90%**, 454/454, prefix 48,
 `175/0/0`.
+
+`copy-constructor-interactions.json` records 14 explicit-copy and position
+initialization combinations (spec
+`27033728b3916334b2c876ed3088221a26c95f161e3c82133bb31297d3ba8e79`).
+Direct initialization and default-plus-aggregate assignment are byte-neutral.
+An explicit user copy constructor or component-wise position construction
+removes six instructions, moves the first mismatch to the prologue, and falls
+to 73.61%. The implicit copy source therefore remains the best evidenced
+shape.

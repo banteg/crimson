@@ -341,3 +341,29 @@ SHA-256 remains
 with 2,616.324200913242 weighted bytes out of 5,330 (49.086757990868%),
 1,290/1,338 instructions, zero prefix instructions, and
 `ok=207/mismatch=4/unresolved=0`.
+
+## Blood-splatter loop control-flow sweep
+
+A new bounded tail audit covers native `0x00427575..0x0042762f`, where the
+three corpse blood-splatter loops load `EBX` with 8, 6, and 5 and use the same
+`call; dec ebx; jne` do/while shape. The candidate already has the same
+counter register, trip counts, call order, and decrement branches. Its only
+local differences are the established stack-frame displacement
+(`[esp+0x2c]` versus native `[esp+0x38]`) and downstream labels caused by the
+whole-function `0x60` versus `0x7c` frame allocation.
+
+The schema-1 spec `blood-loop-counter-shape-mutations.json` has SHA-256
+`809f2283bd26c8a130610a170cf9bc8de2144e01fdd84f39904050658f530407`.
+Its recorded sweep exhausts all 26/26 one-, two-, and three-loop combinations
+of equivalent `for` and prechecked `while` spellings, with no truncation.
+Every single-site variant and every interaction produces the same regression:
+16.225266362253 fewer weighted bytes, 49.086758% to 48.782344%, and four fewer
+aligned references, while retaining 1,290 candidate instructions. This
+confirms the current do/while source is the native-supported control-flow
+shape and that rewriting the loops cannot recover the enclosing frame slots.
+
+No `creature_update_all` source change is retained. Its canonical source
+SHA-256 and metrics remain
+`0928e121f84ed1937daeb86a57b9b0383bd0d3b2e35e395e4a491ce4bfe2eec3`,
+2,616.324200913242/5,330 (49.086757990868%), 1,290/1,338 instructions,
+zero prefix instructions, and `207/0/4` references.

@@ -312,3 +312,40 @@ adding `/G5` or `/GX` is byte-neutral. `RECOVERY=semantic-complete` and
 The final `experiments.jsonl` contains ten recorded experiments and has
 SHA-256
 `b9bf48f26ac0fab17ea553ed0006c5b46f8ad6adb09b341b77effdd09f94e93d`.
+
+## Quest-entry mode lifetime sweep
+
+A fresh live rebaseline reproduces the retained source at **78.0156%**,
+`6261.533115084361/8026` fuzzy-weighted bytes, gap
+`1764.466884915639`, 1,967/2,004 instructions, prefix 45, and references
+`588/0/7`. The active Binary Ninja database was explicitly verified as
+`crimsonland.exe.bndb`, target `3023:2:9499448411019345244`.
+
+The first mismatch region at `0x00442483..0x004424f2` remains the previously
+audited opening aggregate-slot allocation: native uses `[esp+0x64/0x68]`,
+while VC6 assigns the equivalent candidate temporaries to
+`[esp+0x5c/0x60]`. The first new material control-flow allocation appears at
+`0x004425d6..0x004425e7`. Native loads `config_blob.game_mode` into `EAX`,
+loads `GAME_MODE_QUEST` (`3`) into `EDI`, compares them, and then seeds the
+literal `1` in `ESI`; the candidate folds the Quest comparison to an immediate
+and uses `EDI` for the repeated literal `1`. Native reuses that `ESI` value at
+`0x00442837..0x0044284b` for the `1.1` quest-stage edge check. The bounded
+native disassembly artifact has SHA-256
+`6e08fef0cf4ab676f6217278a9dbb8bc57d81e58d94ba4fa321ebf2bf355d866`.
+
+The schema-1 `quest-entry-mode-lifetime-mutations.json` spec has SHA-256
+`c29f4df3600fc9579c5be0cf465cd366f8b6c90c4219ded03fbdb0d9d2760cc8`.
+Its recorded sweep exhausts all 6/6 natural one-site spellings: typed and
+integer mode snapshots, typed and const Quest constants, a named Quest
+predicate, and a commuted comparison. VC6 canonicalizes every variant to the
+same baseline bytes, first mismatch, instruction count, prefix, and reference
+audit. This rules out ordinary lexical mode lifetime and comparison polarity
+as controls for the native `EDI`/`ESI` allocation.
+
+A fresh bounded six-profile matrix independently confirms that VC6.5 and
+VC6.6 under `/O2 /GB /W3 /GR-`, with `/G5`, or with `/GX` all emit the same
+`6261.533115084361` weighted bytes and `588/0/7` references. No source or
+profile change is retained. The canonical source SHA-256 remains
+`cb069154c9da406e88b327e9c6982e5268ae8cc8961b913c6d0a1c7df8855595`;
+`experiments.jsonl` now contains eleven recorded experiments and has SHA-256
+`ea76587be5f7b2cb7dccefb11dd3c03e8bcb422930bcd7788f58640dc9a62aee`.

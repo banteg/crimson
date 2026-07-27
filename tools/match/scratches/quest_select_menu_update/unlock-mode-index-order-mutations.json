@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "unlock-mode-index-order",
+      "find": "        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (config_hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }",
+      "replacements": [
+        {
+          "name": "bool-mode-before-index",
+          "text": "        bool hardcore = config_hardcore;\n        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }"
+        },
+        {
+          "name": "byte-mode-before-index",
+          "text": "        unsigned char hardcore = config_hardcore;\n        int quest_index = row + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }"
+        },
+        {
+          "name": "split-index-after-mode",
+          "text": "        int quest_index;\n        bool hardcore = config_hardcore;\n        quest_index = row + quest_select_stage_major * 10 - 10;\n        if (hardcore) {\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else if (quest_unlock_index >= quest_index) {\n            goto unlocked_row;\n        }"
+        },
+        {
+          "name": "mode-branch-with-duplicated-index",
+          "text": "        if (config_hardcore) {\n            int quest_index = row + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index_full >= quest_index) {\n                goto unlocked_row;\n            }\n        } else {\n            int quest_index = row + quest_select_stage_major * 10 - 10;\n            if (quest_unlock_index >= quest_index) {\n                goto unlocked_row;\n            }\n        }"
+        }
+      ]
+    }
+  ]
+}

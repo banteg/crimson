@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "persistent-object-and-path-aliases",
+      "find": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n",
+      "replacements": [
+        {
+          "name": "self-then-path",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    GrimTexture *self = this;\n    char *source_path = path;\n#define this self\n#define path source_path\n"
+        },
+        {
+          "name": "path-then-self",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    char *source_path = path;\n    GrimTexture *self = this;\n#define this self\n#define path source_path\n"
+        },
+        {
+          "name": "self-only",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    GrimTexture *self = this;\n#define this self\n"
+        },
+        {
+          "name": "path-only",
+          "text": "bool GrimTexture::grim_texture_load_file(char *path)\n{\n    char *source_path = path;\n#define path source_path\n"
+        }
+      ]
+    }
+  ]
+}

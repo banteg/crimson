@@ -156,3 +156,13 @@ frame, and the four-step offset loop.
 The complete geometry and loop behavior remain recovered without volatile
 state, dummy address-taking, fake arithmetic, or register forcing.
 Classification: `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+`uv-depth-interactions.json` adds a complete 35-variant, up-to-three-site
+matrix over lower-right UV aggregate materialization and early/late depth
+storage (spec
+`29a2f5120440fbc5123849327581e91f0c641dcd09634d0928b545a376859db9`).
+The best variants are byte-neutral at **87.15%**. Aggregate UV forms add four
+instructions and regress; removing the depth storage loses two instructions;
+the remaining incomplete site combinations fail compilation as expected.
+No natural interaction restores the native three-copy schedule, so no source
+change is retained.

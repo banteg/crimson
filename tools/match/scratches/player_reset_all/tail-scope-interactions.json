@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "demo-flag-native-lifetime",
+      "find": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n",
+      "replacements": [
+        {
+          "name": "cache-byte-before-final-stores",
+          "text": "            *(int *)&player_state_table[reset_index].alt_reload_timer_max = alt_reload_time;\n            unsigned char demo_active = demo_mode_active;\n            player_state_table[reset_index].shot_cooldown = 0.8f;\n"
+        }
+      ]
+    },
+    {
+      "name": "demo-flag-native-use",
+      "find": "            if (!demo_mode_active) {\n",
+      "replacements": [
+        {
+          "name": "use-cached-byte",
+          "text": "            if (!demo_active) {\n"
+        }
+      ]
+    },
+    {
+      "name": "perk-clear-owned-by-reset-index",
+      "find": "        }\n\n        memset(\n            player_state_table[render_overlay_player_index].perk_counts,\n            0,\n            sizeof(player_state_table[0].perk_counts));\n",
+      "replacements": [
+        {
+          "name": "move-inside-reset-block",
+          "text": "            memset(\n                player_state_table[reset_index].perk_counts,\n                0,\n                sizeof(player_state_table[0].perk_counts));\n        }\n"
+        },
+        {
+          "name": "move-inside-reset-block-global-index",
+          "text": "            memset(\n                player_state_table[render_overlay_player_index].perk_counts,\n                0,\n                sizeof(player_state_table[0].perk_counts));\n        }\n"
+        }
+      ]
+    }
+  ]
+}

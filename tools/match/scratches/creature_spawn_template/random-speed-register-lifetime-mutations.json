@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-31-speed-register-lifetime",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);",
+      "replacements": [
+        {
+          "name": "register-roll-alpha-before-convert",
+          "text": "                    register int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x12) * 0.1f + 1.1f;"
+        },
+        {
+          "name": "const-roll-alpha-before-convert",
+          "text": "                    const int random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x12) * 0.1f + 1.1f;"
+        },
+        {
+          "name": "register-then-assign-roll",
+          "text": "                    register int random_speed_roll;\n                    random_speed_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_speed_roll % 0x12) * 0.1f + 1.1f;"
+        }
+      ]
+    }
+  ]
+}

@@ -837,3 +837,54 @@ native `0x00413eb2` / candidate offset 2001, native references the
 aligned target load of `render_overlay_player_index` is paired with the
 candidate's later `grim_interface_ptr` load. The final audit is otherwise
 `800/0/2`; no unsupported layout trick was used to hide either mismatch.
+
+## Alternate Weapon swap orientation
+
+The starting build for this slice was 4,051/4,206 instructions at
+`62.4924306648904%`: 10,159.394453191231 weighted bytes, a
+6,097.605546808769-byte gap, a seven-instruction prefix, and `800/0/2`
+references.
+
+Live Binary Ninja instructions `0x00415813..0x00415831` expose the source
+orientation of Alternate Weapon's integer swap. Native first loads the current
+`weapon_id`, then loads `alt_weapon_id`, stores the current value to the
+alternate field, and finally stores the alternate value through a materialized
+pointer to the current field. This is the ordinary
+`temporary = current; current = alternate; alternate = temporary` spelling.
+The recovered source used the behaviorally equivalent opposite orientation.
+
+The exhaustive seven-field interaction plan
+`alternate-weapon-swap-orientation-mutations.json` evaluated all `127/127`
+subsets through seven changes, with no unevaluated combinations (spec SHA-256
+`ffda5271ae1d76082679aea559507a7540fb7f5499af0b53a1ea89318b5b2a14`).
+Only reversing the integer `weapon_id` swap changes codegen; reversing any
+combination of the six float/byte swaps is byte-neutral. The single-site
+winner follows the native load/store order and improves weighted similarity by
+`+3.937749788058` bytes and the ratio by `+0.024221872351` percentage
+points. It leaves instruction coverage, prefix, and reference audit unchanged.
+
+The canonical build is now 4,051/4,206 instructions at
+`62.5166525372411%`: 10,163.332202979289 weighted bytes, a
+6,093.667797020711-byte gap, a seven-instruction prefix, and `800/0/2`
+references. A recorded zero-delta confirmation uses source SHA-256
+`685f369f91ee9cddfdf5ea212a4e00035dee3de95b9665cb8a2f8a492e281971`.
+
+Four additional BN-guided source families were measured and rejected. The
+long-lived muzzle-flash pointer declaration/initialization plan evaluated all
+`9/9` variants and found only byte-neutral valid forms (spec SHA-256
+`857fe636c1acb8f5c727f6362bb6b25af7e0143f637d35cb28a6e98a35865c15`).
+The low-health blood-vector plan evaluated all `4/4` forms; grouping both
+translations gained `4.923976470711` aggregate weighted bytes, but it emitted
+the opposite local x87 lifetime from native `0x00413795..0x004137ed`, removed
+four candidate instructions, and worsened references from `800/0/2` to
+`798/0/4`, so it was not retained (spec SHA-256
+`78b6a908fe68fa600d69c65a3d43a65c48e8c8d1b320b8d9a6d077cbb41ab1f4`).
+Five scalar-X lifetime forms all lost `43.577637102062` weighted bytes and
+eight reference matches (spec SHA-256
+`749780a737fed0cae22145ee2ad1f21be973b2baf9ba4212073402a284d4861b`).
+Finally, an inlined vector-operator probe over the Plasma Rifle and
+Multi-Plasma position expressions evaluated all `15/15` variants; unused
+operator definitions were neutral and every used form regressed (spec SHA-256
+`d1f6430b1f8534f312e8bd9a59e00617ff834145d164fe7b9d029e9f40a09b06`).
+These negative records rule out the tempting pointer, x87-expression, and
+return-by-value explanations without weakening the native-supported source.

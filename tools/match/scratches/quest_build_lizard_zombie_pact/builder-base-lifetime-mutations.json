@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "builder-base-lifetime",
+      "find": "    int wave = 0;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n",
+      "replacements": [
+        {
+          "name": "base-wave-trigger-builder",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int wave = 0;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder(spawns);\n"
+        },
+        {
+          "name": "wave-trigger-base-builder",
+          "text": "    int wave = 0;\n    int trigger_time_ms = 1500;\n    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_spawn_builder_t builder(spawns);\n"
+        },
+        {
+          "name": "wave-base-trigger-builder",
+          "text": "    int wave = 0;\n    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 1500;\n    quest_spawn_builder_t builder(spawns);\n"
+        },
+        {
+          "name": "base-builder-wave-trigger",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    quest_spawn_builder_t builder(spawns);\n    int wave = 0;\n    int trigger_time_ms = 1500;\n"
+        },
+        {
+          "name": "base-trigger-wave-builder",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int trigger_time_ms = 1500;\n    int wave = 0;\n    quest_spawn_builder_t builder(spawns);\n"
+        }
+      ]
+    }
+  ]
+}

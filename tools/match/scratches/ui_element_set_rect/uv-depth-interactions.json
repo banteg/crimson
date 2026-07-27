@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "depth-early-storage",
+      "find": "    ui_vertex_t::ui_depth_t depth;\n    float inv_width = 1.0f / width;",
+      "replacements": [
+        {
+          "name": "remove-early-storage",
+          "text": "    float inv_width = 1.0f / width;"
+        },
+        {
+          "name": "early-aggregate-storage",
+          "text": "    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};\n    float inv_width = 1.0f / width;"
+        }
+      ]
+    },
+    {
+      "name": "slot-two-aggregate",
+      "find": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv.x = 1.0f - inv_width;\n    vertices[2].uv.y = 1.0f - inv_height;",
+      "replacements": [
+        {
+          "name": "aggregate-temporary",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    vertices[2].uv = ui_vec2_t(1.0f - inv_width, 1.0f - inv_height);"
+        },
+        {
+          "name": "named-aggregate",
+          "text": "    vertices[3].uv = ui_vec2_t(inv_width, 1.0f - inv_height);\n    ui_vec2_t uv_two(1.0f - inv_width, 1.0f - inv_height);\n    vertices[2].uv = uv_two;"
+        }
+      ]
+    },
+    {
+      "name": "depth-late-storage",
+      "find": "    depth.z = 0.5f;\n    depth.rhw = 1.0f;",
+      "replacements": [
+        {
+          "name": "declare-late-separate",
+          "text": "    ui_vertex_t::ui_depth_t depth;\n    depth.z = 0.5f;\n    depth.rhw = 1.0f;"
+        },
+        {
+          "name": "declare-late-aggregate",
+          "text": "    ui_vertex_t::ui_depth_t depth = {0.5f, 1.0f};"
+        },
+        {
+          "name": "remove-late-storage",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

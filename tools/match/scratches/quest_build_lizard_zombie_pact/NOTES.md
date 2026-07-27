@@ -52,3 +52,14 @@ Fresh scratch recomputation improved 176.77894736842106/311 to
 57.89473684210527%, with the gap falling from 134.22105263157894 to
 130.94736842105263. The validated result remains exactly 95/95 instructions,
 prefix two, and references 3/0/0.
+
+## Builder-base lifetime audit
+
+Native keeps the entry base in EBP, wave in EDI, and trigger in EBX.
+`builder-base-lifetime-mutations.json` (SHA-256
+`16ace3b5300f91a6ebede167dafe9f88deaace8b5f4d7c814b020d92782edbf4`)
+tested five placements for an explicit semantic base alias around the retained
+wave/trigger order. Four were byte-neutral and constructing the builder before
+the induction locals lost 3.274 weighted bytes. The alias is fully folded by
+VC6 and does not break the remaining allocation cycle, so no source change is
+retained.

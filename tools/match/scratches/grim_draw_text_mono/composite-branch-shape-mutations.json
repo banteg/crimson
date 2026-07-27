@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "e4-branch-tail",
+      "find": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {",
+      "replacements": [
+        {
+          "name": "named-mark-scalars",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            float mark_u1 = uv.x + 0.0625f;\n            float mark_v1 = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_u1, mark_v1);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        },
+        {
+          "name": "copy-initialized-point",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1 =\n                GrimMonoPoint(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        },
+        {
+          "name": "mark-pointer-load",
+          "text": "            GrimMonoPoint *mark_uv = &grim_font2_uv_u['\"'];\n            uv = *mark_uv;\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {"
+        }
+      ]
+    },
+    {
+      "name": "f6-branch-tail",
+      "find": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n",
+      "replacements": [
+        {
+          "name": "named-mark-scalars",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            float mark_u1 = uv.x + 0.0625f;\n            float mark_v1 = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_u1, mark_v1);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        },
+        {
+          "name": "copy-initialized-point",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1 =\n                GrimMonoPoint(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        },
+        {
+          "name": "mark-pointer-load",
+          "text": "            GrimMonoPoint *mark_uv = &grim_font2_uv_u['\"'];\n            uv = *mark_uv;\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else {\n"
+        }
+      ]
+    }
+  ]
+}

@@ -57,3 +57,15 @@ recorded five complete variants, all byte-neutral. No source change was
 retained. Fresh validation remains at 458.6743515850144/692 weighted bytes,
 a 233.3256484149856 gap, 66.28242074927954%, 173/174 instructions, prefix
 four, and references 18/0/0.
+
+## First-entry lifetime and store audit
+
+Native disassembly materializes the first position before loading the shared
+template/count registers. `first-entry-lifetime-mutations.json` (SHA-256
+`0825c42d731a0c3d52eb56fec9b658118f18bb331c5301766649825201676a2b`)
+tested moving either or both semantic constants to that boundary.
+`first-entry-store-shape-mutations.json` (SHA-256
+`df6e342a1be59dd2b5436226185037319515c36e4ede6172922e13d690ed21d0`)
+separately tested direct position, metadata, and all-field stores. All seven
+variants were byte-identical, confirming that VC6 erases these source-level
+distinctions. The canonical source and 66.2824% score remain unchanged.

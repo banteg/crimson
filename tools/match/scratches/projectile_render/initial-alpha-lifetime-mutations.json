@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "initial-trail-alpha-lifetime",
+      "find": "    grim_interface_ptr->grim_set_color(\n        1.0f,\n        0.0f,\n        0.0f,\n        transition_alpha * 0.5f);",
+      "replacements": [
+        {
+          "name": "named-before-call",
+          "text": "    float trail_alpha = transition_alpha * 0.5f;\n    grim_interface_ptr->grim_set_color(\n        1.0f,\n        0.0f,\n        0.0f,\n        trail_alpha);"
+        }
+      ]
+    },
+    {
+      "name": "initial-slot-alpha-lifetime",
+      "find": "    grim_interface_ptr->grim_set_color_slot(\n        2,\n        0.0f,\n        0.0f,\n        0.0f,\n        transition_alpha * 0.2f);\n    grim_interface_ptr->grim_set_color_slot(\n        3,\n        0.0f,\n        0.0f,\n        0.0f,\n        transition_alpha * 0.2f);",
+      "replacements": [
+        {
+          "name": "named-before-both-calls",
+          "text": "    float slot_alpha = transition_alpha * 0.2f;\n    grim_interface_ptr->grim_set_color_slot(\n        2,\n        0.0f,\n        0.0f,\n        0.0f,\n        slot_alpha);\n    grim_interface_ptr->grim_set_color_slot(\n        3,\n        0.0f,\n        0.0f,\n        0.0f,\n        slot_alpha);"
+        }
+      ]
+    }
+  ]
+}

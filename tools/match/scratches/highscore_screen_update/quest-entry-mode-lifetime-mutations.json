@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-quest-mode-gate",
+      "find": "    if (config_blob.game_mode == GAME_MODE_QUEST) {",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "typed-mode-snapshot",
+          "text": "    game_mode_id_t current_game_mode = config_blob.game_mode;\n    if (current_game_mode == GAME_MODE_QUEST) {"
+        },
+        {
+          "name": "integer-mode-snapshot",
+          "text": "    int current_game_mode = (int)config_blob.game_mode;\n    if (current_game_mode == GAME_MODE_QUEST) {"
+        },
+        {
+          "name": "typed-quest-constant",
+          "text": "    game_mode_id_t quest_mode_value = GAME_MODE_QUEST;\n    if (config_blob.game_mode == quest_mode_value) {"
+        },
+        {
+          "name": "const-typed-quest-constant",
+          "text": "    const game_mode_id_t quest_mode_value = GAME_MODE_QUEST;\n    if (config_blob.game_mode == quest_mode_value) {"
+        },
+        {
+          "name": "named-quest-predicate",
+          "text": "    bool quest_mode_active = config_blob.game_mode == GAME_MODE_QUEST;\n    if (quest_mode_active) {"
+        },
+        {
+          "name": "commuted-quest-comparison",
+          "text": "    if (GAME_MODE_QUEST == config_blob.game_mode) {"
+        }
+      ]
+    }
+  ]
+}

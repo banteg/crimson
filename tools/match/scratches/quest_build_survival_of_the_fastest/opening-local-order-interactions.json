@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "opening-local-order",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n",
+      "replacements": [
+        {
+          "name": "builder-trigger-x",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 500;\n    int x = 256;\n    quest_entry_original_t *spawn = builder.spawns;\n"
+        },
+        {
+          "name": "x-trigger-builder",
+          "text": "    int x = 256;\n    int trigger_time_ms = 500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    quest_entry_original_t *spawn = builder.spawns;\n"
+        },
+        {
+          "name": "trigger-x-builder",
+          "text": "    int trigger_time_ms = 500;\n    int x = 256;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    quest_entry_original_t *spawn = builder.spawns;\n"
+        },
+        {
+          "name": "x-builder-trigger",
+          "text": "    int x = 256;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int trigger_time_ms = 500;\n    quest_entry_original_t *spawn = builder.spawns;\n"
+        },
+        {
+          "name": "trigger-builder-x",
+          "text": "    int trigger_time_ms = 500;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int x = 256;\n    quest_entry_original_t *spawn = builder.spawns;\n"
+        }
+      ]
+    },
+    {
+      "name": "east-phase-cursor-shape",
+      "find": "    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->set_spawn(\n            SPAWN_ID_DEN_SPIDER_WEAK_10,\n            trigger_time_ms,\n            1);\n        ++builder.count;\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n",
+      "replacements": [
+        {
+          "name": "preadvance-direct",
+          "text": "    while (x < 688) {\n        ++spawn;\n        spawn[-1].pos = quest_vec2_t((float)x, 256.0f);\n        spawn[-1].template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn[-1].trigger_time_ms = trigger_time_ms;\n        spawn[-1].count = 1;\n        ++builder.count;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n"
+        },
+        {
+          "name": "direct-fields",
+          "text": "    while (x < 688) {\n        spawn->pos = quest_vec2_t((float)x, 256.0f);\n        spawn->template_id = SPAWN_ID_DEN_SPIDER_WEAK_10;\n        spawn->trigger_time_ms = trigger_time_ms;\n        spawn->count = 1;\n        ++builder.count;\n        ++spawn;\n        x += 72;\n        trigger_time_ms += 900;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

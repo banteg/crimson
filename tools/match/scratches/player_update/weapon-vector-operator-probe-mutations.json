@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vec2-add-operator",
+      "find": "struct vec2_t {\n    float x;\n    float y;\n\n    float *vec2_sub(float *dst, float *rhs);\n};",
+      "replacements": [
+        {
+          "name": "constructor-return",
+          "text": "struct vec2_t {\n    float x;\n    float y;\n\n    vec2_t() {}\n    vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    vec2_t operator+(const vec2_t &other) const\n    {\n        return vec2_t(x + other.x, y + other.y);\n    }\n\n    float *vec2_sub(float *dst, float *rhs);\n};"
+        },
+        {
+          "name": "named-return",
+          "text": "struct vec2_t {\n    float x;\n    float y;\n\n    vec2_t() {}\n    vec2_t(float x_value, float y_value) : x(x_value), y(y_value) {}\n\n    vec2_t operator+(const vec2_t &other) const\n    {\n        vec2_t result(x + other.x, y + other.y);\n        return result;\n    }\n\n    float *vec2_sub(float *dst, float *rhs);\n};"
+        },
+        {
+          "name": "assigned-return",
+          "text": "struct vec2_t {\n    float x;\n    float y;\n\n    vec2_t() {}\n\n    vec2_t operator+(const vec2_t &other) const\n    {\n        vec2_t result;\n        result.x = x + other.x;\n        result.y = y + other.y;\n        return result;\n    }\n\n    float *vec2_sub(float *dst, float *rhs);\n};"
+        }
+      ]
+    },
+    {
+      "name": "plasma-rifle-vector-add",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n                player_update_vec2_t spawn_pos;\n                spawn_pos.x = movement_input.x + player_position->x;\n                spawn_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "operator-expression",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n                vec2_t spawn_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    (vec2f_t *)&spawn_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);"
+        }
+      ]
+    },
+    {
+      "name": "multi-plasma-vector-add",
+      "find": "            } else if (player->weapon_id == WEAPON_ID_MULTI_PLASMA) {\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step - 0.31415927f,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step - 0.5235988f,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step + 0.5235988f,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);\n                scratch_pos.x = movement_input.x + player_position->x;\n                scratch_pos.y = movement_input.y + player_position->y;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step + 0.31415927f,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);",
+      "replacements": [
+        {
+          "name": "operator-expression",
+          "text": "            } else if (player->weapon_id == WEAPON_ID_MULTI_PLASMA) {\n                *(vec2_t *)&scratch_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step - 0.31415927f,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);\n                *(vec2_t *)&scratch_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step - 0.5235988f,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);\n                *(vec2_t *)&scratch_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);\n                *(vec2_t *)&scratch_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step + 0.5235988f,\n                    PROJECTILE_TYPE_PLASMA_MINIGUN,\n                    owner_id);\n                *(vec2_t *)&scratch_pos =\n                    *(vec2_t *)&movement_input + *(vec2_t *)player_position;\n                projectile_spawn(\n                    &scratch_pos,\n                    angle_step + 0.31415927f,\n                    PROJECTILE_TYPE_PLASMA_RIFLE,\n                    owner_id);"
+        }
+      ]
+    }
+  ]
+}

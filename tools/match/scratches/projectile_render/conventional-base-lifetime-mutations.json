@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "assault-base-lifetime",
+      "find": "            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            point2 = origin + half_width;\n            point3 = origin - half_width;",
+      "replacements": [
+        {
+          "name": "sequential-named-bases",
+          "text": "            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = origin + half_width;\n            point3 = origin - half_width;"
+        },
+        {
+          "name": "sequential-direct-width",
+          "text": "            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = current\n                - *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point1 = current\n                + *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = origin\n                + *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point3 = origin\n                - *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;"
+        },
+        {
+          "name": "reuse-base-direct-width",
+          "text": "            projectile_render_vec2_t base =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = base\n                - *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point1 = base\n                + *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            base = camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = base\n                + *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point3 = base\n                - *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;"
+        }
+      ]
+    },
+    {
+      "name": "pistol-base-lifetime",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            point2 = origin + half_width;\n            point3 = origin - half_width;",
+      "replacements": [
+        {
+          "name": "sequential-named-bases",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = origin + half_width;\n            point3 = origin - half_width;"
+        },
+        {
+          "name": "reuse-base",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.2f;\n            projectile_render_vec2_t base =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = base - half_width;\n            point1 = base + half_width;\n            base = camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = base + half_width;\n            point3 = base - half_width;"
+        }
+      ]
+    },
+    {
+      "name": "gauss-base-lifetime",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            point2 = origin + half_width;\n            point3 = origin - half_width;",
+      "replacements": [
+        {
+          "name": "sequential-named-bases",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = origin + half_width;\n            point3 = origin - half_width;"
+        },
+        {
+          "name": "reuse-base",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 1.1f;\n            projectile_render_vec2_t base =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = base - half_width;\n            point1 = base + half_width;\n            base = camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = base + half_width;\n            point3 = base - half_width;"
+        }
+      ]
+    },
+    {
+      "name": "remaining-bullet-base-lifetime",
+      "find": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            point2 = origin + half_width;\n            point3 = origin - half_width;",
+      "replacements": [
+        {
+          "name": "sequential-named-bases",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = origin + half_width;\n            point3 = origin - half_width;"
+        },
+        {
+          "name": "reuse-base",
+          "text": "            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity\n                * 0.7f;\n            projectile_render_vec2_t base =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            point0 = base - half_width;\n            point1 = base + half_width;\n            base = camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            point2 = base + half_width;\n            point3 = base - half_width;"
+        }
+      ]
+    }
+  ]
+}

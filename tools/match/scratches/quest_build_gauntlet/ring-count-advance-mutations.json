@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "inner-ring-count-advance",
+      "find": "            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n            ++entry_count;\n            trigger_time_ms += 200;\n",
+      "replacements": [
+        {
+          "name": "count-before-metadata",
+          "text": "            ++entry_count;\n            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n            trigger_time_ms += 200;\n"
+        }
+      ]
+    },
+    {
+      "name": "outer-ring-count-advance",
+      "find": "            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n            ++entry_count;\n            trigger_time_ms += 500;\n            ++ring_index;\n",
+      "replacements": [
+        {
+          "name": "count-before-metadata",
+          "text": "            ++entry_count;\n            spawn->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;\n            spawn->trigger_time_ms = trigger_time_ms;\n            spawn->count = 1;\n            trigger_time_ms += 500;\n            ++ring_index;\n"
+        }
+      ]
+    }
+  ]
+}

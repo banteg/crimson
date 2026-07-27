@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "sharpshooter-screen-base-lifetime",
+      "find": "            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;\n            projectile_render_vec2_t end_screen =\n                camera_offset + end_pos;\n            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;",
+      "replacements": [
+        {
+          "name": "sequential-named-screens",
+          "text": "            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;\n            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t end_screen =\n                camera_offset + end_pos;\n            projectile_render_vec2_t point2 = end_screen + half_width;\n            projectile_render_vec2_t point3 = end_screen - half_width;"
+        },
+        {
+          "name": "reuse-screen-base",
+          "text": "            projectile_render_vec2_t screen =\n                camera_offset + start_pos;\n            projectile_render_vec2_t point0 = screen - half_width;\n            projectile_render_vec2_t point1 = screen + half_width;\n            screen = camera_offset + end_pos;\n            projectile_render_vec2_t point2 = screen + half_width;\n            projectile_render_vec2_t point3 = screen - half_width;"
+        },
+        {
+          "name": "sequential-direct-end-screen",
+          "text": "            projectile_render_vec2_t start_screen =\n                camera_offset + start_pos;\n            projectile_render_vec2_t point0 = start_screen - half_width;\n            projectile_render_vec2_t point1 = start_screen + half_width;\n            projectile_render_vec2_t point2 =\n                camera_offset + end_pos + half_width;\n            projectile_render_vec2_t point3 =\n                camera_offset + end_pos - half_width;"
+        }
+      ]
+    }
+  ]
+}

@@ -62,3 +62,13 @@ references `134/9/0` in `ok/mismatch/unresolved` order. Live Binary Ninja also
 types the native table at `0x1005cb88` as 128 16-byte
 `grim_config_value_t` records. No constructor or shared-header correction is
 supported.
+
+`atlas-counter-lifetime-mutations.json` tests the native font-atlas loop's
+distinct outer-counter and conversion-slot lifetimes. Live disassembly at
+`0x10005856..0x100058ae` keeps the outer count in `esi`, mirrors it to
+`[esp+0xc]` for `fild`, and advances a separate row pointer in `edx`. Explicit
+conversion copies, row offsets, and nested `do/while` loops are byte-neutral;
+`!=` counters lose 2.71 fuzzy-weighted bytes, a named row pointer loses 35.70,
+and unsigned counters perturb the earlier allocator enough to fall to 46.96%.
+The sweep therefore supplies negative allocation evidence and does not support
+a source change.

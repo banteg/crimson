@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-28-tail-share-with-21",
+      "find": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    creature->health = 50.0f;\n                    child_tint.set(0.7f, 0.1f, 0.51f, 1.0f);\n                    creature->move_speed = 1.7f;\n                    creature->reward_value = 150.0f;\n                    *(creature_tint_t *)&creature->color = child_tint;\n                    creature->size = 55.0f;\n                    creature->contact_damage = 8.0f;",
+      "replacements": [
+        {
+          "name": "same-helper-shape-as-21",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    SET_ROOT_STATS_WITH_TINT(CREATURE_TYPE_ALIEN, 50.0f, 1.7f, 150.0f,\n                                             0.7f, 0.1f, 0.51f, 1.0f, 55.0f, 8.0f);"
+        },
+        {
+          "name": "named-pointer-at-copy",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    creature->health = 50.0f;\n                    child_tint.set(0.7f, 0.1f, 0.51f, 1.0f);\n                    creature->move_speed = 1.7f;\n                    creature->reward_value = 150.0f;\n                    creature_tint_t *color_copy = (creature_tint_t *)&creature->color;\n                    *color_copy = child_tint;\n                    creature->size = 55.0f;\n                    creature->contact_damage = 8.0f;"
+        },
+        {
+          "name": "named-reference-at-copy",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    creature->health = 50.0f;\n                    child_tint.set(0.7f, 0.1f, 0.51f, 1.0f);\n                    creature->move_speed = 1.7f;\n                    creature->reward_value = 150.0f;\n                    creature_tint_t &color_copy = *(creature_tint_t *)&creature->color;\n                    color_copy = child_tint;\n                    creature->size = 55.0f;\n                    creature->contact_damage = 8.0f;"
+        },
+        {
+          "name": "tint-after-reward",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    creature->health = 50.0f;\n                    creature->move_speed = 1.7f;\n                    creature->reward_value = 150.0f;\n                    child_tint.set(0.7f, 0.1f, 0.51f, 1.0f);\n                    *(creature_tint_t *)&creature->color = child_tint;\n                    creature->size = 55.0f;\n                    creature->contact_damage = 8.0f;"
+        },
+        {
+          "name": "explicit-component-init",
+          "text": "                } else if (template_id == SPAWN_ID_ALIEN_CONST_PURPLE_28) {\n                    creature->type_id = CREATURE_TYPE_ALIEN;\n                    creature->health = 50.0f;\n                    child_tint.r = 0.7f;\n                    child_tint.g = 0.1f;\n                    child_tint.b = 0.51f;\n                    child_tint.a = 1.0f;\n                    creature->move_speed = 1.7f;\n                    creature->reward_value = 150.0f;\n                    *(creature_tint_t *)&creature->color = child_tint;\n                    creature->size = 55.0f;\n                    creature->contact_damage = 8.0f;"
+        }
+      ]
+    }
+  ]
+}

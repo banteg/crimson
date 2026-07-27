@@ -304,3 +304,54 @@ native 3/4/2-pixel small-billboard branches at
 Both the source and the native disassembly confirm those values and field
 offsets are already correct. This leaves no second locally coherent reference
 cluster to repair honestly.
+
+## Native geometry-lifetime mutation wave
+
+The live `crimsonland.exe.bndb` target
+`3023:2:9499448411019345244` exposes two further source-lifetime details. In
+the muzzle-flash pass, native materializes the cosine and sine offsets at
+`0x0042372b` and `0x00423737`, before the color and batch calls at
+`0x0042375a` and `0x00423768`. With two independent scalar locals, MSVC
+instead deferred the trigonometry across those calls. The natural
+two-component flash vector forces the observed lifetime without changing the
+geometry. In the Sharpshooter pass, native finishes the start-screen pair at
+`0x00422e12-0x00422e6d` before constructing the end-screen pair at
+`0x00422e74-0x00422ee0`; the source now follows that same object order.
+
+Five complete recorded sweeps cover this slice:
+
+- `initial-alpha-lifetime-mutations.json` (SHA-256
+  `3638714e584f47019e522420fbceb5751ca6d8dfbabb32f50b8450c671dfbd81`)
+  evaluates all three named-alpha variants. All are byte-identical, so the
+  scalar spelling cannot explain the native pre-pass stores.
+- `conventional-base-lifetime-mutations.json` (SHA-256
+  `2a633f74b2664dff318ca0dc2b312fe912e9df0ec0cefaef2adea3faf964c966`)
+  evaluates all 107 one- through four-site variants. Every one-site variant
+  regresses by 17.991 to 46.847 weighted bytes. A four-site interaction gains
+  5.706 bytes only on the old baseline, drops 13 candidate instructions, and
+  ceases to improve after the independently supported muzzle change. It is
+  rejected as an alignment interaction.
+- `sharpshooter-screen-lifetime-mutations.json` (SHA-256
+  `ce6012511969a9629892dbad8c2527c2b52e5deda3f35cdc136eb5626f54f13a`)
+  evaluates all three screen-base spellings. The native sequential ordering
+  is the only improving variant.
+- `muzzle-flash-vector-lifetime-mutations.json` (SHA-256
+  `4952c24be5f13c385ab8f7648d2429ff19d9eccc1be253f6c5f90712a48ecde9`)
+  evaluates all three aggregate spellings. The constructed and member-assigned
+  vectors tie at +10.624 weighted bytes; the simpler constructor is retained.
+- `native-base-order-interactions.json` (SHA-256
+  `f3f457a75b21636b3becc97eb1e7c00f7c65c1b50476d176636479894df440e1`)
+  evaluates all 31 interactions on the improved muzzle baseline. Only the
+  single Sharpshooter ordering improves, by another 6.467 weighted bytes; all
+  conventional combinations regress and remain rejected.
+
+The retained source SHA-256 is
+`70f2cd4d66e04eb6c7d35eb725d462ebc86604af832d2038cf762b1c7dbadab2`.
+It raises the candidate from 51.2680851% to 51.4042553%, adds 17.091
+fuzzy-weighted bytes, and reduces the gap from 6,116.343 to 6,099.252 bytes.
+The final candidate remains 2,854/3,021 instructions. Its audit is
+`407/0/13`: all 13 residuals are aligned mismatches and there are still no
+unresolved references. The two extra Sharpshooter pairings are the expected
+alignment cost of the native-evidenced object order, while the higher-priority
+byte score improves. `crimson match validate` accepts the retained source, and
+the complete records are appended to `experiments.jsonl`.

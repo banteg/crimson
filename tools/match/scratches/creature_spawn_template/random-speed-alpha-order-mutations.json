@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-31-speed-alpha",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);",
+      "replacements": [
+        {
+          "name": "split-rand-alpha-before-convert",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x12) * 0.1f + 1.1f;"
+        }
+      ]
+    },
+    {
+      "name": "template-32-speed-alpha",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x11, 0.1f, 1.1f);",
+      "replacements": [
+        {
+          "name": "split-rand-alpha-before-convert",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x11) * 0.1f + 1.1f;"
+        }
+      ]
+    },
+    {
+      "name": "template-33-speed-alpha",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.r, 0x28, 0.01f, 0.6f);",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "split-rand-alpha-before-convert",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x12) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    RAND_FIELD(creature->color.r, 0x28, 0.01f, 0.6f);"
+        }
+      ]
+    },
+    {
+      "name": "template-34-speed-alpha",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    creature->color.r = 0.5f;",
+      "replacements": [
+        {
+          "name": "split-rand-alpha-before-convert",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x12) * 0.1f + 1.1f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;\n                    creature->color.r = 0.5f;"
+        }
+      ]
+    },
+    {
+      "name": "template-20-speed-alpha",
+      "find": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;\n                    creature->color.r = 0.3f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;",
+      "replacements": [
+        {
+          "name": "split-rand-alpha-before-convert",
+          "text": "                    random_heading_roll = crt_rand();\n                    creature->color.a = 1.0f;\n                    creature->move_speed =\n                        (float)(random_heading_roll % 0x12) * 0.1f + 1.1f;\n                    creature->color.r = 0.3f;\n                    creature->reward_value = creature->size + creature->size + 50.0f;"
+        }
+      ]
+    }
+  ]
+}

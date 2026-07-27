@@ -54,3 +54,16 @@ all byte-identical, alone and in the evaluated interactions. No source change
 is justified. Validation remains 239.41232227488152/346 weighted bytes, a
 106.58767772511848 gap, 106/105 instructions, prefix nine, and references
 8/0/0.
+
+## Fixed-opening builder-boundary audit
+
+Native disassembly does not materialize the count until after the three fixed
+entries. `first-entry-lifetime-mutations.json` (SHA-256
+`3d537e07ddda3d4c0d544b3a59d61d0aeb264d02d5d234e414f608582fa02464`)
+tested four first-entry declaration boundaries; all were byte-neutral.
+`delayed-builder-construction-mutations.json` (SHA-256
+`b6c31d301e0aafdffbb80f1d3ff6c1a94d927e39c5cd17e7919ee394cfdc3655`)
+then tested the complete interaction that builds the count wrapper only after
+the fixed entries. The full four-site form was also byte-identical; incomplete
+site subsets correctly failed because they intentionally lacked one side of
+the coordinated rename. No source change is retained.

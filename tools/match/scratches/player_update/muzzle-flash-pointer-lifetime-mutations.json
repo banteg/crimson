@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muzzle-pointer-declaration",
+      "find": "    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;",
+      "replacements": [
+        {
+          "name": "const-pointer",
+          "text": "    float *const muzzle_flash_alpha = &player->muzzle_flash_alpha;"
+        },
+        {
+          "name": "split-initialization",
+          "text": "    float *muzzle_flash_alpha;"
+        },
+        {
+          "name": "indexed-player",
+          "text": "    float *muzzle_flash_alpha = &player[0].muzzle_flash_alpha;"
+        },
+        {
+          "name": "parenthesized-member",
+          "text": "    float *muzzle_flash_alpha = &(player->muzzle_flash_alpha);"
+        }
+      ]
+    },
+    {
+      "name": "muzzle-pointer-first-use",
+      "find": "    *muzzle_flash_alpha = *muzzle_flash_alpha - (frame_dt + frame_dt);",
+      "replacements": [
+        {
+          "name": "initialize-at-first-use",
+          "text": "    muzzle_flash_alpha = &player->muzzle_flash_alpha;\n    *muzzle_flash_alpha = *muzzle_flash_alpha - (frame_dt + frame_dt);"
+        }
+      ]
+    }
+  ]
+}

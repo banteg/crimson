@@ -76,3 +76,14 @@ the native backward common tail. Direct `else if` nesting and an explicit
 remaining-axis `else` compile byte-identically at 79.20%, prefix 95, 176
 instructions, and references `7/1/0`. Inverting the first-axis test resolves
 the alignment conflict but falls to 65.53% and prefix 5. None is retained.
+
+`axis-provider-cross-mutations.json` tests whether the slightly higher-scoring
+axis `switch` interacts profitably with a native-shaped provider loop. It does
+not: all six two-site combinations fall to 72.89%, while the three standalone
+provider forms fall to 73.93%. The reverse `switch` repeats the isolated
+80.00% result and resolves the aligned reference, but loses 90 exact prefix
+instructions. Live disassembly at `0x100070cd..0x10007199` proves an ascending
+axis comparison chain with the shared x87 threshold immediately after `lX`,
+followed by an action-counted provider loop. The retained source expresses
+that native structure; the reversed router is a misleading aggregate-only
+gain and is not retained.

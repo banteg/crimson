@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "quest-name-index-lifetime",
+      "find": "            char *quest_name = quest_selected_meta[quest_index].name;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_name);\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_name) + 32);",
+      "replacements": [
+        {
+          "name": "recompute-index-keep-name",
+          "text": "            char *quest_name = quest_selected_meta[\n                row + quest_select_stage_major * 10 - 10].name;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_name);\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_name) + 32);"
+        },
+        {
+          "name": "original-index-no-name-local",
+          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_selected_meta[quest_index].name);\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_selected_meta[quest_index].name) + 32);"
+        },
+        {
+          "name": "recompute-index-each-use",
+          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_selected_meta[\n                    row + quest_select_stage_major * 10 - 10].name);\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_selected_meta[\n                        row + quest_select_stage_major * 10 - 10].name) + 32);"
+        },
+        {
+          "name": "fresh-index-each-use",
+          "text": "            int name_index =\n                row + quest_select_stage_major * 10 - 10;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_selected_meta[name_index].name);\n            name_index = row + quest_select_stage_major * 10 - 10;\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_selected_meta[name_index].name) + 32);"
+        },
+        {
+          "name": "recompute-next-row-index-each-use",
+          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                position.x + 32.0f,\n                row_y,\n                \"%s\",\n                quest_selected_meta[\n                    next_row + quest_select_stage_major * 10 - 11].name);\n            float title_width =\n                (float)(grim_interface_ptr->grim_measure_text_width(\n                    quest_selected_meta[\n                        next_row + quest_select_stage_major * 10 - 11].name)\n                    + 32);"
+        }
+      ]
+    }
+  ]
+}

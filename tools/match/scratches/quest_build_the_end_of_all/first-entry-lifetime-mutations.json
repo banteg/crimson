@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-entry-constant-lifetime",
+      "find": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int one = 1;\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n\n    spawns[0].pos.set(128.0f, 128.0f);\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n",
+      "replacements": [
+        {
+          "name": "both-after-position-one-first",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.set(128.0f, 128.0f);\n    int one = 1;\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n"
+        },
+        {
+          "name": "both-after-position-template-first",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n\n    spawns[0].pos.set(128.0f, 128.0f);\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    int one = 1;\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n"
+        },
+        {
+          "name": "template-after-position",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int one = 1;\n\n    spawns[0].pos.set(128.0f, 128.0f);\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n"
+        },
+        {
+          "name": "one-after-position",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int corner_template_id =\n        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;\n\n    spawns[0].pos.set(128.0f, 128.0f);\n    int one = 1;\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n"
+        }
+      ]
+    }
+  ]
+}

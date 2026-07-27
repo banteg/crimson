@@ -39,10 +39,10 @@ match.
 
 ## Matching evidence and honest residual
 
-The verified VC6 build is 785 normalized instructions against 803 native,
-scores 72.0403%, and audits 235 references as resolved, zero as unresolved,
-and five as mismatched inside nonmatching instruction regions. Its weighted
-gap is 960.6952 bytes. The broad behavior
+The verified VC6 build is 794 normalized instructions against 803 native,
+scores 76.8942%, and audits 237 references as resolved, zero as unresolved,
+and four as mismatched inside nonmatching instruction regions. Its weighted
+gap is 793.9161 bytes. The broad behavior
 and static-constructor sequence are recovered, but the natural reconstruction
 uses a 56-byte frame while native uses 48 bytes. Native also keeps icon Y and
 row/control constants in a different EBX/EBP/ESI allocation and lays out the
@@ -132,12 +132,51 @@ Constructor-copy and both component-copy spellings regress to
 `55.93434343434344%`, 781/803 instructions, and `202/0/15` references, so
 they are rejected.
 
+## Quest-name lifetime correction
+
+Live Binary Ninja disassembly at `0x00448653..0x004486b8` shows two separate
+metadata-name address calculations: native recomputes the stage/row index
+before the draw call, then recomputes it again before measuring the title. It
+does not keep either the prior unlock-check index or a name pointer live across
+both calls.
+
+The recorded schema-1 `quest-name-index-lifetime` sweep tested five bounded
+spellings. Its spec SHA-256 is
+`7abdb570d7e69c6d1c0e9e53dc856a990db5f4dcc08389a82d047d3b28b8d8c6`.
+Only `recompute-index-each-use` reproduces both evidenced lifetimes well and is
+retained. It raises the score from `2475.304785894207/3436`
+(`72.04030226700252%`) to `2642.083907326237/3436`
+(`76.89417658108955%`), a gain of `166.77912143203002` weighted bytes and
+`4.8538743140870255` percentage points. The weighted gap falls from
+`960.6952141057932` to `793.9160926737632`, instructions move from 785 to 794,
+and the reference audit improves from `235/0/5` to `237/0/4`.
+
+Three nearby negative sweeps are retained as evidence:
+
+- `show-counts-lifetime` tested eight boolean spellings; the best alternatives
+  were byte-neutral and direct-result forms lost 1.2115 weighted bytes.
+- `row-loop-bound` tested the equivalent `row < 10` bound and was byte-neutral.
+- `tenth-key-selection-lifetime` tested four order/chaining spellings for the
+  `0` quick-select key; all four compiled identically to the current source.
+- `unlock-mode-index-order` tested four evidenced load/index orderings; three
+  were byte-neutral and duplicating the index expression lost 4.3031 weighted
+  bytes.
+
+The `minimum-stage-lifetime` sweep also demonstrates why aggregate score alone
+is not an acceptance gate. A post-decrement spelling gained 45.6508 weighted
+bytes, but introduced one extra instruction and three additional aligned
+reference mismatches. Native `0x00448602..0x0044861a` explicitly loads the
+stage, decrements that value, compares the decremented value with one, stores
+it, and clamps only below one. The canonical source therefore keeps the
+evidenced pre-decrement form and records the scorer-local post-decrement result
+as rejected rather than writing it.
+
 ## Recovery classification
 
 This scratch is `semantic-complete` with a `compiler` residual. A
 fresh live Binary Ninja audit retains the complete stage-icon, Hardcore,
 locked/unlocked row, Back, quick-select, validation, and gameplay-transition
-paths, and its seven-call inventory agrees with the recovered source. All five
+paths, and its seven-call inventory agrees with the recovered source. All four
 masked-reference mismatches occur inside nonmatching sequence alignments and
 resolve to source operations already present in the surrounding native flow.
 They remain visible and unaliased rather than being classified as separate

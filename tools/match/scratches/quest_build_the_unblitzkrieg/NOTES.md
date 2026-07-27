@@ -70,3 +70,13 @@ Reversing metadata stores lost 23.4536 weighted bytes and three prefix
 instructions, so no variant was retained. The validated source remains at
 733.7628865979382/975 weighted bytes, a 241.23711340206182 gap, 291/291
 instructions, prefix twelve, and references 0/0/0.
+
+## First-sweep position-materialization audit
+
+Native writes the fixed x coordinate before completing the signed
+divide-by-ten y conversion. `first-sweep-position-shape-mutations.json`
+(SHA-256 `74f6c26317c034087411cfe26fbd568be2c637c649b87f52bef2ee5df340958d`)
+tested reversed field order, integer and float axis temporaries, and advancing
+the offset between calculation and stores. The three integer forms were
+byte-neutral; the float temporary lost 3.351 weighted bytes. This rules out a
+missing position-materialization idiom at the first mismatch.

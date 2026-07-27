@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "tenth-key-selection-lifetime",
+      "find": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        selected_minor = 9;\n        quest_select_stage_minor_index = 9;\n        goto validate_selected;\n    }",
+      "replacements": [
+        {
+          "name": "global-then-reload",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        quest_select_stage_minor_index = 9;\n        selected_minor = quest_select_stage_minor_index;\n        goto validate_selected;\n    }"
+        },
+        {
+          "name": "chained-assignment",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        selected_minor = quest_select_stage_minor_index = 9;\n        goto validate_selected;\n    }"
+        },
+        {
+          "name": "global-then-literal",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        quest_select_stage_minor_index = 9;\n        selected_minor = 9;\n        goto validate_selected;\n    }"
+        },
+        {
+          "name": "local-then-copy",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(11)) {\n        selected_minor = 9;\n        quest_select_stage_minor_index = selected_minor;\n        goto validate_selected;\n    }"
+        }
+      ]
+    }
+  ]
+}

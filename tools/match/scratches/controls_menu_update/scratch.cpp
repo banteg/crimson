@@ -507,29 +507,30 @@ extern "C" void controls_menu_update(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.9f);
     draw_position.x -= 27.0f;
     if (controls_rebind_slot_index != -1) {
-        float prompt_y = draw_position.y + 12.0f;
         if (controls_rebind_slot_index < 9
             || controls_rebind_slot_index >= 13) {
+            draw_position.y += 12.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                prompt_y,
+                draw_position.y,
                 "Assign control (eg. press a key).");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                prompt_y + 13.0f,
+                draw_position.y + 13.0f,
                 "     (press ESCAPE to cancel)");
         } else {
+            draw_position.y += 12.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                prompt_y,
+                draw_position.y,
                 " Move joystick/pad analog controller");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                prompt_y + 13.0f,
+                draw_position.y + 13.0f,
                 "axis you want to assign the control to");
             grim_interface_ptr->grim_draw_text_small_fmt(
                 draw_position.x + 54.0f,
-                prompt_y + 26.0f,
+                draw_position.y + 26.0f,
                 "     (press ESCAPE to cancel)");
         }
     }

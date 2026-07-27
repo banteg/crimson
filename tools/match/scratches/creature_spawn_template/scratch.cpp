@@ -628,10 +628,10 @@ extern "C" creature_t *creature_spawn_template(
                     creature->color.a = 1.0f;
                     RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);
                     creature->reward_value = creature->size + creature->size + 50.0f;
+                    int random_tint_roll = crt_rand();
                     creature->color.b = 0.38f;
-                    random_heading_roll = crt_rand();
                     float random_tint_scalar =
-                        (float)(random_heading_roll % 0x1e) * 0.01f + 0.6f;
+                        (float)(random_tint_roll % 0x1e) * 0.01f + 0.6f;
                     creature->color.r = random_tint_scalar;
                     creature->color.g = random_tint_scalar;
                     creature->contact_damage = creature->size * 0.14f + 4.0f;

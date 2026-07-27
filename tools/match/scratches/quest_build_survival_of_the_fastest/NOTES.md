@@ -81,3 +81,14 @@ Fresh scratch recomputation improved 534.0134831460674/861 to
 63.67713004484304%, with the gap falling from 326.9865168539326 to
 312.7399103139014. The validated result has 218/228 instructions, prefix
 five, and references 0/0/0.
+
+## Opening local-order interaction audit
+
+Live native disassembly keeps the entry base in EBX, the first x coordinate in
+ECX, and its trigger time in EDX. `opening-local-order-interactions.json`
+(SHA-256 `873cc60673a179ddf330c0402abb816df9c18a53dfa48786a59ec2ecc928a6c0`)
+tested all five remaining semantic declaration orders, both natural first-phase
+metadata spellings, and every pair interaction. All 17 variants were
+byte-identical to the retained source. This closes the declaration-order and
+east/south cursor-shape interaction hypothesis without changing the 63.6771%
+scratch.

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-loop-bound",
+      "find": "    } while (next_row < 10);",
+      "replacements": [
+        {
+          "name": "assigned-row",
+          "text": "    } while (row < 10);"
+        }
+      ]
+    }
+  ]
+}

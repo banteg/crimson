@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "health-expression-lifetime",
+      "find": "    creature_pool[slot_id].health = (float)survival_elapsed_ms * 0.0001f + 10.0f;\n",
+      "replacements": [
+        {
+          "name": "integer-snapshot",
+          "text": "    {\n        int health_elapsed_ms = survival_elapsed_ms;\n        creature_pool[slot_id].health = (float)health_elapsed_ms * 0.0001f + 10.0f;\n    }\n"
+        },
+        {
+          "name": "float-snapshot",
+          "text": "    {\n        float health_elapsed_ms = (float)survival_elapsed_ms;\n        creature_pool[slot_id].health = health_elapsed_ms * 0.0001f + 10.0f;\n    }\n"
+        },
+        {
+          "name": "named-result",
+          "text": "    {\n        float spawn_health = (float)survival_elapsed_ms * 0.0001f + 10.0f;\n        creature_pool[slot_id].health = spawn_health;\n    }\n"
+        },
+        {
+          "name": "staged-result",
+          "text": "    {\n        float spawn_health = (float)survival_elapsed_ms * 0.0001f;\n        spawn_health += 10.0f;\n        creature_pool[slot_id].health = spawn_health;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "size-expression-lifetime",
+      "find": "    creature_pool[slot_id].size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n",
+      "replacements": [
+        {
+          "name": "integer-snapshot",
+          "text": "    {\n        int size_elapsed_ms = survival_elapsed_ms;\n        creature_pool[slot_id].size = (float)size_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n    }\n"
+        },
+        {
+          "name": "float-snapshot",
+          "text": "    {\n        float size_elapsed_ms = (float)survival_elapsed_ms;\n        creature_pool[slot_id].size = size_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n    }\n"
+        },
+        {
+          "name": "named-result",
+          "text": "    {\n        float spawn_size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE + 47.0f;\n        creature_pool[slot_id].size = spawn_size;\n    }\n"
+        },
+        {
+          "name": "staged-result",
+          "text": "    {\n        float spawn_size = (float)survival_elapsed_ms * CREATURE_SPAWN_ELAPSED_SCALE;\n        spawn_size += 47.0f;\n        creature_pool[slot_id].size = spawn_size;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

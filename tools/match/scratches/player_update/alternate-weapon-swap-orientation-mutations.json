@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "weapon-id-swap",
+      "find": "            int swap_weapon_id = player->alt_weapon_id;\n            player->alt_weapon_id = player->weapon_id;\n            player->weapon_id = swap_weapon_id;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            int swap_weapon_id = player->weapon_id;\n            player->weapon_id = player->alt_weapon_id;\n            player->alt_weapon_id = swap_weapon_id;"
+        }
+      ]
+    },
+    {
+      "name": "clip-size-swap",
+      "find": "            float swap_clip_size = player->alt_clip_size;\n            player->alt_clip_size = player->clip_size;\n            player->clip_size = swap_clip_size;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            float swap_clip_size = player->clip_size;\n            player->clip_size = player->alt_clip_size;\n            player->alt_clip_size = swap_clip_size;"
+        }
+      ]
+    },
+    {
+      "name": "reload-active-swap",
+      "find": "            unsigned char swap_reload_active = player->alt_reload_active;\n            player->alt_reload_active = player->reload_active;\n            player->reload_active = swap_reload_active;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            unsigned char swap_reload_active = player->reload_active;\n            player->reload_active = player->alt_reload_active;\n            player->alt_reload_active = swap_reload_active;"
+        }
+      ]
+    },
+    {
+      "name": "ammo-swap",
+      "find": "            float swap_ammo = player->alt_ammo;\n            player->alt_ammo = player->ammo;\n            player->ammo = swap_ammo;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            float swap_ammo = player->ammo;\n            player->ammo = player->alt_ammo;\n            player->alt_ammo = swap_ammo;"
+        }
+      ]
+    },
+    {
+      "name": "reload-timer-swap",
+      "find": "            float swap_reload_timer = player->alt_reload_timer;\n            player->alt_reload_timer = player->reload_timer;\n            player->reload_timer = swap_reload_timer;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            float swap_reload_timer = player->reload_timer;\n            player->reload_timer = player->alt_reload_timer;\n            player->alt_reload_timer = swap_reload_timer;"
+        }
+      ]
+    },
+    {
+      "name": "shot-cooldown-swap",
+      "find": "            float swap_shot_cooldown = player->alt_shot_cooldown;\n            player->alt_shot_cooldown = player->shot_cooldown;\n            player->shot_cooldown = swap_shot_cooldown;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            float swap_shot_cooldown = player->shot_cooldown;\n            player->shot_cooldown = player->alt_shot_cooldown;\n            player->alt_shot_cooldown = swap_shot_cooldown;"
+        }
+      ]
+    },
+    {
+      "name": "reload-timer-max-swap",
+      "find": "            float swap_reload_timer_max = player->alt_reload_timer_max;\n            player->alt_reload_timer_max = player->reload_timer_max;\n            player->reload_timer_max = swap_reload_timer_max;",
+      "replacements": [
+        {
+          "name": "current-value-temporary",
+          "text": "            float swap_reload_timer_max = player->reload_timer_max;\n            player->reload_timer_max = player->alt_reload_timer_max;\n            player->alt_reload_timer_max = swap_reload_timer_max;"
+        }
+      ]
+    }
+  ]
+}

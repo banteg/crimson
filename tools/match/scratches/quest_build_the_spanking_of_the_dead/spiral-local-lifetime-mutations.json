@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "spiral-local-lifetime",
+      "find": "    spawns[1].pos = quest_vec2_t(768.0f, 512.0f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n\n    int trigger_time_ms = 5000;\n    int step_index = 0;\n",
+      "replacements": [
+        {
+          "name": "step-before-trigger",
+          "text": "    spawns[1].pos = quest_vec2_t(768.0f, 512.0f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n\n    int step_index = 0;\n    int trigger_time_ms = 5000;\n"
+        },
+        {
+          "name": "locals-before-fixed-entries",
+          "text": "    int trigger_time_ms = 5000;\n    int step_index = 0;\n\n    spawns[1].pos = quest_vec2_t(768.0f, 512.0f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n"
+        },
+        {
+          "name": "step-before-fixed-trigger-after",
+          "text": "    int step_index = 0;\n\n    spawns[1].pos = quest_vec2_t(768.0f, 512.0f);\n    spawns[1].set_spawn(SPAWN_ID_ALIEN_BONUS_CARRIER_27, 500, 1);\n\n    int trigger_time_ms = 5000;\n"
+        }
+      ]
+    }
+  ]
+}

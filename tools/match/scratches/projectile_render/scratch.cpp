@@ -145,10 +145,10 @@ extern "C" void projectile_render(float transition_alpha)
                 * 1.1f;
             projectile_render_vec2_t start_screen =
                 camera_offset + start_pos;
-            projectile_render_vec2_t end_screen =
-                camera_offset + end_pos;
             projectile_render_vec2_t point0 = start_screen - half_width;
             projectile_render_vec2_t point1 = start_screen + half_width;
+            projectile_render_vec2_t end_screen =
+                camera_offset + end_pos;
             projectile_render_vec2_t point2 = end_screen + half_width;
             projectile_render_vec2_t point3 = end_screen - half_width;
 
@@ -287,8 +287,9 @@ extern "C" void projectile_render(float transition_alpha)
         float heading = overlay_player->aim_heading
             - 1.5707964f
             - 0.150915f;
-        float flash_x = (float)cos(heading) * 15.0f;
-        float flash_y = (float)sin(heading) * 15.0f;
+        projectile_render_vec2_t flash(
+            (float)cos(heading) * 15.0f,
+            (float)sin(heading) * 15.0f);
         grim_interface_ptr->grim_set_color(
             1.0f,
             1.0f,
@@ -296,8 +297,8 @@ extern "C" void projectile_render(float transition_alpha)
             transition_alpha * overlay_player->muzzle_flash_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
-            camera_offset_x + overlay_player->pos_x + flash_x - 80.0f,
-            camera_offset_y + overlay_player->pos_y + flash_y - 80.0f,
+            camera_offset_x + overlay_player->pos_x + flash.x - 80.0f,
+            camera_offset_y + overlay_player->pos_y + flash.y - 80.0f,
             160.0f,
             160.0f);
         grim_interface_ptr->grim_end_batch();

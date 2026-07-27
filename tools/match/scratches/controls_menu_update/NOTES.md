@@ -69,8 +69,8 @@ configuration field directly; the analog peak scan walks seven contiguous
 float slots with a pointer, mapping the first six and routing the cleared
 seventh slot through the native switch default; dropdown selection returns the
 selected index; and list enable flags are reset and then cleared in native
-open-list order. The two capture prompts share one base Y value, as in the
-native branch join.
+open-list order. Each capture-prompt branch advances the existing working Y
+field in place before its draw calls, matching the native stack-slot ownership.
 
 The panel geometry now uses the same inline vector-addition shape recovered in
 the neighboring menu callbacks. The left base adds the widget position and
@@ -517,3 +517,66 @@ Recorded spec SHA-256 values are:
 
 The updated `experiments.jsonl` SHA-256 is
 `58e7f2c5d1af9831afee92256a57b9c4b38491d9b6b6675adc3211c89422779a`.
+
+## Prompt branch lifetime and storage ownership
+
+This slice started from **80.7572%**, 17,192.3910 fuzzy-weighted bytes, a
+4,096.6090-byte fuzzy gap, 5,409/5,421 candidate/native instructions, a
+172-instruction exact prefix, and reference audit 1,552/0/9.
+
+Explicit live Binary Ninja evidence from `crimsonland.exe.bndb` separates the
+two prompt paths. Native `0x0044d85d..0x0044d8f5` computes an analog-branch Y
+and native `0x0044d8ff..0x0044d965` computes a distinct regular-branch Y.
+Moving the scratch's formerly joined `prompt_y` into those branches adds three
+missing instructions, two resolved references, and 18.8213 fuzzy-weighted
+bytes.
+
+The stack-storage evidence resolves the remaining ownership question. Binary
+Ninja assigns both `y_19` and `y_20` to stack storage `-0x68`, the same storage
+as the live working-position Y. The disassembly agrees: after the prompt
+string is pushed, native stores the `+12` result to `[esp+0x20]`, which is the
+same physical slot it loaded from at `[esp+0x1c]` before the push. The working
+Y has no later use after prompt rendering. Updating it in place inside each
+branch is therefore both behavior-preserving and the more precise recovered
+object lifetime.
+
+`prompt-y-storage-ownership-mutations.json` evaluated all five bounded
+spellings. Direct compound assignment, direct assignment, a reference alias,
+and a pointer alias compile byte-identically and recover another 35.3736
+weighted bytes. The direct compound form is retained as the simplest
+native-shaped source. Hoisting the update above the branch removes three
+instructions and loses 7.0268 weighted bytes, corroborating the native
+branch-local control flow. After the retained change, the normalized prompt
+arithmetic and draw-call bodies agree; the residual prompt-region changes are
+only branch-target displacements caused by downstream size differences.
+
+The neighboring axis scan was deliberately kept separate:
+
+- the complete prompt/axis-bound matrix evaluated all 29 singles and pairs
+  without truncation. Signed-address and not-equal bounds are neutral, while
+  the axis-index form regresses, so no source change is retained;
+- replaying all six axis absolute-value shapes after the prompt allocation
+  change produced no winner. Every alternative loses between 23.5824 and
+  237.3114 weighted bytes.
+
+The final source matches **81.0117%**, with **17,246.5858
+fuzzy-weighted bytes** and a **4,042.4142-byte fuzzy gap**, 5,412 candidate
+instructions versus 5,421 native instructions, the same 172-instruction exact
+prefix, and reference audit **1,554/0/9**. Relative to the starting point,
+this recovers **54.1949 weighted bytes** and **0.2546 percentage points** while
+correcting the prompt lifetime and storage ownership.
+
+The retained source SHA-256 is
+`7c425f58640eb8c79f06b87894c91ac216211960ad7225b768d1c30429a15789`.
+Recorded spec SHA-256 values are:
+
+- prompt lifetime plus axis-bound interactions:
+  `cda5169a650baeb33a830f242d34e25bad673d00c4f6325fbaae2c7d1c2cacb7`;
+- prompt Y storage ownership:
+  `e17799d7cdc214d7f18f873f768ba36710f124c1c4440ed51e621c8e0b4ee357`;
+  and
+- replayed axis absolute-value shape:
+  `778eb5887be61af9c07ad366b9d6134cd5c3373991162df78bf8720cf2452e2e`.
+
+The updated `experiments.jsonl` SHA-256 is
+`fe8d7108f04171ac84db6144a1b6ce1f4198f08387e26bf377a84f98eb072bd6`.

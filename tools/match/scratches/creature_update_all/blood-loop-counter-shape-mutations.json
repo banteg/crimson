@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "blood-loop-8-counter-shape",
+      "find": "                                int count = 8;\n                                do {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        0.0f);\n                                } while (--count != 0);",
+      "replacements": [
+        {
+          "name": "for-precheck",
+          "text": "                                int count = 8;\n                                for (; count != 0; --count) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        0.0f);\n                                }"
+        },
+        {
+          "name": "while-precheck",
+          "text": "                                int count = 8;\n                                while (count != 0) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        0.0f);\n                                    --count;\n                                }"
+        }
+      ]
+    },
+    {
+      "name": "blood-loop-6-counter-shape",
+      "find": "                                count = 6;\n                                do {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.07f);\n                                } while (--count != 0);",
+      "replacements": [
+        {
+          "name": "for-precheck",
+          "text": "                                count = 6;\n                                for (; count != 0; --count) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.07f);\n                                }"
+        },
+        {
+          "name": "while-precheck",
+          "text": "                                count = 6;\n                                while (count != 0) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.07f);\n                                    --count;\n                                }"
+        }
+      ]
+    },
+    {
+      "name": "blood-loop-5-counter-shape",
+      "find": "                                count = 5;\n                                do {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.12f);\n                                } while (--count != 0);",
+      "replacements": [
+        {
+          "name": "for-precheck",
+          "text": "                                count = 5;\n                                for (; count != 0; --count) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.12f);\n                                }"
+        },
+        {
+          "name": "while-precheck",
+          "text": "                                count = 5;\n                                while (count != 0) {\n                                    effect_spawn_blood_splatter(\n                                        position,\n                                        (float)(crt_rand() % 612) * 0.01f,\n                                        -0.12f);\n                                    --count;\n                                }"
+        }
+      ]
+    }
+  ]
+}

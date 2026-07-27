@@ -53,3 +53,13 @@ direct fields for every edge entry are all byte-identical, including their
 pair interactions. No source change is justified. Validation remains
 492.54945054945057/614 weighted bytes, a 121.45054945054943 gap,
 182/182 instructions, prefix 31, and references 25/0/0.
+
+## Ring count-advance audit
+
+The first native ring advances its entry induction value inside the x87
+window, so `ring-count-advance-mutations.json` (SHA-256
+`ae6651814bd7ce51b368bccdddfc4703a808e09fc13447c34174f8897f587e73`)
+tested moving the semantic count update before metadata in either ring and in
+combination. The inner change lost 129.196 weighted bytes and 21 prefix
+instructions; the outer change lost 48.451 weighted bytes; the pair lost
+130.189. These are decisive negatives, so the source remains at 80.2198%.

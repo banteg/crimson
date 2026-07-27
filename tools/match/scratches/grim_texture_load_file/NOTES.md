@@ -81,6 +81,13 @@ compile byte-identically at 64.19% with 223 instructions. An explicit
 lookup-hit branch adds one instruction and falls to 64.05%. No variant changes
 the native-relevant frame or register allocation, so none is retained.
 
+`object-path-alias-mutations.json` tests the remaining natural persistent
+lifetime hypothesis without taking artificial addresses or adding volatile
+state. Four combinations of explicit `self` and `source_path` aliases all
+compile byte-identically at 64.19%, with the same 0x2c-byte frame, 223
+instructions, and `24/0/0` references. Thus source-level object/path naming
+does not induce the native `ebp`/`esi` allocation or spill the lookup-hit byte.
+
 No volatile state, dummy reference, forced address, fake helper, or
 layout-only arithmetic is retained. The residual is a compiler allocation and
 tail-placement problem, not unresolved behavior, so the scratch is classified

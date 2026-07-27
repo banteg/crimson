@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "blood-vector-translation-shape",
+      "find": "            scratch_pos.x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x += player_position->x;\n            scratch_pos.y += player_position->y;",
+      "replacements": [
+        {
+          "name": "group-x-translation",
+          "text": "            scratch_pos.x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f +\n                player_position->x;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "group-x-parenthesized",
+          "text": "            scratch_pos.x =\n                ((float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f) +\n                player_position->x;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "group-both-translations",
+          "text": "            scratch_pos.x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f +\n                player_position->x;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f +\n                player_position->y;"
+        },
+        {
+          "name": "stage-y-before-grouped-x",
+          "text": "            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f +\n                player_position->x;\n            scratch_pos.y += player_position->y;"
+        }
+      ]
+    }
+  ]
+}

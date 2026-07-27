@@ -35,3 +35,13 @@ mark draw, or after both, is semantically neutral and compiles byte-identically
 at 94.39% with 298 instructions and all 41 references resolved. Thus branch
 fallthrough spelling is not what causes stock VC6.5 to merge the `0xe4` and
 `0xf6` mark tails, and no variant is retained.
+
+`composite-branch-shape-mutations.json` further tests branch-local scalar
+endpoints, copy initialization, and explicit mark-pointer loads, including all
+two-branch combinations. Live disassembly at
+`0x10009500..0x1000960c` confirms that native allocates separate endpoint
+temporaries and duplicates the `SetUV` call before the common final draw.
+Pointer and copy-initialized forms remain byte-identical at 94.39%; scalar
+forms shorten the candidate and regress by at least 77.00 fuzzy-weighted
+bytes. These natural spelling differences cannot prevent VC6 from folding the
+suffix, so no source change is retained.

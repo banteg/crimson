@@ -50,3 +50,23 @@ Fresh scratch recomputation improved 237.09574468085108/391 to
 62.98342541436464%, with the gap falling from 153.90425531914892 to
 144.73480662983428. The validated result has 87/94 instructions, prefix four,
 and preserves references 5/0/0.
+
+## Spiral induction-lifetime improvement
+
+Live native disassembly keeps the zero-based spiral step in ESI and trigger
+time in EDX. `spiral-local-lifetime-mutations.json` (SHA-256
+`2ae4ef31ac07d20fda5c6389dcbe0b04c79603c0a197c29fab7c563cacd905aa`)
+tested three declaration boundaries. Declaring the semantic step before the
+trigger is the sole win: it adds 4.320441988950307 weighted bytes without
+changing the 87 instructions, four-instruction prefix, or 5/0/0 reference
+audit. The validated source now scores 250.58563535911603/391, or
+64.08839779005525%, with a 140.41436464088397-byte gap.
+
+`spiral-advance-shape-mutations.json` (SHA-256
+`3d203eb6b994bdd430ba914137004531a9b82cb41f9f05c24c4f8b9830ca3a4d`)
+then tested the apparent native early step/cursor advances as a justified
+interaction. Preadvancing only the cursor lost 25.923 weighted bytes; moving
+the step early, with or without the cursor, added three instructions, lost a
+reference, and lost 93.336 weighted bytes. Those variants are rejected. The
+retained source SHA-256 is
+`fd84038546cad3b963e641273e966a9f6c8d386cc82ddce9c45481b2f3ee7840`.

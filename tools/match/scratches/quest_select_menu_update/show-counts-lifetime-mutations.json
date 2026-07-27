@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "show-counts-lifetime",
+      "find": "    bool show_counts = false;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = true;\n    }",
+      "replacements": [
+        {
+          "name": "split-with-else",
+          "text": "    bool show_counts;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = true;\n    } else {\n        show_counts = false;\n    }"
+        },
+        {
+          "name": "direct-bool-result",
+          "text": "    bool show_counts =\n        grim_interface_ptr->grim_is_key_down(0x3b);"
+        },
+        {
+          "name": "split-direct-result",
+          "text": "    bool show_counts;\n    show_counts = grim_interface_ptr->grim_is_key_down(0x3b);"
+        },
+        {
+          "name": "toggle-from-false",
+          "text": "    bool show_counts = false;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = !show_counts;\n    }"
+        },
+        {
+          "name": "char-zero-one",
+          "text": "    char show_counts = 0;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = 1;\n    }"
+        },
+        {
+          "name": "unsigned-char-zero-one",
+          "text": "    unsigned char show_counts = 0;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = 1;\n    }"
+        },
+        {
+          "name": "integer-zero-one",
+          "text": "    int show_counts = 0;\n    if (grim_interface_ptr->grim_is_key_down(0x3b)) {\n        show_counts = 1;\n    }"
+        },
+        {
+          "name": "conditional-expression",
+          "text": "    bool show_counts =\n        grim_interface_ptr->grim_is_key_down(0x3b) ? true : false;"
+        }
+      ]
+    }
+  ]
+}

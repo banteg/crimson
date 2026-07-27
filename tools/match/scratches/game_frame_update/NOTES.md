@@ -128,3 +128,11 @@ definitions alone are byte-neutral, while both complete call forms move an
 earlier scheduling boundary and regress to 91.27% with four fewer resolved
 references. This rules out a per-component inline call boundary as the source
 of native's X-store-before-Y-load schedule.
+
+`aim-copy-aggregate-mutations.json` adds 11 recorded aggregate/source-view
+forms (spec
+`c1b928c5598874a76c2269a6760a69f2ca235ca3d7feb84a2e7b1c9852f6bf5c`).
+The ordinary source-pointer component forms are byte-neutral. Direct aggregate
+assignment and `memcpy` materially regress the instruction and reference
+alignment, so none improves the **99.45%**, 905/905, `317/0/0` baseline.
+No source change is retained.

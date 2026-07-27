@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-entry-store-shape",
+      "find": "    spawns[0].pos.set(128.0f, 128.0f);\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n",
+      "replacements": [
+        {
+          "name": "direct-position",
+          "text": "    spawns[0].pos.x = 128.0f;\n    spawns[0].pos.y = 128.0f;\n    spawns[0].set_spawn(\n        corner_template_id,\n        3000,\n        one);\n"
+        },
+        {
+          "name": "direct-metadata",
+          "text": "    spawns[0].pos.set(128.0f, 128.0f);\n    spawns[0].template_id = corner_template_id;\n    spawns[0].trigger_time_ms = 3000;\n    spawns[0].count = one;\n"
+        },
+        {
+          "name": "all-direct",
+          "text": "    spawns[0].pos.x = 128.0f;\n    spawns[0].pos.y = 128.0f;\n    spawns[0].template_id = corner_template_id;\n    spawns[0].trigger_time_ms = 3000;\n    spawns[0].count = one;\n"
+        }
+      ]
+    }
+  ]
+}

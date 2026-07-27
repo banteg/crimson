@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "unsigned-visible-line-adjustment",
+      "find": "        int visible_line_limit = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "unsigned-hex-addition",
+          "text": "        int visible_line_limit = height / 16 + 0xfffffffeu;\n"
+        },
+        {
+          "name": "unsigned-complement-addition",
+          "text": "        int visible_line_limit = height / 16 + ~1u;\n"
+        },
+        {
+          "name": "cast-unsigned-negative-addition",
+          "text": "        int visible_line_limit = height / 16 + (unsigned int)-2;\n"
+        }
+      ]
+    },
+    {
+      "name": "unsigned-maximum-line-adjustment",
+      "find": "        int max_visible_lines = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "unsigned-hex-addition",
+          "text": "        int max_visible_lines = height / 16 + 0xfffffffeu;\n"
+        },
+        {
+          "name": "unsigned-complement-addition",
+          "text": "        int max_visible_lines = height / 16 + ~1u;\n"
+        },
+        {
+          "name": "cast-unsigned-negative-addition",
+          "text": "        int max_visible_lines = height / 16 + (unsigned int)-2;\n"
+        }
+      ]
+    }
+  ]
+}

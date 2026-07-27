@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "template-31-alpha-after-speed",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);",
+      "replacements": [
+        {
+          "name": "store-after-speed-expression",
+          "text": "                    RAND_FIELD(creature->move_speed, 0x12, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;"
+        }
+      ]
+    },
+    {
+      "name": "template-32-alpha-after-speed",
+      "find": "                    creature->color.a = 1.0f;\n                    RAND_FIELD(creature->move_speed, 0x11, 0.1f, 1.1f);",
+      "replacements": [
+        {
+          "name": "store-after-speed-expression",
+          "text": "                    RAND_FIELD(creature->move_speed, 0x11, 0.1f, 1.1f);\n                    creature->color.a = 1.0f;"
+        }
+      ]
+    }
+  ]
+}

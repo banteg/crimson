@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "capture-prompt-y-lifetime",
+      "find": "    if (controls_rebind_slot_index != -1) {\n        float prompt_y = draw_position.y + 12.0f;\n        if (controls_rebind_slot_index < 9\n            || controls_rebind_slot_index >= 13) {\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \"Assign control (eg. press a key).\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"     (press ESCAPE to cancel)\");\n        } else {\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \" Move joystick/pad analog controller\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"axis you want to assign the control to\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 26.0f,\n                \"     (press ESCAPE to cancel)\");\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "branch-local-initialized-y",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_slot_index < 9\n            || controls_rebind_slot_index >= 13) {\n            float prompt_y = draw_position.y + 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \"Assign control (eg. press a key).\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"     (press ESCAPE to cancel)\");\n        } else {\n            float prompt_y = draw_position.y + 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \" Move joystick/pad analog controller\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"axis you want to assign the control to\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 26.0f,\n                \"     (press ESCAPE to cancel)\");\n        }\n    }\n"
+        },
+        {
+          "name": "branch-local-assigned-y",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_slot_index < 9\n            || controls_rebind_slot_index >= 13) {\n            float prompt_y;\n            prompt_y = draw_position.y + 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \"Assign control (eg. press a key).\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"     (press ESCAPE to cancel)\");\n        } else {\n            float prompt_y;\n            prompt_y = draw_position.y + 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \" Move joystick/pad analog controller\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"axis you want to assign the control to\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 26.0f,\n                \"     (press ESCAPE to cancel)\");\n        }\n    }\n"
+        },
+        {
+          "name": "branch-local-incremented-y",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_slot_index < 9\n            || controls_rebind_slot_index >= 13) {\n            float prompt_y = draw_position.y;\n            prompt_y += 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \"Assign control (eg. press a key).\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"     (press ESCAPE to cancel)\");\n        } else {\n            float prompt_y = draw_position.y;\n            prompt_y += 12.0f;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y,\n                \" Move joystick/pad analog controller\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 13.0f,\n                \"axis you want to assign the control to\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                prompt_y + 26.0f,\n                \"     (press ESCAPE to cancel)\");\n        }\n    }\n"
+        },
+        {
+          "name": "inline-prompt-y",
+          "text": "    if (controls_rebind_slot_index != -1) {\n        if (controls_rebind_slot_index < 9\n            || controls_rebind_slot_index >= 13) {\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                draw_position.y + 12.0f,\n                \"Assign control (eg. press a key).\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                draw_position.y + 25.0f,\n                \"     (press ESCAPE to cancel)\");\n        } else {\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                draw_position.y + 12.0f,\n                \" Move joystick/pad analog controller\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                draw_position.y + 25.0f,\n                \"axis you want to assign the control to\");\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                draw_position.x + 54.0f,\n                draw_position.y + 38.0f,\n                \"     (press ESCAPE to cancel)\");\n        }\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "axis-peak-scan-bound",
+      "find": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while (\n                    peaks < &controls_rebind_axis_peak_abs_13f + 7) {\n",
+      "replacements": [
+        {
+          "name": "signed-address-bound",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while ((int)peaks\n                    < (int)(&controls_rebind_axis_peak_abs_13f + 7)) {\n"
+        },
+        {
+          "name": "named-signed-address-bound",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                float *peak_end =\n                    &controls_rebind_axis_peak_abs_13f + 7;\n                int axis_index = 0;\n                while ((int)peaks < (int)peak_end) {\n"
+        },
+        {
+          "name": "not-equal-bound",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while (peaks !=\n                    &controls_rebind_axis_peak_abs_13f + 7) {\n"
+        },
+        {
+          "name": "signed-pointer-difference-bound",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while ((int)(peaks\n                    - &controls_rebind_axis_peak_abs_13f) < 7) {\n"
+        },
+        {
+          "name": "axis-index-bound",
+          "text": "                float *peaks = &controls_rebind_axis_peak_abs_13f;\n                int axis_index = 0;\n                while (axis_index < 7) {\n"
+        }
+      ]
+    }
+  ]
+}

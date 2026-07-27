@@ -72,3 +72,11 @@ native flag lifetime does not alter VC6's `AL` allocation.
 index through the perk clear. Extending only its lexical scope is byte-neutral;
 using it in the clear moves an earlier allocation boundary and regresses to
 57.25%, so the narrower source remains retained.
+
+`tail-scope-interactions.json` records 11 further one-, two-, and three-site
+interactions between the demo-flag lifetime and perk-clear ownership (spec
+`f32493907f89ecbdb76f84d30816b874823becbccd5815523cf75f9b2f5ceed5`).
+Caching the flag or moving the clear inside the existing scope while retaining
+the global index is byte-neutral. Reusing the scoped reset index disturbs the
+earlier allocation boundary and regresses. Baseline remains **91.83%**,
+130/127 instructions, prefix 94, references `57/0/1`.

@@ -316,15 +316,17 @@ unlocked_row:
                 "%d.%d",
                 quest_select_stage_major,
                 next_row);
-            char *quest_name = quest_selected_meta[quest_index].name;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x + 32.0f,
                 row_y,
                 "%s",
-                quest_name);
+                quest_selected_meta[
+                    row + quest_select_stage_major * 10 - 10].name);
             float title_width =
                 (float)(grim_interface_ptr->grim_measure_text_width(
-                    quest_name) + 32);
+                    quest_selected_meta[
+                        row + quest_select_stage_major * 10 - 10].name)
+                    + 32);
             quest_select_vec2_t line_position(
                 position.x, position.y + 13.0f);
             grim_interface_ptr->grim_draw_rect_outline(

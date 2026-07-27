@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-sweep-position-shape",
+      "find": "        spawn->pos.x = 824.0f;\n        spawn->pos.y = (float)(offset / 10 + 200);\n        offset += 0x270;\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "y-before-x",
+          "text": "        spawn->pos.y = (float)(offset / 10 + 200);\n        spawn->pos.x = 824.0f;\n        offset += 0x270;\n"
+        },
+        {
+          "name": "integer-axis-local",
+          "text": "        int axis = offset / 10 + 200;\n        spawn->pos.x = 824.0f;\n        spawn->pos.y = (float)axis;\n        offset += 0x270;\n"
+        },
+        {
+          "name": "float-axis-local",
+          "text": "        float axis = (float)(offset / 10 + 200);\n        spawn->pos.x = 824.0f;\n        spawn->pos.y = axis;\n        offset += 0x270;\n"
+        },
+        {
+          "name": "axis-before-x-after-offset",
+          "text": "        int axis = offset / 10 + 200;\n        offset += 0x270;\n        spawn->pos.x = 824.0f;\n        spawn->pos.y = (float)axis;\n"
+        }
+      ]
+    }
+  ]
+}

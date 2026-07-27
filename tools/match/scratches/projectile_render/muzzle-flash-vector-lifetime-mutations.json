@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "muzzle-flash-offset-lifetime",
+      "find": "        float flash_x = (float)cos(heading) * 15.0f;\n        float flash_y = (float)sin(heading) * 15.0f;\n        grim_interface_ptr->grim_set_color(\n            1.0f,\n            1.0f,\n            1.0f,\n            transition_alpha * overlay_player->muzzle_flash_alpha);\n        grim_interface_ptr->grim_begin_batch();\n        grim_interface_ptr->grim_draw_quad(\n            camera_offset_x + overlay_player->pos_x + flash_x - 80.0f,\n            camera_offset_y + overlay_player->pos_y + flash_y - 80.0f,",
+      "replacements": [
+        {
+          "name": "constructed-offset-vector",
+          "text": "        projectile_render_vec2_t flash(\n            (float)cos(heading) * 15.0f,\n            (float)sin(heading) * 15.0f);\n        grim_interface_ptr->grim_set_color(\n            1.0f,\n            1.0f,\n            1.0f,\n            transition_alpha * overlay_player->muzzle_flash_alpha);\n        grim_interface_ptr->grim_begin_batch();\n        grim_interface_ptr->grim_draw_quad(\n            camera_offset_x + overlay_player->pos_x + flash.x - 80.0f,\n            camera_offset_y + overlay_player->pos_y + flash.y - 80.0f,"
+        },
+        {
+          "name": "scaled-direction-vector",
+          "text": "        projectile_render_vec2_t flash =\n            projectile_render_vec2_t(\n                (float)cos(heading),\n                (float)sin(heading))\n            * 15.0f;\n        grim_interface_ptr->grim_set_color(\n            1.0f,\n            1.0f,\n            1.0f,\n            transition_alpha * overlay_player->muzzle_flash_alpha);\n        grim_interface_ptr->grim_begin_batch();\n        grim_interface_ptr->grim_draw_quad(\n            camera_offset_x + overlay_player->pos_x + flash.x - 80.0f,\n            camera_offset_y + overlay_player->pos_y + flash.y - 80.0f,"
+        },
+        {
+          "name": "assigned-offset-vector",
+          "text": "        projectile_render_vec2_t flash;\n        flash.x = (float)cos(heading) * 15.0f;\n        flash.y = (float)sin(heading) * 15.0f;\n        grim_interface_ptr->grim_set_color(\n            1.0f,\n            1.0f,\n            1.0f,\n            transition_alpha * overlay_player->muzzle_flash_alpha);\n        grim_interface_ptr->grim_begin_batch();\n        grim_interface_ptr->grim_draw_quad(\n            camera_offset_x + overlay_player->pos_x + flash.x - 80.0f,\n            camera_offset_y + overlay_player->pos_y + flash.y - 80.0f,"
+        }
+      ]
+    }
+  ]
+}

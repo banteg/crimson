@@ -638,3 +638,62 @@ No variant improves, so the source remains unchanged. An explicit cross-case
 `goto` was deliberately excluded: it could force the compiler artifact but
 would not recover additional gameplay semantics or an evidenced source-level
 control-flow construct.
+
+## Random-template RNG lifetime and store-order sweep
+
+A new live Binary Ninja pass used the explicit `crimsonland.exe.bndb` target
+`3023:2:9499448411019345244`. In the native template-`0x31` handler at
+`0x0043256d..0x00432605`, the final `crt_rand` result remains in `EAX` while
+the constant blue component is stored before the signed remainder conversion.
+The previous source stored blue before the call and reused the function-wide
+`random_heading_roll`. Giving this final tint roll a natural block-local
+lifetime makes VC6 reproduce the native call/store schedule without changing
+the instruction count:
+
+```cpp
+int random_tint_roll = crt_rand();
+creature->color.b = 0.38f;
+float random_tint_scalar =
+    (float)(random_tint_roll % 0x1e) * 0.01f + 0.6f;
+```
+
+The recorded `random-roll-lifetime-mutations.json` sweep exhausts all 10/10
+one- and two-site variants. This single template-`0x31` mutation improves the
+weighted match by 4.461708860759 bytes, from
+12,256.314240506328/14,099 (86.930379746835%) to
+12,260.775949367087/14,099 (86.962025316456%), reducing the fuzzy gap from
+1,842.685759493672 to 1,838.224050632913. Candidate/native instructions remain
+3,161/3,159, the prefix remains 23, and references remain `352/0/1`. Pairing
+the winning site with the template-`0x33` constant-store hypothesis is
+byte-identical to the winner alone. The retained source SHA-256 is
+`eaff2a860456d494748f96b182d26d2c372b00d631727d88e12e6997e3acf8cf`;
+the mutation-spec SHA-256 is
+`c29aa520b81bdfba6dcb1d52062d449a3243ac0547c009717da56794ea8692d0`.
+
+Four additional recorded sweeps close nearby source-shape hypotheses:
+
+- `template-28-tail-merge-mutations.json`
+  (`53dab3e001ea024258a15e78ef638b2513eb1c100d9c663ebddc9dbfce62aae9`)
+  evaluates all 5/5 natural helper, pointer, reference, tint-placement, and
+  component spellings for the native template-`0x28` to template-`0x21`
+  suffix share. Four are byte-neutral; explicit components add one instruction
+  and lose 95.620047 weighted bytes.
+- `random-speed-alpha-order-mutations.json`
+  (`ce27d5a82827e13578f11dc7d3f6981ffe1b4bf99dedacd2f85e5b4be822a323`)
+  evaluates all 5/5 template-`0x20/0x31..0x34` splits through the existing
+  function-wide roll. Each adds one instruction and loses 86.698041 to
+  95.620047 weighted bytes.
+- `random-speed-register-lifetime-mutations.json`
+  (`caaf9a8fce839f826e802e66bed1088a476b5fa26960804dcb7cf350f32edd5a`)
+  evaluates register, const, and split-declaration speed-roll lifetimes at
+  template `0x31`. All 3/3 produce the same one-instruction,
+  91.159749-byte regression.
+- `random-speed-alpha-placement-mutations.json`
+  (`a737925e329c9a27d89ead4e9560e7aa14deb76c21095653ae30e85e6425fe63`)
+  evaluates all 3/3 single and combined alpha-after-speed placements at
+  templates `0x31` and `0x32`; VC6 canonicalizes every variant to the retained
+  bytes.
+
+The full live native disassembly used for these decisions has SHA-256
+`84208879854802967cf4fe8bac46cbda58ed4464dbe111bf4f709446482b3881`.
+Only the measured template-`0x31` lifetime improvement is retained.

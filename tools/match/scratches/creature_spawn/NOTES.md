@@ -83,3 +83,12 @@ resolve to the intended globals, calls, constants, and record fields.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
 metadata-only change preserves the before/after result: 86.08%, prefix 7/79,
 79/79 instructions, and references 27/0/0.
+
+`elapsed-expression-lifetime-mutations.json` records 24 compile-valid
+single/paired integer-snapshot, float-snapshot, named-result, and staged-result
+forms for the health and size expressions (spec
+`f9e49f8e6fbebfee744dba7c7ec2647f19238d81ecbca3fe57d7cd3e3106df72`).
+Ordinary integer snapshots and named results are byte-neutral; float or staged
+forms regress by 4.23 weighted bytes and can disturb reference alignment.
+None delays either x87 chain to the native schedule, so the **86.08%** source
+is retained unchanged.

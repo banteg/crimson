@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "string-header-for-aim-copy",
+      "find": "#include <math.h>\n#include <stdio.h>\n",
+      "replacements": [
+        {
+          "name": "add-string-header",
+          "text": "#include <math.h>\n#include <stdio.h>\n#include <string.h>\n"
+        }
+      ]
+    },
+    {
+      "name": "aggregate-aim-copy",
+      "find": "            float *aim = &player_aim_screen_x[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;\n",
+      "replacements": [
+        {
+          "name": "direct-aggregate-assignment",
+          "text": "            frame_vec2_t *aim =\n                (frame_vec2_t *)&player_aim_screen_x[aim_index];\n            *aim = *(frame_vec2_t *)&ui_mouse_x;\n"
+        },
+        {
+          "name": "direct-aggregate-reference-assignment",
+          "text": "            frame_vec2_t &aim =\n                *(frame_vec2_t *)&player_aim_screen_x[aim_index];\n            aim = *(frame_vec2_t *)&ui_mouse_x;\n"
+        },
+        {
+          "name": "builtin-memcpy",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            memcpy(aim, &ui_mouse_x, sizeof(frame_vec2_t));\n"
+        },
+        {
+          "name": "source-pointer-components",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            float *mouse = &ui_mouse_x;\n            aim[0] = mouse[0];\n            aim[1] = mouse[1];\n"
+        },
+        {
+          "name": "source-aggregate-components",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            frame_vec2_t *mouse = (frame_vec2_t *)&ui_mouse_x;\n            aim[0] = mouse->x;\n            aim[1] = mouse->y;\n"
+        }
+      ]
+    }
+  ]
+}

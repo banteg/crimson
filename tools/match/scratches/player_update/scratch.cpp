@@ -1030,9 +1030,9 @@ extern "C" void player_update(void)
                         player_alt_weapon_swap_cooldown_ms - frame_dt_ms,
                     player_alt_weapon_swap_cooldown_ms <= 0))
             && grim_interface_ptr->grim_is_key_active(config_key_reload)) {
-            int swap_weapon_id = player->alt_weapon_id;
-            player->alt_weapon_id = player->weapon_id;
-            player->weapon_id = swap_weapon_id;
+            int swap_weapon_id = player->weapon_id;
+            player->weapon_id = player->alt_weapon_id;
+            player->alt_weapon_id = swap_weapon_id;
 
             float swap_clip_size = player->alt_clip_size;
             player->alt_clip_size = player->clip_size;

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "minimum-stage-lifetime",
+      "find": "    if (grim_interface_ptr->grim_was_key_pressed(203)) {\n        --quest_select_stage_major;\n        if (quest_select_stage_major < 1) {\n            quest_select_stage_major = 1;\n        }\n    }",
+      "replacements": [
+        {
+          "name": "branch-local-minimum",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(203)) {\n        int minimum_stage = 1;\n        --quest_select_stage_major;\n        if (quest_select_stage_major < minimum_stage) {\n            quest_select_stage_major = minimum_stage;\n        }\n    }"
+        },
+        {
+          "name": "branch-local-const-minimum",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(203)) {\n        const int minimum_stage = 1;\n        --quest_select_stage_major;\n        if (quest_select_stage_major < minimum_stage) {\n            quest_select_stage_major = minimum_stage;\n        }\n    }"
+        },
+        {
+          "name": "explicit-subtraction",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(203)) {\n        quest_select_stage_major = quest_select_stage_major - 1;\n        if (quest_select_stage_major < 1) {\n            quest_select_stage_major = 1;\n        }\n    }"
+        },
+        {
+          "name": "postdecrement-threshold",
+          "text": "    if (grim_interface_ptr->grim_was_key_pressed(203)) {\n        if (quest_select_stage_major-- <= 1) {\n            quest_select_stage_major = 1;\n        }\n    }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "font-atlas-counter-lifetime",
+      "find": "    {\n        for (int y = 0; y < 16; ++y) {\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n",
+      "replacements": [
+        {
+          "name": "not-equal-counters",
+          "text": "    {\n        for (int y = 0; y != 16; ++y) {\n            for (int x = 0; x != 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "unsigned-counters",
+          "text": "    {\n        for (unsigned int y = 0; y < 16; ++y) {\n            for (unsigned int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-y-conversion-copy",
+          "text": "    {\n        for (int y = 0; y < 16; ++y) {\n            int y_for_conversion = y;\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y_for_conversion * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "explicit-row-offset",
+          "text": "    {\n        for (int y = 0; y < 16; ++y) {\n            int row_offset = y * 16;\n            for (int x = 0; x < 16; ++x) {\n                grim_font2_uv_u[row_offset + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[row_offset + x].v =\n                    (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "row-pointer-with-counter",
+          "text": "    {\n        GrimUV *row = grim_font2_uv_u;\n        for (int y = 0; y < 16; ++y, row += 16) {\n            for (int x = 0; x < 16; ++x) {\n                row[x].u = (float)x * 0.0625f;\n                row[x].v = (float)y * 0.0625f;\n            }\n        }\n    }\n"
+        },
+        {
+          "name": "nested-do-while",
+          "text": "    {\n        int y = 0;\n        do {\n            int x = 0;\n            do {\n                grim_font2_uv_u[y * 16 + x].u =\n                    (float)x * 0.0625f;\n                grim_font2_uv_u[y * 16 + x].v =\n                    (float)y * 0.0625f;\n                ++x;\n            } while (x < 16);\n            ++y;\n        } while (y < 16);\n    }\n"
+        }
+      ]
+    }
+  ]
+}

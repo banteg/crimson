@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "blood-x-lifetime",
+      "find": "            scratch_pos.x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x += player_position->x;\n            scratch_pos.y += player_position->y;",
+      "replacements": [
+        {
+          "name": "float-blood-x",
+          "text": "            float blood_x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x = blood_x + player_position->x;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "const-float-blood-x",
+          "text": "            const float blood_x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x = blood_x + player_position->x;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "split-float-blood-x",
+          "text": "            float blood_x;\n            blood_x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x = blood_x + player_position->x;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "float-x-offset",
+          "text": "            float x_offset =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x = x_offset + player_position->x;\n            scratch_pos.y += player_position->y;"
+        },
+        {
+          "name": "float-blood-x-commuted-add",
+          "text": "            float blood_x =\n                (float)cos(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.y =\n                (float)sin(player->aim_heading + 1.5707964f - 0.5f) * -6.0f;\n            scratch_pos.x = player_position->x + blood_x;\n            scratch_pos.y += player_position->y;"
+        }
+      ]
+    }
+  ]
+}

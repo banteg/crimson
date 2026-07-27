@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "fixed-opening-base",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    quest_entry_original_t *spawn = &builder.spawns[0];\n",
+      "replacements": [
+        {
+          "name": "raw-spawns-before-builder",
+          "text": "    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    quest_entry_original_t *spawn = &spawns[0];\n"
+        }
+      ]
+    },
+    {
+      "name": "second-fixed-entry-base",
+      "find": "    spawn = &builder.spawns[1];\n",
+      "replacements": [
+        {
+          "name": "raw-spawns",
+          "text": "    spawn = &spawns[1];\n"
+        }
+      ]
+    },
+    {
+      "name": "third-fixed-entry-base",
+      "find": "    spawn = &builder.spawns[2];\n",
+      "replacements": [
+        {
+          "name": "raw-spawns-and-build",
+          "text": "    spawn = &spawns[2];\n"
+        }
+      ]
+    },
+    {
+      "name": "builder-construction-point",
+      "find": "    builder.count = 3;\n",
+      "replacements": [
+        {
+          "name": "construct-after-fixed-entries",
+          "text": "    quest_spawn_builder_t builder(spawns);\n    builder.count = 3;\n"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "first-entry-local-lifetime",
+      "find": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    quest_entry_original_t *spawn = &builder.spawns[0];\n    spawn->pos.y = (float)(terrain_texture_width + 64);\n    spawn->pos.x = (float)(terrain_texture_width / 2);\n",
+      "replacements": [
+        {
+          "name": "spawn-before-locals",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    quest_entry_original_t *spawn = &builder.spawns[0];\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    spawn->pos.y = (float)(terrain_texture_width + 64);\n    spawn->pos.x = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "template-after-y",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    quest_entry_original_t *spawn = &builder.spawns[0];\n    spawn->pos.y = (float)(terrain_texture_width + 64);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    spawn->pos.x = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "spawn-before-locals-template-after-y",
+          "text": "    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n    quest_entry_original_t *spawn = &builder.spawns[0];\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n\n    spawn->pos.y = (float)(terrain_texture_width + 64);\n    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    spawn->pos.x = (float)(terrain_texture_width / 2);\n"
+        },
+        {
+          "name": "locals-before-builder",
+          "text": "    int initial_template_id = SPAWN_ID_SPIDER_SP1_AI7_TIMER_38;\n    int initial_trigger_time_ms = 500;\n    int initial_count = 1;\n    quest_spawn_builder_t builder((quest_entry_original_t *)entries);\n\n    quest_entry_original_t *spawn = &builder.spawns[0];\n    spawn->pos.y = (float)(terrain_texture_width + 64);\n    spawn->pos.x = (float)(terrain_texture_width / 2);\n"
+        }
+      ]
+    }
+  ]
+}
