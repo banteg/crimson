@@ -811,10 +811,10 @@ extern "C" void ui_menu_layout_init(void)
 
     responsive = &ui_element_table_slot_01_main_menu_aux;
     do {
-        (*responsive)->pos.y =
-            (float)config_screen_width * 0.0015625f * 150.0f
-            - 150.0f
-            + (*responsive)->pos.y;
+        float responsive_y =
+            (float)config_screen_width * 0.0015625f;
+        responsive_y = responsive_y * 150.0f - 150.0f;
+        (*responsive)->pos.y += responsive_y;
         ++responsive;
     } while ((int)responsive < (int)&ui_perk_prompt_element);
 

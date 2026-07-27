@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "vector-add-result-shape",
+      "find": "    quest_failed_vec2_t operator+(const quest_failed_vec2_t &other) const\n    {\n        return quest_failed_vec2_t(x + other.x, other.y + y);\n    }\n",
+      "replacements": [
+        {
+          "name": "canonical-component-order",
+          "text": "    quest_failed_vec2_t operator+(const quest_failed_vec2_t &other) const\n    {\n        return quest_failed_vec2_t(x + other.x, y + other.y);\n    }\n"
+        },
+        {
+          "name": "named-result",
+          "text": "    quest_failed_vec2_t operator+(const quest_failed_vec2_t &other) const\n    {\n        quest_failed_vec2_t result;\n        result.x = x + other.x;\n        result.y = other.y + y;\n        return result;\n    }\n"
+        }
+      ]
+    },
+    {
+      "name": "panel-chain-lifetime",
+      "find": "        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n",
+      "replacements": [
+        {
+          "name": "named-first-sum",
+          "text": "        quest_failed_vec2_t panel_base =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position;\n        quest_failed_vec2_t panel_xy =\n            panel_base + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "split-panel-initialization",
+          "text": "        quest_failed_vec2_t panel_xy;\n        panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        quest_failed_vec2_t xy = panel_xy;\n"
+        },
+        {
+          "name": "declare-live-cursor-first",
+          "text": "        quest_failed_vec2_t xy;\n        quest_failed_vec2_t panel_xy =\n            *(quest_failed_vec2_t *)&ui_element_slot_35.pos\n            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position\n            + quest_failed_vec2_t(180.0f, 40.0f);\n\n        xy = panel_xy;\n"
+        }
+      ]
+    }
+  ]
+}

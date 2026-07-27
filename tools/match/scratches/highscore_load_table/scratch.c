@@ -185,12 +185,12 @@ void highscore_load_table(void)
             int inner;
             int best;
 
+            best = index;
             if ((highscore_table[index].flags & 4) != 0 ||
                 (highscore_table[index].flags & 1) == 0) {
                 continue;
             }
 
-            best = index;
             for (inner = 0; inner < highscore_table_count; inner++) {
                 if ((highscore_table[inner].flags & 1) == 0 ||
                     strcmp(

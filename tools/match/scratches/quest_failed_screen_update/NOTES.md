@@ -64,3 +64,10 @@ button, transition, audio, and cursor paths are complete.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+## Recorded opening-vector sweep
+
+`opening-vector-lifetime-mutations.json` evaluated 11 constructor,
+copy-then-add, and panel-chain lifetime variants. None improved the score,
+instruction count, or reference audit. No stack-slot coercion was retained;
+the two-instruction compiler residual remains visible.

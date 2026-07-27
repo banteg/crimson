@@ -16,3 +16,7 @@ the loop-counter zeroing relative to two hoisted position constants and the
 commutative scheduling of one template store against the trigger-step
 subtraction. Both are left visible rather than forced with artificial
 dependencies.
+
+`position-lifetime-mutations.json` evaluated three paired-position lifetime
+shapes. All three regress, the least by 10.44 fuzzy-weighted bytes, so the
+current aggregate form remains the strongest evidenced source.

@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "e4-mark-endpoint-shape",
+      "find": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n",
+      "occurrence": 1,
+      "replacements": [
+        {
+          "name": "commuted-x",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(0.0625f + uv.x, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "commuted-y",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, 0.0625f + uv.y);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "commuted-both",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(0.0625f + uv.x, 0.0625f + uv.y);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "inline-endpoint",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            grim_set_uv(\n                uv.x, uv.y, uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "scalar-endpoint",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            float mark_u1 = uv.x + 0.0625f;\n            float mark_v1 = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_u1, mark_v1);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "staged-point-copy",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv);\n            mark_uv1.x += 0.0625f;\n            mark_uv1.y += 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        }
+      ]
+    },
+    {
+      "name": "f6-mark-endpoint-shape",
+      "find": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n",
+      "occurrence": 2,
+      "replacements": [
+        {
+          "name": "commuted-x",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(0.0625f + uv.x, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "commuted-y",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, 0.0625f + uv.y);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "commuted-both",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(0.0625f + uv.x, 0.0625f + uv.y);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "inline-endpoint",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            grim_set_uv(\n                uv.x, uv.y, uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "scalar-endpoint",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            float mark_u1 = uv.x + 0.0625f;\n            float mark_v1 = uv.y + 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_u1, mark_v1);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "staged-point-copy",
+          "text": "            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv);\n            mark_uv1.x += 0.0625f;\n            mark_uv1.y += 0.0625f;\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        }
+      ]
+    }
+  ]
+}

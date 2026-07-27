@@ -79,3 +79,8 @@ host/request-path buffer instead regressed from 69.95% to 66.04%, removed the
 remaining stack-slot order, literal lowering, tail merging, and scan-output
 allocation are therefore compiler residuals. The scratch is classified
 `semantic-complete` with a `compiler` residual.
+
+`request-path-initializer-mutations.json` evaluated three direct, aggregate,
+and staged request-path initializers. Every alternative regressed by at least
+57.76 fuzzy-weighted bytes and lost native-prefix or reference agreement. The
+existing initializer is retained.

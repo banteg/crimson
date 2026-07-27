@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "player-item-publication-order",
+      "find": "    char *player_items[4] = {\n        \"Player 1\",\n        \"Player 2\",\n        \"Player 3\",\n        \"Player 4\",\n    };\n    controls_player_profile_list.items = player_items;\n    controls_player_profile_list.item_count = 2;\n",
+      "replacements": [
+        {
+          "name": "publish-before-fill",
+          "text": "    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n"
+        },
+        {
+          "name": "fill-then-publish",
+          "text": "    char *player_items[4];\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.items = player_items;\n    controls_player_profile_list.item_count = 2;\n"
+        },
+        {
+          "name": "publish-after-first",
+          "text": "    char *player_items[4];\n    player_items[0] = \"Player 1\";\n    controls_player_profile_list.items = player_items;\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n    controls_player_profile_list.item_count = 2;\n"
+        },
+        {
+          "name": "count-before-fill",
+          "text": "    char *player_items[4];\n    controls_player_profile_list.items = player_items;\n    controls_player_profile_list.item_count = 2;\n    player_items[0] = \"Player 1\";\n    player_items[1] = \"Player 2\";\n    player_items[2] = \"Player 3\";\n    player_items[3] = \"Player 4\";\n"
+        }
+      ]
+    }
+  ]
+}

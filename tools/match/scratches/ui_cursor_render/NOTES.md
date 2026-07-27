@@ -37,3 +37,7 @@ quads, and final cursor quad are accounted for.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+`final-quad-coordinate-mutations.json` evaluated three named, staged, and
+component-wise coordinate lifetimes for the closing draw. All three compile
+byte-identically, so no cosmetic source rewrite was retained.

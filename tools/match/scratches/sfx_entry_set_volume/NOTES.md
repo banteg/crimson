@@ -19,3 +19,7 @@ return, DirectSound attenuation conversion, primary-only stream update, and
 `5/0/0` references. The two localized regions are allocation/control-flow
 consequences of the documented entry/cursor register choice, so recovery is
 `semantic-complete` with a `compiler` residual.
+
+`entry-alias-mutations.json` evaluated three entry/cursor lifetime forms. The
+plain alias is byte-neutral and the initialized-cursor alternatives regress,
+so no pointer-lifetime rewrite was retained.

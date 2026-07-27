@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "final-responsive-y-expression",
+      "find": "        (*responsive)->pos.y =\n            (float)config_screen_width * 0.0015625f * 150.0f\n            - 150.0f\n            + (*responsive)->pos.y;\n",
+      "replacements": [
+        {
+          "name": "staged-from-width",
+          "text": "        float responsive_y = (float)config_screen_width;\n        responsive_y *= 0.0015625f;\n        responsive_y *= 150.0f;\n        responsive_y -= 150.0f;\n        (*responsive)->pos.y += responsive_y;\n"
+        },
+        {
+          "name": "staged-after-scale",
+          "text": "        float responsive_y =\n            (float)config_screen_width * 0.0015625f;\n        responsive_y *= 150.0f;\n        responsive_y -= 150.0f;\n        (*responsive)->pos.y += responsive_y;\n"
+        },
+        {
+          "name": "staged-offset-expression",
+          "text": "        float responsive_y =\n            (float)config_screen_width * 0.0015625f;\n        responsive_y = responsive_y * 150.0f - 150.0f;\n        (*responsive)->pos.y += responsive_y;\n"
+        }
+      ]
+    }
+  ]
+}

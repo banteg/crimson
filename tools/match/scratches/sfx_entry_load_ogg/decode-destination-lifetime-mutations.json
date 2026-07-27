@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-destination-temporaries",
+      "find": "    unsigned int remaining;\n    int read_bytes;\n",
+      "replacements": [
+        {
+          "name": "function-scope-base-and-offset",
+          "text": "    unsigned int remaining, write_offset;\n    unsigned char *write_base;\n    int read_bytes;\n"
+        }
+      ]
+    },
+    {
+      "name": "decode-destination-lifetime",
+      "find": "    while (remaining > 0 && read_bytes != 0) {\n        read_bytes = stream.read_pcm16(\n            (char *)(entry->pcm_bytes - remaining +\n                (unsigned int)entry->pcm_data),\n            remaining);\n        remaining -= read_bytes;\n    }\n",
+      "replacements": [
+        {
+          "name": "assign-data-then-offset",
+          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_base = entry->pcm_data;\n        write_offset = entry->pcm_bytes - remaining;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
+        },
+        {
+          "name": "assign-offset-then-data",
+          "text": "    while (remaining > 0 && read_bytes != 0) {\n        write_offset = entry->pcm_bytes - remaining;\n        write_base = entry->pcm_data;\n        read_bytes = stream.read_pcm16(\n            (char *)write_base + write_offset,\n            remaining);\n        remaining -= read_bytes;\n    }\n"
+        }
+      ]
+    }
+  ]
+}

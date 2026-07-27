@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "point-default-construction",
+      "find": "struct GrimMonoPoint {\n    float x;\n    float y;\n\n    GrimMonoPoint(float x_value, float y_value) : x(x_value), y(y_value) {}\n};\n",
+      "replacements": [
+        {
+          "name": "empty-default-constructor",
+          "text": "struct GrimMonoPoint {\n    float x;\n    float y;\n\n    GrimMonoPoint() {}\n    GrimMonoPoint(float x_value, float y_value) : x(x_value), y(y_value) {}\n};\n"
+        }
+      ]
+    },
+    {
+      "name": "composite-mark-storage",
+      "find": "    bool combine = false;\n    GrimMonoPoint uv(0.0f, 0.0f);\n\n    for (int index = 0; index < length; ++index) {\n",
+      "replacements": [
+        {
+          "name": "branch-specific-points",
+          "text": "    bool combine = false;\n    GrimMonoPoint uv(0.0f, 0.0f);\n    GrimMonoPoint e4_mark_uv1;\n    GrimMonoPoint f6_mark_uv1;\n\n    for (int index = 0; index < length; ++index) {\n"
+        }
+      ]
+    },
+    {
+      "name": "composite-mark-assignments",
+      "find": "        } else if (character == '\\xe4') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['a'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['o'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            GrimMonoPoint mark_uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, mark_uv1.x, mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n",
+      "replacements": [
+        {
+          "name": "temporary-assignments",
+          "text": "        } else if (character == '\\xe4') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['a'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            e4_mark_uv1 = GrimMonoPoint(\n                uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(\n                uv.x, uv.y, e4_mark_uv1.x, e4_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['o'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            f6_mark_uv1 = GrimMonoPoint(\n                uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(\n                uv.x, uv.y, f6_mark_uv1.x, f6_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        },
+        {
+          "name": "component-assignments",
+          "text": "        } else if (character == '\\xe4') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['a'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            e4_mark_uv1.x = uv.x + 0.0625f;\n            e4_mark_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(\n                uv.x, uv.y, e4_mark_uv1.x, e4_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n        } else if (character == '\\xf6') {\n            cursor.x += advance;\n\n            uv = grim_font2_uv_u['o'];\n            GrimMonoPoint uv1(uv.x + 0.0625f, uv.y + 0.0625f);\n            grim_set_uv(uv.x, uv.y, uv1.x, uv1.y);\n            grim_draw_quad(cursor.x, cursor.y + 1.0f, cell_size, cell_size);\n\n            uv = grim_font2_uv_u['\"'];\n            f6_mark_uv1.x = uv.x + 0.0625f;\n            f6_mark_uv1.y = uv.y + 0.0625f;\n            grim_set_uv(\n                uv.x, uv.y, f6_mark_uv1.x, f6_mark_uv1.y);\n            grim_draw_quad(cursor.x, cursor.y, cell_size, cell_size);\n"
+        }
+      ]
+    }
+  ]
+}

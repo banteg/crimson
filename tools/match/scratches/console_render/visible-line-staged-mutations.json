@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "stage-visible-line-adjustment",
+      "find": "        int visible_line_limit = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "compound-add-negative-two",
+          "text": "        int visible_line_limit = height / 16;\n        visible_line_limit += -2;\n"
+        },
+        {
+          "name": "assignment-add-negative-two",
+          "text": "        int visible_line_limit = height / 16;\n        visible_line_limit = visible_line_limit + -2;\n"
+        }
+      ]
+    },
+    {
+      "name": "stage-maximum-line-adjustment",
+      "find": "        int max_visible_lines = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "compound-add-negative-two",
+          "text": "        int max_visible_lines = height / 16;\n        max_visible_lines += -2;\n"
+        },
+        {
+          "name": "assignment-add-negative-two",
+          "text": "        int max_visible_lines = height / 16;\n        max_visible_lines = max_visible_lines + -2;\n"
+        }
+      ]
+    }
+  ]
+}

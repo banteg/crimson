@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "decode-destination-expression",
+      "find": "            (char *)(entry->pcm_bytes - remaining +\n                (unsigned int)entry->pcm_data),\n",
+      "replacements": [
+        {
+          "name": "data-base-first",
+          "text": "            (char *)((unsigned int)entry->pcm_data\n                + entry->pcm_bytes - remaining),\n"
+        },
+        {
+          "name": "data-base-plus-offset",
+          "text": "            (char *)((unsigned int)entry->pcm_data\n                + (entry->pcm_bytes - remaining)),\n"
+        },
+        {
+          "name": "typed-pointer-plus-offset",
+          "text": "            (char *)entry->pcm_data\n                + (entry->pcm_bytes - remaining),\n"
+        }
+      ]
+    }
+  ]
+}

@@ -264,13 +264,12 @@ extern "C" void controls_menu_update(void)
         controls_move_method_list.item_count = 4;
     }
 
-    char *player_items[4] = {
-        "Player 1",
-        "Player 2",
-        "Player 3",
-        "Player 4",
-    };
+    char *player_items[4];
     controls_player_profile_list.items = player_items;
+    player_items[0] = "Player 1";
+    player_items[1] = "Player 2";
+    player_items[2] = "Player 3";
+    player_items[3] = "Player 4";
     controls_player_profile_list.item_count = 2;
 
     controls_vec2_t left_panel =

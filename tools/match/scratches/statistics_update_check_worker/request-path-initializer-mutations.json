@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "request-path-initializer",
+      "find": "        char request_path[64] = \"/ra_version.php\";\n",
+      "replacements": [
+        {
+          "name": "zero-then-copy",
+          "text": "        char request_path[64];\n        memset(request_path, 0, sizeof(request_path));\n        strcpy(request_path, \"/ra_version.php\");\n"
+        },
+        {
+          "name": "aggregate-zero-then-copy",
+          "text": "        char request_path[64] = {0};\n        strcpy(request_path, \"/ra_version.php\");\n"
+        },
+        {
+          "name": "copy-without-prefill",
+          "text": "        char request_path[64];\n        strcpy(request_path, \"/ra_version.php\");\n"
+        }
+      ]
+    }
+  ]
+}

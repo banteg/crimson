@@ -118,10 +118,24 @@ canonical source SHA-256 is therefore the rank-2 hash above. All alternatives
 replace the same source span, so they are mutually exclusive and no
 positive-single interaction exists to sweep.
 
-Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.63%**, with a fuzzy gap of
-4,975.24 bytes, 162 exact prefix instructions, 5,421 native instructions
-versus 5,392 candidate instructions, and reference audit **1,530 resolved /
-4 unresolved / 9 mismatched**. This improves the prior **76.59%** result
+## Player-item publication ordering
+
+Live native disassembly publishes the four-entry stack array through
+`controls_player_profile_list.items` before filling its four slots.
+`player-item-publication-mutations.json` evaluated four declaration,
+initialization, and publication spellings. Publishing the pointer before the
+four scalar stores is the unique improving shape and is behavior-preserving:
+no consumer runs until after all stores and `item_count` is assigned.
+
+The retained form adds 19.69 fuzzy-weighted bytes, five resolved references,
+and two exact prefix instructions. Native and candidate now agree through the
+publication and all four item stores; the first residual is the following x87
+temporary, stored at native `[esp+0x30]` versus candidate `[esp+0x18]`.
+
+Current MSVC 6.5 `/O2 /GB /W3 /GR-` result: **76.72%**, with a fuzzy gap of
+4,955.55 bytes, 164 exact prefix instructions, 5,421 native instructions
+versus 5,392 candidate instructions, and reference audit **1,535 resolved /
+4 unresolved / 9 mismatched**. This improves the earlier **76.59%** result
 (4,983.12-byte gap, 148 exact prefix instructions, 5,392 candidate
 instructions, and 1,529 / 4 / 9 references) while retaining the native
 `0x74`-byte frame. The remaining gap is dominated by allocation and early

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "local-declaration-order",
+      "find": "            int inner;\n            int best;\n",
+      "replacements": [
+        {
+          "name": "best-before-inner",
+          "text": "            int best;\n            int inner;\n"
+        }
+      ]
+    },
+    {
+      "name": "best-initialization-and-outer-gate",
+      "find": "            if ((highscore_table[index].flags & 4) != 0 ||\n                (highscore_table[index].flags & 1) == 0) {\n                continue;\n            }\n\n            best = index;\n",
+      "replacements": [
+        {
+          "name": "best-before-compound-gate",
+          "text": "            best = index;\n            if ((highscore_table[index].flags & 4) != 0 ||\n                (highscore_table[index].flags & 1) == 0) {\n                continue;\n            }\n"
+        },
+        {
+          "name": "best-before-split-gate",
+          "text": "            best = index;\n            if ((highscore_table[index].flags & 4) != 0) {\n                continue;\n            }\n            if ((highscore_table[index].flags & 1) == 0) {\n                continue;\n            }\n"
+        },
+        {
+          "name": "best-after-split-gate",
+          "text": "            if ((highscore_table[index].flags & 4) != 0) {\n                continue;\n            }\n            if ((highscore_table[index].flags & 1) == 0) {\n                continue;\n            }\n            best = index;\n"
+        }
+      ]
+    }
+  ]
+}

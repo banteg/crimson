@@ -19,3 +19,12 @@ decoder lifecycle, PCM format, complete short-decode loop, and voice creation.
 Candidate and native each have 99 instructions with `10/0/0` references.
 `--regions` isolates the only difference to the two equivalent decode-pointer
 loads, so recovery is `semantic-complete` with a `compiler` residual.
+
+## Recorded decode-destination sweeps
+
+`decode-destination-order-mutations.json` and
+`decode-destination-lifetime-mutations.json` exercised expression ordering
+and explicit base/offset lifetimes. All four compile-valid alternatives were
+byte-neutral; the dependent partial combinations rejected by VC6 remain
+recorded as compile errors rather than being mistaken for tested semantic
+alternatives. No source change was retained.

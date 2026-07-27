@@ -238,3 +238,8 @@ eligible for testing. Both recorded sweeps report complete one-change coverage,
 variant was retained, and no recovered runtime-port change is warranted. The
 two complete records live in `experiments.jsonl`, whose SHA-256 is
 `fde18fafd0338ab823aae8089d96c24dabd7316f6f72cb65632fdb54b7ef8a7a`.
+
+`conventional-assault-geometry-mutations.json` adds a focused two-variant
+check of the conventional assault-rifle output geometry. Both natural
+alternatives regress by at least 27.66 fuzzy-weighted bytes, with no reference
+or prefix gain. No geometry rewrite was retained.

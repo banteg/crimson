@@ -74,3 +74,8 @@ selection, return values, and close policy are complete.
 The full compiler/flag sweep found no exact profile flip, with stock VC6.5
 `/O2 /GB` remaining best. Classification:
 `RECOVERY=semantic-complete`, `RESIDUAL=compiler`.
+
+`row-position-lifetime-mutations.json` evaluated five named-result,
+constructor, and component-assignment forms in the only residual region. The
+natural named forms are byte-neutral; component assignments regress despite
+one moving the prefix by a single instruction. No source change was retained.

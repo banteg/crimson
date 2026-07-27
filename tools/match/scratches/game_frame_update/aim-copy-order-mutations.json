@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "two-component-aim-copy",
+      "find": "            float *aim = &player_aim_screen_x[aim_index];\n            aim[0] = ui_mouse_x;\n            aim[1] = ui_mouse_y;\n",
+      "replacements": [
+        {
+          "name": "advance-pointer-between-stores",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            *aim = ui_mouse_x;\n            ++aim;\n            *aim = ui_mouse_y;\n"
+        },
+        {
+          "name": "postincrement-first-store",
+          "text": "            float *aim = &player_aim_screen_x[aim_index];\n            *aim++ = ui_mouse_x;\n            *aim = ui_mouse_y;\n"
+        },
+        {
+          "name": "named-component-pointers",
+          "text": "            float *aim_x = &player_aim_screen_x[aim_index];\n            float *aim_y = aim_x + 1;\n            *aim_x = ui_mouse_x;\n            *aim_y = ui_mouse_y;\n"
+        }
+      ]
+    }
+  ]
+}

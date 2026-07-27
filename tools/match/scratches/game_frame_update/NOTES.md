@@ -96,3 +96,10 @@ input, state-dispatch, pause, trial, and return policies are accounted for.
 Classification is `RECOVERY=semantic-complete`, `RESIDUAL=compiler`. The
 metadata-only change is byte-neutral: before and after are 99.45%, prefix
 363/905, 905/905 instructions, and references 317/0/0.
+
+## Recorded aim-copy sweep
+
+`aim-copy-order-mutations.json` evaluated all three natural X/Y assignment
+orders around the two-player aim copy. None improved the score or reference
+audit, so the canonical scalar-pointer spelling remains unchanged and the
+negative result is recorded in `experiments.jsonl`.

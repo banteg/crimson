@@ -64,3 +64,10 @@ scheduling.
 The final terrain clamp now addresses the selected player's canonical
 `position.x/y` fields directly. This removes the last scalar position aliases
 from the function.
+
+## Recorded shotgun-local sweep
+
+`shotgun-vector-slot-mutations.json` evaluated five declaration and heading
+orders around the shotgun vector. Swapping the declarations was byte-neutral
+and the heading reorders regressed, so none supplied evidence for changing the
+recovered source. The stack-coloring residual remains explicit.

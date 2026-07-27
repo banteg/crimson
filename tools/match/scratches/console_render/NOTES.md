@@ -42,3 +42,12 @@ instructions as native and `61/0/0` audited references. `--regions` isolates
 the two differences to the equivalent `add eax, -2` versus `sub eax, 2`
 spellings, so recovery is classified `semantic-complete` with a `compiler`
 residual.
+
+## Recorded visible-line sweeps
+
+`visible-line-adjustment-mutations.json` and
+`visible-line-staged-mutations.json` evaluated 16 signed-local, reused-local,
+and staged-minimum shapes. Every compile-valid alternative was byte-neutral
+or worse, so no source change was retained. The complete records reinforce
+that the final two differences are compiler spelling rather than missing
+visible-line behavior.

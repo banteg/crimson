@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "entry-pointer-lifetime",
+      "find": "extern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n\n    volume = (volume + 2.0f) * (1.0f / 3.0f);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    buffer = entry->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n",
+      "replacements": [
+        {
+          "name": "named-entry-alias",
+          "text": "extern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer;\n    sfx_entry_t *current = entry;\n\n    volume = (volume + 2.0f) * (1.0f / 3.0f);\n    if (current->vorbis_stream != 0 && current->volume == volume) {\n        return;\n    }\n\n    current->volume = volume;\n    buffer = current->buffers;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (current->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        },
+        {
+          "name": "initialized-buffer-cursor",
+          "text": "extern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    LPDIRECTSOUNDBUFFER *buffer = entry->buffers;\n\n    volume = (volume + 2.0f) * (1.0f / 3.0f);\n    if (entry->vorbis_stream != 0 && entry->volume == volume) {\n        return;\n    }\n\n    entry->volume = volume;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (entry->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        },
+        {
+          "name": "alias-and-initialized-cursor",
+          "text": "extern \"C\" void sfx_entry_set_volume(sfx_entry_t *entry, float volume)\n{\n    int i;\n    sfx_entry_t *current = entry;\n    LPDIRECTSOUNDBUFFER *buffer = current->buffers;\n\n    volume = (volume + 2.0f) * (1.0f / 3.0f);\n    if (current->vorbis_stream != 0 && current->volume == volume) {\n        return;\n    }\n\n    current->volume = volume;\n    for (i = 0; i < 16; ++i, ++buffer) {\n        if (*buffer != 0) {\n            (*buffer)->SetVolume((long)((1.0f - volume) * -10000.0f));\n        }\n        if (current->vorbis_stream != 0) {\n            break;\n        }\n    }\n}\n"
+        }
+      ]
+    }
+  ]
+}

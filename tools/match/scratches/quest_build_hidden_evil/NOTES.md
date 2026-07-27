@@ -20,3 +20,8 @@ the candidate fills x87 conversion latency with them, while the native body
 emits them after both position stores. A combined position-and-metadata setter
 produces the same candidate, so the simpler repeated vector assignment remains
 the strongest plausible source shape.
+
+`first-position-lifetime-mutations.json` evaluated four aggregate, staged,
+and scalar materializations of the first wave position. None improved the
+match; the negative sweep leaves the documented VC6 store scheduling as the
+only residual and retains the simpler source.

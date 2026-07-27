@@ -18,3 +18,13 @@ either preserve that fold or perturb otherwise exact frame/register code. No
 alias symbol, volatile shaping, or other fakematch is used. Every native branch,
 glyph lookup, composite draw, and state transition is represented, so the
 scratch is classified as semantic-complete with a compiler residual.
+
+## Recorded composite-tail sweeps
+
+Live native disassembly confirms separate endpoint-temporary pairs in the
+`0xe4` and `0xf6` branches even though their mark suffixes are identical.
+Three specs evaluated 30 commuted endpoint expressions, branch-specific
+storage forms, and point-add operator shapes. Every compile-valid alternative
+was byte-neutral or worse; incomplete dependent-site combinations that did
+not compile remain visible in the machine record. No source change was
+retained, strengthening the tail-merging compiler-residual classification.

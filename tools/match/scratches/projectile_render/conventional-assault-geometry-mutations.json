@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "assault-rifle-output-geometry",
+      "find": "        if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0 = current - half_width;\n            point1 = current + half_width;\n            point2 = origin + half_width;\n            point3 = origin - half_width;\n",
+      "replacements": [
+        {
+          "name": "scalar-output-components",
+          "text": "        if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {\n            projectile_render_vec2_t current =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->position;\n            projectile_render_vec2_t origin =\n                camera_offset\n                + *(projectile_render_vec2_t *)&projectile->pos.origin;\n            projectile_render_vec2_t half_width =\n                *(projectile_render_vec2_t *)&projectile->pos.tail.velocity;\n            point0.x = current.x - half_width.x;\n            point0.y = current.y - half_width.y;\n            point1.x = current.x + half_width.x;\n            point1.y = current.y + half_width.y;\n            point2.x = origin.x + half_width.x;\n            point2.y = origin.y + half_width.y;\n            point3.x = origin.x - half_width.x;\n            point3.y = origin.y - half_width.y;\n"
+        },
+        {
+          "name": "named-scalar-components",
+          "text": "        if (type_id == PROJECTILE_TYPE_ASSAULT_RIFLE) {\n            float current_x = camera_offset_x + projectile->fields.pos_x;\n            float current_y = camera_offset_y + projectile->fields.pos_y;\n            float origin_x = camera_offset_x + projectile->fields.origin_x;\n            float origin_y = camera_offset_y + projectile->fields.origin_y;\n            float half_width_x = projectile->fields.vel_x;\n            float half_width_y = projectile->fields.vel_y;\n            point0.x = current_x - half_width_x;\n            point0.y = current_y - half_width_y;\n            point1.x = current_x + half_width_x;\n            point1.y = current_y + half_width_y;\n            point2.x = origin_x + half_width_x;\n            point2.y = origin_y + half_width_y;\n            point3.x = origin_x - half_width_x;\n            point3.y = origin_y - half_width_y;\n"
+        }
+      ]
+    }
+  ]
+}

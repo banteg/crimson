@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "row-position-materialization",
+      "find": "        list_vec2_t row_position(\n            xy->x, xy->y + (float)(row_index * 16 + 16));\n",
+      "replacements": [
+        {
+          "name": "named-float-offset",
+          "text": "        float row_y_offset =\n            (float)(row_index * 16 + 16);\n        list_vec2_t row_position(\n            xy->x, xy->y + row_y_offset);\n"
+        },
+        {
+          "name": "named-integer-offset",
+          "text": "        int row_y_offset = row_index * 16 + 16;\n        list_vec2_t row_position(\n            xy->x, xy->y + (float)row_y_offset);\n"
+        },
+        {
+          "name": "named-y-coordinate",
+          "text": "        float row_y =\n            xy->y + (float)(row_index * 16 + 16);\n        list_vec2_t row_position(xy->x, row_y);\n"
+        },
+        {
+          "name": "component-assignment-y-first",
+          "text": "        list_vec2_t row_position;\n        row_position.y =\n            xy->y + (float)(row_index * 16 + 16);\n        row_position.x = xy->x;\n"
+        },
+        {
+          "name": "component-assignment-x-first",
+          "text": "        list_vec2_t row_position;\n        row_position.x = xy->x;\n        row_position.y =\n            xy->y + (float)(row_index * 16 + 16);\n"
+        }
+      ]
+    }
+  ]
+}

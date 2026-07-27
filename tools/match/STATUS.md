@@ -4,9 +4,9 @@ Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**686/808** functions matched exactly, **125859/341963** code bytes (**36.8%**). Byte totals are manifest function extents with terminal padding trimmed.
+**687/808** functions matched exactly, **127057/341963** code bytes (**37.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **293857/341963** code bytes (**85.9%**).
+Fuzzy-weighted alignment is **293924/341963** code bytes (**86.0%**).
 
 Compilable source candidates cover **808/808** functions and **341964/341963** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -78,12 +78,12 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 556/671 | 111706/320805 | 34.8% | 273939/320805 | 85.4% | 671/671 | 320805/320805 | 100.0% | 556/671 |
+| crimsonland.exe | 557/671 | 112904/320805 | 35.2% | 274005/320805 | 85.4% | 671/671 | 320805/320805 | 100.0% | 557/671 |
 | grim.dll | 130/137 | 14153/21158 | 66.9% | 19918/21158 | 94.1% | 137/137 | 21159/21158 | 100.0% | 130/137 |
 
 ## crimsonland.exe
 
-**556/671** functions, **111706/320805** bytes (**34.8%**), **273939/320805** fuzzy-weighted bytes (**85.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **556/671** scratches verified.
+**557/671** functions, **112904/320805** bytes (**35.2%**), **274005/320805** fuzzy-weighted bytes (**85.4%**), **671/671** source candidates covering **320805/320805** bytes (**100.0%**), **557/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -567,7 +567,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
 | match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 53/53 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 101/101 | 0 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
-| wip | highscore_load_table | 0x0043afa0 | 1198 | 1154/1198 | 44 | 354/354 | 96.33% | 261/354 | 57/0/0 |  | highscore-table-load-filter-sort |
+| match | highscore_load_table | 0x0043afa0 | 1198 | 1198/1198 | 0 | 354/354 | 100.00% | 354/354 | 59/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 182/182 | 0 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
 | match | highscore_save_active | 0x0043b510 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | highscore-active-record-save |
 | wip | highscore_rank_index | 0x0043b520 | 133 | 78/133 | 55 | 51/51 | 58.82% | 4/51 | 4/0/0 |  | highscore-rank-lookup |
@@ -730,7 +730,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | match | quest_select_row_hover_color_destroy | 0x00448b30 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-hover-color-empty-destructor |
 | match | quest_select_row_idle_color_destroy | 0x00448b40 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | quest-select-row-idle-color-empty-destructor |
 | match | input_detect_active_analog_axis | 0x00448b50 | 377 | 377/377 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | input-analog-axis-detection |
-| wip | controls_menu_update | 0x00448cd0 | 21289 | 16314/21289 | 4975 | 5392/5421 | 76.63% | 162/5421 | 1530/4/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
+| wip | controls_menu_update | 0x00448cd0 | 21289 | 16333/21289 | 4956 | 5392/5421 | 76.72% | 164/5421 | 1535/4/9 |  | controls-device-schemes-key-axis-rebinding-and-render-flow |
 | match | vec2_add_out | 0x0044ecf0 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-add |
 | match | nullsub_89 | 0x0044ed10 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
 | match | nullsub_90 | 0x0044ed20 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | empty-nullsub |
@@ -751,7 +751,7 @@ Compilable source candidates cover **808/808** functions and **341964/341963** c
 | wip | ui_element_layout_calc | 0x0044fb50 | 288 | 278/288 | 10 | 86/86 | 96.51% | 34/86 | 6/0/0 |  | ui-element-layout-and-hover-uvs |
 | match | ui_menu_main_click_buy_full_version | 0x0044fc70 | 39 | 39/39 | 0 | 11/11 | 100.00% | 11/11 | 5/0/0 |  | shareware-purchase-link |
 | match | ui_menu_main_click_recheck_full_version | 0x0044fca0 | 8 | 8/8 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | full-version-recheck |
-| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6133/7237 | 1104 | 1403/1422 | 84.74% | 10/1422 | 437/0/23 |  | menu-element-graph-layout-and-responsive-transforms |
+| wip | ui_menu_layout_init | 0x0044fcb0 | 7237 | 6136/7237 | 1101 | 1404/1422 | 84.78% | 10/1422 | 439/0/22 |  | menu-element-graph-layout-and-responsive-transforms |
 | match | weapon_table_defaults_global_init_thunk | 0x00451900 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | weapon-table-default-global-initialization-thunk |
 | match | weapon_table_defaults_global_init | 0x00451910 | 150 | 150/150 | 0 | 47/47 | 100.00% | 47/47 | 2/0/0 |  | weapon-table-default-global-initialization |
 | match | weapon_table_init | 0x004519b0 | 4885 | 4885/4885 | 0 | 1000/1000 | 100.00% | 1000/1000 | 477/0/0 |  | weapon-metadata-database |

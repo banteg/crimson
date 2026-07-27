@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "sites": [
+    {
+      "name": "declare-signed-line-adjustment",
+      "find": "        int line_y;\n        int visible_line_limit = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "named-negative-adjustment",
+          "text": "        int line_y;\n        const int visible_line_adjustment = -2;\n        int visible_line_limit =\n            height / 16 + visible_line_adjustment;\n"
+        },
+        {
+          "name": "inline-negative-adjustment",
+          "text": "        int line_y;\n        int visible_line_limit = height / 16 + (-2);\n"
+        }
+      ]
+    },
+    {
+      "name": "reuse-signed-line-adjustment",
+      "find": "        int max_visible_lines = height / 16 - 2;\n",
+      "replacements": [
+        {
+          "name": "named-negative-adjustment",
+          "text": "        int max_visible_lines =\n            height / 16 + visible_line_adjustment;\n"
+        },
+        {
+          "name": "inline-negative-adjustment",
+          "text": "        int max_visible_lines = height / 16 + (-2);\n"
+        }
+      ]
+    }
+  ]
+}

@@ -155,3 +155,16 @@ pointer variants and three force-inlined vector-helper variants were likewise
 neutral or regressive, so no prompt-transform rewrite was retained. All
 complete rankings are recorded in `experiments.jsonl`; the JSON specs capture
 the pre-application source snapshots used for each sweep.
+
+## Final responsive-Y lifetime
+
+Live native disassembly computes the last responsive offset as three staged
+x87 operations: multiply the converted screen width by `0.0015625`, multiply
+that result by `150`, then subtract `150` before adding the element's current
+Y. `final-responsive-y-mutations.json` evaluated the fused and staged source
+shapes; all three staged spellings compiled identically and improved the same
+intended closing region.
+
+The retained temporary follows that native dataflow without an artificial
+dependency. It raises the result to **84.78%**, 1,404/1,422 instructions,
+prefix 10, audit **439/0/22**, and a 1,101.17-byte fuzzy gap.

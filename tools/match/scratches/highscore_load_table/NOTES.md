@@ -71,3 +71,13 @@ instruction-scheduling differences: the target uses `edx`/`ebp` for the inner
 index/byte offset while the candidate uses `ebp`/`edi`. No volatile state,
 byte-offset locals, or artificial dependencies were added to force those
 compiler choices.
+
+## Same-name loop exact match
+
+Live native IL shows the initial best-record index being saved before either
+outer-record flag test. `same-name-loop-lifetime-mutations.json` evaluated that
+ordering, split and compound gate spellings, declaration ordering, and their
+interactions. Moving only `best = index` before the existing compound gate is
+exact: 1198/1198 bytes, 354/354 instructions, and `59/0/0` references.
+Reordering the declarations alone was byte-neutral. The retained move is
+behavior-preserving because skipped records never consume `best`.
