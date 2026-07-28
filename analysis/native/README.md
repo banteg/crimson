@@ -67,6 +67,11 @@ manifest text without widening which symbols qualify for emission. A `null`
 expected type deliberately restricts a group to currently untyped map entries;
 the group's size and alignment sources must then record the independent type or
 storage-width evidence used for those members.
+Groups whose members have different literal values may instead set
+`member_initializer_hex` and list `[address, name, initializer_hex]` members.
+The group still owns the common initializer provenance, size, alignment, and
+type checks, while each member's literal is independently length-checked and
+compared byte-for-byte with the pinned reference image.
 An unresolved catalog name whose address falls inside one of those explicit
 ranges is emitted as an `interior-alias` binding. The alias records its own
 mapped address and name, but its section storage remains owned by the smallest

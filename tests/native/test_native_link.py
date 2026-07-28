@@ -1185,12 +1185,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 581
-    assert payload["summary"]["explicit_alignment_entries"] == 581
-    assert payload["summary"]["explicit_initializer_entries"] == 581
-    assert payload["summary"]["fully_specified_entries"] == 581
-    assert payload["summary"]["definition_group_entries"] == 517
-    assert payload["summary"]["definition_groups"] == 37
+    assert payload["summary"]["explicit_size_entries"] == 638
+    assert payload["summary"]["explicit_alignment_entries"] == 638
+    assert payload["summary"]["explicit_initializer_entries"] == 638
+    assert payload["summary"]["fully_specified_entries"] == 638
+    assert payload["summary"]["definition_group_entries"] == 574
+    assert payload["summary"]["definition_groups"] == 56
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1230,11 +1230,11 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["ui_element_slot_footer_variant_a"]["definition_group"] == (
         "zero-ui-element-slots"
     )
-    assert next(
-        entry
-        for entry in payload["entries"]
-        if entry["name"] == "demo_time_limit_ms"
-    )["size"] is None
+    assert defined["demo_time_limit_ms"]["initializer_hex"] == "10270000"
+    assert defined["default_player_name"]["size"] == 7
+    assert defined["console_input_buf"]["size"] == 1024
+    assert defined["typo_target_name_table"]["size"] == 384 * 64
+    assert defined["terrain_texture_handles"]["size"] == 8 * 4
 
 
 def test_data_manifest_ranks_game_data_by_reference_fan_in() -> None:
@@ -1427,6 +1427,135 @@ def test_data_definition_groups_reject_data_map_type_mismatch(
     )
 
     with pytest.raises(ValueError, match="data-map type 'float'"):
+        load_native_data_definitions(
+            "grim.dll",
+            path=path,
+            data_map_path=data_map_path,
+        )
+
+
+def test_data_definition_groups_expand_member_initializers(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    data_map_path = tmp_path / "data.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "groups": [
+                    {
+                        "name": "literal-int32",
+                        "types": ["int"],
+                        "size": 4,
+                        "size_source": "data-map type",
+                        "alignment": 4,
+                        "alignment_source": "data-map type",
+                        "member_initializer_hex": True,
+                        "initializer_source": "reference image",
+                        "members": [
+                            ["0x10053000", "first", "01000000"],
+                            ["0x10053004", "second", "ffffffff"],
+                        ],
+                    },
+                ],
+                "entries": [],
+            },
+        ),
+        encoding="utf-8",
+    )
+    data_map_path.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "first",
+                        "program": "grim.dll",
+                        "type": "int",
+                    },
+                    {
+                        "address": "0x10053004",
+                        "name": "second",
+                        "program": "grim.dll",
+                        "type": "int",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    payload = load_native_data_definitions(
+        "grim.dll",
+        path=path,
+        data_map_path=data_map_path,
+    )
+
+    assert payload is not None
+    assert [
+        (entry["name"], entry["initializer_hex"])
+        for entry in payload["entries"]
+    ] == [
+        ("first", "01000000"),
+        ("second", "ffffffff"),
+    ]
+
+
+def test_data_definition_groups_reject_malformed_member_initializer(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    data_map_path = tmp_path / "data.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "groups": [
+                    {
+                        "name": "literal-int32",
+                        "types": ["int"],
+                        "size": 4,
+                        "size_source": "data-map type",
+                        "member_initializer_hex": True,
+                        "initializer_source": "reference image",
+                        "members": [["0x10053000", "counter", "not-hex"]],
+                    },
+                ],
+                "entries": [],
+            },
+        ),
+        encoding="utf-8",
+    )
+    data_map_path.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "counter",
+                        "program": "grim.dll",
+                        "type": "int",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="lowercase byte hex"):
         load_native_data_definitions(
             "grim.dll",
             path=path,

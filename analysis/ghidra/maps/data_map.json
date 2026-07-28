@@ -127,7 +127,8 @@
       "address": "0x0047125c",
       "comment": "Shared default cvar string used for \"enabled\"/true-like console vars.",
       "name": "console_cvar_default_true",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x00471260",
@@ -153,7 +154,8 @@
       "address": "0x004712c0",
       "comment": "Console prompt string used for input rendering.",
       "name": "console_prompt_string",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[2]"
     },
     {
       "address": "0x004712c4",
@@ -166,7 +168,8 @@
       "address": "0x004712f0",
       "comment": "Demo/attract mode time limit in ms (used with quest_spawn_timeline to cycle demo variants and the upsell overlay).",
       "name": "demo_time_limit_ms",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004712f4",
@@ -186,7 +189,8 @@
       "address": "0x004712fc",
       "comment": "Tutorial hint index used for secondary prompt overlay (increments when bonus object deactivates).",
       "name": "tutorial_hint_index",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00471304",
@@ -206,7 +210,8 @@
       "address": "0x00471314",
       "comment": "Default player name string copied into config on load.",
       "name": "default_player_name",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x004713f8",
@@ -1048,25 +1053,29 @@
       "address": "0x004755e0",
       "comment": "Effect UV step for 2x2 atlas (size code 0x80)",
       "name": "effect_uv_step_2",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004755e4",
       "comment": "Effect UV step for 4x4 atlas (size code 0x40)",
       "name": "effect_uv_step_4",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004755e8",
       "comment": "Effect UV step for 8x8 atlas (size code 0x20)",
       "name": "effect_uv_step_8",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004755ec",
       "comment": "Effect UV step for 16x16 atlas (size code 0x10)",
       "name": "effect_uv_step_16",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004755f0",
@@ -1085,7 +1094,8 @@
       "address": "0x00477758",
       "comment": "Unhandled creature-template diagnostic string (\"Unhandled creatureType.\\n\").",
       "name": "s_unhandled_creature_type",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[25]"
     },
     {
       "address": "0x00477bf4",
@@ -1097,7 +1107,8 @@
       "address": "0x00477d28",
       "comment": "SFX playback rate scale (set during sfx_play; affected by Reflex Boost).",
       "name": "sfx_rate_scale",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "DWORD"
     },
     {
       "address": "0x00478668",
@@ -1144,7 +1155,8 @@
       "address": "0x00478884",
       "comment": "Fallback month label used by highscore_format_date_label for out-of-range month values.",
       "name": "highscore_month_label_default",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[4]"
     },
     {
       "address": "0x00478888",
@@ -1330,7 +1342,8 @@
       "address": "0x00478e38",
       "comment": "Typ-o typed command that triggers manual reload behavior (\"reload\").",
       "name": "s_typo_command_reload",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[7]"
     },
     {
       "address": "0x00478e50",
@@ -1412,13 +1425,15 @@
       "address": "0x0047e448",
       "comment": "Console input text buffer (0x400 bytes; null-terminated).",
       "name": "console_input_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[1024]"
     },
     {
       "address": "0x0047e848",
       "comment": "Scratch line buffer used by console_cmd_exec when reading script files with fgets().",
       "name": "console_exec_line_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[512]"
     },
     {
       "address": "0x0047ea4c",
@@ -1536,7 +1551,8 @@
       "address": "0x0047f4d0",
       "comment": "Console cvar handle for con_monoFont (queried when drawing console text).",
       "name": "cv_con_mono_font",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "console_cvar_entry_t *"
     },
     {
       "address": "0x0047f4d4",
@@ -1548,7 +1564,8 @@
       "address": "0x0047f4d8",
       "comment": "Empty string constant (\"\"), used as default/blank text.",
       "name": "s_empty_string",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char"
     },
     {
       "address": "0x0047f5e0",
@@ -2232,7 +2249,8 @@
       "address": "0x004807e8",
       "comment": "Perk choice table filled by perks_generate_choices.",
       "name": "perk_choice_ids",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[7]"
     },
     {
       "address": "0x00480808",
@@ -5050,7 +5068,8 @@
       "address": "0x0048f548",
       "comment": "Array of terrain texture handles. Indexed by quest_meta terrain_id fields (offsets 0x10/0x14/0x18) in terrain_generate.",
       "name": "terrain_texture_handles",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[8]"
     },
     {
       "address": "0x0048f54c",
@@ -7979,19 +7998,22 @@
       "address": "0x004c365c",
       "comment": "High score filename buffer for named profile variants (returned by highscore_build_path when name slot != 0).",
       "name": "highscore_named_path_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004c36dc",
       "comment": "Base high score filename buffer assembled by highscore_build_path.",
       "name": "highscore_path_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[128]"
     },
     {
       "address": "0x004c375c",
       "comment": "Cached working-directory prefix used when composing high score file paths.",
       "name": "highscore_cwd_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[512]"
     },
     {
       "address": "0x004c395b",
@@ -8744,7 +8766,8 @@
       "address": "0x004ccbd0",
       "comment": "UI focus candidate list used by ui_focus_update.",
       "name": "ui_focus_candidates",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int[32]"
     },
     {
       "address": "0x004ccc50",
@@ -9221,7 +9244,8 @@
       "address": "0x004d152c",
       "comment": "Per-creature Typ-o target-name table (0x40-byte strings indexed by creature id).",
       "name": "typo_target_name_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[384][64]"
     },
     {
       "address": "0x004d7570",
@@ -9940,7 +9964,8 @@
       "address": "0x004da100",
       "comment": "Scratch buffer used by input_key_name (GetKeyNameTextA, 0x40 bytes).",
       "name": "input_key_name_buf",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[64]"
     },
     {
       "address": "0x004da3a4",

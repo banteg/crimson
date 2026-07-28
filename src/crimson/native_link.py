@@ -2070,18 +2070,48 @@ def load_native_data_definitions(
         members = raw_group.get("members")
         if not isinstance(members, list) or not members:
             raise ValueError(f"{group_label}.members must be a non-empty array")
+        member_initializer_hex = raw_group.get("member_initializer_hex", False)
+        if not isinstance(member_initializer_hex, bool):
+            raise TypeError(f"{group_label}.member_initializer_hex must be a boolean")
+        if member_initializer_hex:
+            if (
+                raw_group.get("initializer_hex") is not None
+                or raw_group.get("initializer_fill") is not None
+            ):
+                raise ValueError(
+                    f"{group_label}: member_initializer_hex cannot be combined "
+                    "with a group initializer",
+                )
+            if not isinstance(raw_group.get("initializer_source"), str):
+                raise ValueError(
+                    f"{group_label}: member_initializer_hex requires "
+                    "initializer_source",
+                )
         member_keys: list[tuple[int, str]] = []
         for member_index, member in enumerate(members):
             member_label = f"{group_label}.members[{member_index}]"
+            expected_member_length = 3 if member_initializer_hex else 2
             if (
                 not isinstance(member, list)
-                or len(member) != 2
+                or len(member) != expected_member_length
                 or not isinstance(member[0], (str, int))
                 or not isinstance(member[1], str)
                 or not member[1]
+                or (
+                    member_initializer_hex
+                    and (
+                        not isinstance(member[2], str)
+                        or re.fullmatch(r"(?:[0-9a-f]{2})+", member[2]) is None
+                    )
+                )
             ):
+                member_shape = (
+                    "[address, non-empty name, lowercase byte hex]"
+                    if member_initializer_hex
+                    else "[address, non-empty name]"
+                )
                 raise ValueError(
-                    f"{member_label} must be [address, non-empty name]",
+                    f"{member_label} must be {member_shape}",
                 )
             try:
                 key = (matchlib.parse_int(member[0]), member[1])
@@ -2114,6 +2144,8 @@ def load_native_data_definitions(
                     "name": member[1],
                 },
             )
+            if member_initializer_hex:
+                expanded["initializer_hex"] = member[2]
             labeled_entries.append(expanded)
         if member_keys != sorted(member_keys):
             raise ValueError(f"{group_label}.members must be sorted by address and name")
