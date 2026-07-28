@@ -254,6 +254,7 @@ def cmd_native_link(
         f"imports={summary['import_symbols']} "
         f"archives={summary['archive_symbols']} "
         f"generated_imports={summary['generated_import_symbols']} "
+        f"link_deps={summary['link_dependency_symbols']} "
         f"placeholders={summary['placeholder_symbols']} "
         f"runnable={manifest['runnable']}",
     )

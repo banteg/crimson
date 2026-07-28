@@ -46,6 +46,14 @@ Evidence is also listed inline with addresses from the Ghidra and IDA outputs.
   remaining unmatched functions are a boundary/symbol-recovery problem, not a
   reason to recreate D3DX from decompilation.
 
+- Native provider: Grim now links the pinned archive for
+  `D3DXCreateTexture`, both `D3DXCreateTextureFromFile*` entrypoints,
+  `D3DXVec2Normalize`, and the byte-identical internal
+  `D3DXComputeNormalMap` body (`0x1000b3fe`, 2,046 bytes and 52 normalized
+  relocations). Its 24 decorated platform dependencies are modeled separately
+  from closure coverage; release dead-code elimination retains 17 imports
+  found in the reference DLL and discards the other seven.
+
 Reproduce the archive proof without installing the SDK:
 
 ```sh
@@ -187,13 +195,16 @@ uv run crimson match archive /tmp/crimson-vc6/vc98/lib/msvcrt.lib \
 - Status: the exact IJG objects are present in the confirmed DirectX 8.1
   `d3dx8.lib`; member symbols such as `jdmarker.obj`, `jmemmgr.obj`, and
   `jquant*.obj` match Grim functions directly.
-- Status: the interleaved decompressor entry cluster at
+- Status: the interleaved plain-C decompressor entry cluster at
   `0x10009a50..0x1000a107` is mapped as `jpeg_CreateDecompress`,
   `jpeg_destroy_decompress`, `jpeg_read_header`, `jpeg_consume_input`,
   `default_decompress_parms`, `jpeg_finish_decompress`,
   `jpeg_start_decompress`, `output_pass_setup`, and `jpeg_read_scanlines`.
   These nine library functions are excluded from the default port score with
-  address-keyed `third-party` dispositions.
+  address-keyed `third-party` dispositions. They are a separately linked JAZ
+  decoder copy: the confirmed D3DX8 archive exposes namespaced symbols with
+  byte-distinct entry bodies elsewhere in Grim, so this cluster remains a
+  separate provider target.
 - Status: `grim_jaz_jpeg_error_exit` remains a 100% scratch match with the 6a
   headers. It and the surrounding JAZ payload/RLE logic remain Grim-owned.
 

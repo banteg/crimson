@@ -21,8 +21,8 @@ NATIVE_DATA_MANIFEST_SCHEMA = 1
 NATIVE_DATA_DEFINITION_SCHEMA = 1
 NATIVE_TRANSLATION_UNIT_SCHEMA = 1
 NATIVE_LINKER_ALIAS_SCHEMA = 1
-NATIVE_PROVIDER_SCHEMA = 2
-NATIVE_LINK_MANIFEST_SCHEMA = 2
+NATIVE_PROVIDER_SCHEMA = 3
+NATIVE_LINK_MANIFEST_SCHEMA = 3
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
@@ -205,6 +205,7 @@ class NativeProviderSymbol:
 @dataclass(frozen=True, slots=True)
 class NativeProviderSpec:
     name: str
+    scope: str
     kind: str
     resolution: str
     module: str | None
@@ -728,6 +729,7 @@ def load_native_provider_config(
         if not isinstance(raw_provider, dict):
             raise TypeError(f"{label} must be an object")
         name = raw_provider.get("name")
+        scope = raw_provider.get("scope", "closure")
         kind = raw_provider.get("kind")
         resolution = raw_provider.get("resolution")
         module = raw_provider.get("module")
@@ -737,6 +739,8 @@ def load_native_provider_config(
         if name in provider_names:
             raise ValueError(f"{path}: duplicate provider name {name!r}")
         provider_names.add(name)
+        if scope not in {"closure", "link-dependency"}:
+            raise ValueError(f"{label}.scope is unsupported: {scope!r}")
         if kind not in {
             "platform-replaced",
             "reference-import",
@@ -753,6 +757,13 @@ def load_native_provider_config(
         if resolution == "import-library" and kind != "reference-import":
             raise ValueError(
                 f"{label}: import-library resolution requires reference-import kind",
+            )
+        if scope == "link-dependency" and (
+            kind != "reference-import" or resolution != "import-library"
+        ):
+            raise ValueError(
+                f"{label}: link-dependency scope requires a reference-import "
+                "import-library provider",
             )
         if kind == "reference-import":
             if not isinstance(module, str) or not module:
@@ -899,6 +910,7 @@ def load_native_provider_config(
         providers.append(
             NativeProviderSpec(
                 name=name,
+                scope=cast(str, scope),
                 kind=cast(str, kind),
                 resolution=cast(str, resolution),
                 module=cast(str | None, module),
@@ -941,9 +953,24 @@ def native_provider_coverage(
         if name in unresolved_by_name:
             raise ValueError(f"closure contains duplicate unresolved symbol {name!r}")
         unresolved_by_name[name] = unresolved_row
+    closure_providers = tuple(
+        provider
+        for provider in config.providers
+        if provider.scope == "closure"
+    )
+    dependency_providers = tuple(
+        provider
+        for provider in config.providers
+        if provider.scope == "link-dependency"
+    )
     provider_symbols = {
         symbol.name
-        for provider in config.providers
+        for provider in closure_providers
+        for symbol in provider.symbols
+    }
+    dependency_symbols = {
+        symbol.name
+        for provider in dependency_providers
         for symbol in provider.symbols
     }
     missing = sorted(set(unresolved_by_name) - provider_symbols)
@@ -962,22 +989,51 @@ def native_provider_coverage(
         for row in reference_imports
         if isinstance(row, dict)
     }
+    normalized_import_keys = {
+        (module.removesuffix(".dll"), export)
+        for module, export in import_keys
+    }
+    reference_modules = {module for module, _ in normalized_import_keys}
     provider_rows: list[dict[str, Any]] = []
     for provider in config.providers:
         if provider.kind == "reference-import":
             assert provider.module is not None
+            module = provider.module.removesuffix(".dll").casefold()
+            if (
+                provider.scope == "link-dependency"
+                and module not in reference_modules
+            ):
+                raise ValueError(
+                    f"{provider.name}: link-dependency module "
+                    f"{provider.module!r} is absent from reference imports",
+                )
             for symbol in provider.symbols:
                 assert symbol.export is not None
-                key = (provider.module.removesuffix(".dll").casefold(), symbol.export)
-                normalized_import_keys = {
-                    (module.removesuffix(".dll"), export)
-                    for module, export in import_keys
-                }
-                if key not in normalized_import_keys:
+                key = (module, symbol.export)
+                if (
+                    provider.scope == "closure"
+                    and key not in normalized_import_keys
+                ):
                     raise ValueError(
                         f"{provider.name}: {symbol.name!r} lacks reference import "
                         f"{provider.module}!{symbol.export}",
                     )
+        if provider.scope == "link-dependency":
+            provider_rows.append(
+                {
+                    "kind": provider.kind,
+                    "name": provider.name,
+                    "resolution": provider.resolution,
+                    "scope": provider.scope,
+                    "symbol_count": len(provider.symbols),
+                    **(
+                        {"alias_count": len(provider.aliases)}
+                        if provider.aliases
+                        else {}
+                    ),
+                },
+            )
+            continue
         for symbol in provider.symbols:
             unresolved = unresolved_by_name[symbol.name]
             catalog = unresolved.get("catalog")
@@ -1007,6 +1063,7 @@ def native_provider_coverage(
                 "kind": provider.kind,
                 "name": provider.name,
                 "resolution": provider.resolution,
+                "scope": provider.scope,
                 "symbol_count": len(provider.symbols),
                 **(
                     {"archive": provider.archive.id}
@@ -1022,22 +1079,22 @@ def native_provider_coverage(
         )
     import_count = sum(
         len(provider.symbols)
-        for provider in config.providers
+        for provider in closure_providers
         if provider.kind == "reference-import"
     )
     generated_import_count = sum(
         len(provider.symbols)
-        for provider in config.providers
+        for provider in closure_providers
         if provider.resolution == "import-library"
     )
     archive_count = sum(
         len(provider.symbols)
-        for provider in config.providers
+        for provider in closure_providers
         if provider.resolution == "archive-library"
     )
     placeholder_count = sum(
         len(provider.symbols)
-        for provider in config.providers
+        for provider in closure_providers
         if provider.resolution == "placeholder-object"
     )
     if generated_import_count + archive_count + placeholder_count != len(
@@ -1049,6 +1106,7 @@ def native_provider_coverage(
         "covered_symbols": len(provider_symbols),
         "generated_import_symbols": generated_import_count,
         "import_symbols": import_count,
+        "link_dependency_symbols": len(dependency_symbols),
         "placeholder_symbols": placeholder_count,
         "providers": provider_rows,
         "runnable": placeholder_count == 0,
@@ -5113,18 +5171,22 @@ def native_pe_imports(data: bytes) -> dict[str, tuple[str, ...]]:
 def _validate_linked_reference_imports(
     config: NativeProviderConfig,
     image_data: bytes,
+    symbol_closure: dict[str, Any],
 ) -> dict[str, Any]:
     actual = native_pe_imports(image_data)
     expected: dict[str, set[str]] = defaultdict(set)
+    dependencies: dict[str, set[str]] = defaultdict(set)
     for provider in config.providers:
         if provider.kind != "reference-import":
             continue
         assert provider.module is not None
         module = provider.module.casefold().removesuffix(".dll")
-        expected[module].update(
-            cast(str, symbol.export)
-            for symbol in provider.symbols
+        target = (
+            dependencies
+            if provider.scope == "link-dependency"
+            else expected
         )
+        target[module].update(cast(str, symbol.export) for symbol in provider.symbols)
     missing = sorted(
         (module, symbol)
         for module, symbols in expected.items()
@@ -5139,7 +5201,46 @@ def _validate_linked_reference_imports(
         raise ValueError(
             f"linked PE is missing configured reference imports: {rendered}",
         )
+    raw_reference_imports = symbol_closure.get("reference_imports")
+    if not isinstance(raw_reference_imports, list):
+        raise TypeError("closure reference_imports must be an array")
+    reference = {
+        (
+            str(row.get("module", "")).casefold().removesuffix(".dll"),
+            str(row.get("name", "")),
+        )
+        for row in raw_reference_imports
+        if isinstance(row, dict)
+    }
+    unexpected = sorted(
+        (module, symbol)
+        for module, symbols in actual.items()
+        for symbol in symbols
+        if (module, symbol) not in reference
+    )
+    if unexpected:
+        rendered = ", ".join(
+            f"{module}.dll!{symbol}"
+            for module, symbol in unexpected
+        )
+        raise ValueError(
+            f"linked PE imports symbols absent from the reference image: {rendered}",
+        )
+    dependency_rows = [
+        {
+            "declared_symbols": sorted(symbols),
+            "discarded_symbols": sorted(symbols - set(actual.get(module, ()))),
+            "module": module,
+            "retained_symbols": sorted(symbols & set(actual.get(module, ()))),
+        }
+        for module, symbols in sorted(dependencies.items())
+    ]
     return {
+        "link_dependencies": dependency_rows,
+        "link_dependency_retained_symbol_count": sum(
+            len(row["retained_symbols"])
+            for row in dependency_rows
+        ),
         "modules": [
             {
                 "module": module,
@@ -5147,6 +5248,14 @@ def _validate_linked_reference_imports(
             }
             for module, symbols in sorted(expected.items())
         ],
+        "output_modules": [
+            {
+                "module": module,
+                "symbols": list(symbols),
+            }
+            for module, symbols in sorted(actual.items())
+        ],
+        "output_symbol_count": sum(len(symbols) for symbols in actual.values()),
         "symbol_count": sum(len(symbols) for symbols in expected.values()),
     }
 
@@ -5276,6 +5385,7 @@ def link_native_image(
             "kind": provider.kind,
             "name": provider.name,
             "resolution": provider.resolution,
+            "scope": provider.scope,
             "symbols": [symbol.name for symbol in provider.symbols],
         }
         stem: str | None = None
@@ -5371,7 +5481,10 @@ def link_native_image(
     placeholder_providers = tuple(
         provider
         for provider in provider_config.providers
-        if provider.resolution == "placeholder-object"
+        if (
+            provider.scope == "closure"
+            and provider.resolution == "placeholder-object"
+        )
     )
     placeholder_path: Path | None = None
     placeholder_payload: dict[str, Any] | None = None
@@ -5418,6 +5531,7 @@ def link_native_image(
             "/nologo",
             "/dll",
             "/nodefaultlib",
+            "/opt:ref",
             "/machine:ix86",
             f"/entry:{provider_config.entry}",
             f"/base:0x{provider_config.image_base:08x}",
@@ -5472,6 +5586,7 @@ def link_native_image(
     reference_imports = _validate_linked_reference_imports(
         provider_config,
         linked_image_data,
+        audit.symbol_closure,
     )
     if reference_imports["symbol_count"] != coverage["import_symbols"]:
         raise ValueError(
@@ -5500,6 +5615,12 @@ def link_native_image(
         "summary": {
             **coverage,
             "input_object_count": len(object_paths),
+            "retained_link_dependency_import_symbols": (
+                reference_imports["link_dependency_retained_symbol_count"]
+            ),
+            "validated_output_import_symbols": (
+                reference_imports["output_symbol_count"]
+            ),
             "validated_reference_import_symbols": reference_imports["symbol_count"],
         },
         "toolchain": {

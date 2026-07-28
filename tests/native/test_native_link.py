@@ -598,8 +598,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     assert coverage["covered_symbols"] == 53
     assert coverage["import_symbols"] == 20
     assert coverage["generated_import_symbols"] == 5
-    assert coverage["archive_symbols"] == 18
-    assert coverage["placeholder_symbols"] == 30
+    assert coverage["archive_symbols"] == 23
+    assert coverage["link_dependency_symbols"] == 24
+    assert coverage["placeholder_symbols"] == 25
     assert coverage["runnable"] is False
     assert [
         provider.name
@@ -609,6 +610,9 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         "user32.dll",
         "winmm.dll",
         "d3d8.dll",
+        "directx-8.1-d3dx8-kernel32",
+        "directx-8.1-d3dx8-gdi32",
+        "directx-8.1-d3dx8-advapi32",
     ]
     assert [
         provider.name
@@ -616,16 +620,48 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
         if provider.resolution == "archive-library"
     ] == [
         "msvcrt.dll",
+        "directx-8.1-d3dx8-static",
         "msvc6-runtime-static",
         "msvc6-toolchain",
     ]
-    assert len(config.archives) == 1
-    archive = config.archives[0]
-    assert archive.id == "vc6-sp6-msvcrt"
-    assert archive.size == 235942
-    assert archive.sha256 == (
+    assert len(config.archives) == 2
+    archives = {archive.id: archive for archive in config.archives}
+    assert archives["directx-8.1-d3dx8"].size == 2150226
+    assert archives["directx-8.1-d3dx8"].sha256 == (
+        "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+    )
+    assert archives["vc6-sp6-msvcrt"].size == 235942
+    assert archives["vc6-sp6-msvcrt"].sha256 == (
         "3efc3ddf045a459a2b6403f0b821be2cb7c316ffca67dddddb346cea7a9e4f63"
     )
+
+
+def test_default_grim_link_manifest_records_d3dx_dependency_pruning() -> None:
+    manifest = json.loads(
+        (
+            matchlib.REPO_ROOT
+            / "analysis/native/grim.dll/link/link.json"
+        ).read_text(encoding="utf-8"),
+    )
+
+    assert manifest["schema"] == 3
+    assert manifest["summary"]["link_dependency_symbols"] == 24
+    assert manifest["summary"]["retained_link_dependency_import_symbols"] == 17
+    assert manifest["summary"]["validated_output_import_symbols"] == 52
+    dependencies = {
+        row["module"]: row
+        for row in manifest["reference_imports"]["link_dependencies"]
+    }
+    assert dependencies["kernel32"]["discarded_symbols"] == [
+        "FindResourceA",
+        "FindResourceW",
+        "LoadResource",
+        "LockResource",
+        "SizeofResource",
+        "WriteFile",
+    ]
+    assert dependencies["gdi32"]["retained_symbols"] == []
+    assert dependencies["advapi32"]["discarded_symbols"] == []
 
 
 def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
@@ -660,7 +696,7 @@ def test_provider_archive_can_be_absent_but_present_bytes_are_hash_checked(
     config_path.write_text(
         json.dumps(
             {
-                "schema": 2,
+                "schema": 3,
                 "image": "grim.dll",
                 "entry": "DllMain",
                 "image_base": "0x10000000",
@@ -746,6 +782,10 @@ def test_native_provider_import_definitions_preserve_reference_export_names() ->
         (alias.alias, alias.target)
         for alias in providers["msvcrt.dll"].aliases
     ] == [("_strdup", "__strdup")]
+    assert providers["directx-8.1-d3dx8-kernel32"].scope == "link-dependency"
+    assert "    FindResourceW\n" in render_native_import_definition(
+        providers["directx-8.1-d3dx8-kernel32"],
+    )
 
 
 def test_native_provider_placeholder_object_is_deterministic() -> None:
@@ -768,12 +808,14 @@ def test_native_provider_placeholder_object_is_deterministic() -> None:
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
 
-    assert len(symbols) == 30
+    assert len(symbols) == 25
     assert [section.name for section in coff.sections] == [".text"]
-    stdcall = symbols["_D3DXCreateTexture@32"]
-    assert coff.sections[stdcall.section_number - 1].data[
-        stdcall.value : stdcall.value + 5
-    ] == b"\x31\xc0\xc2\x20\x00"
+    assert "_D3DXCreateTexture@32" not in symbols
+    assert "_d3dx_copy_texture_filtered@24" not in symbols
+    c_provider = symbols["_jpeg_CreateDecompress"]
+    assert coff.sections[c_provider.section_number - 1].data[
+        c_provider.value : c_provider.value + 3
+    ] == b"\x31\xc0\xc3"
     cxx = symbols["?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"]
     assert coff.sections[cxx.section_number - 1].data[
         cxx.value : cxx.value + 3

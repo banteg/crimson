@@ -155,29 +155,45 @@ exactly. It distinguishes 20 exports that the reference PE really imports
 from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original
 VC6 SP6 `MSVCRT.LIB` now supplies 15 of those imports plus the exact
 `atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes: 18
-closure symbols total. Five imports still use generated import libraries, and
-30 static-library or host-replaced symbols remain explicit placeholders.
-Every group cites repository evidence, and reference-import entries are
-checked against both the pinned PE import table and the linked output.
+closure symbols total. The original DirectX 8.1 `d3dx8.lib` supplies another
+five closure symbols, including a byte-proven alias from the recovered
+`d3dx_copy_texture_filtered` name to the archive's
+`D3DXComputeNormalMap`. Five closure imports still use generated import
+libraries, and 25 static-library or host-replaced symbols remain explicit
+placeholders.
 
-The archive is ignored proprietary input, pinned by size and SHA-256 to
-`analysis/library_provenance.json`. Provision it at the configured path before
-linking:
+The D3DX archive also needs 24 decorated platform symbols while the linker
+selects and prunes its members. These are modeled as `link-dependency`
+providers, not counted as closure coverage. `/OPT:REF` retains 17 imports in
+the output and discards seven unused edges, including `FindResourceW`; every
+retained output import is required to exist in the pinned reference PE table.
+Every provider group cites repository evidence.
+
+The archives are ignored proprietary inputs, pinned by size and SHA-256 to
+`analysis/library_provenance.json`. Provision them at the configured paths
+before linking:
 
 ```bash
 mkdir -p tools/native/providers/build/vc6-sp6
 cabextract -F vc98/lib/msvcrt.lib \
   -d tools/native/providers/build/vc6-sp6 \
   /path/to/VS6sp61.cab
+
+mkdir -p tools/native/providers/build/directx-8.1
+unzip -j /path/to/DX81SDK_FULL.exe \
+  DXF/DXSDK/lib/d3dx8.lib \
+  -d tools/native/providers/build/directx-8.1
 ```
 
 The command rebuilds the canonical audit, rejects archive drift, synthesizes
-the five remaining import-library symbols with the recorded VC6 tools, emits
-deterministic weak COFF aliases where compiler decoration differs from the
-reference export name, and creates an explicitly labeled placeholder COFF
-object for the remaining providers. It then invokes the VC6 linker with the
-recovered entry point, image base, and export definition and verifies all 20
-configured exports in the resulting PE import table. It writes
+the five remaining closure imports and 24 D3DX link dependencies with the
+recorded VC6 tools, emits deterministic weak COFF aliases where compiler
+decoration differs from the reference export name, and creates an explicitly
+labeled placeholder COFF object for the remaining providers. It then invokes
+the VC6 release linker with the recovered entry point, image base, export
+definition, and dead-code elimination. It verifies all 20 configured closure
+exports plus the complete output import-table subset against the reference
+image. It writes
 `analysis/native/grim.dll/link/link.json`; bulk PE, map, library, response,
 log, and provider outputs remain ignored. Generated archive, object, PE
 header, and PE export-directory timestamps are normalized, so identical
@@ -185,7 +201,7 @@ inputs produce the same linked-image hash.
 
 This is a structural linker milestone, not a runnable DLL or a byte-match
 claim. `link.json.runnable` stays false while any placeholder symbol remains.
-The canonical closure report also keeps those 30 references unresolved, so
+The canonical closure report also keeps those 25 references unresolved, so
 `all_references_closed` cannot pass merely because a generated stub made the
 linker accept the image. Replacing each placeholder group with its actual
 provider object is the path from a structural image to a runnable one.

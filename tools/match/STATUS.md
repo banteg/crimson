@@ -64,15 +64,15 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | grim.dll | grim_save_screenshot | 0x10005cb0 | platform-replaced | D3DX front-buffer export; the host renderer supplies screenshot capture. |
 | grim.dll | grim_apply_config | 0x10005d40 | platform-replaced | Direct3D capability probe and Win32 launcher entry; the port supplies its own settings UI. |
 | grim.dll | grim_save_texture | 0x10007750 | platform-replaced | D3DX texture export; the host renderer supplies image export. |
-| grim.dll | jpeg_CreateDecompress | 0x10009a50 | third-party | IJG libjpeg 6a jdapimin entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_destroy_decompress | 0x10009b20 | third-party | IJG libjpeg 6a decompressor teardown wrapper linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_read_header | 0x10009b30 | third-party | IJG libjpeg 6a header parser entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_consume_input | 0x10009ba0 | third-party | IJG libjpeg 6a input-state dispatcher linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | default_decompress_parms | 0x10009c60 | third-party | IJG libjpeg 6a default output-parameter initializer linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_finish_decompress | 0x10009e00 | third-party | IJG libjpeg 6a decompressor completion entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_start_decompress | 0x10009ec0 | third-party | IJG libjpeg 6a output-pass startup entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | output_pass_setup | 0x10009fa0 | third-party | IJG libjpeg 6a output-pass helper linked from the confirmed DirectX 8.1 d3dx8.lib. |
-| grim.dll | jpeg_read_scanlines | 0x1000a070 | third-party | IJG libjpeg 6a scanline decode entrypoint linked from the confirmed DirectX 8.1 d3dx8.lib. |
+| grim.dll | jpeg_CreateDecompress | 0x10009a50 | third-party | Plain-C IJG libjpeg 6a jdapimin entrypoint in Grim's separately linked JAZ decoder cluster; the DirectX 8.1 archive copy is namespaced and byte-distinct. |
+| grim.dll | jpeg_destroy_decompress | 0x10009b20 | third-party | Plain-C IJG libjpeg 6a decompressor teardown wrapper in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | jpeg_read_header | 0x10009b30 | third-party | Plain-C IJG libjpeg 6a header parser entrypoint in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | jpeg_consume_input | 0x10009ba0 | third-party | Plain-C IJG libjpeg 6a input-state dispatcher in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | default_decompress_parms | 0x10009c60 | third-party | Plain-C IJG libjpeg 6a default output-parameter initializer in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | jpeg_finish_decompress | 0x10009e00 | third-party | Plain-C IJG libjpeg 6a decompressor completion entrypoint in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | jpeg_start_decompress | 0x10009ec0 | third-party | Plain-C IJG libjpeg 6a output-pass startup entrypoint in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | output_pass_setup | 0x10009fa0 | third-party | Plain-C IJG libjpeg 6a output-pass helper in Grim's separately linked JAZ decoder cluster. |
+| grim.dll | jpeg_read_scanlines | 0x1000a070 | third-party | Plain-C IJG libjpeg 6a scanline decode entrypoint in Grim's separately linked JAZ decoder cluster. |
 | grim.dll | grim_joystick_enum_device | 0x1000a110 | platform-replaced | Raw DirectInput joystick enumeration; the host input backend owns device discovery. |
 | grim.dll | grim_joystick_configure_axis | 0x1000a150 | platform-replaced | Raw DirectInput axis setup; the host input backend owns device configuration. |
 | grim.dll | grim_joystick_init | 0x1000a1c0 | platform-replaced | Raw DirectInput joystick initialization; the host input backend owns devices. |

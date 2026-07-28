@@ -1,10 +1,20 @@
 {
-  "schema": 2,
+  "schema": 3,
   "image": "grim.dll",
   "entry": "DllMain",
   "image_base": "0x10000000",
   "mode": "structural",
   "archives": [
+    {
+      "id": "directx-8.1-d3dx8",
+      "path": "tools/native/providers/build/directx-8.1/d3dx8.lib",
+      "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28",
+      "provenance": {
+        "path": "analysis/library_provenance.json",
+        "source_artifact": "directx-8.1-sdk-full",
+        "member": "DXF/DXSDK/lib/d3dx8.lib"
+      }
+    },
     {
       "id": "vc6-sp6-msvcrt",
       "path": "tools/native/providers/build/vc6-sp6/vc98/lib/msvcrt.lib",
@@ -290,11 +300,26 @@
     {
       "name": "directx-8.1-d3dx8-static",
       "kind": "static-library",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "archive": "directx-8.1-d3dx8",
       "evidence": [
         {
           "path": "analysis/ida/raw/grim.dll/functions.json",
           "note": "These D3DX8 bodies are statically linked into the reference image rather than imported."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The provenance manifest pins the exact DirectX 8.1 SDK archive whose normalized functions match the reference image."
+        },
+        {
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "_d3dx_copy_texture_filtered@24",
+          "target": "_D3DXComputeNormalMap@24"
         }
       ],
       "symbols": [
@@ -321,13 +346,292 @@
       ]
     },
     {
-      "name": "directx-8.1-libjpeg-6a-static",
+      "name": "directx-8.1-d3dx8-kernel32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "KERNEL32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The retained D3DX8 platform imports are present in the reference image."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The pinned DirectX 8.1 archive records these decorated import references in the selected members."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__CloseHandle@4",
+          "target": "__imp__CloseHandle"
+        },
+        {
+          "alias": "__imp__CreateFileA@28",
+          "target": "__imp__CreateFileA"
+        },
+        {
+          "alias": "__imp__CreateFileMappingA@24",
+          "target": "__imp__CreateFileMappingA"
+        },
+        {
+          "alias": "__imp__CreateFileW@28",
+          "target": "__imp__CreateFileW"
+        },
+        {
+          "alias": "__imp__FindResourceA@12",
+          "target": "__imp__FindResourceA"
+        },
+        {
+          "alias": "__imp__FindResourceW@12",
+          "target": "__imp__FindResourceW"
+        },
+        {
+          "alias": "__imp__GetFileSize@8",
+          "target": "__imp__GetFileSize"
+        },
+        {
+          "alias": "__imp__GetLastError@0",
+          "target": "__imp__GetLastError"
+        },
+        {
+          "alias": "__imp__GetModuleHandleA@4",
+          "target": "__imp__GetModuleHandleA"
+        },
+        {
+          "alias": "__imp__GetProcAddress@8",
+          "target": "__imp__GetProcAddress"
+        },
+        {
+          "alias": "__imp__GetVersionExA@4",
+          "target": "__imp__GetVersionExA"
+        },
+        {
+          "alias": "__imp__IsProcessorFeaturePresent@4",
+          "target": "__imp__IsProcessorFeaturePresent"
+        },
+        {
+          "alias": "__imp__LoadLibraryA@4",
+          "target": "__imp__LoadLibraryA"
+        },
+        {
+          "alias": "__imp__LoadResource@8",
+          "target": "__imp__LoadResource"
+        },
+        {
+          "alias": "__imp__LockResource@4",
+          "target": "__imp__LockResource"
+        },
+        {
+          "alias": "__imp__MapViewOfFile@20",
+          "target": "__imp__MapViewOfFile"
+        },
+        {
+          "alias": "__imp__SizeofResource@8",
+          "target": "__imp__SizeofResource"
+        },
+        {
+          "alias": "__imp__UnmapViewOfFile@4",
+          "target": "__imp__UnmapViewOfFile"
+        },
+        {
+          "alias": "__imp__WideCharToMultiByte@32",
+          "target": "__imp__WideCharToMultiByte"
+        },
+        {
+          "alias": "__imp__WriteFile@20",
+          "target": "__imp__WriteFile"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__CloseHandle@4",
+          "link_name": "CloseHandle",
+          "export": "CloseHandle"
+        },
+        {
+          "name": "__imp__CreateFileA@28",
+          "link_name": "CreateFileA",
+          "export": "CreateFileA"
+        },
+        {
+          "name": "__imp__CreateFileMappingA@24",
+          "link_name": "CreateFileMappingA",
+          "export": "CreateFileMappingA"
+        },
+        {
+          "name": "__imp__CreateFileW@28",
+          "link_name": "CreateFileW",
+          "export": "CreateFileW"
+        },
+        {
+          "name": "__imp__FindResourceA@12",
+          "link_name": "FindResourceA",
+          "export": "FindResourceA"
+        },
+        {
+          "name": "__imp__FindResourceW@12",
+          "link_name": "FindResourceW",
+          "export": "FindResourceW"
+        },
+        {
+          "name": "__imp__GetFileSize@8",
+          "link_name": "GetFileSize",
+          "export": "GetFileSize"
+        },
+        {
+          "name": "__imp__GetLastError@0",
+          "link_name": "GetLastError",
+          "export": "GetLastError"
+        },
+        {
+          "name": "__imp__GetModuleHandleA@4",
+          "link_name": "GetModuleHandleA",
+          "export": "GetModuleHandleA"
+        },
+        {
+          "name": "__imp__GetProcAddress@8",
+          "link_name": "GetProcAddress",
+          "export": "GetProcAddress"
+        },
+        {
+          "name": "__imp__GetVersionExA@4",
+          "link_name": "GetVersionExA",
+          "export": "GetVersionExA"
+        },
+        {
+          "name": "__imp__IsProcessorFeaturePresent@4",
+          "link_name": "IsProcessorFeaturePresent",
+          "export": "IsProcessorFeaturePresent"
+        },
+        {
+          "name": "__imp__LoadLibraryA@4",
+          "link_name": "LoadLibraryA",
+          "export": "LoadLibraryA"
+        },
+        {
+          "name": "__imp__LoadResource@8",
+          "link_name": "LoadResource",
+          "export": "LoadResource"
+        },
+        {
+          "name": "__imp__LockResource@4",
+          "link_name": "LockResource",
+          "export": "LockResource"
+        },
+        {
+          "name": "__imp__MapViewOfFile@20",
+          "link_name": "MapViewOfFile",
+          "export": "MapViewOfFile"
+        },
+        {
+          "name": "__imp__SizeofResource@8",
+          "link_name": "SizeofResource",
+          "export": "SizeofResource"
+        },
+        {
+          "name": "__imp__UnmapViewOfFile@4",
+          "link_name": "UnmapViewOfFile",
+          "export": "UnmapViewOfFile"
+        },
+        {
+          "name": "__imp__WideCharToMultiByte@32",
+          "link_name": "WideCharToMultiByte",
+          "export": "WideCharToMultiByte"
+        },
+        {
+          "name": "__imp__WriteFile@20",
+          "link_name": "WriteFile",
+          "export": "WriteFile"
+        }
+      ]
+    },
+    {
+      "name": "directx-8.1-d3dx8-gdi32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "GDI32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports DeleteObject from GDI32."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The selected D3DX8 resource member records a decorated DeleteObject import reference."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__DeleteObject@4",
+          "target": "__imp__DeleteObject"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__DeleteObject@4",
+          "link_name": "DeleteObject",
+          "export": "DeleteObject"
+        }
+      ]
+    },
+    {
+      "name": "directx-8.1-d3dx8-advapi32",
+      "scope": "link-dependency",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "ADVAPI32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The D3DX8 CPU-detection registry imports are present in the reference image."
+        },
+        {
+          "path": "analysis/library_provenance.json",
+          "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 import references."
+        }
+      ],
+      "aliases": [
+        {
+          "alias": "__imp__RegCloseKey@4",
+          "target": "__imp__RegCloseKey"
+        },
+        {
+          "alias": "__imp__RegOpenKeyA@12",
+          "target": "__imp__RegOpenKeyA"
+        },
+        {
+          "alias": "__imp__RegQueryValueExA@24",
+          "target": "__imp__RegQueryValueExA"
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__RegCloseKey@4",
+          "link_name": "RegCloseKey",
+          "export": "RegCloseKey"
+        },
+        {
+          "name": "__imp__RegOpenKeyA@12",
+          "link_name": "RegOpenKeyA",
+          "export": "RegOpenKeyA"
+        },
+        {
+          "name": "__imp__RegQueryValueExA@24",
+          "link_name": "RegQueryValueExA",
+          "export": "RegQueryValueExA"
+        }
+      ]
+    },
+    {
+      "name": "grim-jaz-libjpeg-6a-static",
       "kind": "static-library",
       "resolution": "placeholder-object",
       "evidence": [
         {
           "path": "analysis/matching_scope.json",
-          "note": "The matching scope identifies the IJG libjpeg 6a functions linked from the confirmed DirectX 8.1 d3dx8.lib."
+          "note": "The matching scope identifies a separate plain-C IJG libjpeg 6a provider seam."
         },
         {
           "path": "analysis/ghidra/raw/grim.dll_strings.txt",

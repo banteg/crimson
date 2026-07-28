@@ -16,9 +16,26 @@
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/msvcrt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
       }
+    },
+    {
+      "file": {
+        "path": "tools/native/providers/build/directx-8.1/d3dx8.lib",
+        "repository_relative": true,
+        "sha256": "39a8e21889a7c1f0b966f04a9e7d392de14ddebb3e091dfa1e5ce3e19564fc28"
+      },
+      "id": "directx-8.1-d3dx8",
+      "provenance": {
+        "manifest": {
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        },
+        "member": "DXF/DXSDK/lib/d3dx8.lib",
+        "source_artifact": "directx-8.1-sdk-full"
+      }
     }
   ],
-  "audit_digest": "bb2867a15a850e0f47867a8ff9ea7b4c612f55758f3d7f80cfc16d8f5d1e2a4c",
+  "audit_digest": "667b55c336304e8d74c6c6dd6ace42f886485a4a80f61faafc86dc31d4bbfcaf",
   "image": "grim.dll",
   "kind": "crimson-native-linked-image",
   "mode": "structural",
@@ -29,27 +46,27 @@
       "dll": true,
       "entry_point_rva": 24208,
       "image_base": 268435456,
-      "image_size": 53248,
+      "image_size": 282624,
       "machine": 332,
       "optional_magic": 267,
-      "section_count": 4,
+      "section_count": 5,
       "subsystem": 2,
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "6159cb3ffff4736a4dc8cba9cd703f40a7f4505ec615a257527d4630bbe11101"
+    "sha256": "03b6b017ab462936e5e84b8bdd03e1334a0df88508de3b28b4c5bb5551735f90"
   },
   "placeholder_object": {
     "path": "analysis/native/grim.dll/link/providers/placeholders.obj",
     "repository_relative": true,
-    "sha256": "9e4820fb335a39cbc455f3db1c14a6255cbe35b2e1b7415c95fad227b5abe077",
-    "symbol_count": 30
+    "sha256": "b5cb2f56256bce022040848aea61af80b8e3c1c30729ec506a0838abf1a63718",
+    "symbol_count": 25
   },
   "provider_config": {
-    "declared_sha256": "1c2034629c3300114bad9a4e011c5c6958ec587f1b514ed83d4ea32a68d1b9f0",
+    "declared_sha256": "a1498af9ef5171f99c814198667ce83a3c52cb06fedd22317d7646a1b3d6284e",
     "path": "tools/native/providers/grim.dll.json",
     "repository_relative": true,
-    "sha256": "1c2034629c3300114bad9a4e011c5c6958ec587f1b514ed83d4ea32a68d1b9f0"
+    "sha256": "a1498af9ef5171f99c814198667ce83a3c52cb06fedd22317d7646a1b3d6284e"
   },
   "providers": [
     {
@@ -84,6 +101,7 @@
       "kind": "reference-import",
       "name": "msvcrt.dll",
       "resolution": "archive-library",
+      "scope": "closure",
       "symbols": [
         "??2@YAPAXI@Z",
         "??3@YAXPAX@Z",
@@ -142,6 +160,7 @@
       "module": "USER32.dll",
       "name": "user32.dll",
       "resolution": "import-library",
+      "scope": "closure",
       "symbols": [
         "__imp__LoadIconA@8",
         "__imp__MessageBoxA@16"
@@ -187,6 +206,7 @@
       "module": "WINMM.dll",
       "name": "winmm.dll",
       "resolution": "import-library",
+      "scope": "closure",
       "symbols": [
         "__imp__timeBeginPeriod@4",
         "__imp__timeGetTime@0"
@@ -228,6 +248,7 @@
       "module": "d3d8.dll",
       "name": "d3d8.dll",
       "resolution": "import-library",
+      "scope": "closure",
       "symbols": [
         "_Direct3DCreate8@4"
       ]
@@ -238,12 +259,13 @@
           "note": "The port scope assigns these Win32, Direct3D, and input responsibilities to host backends.",
           "path": "analysis/matching_scope.json",
           "repository_relative": true,
-          "sha256": "1437fb7c6961ad3f6e73f9a8df90864fb077d30667c521d3fd9fef3a2a6e8707"
+          "sha256": "5c822b8cfe25fc3901b0ea3d332cb72431486ad55168d1bcf0ea7c801aab6d04"
         }
       ],
       "kind": "platform-replaced",
       "name": "host-platform-replacements",
       "resolution": "placeholder-object",
+      "scope": "closure",
       "symbols": [
         "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
         "?grim_d3d_init@@YA_NXZ",
@@ -264,17 +286,44 @@
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-static-aliases.obj",
+          "repository_relative": true,
+          "sha256": "da463198dbc4893bce696f441dc7035b81e5acab5f366ec2e5a4dc91c62e21ec"
+        },
+        "symbols": [
+          {
+            "alias": "_d3dx_copy_texture_filtered@24",
+            "target": "_D3DXComputeNormalMap@24"
+          }
+        ]
+      },
+      "archive": "directx-8.1-d3dx8",
       "evidence": [
         {
           "note": "These D3DX8 bodies are statically linked into the reference image rather than imported.",
           "path": "analysis/ida/raw/grim.dll/functions.json",
           "repository_relative": true,
           "sha256": "c2226db5bc1c854d75bc72b50588c6fad64f2577de8ebe360fa0eead7679e104"
+        },
+        {
+          "note": "The provenance manifest pins the exact DirectX 8.1 SDK archive whose normalized functions match the reference image.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        },
+        {
+          "note": "The archive proof records exact matches for the four public APIs and the internal D3DXComputeNormalMap body.",
+          "path": "docs/contributor/project-tracking/third-party-libs.md",
+          "repository_relative": true,
+          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
         }
       ],
       "kind": "static-library",
       "name": "directx-8.1-d3dx8-static",
-      "resolution": "placeholder-object",
+      "resolution": "archive-library",
+      "scope": "closure",
       "symbols": [
         "_D3DXCreateTexture@32",
         "_D3DXCreateTextureFromFileExA@56",
@@ -284,12 +333,258 @@
       ]
     },
     {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-kernel32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "5bc93a614065c6f467524fe3ff75c4fada40635aabe13e57a76065d734189e6c"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__CloseHandle@4",
+            "target": "__imp__CloseHandle"
+          },
+          {
+            "alias": "__imp__CreateFileA@28",
+            "target": "__imp__CreateFileA"
+          },
+          {
+            "alias": "__imp__CreateFileMappingA@24",
+            "target": "__imp__CreateFileMappingA"
+          },
+          {
+            "alias": "__imp__CreateFileW@28",
+            "target": "__imp__CreateFileW"
+          },
+          {
+            "alias": "__imp__FindResourceA@12",
+            "target": "__imp__FindResourceA"
+          },
+          {
+            "alias": "__imp__FindResourceW@12",
+            "target": "__imp__FindResourceW"
+          },
+          {
+            "alias": "__imp__GetFileSize@8",
+            "target": "__imp__GetFileSize"
+          },
+          {
+            "alias": "__imp__GetLastError@0",
+            "target": "__imp__GetLastError"
+          },
+          {
+            "alias": "__imp__GetModuleHandleA@4",
+            "target": "__imp__GetModuleHandleA"
+          },
+          {
+            "alias": "__imp__GetProcAddress@8",
+            "target": "__imp__GetProcAddress"
+          },
+          {
+            "alias": "__imp__GetVersionExA@4",
+            "target": "__imp__GetVersionExA"
+          },
+          {
+            "alias": "__imp__IsProcessorFeaturePresent@4",
+            "target": "__imp__IsProcessorFeaturePresent"
+          },
+          {
+            "alias": "__imp__LoadLibraryA@4",
+            "target": "__imp__LoadLibraryA"
+          },
+          {
+            "alias": "__imp__LoadResource@8",
+            "target": "__imp__LoadResource"
+          },
+          {
+            "alias": "__imp__LockResource@4",
+            "target": "__imp__LockResource"
+          },
+          {
+            "alias": "__imp__MapViewOfFile@20",
+            "target": "__imp__MapViewOfFile"
+          },
+          {
+            "alias": "__imp__SizeofResource@8",
+            "target": "__imp__SizeofResource"
+          },
+          {
+            "alias": "__imp__UnmapViewOfFile@4",
+            "target": "__imp__UnmapViewOfFile"
+          },
+          {
+            "alias": "__imp__WideCharToMultiByte@32",
+            "target": "__imp__WideCharToMultiByte"
+          },
+          {
+            "alias": "__imp__WriteFile@20",
+            "target": "__imp__WriteFile"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-kernel32.def",
+        "repository_relative": true,
+        "sha256": "7e768f45f5ca45e535786bf7322a9a06567a5aa43dcacd605f2aa59f967344f5"
+      },
       "evidence": [
         {
-          "note": "The matching scope identifies the IJG libjpeg 6a functions linked from the confirmed DirectX 8.1 d3dx8.lib.",
+          "note": "The retained D3DX8 platform imports are present in the reference image.",
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "repository_relative": true,
+          "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
+        },
+        {
+          "note": "The pinned DirectX 8.1 archive records these decorated import references in the selected members.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-kernel32.lib",
+        "repository_relative": true,
+        "sha256": "81cb693a83adabf0e9c38a34c04965518c636a8d2cfcee392041041864f39c06"
+      },
+      "kind": "reference-import",
+      "module": "KERNEL32.dll",
+      "name": "directx-8.1-d3dx8-kernel32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__CloseHandle@4",
+        "__imp__CreateFileA@28",
+        "__imp__CreateFileMappingA@24",
+        "__imp__CreateFileW@28",
+        "__imp__FindResourceA@12",
+        "__imp__FindResourceW@12",
+        "__imp__GetFileSize@8",
+        "__imp__GetLastError@0",
+        "__imp__GetModuleHandleA@4",
+        "__imp__GetProcAddress@8",
+        "__imp__GetVersionExA@4",
+        "__imp__IsProcessorFeaturePresent@4",
+        "__imp__LoadLibraryA@4",
+        "__imp__LoadResource@8",
+        "__imp__LockResource@4",
+        "__imp__MapViewOfFile@20",
+        "__imp__SizeofResource@8",
+        "__imp__UnmapViewOfFile@4",
+        "__imp__WideCharToMultiByte@32",
+        "__imp__WriteFile@20"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-gdi32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "45925dbc4d5da927848460473fe1033be4ef64edb9eaba77da4d244c3d25ea01"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__DeleteObject@4",
+            "target": "__imp__DeleteObject"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-gdi32.def",
+        "repository_relative": true,
+        "sha256": "267dc18ddc9b514e98e6e0b1b5fa2f34937975948b7d7f06f255a5effcef3e48"
+      },
+      "evidence": [
+        {
+          "note": "The reference image imports DeleteObject from GDI32.",
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "repository_relative": true,
+          "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
+        },
+        {
+          "note": "The selected D3DX8 resource member records a decorated DeleteObject import reference.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-gdi32.lib",
+        "repository_relative": true,
+        "sha256": "72194882619f9e330414b754e0fe5e4d5c3dd018dde1dfaf0c443c686471faa4"
+      },
+      "kind": "reference-import",
+      "module": "GDI32.dll",
+      "name": "directx-8.1-d3dx8-gdi32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__DeleteObject@4"
+      ]
+    },
+    {
+      "aliases": {
+        "object": {
+          "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-advapi32-aliases.obj",
+          "repository_relative": true,
+          "sha256": "8d7dd576a992ba56030d07f8c302810c5a714e7e63fe473b5ce95e2ab31a7f66"
+        },
+        "symbols": [
+          {
+            "alias": "__imp__RegCloseKey@4",
+            "target": "__imp__RegCloseKey"
+          },
+          {
+            "alias": "__imp__RegOpenKeyA@12",
+            "target": "__imp__RegOpenKeyA"
+          },
+          {
+            "alias": "__imp__RegQueryValueExA@24",
+            "target": "__imp__RegQueryValueExA"
+          }
+        ]
+      },
+      "definition": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-advapi32.def",
+        "repository_relative": true,
+        "sha256": "c08ccf6edeb46451b9b0de83f179ac53b54cff1e00e02ca98f087efff1fc8c9d"
+      },
+      "evidence": [
+        {
+          "note": "The D3DX8 CPU-detection registry imports are present in the reference image.",
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "repository_relative": true,
+          "sha256": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2"
+        },
+        {
+          "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 import references.",
+          "path": "analysis/library_provenance.json",
+          "repository_relative": true,
+          "sha256": "936dce54c162a83abf8eb72f51a25d7d34da7b0630904f281002f2591d13940a"
+        }
+      ],
+      "import_library": {
+        "path": "analysis/native/grim.dll/link/providers/directx-8-1-d3dx8-advapi32.lib",
+        "repository_relative": true,
+        "sha256": "644bc23542e4f95daf3de86480caeba094775b806c381f18be3b543c613e3983"
+      },
+      "kind": "reference-import",
+      "module": "ADVAPI32.dll",
+      "name": "directx-8.1-d3dx8-advapi32",
+      "resolution": "import-library",
+      "scope": "link-dependency",
+      "symbols": [
+        "__imp__RegCloseKey@4",
+        "__imp__RegOpenKeyA@12",
+        "__imp__RegQueryValueExA@24"
+      ]
+    },
+    {
+      "evidence": [
+        {
+          "note": "The matching scope identifies a separate plain-C IJG libjpeg 6a provider seam.",
           "path": "analysis/matching_scope.json",
           "repository_relative": true,
-          "sha256": "1437fb7c6961ad3f6e73f9a8df90864fb077d30667c521d3fd9fef3a2a6e8707"
+          "sha256": "5c822b8cfe25fc3901b0ea3d332cb72431486ad55168d1bcf0ea7c801aab6d04"
         },
         {
           "note": "The reference image retains the corresponding IJG JPEG diagnostics.",
@@ -299,8 +594,9 @@
         }
       ],
       "kind": "static-library",
-      "name": "directx-8.1-libjpeg-6a-static",
+      "name": "grim-jaz-libjpeg-6a-static",
       "resolution": "placeholder-object",
+      "scope": "closure",
       "symbols": [
         "_grim_jpeg_memory_src",
         "_jpeg_CreateDecompress",
@@ -324,6 +620,7 @@
       "kind": "static-library",
       "name": "zlib-1.1.3-static",
       "resolution": "placeholder-object",
+      "scope": "closure",
       "symbols": [
         "_zlib_uncompress"
       ]
@@ -341,12 +638,13 @@
           "note": "VC6 SP6 atonexit.obj uniquely matches Grim's __onexit and _atexit functions byte-for-byte.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "f3c5efd3921d68946eeb94f7fa84776e1d2f4dca4b7487d269682acd8c3434c0"
+          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
         }
       ],
       "kind": "static-library",
       "name": "msvc6-runtime-static",
       "resolution": "archive-library",
+      "scope": "closure",
       "symbols": [
         "_atexit"
       ]
@@ -358,18 +656,19 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "40915cd147d71b5070c38a3a7ee6719dc1bed07298e6ac2981fdec73dc868177"
+          "sha256": "69562e0ba54b6ec1199d8d4fd7c247112d3309610f90353b48c2ecc319ff290d"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "f3c5efd3921d68946eeb94f7fa84776e1d2f4dca4b7487d269682acd8c3434c0"
+          "sha256": "4cc5474e9f00bf7210015a8164bf103821ab18420579a99607c36e507011b40b"
         }
       ],
       "kind": "toolchain",
       "name": "msvc6-toolchain",
       "resolution": "archive-library",
+      "scope": "closure",
       "symbols": [
         "__except_list",
         "__fltused"
@@ -377,6 +676,82 @@
     }
   ],
   "reference_imports": {
+    "link_dependencies": [
+      {
+        "declared_symbols": [
+          "RegCloseKey",
+          "RegOpenKeyA",
+          "RegQueryValueExA"
+        ],
+        "discarded_symbols": [],
+        "module": "advapi32",
+        "retained_symbols": [
+          "RegCloseKey",
+          "RegOpenKeyA",
+          "RegQueryValueExA"
+        ]
+      },
+      {
+        "declared_symbols": [
+          "DeleteObject"
+        ],
+        "discarded_symbols": [
+          "DeleteObject"
+        ],
+        "module": "gdi32",
+        "retained_symbols": []
+      },
+      {
+        "declared_symbols": [
+          "CloseHandle",
+          "CreateFileA",
+          "CreateFileMappingA",
+          "CreateFileW",
+          "FindResourceA",
+          "FindResourceW",
+          "GetFileSize",
+          "GetLastError",
+          "GetModuleHandleA",
+          "GetProcAddress",
+          "GetVersionExA",
+          "IsProcessorFeaturePresent",
+          "LoadLibraryA",
+          "LoadResource",
+          "LockResource",
+          "MapViewOfFile",
+          "SizeofResource",
+          "UnmapViewOfFile",
+          "WideCharToMultiByte",
+          "WriteFile"
+        ],
+        "discarded_symbols": [
+          "FindResourceA",
+          "FindResourceW",
+          "LoadResource",
+          "LockResource",
+          "SizeofResource",
+          "WriteFile"
+        ],
+        "module": "kernel32",
+        "retained_symbols": [
+          "CloseHandle",
+          "CreateFileA",
+          "CreateFileMappingA",
+          "CreateFileW",
+          "GetFileSize",
+          "GetLastError",
+          "GetModuleHandleA",
+          "GetProcAddress",
+          "GetVersionExA",
+          "IsProcessorFeaturePresent",
+          "LoadLibraryA",
+          "MapViewOfFile",
+          "UnmapViewOfFile",
+          "WideCharToMultiByte"
+        ]
+      }
+    ],
+    "link_dependency_retained_symbol_count": 17,
     "modules": [
       {
         "module": "d3d8",
@@ -419,18 +794,104 @@
         ]
       }
     ],
+    "output_modules": [
+      {
+        "module": "advapi32",
+        "symbols": [
+          "RegCloseKey",
+          "RegOpenKeyA",
+          "RegQueryValueExA"
+        ]
+      },
+      {
+        "module": "d3d8",
+        "symbols": [
+          "Direct3DCreate8"
+        ]
+      },
+      {
+        "module": "kernel32",
+        "symbols": [
+          "CloseHandle",
+          "CreateFileA",
+          "CreateFileMappingA",
+          "CreateFileW",
+          "GetFileSize",
+          "GetLastError",
+          "GetModuleHandleA",
+          "GetProcAddress",
+          "GetVersionExA",
+          "IsProcessorFeaturePresent",
+          "LoadLibraryA",
+          "MapViewOfFile",
+          "UnmapViewOfFile",
+          "WideCharToMultiByte"
+        ]
+      },
+      {
+        "module": "msvcrt",
+        "symbols": [
+          "??2@YAPAXI@Z",
+          "??3@YAXPAX@Z",
+          "?terminate@@YAXXZ",
+          "_CIacos",
+          "_CIpow",
+          "__CxxFrameHandler",
+          "__CxxLongjmpUnwind",
+          "__dllonexit",
+          "_except_handler3",
+          "_finite",
+          "_ftol",
+          "_getcwd",
+          "_onexit",
+          "_setjmp3",
+          "_strdup",
+          "calloc",
+          "exit",
+          "fclose",
+          "floor",
+          "fopen",
+          "fread",
+          "free",
+          "fseek",
+          "ftell",
+          "isdigit",
+          "isspace",
+          "longjmp",
+          "malloc",
+          "sprintf",
+          "vsprintf"
+        ]
+      },
+      {
+        "module": "user32",
+        "symbols": [
+          "LoadIconA",
+          "MessageBoxA"
+        ]
+      },
+      {
+        "module": "winmm",
+        "symbols": [
+          "timeBeginPeriod",
+          "timeGetTime"
+        ]
+      }
+    ],
+    "output_symbol_count": 52,
     "symbol_count": 20
   },
   "runnable": false,
-  "schema": 2,
+  "schema": 3,
   "status": "linked",
   "summary": {
-    "archive_symbols": 18,
+    "archive_symbols": 23,
     "covered_symbols": 53,
     "generated_import_symbols": 5,
     "import_symbols": 20,
-    "input_object_count": 140,
-    "placeholder_symbols": 30,
+    "input_object_count": 148,
+    "link_dependency_symbols": 24,
+    "placeholder_symbols": 25,
     "providers": [
       {
         "alias_count": 1,
@@ -438,6 +899,7 @@
         "kind": "reference-import",
         "name": "msvcrt.dll",
         "resolution": "archive-library",
+        "scope": "closure",
         "symbol_count": 15
       },
       {
@@ -445,6 +907,7 @@
         "kind": "reference-import",
         "name": "user32.dll",
         "resolution": "import-library",
+        "scope": "closure",
         "symbol_count": 2
       },
       {
@@ -452,6 +915,7 @@
         "kind": "reference-import",
         "name": "winmm.dll",
         "resolution": "import-library",
+        "scope": "closure",
         "symbol_count": 2
       },
       {
@@ -459,30 +923,61 @@
         "kind": "reference-import",
         "name": "d3d8.dll",
         "resolution": "import-library",
+        "scope": "closure",
         "symbol_count": 1
       },
       {
         "kind": "platform-replaced",
         "name": "host-platform-replacements",
         "resolution": "placeholder-object",
+        "scope": "closure",
         "symbol_count": 16
       },
       {
+        "alias_count": 1,
+        "archive": "directx-8.1-d3dx8",
         "kind": "static-library",
         "name": "directx-8.1-d3dx8-static",
-        "resolution": "placeholder-object",
+        "resolution": "archive-library",
+        "scope": "closure",
         "symbol_count": 5
       },
       {
+        "alias_count": 20,
+        "kind": "reference-import",
+        "name": "directx-8.1-d3dx8-kernel32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 20
+      },
+      {
+        "alias_count": 1,
+        "kind": "reference-import",
+        "name": "directx-8.1-d3dx8-gdi32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 1
+      },
+      {
+        "alias_count": 3,
+        "kind": "reference-import",
+        "name": "directx-8.1-d3dx8-advapi32",
+        "resolution": "import-library",
+        "scope": "link-dependency",
+        "symbol_count": 3
+      },
+      {
         "kind": "static-library",
-        "name": "directx-8.1-libjpeg-6a-static",
+        "name": "grim-jaz-libjpeg-6a-static",
         "resolution": "placeholder-object",
+        "scope": "closure",
         "symbol_count": 8
       },
       {
         "kind": "static-library",
         "name": "zlib-1.1.3-static",
         "resolution": "placeholder-object",
+        "scope": "closure",
         "symbol_count": 1
       },
       {
@@ -490,6 +985,7 @@
         "kind": "static-library",
         "name": "msvc6-runtime-static",
         "resolution": "archive-library",
+        "scope": "closure",
         "symbol_count": 1
       },
       {
@@ -497,10 +993,13 @@
         "kind": "toolchain",
         "name": "msvc6-toolchain",
         "resolution": "archive-library",
+        "scope": "closure",
         "symbol_count": 2
       }
     ],
+    "retained_link_dependency_import_symbols": 17,
     "runnable": false,
+    "validated_output_import_symbols": 52,
     "validated_reference_import_symbols": 20
   },
   "toolchain": {
