@@ -16,12 +16,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | no | no | 0 | 1010 | 441 |
+| crimsonland.exe | current | 671 | 663 | 3 | passed | yes | no | no | 0 | 1187 | 264 |
 | grim.dll | current | 137 | 134 | 1 | passed | yes | no | no | 0 | 39 | 205 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
 |---|---|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | excluded_function=70, external=3, game_data=342, import=25, toolchain=1 | 342 | 1547 | 707 | 342 | 342 | 342 |
+| crimsonland.exe | excluded_function=70, external=3, game_data=165, import=25, toolchain=1 | 165 | 1547 | 707 | 517 | 517 | 517 |
 | grim.dll | excluded_function=36, external=1, game_data=154, import=12, toolchain=2 | 154 | 273 | 182 | 8 | 8 | 8 |
 
 ## Function dispositions

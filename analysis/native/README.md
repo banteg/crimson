@@ -63,7 +63,10 @@ the pinned reference image before an object is emitted.
 Definition groups share the same size, alignment, initializer, and provenance
 across an explicit sorted list of `[address, name]` members. Each member's
 expected data-map type is validated before expansion, so groups reduce repeated
-manifest text without widening which symbols qualify for emission.
+manifest text without widening which symbols qualify for emission. A `null`
+expected type deliberately restricts a group to currently untyped map entries;
+the group's size and alignment sources must then record the independent type or
+storage-width evidence used for those members.
 An unresolved catalog name whose address falls inside one of those explicit
 ranges is emitted as an `interior-alias` binding. The alias records its own
 mapped address and name, but its section storage remains owned by the smallest

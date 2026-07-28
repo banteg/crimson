@@ -1185,12 +1185,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 342
-    assert payload["summary"]["explicit_alignment_entries"] == 342
-    assert payload["summary"]["explicit_initializer_entries"] == 342
-    assert payload["summary"]["fully_specified_entries"] == 342
-    assert payload["summary"]["definition_group_entries"] == 278
-    assert payload["summary"]["definition_groups"] == 9
+    assert payload["summary"]["explicit_size_entries"] == 517
+    assert payload["summary"]["explicit_alignment_entries"] == 517
+    assert payload["summary"]["explicit_initializer_entries"] == 517
+    assert payload["summary"]["fully_specified_entries"] == 517
+    assert payload["summary"]["definition_group_entries"] == 453
+    assert payload["summary"]["definition_groups"] == 12
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1214,6 +1214,15 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["quest_unlock_index"]["size"] == 2
     assert defined["perk_pending_count"]["definition_group"] == "zero-int32"
     assert defined["plugin_interface_ptr"]["definition_group"] == "zero-pointer32"
+    assert defined["ui_elements_timeline"]["definition_group"] == (
+        "source-zero-int32"
+    )
+    assert defined["ui_transition_alpha"]["definition_group"] == (
+        "source-zero-float32"
+    )
+    assert defined["time_scale_active"]["definition_group"] == (
+        "source-zero-uchar"
+    )
     assert defined["ui_element_slot_footer_variant_a"]["definition_group"] == (
         "zero-ui-element-slots"
     )
@@ -1313,7 +1322,7 @@ def test_data_definition_groups_expand_data_map_checked_members(
                 "groups": [
                     {
                         "name": "zero-int32",
-                        "types": ["int"],
+                        "types": [None],
                         "size": 4,
                         "size_source": "data-map type",
                         "alignment": 4,
@@ -1336,7 +1345,6 @@ def test_data_definition_groups_expand_data_map_checked_members(
                         "address": "0x10053000",
                         "name": "counter",
                         "program": "grim.dll",
-                        "type": "int",
                     },
                 ],
             },

@@ -2059,11 +2059,14 @@ def load_native_data_definitions(
             not isinstance(expected_types, list)
             or not expected_types
             or any(
-                not isinstance(type_name, str) or not type_name
+                type_name is not None
+                and (not isinstance(type_name, str) or not type_name)
                 for type_name in expected_types
             )
         ):
-            raise ValueError(f"{group_label}.types must be non-empty strings")
+            raise ValueError(
+                f"{group_label}.types must contain non-empty strings or null",
+            )
         members = raw_group.get("members")
         if not isinstance(members, list) or not members:
             raise ValueError(f"{group_label}.members must be a non-empty array")
