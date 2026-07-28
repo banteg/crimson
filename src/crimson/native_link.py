@@ -10,7 +10,7 @@ import struct
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from . import match as matchlib
 
@@ -1945,6 +1945,7 @@ def load_native_data_definitions(
     *,
     path: Path | None = None,
     reference_image_path: Path | None = None,
+    data_map_path: Path = matchlib.DEFAULT_DATA_MAP_PATH,
 ) -> dict[str, Any] | None:
     path = path or default_native_data_definitions_path(image)
     if not path.is_file():
@@ -1993,12 +1994,138 @@ def load_native_data_definitions(
     raw_entries = payload.get("entries")
     if not isinstance(raw_entries, list):
         raise TypeError(f"{path}: entries must be an array")
-    entries: list[dict[str, Any]] = []
-    keys: set[tuple[int, str]] = set()
+    explicit_entry_keys: list[tuple[int, str]] = []
+    labeled_entries: list[dict[str, Any]] = []
     for index, raw_entry in enumerate(raw_entries):
         label = f"{path}: entries[{index}]"
         if not isinstance(raw_entry, dict):
             raise TypeError(f"{label} must be an object")
+        raw_entry = cast(dict[str, Any], raw_entry)
+        raw_address = raw_entry.get("address")
+        name = raw_entry.get("name")
+        if not isinstance(raw_address, (str, int)):
+            raise TypeError(f"{label}.address must be an integer or hex string")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"{label}.name must be non-empty")
+        try:
+            key = (matchlib.parse_int(raw_address), name)
+        except ValueError as exc:
+            raise ValueError(
+                f"{label}.address must be an integer or hex string",
+            ) from exc
+        explicit_entry_keys.append(key)
+        labeled_entries.append({**raw_entry, "__label": label})
+    if explicit_entry_keys != sorted(explicit_entry_keys):
+        raise ValueError(f"{path}: entries must be sorted by address and name")
+
+    raw_groups = payload.get("groups", [])
+    if not isinstance(raw_groups, list):
+        raise TypeError(f"{path}: groups must be an array")
+    data_map_types: dict[tuple[int, str], str | None] = {}
+    if raw_groups:
+        data_map_payload = json.loads(data_map_path.read_text(encoding="utf-8"))
+        data_map_types = {
+            (
+                matchlib.parse_int(row["address"]),
+                str(row["name"]),
+            ): str(row["type"]) if row.get("type") else None
+            for row in data_map_payload.get("entries", [])
+            if row.get("program") == image
+        }
+    group_names: set[str] = set()
+    group_fields = (
+        "alignment",
+        "alignment_source",
+        "initializer_fill",
+        "initializer_hex",
+        "initializer_source",
+        "note",
+        "size",
+        "size_source",
+    )
+    for group_index, raw_group in enumerate(raw_groups):
+        group_label = f"{path}: groups[{group_index}]"
+        if not isinstance(raw_group, dict):
+            raise TypeError(f"{group_label} must be an object")
+        raw_group = cast(dict[str, Any], raw_group)
+        group_name = raw_group.get("name")
+        if not isinstance(group_name, str) or not group_name:
+            raise ValueError(f"{group_label}.name must be non-empty")
+        if group_name in group_names:
+            raise ValueError(f"{group_label}: duplicate group name {group_name!r}")
+        group_names.add(group_name)
+        expected_types = raw_group.get("types")
+        if (
+            not isinstance(expected_types, list)
+            or not expected_types
+            or any(
+                not isinstance(type_name, str) or not type_name
+                for type_name in expected_types
+            )
+        ):
+            raise ValueError(f"{group_label}.types must be non-empty strings")
+        members = raw_group.get("members")
+        if not isinstance(members, list) or not members:
+            raise ValueError(f"{group_label}.members must be a non-empty array")
+        member_keys: list[tuple[int, str]] = []
+        for member_index, member in enumerate(members):
+            member_label = f"{group_label}.members[{member_index}]"
+            if (
+                not isinstance(member, list)
+                or len(member) != 2
+                or not isinstance(member[0], (str, int))
+                or not isinstance(member[1], str)
+                or not member[1]
+            ):
+                raise ValueError(
+                    f"{member_label} must be [address, non-empty name]",
+                )
+            try:
+                key = (matchlib.parse_int(member[0]), member[1])
+            except ValueError as exc:
+                raise ValueError(
+                    f"{member_label} has an invalid address",
+                ) from exc
+            actual_type = data_map_types.get(key)
+            if key not in data_map_types:
+                raise ValueError(
+                    f"{member_label}: {key[1]}@0x{key[0]:08x} "
+                    "is absent from the data map",
+                )
+            if actual_type not in expected_types:
+                raise ValueError(
+                    f"{member_label}: data-map type {actual_type!r} is not one of "
+                    f"{expected_types!r}",
+                )
+            member_keys.append(key)
+            expanded = {
+                field: raw_group[field]
+                for field in group_fields
+                if field in raw_group
+            }
+            expanded.update(
+                {
+                    "__definition_group": group_name,
+                    "__label": member_label,
+                    "address": member[0],
+                    "name": member[1],
+                },
+            )
+            labeled_entries.append(expanded)
+        if member_keys != sorted(member_keys):
+            raise ValueError(f"{group_label}.members must be sorted by address and name")
+
+    raw_entries = sorted(
+        labeled_entries,
+        key=lambda raw_entry: (
+            matchlib.parse_int(raw_entry["address"]),
+            str(raw_entry["name"]),
+        ),
+    )
+    entries: list[dict[str, Any]] = []
+    keys: set[tuple[int, str]] = set()
+    for index, raw_entry in enumerate(raw_entries):
+        label = str(raw_entry.get("__label") or f"{path}: entries[{index}]")
         name = raw_entry.get("name")
         if not isinstance(name, str) or not name:
             raise ValueError(f"{label}.name must be non-empty")
@@ -2016,6 +2143,7 @@ def load_native_data_definitions(
 
         normalized: dict[str, Any] = {
             "address": address,
+            "definition_group": str(raw_entry.get("__definition_group") or ""),
             "name": name,
             "note": str(raw_entry.get("note") or ""),
         }
@@ -2143,6 +2271,7 @@ def load_native_data_definitions(
         "image": image,
         "kind": NATIVE_DATA_DEFINITION_KIND,
         "notes": str(payload.get("notes") or ""),
+        "groups": sorted(group_names),
         "reference_image": {
             "path": reference_path,
             "sha256": reference_sha256,
@@ -2658,6 +2787,7 @@ def data_manifest_payload(
         image,
         path=resolved_definitions_path,
         reference_image_path=reference_image_path,
+        data_map_path=data_map_path,
     )
     definitions_by_key = {
         (int(entry["address"]), str(entry["name"])): entry
@@ -2767,6 +2897,8 @@ def data_manifest_payload(
             ),
             "type": type_name,
         }
+        if definition is not None and definition["definition_group"]:
+            entry["definition_group"] = definition["definition_group"]
         if definition is not None and definition["initializer_fill"] is not None:
             entry["initializer_fill"] = definition["initializer_fill"]
         entries.append(entry)
@@ -2848,6 +2980,17 @@ def data_manifest_payload(
             "explicit_alignment_entries": sum(
                 entry["alignment"] is not None
                 for entry in entries
+            ),
+            "definition_group_entries": sum(
+                bool(entry.get("definition_group"))
+                for entry in entries
+            ),
+            "definition_groups": len(
+                {
+                    str(entry["definition_group"])
+                    for entry in entries
+                    if entry.get("definition_group")
+                },
             ),
             "explicit_initializer_entries": sum(
                 entry["initializer_hex"] is not None

@@ -1185,10 +1185,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 64
-    assert payload["summary"]["explicit_alignment_entries"] == 64
-    assert payload["summary"]["explicit_initializer_entries"] == 64
-    assert payload["summary"]["fully_specified_entries"] == 64
+    assert payload["summary"]["explicit_size_entries"] == 342
+    assert payload["summary"]["explicit_alignment_entries"] == 342
+    assert payload["summary"]["explicit_initializer_entries"] == 342
+    assert payload["summary"]["fully_specified_entries"] == 342
+    assert payload["summary"]["definition_group_entries"] == 278
+    assert payload["summary"]["definition_groups"] == 9
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1210,6 +1212,11 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["grim_interface_ptr"]["size"] == 4
     assert defined["sfx_unmuted_flag"]["size"] == 1
     assert defined["quest_unlock_index"]["size"] == 2
+    assert defined["perk_pending_count"]["definition_group"] == "zero-int32"
+    assert defined["plugin_interface_ptr"]["definition_group"] == "zero-pointer32"
+    assert defined["ui_element_slot_footer_variant_a"]["definition_group"] == (
+        "zero-ui-element-slots"
+    )
     assert next(
         entry
         for entry in payload["entries"]
@@ -1286,6 +1293,133 @@ def test_data_definitions_reject_initializer_size_mismatch(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="initializer has 1 bytes, expected size 4"):
         load_native_data_definitions("grim.dll", path=path)
+
+
+def test_data_definition_groups_expand_data_map_checked_members(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    data_map_path = tmp_path / "data.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "groups": [
+                    {
+                        "name": "zero-int32",
+                        "types": ["int"],
+                        "size": 4,
+                        "size_source": "data-map type",
+                        "alignment": 4,
+                        "alignment_source": "data-map type",
+                        "initializer_fill": "00",
+                        "initializer_source": "reference image",
+                        "members": [["0x10053000", "counter"]],
+                    },
+                ],
+                "entries": [],
+            },
+        ),
+        encoding="utf-8",
+    )
+    data_map_path.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "counter",
+                        "program": "grim.dll",
+                        "type": "int",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    payload = load_native_data_definitions(
+        "grim.dll",
+        path=path,
+        data_map_path=data_map_path,
+    )
+
+    assert payload is not None
+    assert payload["groups"] == ["zero-int32"]
+    assert payload["entries"] == [
+        {
+            "address": 0x10053000,
+            "alignment": 4,
+            "alignment_source": "data-map type",
+            "definition_group": "zero-int32",
+            "initializer_fill": "00",
+            "initializer_hex": None,
+            "initializer_source": "reference image",
+            "name": "counter",
+            "note": "",
+            "size": 4,
+            "size_source": "data-map type",
+        },
+    ]
+
+
+def test_data_definition_groups_reject_data_map_type_mismatch(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    data_map_path = tmp_path / "data.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "groups": [
+                    {
+                        "name": "zero-int32",
+                        "types": ["int"],
+                        "size": 4,
+                        "size_source": "data-map type",
+                        "members": [["0x10053000", "counter"]],
+                    },
+                ],
+                "entries": [],
+            },
+        ),
+        encoding="utf-8",
+    )
+    data_map_path.write_text(
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "counter",
+                        "program": "grim.dll",
+                        "type": "float",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="data-map type 'float'"):
+        load_native_data_definitions(
+            "grim.dll",
+            path=path,
+            data_map_path=data_map_path,
+        )
 
 
 def _build_auxiliary_coff(*, relocation_symbol_index: int | None = None) -> bytes:
