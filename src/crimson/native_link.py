@@ -29,6 +29,7 @@ IMAGE_SCN_LNK_COMDAT = 0x00001000
 IMAGE_SCN_CNT_INITIALIZED_DATA = 0x00000040
 IMAGE_SCN_MEM_READ = 0x40000000
 IMAGE_SCN_MEM_WRITE = 0x80000000
+IMAGE_REL_I386_DIR32 = 0x0006
 IMAGE_SYM_CLASS_WEAK_EXTERNAL = 105
 IMAGE_WEAK_EXTERN_SEARCH_ALIAS = 3
 
@@ -129,6 +130,7 @@ class NativeDataBinding:
     size: int | None
     alignment: int | None
     initializer: bytes | None
+    initializer_target: tuple[int, str] | None
     kind: str
     storage_address: int
     storage_name: str
@@ -138,12 +140,20 @@ class NativeDataBinding:
 
 
 @dataclass(frozen=True, slots=True)
+class NativeDataRelocation:
+    section_offset: int
+    target_address: int
+    target_name: str
+
+
+@dataclass(frozen=True, slots=True)
 class NativeDataRegion:
     address: int
     alignment: int
     data: bytes
     section_number: int
     entries: tuple[tuple[int, str], ...]
+    relocations: tuple[NativeDataRelocation, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1182,6 +1192,14 @@ def object_manifest_payload(
                 {
                     "address": binding.address,
                     "alignment": binding.alignment,
+                    "initializer_target": (
+                        {
+                            "address": binding.initializer_target[0],
+                            "name": binding.initializer_target[1],
+                        }
+                        if binding.initializer_target is not None
+                        else None
+                    ),
                     "kind": binding.kind,
                     "name": binding.name,
                     "section_number": binding.section_number,
@@ -1211,6 +1229,14 @@ def object_manifest_payload(
                     "entries": [
                         {"address": address, "name": name}
                         for address, name in region.entries
+                    ],
+                    "relocations": [
+                        {
+                            "offset": relocation.section_offset,
+                            "target_address": relocation.target_address,
+                            "target_name": relocation.target_name,
+                        }
+                        for relocation in region.relocations
                     ],
                     "section_number": region.section_number,
                     "size": len(region.data),
@@ -2039,6 +2065,7 @@ def load_native_data_definitions(
         "initializer_fill",
         "initializer_hex",
         "initializer_source",
+        "initializer_target",
         "note",
         "size",
         "size_source",
@@ -2204,12 +2231,18 @@ def load_native_data_definitions(
 
         initializer_hex = raw_entry.get("initializer_hex")
         initializer_fill = raw_entry.get("initializer_fill")
+        initializer_target = raw_entry.get("initializer_target")
         initializer_source = raw_entry.get("initializer_source")
-        if initializer_hex is not None and initializer_fill is not None:
+        initializer_forms = sum(
+            value is not None
+            for value in (initializer_hex, initializer_fill, initializer_target)
+        )
+        if initializer_forms > 1:
             raise ValueError(
-                f"{label}: initializer_hex and initializer_fill are mutually exclusive",
+                f"{label}: initializer_hex, initializer_fill, and "
+                "initializer_target are mutually exclusive",
             )
-        if initializer_hex is None and initializer_fill is None:
+        if initializer_forms == 0:
             if initializer_source is not None:
                 raise ValueError(
                     f"{label}: initializer_source requires an initializer",
@@ -2217,6 +2250,7 @@ def load_native_data_definitions(
             normalized["initializer_fill"] = None
             normalized["initializer_hex"] = None
             normalized["initializer_source"] = None
+            normalized["initializer_target"] = None
         else:
             if (
                 not isinstance(initializer_source, str)
@@ -2230,6 +2264,30 @@ def load_native_data_definitions(
             normalized["initializer_fill"] = initializer_fill
             normalized["initializer_hex"] = initializer_hex
             normalized["initializer_source"] = initializer_source.strip()
+            if initializer_target is None:
+                normalized["initializer_target"] = None
+            else:
+                if (
+                    not isinstance(initializer_target, list)
+                    or len(initializer_target) != 2
+                    or not isinstance(initializer_target[0], (str, int))
+                    or not isinstance(initializer_target[1], str)
+                    or not initializer_target[1]
+                ):
+                    raise ValueError(
+                        f"{label}.initializer_target must be "
+                        "[address, non-empty name]",
+                    )
+                try:
+                    target_address = matchlib.parse_int(initializer_target[0])
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{label}.initializer_target has an invalid address",
+                    ) from exc
+                normalized["initializer_target"] = {
+                    "address": target_address,
+                    "name": initializer_target[1],
+                }
         if explicit_fields == 0:
             raise ValueError(f"{label}: at least one explicit data fact is required")
 
@@ -2277,11 +2335,16 @@ def load_native_data_definitions(
                 )
         if initializer_fill is not None and size is None:
             raise ValueError(f"{label}: initializer_fill requires an explicit size")
+        normalized_target = normalized["initializer_target"]
+        if normalized_target is not None and size != 4:
+            raise ValueError(f"{label}: initializer_target requires size 4")
         initializer = (
             bytes.fromhex(initializer_hex)
             if initializer_hex is not None
             else bytes.fromhex(initializer_fill) * size
             if initializer_fill is not None and size is not None
+            else struct.pack("<I", int(normalized_target["address"]))
+            if normalized_target is not None
             else None
         )
         if initializer is not None and loaded_reference_image is not None:
@@ -2301,6 +2364,34 @@ def load_native_data_definitions(
     ordered = sorted(entries, key=lambda row: (row["address"], row["name"]))
     if entries != ordered:
         raise ValueError(f"{path}: entries must be sorted by address and name")
+    entries_by_key = {
+        (int(entry["address"]), str(entry["name"])): entry
+        for entry in entries
+    }
+    for entry in entries:
+        target = entry["initializer_target"]
+        if target is None:
+            continue
+        target_key = (int(target["address"]), str(target["name"]))
+        target_entry = entries_by_key.get(target_key)
+        if target_entry is None:
+            raise ValueError(
+                f"{path}: initializer target {target_key[1]}@"
+                f"0x{target_key[0]:08x} has no definition",
+            )
+        if (
+            target_entry["size"] is None
+            or target_entry["alignment"] is None
+            or (
+                target_entry["initializer_hex"] is None
+                and target_entry["initializer_fill"] is None
+                and target_entry["initializer_target"] is None
+            )
+        ):
+            raise ValueError(
+                f"{path}: initializer target {target_key[1]}@"
+                f"0x{target_key[0]:08x} is not fully specified",
+            )
     return {
         "entries": entries,
         "image": image,
@@ -2386,10 +2477,15 @@ def _native_data_layout(
         alignment = entry["alignment"]
         initializer_hex = entry.get("initializer_hex")
         initializer_fill = entry.get("initializer_fill")
+        initializer_target = entry.get("initializer_target")
         if (
             size is None
             or alignment is None
-            or (initializer_hex is None and initializer_fill is None)
+            or (
+                initializer_hex is None
+                and initializer_fill is None
+                and initializer_target is None
+            )
         ):
             continue
         key = (int(entry["address"]), str(entry["name"]))
@@ -2397,11 +2493,22 @@ def _native_data_layout(
             bytes.fromhex(str(initializer_hex))
             if initializer_hex is not None
             else bytes.fromhex(str(initializer_fill)) * int(size)
+            if initializer_fill is not None
+            else bytes(int(size))
+        )
+        target_key = (
+            (
+                int(initializer_target["address"]),
+                str(initializer_target["name"]),
+            )
+            if initializer_target is not None
+            else None
         )
         row = {
             "address": key[0],
             "alignment": int(alignment),
             "initializer": initializer,
+            "initializer_target": target_key,
             "key": key,
             "name": key[1],
             "size": int(size),
@@ -2467,6 +2574,21 @@ def _native_data_layout(
         owner_key
         for owner_key, _ in assignments
     }
+    while True:
+        dependency_keys = {
+            target_key
+            for owner_key in selected_owner_keys
+            if (
+                target_key := definitions_by_key[owner_key][
+                    "initializer_target"
+                ]
+            )
+            is not None
+        }
+        missing_dependencies = dependency_keys - selected_owner_keys
+        if not missing_dependencies:
+            break
+        selected_owner_keys.update(missing_dependencies)
     pending: list[dict[str, Any]] = [
         {
             **row,
@@ -2530,6 +2652,7 @@ def _native_data_layout(
         )
         data = bytearray(storage_end - storage_address)
         written = bytearray(len(data))
+        relocations: list[NativeDataRelocation] = []
         for row in group:
             offset = int(row["address"]) - storage_address
             initializer = bytes(row["initializer"])
@@ -2548,6 +2671,10 @@ def _native_data_layout(
                     size=int(row["size"]),
                     alignment=int(row["alignment"]),
                     initializer=initializer,
+                    initializer_target=cast(
+                        tuple[int, str] | None,
+                        row["initializer_target"],
+                    ),
                     kind="definition",
                     storage_address=int(row["address"]),
                     storage_name=str(row["name"]),
@@ -2557,6 +2684,18 @@ def _native_data_layout(
                 ),
             )
             owner_locations[row["key"]] = (section_number, offset)
+            target_key = cast(
+                tuple[int, str] | None,
+                row["initializer_target"],
+            )
+            if target_key is not None:
+                relocations.append(
+                    NativeDataRelocation(
+                        section_offset=offset,
+                        target_address=target_key[0],
+                        target_name=target_key[1],
+                    ),
+                )
         regions.append(
             NativeDataRegion(
                 address=storage_address,
@@ -2569,6 +2708,12 @@ def _native_data_layout(
                             (int(row["address"]), str(row["name"]))
                             for row in group
                         ),
+                    ),
+                ),
+                relocations=tuple(
+                    sorted(
+                        relocations,
+                        key=lambda relocation: relocation.section_offset,
                     ),
                 ),
             ),
@@ -2585,6 +2730,7 @@ def _native_data_layout(
                 size=None,
                 alignment=None,
                 initializer=None,
+                initializer_target=None,
                 kind="interior-alias",
                 storage_address=owner_key[0],
                 storage_name=owner_key[1],
@@ -2622,20 +2768,47 @@ def native_data_object_bytes(
     if not bindings:
         return b"", (), ()
 
-    symbols: list[tuple[str, NativeDataBinding]] = sorted(
+    external_symbols: list[tuple[str, NativeDataBinding, int]] = sorted(
         (
-            (symbol, binding)
+            (symbol, binding, matchlib.IMAGE_SYM_CLASS_EXTERNAL)
             for binding in bindings
             for symbol in binding.symbols
         ),
         key=lambda item: item[0],
     )
-    if len({symbol for symbol, _ in symbols}) != len(symbols):
+    bindings_by_key = {
+        (binding.address, binding.name): binding
+        for binding in bindings
+        if binding.kind == "definition"
+    }
+    relocation_target_keys = {
+        (relocation.target_address, relocation.target_name)
+        for region in regions
+        for relocation in region.relocations
+    }
+    local_symbol_by_key = {
+        key: f"$data${key[0]:08x}"
+        for key in sorted(relocation_target_keys)
+    }
+    local_symbols = [
+        (
+            local_symbol_by_key[key],
+            bindings_by_key[key],
+            matchlib.IMAGE_SYM_CLASS_STATIC,
+        )
+        for key in sorted(relocation_target_keys)
+    ]
+    symbols = sorted(external_symbols + local_symbols, key=lambda item: item[0])
+    if len({symbol for symbol, _, _ in symbols}) != len(symbols):
         raise ValueError("generated data object contains duplicate symbol names")
+    symbol_index_by_name = {
+        symbol: index
+        for index, (symbol, _, _) in enumerate(symbols)
+    }
 
     string_offsets: dict[str, int] = {}
     string_payload = bytearray()
-    for symbol, _ in symbols:
+    for symbol, _, _ in symbols:
         encoded = symbol.encode("latin1")
         if len(encoded) <= 8:
             continue
@@ -2647,10 +2820,17 @@ def native_data_object_bytes(
     section_table_end = 20 + len(regions) * 40
     cursor = section_table_end
     raw_offsets: list[int] = []
+    relocation_offsets: list[int] = []
     for region in regions:
         cursor = (cursor + 3) & ~3
         raw_offsets.append(cursor)
         cursor += len(region.data)
+        if region.relocations:
+            cursor = (cursor + 3) & ~3
+            relocation_offsets.append(cursor)
+            cursor += len(region.relocations) * 10
+        else:
+            relocation_offsets.append(0)
     symbol_table_offset = (cursor + 3) & ~3
 
     payload = bytearray(symbol_table_offset)
@@ -2666,8 +2846,8 @@ def native_data_object_bytes(
         0,
         0,
     )
-    for index, (region, raw_offset) in enumerate(
-        zip(regions, raw_offsets, strict=True),
+    for index, (region, raw_offset, relocation_offset) in enumerate(
+        zip(regions, raw_offsets, relocation_offsets, strict=True),
     ):
         header_offset = 20 + index * 40
         payload[header_offset : header_offset + 8] = b".data\x00\x00\x00"
@@ -2679,9 +2859,9 @@ def native_data_object_bytes(
             0,
             len(region.data),
             raw_offset,
+            relocation_offset,
             0,
-            0,
-            0,
+            len(region.relocations),
             0,
             (
                 IMAGE_SCN_CNT_INITIALIZED_DATA
@@ -2691,8 +2871,21 @@ def native_data_object_bytes(
             ),
         )
         payload[raw_offset : raw_offset + len(region.data)] = region.data
+        for relocation_index, relocation in enumerate(region.relocations):
+            target_key = (
+                relocation.target_address,
+                relocation.target_name,
+            )
+            struct.pack_into(
+                "<IIH",
+                payload,
+                relocation_offset + relocation_index * 10,
+                relocation.section_offset,
+                symbol_index_by_name[local_symbol_by_key[target_key]],
+                IMAGE_REL_I386_DIR32,
+            )
 
-    for symbol, binding in symbols:
+    for symbol, binding, storage_class in symbols:
         encoded = symbol.encode("latin1")
         if len(encoded) <= 8:
             name_field = encoded.ljust(8, b"\x00")
@@ -2705,7 +2898,7 @@ def native_data_object_bytes(
                 binding.section_offset,
                 binding.section_number,
                 0,
-                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                storage_class,
                 0,
             ),
         )
@@ -2713,22 +2906,45 @@ def native_data_object_bytes(
 
     object_data = bytes(payload)
     coff = matchlib.parse_coff_object(object_data)
-    parsed_symbols = {
+    parsed_external_symbols = {
         symbol.name: symbol
         for symbol in coff.symbols
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
     }
-    if set(parsed_symbols) != {symbol for symbol, _ in symbols}:
+    if set(parsed_external_symbols) != {
+        symbol
+        for symbol, _, _ in external_symbols
+    }:
         raise ValueError("generated data object symbol table did not round-trip")
-    for symbol, binding in symbols:
+    parsed_symbols = {symbol.name: symbol for symbol in coff.symbols}
+    for symbol, binding, storage_class in symbols:
         parsed = parsed_symbols[symbol]
         if (
             parsed.section_number != binding.section_number
             or parsed.value != binding.section_offset
+            or parsed.storage_class != storage_class
         ):
             raise ValueError(
                 f"generated data symbol {symbol!r} did not retain its section offset",
             )
+    for region, parsed_section in zip(regions, coff.sections, strict=True):
+        if len(parsed_section.relocations) != len(region.relocations):
+            raise ValueError("generated data relocations did not round-trip")
+        for expected, parsed in zip(
+            region.relocations,
+            parsed_section.relocations,
+            strict=True,
+        ):
+            target_key = (expected.target_address, expected.target_name)
+            target_symbol = parsed_symbols[
+                local_symbol_by_key[target_key]
+            ]
+            if (
+                parsed.virtual_address != expected.section_offset
+                or parsed.symbol_index != target_symbol.raw_index
+                or parsed.relocation_type != IMAGE_REL_I386_DIR32
+            ):
+                raise ValueError("generated data relocation did not round-trip")
     return object_data, bindings, regions
 
 
@@ -2786,6 +3002,7 @@ def _data_definition_state(entry: dict[str, Any]) -> str:
     initializer_present = (
         entry.get("initializer_hex") is not None
         or entry.get("initializer_fill") is not None
+        or entry.get("initializer_target") is not None
     )
     present = sum(
         (
@@ -2919,6 +3136,11 @@ def data_manifest_payload(
                 if definition is not None
                 else None
             ),
+            "initializer_target": (
+                definition["initializer_target"]
+                if definition is not None
+                else None
+            ),
             "linker_reference_count": linker_reference_count,
             "name": str(row["name"]),
             "section": section,
@@ -3030,6 +3252,7 @@ def data_manifest_payload(
             "explicit_initializer_entries": sum(
                 entry["initializer_hex"] is not None
                 or entry.get("initializer_fill") is not None
+                or entry.get("initializer_target") is not None
                 for entry in entries
             ),
             "explicit_size_entries": sum(

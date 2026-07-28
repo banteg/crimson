@@ -997,7 +997,15 @@
       "address": "0x00473a8c",
       "comment": "Secret-hint string: \"Brave little haxx0r aren't you?\"",
       "name": "secret_hint_haxx0r",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[33]"
+    },
+    {
+      "address": "0x00473ab0",
+      "comment": "Secret-hint string: Muzzy dig message and concatenated Wonder follow-up.",
+      "name": "secret_hint_muzzy",
+      "program": "crimsonland.exe",
+      "type": "char[135]"
     },
     {
       "address": "0x00473b14",
@@ -1009,37 +1017,50 @@
       "address": "0x00473b38",
       "comment": "Secret-hint string: \"Magic Paint\" city walls line.",
       "name": "secret_hint_magic_paint",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[82]"
     },
     {
       "address": "0x00473b8c",
       "comment": "Secret-hint string: credits click pattern for Secret Path.",
       "name": "secret_hint_secret_path",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[173]"
     },
     {
       "address": "0x00473c3c",
       "comment": "Secret-hint string: AlienZooKeeper combo / orthogonal projection.",
       "name": "secret_hint_alienzookeeper",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[171]"
     },
     {
       "address": "0x00473ce8",
       "comment": "Secret-hint string: \"not really meant to see\".",
       "name": "secret_hint_not_meant_to_see",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[104]"
     },
     {
       "address": "0x00473d50",
       "comment": "Secret-hint string: secret weapons exist.",
       "name": "secret_hint_secret_weapons",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[85]"
+    },
+    {
+      "address": "0x00473da8",
+      "comment": "Secret-hint string: Pikku-Reijo zebra story.",
+      "name": "secret_hint_reijo",
+      "program": "crimsonland.exe",
+      "type": "char[138]"
     },
     {
       "address": "0x00473e34",
       "comment": "Secret-hint string: \"%ReDistrBuildXX%\" build tag.",
       "name": "secret_hint_redistr_build",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[18]"
     },
     {
       "address": "0x00473e48",

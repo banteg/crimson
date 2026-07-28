@@ -696,6 +696,69 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
     )
 
 
+def test_native_data_object_emits_symbolic_pointer_relocation() -> None:
+    definitions = {
+        "entries": [
+            {
+                "address": 0x1000,
+                "alignment": 4,
+                "initializer_target": {
+                    "address": 0x2000,
+                    "name": "target_string",
+                },
+                "name": "pointer",
+                "size": 4,
+            },
+            {
+                "address": 0x2000,
+                "alignment": 1,
+                "initializer_hex": "686900",
+                "name": "target_string",
+                "size": 3,
+            },
+        ],
+    }
+    closure = {
+        "unresolved": [
+            {
+                "catalog": [{"address": 0x1000, "name": "pointer"}],
+                "category": "game_data",
+                "lookup_name": "pointer",
+                "name": "_pointer",
+                "referenced_by": [{"function": "first"}],
+            },
+        ],
+    }
+
+    data, bindings, regions = native_data_object_bytes(definitions, closure)
+    repeated, _, _ = native_data_object_bytes(definitions, closure)
+    coff = matchlib.parse_coff_object(data)
+    pointer = next(binding for binding in bindings if binding.name == "pointer")
+    target = next(
+        binding for binding in bindings if binding.name == "target_string"
+    )
+    section = coff.sections[pointer.section_number - 1]
+    relocation = section.relocations[0]
+    relocation_symbol = next(
+        symbol
+        for symbol in coff.symbols
+        if symbol.raw_index == relocation.symbol_index
+    )
+
+    assert data == repeated
+    assert len(bindings) == 2
+    assert len(regions) == 2
+    assert pointer.initializer_target == (0x2000, "target_string")
+    assert target.symbols == ()
+    assert section.data == b"\x00\x00\x00\x00"
+    assert relocation.virtual_address == 0
+    assert relocation.relocation_type == 0x0006
+    assert relocation_symbol.name == "$data$00002000"
+    assert relocation_symbol.storage_class == matchlib.IMAGE_SYM_CLASS_STATIC
+    assert relocation_symbol.section_number == target.section_number
+    assert relocation_symbol.value == target.section_offset
+
+
 def test_symbol_closure_keeps_exact_link_identity_and_classifies_debt(tmp_path: Path) -> None:
     first_function = _function("first", 0x10001000)
     second_function = _function("second", 0x10001010)
@@ -1184,11 +1247,11 @@ def test_grim_data_manifest_applies_only_explicit_data_definitions() -> None:
 def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
-    assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 662
-    assert payload["summary"]["explicit_alignment_entries"] == 662
-    assert payload["summary"]["explicit_initializer_entries"] == 662
-    assert payload["summary"]["fully_specified_entries"] == 662
+    assert payload["summary"]["entry_count"] == 1549
+    assert payload["summary"]["explicit_size_entries"] == 681
+    assert payload["summary"]["explicit_alignment_entries"] == 681
+    assert payload["summary"]["explicit_initializer_entries"] == 681
+    assert payload["summary"]["fully_specified_entries"] == 681
     assert payload["summary"]["definition_group_entries"] == 597
     assert payload["summary"]["definition_groups"] == 67
     assert payload["source"]["definitions"] == (
@@ -1239,6 +1302,10 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["console_tokenize_buf"]["size"] == 1024
     assert defined["resource_pack_entry_name_buf"]["size"] == 512
     assert defined["reserved_color_4871b8"]["size"] == 16
+    assert defined["console_empty_arg"]["initializer_target"] == {
+        "address": 0x0047F4D8,
+        "name": "s_empty_string",
+    }
 
 
 def test_data_manifest_ranks_game_data_by_reference_fan_in() -> None:
@@ -1312,6 +1379,59 @@ def test_data_definitions_reject_initializer_size_mismatch(tmp_path: Path) -> No
         load_native_data_definitions("grim.dll", path=path)
 
 
+def test_data_definitions_normalize_symbolic_initializer_target(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "grim.dll.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-data-definitions",
+                "image": "grim.dll",
+                "reference_image": {
+                    "path": "game_bins/grim.dll",
+                    "sha256": "0" * 64,
+                },
+                "entries": [
+                    {
+                        "address": "0x10053000",
+                        "name": "pointer",
+                        "size": 4,
+                        "size_source": "pointer ABI",
+                        "alignment": 4,
+                        "alignment_source": "pointer ABI",
+                        "initializer_target": [
+                            "0x10054000",
+                            "target_string",
+                        ],
+                        "initializer_source": "reference image pointer",
+                    },
+                    {
+                        "address": "0x10054000",
+                        "name": "target_string",
+                        "size": 2,
+                        "size_source": "CString extent",
+                        "alignment": 1,
+                        "alignment_source": "char ABI",
+                        "initializer_hex": "7800",
+                        "initializer_source": "reference image string",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    payload = load_native_data_definitions("grim.dll", path=path)
+
+    assert payload is not None
+    assert payload["entries"][0]["initializer_target"] == {
+        "address": 0x10054000,
+        "name": "target_string",
+    }
+
+
 def test_data_definition_groups_expand_data_map_checked_members(
     tmp_path: Path,
 ) -> None:
@@ -1377,6 +1497,7 @@ def test_data_definition_groups_expand_data_map_checked_members(
             "initializer_fill": "00",
             "initializer_hex": None,
             "initializer_source": "reference image",
+            "initializer_target": None,
             "name": "counter",
             "note": "",
             "size": 4,

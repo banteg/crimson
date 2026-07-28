@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b7d8bfbef53ccc25cba8ae933fc28f72924e0b4c473898e6d700aa5c46dadb39",
+  "audit_digest": "d5e1a702731d1d2e0f8d187aa3aceb83e4c7aadb319fe4e8e477c9dab3f9f60e",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -82129,6 +82129,30 @@
     {
       "definitions": [
         {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4657496,
+          "data_binding_kind": "definition",
+          "data_name": "console_empty_arg",
+          "data_storage_address": 4657496,
+          "data_storage_name": "console_empty_arg",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_console_empty_arg"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -85041,6 +85065,222 @@
         }
       ],
       "name": "_demo_variant_index"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667936,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_alien_zookeeper",
+          "data_storage_address": 4667936,
+          "data_storage_name": "developer_hint_alien_zookeeper",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_alien_zookeeper"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667956,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_haxxor",
+          "data_storage_address": 4667956,
+          "data_storage_name": "developer_hint_haxxor",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_haxxor"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667944,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_magic_paint",
+          "data_storage_address": 4667944,
+          "data_storage_name": "developer_hint_magic_paint",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_magic_paint"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667948,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_muzzy",
+          "data_storage_address": 4667948,
+          "data_storage_name": "developer_hint_muzzy",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_muzzy"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667920,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_redistribution_build",
+          "data_storage_address": 4667920,
+          "data_storage_name": "developer_hint_redistribution_build",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_redistribution_build"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667924,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_reijo",
+          "data_storage_address": 4667924,
+          "data_storage_name": "developer_hint_reijo",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_reijo"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667940,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_secret_path",
+          "data_storage_address": 4667940,
+          "data_storage_name": "developer_hint_secret_path",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_secret_path"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667928,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_secret_weapons",
+          "data_storage_address": 4667928,
+          "data_storage_name": "developer_hint_secret_weapons",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_secret_weapons"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667932,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_warning",
+          "data_storage_address": 4667932,
+          "data_storage_name": "developer_hint_warning",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_warning"
     },
     {
       "definitions": [
@@ -123628,6 +123868,37 @@
     {
       "definitions": [
         {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4657496,
+          "data_binding_kind": "definition",
+          "data_name": "console_empty_arg",
+          "data_storage_address": 4657496,
+          "data_storage_name": "console_empty_arg",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_console_empty_arg",
+      "referenced_by": [
+        {
+          "function": "console_cmd_arg_get",
+          "object": "tools/match/scratches/console_cmd_arg_get/build/msvc6.5/9ab869c9b2808e0d/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 1,
           "comdat": false,
           "comdat_associative_section": null,
@@ -128442,6 +128713,285 @@
         {
           "function": "demo_mode_start",
           "object": "tools/match/scratches/demo_mode_start/build/msvc6.5/caf162aa72e03cad/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667936,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_alien_zookeeper",
+          "data_storage_address": 4667936,
+          "data_storage_name": "developer_hint_alien_zookeeper",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_alien_zookeeper",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667956,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_haxxor",
+          "data_storage_address": 4667956,
+          "data_storage_name": "developer_hint_haxxor",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_haxxor",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667944,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_magic_paint",
+          "data_storage_address": 4667944,
+          "data_storage_name": "developer_hint_magic_paint",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_magic_paint",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667948,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_muzzy",
+          "data_storage_address": 4667948,
+          "data_storage_name": "developer_hint_muzzy",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_muzzy",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667920,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_redistribution_build",
+          "data_storage_address": 4667920,
+          "data_storage_name": "developer_hint_redistribution_build",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_redistribution_build",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667924,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_reijo",
+          "data_storage_address": 4667924,
+          "data_storage_name": "developer_hint_reijo",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_reijo",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667940,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_secret_path",
+          "data_storage_address": 4667940,
+          "data_storage_name": "developer_hint_secret_path",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_secret_path",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667928,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_secret_weapons",
+          "data_storage_address": 4667928,
+          "data_storage_name": "developer_hint_secret_weapons",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_secret_weapons",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4667932,
+          "data_binding_kind": "definition",
+          "data_name": "developer_hint_warning",
+          "data_storage_address": 4667932,
+          "data_storage_name": "developer_hint_warning",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 4,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 4,
+          "weak": false
+        }
+      ],
+      "name": "_developer_hint_warning",
+      "referenced_by": [
+        {
+          "function": "crimsonland_main",
+          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
           "weak": false
         }
       ]
@@ -163982,7 +164532,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "cb15c00225b73987f335c22b9c4be45356bf1e141b166a37d2b8c1fe8c1b5795"
+        "sha256": "0f03adaee16aca935f6c7614d382837d9299a3f95f5fecc133ea8c8fb285664f"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -163999,7 +164549,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3136,
+    "defined_symbols": 3146,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -164008,15 +164558,15 @@
     "hard_duplicate_symbols": 0,
     "object_count": 663,
     "reference_exports_closed": true,
-    "resolved_symbols": 1340,
+    "resolved_symbols": 1350,
     "unresolved_by_category": {
       "excluded_function": 70,
       "external": 3,
-      "game_data": 12,
+      "game_data": 2,
       "import": 25,
       "toolchain": 1
     },
-    "unresolved_symbols": 111
+    "unresolved_symbols": 101
   },
   "unresolved": [
     {
@@ -167038,25 +167588,6 @@
       "candidate_definitions": [],
       "catalog": [
         {
-          "address": 4657496,
-          "name": "console_empty_arg"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "console_empty_arg",
-      "name": "_console_empty_arg",
-      "referenced_by": [
-        {
-          "function": "console_cmd_arg_get",
-          "object": "tools/match/scratches/console_cmd_arg_get/build/msvc6.5/9ab869c9b2808e0d/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
           "address": 4590982,
           "disposition": "outside-port-scope",
           "function": "crt_atexit"
@@ -168189,177 +168720,6 @@
         {
           "function": "mod_api_gfx_printf",
           "object": "tools/match/scratches/mod_api_gfx_printf/build/msvc6.5/b99d6bdf349f3408/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667936,
-          "name": "developer_hint_alien_zookeeper"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_alien_zookeeper",
-      "name": "_developer_hint_alien_zookeeper",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667956,
-          "name": "developer_hint_haxxor"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_haxxor",
-      "name": "_developer_hint_haxxor",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667944,
-          "name": "developer_hint_magic_paint"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_magic_paint",
-      "name": "_developer_hint_magic_paint",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667948,
-          "name": "developer_hint_muzzy"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_muzzy",
-      "name": "_developer_hint_muzzy",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667920,
-          "name": "developer_hint_redistribution_build"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_redistribution_build",
-      "name": "_developer_hint_redistribution_build",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667924,
-          "name": "developer_hint_reijo"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_reijo",
-      "name": "_developer_hint_reijo",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667940,
-          "name": "developer_hint_secret_path"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_secret_path",
-      "name": "_developer_hint_secret_path",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667928,
-          "name": "developer_hint_secret_weapons"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_secret_weapons",
-      "name": "_developer_hint_secret_weapons",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4667932,
-          "name": "developer_hint_warning"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "developer_hint_warning",
-      "name": "_developer_hint_warning",
-      "referenced_by": [
-        {
-          "function": "crimsonland_main",
-          "object": "tools/match/scratches/crimsonland_main/build/msvc6.5/6106cb05efc0b5e2/scratch.obj",
           "weak": false
         }
       ]

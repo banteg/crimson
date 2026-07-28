@@ -60,6 +60,11 @@ not fill unknown gaps or derive extents from neighboring symbols.
 Initializers may be recorded literally as `initializer_hex` or compactly as a
 single-byte `initializer_fill`; both forms are checked byte-for-byte against
 the pinned reference image before an object is emitted.
+Pointer definitions use `initializer_target: [address, name]` instead. The
+target must be another fully specified definition, the recorded reference-PE
+pointer must equal its address, and the generated object emits an i386 `DIR32`
+relocation to a COFF-local target symbol. This preserves rebasing semantics
+instead of embedding an original-image virtual address as inert bytes.
 Definition groups share the same size, alignment, initializer, and provenance
 across an explicit sorted list of `[address, name]` members. Each member's
 expected data-map type is validated before expansion, so groups reduce repeated
