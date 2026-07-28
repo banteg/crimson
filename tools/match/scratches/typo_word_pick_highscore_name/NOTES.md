@@ -14,7 +14,10 @@ match=100.00% prefix=123/123 target_insns=123 candidate_insns=123 refs=20/0/0
 - The first call goes through the observed `j_highscore_load_table` thunk and
   lazily builds a process-lifetime cache. Later calls reuse it.
 - The routine scans all 100 loaded 72-byte high-score records, not only the
-  persisted-record count. Accepted names are stored in 32-byte cache slots.
+  persisted-record count. Accepted names are stored in a 20-entry array of
+  32-byte cache slots; the next global begins exactly 0x280 bytes after the
+  cache base. Native has no capacity guard, so more than 20 accepted unique
+  names would overwrite the following Typ-o globals.
 - Cache comparison is case-sensitive. A candidate is skipped when it exactly
   matches any earlier accepted entry.
 - Every byte of a nonempty candidate must satisfy `isalpha` or equal `'.'`.

@@ -342,12 +342,13 @@
       "name": "recovered-zero-char-array-00100",
       "types": ["char[256]", null],
       "size": 256,
-      "size_source": "tools/match/include/crimsonland_resource.h and resource_pack_set/scratch.cpp: dedicated resource-pack path storage; Binary Ninja data layout reserves exactly 256 bytes before the entry-name buffer",
+      "size_source": "tools/match/scratches/grim_load_interface and resource_pack_set: complete buffer writers; Binary Ninja data layout reserves exactly 256 bytes before each following global",
       "alignment": 1,
       "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
+        ["0x00490308", "grim_dll_name"],
         ["0x004c3968", "resource_pack_path_buf"]
       ]
     },
@@ -379,6 +380,19 @@
         ["0x004c3a68", "resource_pack_entry_name_buf"],
         ["0x004d9d00", "mod_api_gfx_format_buffer"],
         ["0x004d9f00", "mod_api_core_format_buffer"]
+      ]
+    },
+    {
+      "name": "recovered-zero-char-array-00280",
+      "types": ["char[20][32]", null],
+      "size": 640,
+      "size_source": "tools/match/scratches/typo_word_pick_highscore_name: 32-byte slot stride; Binary Ninja data layout reserves exactly 0x280 bytes before typo_input_buffer",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "initializer_fill": "00",
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004d1228..0x004d14a8",
+      "members": [
+        ["0x004d1228", "typo_word_highscore_cache"]
       ]
     },
     {

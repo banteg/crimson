@@ -5647,10 +5647,10 @@
     },
     {
       "address": "0x00490308",
-      "comment": "Path of the Grim2D implementation DLL copied after resolving GRIM__GetInterface.",
+      "comment": "256-byte path buffer for the Grim2D implementation DLL copied after resolving GRIM__GetInterface; the next constructed global begins at +0x100.",
       "name": "grim_dll_name",
       "program": "crimsonland.exe",
-      "type": "char[260]"
+      "type": "char[256]"
     },
     {
       "address": "0x00490408",
@@ -9263,9 +9263,10 @@
     },
     {
       "address": "0x004d1228",
-      "comment": "Cache of unique highscore-derived words used by typo_word_pick_highscore_name (32-byte strings).",
+      "comment": "20-entry cache of unique highscore-derived words used by typo_word_pick_highscore_name (32-byte strings); the native scan has no capacity guard.",
       "name": "typo_word_highscore_cache",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "char[20][32]"
     },
     {
       "address": "0x004d14a8",

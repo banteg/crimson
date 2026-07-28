@@ -5,7 +5,7 @@
 extern "C" void j_highscore_load_table(void);
 extern "C" int crt_isalpha(int ch);
 
-extern "C" char typo_word_highscore_cache[100][32];
+extern "C" char typo_word_highscore_cache[20][32];
 extern "C" unsigned char typo_word_highscore_cache_ready;
 extern "C" int typo_word_highscore_cache_count;
 

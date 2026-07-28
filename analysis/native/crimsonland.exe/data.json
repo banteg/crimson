@@ -1,5 +1,5 @@
 {
-  "audit_digest": "d5e1a702731d1d2e0f8d187aa3aceb83e4c7aadb319fe4e8e477c9dab3f9f60e",
+  "audit_digest": "3b7fcdc33b1642077df46a2c6f401189c2da389c8b6244d9fd3439f259a6c636",
   "entries": [
     {
       "address": 4211888,
@@ -17148,21 +17148,23 @@
     {
       "address": 4784904,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
-      "comment": "Path of the Grim2D implementation DLL copied after resolving GRIM__GetInterface.",
-      "definition_state": "unknown",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "256-byte path buffer for the Grim2D implementation DLL copied after resolving GRIM__GetInterface; the next constructed global begins at +0x100.",
+      "definition_group": "recovered-zero-char-array-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "grim_dll_name",
       "section": ".data",
       "section_offset": 127752,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "char[260]"
+      "size": 256,
+      "size_source": "tools/match/scratches/grim_load_interface and resource_pack_set: complete buffer writers; Binary Ninja data layout reserves exactly 256 bytes before each following global",
+      "type": "char[256]"
     },
     {
       "address": 4785160,
@@ -24795,7 +24797,7 @@
       "section_offset": 338280,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 256,
-      "size_source": "tools/match/include/crimsonland_resource.h and resource_pack_set/scratch.cpp: dedicated resource-pack path storage; Binary Ninja data layout reserves exactly 256 bytes before the entry-name buffer",
+      "size_source": "tools/match/scratches/grim_load_interface and resource_pack_set: complete buffer writers; Binary Ninja data layout reserves exactly 256 bytes before each following global",
       "type": "char[256]"
     },
     {
@@ -28491,21 +28493,23 @@
     {
       "address": 5050920,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
-      "comment": "Cache of unique highscore-derived words used by typo_word_pick_highscore_name (32-byte strings).",
-      "definition_state": "unknown",
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
+      "comment": "20-entry cache of unique highscore-derived words used by typo_word_pick_highscore_name (32-byte strings); the native scan has no capacity guard.",
+      "definition_group": "recovered-zero-char-array-00280",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at VA 0x004d1228..0x004d14a8",
       "initializer_target": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "typo_word_highscore_cache",
       "section": ".data",
       "section_offset": 393768,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": null
+      "size": 640,
+      "size_source": "tools/match/scratches/typo_word_pick_highscore_name: 32-byte slot stride; Binary Ninja data layout reserves exactly 0x280 bytes before typo_input_buffer",
+      "type": "char[20][32]"
     },
     {
       "address": 5051560,
@@ -30725,40 +30729,13 @@
       ]
     }
   ],
-  "priorities": [
-    {
-      "address": 4784904,
-      "definition_state": "unknown",
-      "name": "grim_dll_name",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "grim_dll_name",
-          "name": "?grim_dll_name@@3PADA",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 5050920,
-      "definition_state": "unknown",
-      "name": "typo_word_highscore_cache",
-      "reference_count": 1,
-      "requested_symbols": [
-        {
-          "lookup_name": "typo_word_highscore_cache",
-          "name": "_typo_word_highscore_cache",
-          "reference_count": 1
-        }
-      ]
-    }
-  ],
+  "priorities": [],
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "0f03adaee16aca935f6c7614d382837d9299a3f95f5fecc133ea8c8fb285664f",
+    "data_map_sha256": "f4a74bf4deee760e3a8a2803cbfab3e5d98626812f31d3a551aac39cbf13db28",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "bbea7d70c0086a63782193dd76ccb72d7ae00e9e29fe549e31ead490f9f3a4da",
+    "definitions_sha256": "1db4fef3a35fb886c96c99eedda891d40ab53e4d0872d77fc53b993c307885ea",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -30769,27 +30746,27 @@
   "summary": {
     "alias_names": 35,
     "alias_rows": 35,
-    "definition_group_entries": 597,
-    "definition_groups": 67,
+    "definition_group_entries": 599,
+    "definition_groups": 68,
     "entry_count": 1549,
-    "explicit_alignment_entries": 681,
-    "explicit_initializer_entries": 681,
-    "explicit_size_entries": 681,
-    "fixed_array_types": 95,
-    "fully_specified_entries": 681,
-    "game_data_reference_count": 2,
+    "explicit_alignment_entries": 683,
+    "explicit_initializer_entries": 683,
+    "explicit_size_entries": 683,
+    "fixed_array_types": 96,
+    "fully_specified_entries": 683,
+    "game_data_reference_count": 0,
     "incomplete_array_types": 0,
-    "multidimensional_array_types": 4,
+    "multidimensional_array_types": 5,
     "overlay_addresses": 2,
-    "priority_entries": 2,
-    "referenced_entries": 2,
+    "priority_entries": 0,
+    "referenced_entries": 0,
     "section_counts": {
       ".data": 1541,
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 764,
+    "typed_entries": 765,
     "unique_addresses": 1547,
-    "untyped_entries": 785
+    "untyped_entries": 784
   }
 }

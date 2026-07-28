@@ -54,7 +54,7 @@
     "source_sha256": "8eb9f2d6e35f0be8eadfc90ca2cc68a971f8580c8e5e236f9893e80e2a95de64",
     "status": "passed"
   },
-  "audit_digest": "d5e1a702731d1d2e0f8d187aa3aceb83e4c7aadb319fe4e8e477c9dab3f9f60e",
+  "audit_digest": "3b7fcdc33b1642077df46a2c6f401189c2da389c8b6244d9fd3439f259a6c636",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7315,12 +7315,27 @@
           ]
         },
         {
+          "address": 4784904,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "grim_dll_name",
+          "section_number": 367,
+          "section_offset": 0,
+          "size": 256,
+          "storage_address": 4784904,
+          "storage_name": "grim_dll_name",
+          "symbols": [
+            "?grim_dll_name@@3PADA"
+          ]
+        },
+        {
           "address": 4785160,
           "alignment": 4,
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_fx_queue_random_prefix_color",
-          "section_number": 367,
+          "section_number": 368,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4785160,
@@ -7335,7 +7350,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_fx_queue_random_prefix_vec2",
-          "section_number": 368,
+          "section_number": 369,
           "section_offset": 0,
           "size": 8,
           "storage_address": 4785176,
@@ -7350,7 +7365,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_rotated_pos_x",
-          "section_number": 369,
+          "section_number": 370,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4785200,
@@ -7365,7 +7380,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "bonus_pool_sentinel",
-          "section_number": 370,
+          "section_number": 371,
           "section_offset": 0,
           "size": 28,
           "storage_address": 4785712,
@@ -7380,7 +7395,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_fx_rotated_scale_prefix_color",
-          "section_number": 371,
+          "section_number": 372,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4785808,
@@ -7395,7 +7410,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_rotated_scale",
-          "section_number": 372,
+          "section_number": 373,
           "section_offset": 0,
           "size": 256,
           "storage_address": 4785832,
@@ -7410,7 +7425,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "game_base_path",
-          "section_number": 373,
+          "section_number": 374,
           "section_offset": 0,
           "size": 260,
           "storage_address": 4786088,
@@ -7425,7 +7440,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "player_state_table",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 0,
           "size": 1728,
           "storage_address": 4786352,
@@ -7440,7 +7455,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_plaguebearer_active",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 9,
           "size": null,
           "storage_address": 4786352,
@@ -7455,7 +7470,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_health",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 36,
           "size": null,
           "storage_address": 4786352,
@@ -7470,7 +7485,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_experience",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 172,
           "size": null,
           "storage_address": 4786352,
@@ -7485,7 +7500,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player2_health",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 900,
           "size": null,
           "storage_address": 4786352,
@@ -7500,7 +7515,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_alt_move_key_forward",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 1676,
           "size": null,
           "storage_address": 4786352,
@@ -7515,7 +7530,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_alt_move_key_backward",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 1680,
           "size": null,
           "storage_address": 4786352,
@@ -7530,7 +7545,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_alt_turn_key_left",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 1684,
           "size": null,
           "storage_address": 4786352,
@@ -7545,7 +7560,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_alt_turn_key_right",
-          "section_number": 374,
+          "section_number": 375,
           "section_offset": 1688,
           "size": null,
           "storage_address": 4786352,
@@ -7560,7 +7575,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_effect_uv_strip16_prefix_vec2",
-          "section_number": 375,
+          "section_number": 376,
           "section_offset": 0,
           "size": 8,
           "storage_address": 4788088,
@@ -7575,7 +7590,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_uv_strip16",
-          "section_number": 376,
+          "section_number": 377,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4788096,
@@ -7590,7 +7605,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_effect_uv8_prefix_state",
-          "section_number": 377,
+          "section_number": 378,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4788224,
@@ -7605,7 +7620,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_uv8",
-          "section_number": 378,
+          "section_number": 379,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4788240,
@@ -7620,7 +7635,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "player_overlay_torso_uv8",
-          "section_number": 378,
+          "section_number": 379,
           "section_offset": 128,
           "size": null,
           "storage_address": 4788240,
@@ -7635,7 +7650,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_uv4",
-          "section_number": 379,
+          "section_number": 380,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4788752,
@@ -7650,7 +7665,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sprite_effect_uv_u",
-          "section_number": 379,
+          "section_number": 380,
           "section_offset": 56,
           "size": 4,
           "storage_address": 4788808,
@@ -7665,7 +7680,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sprite_effect_uv_v",
-          "section_number": 379,
+          "section_number": 380,
           "section_offset": 60,
           "size": 4,
           "storage_address": 4788812,
@@ -7680,7 +7695,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_uv2",
-          "section_number": 380,
+          "section_number": 381,
           "section_offset": 0,
           "size": 32,
           "storage_address": 4788880,
@@ -7695,7 +7710,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_queue",
-          "section_number": 381,
+          "section_number": 382,
           "section_offset": 0,
           "size": 5120,
           "storage_address": 4788920,
@@ -7710,7 +7725,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "projectile_pool",
-          "section_number": 382,
+          "section_number": 383,
           "section_offset": 0,
           "size": 6144,
           "storage_address": 4794040,
@@ -7725,7 +7740,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "particle_pool",
-          "section_number": 383,
+          "section_number": 384,
           "section_offset": 0,
           "size": 7168,
           "storage_address": 4800184,
@@ -7740,7 +7755,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_particle_pool_suffix_color",
-          "section_number": 384,
+          "section_number": 385,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4807352,
@@ -7755,7 +7770,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "local_system_time",
-          "section_number": 385,
+          "section_number": 386,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4807368,
@@ -7770,7 +7785,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "secondary_projectile_pool",
-          "section_number": 386,
+          "section_number": 387,
           "section_offset": 0,
           "size": 2816,
           "storage_address": 4807384,
@@ -7785,7 +7800,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "render_scratch_f0",
-          "section_number": 387,
+          "section_number": 388,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4810200,
@@ -7800,7 +7815,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "render_scratch_f2",
-          "section_number": 388,
+          "section_number": 389,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4810208,
@@ -7815,7 +7830,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "render_tint_color_r",
-          "section_number": 389,
+          "section_number": 390,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4810232,
@@ -7830,7 +7845,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "render_tint_color_a",
-          "section_number": 390,
+          "section_number": 391,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4810244,
@@ -7845,7 +7860,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_aim64_prefix_color",
-          "section_number": 391,
+          "section_number": 392,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4810376,
@@ -7860,7 +7875,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "aim64_texture",
-          "section_number": 392,
+          "section_number": 393,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4810392,
@@ -7875,7 +7890,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_rotated_rotation",
-          "section_number": 393,
+          "section_number": 394,
           "section_offset": 0,
           "size": 256,
           "storage_address": 4810396,
@@ -7890,7 +7905,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "bonus_label_format_buffer",
-          "section_number": 394,
+          "section_number": 395,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4810652,
@@ -7905,7 +7920,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sprite_effect_pool",
-          "section_number": 395,
+          "section_number": 396,
           "section_offset": 0,
           "size": 16896,
           "storage_address": 4810784,
@@ -7920,7 +7935,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_fx_rotated_effect_id_prefix_color",
-          "section_number": 396,
+          "section_number": 397,
           "section_offset": 0,
           "size": 16,
           "storage_address": 4831776,
@@ -7935,7 +7950,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_rotated_effect_id",
-          "section_number": 397,
+          "section_number": 398,
           "section_offset": 0,
           "size": 256,
           "storage_address": 4831792,
@@ -7950,7 +7965,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "projectile_bullet_texture",
-          "section_number": 398,
+          "section_number": 399,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4832048,
@@ -7965,7 +7980,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_rotated_color_r",
-          "section_number": 399,
+          "section_number": 400,
           "section_offset": 0,
           "size": 1024,
           "storage_address": 4832056,
@@ -7980,7 +7995,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "creature_pool",
-          "section_number": 400,
+          "section_number": 401,
           "section_offset": 0,
           "size": 58368,
           "storage_address": 4833080,
@@ -7995,7 +8010,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "creature_max_health",
-          "section_number": 400,
+          "section_number": 401,
           "section_offset": 40,
           "size": null,
           "storage_address": 4833080,
@@ -8010,7 +8025,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unused_effect_uv16_prefix_vec2",
-          "section_number": 401,
+          "section_number": 402,
           "section_offset": 0,
           "size": 8,
           "storage_address": 4891856,
@@ -8025,7 +8040,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_uv16",
-          "section_number": 402,
+          "section_number": 403,
           "section_offset": 0,
           "size": 2048,
           "storage_address": 4891864,
@@ -8040,7 +8055,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "key_char_buffer",
-          "section_number": 403,
+          "section_number": 404,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4893912,
@@ -8055,7 +8070,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "seasonal_balloon_load_active",
-          "section_number": 404,
+          "section_number": 405,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894424,
@@ -8070,7 +8085,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_terrain_generation_active",
-          "section_number": 405,
+          "section_number": 406,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894425,
@@ -8085,7 +8100,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_disabled_runtime",
-          "section_number": 406,
+          "section_number": 407,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894426,
@@ -8100,7 +8115,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "key_char_count",
-          "section_number": 407,
+          "section_number": 408,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894428,
@@ -8115,7 +8130,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "runtime_empty_string_copy",
-          "section_number": 408,
+          "section_number": 409,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894436,
@@ -8130,7 +8145,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_init_disabled",
-          "section_number": 409,
+          "section_number": 410,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894442,
@@ -8145,7 +8160,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "render_overlay_player_index",
-          "section_number": 410,
+          "section_number": 411,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894476,
@@ -8160,7 +8175,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_queue_count",
-          "section_number": 411,
+          "section_number": 412,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894488,
@@ -8175,7 +8190,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_jinxed_proc_timer_s",
-          "section_number": 412,
+          "section_number": 413,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894492,
@@ -8190,7 +8205,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "gameplay_reset_unused_timer",
-          "section_number": 413,
+          "section_number": 414,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894500,
@@ -8205,7 +8220,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "bonus_update_phase_accumulator",
-          "section_number": 414,
+          "section_number": 415,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894508,
@@ -8220,7 +8235,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "player_reset_reserved_zero",
-          "section_number": 415,
+          "section_number": 416,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894512,
@@ -8235,7 +8250,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "player_spread_damping_gate",
-          "section_number": 416,
+          "section_number": 417,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894516,
@@ -8250,7 +8265,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "fx_queue_rotated",
-          "section_number": 417,
+          "section_number": 418,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894524,
@@ -8265,7 +8280,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "grim_config_invoked",
-          "section_number": 418,
+          "section_number": 419,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894533,
@@ -8280,7 +8295,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "projectile_update_tick",
-          "section_number": 419,
+          "section_number": 420,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894548,
@@ -8295,7 +8310,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "creature_update_tick",
-          "section_number": 420,
+          "section_number": 421,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894552,
@@ -8310,7 +8325,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "bonus_render_anim_phase",
-          "section_number": 421,
+          "section_number": 422,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894556,
@@ -8325,7 +8340,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "telekinetic_bonus_hover_timer_ms",
-          "section_number": 422,
+          "section_number": 423,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894560,
@@ -8340,7 +8355,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "audio_suspend_flag",
-          "section_number": 423,
+          "section_number": 424,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894596,
@@ -8355,7 +8370,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_intro_enabled",
-          "section_number": 424,
+          "section_number": 425,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894597,
@@ -8370,7 +8385,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_bootstrap_pending",
-          "section_number": 425,
+          "section_number": 426,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894598,
@@ -8385,7 +8400,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_texture_load_stage",
-          "section_number": 426,
+          "section_number": 427,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894600,
@@ -8400,7 +8415,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_async_load_ready",
-          "section_number": 427,
+          "section_number": 428,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894604,
@@ -8415,7 +8430,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_splash_timer",
-          "section_number": 428,
+          "section_number": 429,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894608,
@@ -8430,7 +8445,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_skip_requested",
-          "section_number": 429,
+          "section_number": 430,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894612,
@@ -8445,7 +8460,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_post_load_settle_ticks",
-          "section_number": 430,
+          "section_number": 431,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4894616,
@@ -8460,7 +8475,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_logo_sequence_active",
-          "section_number": 431,
+          "section_number": 432,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894620,
@@ -8475,7 +8490,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "startup_loading_fade_complete",
-          "section_number": 432,
+          "section_number": 433,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4894621,
@@ -8490,7 +8505,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_template_position",
-          "section_number": 433,
+          "section_number": 434,
           "section_offset": 0,
           "size": 8,
           "storage_address": 4895152,
@@ -8505,7 +8520,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_template",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 0,
           "size": 60,
           "storage_address": 4895164,
@@ -8520,7 +8535,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_vel_x",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 0,
           "size": null,
           "storage_address": 4895164,
@@ -8535,7 +8550,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_vel_y",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 4,
           "size": null,
           "storage_address": 4895164,
@@ -8550,7 +8565,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_rotation",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 8,
           "size": null,
           "storage_address": 4895164,
@@ -8565,7 +8580,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_half_width",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 16,
           "size": null,
           "storage_address": 4895164,
@@ -8580,7 +8595,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_half_height",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 20,
           "size": null,
           "storage_address": 4895164,
@@ -8595,7 +8610,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_age",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 24,
           "size": null,
           "storage_address": 4895164,
@@ -8610,7 +8625,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_lifetime",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 28,
           "size": null,
           "storage_address": 4895164,
@@ -8625,7 +8640,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_template_scale_step",
-          "section_number": 434,
+          "section_number": 435,
           "section_offset": 56,
           "size": null,
           "storage_address": 4895164,
@@ -8640,7 +8655,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_defaults_reserved_zero",
-          "section_number": 435,
+          "section_number": 436,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4895336,
@@ -8655,7 +8670,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_discard_entry",
-          "section_number": 436,
+          "section_number": 437,
           "section_offset": 0,
           "size": 188,
           "storage_address": 4895344,
@@ -8670,7 +8685,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_pool",
-          "section_number": 437,
+          "section_number": 438,
           "section_offset": 0,
           "size": 96256,
           "storage_address": 4895536,
@@ -8685,7 +8700,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "effect_pool_pos_x",
-          "section_number": 437,
+          "section_number": 438,
           "section_offset": 0,
           "size": null,
           "storage_address": 4895536,
@@ -8700,7 +8715,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_free_list_head",
-          "section_number": 438,
+          "section_number": 439,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991792,
@@ -8715,7 +8730,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_pool_reserved_zero",
-          "section_number": 439,
+          "section_number": 440,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991796,
@@ -8730,7 +8745,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "effect_spawn_detail_skip_counter",
-          "section_number": 440,
+          "section_number": 441,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991800,
@@ -8745,7 +8760,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_antiperk",
-          "section_number": 441,
+          "section_number": 442,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991808,
@@ -8760,7 +8775,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_bloody_mess_quick_learner",
-          "section_number": 442,
+          "section_number": 443,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991812,
@@ -8775,7 +8790,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_sharpshooter",
-          "section_number": 443,
+          "section_number": 444,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991816,
@@ -8790,7 +8805,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_instant_winner",
-          "section_number": 444,
+          "section_number": 445,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991820,
@@ -8805,7 +8820,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_fastshot",
-          "section_number": 445,
+          "section_number": 446,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991824,
@@ -8820,7 +8835,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_long_distance_runner",
-          "section_number": 446,
+          "section_number": 447,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991828,
@@ -8835,7 +8850,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_reflex_boosted",
-          "section_number": 447,
+          "section_number": 448,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991832,
@@ -8850,7 +8865,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_fastloader",
-          "section_number": 448,
+          "section_number": 449,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991836,
@@ -8865,7 +8880,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_doctor",
-          "section_number": 449,
+          "section_number": 450,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991840,
@@ -8880,7 +8895,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_pyrokinetic",
-          "section_number": 450,
+          "section_number": 451,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991844,
@@ -8895,7 +8910,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_jinxed",
-          "section_number": 451,
+          "section_number": 452,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991848,
@@ -8910,7 +8925,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_grim_deal",
-          "section_number": 452,
+          "section_number": 453,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991856,
@@ -8925,7 +8940,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_alternate_weapon",
-          "section_number": 453,
+          "section_number": 454,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991860,
@@ -8940,7 +8955,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_plaguebearer",
-          "section_number": 454,
+          "section_number": 455,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991864,
@@ -8955,7 +8970,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_radioactive",
-          "section_number": 455,
+          "section_number": 456,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991868,
@@ -8970,7 +8985,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_ammo_maniac",
-          "section_number": 456,
+          "section_number": 457,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991872,
@@ -8985,7 +9000,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_lean_mean_exp_machine",
-          "section_number": 457,
+          "section_number": 458,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991876,
@@ -9000,7 +9015,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_evil_eyes",
-          "section_number": 458,
+          "section_number": 459,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991880,
@@ -9015,7 +9030,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_count",
-          "section_number": 459,
+          "section_number": 460,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991884,
@@ -9030,7 +9045,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_anxious_loader",
-          "section_number": 460,
+          "section_number": 461,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991888,
@@ -9045,7 +9060,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_final_revenge",
-          "section_number": 461,
+          "section_number": 462,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991892,
@@ -9060,7 +9075,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_unstoppable",
-          "section_number": 462,
+          "section_number": 463,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991896,
@@ -9075,7 +9090,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_infernal_contract",
-          "section_number": 463,
+          "section_number": 464,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991900,
@@ -9090,7 +9105,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_perk_expert",
-          "section_number": 464,
+          "section_number": 465,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991904,
@@ -9105,7 +9120,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_perk_master",
-          "section_number": 465,
+          "section_number": 466,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991908,
@@ -9120,7 +9135,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_bonus_magnet",
-          "section_number": 466,
+          "section_number": 467,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991912,
@@ -9135,7 +9150,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_mr_melee",
-          "section_number": 467,
+          "section_number": 468,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991916,
@@ -9150,7 +9165,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_regeneration",
-          "section_number": 468,
+          "section_number": 469,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991920,
@@ -9165,7 +9180,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_greater_regeneration",
-          "section_number": 469,
+          "section_number": 470,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991924,
@@ -9180,7 +9195,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_veins_of_poison",
-          "section_number": 470,
+          "section_number": 471,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991928,
@@ -9195,7 +9210,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_toxic_avenger",
-          "section_number": 471,
+          "section_number": 472,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991932,
@@ -9210,7 +9225,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_thick_skinned",
-          "section_number": 472,
+          "section_number": 473,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991936,
@@ -9225,7 +9240,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_breathing_room",
-          "section_number": 473,
+          "section_number": 474,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991940,
@@ -9240,7 +9255,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_ammunition_within",
-          "section_number": 474,
+          "section_number": 475,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991944,
@@ -9255,7 +9270,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "player_overlay_auto_target_line_perk_id",
-          "section_number": 475,
+          "section_number": 476,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991948,
@@ -9270,7 +9285,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_regression_bullets",
-          "section_number": 476,
+          "section_number": 477,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991952,
@@ -9285,7 +9300,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_pyromaniac",
-          "section_number": 477,
+          "section_number": 478,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991956,
@@ -9300,7 +9315,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_highlander",
-          "section_number": 478,
+          "section_number": 479,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991960,
@@ -9315,7 +9330,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_dodger",
-          "section_number": 479,
+          "section_number": 480,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991964,
@@ -9330,7 +9345,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_ninja",
-          "section_number": 480,
+          "section_number": 481,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991968,
@@ -9345,7 +9360,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_lifeline_50_50",
-          "section_number": 481,
+          "section_number": 482,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991972,
@@ -9360,7 +9375,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_monster_vision",
-          "section_number": 482,
+          "section_number": 483,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991976,
@@ -9375,7 +9390,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_barrel_greaser",
-          "section_number": 483,
+          "section_number": 484,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991980,
@@ -9390,7 +9405,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_bonus_economist",
-          "section_number": 484,
+          "section_number": 485,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991984,
@@ -9405,7 +9420,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_poison_bullets",
-          "section_number": 485,
+          "section_number": 486,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991988,
@@ -9420,7 +9435,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_telekinetic",
-          "section_number": 486,
+          "section_number": 487,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991992,
@@ -9435,7 +9450,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_hot_tempered",
-          "section_number": 487,
+          "section_number": 488,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4991996,
@@ -9450,7 +9465,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_uranium_filled_bullets",
-          "section_number": 488,
+          "section_number": 489,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992000,
@@ -9465,7 +9480,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_random_weapon",
-          "section_number": 489,
+          "section_number": 490,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992004,
@@ -9480,7 +9495,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_fatal_lottery",
-          "section_number": 490,
+          "section_number": 491,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992008,
@@ -9495,7 +9510,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_ion_gun_master",
-          "section_number": 491,
+          "section_number": 492,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992012,
@@ -9510,7 +9525,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_stationary_reloader",
-          "section_number": 492,
+          "section_number": 493,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992016,
@@ -9525,7 +9540,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_death_clock",
-          "section_number": 493,
+          "section_number": 494,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992020,
@@ -9540,7 +9555,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_my_favourite_weapon",
-          "section_number": 494,
+          "section_number": 495,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992024,
@@ -9555,7 +9570,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_bandage",
-          "section_number": 495,
+          "section_number": 496,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992028,
@@ -9570,7 +9585,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_angry_reloader",
-          "section_number": 496,
+          "section_number": 497,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992032,
@@ -9585,7 +9600,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_man_bomb",
-          "section_number": 497,
+          "section_number": 498,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992036,
@@ -9600,7 +9615,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_living_fortress",
-          "section_number": 498,
+          "section_number": 499,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992040,
@@ -9615,7 +9630,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_fire_caugh",
-          "section_number": 499,
+          "section_number": 500,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992044,
@@ -9630,7 +9645,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_tough_reloader",
-          "section_number": 500,
+          "section_number": 501,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992048,
@@ -9645,7 +9660,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_id_max",
-          "section_number": 501,
+          "section_number": 502,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4992056,
@@ -9660,7 +9675,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_meta_table",
-          "section_number": 502,
+          "section_number": 503,
           "section_offset": 0,
           "size": 2560,
           "storage_address": 4992064,
@@ -9675,7 +9690,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_slot_1_name_wrapped_primary",
-          "section_number": 503,
+          "section_number": 504,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994624,
@@ -9690,7 +9705,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_slot_1_name_wrapped_alternate",
-          "section_number": 504,
+          "section_number": 505,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994628,
@@ -9705,7 +9720,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_slot_1_desc_wrapped_primary",
-          "section_number": 505,
+          "section_number": 506,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994632,
@@ -9720,7 +9735,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "perk_slot_1_desc_wrapped_alternate",
-          "section_number": 506,
+          "section_number": 507,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994636,
@@ -9735,7 +9750,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "quest_meta_cursor",
-          "section_number": 507,
+          "section_number": 508,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994640,
@@ -9750,7 +9765,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "quest_spawn_stall_timer_ms",
-          "section_number": 508,
+          "section_number": 509,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994644,
@@ -9765,7 +9780,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "quest_monster_vision_meta",
-          "section_number": 509,
+          "section_number": 510,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4994648,
@@ -9780,7 +9795,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_named_path_buf",
-          "section_number": 510,
+          "section_number": 511,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4994652,
@@ -9795,7 +9810,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_path_buf",
-          "section_number": 511,
+          "section_number": 512,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4994780,
@@ -9810,7 +9825,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_cwd_buf",
-          "section_number": 512,
+          "section_number": 513,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4994908,
@@ -9825,7 +9840,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_cwd_buf_tail_nul",
-          "section_number": 512,
+          "section_number": 513,
           "section_offset": 511,
           "size": 1,
           "storage_address": 4995419,
@@ -9840,7 +9855,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_table_count",
-          "section_number": 513,
+          "section_number": 514,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4995420,
@@ -9856,7 +9871,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_cwd_cached",
-          "section_number": 514,
+          "section_number": 515,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4995424,
@@ -9871,7 +9886,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "dsound_iface",
-          "section_number": 515,
+          "section_number": 516,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4995428,
@@ -9886,7 +9901,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "resource_pack_path_buf",
-          "section_number": 516,
+          "section_number": 517,
           "section_offset": 0,
           "size": 256,
           "storage_address": 4995432,
@@ -9901,7 +9916,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "resource_pack_entry_name_buf",
-          "section_number": 517,
+          "section_number": 518,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4995688,
@@ -9917,7 +9932,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "resource_fp",
-          "section_number": 518,
+          "section_number": 519,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996200,
@@ -9932,7 +9947,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "resource_pack_enabled",
-          "section_number": 519,
+          "section_number": 520,
           "section_offset": 0,
           "size": 1,
           "storage_address": 4996204,
@@ -9947,7 +9962,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "buffer_reader_data",
-          "section_number": 520,
+          "section_number": 521,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996208,
@@ -9962,7 +9977,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "buffer_reader_size",
-          "section_number": 521,
+          "section_number": 522,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996212,
@@ -9977,7 +9992,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "buffer_reader_offset",
-          "section_number": 522,
+          "section_number": 523,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996216,
@@ -9992,7 +10007,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_cooldown_table",
-          "section_number": 523,
+          "section_number": 524,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4996224,
@@ -10007,7 +10022,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_voice_table",
-          "section_number": 524,
+          "section_number": 525,
           "section_offset": 0,
           "size": 128,
           "storage_address": 4996736,
@@ -10022,7 +10037,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_trooper_inpain_01",
-          "section_number": 525,
+          "section_number": 526,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996864,
@@ -10038,7 +10053,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_trooper_die_01",
-          "section_number": 526,
+          "section_number": 527,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996876,
@@ -10053,7 +10068,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_trooper_die_02",
-          "section_number": 527,
+          "section_number": 528,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996880,
@@ -10068,7 +10083,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_trooper_die_03",
-          "section_number": 528,
+          "section_number": 529,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996884,
@@ -10083,7 +10098,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_die_01",
-          "section_number": 529,
+          "section_number": 530,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996888,
@@ -10098,7 +10113,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_die_02",
-          "section_number": 530,
+          "section_number": 531,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996892,
@@ -10113,7 +10128,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_die_03",
-          "section_number": 531,
+          "section_number": 532,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996896,
@@ -10128,7 +10143,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_die_04",
-          "section_number": 532,
+          "section_number": 533,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996900,
@@ -10143,7 +10158,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_attack_01",
-          "section_number": 533,
+          "section_number": 534,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996904,
@@ -10158,7 +10173,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_zombie_attack_02",
-          "section_number": 534,
+          "section_number": 535,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996908,
@@ -10173,7 +10188,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_die_01",
-          "section_number": 535,
+          "section_number": 536,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996912,
@@ -10188,7 +10203,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_die_02",
-          "section_number": 536,
+          "section_number": 537,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996916,
@@ -10203,7 +10218,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_die_03",
-          "section_number": 537,
+          "section_number": 538,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996920,
@@ -10218,7 +10233,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_die_04",
-          "section_number": 538,
+          "section_number": 539,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996924,
@@ -10233,7 +10248,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_attack_01",
-          "section_number": 539,
+          "section_number": 540,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996928,
@@ -10248,7 +10263,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_alien_attack_02",
-          "section_number": 540,
+          "section_number": 541,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996932,
@@ -10263,7 +10278,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_die_01",
-          "section_number": 541,
+          "section_number": 542,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996936,
@@ -10278,7 +10293,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_die_02",
-          "section_number": 542,
+          "section_number": 543,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996940,
@@ -10293,7 +10308,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_die_03",
-          "section_number": 543,
+          "section_number": 544,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996944,
@@ -10308,7 +10323,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_die_04",
-          "section_number": 544,
+          "section_number": 545,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996948,
@@ -10323,7 +10338,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_attack_01",
-          "section_number": 545,
+          "section_number": 546,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996952,
@@ -10338,7 +10353,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_lizard_attack_02",
-          "section_number": 546,
+          "section_number": 547,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996956,
@@ -10353,7 +10368,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_die_01",
-          "section_number": 547,
+          "section_number": 548,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996960,
@@ -10368,7 +10383,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_die_02",
-          "section_number": 548,
+          "section_number": 549,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996964,
@@ -10383,7 +10398,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_die_03",
-          "section_number": 549,
+          "section_number": 550,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996968,
@@ -10398,7 +10413,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_die_04",
-          "section_number": 550,
+          "section_number": 551,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996972,
@@ -10413,7 +10428,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_attack_01",
-          "section_number": 551,
+          "section_number": 552,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996976,
@@ -10428,7 +10443,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_spider_attack_02",
-          "section_number": 552,
+          "section_number": 553,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996980,
@@ -10443,7 +10458,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_pistol_fire",
-          "section_number": 553,
+          "section_number": 554,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996984,
@@ -10458,7 +10473,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_pistol_reload",
-          "section_number": 554,
+          "section_number": 555,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996988,
@@ -10473,7 +10488,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shotgun_fire",
-          "section_number": 555,
+          "section_number": 556,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996992,
@@ -10488,7 +10503,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shotgun_reload",
-          "section_number": 556,
+          "section_number": 557,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4996996,
@@ -10503,7 +10518,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_autorifle_fire",
-          "section_number": 557,
+          "section_number": 558,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997000,
@@ -10518,7 +10533,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_autorifle_reload",
-          "section_number": 558,
+          "section_number": 559,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997004,
@@ -10533,7 +10548,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_gauss_fire",
-          "section_number": 559,
+          "section_number": 560,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997008,
@@ -10548,7 +10563,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_hrpm_fire",
-          "section_number": 560,
+          "section_number": 561,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997016,
@@ -10563,7 +10578,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shock_fire",
-          "section_number": 561,
+          "section_number": 562,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997020,
@@ -10578,7 +10593,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_plasmaminigun_fire",
-          "section_number": 562,
+          "section_number": 563,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997024,
@@ -10593,7 +10608,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_plasmashotgun_fire",
-          "section_number": 563,
+          "section_number": 564,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997028,
@@ -10608,7 +10623,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_pulse_fire",
-          "section_number": 564,
+          "section_number": 565,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997032,
@@ -10623,7 +10638,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_flamer_fire_01",
-          "section_number": 565,
+          "section_number": 566,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997036,
@@ -10638,7 +10653,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_flamer_fire_02",
-          "section_number": 566,
+          "section_number": 567,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997040,
@@ -10653,7 +10668,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shock_fire_alt",
-          "section_number": 567,
+          "section_number": 568,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997044,
@@ -10668,7 +10683,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shockminigun_fire",
-          "section_number": 568,
+          "section_number": 569,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997048,
@@ -10683,7 +10698,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shock_reload",
-          "section_number": 569,
+          "section_number": 570,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997052,
@@ -10698,7 +10713,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_rocket_fire",
-          "section_number": 570,
+          "section_number": 571,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997056,
@@ -10713,7 +10728,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_rocketmini_fire",
-          "section_number": 571,
+          "section_number": 572,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997060,
@@ -10728,7 +10743,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_autorifle_reload_alt",
-          "section_number": 572,
+          "section_number": 573,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997064,
@@ -10743,7 +10758,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_bullet_hit_01",
-          "section_number": 573,
+          "section_number": 574,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997068,
@@ -10758,7 +10773,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shock_hit_01",
-          "section_number": 574,
+          "section_number": 575,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997092,
@@ -10773,7 +10788,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_explosion_small",
-          "section_number": 575,
+          "section_number": 576,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997096,
@@ -10788,7 +10803,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_explosion_medium",
-          "section_number": 576,
+          "section_number": 577,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997100,
@@ -10803,7 +10818,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_explosion_large",
-          "section_number": 577,
+          "section_number": 578,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997104,
@@ -10818,7 +10833,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_shockwave",
-          "section_number": 578,
+          "section_number": 579,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997108,
@@ -10833,7 +10848,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_questhit",
-          "section_number": 579,
+          "section_number": 580,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997112,
@@ -10848,7 +10863,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_bonus",
-          "section_number": 580,
+          "section_number": 581,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997116,
@@ -10863,7 +10878,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_trooper_inpain_01_alias_1",
-          "section_number": 581,
+          "section_number": 582,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997124,
@@ -10878,7 +10893,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_buttonclick",
-          "section_number": 582,
+          "section_number": 583,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997132,
@@ -10893,7 +10908,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_panelclick",
-          "section_number": 583,
+          "section_number": 584,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997136,
@@ -10908,7 +10923,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_levelup",
-          "section_number": 584,
+          "section_number": 585,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997140,
@@ -10923,7 +10938,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_typeclick_01",
-          "section_number": 585,
+          "section_number": 586,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997144,
@@ -10938,7 +10953,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_typeenter",
-          "section_number": 586,
+          "section_number": 587,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997152,
@@ -10953,7 +10968,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_ui_clink_01",
-          "section_number": 587,
+          "section_number": 588,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997156,
@@ -10968,7 +10983,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_bloodspill_01",
-          "section_number": 588,
+          "section_number": 589,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997160,
@@ -10983,7 +10998,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_intro_id",
-          "section_number": 589,
+          "section_number": 590,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997168,
@@ -10998,7 +11013,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_shortie_monk_id",
-          "section_number": 590,
+          "section_number": 591,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997172,
@@ -11013,7 +11028,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_crimson_theme_id",
-          "section_number": 591,
+          "section_number": 592,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997176,
@@ -11028,7 +11043,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_extra_0",
-          "section_number": 592,
+          "section_number": 593,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997180,
@@ -11043,7 +11058,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_extra_1",
-          "section_number": 593,
+          "section_number": 594,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997184,
@@ -11058,7 +11073,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_track_crimsonquest_id",
-          "section_number": 594,
+          "section_number": 595,
           "section_offset": 0,
           "size": 4,
           "storage_address": 4997188,
@@ -11073,7 +11088,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_volume_table",
-          "section_number": 595,
+          "section_number": 596,
           "section_offset": 0,
           "size": 512,
           "storage_address": 4997196,
@@ -11088,7 +11103,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_entry_table",
-          "section_number": 596,
+          "section_number": 597,
           "section_offset": 0,
           "size": 16896,
           "storage_address": 4997712,
@@ -11103,7 +11118,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_mute_flags",
-          "section_number": 597,
+          "section_number": 598,
           "section_offset": 0,
           "size": 128,
           "storage_address": 5014608,
@@ -11118,7 +11133,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_entry_table",
-          "section_number": 598,
+          "section_number": 599,
           "section_offset": 0,
           "size": 16896,
           "storage_address": 5014736,
@@ -11133,7 +11148,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_playlist",
-          "section_number": 599,
+          "section_number": 600,
           "section_offset": 0,
           "size": 512,
           "storage_address": 5031632,
@@ -11148,7 +11163,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_playlist_entry_count",
-          "section_number": 600,
+          "section_number": 601,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5032144,
@@ -11163,7 +11178,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "music_playlist_randomized_latch",
-          "section_number": 601,
+          "section_number": 602,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5032148,
@@ -11178,7 +11193,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "audio_resource_pack_available",
-          "section_number": 602,
+          "section_number": 603,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5032149,
@@ -11193,7 +11208,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "sfx_unmuted_flag",
-          "section_number": 603,
+          "section_number": 604,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5032150,
@@ -11208,7 +11223,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "audio_assets_loaded_count",
-          "section_number": 604,
+          "section_number": 605,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5032152,
@@ -11223,7 +11238,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_input_buffer",
-          "section_number": 605,
+          "section_number": 606,
           "section_offset": 0,
           "size": 64,
           "storage_address": 5032728,
@@ -11238,7 +11253,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_batch_sync_stage_index",
-          "section_number": 606,
+          "section_number": 607,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5032792,
@@ -11253,7 +11268,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_item_ptrs",
-          "section_number": 607,
+          "section_number": 608,
           "section_offset": 0,
           "size": 36,
           "storage_address": 5032796,
@@ -11268,7 +11283,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_focus_candidates",
-          "section_number": 608,
+          "section_number": 609,
           "section_offset": 0,
           "size": 128,
           "storage_address": 5032912,
@@ -11283,7 +11298,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_card_divider_color_r",
-          "section_number": 609,
+          "section_number": 610,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5033128,
@@ -11298,7 +11313,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_card_text_buffer",
-          "section_number": 610,
+          "section_number": 611,
           "section_offset": 0,
           "size": 128,
           "storage_address": 5049760,
@@ -11313,7 +11328,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_date_label_buffer",
-          "section_number": 611,
+          "section_number": 612,
           "section_offset": 0,
           "size": 128,
           "storage_address": 5049912,
@@ -11328,7 +11343,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_focus_count",
-          "section_number": 612,
+          "section_number": 613,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050848,
@@ -11343,7 +11358,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_focus_index",
-          "section_number": 613,
+          "section_number": 614,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050852,
@@ -11358,7 +11373,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_focus_frame_marker_ms",
-          "section_number": 614,
+          "section_number": 615,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050856,
@@ -11373,7 +11388,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_focus_timer_ms",
-          "section_number": 615,
+          "section_number": 616,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050860,
@@ -11389,7 +11404,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "online_sync_status",
-          "section_number": 616,
+          "section_number": 617,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050864,
@@ -11405,7 +11420,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "update_notice_url",
-          "section_number": 617,
+          "section_number": 618,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050868,
@@ -11421,7 +11436,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "update_notice_pending",
-          "section_number": 618,
+          "section_number": 619,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050872,
@@ -11437,7 +11452,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_batch_sync_mode",
-          "section_number": 619,
+          "section_number": 620,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050873,
@@ -11453,7 +11468,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_scrollbar_drag_active",
-          "section_number": 620,
+          "section_number": 621,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050874,
@@ -11468,7 +11483,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_scrollbar_drag_offset",
-          "section_number": 621,
+          "section_number": 622,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050876,
@@ -11483,7 +11498,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unlocked_weapons_nav_focus_index",
-          "section_number": 622,
+          "section_number": 623,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050880,
@@ -11498,7 +11513,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "unlocked_perks_nav_focus_index",
-          "section_number": 623,
+          "section_number": 624,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050884,
@@ -11513,7 +11528,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_stats_hover_weapon",
-          "section_number": 624,
+          "section_number": 625,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050888,
@@ -11528,7 +11543,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_stats_hover_time",
-          "section_number": 625,
+          "section_number": 626,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050892,
@@ -11543,7 +11558,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "ui_stats_hover_hit_ratio",
-          "section_number": 626,
+          "section_number": 627,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050896,
@@ -11558,7 +11573,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_screen_action_id",
-          "section_number": 627,
+          "section_number": 628,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050900,
@@ -11573,7 +11588,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "highscore_post_sync_update_check_latch",
-          "section_number": 628,
+          "section_number": 629,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050904,
@@ -11588,7 +11603,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_list_open",
-          "section_number": 629,
+          "section_number": 630,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5050908,
@@ -11603,7 +11618,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_add_mode",
-          "section_number": 630,
+          "section_number": 631,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050912,
@@ -11618,7 +11633,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_selection_dirty",
-          "section_number": 631,
+          "section_number": 632,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050913,
@@ -11633,7 +11648,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "profile_name_filter_dirty",
-          "section_number": 632,
+          "section_number": 633,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5050914,
@@ -11643,12 +11658,27 @@
           ]
         },
         {
+          "address": 5050920,
+          "alignment": 1,
+          "initializer_target": null,
+          "kind": "definition",
+          "name": "typo_word_highscore_cache",
+          "section_number": 634,
+          "section_offset": 0,
+          "size": 640,
+          "storage_address": 5050920,
+          "storage_name": "typo_word_highscore_cache",
+          "symbols": [
+            "_typo_word_highscore_cache"
+          ]
+        },
+        {
           "address": 5051560,
           "alignment": 1,
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_input_buffer",
-          "section_number": 633,
+          "section_number": 635,
           "section_offset": 0,
           "size": 128,
           "storage_address": 5051560,
@@ -11663,7 +11693,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_target_name_table",
-          "section_number": 634,
+          "section_number": 636,
           "section_offset": 0,
           "size": 24576,
           "storage_address": 5051692,
@@ -11678,7 +11708,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_submit_count",
-          "section_number": 635,
+          "section_number": 637,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5076344,
@@ -11693,7 +11723,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_match_count",
-          "section_number": 636,
+          "section_number": 638,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5076348,
@@ -11708,7 +11738,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_word_highscore_cache_ready",
-          "section_number": 637,
+          "section_number": 639,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5076352,
@@ -11723,7 +11753,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_word_highscore_cache_count",
-          "section_number": 638,
+          "section_number": 640,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5076356,
@@ -11738,7 +11768,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_input_length",
-          "section_number": 639,
+          "section_number": 641,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5076360,
@@ -11753,7 +11783,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "typo_spawn_counter",
-          "section_number": 640,
+          "section_number": 642,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5076364,
@@ -11768,7 +11798,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_back_button",
-          "section_number": 641,
+          "section_number": 643,
           "section_offset": 0,
           "size": 24,
           "storage_address": 5076408,
@@ -11783,7 +11813,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_move_method_list",
-          "section_number": 642,
+          "section_number": 644,
           "section_offset": 0,
           "size": 28,
           "storage_address": 5076536,
@@ -11798,7 +11828,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_player_profile_list",
-          "section_number": 643,
+          "section_number": 645,
           "section_offset": 0,
           "size": 28,
           "storage_address": 5076576,
@@ -11813,7 +11843,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_aim_method_list",
-          "section_number": 644,
+          "section_number": 646,
           "section_offset": 0,
           "size": 28,
           "storage_address": 5076648,
@@ -11828,7 +11858,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_redefine_button",
-          "section_number": 645,
+          "section_number": 647,
           "section_offset": 0,
           "size": 24,
           "storage_address": 5076744,
@@ -11843,7 +11873,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_menu_init_flags",
-          "section_number": 646,
+          "section_number": 648,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5076968,
@@ -11858,7 +11888,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_direction_arrow_checkbox",
-          "section_number": 647,
+          "section_number": 649,
           "section_offset": 0,
           "size": 8,
           "storage_address": 5076976,
@@ -11873,7 +11903,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_items",
-          "section_number": 648,
+          "section_number": 650,
           "section_offset": 0,
           "size": 240,
           "storage_address": 5077144,
@@ -11888,7 +11918,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "quest_select_stage_minor_index",
-          "section_number": 649,
+          "section_number": 651,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077464,
@@ -11903,7 +11933,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_player_index",
-          "section_number": 650,
+          "section_number": 652,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077468,
@@ -11918,7 +11948,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_capture_armed",
-          "section_number": 651,
+          "section_number": 653,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5077472,
@@ -11933,7 +11963,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_13f",
-          "section_number": 652,
+          "section_number": 654,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077476,
@@ -11948,7 +11978,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_140",
-          "section_number": 653,
+          "section_number": 655,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077480,
@@ -11963,7 +11993,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_141",
-          "section_number": 654,
+          "section_number": 656,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077484,
@@ -11978,7 +12008,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_153",
-          "section_number": 655,
+          "section_number": 657,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077488,
@@ -11993,7 +12023,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_154",
-          "section_number": 656,
+          "section_number": 658,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077492,
@@ -12008,7 +12038,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "controls_rebind_axis_peak_abs_155",
-          "section_number": 657,
+          "section_number": 659,
           "section_offset": 0,
           "size": 4,
           "storage_address": 5077496,
@@ -12023,7 +12053,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "full_version_recheck_pending_slot_1",
-          "section_number": 658,
+          "section_number": 660,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5077540,
@@ -12038,7 +12068,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "full_version_recheck_pending",
-          "section_number": 659,
+          "section_number": 661,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5077541,
@@ -12053,7 +12083,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "full_version_recheck_pending_slot_3",
-          "section_number": 660,
+          "section_number": 662,
           "section_offset": 0,
           "size": 1,
           "storage_address": 5077542,
@@ -12068,7 +12098,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "weapon_ammo_class",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 0,
           "size": 7936,
           "storage_address": 5077544,
@@ -12084,7 +12114,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "weapon_table",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 4,
           "size": 7936,
           "storage_address": 5077548,
@@ -12099,7 +12129,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "fire_bullets_secondary_shot_sfx_id",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 1456,
           "size": null,
           "storage_address": 5077544,
@@ -12114,7 +12144,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "fire_bullets_fallback_shot_cooldown",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 5656,
           "size": null,
           "storage_address": 5077544,
@@ -12129,7 +12159,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "fire_bullets_fallback_spread_heat",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 5664,
           "size": null,
           "storage_address": 5077544,
@@ -12144,7 +12174,7 @@
           "initializer_target": null,
           "kind": "interior-alias",
           "name": "fire_bullets_primary_shot_sfx_id",
-          "section_number": 661,
+          "section_number": 663,
           "section_offset": 5672,
           "size": null,
           "storage_address": 5077544,
@@ -12159,7 +12189,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "mod_api_gfx_format_buffer",
-          "section_number": 662,
+          "section_number": 664,
           "section_offset": 0,
           "size": 512,
           "storage_address": 5086464,
@@ -12174,7 +12204,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "mod_api_core_format_buffer",
-          "section_number": 663,
+          "section_number": 665,
           "section_offset": 0,
           "size": 512,
           "storage_address": 5086976,
@@ -12189,7 +12219,7 @@
           "initializer_target": null,
           "kind": "definition",
           "name": "input_key_name_buf",
-          "section_number": 664,
+          "section_number": 666,
           "section_offset": 0,
           "size": 64,
           "storage_address": 5087488,
@@ -12202,11 +12232,11 @@
       "definitions": {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "bbea7d70c0086a63782193dd76ccb72d7ae00e9e29fe549e31ead490f9f3a4da"
+        "sha256": "1db4fef3a35fb886c96c99eedda891d40ab53e4d0872d77fc53b993c307885ea"
       },
-      "emitted_symbol_count": 834,
+      "emitted_symbol_count": 836,
       "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-      "object_sha256": "13957f40e87de2fd21ddcb91a6690d7c0ae72028070339b8e2420184be78cec3",
+      "object_sha256": "2279cd9a80e0f85818b261f2de0f5545b2d7092d20dbaed21d66c22ae352b81b",
       "regions": [
         {
           "address": 4650988,
@@ -17079,6 +17109,19 @@
           "size": 4
         },
         {
+          "address": 4784904,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 4784904,
+              "name": "grim_dll_name"
+            }
+          ],
+          "relocations": [],
+          "section_number": 367,
+          "size": 256
+        },
+        {
           "address": 4785160,
           "alignment": 4,
           "entries": [
@@ -17088,7 +17131,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 367,
+          "section_number": 368,
           "size": 16
         },
         {
@@ -17101,7 +17144,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 368,
+          "section_number": 369,
           "size": 8
         },
         {
@@ -17114,7 +17157,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 369,
+          "section_number": 370,
           "size": 512
         },
         {
@@ -17127,7 +17170,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 370,
+          "section_number": 371,
           "size": 28
         },
         {
@@ -17140,7 +17183,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 371,
+          "section_number": 372,
           "size": 16
         },
         {
@@ -17153,7 +17196,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 372,
+          "section_number": 373,
           "size": 256
         },
         {
@@ -17166,7 +17209,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 373,
+          "section_number": 374,
           "size": 260
         },
         {
@@ -17179,7 +17222,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 374,
+          "section_number": 375,
           "size": 1728
         },
         {
@@ -17192,7 +17235,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 375,
+          "section_number": 376,
           "size": 8
         },
         {
@@ -17205,7 +17248,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 376,
+          "section_number": 377,
           "size": 128
         },
         {
@@ -17218,7 +17261,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 377,
+          "section_number": 378,
           "size": 16
         },
         {
@@ -17231,7 +17274,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 378,
+          "section_number": 379,
           "size": 512
         },
         {
@@ -17252,7 +17295,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 379,
+          "section_number": 380,
           "size": 128
         },
         {
@@ -17265,7 +17308,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 380,
+          "section_number": 381,
           "size": 32
         },
         {
@@ -17278,7 +17321,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 381,
+          "section_number": 382,
           "size": 5120
         },
         {
@@ -17291,7 +17334,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 382,
+          "section_number": 383,
           "size": 6144
         },
         {
@@ -17304,7 +17347,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 383,
+          "section_number": 384,
           "size": 7168
         },
         {
@@ -17317,7 +17360,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 384,
+          "section_number": 385,
           "size": 16
         },
         {
@@ -17330,7 +17373,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 385,
+          "section_number": 386,
           "size": 16
         },
         {
@@ -17343,7 +17386,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 386,
+          "section_number": 387,
           "size": 2816
         },
         {
@@ -17356,7 +17399,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 387,
+          "section_number": 388,
           "size": 4
         },
         {
@@ -17369,7 +17412,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 388,
+          "section_number": 389,
           "size": 4
         },
         {
@@ -17382,7 +17425,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 389,
+          "section_number": 390,
           "size": 4
         },
         {
@@ -17395,7 +17438,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 390,
+          "section_number": 391,
           "size": 4
         },
         {
@@ -17408,7 +17451,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 391,
+          "section_number": 392,
           "size": 16
         },
         {
@@ -17421,7 +17464,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 392,
+          "section_number": 393,
           "size": 4
         },
         {
@@ -17434,7 +17477,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 393,
+          "section_number": 394,
           "size": 256
         },
         {
@@ -17447,7 +17490,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 394,
+          "section_number": 395,
           "size": 128
         },
         {
@@ -17460,7 +17503,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 395,
+          "section_number": 396,
           "size": 16896
         },
         {
@@ -17473,7 +17516,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 396,
+          "section_number": 397,
           "size": 16
         },
         {
@@ -17486,7 +17529,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 397,
+          "section_number": 398,
           "size": 256
         },
         {
@@ -17499,7 +17542,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 398,
+          "section_number": 399,
           "size": 4
         },
         {
@@ -17512,7 +17555,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 399,
+          "section_number": 400,
           "size": 1024
         },
         {
@@ -17525,7 +17568,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 400,
+          "section_number": 401,
           "size": 58368
         },
         {
@@ -17538,7 +17581,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 401,
+          "section_number": 402,
           "size": 8
         },
         {
@@ -17551,7 +17594,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 402,
+          "section_number": 403,
           "size": 2048
         },
         {
@@ -17564,7 +17607,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 403,
+          "section_number": 404,
           "size": 512
         },
         {
@@ -17577,7 +17620,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 404,
+          "section_number": 405,
           "size": 1
         },
         {
@@ -17590,7 +17633,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 405,
+          "section_number": 406,
           "size": 1
         },
         {
@@ -17603,7 +17646,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 406,
+          "section_number": 407,
           "size": 1
         },
         {
@@ -17616,7 +17659,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 407,
+          "section_number": 408,
           "size": 4
         },
         {
@@ -17629,7 +17672,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 408,
+          "section_number": 409,
           "size": 4
         },
         {
@@ -17642,7 +17685,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 409,
+          "section_number": 410,
           "size": 1
         },
         {
@@ -17655,7 +17698,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 410,
+          "section_number": 411,
           "size": 4
         },
         {
@@ -17668,7 +17711,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 411,
+          "section_number": 412,
           "size": 4
         },
         {
@@ -17681,7 +17724,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 412,
+          "section_number": 413,
           "size": 4
         },
         {
@@ -17694,7 +17737,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 413,
+          "section_number": 414,
           "size": 4
         },
         {
@@ -17707,7 +17750,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 414,
+          "section_number": 415,
           "size": 4
         },
         {
@@ -17720,7 +17763,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 415,
+          "section_number": 416,
           "size": 4
         },
         {
@@ -17733,7 +17776,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 416,
+          "section_number": 417,
           "size": 4
         },
         {
@@ -17746,7 +17789,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 417,
+          "section_number": 418,
           "size": 4
         },
         {
@@ -17759,7 +17802,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 418,
+          "section_number": 419,
           "size": 1
         },
         {
@@ -17772,7 +17815,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 419,
+          "section_number": 420,
           "size": 4
         },
         {
@@ -17785,7 +17828,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 420,
+          "section_number": 421,
           "size": 4
         },
         {
@@ -17798,7 +17841,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 421,
+          "section_number": 422,
           "size": 4
         },
         {
@@ -17811,7 +17854,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 422,
+          "section_number": 423,
           "size": 4
         },
         {
@@ -17824,7 +17867,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 423,
+          "section_number": 424,
           "size": 1
         },
         {
@@ -17837,7 +17880,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 424,
+          "section_number": 425,
           "size": 1
         },
         {
@@ -17850,7 +17893,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 425,
+          "section_number": 426,
           "size": 1
         },
         {
@@ -17863,7 +17906,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 426,
+          "section_number": 427,
           "size": 4
         },
         {
@@ -17876,7 +17919,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 427,
+          "section_number": 428,
           "size": 1
         },
         {
@@ -17889,7 +17932,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 428,
+          "section_number": 429,
           "size": 4
         },
         {
@@ -17902,7 +17945,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 429,
+          "section_number": 430,
           "size": 1
         },
         {
@@ -17915,7 +17958,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 430,
+          "section_number": 431,
           "size": 4
         },
         {
@@ -17928,7 +17971,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 431,
+          "section_number": 432,
           "size": 1
         },
         {
@@ -17941,7 +17984,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 432,
+          "section_number": 433,
           "size": 1
         },
         {
@@ -17954,7 +17997,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 433,
+          "section_number": 434,
           "size": 8
         },
         {
@@ -17967,7 +18010,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 434,
+          "section_number": 435,
           "size": 60
         },
         {
@@ -17980,7 +18023,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 435,
+          "section_number": 436,
           "size": 4
         },
         {
@@ -17993,7 +18036,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 436,
+          "section_number": 437,
           "size": 188
         },
         {
@@ -18006,7 +18049,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 437,
+          "section_number": 438,
           "size": 96256
         },
         {
@@ -18019,7 +18062,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 438,
+          "section_number": 439,
           "size": 4
         },
         {
@@ -18032,7 +18075,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 439,
+          "section_number": 440,
           "size": 4
         },
         {
@@ -18045,7 +18088,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 440,
+          "section_number": 441,
           "size": 4
         },
         {
@@ -18058,7 +18101,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 441,
+          "section_number": 442,
           "size": 4
         },
         {
@@ -18071,7 +18114,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 442,
+          "section_number": 443,
           "size": 4
         },
         {
@@ -18084,7 +18127,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 443,
+          "section_number": 444,
           "size": 4
         },
         {
@@ -18097,7 +18140,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 444,
+          "section_number": 445,
           "size": 4
         },
         {
@@ -18110,7 +18153,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 445,
+          "section_number": 446,
           "size": 4
         },
         {
@@ -18123,7 +18166,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 446,
+          "section_number": 447,
           "size": 4
         },
         {
@@ -18136,7 +18179,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 447,
+          "section_number": 448,
           "size": 4
         },
         {
@@ -18149,7 +18192,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 448,
+          "section_number": 449,
           "size": 4
         },
         {
@@ -18162,7 +18205,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 449,
+          "section_number": 450,
           "size": 4
         },
         {
@@ -18175,7 +18218,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 450,
+          "section_number": 451,
           "size": 4
         },
         {
@@ -18188,7 +18231,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 451,
+          "section_number": 452,
           "size": 4
         },
         {
@@ -18201,7 +18244,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 452,
+          "section_number": 453,
           "size": 4
         },
         {
@@ -18214,7 +18257,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 453,
+          "section_number": 454,
           "size": 4
         },
         {
@@ -18227,7 +18270,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 454,
+          "section_number": 455,
           "size": 4
         },
         {
@@ -18240,7 +18283,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 455,
+          "section_number": 456,
           "size": 4
         },
         {
@@ -18253,7 +18296,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 456,
+          "section_number": 457,
           "size": 4
         },
         {
@@ -18266,7 +18309,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 457,
+          "section_number": 458,
           "size": 4
         },
         {
@@ -18279,7 +18322,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 458,
+          "section_number": 459,
           "size": 4
         },
         {
@@ -18292,7 +18335,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 459,
+          "section_number": 460,
           "size": 4
         },
         {
@@ -18305,7 +18348,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 460,
+          "section_number": 461,
           "size": 4
         },
         {
@@ -18318,7 +18361,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 461,
+          "section_number": 462,
           "size": 4
         },
         {
@@ -18331,7 +18374,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 462,
+          "section_number": 463,
           "size": 4
         },
         {
@@ -18344,7 +18387,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 463,
+          "section_number": 464,
           "size": 4
         },
         {
@@ -18357,7 +18400,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 464,
+          "section_number": 465,
           "size": 4
         },
         {
@@ -18370,7 +18413,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 465,
+          "section_number": 466,
           "size": 4
         },
         {
@@ -18383,7 +18426,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 466,
+          "section_number": 467,
           "size": 4
         },
         {
@@ -18396,7 +18439,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 467,
+          "section_number": 468,
           "size": 4
         },
         {
@@ -18409,7 +18452,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 468,
+          "section_number": 469,
           "size": 4
         },
         {
@@ -18422,7 +18465,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 469,
+          "section_number": 470,
           "size": 4
         },
         {
@@ -18435,7 +18478,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 470,
+          "section_number": 471,
           "size": 4
         },
         {
@@ -18448,7 +18491,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 471,
+          "section_number": 472,
           "size": 4
         },
         {
@@ -18461,7 +18504,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 472,
+          "section_number": 473,
           "size": 4
         },
         {
@@ -18474,7 +18517,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 473,
+          "section_number": 474,
           "size": 4
         },
         {
@@ -18487,7 +18530,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 474,
+          "section_number": 475,
           "size": 4
         },
         {
@@ -18500,7 +18543,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 475,
+          "section_number": 476,
           "size": 4
         },
         {
@@ -18513,7 +18556,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 476,
+          "section_number": 477,
           "size": 4
         },
         {
@@ -18526,7 +18569,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 477,
+          "section_number": 478,
           "size": 4
         },
         {
@@ -18539,7 +18582,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 478,
+          "section_number": 479,
           "size": 4
         },
         {
@@ -18552,7 +18595,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 479,
+          "section_number": 480,
           "size": 4
         },
         {
@@ -18565,7 +18608,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 480,
+          "section_number": 481,
           "size": 4
         },
         {
@@ -18578,7 +18621,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 481,
+          "section_number": 482,
           "size": 4
         },
         {
@@ -18591,7 +18634,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 482,
+          "section_number": 483,
           "size": 4
         },
         {
@@ -18604,7 +18647,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 483,
+          "section_number": 484,
           "size": 4
         },
         {
@@ -18617,7 +18660,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 484,
+          "section_number": 485,
           "size": 4
         },
         {
@@ -18630,7 +18673,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 485,
+          "section_number": 486,
           "size": 4
         },
         {
@@ -18643,7 +18686,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 486,
+          "section_number": 487,
           "size": 4
         },
         {
@@ -18656,7 +18699,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 487,
+          "section_number": 488,
           "size": 4
         },
         {
@@ -18669,7 +18712,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 488,
+          "section_number": 489,
           "size": 4
         },
         {
@@ -18682,7 +18725,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 489,
+          "section_number": 490,
           "size": 4
         },
         {
@@ -18695,7 +18738,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 490,
+          "section_number": 491,
           "size": 4
         },
         {
@@ -18708,7 +18751,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 491,
+          "section_number": 492,
           "size": 4
         },
         {
@@ -18721,7 +18764,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 492,
+          "section_number": 493,
           "size": 4
         },
         {
@@ -18734,7 +18777,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 493,
+          "section_number": 494,
           "size": 4
         },
         {
@@ -18747,7 +18790,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 494,
+          "section_number": 495,
           "size": 4
         },
         {
@@ -18760,7 +18803,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 495,
+          "section_number": 496,
           "size": 4
         },
         {
@@ -18773,7 +18816,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 496,
+          "section_number": 497,
           "size": 4
         },
         {
@@ -18786,7 +18829,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 497,
+          "section_number": 498,
           "size": 4
         },
         {
@@ -18799,7 +18842,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 498,
+          "section_number": 499,
           "size": 4
         },
         {
@@ -18812,7 +18855,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 499,
+          "section_number": 500,
           "size": 4
         },
         {
@@ -18825,7 +18868,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 500,
+          "section_number": 501,
           "size": 4
         },
         {
@@ -18838,7 +18881,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 501,
+          "section_number": 502,
           "size": 4
         },
         {
@@ -18851,7 +18894,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 502,
+          "section_number": 503,
           "size": 2560
         },
         {
@@ -18864,7 +18907,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 503,
+          "section_number": 504,
           "size": 4
         },
         {
@@ -18877,7 +18920,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 504,
+          "section_number": 505,
           "size": 4
         },
         {
@@ -18890,7 +18933,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 505,
+          "section_number": 506,
           "size": 4
         },
         {
@@ -18903,7 +18946,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 506,
+          "section_number": 507,
           "size": 4
         },
         {
@@ -18916,7 +18959,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 507,
+          "section_number": 508,
           "size": 4
         },
         {
@@ -18929,7 +18972,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 508,
+          "section_number": 509,
           "size": 4
         },
         {
@@ -18942,7 +18985,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 509,
+          "section_number": 510,
           "size": 4
         },
         {
@@ -18955,7 +18998,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 510,
+          "section_number": 511,
           "size": 128
         },
         {
@@ -18968,7 +19011,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 511,
+          "section_number": 512,
           "size": 128
         },
         {
@@ -18985,7 +19028,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 512,
+          "section_number": 513,
           "size": 512
         },
         {
@@ -18998,7 +19041,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 513,
+          "section_number": 514,
           "size": 4
         },
         {
@@ -19011,7 +19054,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 514,
+          "section_number": 515,
           "size": 1
         },
         {
@@ -19024,7 +19067,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 515,
+          "section_number": 516,
           "size": 4
         },
         {
@@ -19037,7 +19080,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 516,
+          "section_number": 517,
           "size": 256
         },
         {
@@ -19050,7 +19093,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 517,
+          "section_number": 518,
           "size": 512
         },
         {
@@ -19063,7 +19106,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 518,
+          "section_number": 519,
           "size": 4
         },
         {
@@ -19076,7 +19119,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 519,
+          "section_number": 520,
           "size": 1
         },
         {
@@ -19089,7 +19132,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 520,
+          "section_number": 521,
           "size": 4
         },
         {
@@ -19102,7 +19145,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 521,
+          "section_number": 522,
           "size": 4
         },
         {
@@ -19115,7 +19158,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 522,
+          "section_number": 523,
           "size": 4
         },
         {
@@ -19128,7 +19171,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 523,
+          "section_number": 524,
           "size": 512
         },
         {
@@ -19141,7 +19184,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 524,
+          "section_number": 525,
           "size": 128
         },
         {
@@ -19154,7 +19197,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 525,
+          "section_number": 526,
           "size": 4
         },
         {
@@ -19167,7 +19210,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 526,
+          "section_number": 527,
           "size": 4
         },
         {
@@ -19180,7 +19223,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 527,
+          "section_number": 528,
           "size": 4
         },
         {
@@ -19193,7 +19236,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 528,
+          "section_number": 529,
           "size": 4
         },
         {
@@ -19206,7 +19249,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 529,
+          "section_number": 530,
           "size": 4
         },
         {
@@ -19219,7 +19262,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 530,
+          "section_number": 531,
           "size": 4
         },
         {
@@ -19232,7 +19275,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 531,
+          "section_number": 532,
           "size": 4
         },
         {
@@ -19245,7 +19288,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 532,
+          "section_number": 533,
           "size": 4
         },
         {
@@ -19258,7 +19301,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 533,
+          "section_number": 534,
           "size": 4
         },
         {
@@ -19271,7 +19314,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 534,
+          "section_number": 535,
           "size": 4
         },
         {
@@ -19284,7 +19327,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 535,
+          "section_number": 536,
           "size": 4
         },
         {
@@ -19297,7 +19340,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 536,
+          "section_number": 537,
           "size": 4
         },
         {
@@ -19310,7 +19353,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 537,
+          "section_number": 538,
           "size": 4
         },
         {
@@ -19323,7 +19366,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 538,
+          "section_number": 539,
           "size": 4
         },
         {
@@ -19336,7 +19379,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 539,
+          "section_number": 540,
           "size": 4
         },
         {
@@ -19349,7 +19392,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 540,
+          "section_number": 541,
           "size": 4
         },
         {
@@ -19362,7 +19405,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 541,
+          "section_number": 542,
           "size": 4
         },
         {
@@ -19375,7 +19418,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 542,
+          "section_number": 543,
           "size": 4
         },
         {
@@ -19388,7 +19431,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 543,
+          "section_number": 544,
           "size": 4
         },
         {
@@ -19401,7 +19444,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 544,
+          "section_number": 545,
           "size": 4
         },
         {
@@ -19414,7 +19457,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 545,
+          "section_number": 546,
           "size": 4
         },
         {
@@ -19427,7 +19470,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 546,
+          "section_number": 547,
           "size": 4
         },
         {
@@ -19440,7 +19483,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 547,
+          "section_number": 548,
           "size": 4
         },
         {
@@ -19453,7 +19496,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 548,
+          "section_number": 549,
           "size": 4
         },
         {
@@ -19466,7 +19509,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 549,
+          "section_number": 550,
           "size": 4
         },
         {
@@ -19479,7 +19522,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 550,
+          "section_number": 551,
           "size": 4
         },
         {
@@ -19492,7 +19535,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 551,
+          "section_number": 552,
           "size": 4
         },
         {
@@ -19505,7 +19548,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 552,
+          "section_number": 553,
           "size": 4
         },
         {
@@ -19518,7 +19561,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 553,
+          "section_number": 554,
           "size": 4
         },
         {
@@ -19531,7 +19574,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 554,
+          "section_number": 555,
           "size": 4
         },
         {
@@ -19544,7 +19587,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 555,
+          "section_number": 556,
           "size": 4
         },
         {
@@ -19557,7 +19600,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 556,
+          "section_number": 557,
           "size": 4
         },
         {
@@ -19570,7 +19613,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 557,
+          "section_number": 558,
           "size": 4
         },
         {
@@ -19583,7 +19626,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 558,
+          "section_number": 559,
           "size": 4
         },
         {
@@ -19596,7 +19639,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 559,
+          "section_number": 560,
           "size": 4
         },
         {
@@ -19609,7 +19652,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 560,
+          "section_number": 561,
           "size": 4
         },
         {
@@ -19622,7 +19665,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 561,
+          "section_number": 562,
           "size": 4
         },
         {
@@ -19635,7 +19678,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 562,
+          "section_number": 563,
           "size": 4
         },
         {
@@ -19648,7 +19691,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 563,
+          "section_number": 564,
           "size": 4
         },
         {
@@ -19661,7 +19704,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 564,
+          "section_number": 565,
           "size": 4
         },
         {
@@ -19674,7 +19717,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 565,
+          "section_number": 566,
           "size": 4
         },
         {
@@ -19687,7 +19730,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 566,
+          "section_number": 567,
           "size": 4
         },
         {
@@ -19700,7 +19743,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 567,
+          "section_number": 568,
           "size": 4
         },
         {
@@ -19713,7 +19756,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 568,
+          "section_number": 569,
           "size": 4
         },
         {
@@ -19726,7 +19769,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 569,
+          "section_number": 570,
           "size": 4
         },
         {
@@ -19739,7 +19782,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 570,
+          "section_number": 571,
           "size": 4
         },
         {
@@ -19752,7 +19795,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 571,
+          "section_number": 572,
           "size": 4
         },
         {
@@ -19765,7 +19808,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 572,
+          "section_number": 573,
           "size": 4
         },
         {
@@ -19778,7 +19821,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 573,
+          "section_number": 574,
           "size": 4
         },
         {
@@ -19791,7 +19834,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 574,
+          "section_number": 575,
           "size": 4
         },
         {
@@ -19804,7 +19847,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 575,
+          "section_number": 576,
           "size": 4
         },
         {
@@ -19817,7 +19860,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 576,
+          "section_number": 577,
           "size": 4
         },
         {
@@ -19830,7 +19873,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 577,
+          "section_number": 578,
           "size": 4
         },
         {
@@ -19843,7 +19886,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 578,
+          "section_number": 579,
           "size": 4
         },
         {
@@ -19856,7 +19899,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 579,
+          "section_number": 580,
           "size": 4
         },
         {
@@ -19869,7 +19912,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 580,
+          "section_number": 581,
           "size": 4
         },
         {
@@ -19882,7 +19925,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 581,
+          "section_number": 582,
           "size": 4
         },
         {
@@ -19895,7 +19938,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 582,
+          "section_number": 583,
           "size": 4
         },
         {
@@ -19908,7 +19951,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 583,
+          "section_number": 584,
           "size": 4
         },
         {
@@ -19921,7 +19964,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 584,
+          "section_number": 585,
           "size": 4
         },
         {
@@ -19934,7 +19977,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 585,
+          "section_number": 586,
           "size": 4
         },
         {
@@ -19947,7 +19990,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 586,
+          "section_number": 587,
           "size": 4
         },
         {
@@ -19960,7 +20003,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 587,
+          "section_number": 588,
           "size": 4
         },
         {
@@ -19973,7 +20016,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 588,
+          "section_number": 589,
           "size": 4
         },
         {
@@ -19986,7 +20029,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 589,
+          "section_number": 590,
           "size": 4
         },
         {
@@ -19999,7 +20042,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 590,
+          "section_number": 591,
           "size": 4
         },
         {
@@ -20012,7 +20055,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 591,
+          "section_number": 592,
           "size": 4
         },
         {
@@ -20025,7 +20068,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 592,
+          "section_number": 593,
           "size": 4
         },
         {
@@ -20038,7 +20081,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 593,
+          "section_number": 594,
           "size": 4
         },
         {
@@ -20051,7 +20094,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 594,
+          "section_number": 595,
           "size": 4
         },
         {
@@ -20064,7 +20107,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 595,
+          "section_number": 596,
           "size": 512
         },
         {
@@ -20077,7 +20120,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 596,
+          "section_number": 597,
           "size": 16896
         },
         {
@@ -20090,7 +20133,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 597,
+          "section_number": 598,
           "size": 128
         },
         {
@@ -20103,7 +20146,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 598,
+          "section_number": 599,
           "size": 16896
         },
         {
@@ -20116,7 +20159,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 599,
+          "section_number": 600,
           "size": 512
         },
         {
@@ -20129,7 +20172,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 600,
+          "section_number": 601,
           "size": 4
         },
         {
@@ -20142,7 +20185,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 601,
+          "section_number": 602,
           "size": 1
         },
         {
@@ -20155,7 +20198,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 602,
+          "section_number": 603,
           "size": 1
         },
         {
@@ -20168,7 +20211,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 603,
+          "section_number": 604,
           "size": 1
         },
         {
@@ -20181,7 +20224,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 604,
+          "section_number": 605,
           "size": 4
         },
         {
@@ -20194,7 +20237,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 605,
+          "section_number": 606,
           "size": 64
         },
         {
@@ -20207,7 +20250,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 606,
+          "section_number": 607,
           "size": 4
         },
         {
@@ -20220,7 +20263,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 607,
+          "section_number": 608,
           "size": 36
         },
         {
@@ -20233,7 +20276,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 608,
+          "section_number": 609,
           "size": 128
         },
         {
@@ -20246,7 +20289,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 609,
+          "section_number": 610,
           "size": 4
         },
         {
@@ -20259,7 +20302,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 610,
+          "section_number": 611,
           "size": 128
         },
         {
@@ -20272,7 +20315,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 611,
+          "section_number": 612,
           "size": 128
         },
         {
@@ -20285,7 +20328,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 612,
+          "section_number": 613,
           "size": 4
         },
         {
@@ -20298,7 +20341,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 613,
+          "section_number": 614,
           "size": 4
         },
         {
@@ -20311,7 +20354,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 614,
+          "section_number": 615,
           "size": 4
         },
         {
@@ -20324,7 +20367,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 615,
+          "section_number": 616,
           "size": 4
         },
         {
@@ -20337,7 +20380,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 616,
+          "section_number": 617,
           "size": 4
         },
         {
@@ -20350,7 +20393,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 617,
+          "section_number": 618,
           "size": 4
         },
         {
@@ -20363,7 +20406,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 618,
+          "section_number": 619,
           "size": 1
         },
         {
@@ -20376,7 +20419,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 619,
+          "section_number": 620,
           "size": 1
         },
         {
@@ -20389,7 +20432,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 620,
+          "section_number": 621,
           "size": 1
         },
         {
@@ -20402,7 +20445,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 621,
+          "section_number": 622,
           "size": 4
         },
         {
@@ -20415,7 +20458,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 622,
+          "section_number": 623,
           "size": 4
         },
         {
@@ -20428,7 +20471,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 623,
+          "section_number": 624,
           "size": 4
         },
         {
@@ -20441,7 +20484,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 624,
+          "section_number": 625,
           "size": 4
         },
         {
@@ -20454,7 +20497,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 625,
+          "section_number": 626,
           "size": 4
         },
         {
@@ -20467,7 +20510,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 626,
+          "section_number": 627,
           "size": 4
         },
         {
@@ -20480,7 +20523,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 627,
+          "section_number": 628,
           "size": 4
         },
         {
@@ -20493,7 +20536,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 628,
+          "section_number": 629,
           "size": 1
         },
         {
@@ -20506,7 +20549,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 629,
+          "section_number": 630,
           "size": 4
         },
         {
@@ -20519,7 +20562,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 630,
+          "section_number": 631,
           "size": 1
         },
         {
@@ -20532,7 +20575,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 631,
+          "section_number": 632,
           "size": 1
         },
         {
@@ -20545,8 +20588,21 @@
             }
           ],
           "relocations": [],
-          "section_number": 632,
+          "section_number": 633,
           "size": 1
+        },
+        {
+          "address": 5050920,
+          "alignment": 1,
+          "entries": [
+            {
+              "address": 5050920,
+              "name": "typo_word_highscore_cache"
+            }
+          ],
+          "relocations": [],
+          "section_number": 634,
+          "size": 640
         },
         {
           "address": 5051560,
@@ -20558,7 +20614,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 633,
+          "section_number": 635,
           "size": 128
         },
         {
@@ -20571,7 +20627,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 634,
+          "section_number": 636,
           "size": 24576
         },
         {
@@ -20584,7 +20640,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 635,
+          "section_number": 637,
           "size": 4
         },
         {
@@ -20597,7 +20653,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 636,
+          "section_number": 638,
           "size": 4
         },
         {
@@ -20610,7 +20666,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 637,
+          "section_number": 639,
           "size": 1
         },
         {
@@ -20623,7 +20679,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 638,
+          "section_number": 640,
           "size": 4
         },
         {
@@ -20636,7 +20692,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 639,
+          "section_number": 641,
           "size": 4
         },
         {
@@ -20649,7 +20705,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 640,
+          "section_number": 642,
           "size": 4
         },
         {
@@ -20662,7 +20718,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 641,
+          "section_number": 643,
           "size": 24
         },
         {
@@ -20675,7 +20731,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 642,
+          "section_number": 644,
           "size": 28
         },
         {
@@ -20688,7 +20744,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 643,
+          "section_number": 645,
           "size": 28
         },
         {
@@ -20701,7 +20757,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 644,
+          "section_number": 646,
           "size": 28
         },
         {
@@ -20714,7 +20770,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 645,
+          "section_number": 647,
           "size": 24
         },
         {
@@ -20727,7 +20783,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 646,
+          "section_number": 648,
           "size": 1
         },
         {
@@ -20740,7 +20796,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 647,
+          "section_number": 649,
           "size": 8
         },
         {
@@ -20753,7 +20809,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 648,
+          "section_number": 650,
           "size": 240
         },
         {
@@ -20766,7 +20822,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 649,
+          "section_number": 651,
           "size": 4
         },
         {
@@ -20779,7 +20835,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 650,
+          "section_number": 652,
           "size": 4
         },
         {
@@ -20792,7 +20848,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 651,
+          "section_number": 653,
           "size": 1
         },
         {
@@ -20805,7 +20861,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 652,
+          "section_number": 654,
           "size": 4
         },
         {
@@ -20818,7 +20874,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 653,
+          "section_number": 655,
           "size": 4
         },
         {
@@ -20831,7 +20887,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 654,
+          "section_number": 656,
           "size": 4
         },
         {
@@ -20844,7 +20900,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 655,
+          "section_number": 657,
           "size": 4
         },
         {
@@ -20857,7 +20913,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 656,
+          "section_number": 658,
           "size": 4
         },
         {
@@ -20870,7 +20926,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 657,
+          "section_number": 659,
           "size": 4
         },
         {
@@ -20883,7 +20939,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 658,
+          "section_number": 660,
           "size": 1
         },
         {
@@ -20896,7 +20952,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 659,
+          "section_number": 661,
           "size": 1
         },
         {
@@ -20909,7 +20965,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 660,
+          "section_number": 662,
           "size": 1
         },
         {
@@ -20926,7 +20982,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 661,
+          "section_number": 663,
           "size": 7940
         },
         {
@@ -20939,7 +20995,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 662,
+          "section_number": 664,
           "size": 512
         },
         {
@@ -20952,7 +21008,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 663,
+          "section_number": 665,
           "size": 512
         },
         {
@@ -20965,7 +21021,7 @@
             }
           ],
           "relocations": [],
-          "section_number": 664,
+          "section_number": 666,
           "size": 64
         }
       ]
@@ -45006,7 +45062,7 @@
         {
           "path": "tools/match/scratches/grim_load_interface/scratch.cpp",
           "repository_relative": true,
-          "sha256": "b077969099baea9b8ff9a6dff71dc56a69a9c53891559bbc79494679c5741042"
+          "sha256": "64c4cc1afd4c016661060decdfe596bafe0827f6bc9a23f25ca7e8224a9e5273"
         },
         {
           "path": "tools/match/scratches/grim_load_interface/scratch.conf",
@@ -45042,7 +45098,7 @@
           "canonical_config_sha256": "fa3aa1f099b88c358aab040407a5b44959377a35d257a16bdf5c423e9d4aa636",
           "canonical_scratch": "tools/match/scratches/grim_load_interface",
           "canonical_source": "tools/match/scratches/grim_load_interface/scratch.cpp",
-          "canonical_source_sha256": "b077969099baea9b8ff9a6dff71dc56a69a9c53891559bbc79494679c5741042",
+          "canonical_source_sha256": "64c4cc1afd4c016661060decdfe596bafe0827f6bc9a23f25ca7e8224a9e5273",
           "effective_end": 4316371,
           "end": 4316371,
           "function": "grim_load_interface",
@@ -45075,7 +45131,7 @@
       "object_sha256": "47c8396c1c241c1fe100e1af11d287585e976a04c01322b3b78c0c48748f05e6",
       "scratch": "tools/match/scratches/grim_load_interface",
       "source": "tools/match/scratches/grim_load_interface/scratch.cpp",
-      "source_sha256": "b077969099baea9b8ff9a6dff71dc56a69a9c53891559bbc79494679c5741042",
+      "source_sha256": "64c4cc1afd4c016661060decdfe596bafe0827f6bc9a23f25ca7e8224a9e5273",
       "target_size": 83,
       "translation_unit": {
         "kind": "isolated",
@@ -79997,7 +80053,7 @@
         {
           "path": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
           "repository_relative": true,
-          "sha256": "702b82f9a316e224eb18a990ff959d6fd3fa8b52c03f2f18555a35ebafa62a11"
+          "sha256": "d203c87a801bc4adcaf2d38321a114a66cbd7736a4cf355e311a56909c8fef33"
         },
         {
           "path": "tools/match/scratches/typo_word_pick_highscore_name/scratch.conf",
@@ -80038,7 +80094,7 @@
           "canonical_config_sha256": "ac6e0d6402b649473a4c6a7abf576b5a502cd93af02e6d8522a39cf3359ae250",
           "canonical_scratch": "tools/match/scratches/typo_word_pick_highscore_name",
           "canonical_source": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
-          "canonical_source_sha256": "702b82f9a316e224eb18a990ff959d6fd3fa8b52c03f2f18555a35ebafa62a11",
+          "canonical_source_sha256": "d203c87a801bc4adcaf2d38321a114a66cbd7736a4cf355e311a56909c8fef33",
           "effective_end": 4477705,
           "end": 4477705,
           "function": "typo_word_pick_highscore_name",
@@ -80071,7 +80127,7 @@
       "object_sha256": "75edec9a5ecd999cf5c8a03650cda3d9da3bdc847fdb7c9385efb12546dd86ad",
       "scratch": "tools/match/scratches/typo_word_pick_highscore_name",
       "source": "tools/match/scratches/typo_word_pick_highscore_name/scratch.cpp",
-      "source_sha256": "702b82f9a316e224eb18a990ff959d6fd3fa8b52c03f2f18555a35ebafa62a11",
+      "source_sha256": "d203c87a801bc4adcaf2d38321a114a66cbd7736a4cf355e311a56909c8fef33",
       "target_size": 345,
       "translation_unit": {
         "kind": "isolated",
@@ -87475,7 +87531,7 @@
       {
         "path": "tools/native/data_definitions/crimsonland.exe.json",
         "repository_relative": true,
-        "sha256": "bbea7d70c0086a63782193dd76ccb72d7ae00e9e29fe549e31ead490f9f3a4da"
+        "sha256": "1db4fef3a35fb886c96c99eedda891d40ab53e4d0872d77fc53b993c307885ea"
       }
     ],
     "toolchain": {

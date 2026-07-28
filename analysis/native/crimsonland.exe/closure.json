@@ -1,5 +1,5 @@
 {
-  "audit_digest": "d5e1a702731d1d2e0f8d187aa3aceb83e4c7aadb319fe4e8e477c9dab3f9f60e",
+  "audit_digest": "3b7fcdc33b1642077df46a2c6f401189c2da389c8b6244d9fd3439f259a6c636",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -58079,6 +58079,30 @@
     {
       "definitions": [
         {
+          "alignment": 1,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4784904,
+          "data_binding_kind": "definition",
+          "data_name": "grim_dll_name",
+          "data_storage_address": 4784904,
+          "data_storage_name": "grim_dll_name",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 256,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 256,
+          "weak": false
+        }
+      ],
+      "name": "?grim_dll_name@@3PADA"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -102601,6 +102625,30 @@
     {
       "definitions": [
         {
+          "alignment": 1,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 5050920,
+          "data_binding_kind": "definition",
+          "data_name": "typo_word_highscore_cache",
+          "data_storage_address": 5050920,
+          "data_storage_name": "typo_word_highscore_cache",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 640,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 640,
+          "weak": false
+        }
+      ],
+      "name": "_typo_word_highscore_cache"
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -115920,6 +115968,37 @@
         }
       ],
       "name": "?grim_dll_module_handle@@3PAUHINSTANCE__@@A",
+      "referenced_by": [
+        {
+          "function": "grim_load_interface",
+          "object": "tools/match/scratches/grim_load_interface/build/msvc6.5/192d26761e373a1b/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 1,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 4784904,
+          "data_binding_kind": "definition",
+          "data_name": "grim_dll_name",
+          "data_storage_address": 4784904,
+          "data_storage_name": "grim_dll_name",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 256,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 256,
+          "weak": false
+        }
+      ],
+      "name": "?grim_dll_name@@3PADA",
       "referenced_by": [
         {
           "function": "grim_load_interface",
@@ -155243,6 +155322,37 @@
     {
       "definitions": [
         {
+          "alignment": 1,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
+          "data_address": 5050920,
+          "data_binding_kind": "definition",
+          "data_name": "typo_word_highscore_cache",
+          "data_storage_address": 5050920,
+          "data_storage_name": "typo_word_highscore_cache",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 640,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 640,
+          "weak": false
+        }
+      ],
+      "name": "_typo_word_highscore_cache",
+      "referenced_by": [
+        {
+          "function": "typo_word_pick_highscore_name",
+          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/6cdb92c133981b3c/scratch.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -164532,7 +164642,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "0f03adaee16aca935f6c7614d382837d9299a3f95f5fecc133ea8c8fb285664f"
+        "sha256": "f4a74bf4deee760e3a8a2803cbfab3e5d98626812f31d3a551aac39cbf13db28"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164549,7 +164659,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 3146,
+    "defined_symbols": 3148,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -164558,15 +164668,14 @@
     "hard_duplicate_symbols": 0,
     "object_count": 663,
     "reference_exports_closed": true,
-    "resolved_symbols": 1350,
+    "resolved_symbols": 1352,
     "unresolved_by_category": {
       "excluded_function": 70,
       "external": 3,
-      "game_data": 2,
       "import": 25,
       "toolchain": 1
     },
-    "unresolved_symbols": 101
+    "unresolved_symbols": 99
   },
   "unresolved": [
     {
@@ -164907,25 +165016,6 @@
         {
           "function": "game_load_status",
           "object": "tools/match/scratches/game_load_status/build/msvc6.5/01618ca9a789952f/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 4784904,
-          "name": "grim_dll_name"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "grim_dll_name",
-      "name": "?grim_dll_name@@3PADA",
-      "referenced_by": [
-        {
-          "function": "grim_load_interface",
-          "object": "tools/match/scratches/grim_load_interface/build/msvc6.5/192d26761e373a1b/scratch.obj",
           "weak": false
         }
       ]
@@ -169398,25 +169488,6 @@
         {
           "function": "statistics_update_check_worker",
           "object": "tools/match/scratches/statistics_update_check_worker/build/msvc6.5/c0825a88c32e68e7/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "candidate_definitions": [],
-      "catalog": [
-        {
-          "address": 5050920,
-          "name": "typo_word_highscore_cache"
-        }
-      ],
-      "category": "game_data",
-      "lookup_name": "typo_word_highscore_cache",
-      "name": "_typo_word_highscore_cache",
-      "referenced_by": [
-        {
-          "function": "typo_word_pick_highscore_name",
-          "object": "tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/6cdb92c133981b3c/scratch.obj",
           "weak": false
         }
       ]

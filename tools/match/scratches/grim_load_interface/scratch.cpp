@@ -4,7 +4,7 @@
 #include "grim2d_cpp.h"
 
 extern HMODULE grim_dll_module_handle;
-extern char grim_dll_name[260];
+extern char grim_dll_name[256];
 
 typedef IGrim2D_cpp *(*grim_get_interface_t)(void);
 
