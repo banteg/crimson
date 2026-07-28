@@ -33,6 +33,13 @@ that lowers the byte ratio or adds unresolved or mismatched references. This
 is source-provenance modeling, not a linker alias: the object retains the
 compiler-generated local symbols and local relocations.
 
+The Grim configuration also models three proven source islands. The JAZ island
+combines its contiguous constructor, zlib-status helper, allocation method,
+and payload method in native address order under one `/GX /MD` provider. Each
+member remains an exact match against its isolated baseline, and the combined
+COFF object internalizes the helper-to-method calls without changing the
+function inventory.
+
 Grim has one explicit link-time exception in
 `tools/native/linker_aliases/grim.dll.json`. Both native cleanup calls in
 `grim_decode_jaz_texture` pass the decode-scope address in `ecx` and branch to

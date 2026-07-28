@@ -41,6 +41,28 @@
           "symbol": "?grim_draw_line_quad@IGrim2D_cpp@@UAEXPAM00@Z"
         }
       ]
+    },
+    {
+      "name": "grim-jaz-decode-island",
+      "scratch": "grim_jaz_decompress_payload",
+      "members": [
+        {
+          "function": "grim_jaz_decode_scope_init",
+          "symbol": "??0GrimJazDecodeScope@@QAE@XZ"
+        },
+        {
+          "function": "grim_zlib_status_is_error",
+          "symbol": "_grim_zlib_status_is_error"
+        },
+        {
+          "function": "grim_zlib_decompress_alloc",
+          "symbol": "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z"
+        },
+        {
+          "function": "grim_jaz_decompress_payload",
+          "symbol": "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z"
+        }
+      ]
     }
   ]
 }

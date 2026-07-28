@@ -18,3 +18,19 @@ remaining stack-store order.
 
 The VC6 `/O2 /GB /GX /MD` method is an exact 26-instruction match with its
 callee reference resolved.
+
+## Modeled translation unit
+
+This scratch is the physical source provider for the contiguous
+`grim-jaz-decode-island` at `0x1000a810..0x1000a8c2`. In native address and
+COFF section order, the combined VC6 object emits:
+
+1. `GrimJazDecodeScope::GrimJazDecodeScope`,
+2. `grim_zlib_status_is_error`,
+3. `GrimJazDecodeScope::decompress_alloc`,
+4. `GrimJazDecodeScope::unpack`.
+
+The native audit still compares every member independently against its
+canonical isolated scratch. All four remain exact under the provider's shared
+`/O2 /GB /W3 /GR- /GX /MD` profile, while the two intra-island calls become
+object-local instead of external linker obligations.

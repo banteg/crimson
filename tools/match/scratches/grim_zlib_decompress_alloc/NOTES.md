@@ -11,3 +11,7 @@ Declaring the available-size local after the allocation preserves the original
 value across `operator new` in `esi`, reproducing the native VC6 lifetime and
 stack layout. The `/O2 /GB /MD` method is an exact 22-instruction match with
 all three references resolved.
+
+The native audit retains this isolated scratch as the canonical baseline, then
+validates the method again under the island's shared `/GX /MD` profile as the
+third member of `grim-jaz-decode-island`.

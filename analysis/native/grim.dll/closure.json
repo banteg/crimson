@@ -1,5 +1,5 @@
 {
-  "audit_digest": "e50335b54b6b89ac9623eb93ea25cf93828a3935118aab844eb6dccb35bb8cd9",
+  "audit_digest": "bb2867a15a850e0f47867a8ff9ea7b4c612f55758f3d7f80cfc16d8f5d1e2a4c",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -664,20 +664,17 @@
     },
     {
       "name": "MSVCRT",
-      "object_count": 7,
+      "object_count": 4,
       "objects": [
         "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
-        "tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
         "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/095675e8fc249479/scratch.obj",
-        "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj",
-        "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
-        "tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj"
+        "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj"
       ]
     },
     {
       "name": "OLDNAMES",
-      "object_count": 132,
+      "object_count": 129,
       "objects": [
         "tools/match/scratches/grim_apply_render_state/build/msvc6.5/c53c287184ecb2ea/scratch.obj",
         "tools/match/scratches/grim_apply_settings/build/msvc6.5/5e91d143e1978233/scratch.obj",
@@ -748,7 +745,6 @@
         "tools/match/scratches/grim_j_nullsub_18/build/msvc6.5/f4ac4730fb3469fd/scratch.obj",
         "tools/match/scratches/grim_j_nullsub_19/build/msvc6.5/30824791affd3825/scratch.obj",
         "tools/match/scratches/grim_j_nullsub_20/build/msvc6.5/01aa71b3f3130d5d/scratch.obj",
-        "tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
         "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/095675e8fc249479/scratch.obj",
         "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/b4c8b35b4e45b4f2/scratch.obj",
@@ -808,9 +804,7 @@
         "tools/match/scratches/grim_timing_init/build/msvc6.5/29c7e1205c6af6fa/scratch.obj",
         "tools/match/scratches/grim_timing_update/build/msvc6.5/1d57bc888dd4cb33/scratch.obj",
         "tools/match/scratches/grim_was_key_pressed/build/msvc6.5/f6dda3089274d5fe/scratch.obj",
-        "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/b9cfd7507a6e8286/scratch.obj",
-        "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
-        "tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj"
+        "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/b9cfd7507a6e8286/scratch.obj"
       ]
     },
     {
@@ -862,11 +856,18 @@
           "comdat_key": "??0GrimJazDecodeScope@@QAE@XZ",
           "comdat_selection": 1,
           "function": "grim_jaz_decode_scope_init",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj",
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -1266,11 +1267,18 @@
           "comdat_key": "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z",
           "comdat_selection": 1,
           "function": "grim_zlib_decompress_alloc",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 64,
-          "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -6544,11 +6552,18 @@
           "comdat_key": "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z",
           "comdat_selection": 1,
           "function": "grim_jaz_decompress_payload",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 80,
           "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -7808,11 +7823,18 @@
           "comdat_key": "_grim_zlib_status_is_error",
           "comdat_selection": 1,
           "function": "grim_zlib_status_is_error",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 32,
-          "object": "tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj",
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -8708,13 +8730,6 @@
         "-defaultlib:MSVCRT",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:MSVCRT",
-        "-defaultlib:OLDNAMES"
-      ],
       "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj"
     },
     {
@@ -9155,20 +9170,6 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/grim_was_mouse_button_pressed/build/msvc6.5/b9cfd7507a6e8286/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:MSVCRT",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:MSVCRT",
-        "-defaultlib:OLDNAMES"
-      ],
-      "object": "tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj"
     }
   ],
   "duplicate_definitions": [],
@@ -9723,11 +9724,18 @@
           "comdat_key": "??0GrimJazDecodeScope@@QAE@XZ",
           "comdat_selection": 1,
           "function": "grim_jaz_decode_scope_init",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 16,
-          "object": "tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj",
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -9796,31 +9804,6 @@
         {
           "function": "grim_load_texture_internal",
           "object": "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z",
-          "comdat_selection": 1,
-          "function": "grim_zlib_decompress_alloc",
-          "kind": "section",
-          "logical_section_size": 64,
-          "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z",
-      "referenced_by": [
-        {
-          "function": "grim_jaz_decompress_payload",
-          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "weak": false
         }
       ]
@@ -17729,11 +17712,18 @@
           "comdat_key": "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z",
           "comdat_selection": 1,
           "function": "grim_jaz_decompress_payload",
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
           "kind": "section",
           "logical_section_size": 80,
           "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ],
@@ -18319,31 +18309,6 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "_grim_zlib_status_is_error",
-          "comdat_selection": 1,
-          "function": "grim_zlib_status_is_error",
-          "kind": "section",
-          "logical_section_size": 32,
-          "object": "tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_grim_zlib_status_is_error",
-      "referenced_by": [
-        {
-          "function": "grim_zlib_decompress_alloc",
-          "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
           "comdat_key": "_nullsub_11",
           "comdat_selection": 1,
           "function": "nullsub_11",
@@ -18641,9 +18606,9 @@
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 134,
+    "object_count": 131,
     "reference_exports_closed": true,
-    "resolved_symbols": 275,
+    "resolved_symbols": 273,
     "unresolved_by_category": {
       "excluded_function": 39,
       "import": 12,
@@ -18681,6 +18646,18 @@
           "weak": false
         },
         {
+          "function": null,
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
+          "translation_unit": "grim-jaz-decode-island",
+          "weak": false
+        },
+        {
           "function": "grim_load_texture_internal",
           "object": "tools/match/scratches/grim_load_texture_internal/build/msvc6.5/b75eb0c92e74f66c/scratch.obj",
           "weak": false
@@ -18708,11 +18685,6 @@
         {
           "function": "grim_texture_load_file",
           "object": "tools/match/scratches/grim_texture_load_file/build/msvc6.5/432726981df38261/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "grim_zlib_decompress_alloc",
-          "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
           "weak": false
         }
       ]
@@ -20185,8 +20157,15 @@
       "name": "_zlib_uncompress",
       "referenced_by": [
         {
-          "function": "grim_zlib_decompress_alloc",
-          "object": "tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj",
+          "function": null,
+          "functions": [
+            "grim_jaz_decode_scope_init",
+            "grim_zlib_status_is_error",
+            "grim_zlib_decompress_alloc",
+            "grim_jaz_decompress_payload"
+          ],
+          "object": "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj",
+          "translation_unit": "grim-jaz-decode-island",
           "weak": false
         }
       ]

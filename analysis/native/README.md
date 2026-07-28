@@ -98,6 +98,12 @@ instead of inventing an external callback provider. `function_count`
 therefore remains the owned function count while `object_count` is the number
 of physical linker inputs.
 
+Grim's modeled source islands follow the same gate. In particular, the
+contiguous JAZ constructor, zlib-status helper, allocation method, and payload
+method are emitted once by `grim_jaz_decompress_payload` in native address and
+COFF section order. The audit compares all four functions independently with
+their isolated exact baselines before accepting the clustered object.
+
 `function_closure` means there are no unresolved in-scope game functions and
 no duplicate strong definitions. `game_owned_closure` additionally requires
 all mapped game data and unclassified externals to resolve.

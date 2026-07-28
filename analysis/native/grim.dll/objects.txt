@@ -126,9 +126,6 @@ tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/0da2787600884a67/scr
 tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/09a3a809a19097fd/scratch.obj
 tools/match/scratches/grim_get_interface/build/msvc6.5/b8e41d673a8df839/scratch.obj
 tools/match/scratches/grim_dll_main/build/msvc6.5/8c75a983c02b4a93/scratch.obj
-tools/match/scratches/grim_jaz_decode_scope_init/build/msvc6.5/6d62de06a3d0cb8e/scratch.obj
-tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/scratch.obj
-tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj
 tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj
 tools/native/data_definitions/build/grim.dll/definitions.obj
 tools/native/linker_aliases/build/grim.dll/aliases.obj
