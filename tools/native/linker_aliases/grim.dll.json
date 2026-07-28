@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "kind": "crimson-native-linker-aliases",
+  "image": "grim.dll",
+  "aliases": [
+    {
+      "alias": "??1GrimJazDecodeScope@@QAE@XZ",
+      "target": "_grim_noop",
+      "target_address": "0x10001160",
+      "reference_function": "grim_decode_jaz_texture",
+      "reference_callsites": [
+        "0x10004cb5",
+        "0x10004e69"
+      ],
+      "evidence": "Both native cleanup callsites load the decode-scope address into ECX and directly call the selected one-byte grim_noop function."
+    }
+  ]
+}

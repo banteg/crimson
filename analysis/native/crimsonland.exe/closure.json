@@ -1,5 +1,5 @@
 {
-  "audit_digest": "efefd84b959cc22f22985eb5b3eeabd57fd35a73d323ceb413f857993f131bab",
+  "audit_digest": "2ef8a83f8e49deb899f6b718e695d1f5f40df2b24e743e0294f2902869bfe1a1",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -113586,6 +113586,7 @@
   "exports": [],
   "image": "crimsonland.exe",
   "kind": "crimson-native-symbol-closure",
+  "linker_aliases": [],
   "reference_imports": [
     {
       "address": 4648960,
@@ -164782,7 +164783,7 @@
       {
         "path": "analysis/ghidra/maps/data_map.json",
         "repository_relative": true,
-        "sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55"
+        "sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -164803,7 +164804,7 @@
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
-    "game_owned_closure": false,
+    "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
     "object_count": 663,
@@ -164811,9 +164812,8 @@
     "resolved_symbols": 1354,
     "unresolved_by_category": {
       "excluded_function": 70,
-      "external": 1,
       "import": 25,
-      "toolchain": 1
+      "toolchain": 2
     },
     "unresolved_symbols": 97
   },
@@ -165329,6 +165329,9 @@
       "candidate_definitions": [],
       "catalog": [],
       "category": "toolchain",
+      "classification_evidence": {
+        "kind": "msvc-compiler-helper"
+      },
       "lookup_name": "fltused",
       "name": "__fltused",
       "referenced_by": [
@@ -169393,7 +169396,13 @@
     {
       "candidate_definitions": [],
       "catalog": [],
-      "category": "external",
+      "category": "toolchain",
+      "classification_evidence": {
+        "default_libraries": [
+          "LIBC"
+        ],
+        "kind": "msvc-crt-default-library"
+      },
       "lookup_name": "sscanf",
       "name": "_sscanf",
       "referenced_by": [

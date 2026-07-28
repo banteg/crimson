@@ -19,11 +19,13 @@ NATIVE_SYMBOL_CLOSURE_SCHEMA = 2
 NATIVE_DATA_MANIFEST_SCHEMA = 1
 NATIVE_DATA_DEFINITION_SCHEMA = 1
 NATIVE_TRANSLATION_UNIT_SCHEMA = 1
+NATIVE_LINKER_ALIAS_SCHEMA = 1
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
 NATIVE_DATA_MANIFEST_KIND = "crimson-native-data-manifest"
 NATIVE_DATA_DEFINITION_KIND = "crimson-native-data-definitions"
+NATIVE_LINKER_ALIAS_KIND = "crimson-native-linker-aliases"
 
 IMAGE_SCN_LNK_COMDAT = 0x00001000
 IMAGE_SCN_CNT_INITIALIZED_DATA = 0x00000040
@@ -39,12 +41,31 @@ KNOWN_MSVC_TOOLCHAIN_EXTERNALS = frozenset(
         "__fltused",
     },
 )
+KNOWN_MSVC_CRT_EXTERNALS = frozenset(
+    {
+        "_sscanf",
+    },
+)
+KNOWN_MSVC_CRT_DEFAULT_LIBRARIES = frozenset(
+    {
+        "libc",
+        "libcd",
+        "libcmt",
+        "libcmtd",
+        "msvcrt",
+        "msvcrtd",
+    },
+)
 
 DEFAULT_NATIVE_ANALYSIS_ROOT = matchlib.REPO_ROOT / "analysis" / "native"
 DEFAULT_DATA_DEFINITION_ROOT = (
     matchlib.REPO_ROOT / "tools" / "native" / "data_definitions"
 )
 DEFAULT_DATA_OBJECT_BUILD_ROOT = DEFAULT_DATA_DEFINITION_ROOT / "build"
+DEFAULT_LINKER_ALIAS_ROOT = (
+    matchlib.REPO_ROOT / "tools" / "native" / "linker_aliases"
+)
+DEFAULT_LINKER_ALIAS_OBJECT_BUILD_ROOT = DEFAULT_LINKER_ALIAS_ROOT / "build"
 DEFAULT_ABI_CONFIGS = {
     "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
@@ -65,6 +86,9 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
         / "grim.dll.json"
     ),
 }
+DEFAULT_LINKER_ALIAS_CONFIGS = {
+    "grim.dll": DEFAULT_LINKER_ALIAS_ROOT / "grim.dll.json",
+}
 
 
 def default_native_data_definitions_path(image: str) -> Path:
@@ -73,6 +97,10 @@ def default_native_data_definitions_path(image: str) -> Path:
 
 def default_native_data_object_path(image: str) -> Path:
     return DEFAULT_DATA_OBJECT_BUILD_ROOT / image / "definitions.obj"
+
+
+def default_native_linker_alias_object_path(image: str) -> Path:
+    return DEFAULT_LINKER_ALIAS_OBJECT_BUILD_ROOT / image / "aliases.obj"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +131,24 @@ class NativeTranslationUnitConfig:
     path: Path
     sha256: str
     clusters: tuple[NativeTranslationUnitSpec, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NativeLinkerAliasSpec:
+    alias: str
+    target: str
+    target_address: int
+    reference_function: str
+    reference_callsites: tuple[int, ...]
+    evidence: str
+
+
+@dataclass(frozen=True, slots=True)
+class NativeLinkerAliasConfig:
+    image: str
+    path: Path
+    sha256: str
+    aliases: tuple[NativeLinkerAliasSpec, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -170,6 +216,16 @@ class NativeDataObjectRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class NativeLinkerAliasObjectRecord:
+    object_path: Path
+    coff: matchlib.CoffObject
+    config_path: Path
+    config_sha256: str
+    object_sha256: str
+    aliases: tuple[NativeLinkerAliasSpec, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class NativeCompilerBundleSnapshot:
     compiler: str
     root: Path
@@ -196,6 +252,7 @@ class NativeObjectSet:
     image_path: Path
     records: tuple[NativeObjectRecord, ...]
     data_records: tuple[NativeDataObjectRecord, ...] = ()
+    linker_alias_records: tuple[NativeLinkerAliasObjectRecord, ...] = ()
     abi_object_path: Path | None = None
     abi_config: matchlib.ScratchConfig | None = None
     abi_compile_inputs: tuple[tuple[Path, str], ...] = ()
@@ -319,6 +376,108 @@ def load_native_translation_unit_config(
         path=path.resolve(),
         sha256=_sha256(path),
         clusters=tuple(clusters),
+    )
+
+
+def load_native_linker_alias_config(
+    path: Path,
+    *,
+    image: str,
+) -> NativeLinkerAliasConfig:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != NATIVE_LINKER_ALIAS_SCHEMA:
+        raise ValueError(
+            f"{path}: expected schema {NATIVE_LINKER_ALIAS_SCHEMA}",
+        )
+    if payload.get("kind") != NATIVE_LINKER_ALIAS_KIND:
+        raise ValueError(
+            f"{path}: expected kind {NATIVE_LINKER_ALIAS_KIND!r}",
+        )
+    if payload.get("image") != image:
+        raise ValueError(f"{path}: targets {payload.get('image')!r}, expected {image!r}")
+
+    raw_aliases = payload.get("aliases")
+    if not isinstance(raw_aliases, list) or not raw_aliases:
+        raise ValueError(f"{path}: aliases must be a non-empty list")
+    aliases: list[NativeLinkerAliasSpec] = []
+    alias_names: set[str] = set()
+    for index, raw_alias in enumerate(raw_aliases):
+        if not isinstance(raw_alias, dict):
+            raise TypeError(f"{path}: aliases[{index}] must be an object")
+        alias = raw_alias.get("alias")
+        target = raw_alias.get("target")
+        reference_function = raw_alias.get("reference_function")
+        evidence = raw_alias.get("evidence")
+        if not isinstance(alias, str) or not alias or "\x00" in alias:
+            raise ValueError(f"{path}: aliases[{index}].alias must be a COFF symbol")
+        if alias in alias_names:
+            raise ValueError(f"{path}: duplicate linker alias {alias!r}")
+        alias_names.add(alias)
+        if not isinstance(target, str) or not target or "\x00" in target:
+            raise ValueError(f"{path}: aliases[{index}].target must be a COFF symbol")
+        if alias == target:
+            raise ValueError(f"{path}: linker alias {alias!r} targets itself")
+        if not isinstance(reference_function, str) or not reference_function:
+            raise ValueError(
+                f"{path}: aliases[{index}].reference_function must be non-empty",
+            )
+        if not isinstance(evidence, str) or not evidence:
+            raise ValueError(f"{path}: aliases[{index}].evidence must be non-empty")
+        raw_target_address = raw_alias.get("target_address")
+        if not isinstance(raw_target_address, (str, int)):
+            raise TypeError(
+                f"{path}: aliases[{index}].target_address must be an integer",
+            )
+        try:
+            target_address = matchlib.parse_int(raw_target_address)
+        except ValueError as error:
+            raise ValueError(
+                f"{path}: aliases[{index}].target_address must be an integer",
+            ) from error
+        raw_callsites = raw_alias.get("reference_callsites")
+        if not isinstance(raw_callsites, list) or not raw_callsites:
+            raise ValueError(
+                f"{path}: aliases[{index}].reference_callsites must be non-empty",
+            )
+        parsed_callsites: list[int] = []
+        for callsite in raw_callsites:
+            if not isinstance(callsite, (str, int)):
+                raise TypeError(
+                    f"{path}: aliases[{index}].reference_callsites "
+                    "must contain integers",
+                )
+            try:
+                parsed_callsites.append(matchlib.parse_int(callsite))
+            except ValueError as error:
+                raise ValueError(
+                    f"{path}: aliases[{index}].reference_callsites "
+                    "must contain integers",
+                ) from error
+        reference_callsites = tuple(parsed_callsites)
+        if tuple(sorted(set(reference_callsites))) != reference_callsites:
+            raise ValueError(
+                f"{path}: aliases[{index}].reference_callsites must be sorted and unique",
+            )
+        aliases.append(
+            NativeLinkerAliasSpec(
+                alias=alias,
+                target=target,
+                target_address=target_address,
+                reference_function=reference_function,
+                reference_callsites=reference_callsites,
+                evidence=evidence,
+            ),
+        )
+    if tuple(sorted(alias.alias for alias in aliases)) != tuple(
+        alias.alias
+        for alias in aliases
+    ):
+        raise ValueError(f"{path}: aliases must be sorted by alias")
+    return NativeLinkerAliasConfig(
+        image=image,
+        path=path.resolve(),
+        sha256=_sha256(path),
+        aliases=tuple(aliases),
     )
 
 
@@ -544,6 +703,7 @@ def _analysis_input_snapshot(
     scope: str,
     *,
     translation_unit_configs: dict[str, Path] | None = None,
+    linker_alias_configs: dict[str, Path] | None = None,
 ) -> tuple[tuple[Path, str], ...]:
     image_path, functions_path, metadata_path = _image_paths(image)
     paths = [
@@ -567,6 +727,13 @@ def _analysis_input_snapshot(
     )
     if translation_unit_config := resolved_translation_unit_configs.get(image):
         paths.append(translation_unit_config)
+    resolved_linker_alias_configs = (
+        DEFAULT_LINKER_ALIAS_CONFIGS
+        if linker_alias_configs is None
+        else linker_alias_configs
+    )
+    if linker_alias_config := resolved_linker_alias_configs.get(image):
+        paths.append(linker_alias_config)
     return tuple((path.resolve(), _sha256(path)) for path in paths)
 
 
@@ -584,6 +751,22 @@ def _load_image_translation_unit_config(
     if path is None:
         return None
     return load_native_translation_unit_config(path, image=image)
+
+
+def _load_image_linker_alias_config(
+    image: str,
+    *,
+    linker_alias_configs: dict[str, Path] | None,
+) -> NativeLinkerAliasConfig | None:
+    resolved_configs = (
+        DEFAULT_LINKER_ALIAS_CONFIGS
+        if linker_alias_configs is None
+        else linker_alias_configs
+    )
+    path = resolved_configs.get(image)
+    if path is None:
+        return None
+    return load_native_linker_alias_config(path, image=image)
 
 
 def _discover_image_scratch_directories(image: str, match_root: Path) -> tuple[Path, ...]:
@@ -757,6 +940,7 @@ def build_native_object_set(
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     abi_configs: dict[str, Path] | None = None,
     translation_unit_configs: dict[str, Path] | None = None,
+    linker_alias_configs: dict[str, Path] | None = None,
 ) -> NativeObjectSet:
     """Compile canonical functions as isolated or explicitly clustered objects."""
 
@@ -801,6 +985,10 @@ def build_native_object_set(
     translation_units = _load_image_translation_unit_config(
         image,
         translation_unit_configs=translation_unit_configs,
+    )
+    linker_aliases = _load_image_linker_alias_config(
+        image,
+        linker_alias_configs=linker_alias_configs,
     )
     prepared_clusters: list[
         tuple[
@@ -1050,6 +1238,18 @@ def build_native_object_set(
         and _sha256(translation_units.path) != translation_units.sha256
     ):
         raise ValueError("translation-unit config changed during native audit")
+    linker_alias_records: tuple[NativeLinkerAliasObjectRecord, ...] = ()
+    if linker_aliases is not None:
+        linker_alias_records = (
+            build_native_linker_alias_object(
+                linker_aliases,
+                records=tuple(records),
+                manifest=manifest,
+                reference_image_path=image_path,
+            ),
+        )
+        if _sha256(linker_aliases.path) != linker_aliases.sha256:
+            raise ValueError("linker-alias config changed during native audit")
     compile_inputs_after = _compile_input_union_snapshot(
         toolchain_configs,
         match_root,
@@ -1066,6 +1266,7 @@ def build_native_object_set(
         manifest=manifest,
         image_path=image_path,
         records=tuple(records),
+        linker_alias_records=linker_alias_records,
         abi_object_path=abi_object_path,
         abi_config=abi_config,
         abi_compile_inputs=abi_compile_inputs,
@@ -1264,6 +1465,26 @@ def object_manifest_payload(
         }
         for record in objects.data_records
     ]
+    linker_alias_records = [
+        {
+            "aliases": [
+                {
+                    "alias": alias.alias,
+                    "evidence": alias.evidence,
+                    "reference_callsites": list(alias.reference_callsites),
+                    "reference_function": alias.reference_function,
+                    "target": alias.target,
+                    "target_address": alias.target_address,
+                }
+                for alias in record.aliases
+            ],
+            "config": _repo_relative(record.config_path, repo_root=repo_root),
+            "config_sha256": record.config_sha256,
+            "object": _repo_relative(record.object_path, repo_root=repo_root),
+            "object_sha256": record.object_sha256,
+        }
+        for record in objects.linker_alias_records
+    ]
 
     abi: dict[str, Any] | None = None
     if objects.abi_object_path is not None:
@@ -1325,6 +1546,14 @@ def object_manifest_payload(
             },
         ),
     )
+    selection_input_paths.extend(
+        sorted(
+            {
+                record.config_path
+                for record in objects.linker_alias_records
+            },
+        ),
+    )
     cluster_count = sum(
         record.translation_unit is not None
         for record in objects.records
@@ -1339,6 +1568,8 @@ def object_manifest_payload(
         if data_records
         else base_build_policy
     )
+    if linker_alias_records:
+        build_policy = f"{build_policy}-and-linker-aliases"
 
     return {
         "abi_assertions": abi,
@@ -1347,8 +1578,17 @@ def object_manifest_payload(
         "function_count": len(bindings),
         "image": objects.image,
         "kind": NATIVE_OBJECT_MANIFEST_KIND,
-        "object_count": len(records) + len(data_records),
-        "object_order": "ascending-minimum-reference-address-then-generated-data",
+        "linker_alias_object_count": len(linker_alias_records),
+        "linker_alias_objects": linker_alias_records,
+        "object_count": (
+            len(records)
+            + len(data_records)
+            + len(linker_alias_records)
+        ),
+        "object_order": (
+            "ascending-minimum-reference-address-then-generated-data-"
+            "then-linker-aliases"
+        ),
         "object_hash": {
             "algorithm": "sha256",
             "normalization": ["zero COFF TimeDateStamp bytes 4..7"],
@@ -1398,6 +1638,10 @@ def render_object_list(
     lines.extend(
         _repo_relative(record.object_path, repo_root=repo_root)
         for record in objects.data_records
+    )
+    lines.extend(
+        _repo_relative(record.object_path, repo_root=repo_root)
+        for record in objects.linker_alias_records
     )
     return "".join(f"{line}\n" for line in lines)
 
@@ -1679,6 +1923,42 @@ def _coff_directives(record: NativeObjectRecord) -> tuple[str, ...]:
     return tuple(directives)
 
 
+def _default_library_name(directive: str) -> str | None:
+    match = re.match(r"(?i)^[-/]defaultlib:(.+)$", directive)
+    if match is None:
+        return None
+    return match.group(1).strip('"')
+
+
+def _msvc_toolchain_classification(
+    name: str,
+    references: list[dict[str, Any]],
+    *,
+    directives_by_object: dict[str, tuple[str, ...]],
+) -> dict[str, Any] | None:
+    if name in KNOWN_MSVC_TOOLCHAIN_EXTERNALS:
+        return {"kind": "msvc-compiler-helper"}
+    if name not in KNOWN_MSVC_CRT_EXTERNALS:
+        return None
+
+    requested: set[str] = set()
+    for reference in references:
+        object_name = str(reference["object"])
+        for directive in directives_by_object.get(object_name, ()):
+            library = _default_library_name(directive)
+            if library is None:
+                continue
+            normalized = library.casefold().removesuffix(".lib")
+            if normalized in KNOWN_MSVC_CRT_DEFAULT_LIBRARIES:
+                requested.add(library)
+    if not requested:
+        return None
+    return {
+        "default_libraries": sorted(requested, key=str.casefold),
+        "kind": "msvc-crt-default-library",
+    }
+
+
 def symbol_closure_payload(
     objects: NativeObjectSet,
     *,
@@ -1691,6 +1971,8 @@ def symbol_closure_payload(
     undefined: dict[str, list[dict[str, Any]]] = defaultdict(list)
     pending_undefined: list[tuple[str, str | None, dict[str, Any]]] = []
     directives_by_object: dict[str, tuple[str, ...]] = {}
+    weak_alias_fallbacks: dict[str, set[str]] = defaultdict(set)
+    weak_alias_objects: dict[str, set[str]] = defaultdict(set)
 
     for record in objects.records:
         object_name = _repo_relative(record.object_path, repo_root=repo_root)
@@ -1731,6 +2013,8 @@ def symbol_closure_payload(
                     reference["weak_search"] = symbol.weak_search
                     if symbol.weak_search == IMAGE_WEAK_EXTERN_SEARCH_ALIAS:
                         alias_fallback = fallback.name
+                        weak_alias_fallbacks[symbol.name].add(fallback.name)
+                        weak_alias_objects[symbol.name].add(object_name)
                 pending_undefined.append((symbol.name, alias_fallback, reference))
 
     for record in objects.data_records:
@@ -1762,11 +2046,72 @@ def symbol_closure_payload(
                     ),
                 )
 
+    for record in objects.linker_alias_records:
+        object_name = _repo_relative(record.object_path, repo_root=repo_root)
+        directives_by_object[object_name] = ()
+        symbols_by_raw_index = {
+            symbol.raw_index: symbol
+            for symbol in record.coff.symbols
+        }
+        for symbol in record.coff.symbols:
+            if symbol.storage_class not in (
+                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                IMAGE_SYM_CLASS_WEAK_EXTERNAL,
+            ):
+                continue
+            if symbol.section_number != 0 or symbol.value != 0:
+                raise ValueError(
+                    f"{record.object_path}: linker-alias object defines "
+                    f"unexpected symbol {symbol.name!r}",
+                )
+            alias_fallback: str | None = None
+            reference: dict[str, Any] = {
+                "function": None,
+                "linker_alias_object": True,
+                "object": object_name,
+                "weak": symbol.storage_class == IMAGE_SYM_CLASS_WEAK_EXTERNAL,
+            }
+            if (
+                symbol.storage_class == IMAGE_SYM_CLASS_WEAK_EXTERNAL
+                and symbol.weak_default_symbol_index is not None
+            ):
+                fallback = symbols_by_raw_index[symbol.weak_default_symbol_index]
+                reference["weak_fallback"] = fallback.name
+                reference["weak_search"] = symbol.weak_search
+                if symbol.weak_search == IMAGE_WEAK_EXTERN_SEARCH_ALIAS:
+                    alias_fallback = fallback.name
+                    weak_alias_fallbacks[symbol.name].add(fallback.name)
+                    weak_alias_objects[symbol.name].add(object_name)
+            pending_undefined.append((symbol.name, alias_fallback, reference))
+
+    conflicting_aliases = {
+        alias: sorted(fallbacks)
+        for alias, fallbacks in weak_alias_fallbacks.items()
+        if len(fallbacks) != 1
+    }
+    if conflicting_aliases:
+        raise ValueError(f"conflicting COFF weak aliases: {conflicting_aliases}")
+
     for primary_name, alias_fallback, reference in pending_undefined:
         reference_name = primary_name
-        if primary_name not in definitions and alias_fallback is not None:
-            reference["weak_alias"] = primary_name
-            reference_name = alias_fallback
+        if primary_name not in definitions:
+            global_fallbacks = weak_alias_fallbacks.get(primary_name, set())
+            global_fallback = next(iter(global_fallbacks)) if global_fallbacks else None
+            if (
+                alias_fallback is not None
+                and global_fallback is not None
+                and alias_fallback != global_fallback
+            ):
+                raise ValueError(
+                    f"COFF weak alias {primary_name!r} has inconsistent fallbacks",
+                )
+            resolved_fallback = alias_fallback or global_fallback
+            if resolved_fallback is not None:
+                if alias_fallback is not None:
+                    reference["weak_alias"] = primary_name
+                else:
+                    reference["linker_alias"] = primary_name
+                reference_name = resolved_fallback
         undefined[reference_name].append(reference)
 
     definition_rows: list[dict[str, Any]] = []
@@ -1821,6 +2166,7 @@ def symbol_closure_payload(
 
         lookup_name = matchlib._symbol_lookup_name(name)
         detail: tuple[dict[str, Any], ...] = ()
+        toolchain_evidence: dict[str, Any] | None = None
         if lookup_name in catalog.port_functions:
             category = "game_function"
             detail = catalog.port_functions[lookup_name]
@@ -1833,7 +2179,11 @@ def symbol_closure_payload(
         elif lookup_name in catalog.imports:
             category = "import"
             detail = catalog.imports[lookup_name]
-        elif name in KNOWN_MSVC_TOOLCHAIN_EXTERNALS:
+        elif toolchain_evidence := _msvc_toolchain_classification(
+            name,
+            references,
+            directives_by_object=directives_by_object,
+        ):
             category = "toolchain"
         else:
             category = "external"
@@ -1845,16 +2195,17 @@ def symbol_closure_payload(
                 if candidate_definitions
                 else "missing_definition"
             ] += 1
-        unresolved_rows.append(
-            {
-                "candidate_definitions": candidate_definitions,
-                "catalog": list(detail),
-                "category": category,
-                "lookup_name": lookup_name,
-                "name": name,
-                "referenced_by": ordered_references,
-            },
-        )
+        unresolved_row = {
+            "candidate_definitions": candidate_definitions,
+            "catalog": list(detail),
+            "category": category,
+            "lookup_name": lookup_name,
+            "name": name,
+            "referenced_by": ordered_references,
+        }
+        if toolchain_evidence is not None:
+            unresolved_row["classification_evidence"] = toolchain_evidence
+        unresolved_rows.append(unresolved_row)
 
     default_libraries: dict[str, set[str]] = defaultdict(set)
     directive_rows: list[dict[str, Any]] = []
@@ -1862,8 +2213,8 @@ def symbol_closure_payload(
         if directives:
             directive_rows.append({"directives": list(directives), "object": object_name})
         for directive in directives:
-            if match := re.match(r"(?i)^[-/]defaultlib:(.+)$", directive):
-                default_libraries[match.group(1)].add(object_name)
+            if library := _default_library_name(directive):
+                default_libraries[library].add(object_name)
     default_library_rows = [
         {
             "name": name,
@@ -1871,6 +2222,14 @@ def symbol_closure_payload(
             "objects": sorted(object_names),
         }
         for name, object_names in sorted(default_libraries.items(), key=lambda item: item[0].lower())
+    ]
+    linker_alias_rows = [
+        {
+            "alias": alias,
+            "objects": sorted(weak_alias_objects[alias]),
+            "target": next(iter(fallbacks)),
+        }
+        for alias, fallbacks in sorted(weak_alias_fallbacks.items())
     ]
 
     export_rows: list[dict[str, Any]] = []
@@ -1952,6 +2311,7 @@ def symbol_closure_payload(
         "exports": export_rows,
         "image": objects.image,
         "kind": NATIVE_SYMBOL_CLOSURE_KIND,
+        "linker_aliases": linker_alias_rows,
         "reference_imports": reference_imports,
         "resolved": resolved_rows,
         "schema": NATIVE_SYMBOL_CLOSURE_SCHEMA,
@@ -1984,7 +2344,11 @@ def symbol_closure_payload(
                 len(_record_bindings(record))
                 for record in objects.records
             ),
-            "object_count": len(objects.records) + len(objects.data_records),
+            "object_count": (
+                len(objects.records)
+                + len(objects.data_records)
+                + len(objects.linker_alias_records)
+            ),
             "reference_exports_closed": reference_exports_closed,
             "resolved_symbols": len(resolved_rows),
             "unresolved_by_category": dict(sorted(unresolved_counts.items())),
@@ -3136,6 +3500,250 @@ def _write_bytes_atomic(path: Path, data: bytes) -> None:
     os.replace(temporary, path)
 
 
+def native_linker_alias_object_bytes(
+    aliases: tuple[NativeLinkerAliasSpec, ...],
+) -> bytes:
+    if not aliases:
+        raise ValueError("linker alias object requires at least one alias")
+
+    targets = sorted({alias.target for alias in aliases})
+    names = [*targets, *(alias.alias for alias in aliases)]
+    string_offsets: dict[str, int] = {}
+    string_payload = bytearray()
+    for name in names:
+        try:
+            encoded = name.encode("latin1")
+        except UnicodeEncodeError as error:
+            raise ValueError(f"COFF symbol {name!r} is not Latin-1") from error
+        if len(encoded) <= 8 or name in string_offsets:
+            continue
+        string_offsets[name] = 4 + len(string_payload)
+        string_payload.extend(encoded)
+        string_payload.append(0)
+
+    def symbol_name_field(name: str) -> bytes:
+        encoded = name.encode("latin1")
+        if len(encoded) <= 8:
+            return encoded.ljust(8, b"\x00")
+        return struct.pack("<II", 0, string_offsets[name])
+
+    target_indices = {
+        target: index
+        for index, target in enumerate(targets)
+    }
+    symbol_count = len(targets) + len(aliases) * 2
+    payload = bytearray(
+        struct.pack(
+            "<HHIIIHH",
+            matchlib.IMAGE_FILE_MACHINE_I386,
+            0,
+            0,
+            20,
+            symbol_count,
+            0,
+            0,
+        ),
+    )
+    for target in targets:
+        payload.extend(symbol_name_field(target))
+        payload.extend(
+            struct.pack(
+                "<IhHBB",
+                0,
+                0,
+                0,
+                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                0,
+            ),
+        )
+    for alias in aliases:
+        payload.extend(symbol_name_field(alias.alias))
+        payload.extend(
+            struct.pack(
+                "<IhHBB",
+                0,
+                0,
+                0,
+                IMAGE_SYM_CLASS_WEAK_EXTERNAL,
+                1,
+            ),
+        )
+        payload.extend(
+            struct.pack(
+                "<II10x",
+                target_indices[alias.target],
+                IMAGE_WEAK_EXTERN_SEARCH_ALIAS,
+            ),
+        )
+    payload.extend(struct.pack("<I", 4 + len(string_payload)))
+    payload.extend(string_payload)
+
+    object_data = bytes(payload)
+    coff = matchlib.parse_coff_object(object_data)
+    parsed = {symbol.name: symbol for symbol in coff.symbols}
+    if set(parsed) != set(names):
+        raise ValueError("generated linker alias object symbol table did not round-trip")
+    for target in targets:
+        symbol = parsed[target]
+        if (
+            symbol.section_number != 0
+            or symbol.storage_class != matchlib.IMAGE_SYM_CLASS_EXTERNAL
+        ):
+            raise ValueError(
+                f"generated linker alias target {target!r} did not remain undefined",
+            )
+    for alias in aliases:
+        symbol = parsed[alias.alias]
+        fallback = next(
+            candidate
+            for candidate in coff.symbols
+            if candidate.raw_index == symbol.weak_default_symbol_index
+        )
+        if (
+            symbol.storage_class != IMAGE_SYM_CLASS_WEAK_EXTERNAL
+            or symbol.weak_search != IMAGE_WEAK_EXTERN_SEARCH_ALIAS
+            or fallback.name != alias.target
+        ):
+            raise ValueError(
+                f"generated linker alias {alias.alias!r} did not retain "
+                f"fallback {alias.target!r}",
+            )
+    return object_data
+
+
+def _validate_native_linker_aliases(
+    config: NativeLinkerAliasConfig,
+    *,
+    records: tuple[NativeObjectRecord, ...],
+    manifest: matchlib.FunctionManifest,
+    reference_image_path: Path,
+) -> None:
+    loaded_image = matchlib.load_image(reference_image_path, manifest.image_base)
+    definitions: dict[str, list[NativeObjectRecord]] = defaultdict(list)
+    references: dict[str, list[NativeObjectRecord]] = defaultdict(list)
+    bindings_by_address_and_symbol: dict[
+        tuple[int, str],
+        list[tuple[NativeObjectRecord, NativeFunctionBinding]],
+    ] = defaultdict(list)
+    records_by_function: dict[str, list[NativeObjectRecord]] = defaultdict(list)
+    for record in records:
+        for binding in _record_bindings(record):
+            bindings_by_address_and_symbol[
+                (binding.function.address, binding.object_symbol)
+            ].append((record, binding))
+            records_by_function[binding.function.name].append(record)
+        for symbol in record.coff.symbols:
+            if symbol.storage_class not in (
+                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                IMAGE_SYM_CLASS_WEAK_EXTERNAL,
+            ):
+                continue
+            if symbol.section_number > 0 or (
+                symbol.section_number == 0
+                and symbol.value > 0
+            ):
+                definitions[symbol.name].append(record)
+            elif symbol.section_number == 0:
+                references[symbol.name].append(record)
+
+    for alias in config.aliases:
+        if definitions.get(alias.alias):
+            raise ValueError(
+                f"{config.path}: linker alias {alias.alias!r} already has a definition",
+            )
+        target_bindings = bindings_by_address_and_symbol.get(
+            (alias.target_address, alias.target),
+            [],
+        )
+        if len(target_bindings) != 1:
+            raise ValueError(
+                f"{config.path}: linker alias target {alias.target!r} must be the "
+                f"unique selected function symbol at 0x{alias.target_address:08x}",
+            )
+        target_records = definitions.get(alias.target, [])
+        if len(target_records) != 1 or target_records[0] is not target_bindings[0][0]:
+            raise ValueError(
+                f"{config.path}: linker alias target {alias.target!r} must have one "
+                "exact COFF definition in its selected function object",
+            )
+
+        reference_function = manifest.by_name.get(alias.reference_function)
+        if reference_function is None:
+            raise ValueError(
+                f"{config.path}: linker alias reference function "
+                f"{alias.reference_function!r} is not in the active manifest",
+            )
+        reference_records = records_by_function.get(alias.reference_function, [])
+        if len(reference_records) != 1:
+            raise ValueError(
+                f"{config.path}: linker alias reference function "
+                f"{alias.reference_function!r} must bind to one object",
+            )
+        if reference_records[0] not in references.get(alias.alias, []):
+            raise ValueError(
+                f"{config.path}: {alias.reference_function!r} does not request "
+                f"linker alias {alias.alias!r}",
+            )
+
+        for callsite in alias.reference_callsites:
+            if not (
+                reference_function.address
+                <= callsite
+                and callsite + 5 <= reference_function.end
+            ):
+                raise ValueError(
+                    f"{config.path}: callsite 0x{callsite:08x} is outside "
+                    f"{alias.reference_function}",
+                )
+            offset = callsite - loaded_image.image_base
+            instruction = loaded_image.mapped[offset : offset + 5]
+            if len(instruction) != 5 or instruction[0] != 0xE8:
+                raise ValueError(
+                    f"{config.path}: callsite 0x{callsite:08x} is not a direct call",
+                )
+            actual_target = (
+                callsite
+                + 5
+                + struct.unpack_from("<i", instruction, 1)[0]
+            )
+            if actual_target != alias.target_address:
+                raise ValueError(
+                    f"{config.path}: callsite 0x{callsite:08x} targets "
+                    f"0x{actual_target:08x}, expected 0x{alias.target_address:08x}",
+                )
+
+
+def build_native_linker_alias_object(
+    config: NativeLinkerAliasConfig,
+    *,
+    records: tuple[NativeObjectRecord, ...],
+    manifest: matchlib.FunctionManifest,
+    reference_image_path: Path,
+    output_path: Path | None = None,
+) -> NativeLinkerAliasObjectRecord:
+    _validate_native_linker_aliases(
+        config,
+        records=records,
+        manifest=manifest,
+        reference_image_path=reference_image_path,
+    )
+    object_data = native_linker_alias_object_bytes(config.aliases)
+    resolved_output_path = (
+        output_path
+        if output_path is not None
+        else default_native_linker_alias_object_path(config.image)
+    )
+    _write_bytes_atomic(resolved_output_path, object_data)
+    return NativeLinkerAliasObjectRecord(
+        object_path=resolved_output_path.resolve(),
+        coff=matchlib.parse_coff_object(object_data),
+        config_path=config.path,
+        config_sha256=config.sha256,
+        object_sha256=_normalized_coff_sha256(object_data),
+        aliases=config.aliases,
+    )
+
+
 def build_native_data_object(
     image: str,
     *,
@@ -3477,11 +4085,13 @@ def build_native_audit(
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
     repo_root: Path = matchlib.REPO_ROOT,
     translation_unit_configs: dict[str, Path] | None = None,
+    linker_alias_configs: dict[str, Path] | None = None,
 ) -> NativeAudit:
     analysis_inputs_before = _analysis_input_snapshot(
         image,
         scope,
         translation_unit_configs=translation_unit_configs,
+        linker_alias_configs=linker_alias_configs,
     )
     objects = build_native_object_set(
         image,
@@ -3489,6 +4099,7 @@ def build_native_audit(
         match_root=match_root,
         jobs=jobs,
         translation_unit_configs=translation_unit_configs,
+        linker_alias_configs=linker_alias_configs,
     )
     preliminary_symbol_closure = symbol_closure_payload(
         objects,
@@ -3519,6 +4130,7 @@ def build_native_audit(
         image,
         scope,
         translation_unit_configs=translation_unit_configs,
+        linker_alias_configs=linker_alias_configs,
     ):
         raise ValueError("analysis inputs changed during native audit")
     digest_payload = {

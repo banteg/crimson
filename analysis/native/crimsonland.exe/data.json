@@ -1,5 +1,5 @@
 {
-  "audit_digest": "efefd84b959cc22f22985eb5b3eeabd57fd35a73d323ceb413f857993f131bab",
+  "audit_digest": "2ef8a83f8e49deb899f6b718e695d1f5f40df2b24e743e0294f2902869bfe1a1",
   "entries": [
     {
       "address": 4211888,
@@ -30789,7 +30789,7 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "c09119daba3a3486c2746da74c6509654316700fcc0961e6effee6b19c189a55",
+    "data_map_sha256": "4d6064931505f58f147b625c133c6fd014fc4c0ab87a60eb3714a42bc2796438",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "c9efad458ba1765718e5e1ff752706a2dce8d99d39e4c94f6cceed3f96a05d0b",
     "reference_image": {

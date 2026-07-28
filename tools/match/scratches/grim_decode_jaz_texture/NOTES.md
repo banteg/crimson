@@ -62,7 +62,9 @@ equivalent regions differently from the native function:
   platform code. This is evidence for linker-folded
   `_grim_noop`/`GrimJazDecodeScope::~GrimJazDecodeScope` aliases, not grounds
   to rename the canonical noop or add a fake destructor stub. The native-link
-  track must provide an explicit evidence-backed alias.
+  track now records both callsites in
+  `tools/native/linker_aliases/grim.dll.json`, verifies their direct targets
+  against the pinned DLL, and emits the corresponding COFF weak alias.
 
 ## Recorded shared-failure sweep
 

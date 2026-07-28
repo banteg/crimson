@@ -17,6 +17,7 @@
 /tools/match/.cache/
 /tools/native/abi/*/build/
 /tools/native/data_definitions/build/
+/tools/native/linker_aliases/build/
 .venv/
 .venv-dev/
 __pycache__/

@@ -33,6 +33,16 @@ that lowers the byte ratio or adds unresolved or mismatched references. This
 is source-provenance modeling, not a linker alias: the object retains the
 compiler-generated local symbols and local relocations.
 
+Grim has one explicit link-time exception in
+`tools/native/linker_aliases/grim.dll.json`. Both native cleanup calls in
+`grim_decode_jaz_texture` pass the decode-scope address in `ecx` and branch to
+the selected one-byte `grim_noop` function. The audit verifies those direct
+call instructions in the pinned DLL, the exact `_grim_noop` object definition
+at the recorded target address, and the decoder's exact decorated destructor
+reference. It then emits a deterministic i386 COFF weak-external alias object
+for `GrimJazDecodeScope::~GrimJazDecodeScope -> _grim_noop`. No destructor body
+is invented and the canonical noop retains its recovered identity.
+
 Generate the checked-in reports:
 
 ```bash
@@ -60,6 +70,7 @@ COFF objects, and writes:
 - exact decorated symbol definitions and references;
 - strong duplicate and COMDAT/coalescible definition inventories;
 - linker directives and requested default libraries;
+- explicit weak-external linker aliases and their evidence;
 - reference PE exports and imports;
 - unresolved symbols classified as owned functions, excluded functions, game
   data, imports, known toolchain support, or unclassified external
@@ -85,6 +96,12 @@ treated as resolutions, absent definitions remain visible, and repeated
 non-COMDAT `.bss` owners remain hard duplicates. The modeled metadata
 lifecycle clusters close the executable's current game-function debt without
 weakening those rules.
+
+Known compiler helpers are classified as toolchain references. CRT entry
+points are stricter: `_sscanf`, for example, is classified as toolchain only
+when its referencing object requests a recognized VC6 CRT default library.
+The closure row records that library evidence; without it, the symbol remains
+an unclassified external and blocks game-owned closure.
 
 ## Closure gates
 

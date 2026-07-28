@@ -131,3 +131,4 @@ tools/match/scratches/grim_zlib_status_is_error/build/msvc6.5/0ca872ee347b6215/s
 tools/match/scratches/grim_zlib_decompress_alloc/build/msvc6.5/8f795412b39e820c/scratch.obj
 tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/0ad83023c92b282e/scratch.obj
 tools/native/data_definitions/build/grim.dll/definitions.obj
+tools/native/linker_aliases/build/grim.dll/aliases.obj

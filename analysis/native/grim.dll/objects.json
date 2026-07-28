@@ -59,7 +59,7 @@
     "source_sha256": "c62c8e080b0c280c0fd0c980596b37e7cc417b7efdf8128f71cf52359b2a6a13",
     "status": "passed"
   },
-  "audit_digest": "283857ec92a0cdbf2d53b9689d24a6f0db08fb12f87c1b9e4fb0ac74b0f6b250",
+  "audit_digest": "e50335b54b6b89ac9623eb93ea25cf93828a3935118aab844eb6dccb35bb8cd9",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4279,15 +4279,37 @@
   "function_count": 137,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
-  "object_count": 133,
+  "linker_alias_object_count": 1,
+  "linker_alias_objects": [
+    {
+      "aliases": [
+        {
+          "alias": "??1GrimJazDecodeScope@@QAE@XZ",
+          "evidence": "Both native cleanup callsites load the decode-scope address into ECX and directly call the selected one-byte grim_noop function.",
+          "reference_callsites": [
+            268455093,
+            268455529
+          ],
+          "reference_function": "grim_decode_jaz_texture",
+          "target": "_grim_noop",
+          "target_address": 268439904
+        }
+      ],
+      "config": "tools/native/linker_aliases/grim.dll.json",
+      "config_sha256": "7d0f37f43a195e318d402cf79f8f6357db9dbde4b2a085631ea8567b6b540682",
+      "object": "tools/native/linker_aliases/build/grim.dll/aliases.obj",
+      "object_sha256": "aac7649073a5a8599107276c87312223ee469dbe6317e7b0cdc2c056e1606a2d"
+    }
+  ],
+  "object_count": 134,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "4838bf882e1e80db6a91c31479cb88e9013678c9ec7f39a7cdc9ece98bcdc8f1",
-  "object_order": "ascending-minimum-reference-address-then-generated-data",
+  "object_list_sha256": "a0a71a489bdb20638b20b6b4f158cb2682f3ff1660ce0cad7ffb056141c46003",
+  "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
       "address": 268439584,
@@ -17292,7 +17314,7 @@
     }
   ],
   "provenance": {
-    "build_policy": "forced-explicit-translation-unit-recompile-with-generated-data-definitions",
+    "build_policy": "forced-explicit-translation-unit-recompile-with-generated-data-definitions-and-linker-aliases",
     "selection_inputs": [
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
@@ -17323,6 +17345,11 @@
         "path": "tools/native/data_definitions/grim.dll.json",
         "repository_relative": true,
         "sha256": "4ed9742d7f5e29840672a5b7a37c5d16b09befee572c109546f239845ce60ebd"
+      },
+      {
+        "path": "tools/native/linker_aliases/grim.dll.json",
+        "repository_relative": true,
+        "sha256": "7d0f37f43a195e318d402cf79f8f6357db9dbde4b2a085631ea8567b6b540682"
       }
     ],
     "toolchain": {

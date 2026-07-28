@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import struct
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from crimson import match as matchlib
 from crimson.native_link import (
+    DEFAULT_LINKER_ALIAS_CONFIGS,
     DEFAULT_TRANSLATION_UNIT_CONFIGS,
     IMAGE_REL_I386_DIR32,
     IMAGE_SCN_LNK_COMDAT,
@@ -15,6 +17,8 @@ from crimson.native_link import (
     NativeCompilerBundleSnapshot,
     NativeDataObjectRecord,
     NativeFunctionBinding,
+    NativeLinkerAliasObjectRecord,
+    NativeLinkerAliasSpec,
     NativeObjectRecord,
     NativeObjectSet,
     NativeSymbolCatalog,
@@ -26,8 +30,10 @@ from crimson.native_link import (
     _vc6_linker_internal_name,
     data_manifest_payload,
     load_native_data_definitions,
+    load_native_linker_alias_config,
     load_native_translation_unit_config,
     native_data_object_bytes,
+    native_linker_alias_object_bytes,
     object_manifest_payload,
     render_export_definition,
     render_object_list,
@@ -497,6 +503,68 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
         "grim_line_vector_dtor",
         "grim_draw_line_quad",
     ]
+
+
+def test_linker_alias_config_normalizes_evidence_addresses(tmp_path: Path) -> None:
+    path = tmp_path / "grim.dll.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema": 1,
+                "kind": "crimson-native-linker-aliases",
+                "image": "grim.dll",
+                "aliases": [
+                    {
+                        "alias": "??1Scope@@QAE@XZ",
+                        "target": "_noop",
+                        "target_address": "0x10001160",
+                        "reference_function": "decode",
+                        "reference_callsites": [
+                            "0x10004cb5",
+                            "0x10004e69",
+                        ],
+                        "evidence": "direct native calls",
+                    },
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    config = load_native_linker_alias_config(path, image="grim.dll")
+
+    assert config.aliases == (
+        NativeLinkerAliasSpec(
+            alias="??1Scope@@QAE@XZ",
+            target="_noop",
+            target_address=0x10001160,
+            reference_function="decode",
+            reference_callsites=(0x10004CB5, 0x10004E69),
+            evidence="direct native calls",
+        ),
+    )
+    assert len(config.sha256) == 64
+
+
+def test_default_grim_linker_alias_config_records_native_cleanup_calls() -> None:
+    config = load_native_linker_alias_config(
+        DEFAULT_LINKER_ALIAS_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+
+    assert config.aliases == (
+        NativeLinkerAliasSpec(
+            alias="??1GrimJazDecodeScope@@QAE@XZ",
+            target="_grim_noop",
+            target_address=0x10001160,
+            reference_function="grim_decode_jaz_texture",
+            reference_callsites=(0x10004CB5, 0x10004E69),
+            evidence=(
+                "Both native cleanup callsites load the decode-scope address into "
+                "ECX and directly call the selected one-byte grim_noop function."
+            ),
+        ),
+    )
 
 
 def test_wibo_resolution_skips_non_executable_repository_copy(
@@ -1178,6 +1246,172 @@ def test_symbol_closure_rejects_secondary_symbol_in_distinct_any_comdats(
 
     assert [row["name"] for row in closure["duplicate_definitions"]] == ["_shared"]
     assert closure["summary"]["function_closure"] is False
+
+
+def test_native_linker_alias_object_emits_weak_external_fallback() -> None:
+    alias = NativeLinkerAliasSpec(
+        alias="??1Scope@@QAE@XZ",
+        target="_noop",
+        target_address=0x10001160,
+        reference_function="decode",
+        reference_callsites=(0x10001234,),
+        evidence="direct native call",
+    )
+
+    data = native_linker_alias_object_bytes((alias,))
+    repeated = native_linker_alias_object_bytes((alias,))
+    coff = matchlib.parse_coff_object(data)
+    symbols = {symbol.name: symbol for symbol in coff.symbols}
+    weak = symbols[alias.alias]
+    fallback = next(
+        symbol
+        for symbol in coff.symbols
+        if symbol.raw_index == weak.weak_default_symbol_index
+    )
+
+    assert data == repeated
+    assert coff.sections == ()
+    assert symbols[alias.target].storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+    assert symbols[alias.target].section_number == 0
+    assert weak.storage_class == IMAGE_SYM_CLASS_WEAK_EXTERNAL
+    assert weak.weak_search == 3
+    assert fallback.name == alias.target
+
+
+def test_symbol_closure_applies_linker_alias_to_strong_reference(
+    tmp_path: Path,
+) -> None:
+    function = _function("first", 0x10001000)
+    alias = NativeLinkerAliasSpec(
+        alias="_weak",
+        target="_foo",
+        target_address=function.address,
+        reference_function=function.name,
+        reference_callsites=(function.address,),
+        evidence="direct native call",
+    )
+    alias_data = native_linker_alias_object_bytes((alias,))
+    alias_object = tmp_path / "aliases.obj"
+    alias_object.write_bytes(alias_data)
+    objects = NativeObjectSet(
+        image="grim.dll",
+        scope="port",
+        manifest=matchlib.FunctionManifest("grim.dll", 0x10000000, (function,)),
+        image_path=tmp_path / "grim.dll",
+        records=(
+            NativeObjectRecord(
+                function=function,
+                status=_status(tmp_path / "first", "first", function.address),
+                object_path=tmp_path / "first.obj",
+                object_symbol="_foo",
+                coff=_coff(
+                    definitions=(("_foo", 1),),
+                    undefined=("_weak",),
+                ),
+            ),
+        ),
+        linker_alias_records=(
+            NativeLinkerAliasObjectRecord(
+                object_path=alias_object,
+                coff=matchlib.parse_coff_object(alias_data),
+                config_path=tmp_path / "aliases.json",
+                config_sha256="a" * 64,
+                object_sha256="b" * 64,
+                aliases=(alias,),
+            ),
+        ),
+    )
+
+    closure = symbol_closure_payload(
+        objects,
+        catalog=NativeSymbolCatalog({}, {}, {}, {}, ()),
+        repo_root=tmp_path,
+    )
+
+    assert closure["unresolved"] == []
+    assert closure["linker_aliases"] == [
+        {
+            "alias": "_weak",
+            "objects": ["aliases.obj"],
+            "target": "_foo",
+        },
+    ]
+    assert closure["summary"]["object_count"] == 2
+    strong_reference = next(
+        reference
+        for reference in closure["resolved"][0]["referenced_by"]
+        if reference["object"] == "first.obj"
+    )
+    assert strong_reference["linker_alias"] == "_weak"
+    assert render_object_list(objects, repo_root=tmp_path) == (
+        "first.obj\n"
+        "aliases.obj\n"
+    )
+
+
+def test_symbol_closure_classifies_sscanf_from_static_crt_directive(
+    tmp_path: Path,
+) -> None:
+    function = _function("first", 0x10001000)
+    base_coff = _coff(
+        definitions=(("_first", 1),),
+        undefined=("_sscanf",),
+    )
+    coff = matchlib.CoffObject(
+        sections=(
+            *base_coff.sections,
+            matchlib.CoffSection(
+                ".drectve",
+                b"-defaultlib:LIBC -defaultlib:OLDNAMES ",
+                0,
+                (),
+                index=3,
+                logical_size=39,
+            ),
+        ),
+        symbols=base_coff.symbols,
+    )
+
+    def closure_for(candidate: matchlib.CoffObject) -> dict[str, Any]:
+        objects = NativeObjectSet(
+            image="crimsonland.exe",
+            scope="port",
+            manifest=matchlib.FunctionManifest(
+                "crimsonland.exe",
+                0x400000,
+                (function,),
+            ),
+            image_path=tmp_path / "crimsonland.exe",
+            records=(
+                NativeObjectRecord(
+                    function=function,
+                    status=_status(tmp_path / "first", "first", function.address),
+                    object_path=tmp_path / "first.obj",
+                    object_symbol="_first",
+                    coff=candidate,
+                ),
+            ),
+        )
+        return symbol_closure_payload(
+            objects,
+            catalog=NativeSymbolCatalog({}, {}, {}, {}, ()),
+            repo_root=tmp_path,
+        )
+
+    closure = closure_for(coff)
+    row = closure["unresolved"][0]
+
+    assert row["name"] == "_sscanf"
+    assert row["category"] == "toolchain"
+    assert row["classification_evidence"] == {
+        "default_libraries": ["LIBC"],
+        "kind": "msvc-crt-default-library",
+    }
+    assert closure["summary"]["game_owned_closure"] is True
+
+    without_crt_directive = closure_for(base_coff)
+    assert without_crt_directive["unresolved"][0]["category"] == "external"
+    assert without_crt_directive["summary"]["game_owned_closure"] is False
 
 
 def test_symbol_closure_resolves_weak_alias_fallback(tmp_path: Path) -> None:

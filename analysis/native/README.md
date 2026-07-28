@@ -10,8 +10,8 @@ just native-audit grim.dll
 Each image directory contains:
 
 - `objects.json`: the canonical function-to-translation-unit selection,
-  generated data-definition objects, compiler profile, matching state, and
-  source/config/object hashes;
+  generated data-definition and linker-alias objects, compiler profile,
+  matching state, and source/config/object hashes;
 - `objects.txt`: the same object files in ascending reference-address order;
 - `exports.def`: explicit reference-export name/ordinal mappings to decorated
   object symbols;
@@ -50,6 +50,14 @@ The audit is intentionally strict:
 - symbol closure uses exact decorated COFF names;
 - the reference PE export must have an unambiguous `.def` mapping;
 - no unresolved symbol is hidden behind a generated stub.
+
+Evidence-backed aliases live in
+`tools/native/linker_aliases/<image>.json`. Before emitting a deterministic
+i386 COFF weak-external alias object, the audit requires the alias to be an
+exact undefined symbol in the named selected function, the target to be the
+unique exact selected definition at the recorded address, and every recorded
+native callsite to be a direct call to that address. This models a real linker
+alias without renaming the target or manufacturing a provider body.
 
 Fully specified, currently referenced data definitions are emitted into one
 deterministic i386 COFF object after the function-object pass discovers their
@@ -94,8 +102,10 @@ of physical linker inputs.
 no duplicate strong definitions. `game_owned_closure` additionally requires
 all mapped game data and unclassified externals to resolve.
 `all_references_closed` is stricter still and includes imports, excluded
-functions, and toolchain/library dependencies. Game-owned closure is expected
-to remain false until real data definitions exist.
+functions, and toolchain/library dependencies. A known CRT symbol is treated
+as toolchain-owned only when the referencing object records a recognized
+MSVC CRT default library; the classification evidence is retained in
+`closure.json`.
 
 `summary.game_function_debt` keeps the function gate actionable without
 weakening exact linker identity. `emitted_name_mismatch` means an object emits

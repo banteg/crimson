@@ -54,7 +54,7 @@
     "source_sha256": "8eb9f2d6e35f0be8eadfc90ca2cc68a971f8580c8e5e236f9893e80e2a95de64",
     "status": "passed"
   },
-  "audit_digest": "efefd84b959cc22f22985eb5b3eeabd57fd35a73d323ceb413f857993f131bab",
+  "audit_digest": "2ef8a83f8e49deb899f6b718e695d1f5f40df2b24e743e0294f2902869bfe1a1",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -21050,6 +21050,8 @@
   "function_count": 671,
   "image": "crimsonland.exe",
   "kind": "crimson-native-object-manifest",
+  "linker_alias_object_count": 0,
+  "linker_alias_objects": [],
   "object_count": 663,
   "object_hash": {
     "algorithm": "sha256",
@@ -21058,7 +21060,7 @@
     ]
   },
   "object_list_sha256": "449c6f0cc0aac6f85be78782a8b0ff304f0cbbb6b7573a7ec572bb7177a6a39f",
-  "object_order": "ascending-minimum-reference-address-then-generated-data",
+  "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
       "address": 4198448,

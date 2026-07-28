@@ -1,5 +1,5 @@
 {
-  "audit_digest": "283857ec92a0cdbf2d53b9689d24a6f0db08fb12f87c1b9e4fb0ac74b0f6b250",
+  "audit_digest": "e50335b54b6b89ac9623eb93ea25cf93828a3935118aab844eb6dccb35bb8cd9",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -9193,6 +9193,15 @@
   ],
   "image": "grim.dll",
   "kind": "crimson-native-symbol-closure",
+  "linker_aliases": [
+    {
+      "alias": "??1GrimJazDecodeScope@@QAE@XZ",
+      "objects": [
+        "tools/native/linker_aliases/build/grim.dll/aliases.obj"
+      ],
+      "target": "_grim_noop"
+    }
+  ],
   "reference_imports": [
     {
       "address": 268746756,
@@ -18213,6 +18222,47 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
+          "comdat_key": "_grim_noop",
+          "comdat_selection": 1,
+          "function": "grim_noop",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/grim_noop/build/msvc6.5/09d752796616e51e/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_grim_noop",
+      "referenced_by": [
+        {
+          "function": "grim_decode_jaz_texture",
+          "linker_alias": "??1GrimJazDecodeScope@@QAE@XZ",
+          "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
+          "weak": false
+        },
+        {
+          "function": null,
+          "linker_alias_object": true,
+          "object": "tools/native/linker_aliases/build/grim.dll/aliases.obj",
+          "weak": false
+        },
+        {
+          "function": null,
+          "linker_alias_object": true,
+          "object": "tools/native/linker_aliases/build/grim.dll/aliases.obj",
+          "weak": true,
+          "weak_alias": "??1GrimJazDecodeScope@@QAE@XZ",
+          "weak_fallback": "_grim_noop",
+          "weak_search": 3
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
           "comdat_key": "_grim_path_has_extension",
           "comdat_selection": 1,
           "function": "grim_path_has_extension",
@@ -18588,35 +18638,20 @@
     "function_closure": true,
     "function_count": 137,
     "game_function_debt": {},
-    "game_owned_closure": false,
+    "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 133,
+    "object_count": 134,
     "reference_exports_closed": true,
-    "resolved_symbols": 274,
+    "resolved_symbols": 275,
     "unresolved_by_category": {
       "excluded_function": 39,
-      "external": 1,
       "import": 12,
       "toolchain": 2
     },
-    "unresolved_symbols": 54
+    "unresolved_symbols": 53
   },
   "unresolved": [
-    {
-      "candidate_definitions": [],
-      "catalog": [],
-      "category": "external",
-      "lookup_name": "?1GrimJazDecodeScope",
-      "name": "??1GrimJazDecodeScope@@QAE@XZ",
-      "referenced_by": [
-        {
-          "function": "grim_decode_jaz_texture",
-          "object": "tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/ba498a5962aa388b/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
     {
       "candidate_definitions": [],
       "catalog": [
@@ -19222,6 +19257,9 @@
       "candidate_definitions": [],
       "catalog": [],
       "category": "toolchain",
+      "classification_evidence": {
+        "kind": "msvc-compiler-helper"
+      },
       "lookup_name": "except_list",
       "name": "__except_list",
       "referenced_by": [
@@ -19246,6 +19284,9 @@
       "candidate_definitions": [],
       "catalog": [],
       "category": "toolchain",
+      "classification_evidence": {
+        "kind": "msvc-compiler-helper"
+      },
       "lookup_name": "fltused",
       "name": "__fltused",
       "referenced_by": [
