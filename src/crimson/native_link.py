@@ -126,9 +126,12 @@ class NativeObjectRecord:
 class NativeDataBinding:
     address: int
     name: str
-    size: int
-    alignment: int
-    initializer: bytes
+    size: int | None
+    alignment: int | None
+    initializer: bytes | None
+    kind: str
+    storage_address: int
+    storage_name: str
     symbols: tuple[str, ...]
     section_number: int
     section_offset: int
@@ -1179,10 +1182,13 @@ def object_manifest_payload(
                 {
                     "address": binding.address,
                     "alignment": binding.alignment,
+                    "kind": binding.kind,
                     "name": binding.name,
                     "section_number": binding.section_number,
                     "section_offset": binding.section_offset,
                     "size": binding.size,
+                    "storage_address": binding.storage_address,
+                    "storage_name": binding.storage_name,
                     "symbols": list(binding.symbols),
                 }
                 for binding in record.bindings
@@ -1606,7 +1612,10 @@ def _data_symbol_occurrence(
         "comdat_key": None,
         "comdat_selection": None,
         "data_address": binding.address,
+        "data_binding_kind": binding.kind,
         "data_name": binding.name,
+        "data_storage_address": binding.storage_address,
+        "data_storage_name": binding.storage_name,
         "function": None,
         "kind": "section",
         "logical_section_size": section.logical_size,
@@ -2206,8 +2215,8 @@ def _native_data_layout(
     symbol_closure: dict[str, Any],
 ) -> tuple[tuple[NativeDataBinding, ...], tuple[NativeDataRegion, ...]]:
     references = _data_closure_references(symbol_closure)
-    pending: list[dict[str, Any]] = []
-    symbol_owners: dict[str, tuple[int, str]] = {}
+    definition_rows: list[dict[str, Any]] = []
+    definitions_by_key: dict[tuple[int, str], dict[str, Any]] = {}
     for entry in definitions["entries"]:
         size = entry["size"]
         alignment = entry["alignment"]
@@ -2220,39 +2229,90 @@ def _native_data_layout(
         ):
             continue
         key = (int(entry["address"]), str(entry["name"]))
-        symbols: list[str] = []
-        for reference in sorted(
-            references.get(key, []),
-            key=lambda row: str(row["name"]),
-        ):
-            symbol = str(reference["name"])
-            owner = symbol_owners.get(symbol)
-            if owner is not None:
-                if owner[0] != key[0]:
-                    raise ValueError(
-                        f"data symbol {symbol!r} maps to both "
-                        f"{owner[1]}@0x{owner[0]:08x} and {key[1]}@0x{key[0]:08x}",
-                    )
-                continue
-            symbol_owners[symbol] = key
-            symbols.append(symbol)
-        if not symbols:
-            continue
         initializer = (
             bytes.fromhex(str(initializer_hex))
             if initializer_hex is not None
             else bytes.fromhex(str(initializer_fill)) * int(size)
         )
-        pending.append(
-            {
-                "address": key[0],
-                "alignment": int(alignment),
-                "initializer": initializer,
-                "name": key[1],
-                "size": int(size),
-                "symbols": tuple(symbols),
-            },
+        row = {
+            "address": key[0],
+            "alignment": int(alignment),
+            "initializer": initializer,
+            "key": key,
+            "name": key[1],
+            "size": int(size),
+        }
+        definition_rows.append(row)
+        definitions_by_key[key] = row
+
+    symbol_candidates: dict[
+        str,
+        list[tuple[tuple[int, str], dict[str, Any]]],
+    ] = defaultdict(list)
+    for key, rows in references.items():
+        for reference in rows:
+            symbol_candidates[str(reference["name"])].append((key, reference))
+
+    assignments: dict[
+        tuple[tuple[int, str], tuple[int, str]],
+        list[str],
+    ] = defaultdict(list)
+    for symbol, candidates in sorted(symbol_candidates.items()):
+        candidate_keys = sorted({key for key, _ in candidates})
+        candidate_addresses = {key[0] for key in candidate_keys}
+        if len(candidate_addresses) != 1:
+            continue
+        lookup_names = {
+            str(reference["lookup_name"])
+            for _, reference in candidates
+        }
+        target_key = min(
+            candidate_keys,
+            key=lambda key: (
+                key[1] not in lookup_names,
+                key not in definitions_by_key,
+                key[1],
+            ),
         )
+        owner = definitions_by_key.get(target_key)
+        if owner is None:
+            address = target_key[0]
+            containers = [
+                row
+                for row in definition_rows
+                if (
+                    int(row["address"])
+                    <= address
+                    < int(row["address"]) + int(row["size"])
+                )
+            ]
+            if not containers:
+                continue
+            owner = min(
+                containers,
+                key=lambda row: (
+                    int(row["size"]),
+                    int(row["address"]),
+                    str(row["name"]),
+                ),
+            )
+        owner_key = (int(owner["address"]), str(owner["name"]))
+        assignments[(owner_key, target_key)].append(symbol)
+
+    selected_owner_keys = {
+        owner_key
+        for owner_key, _ in assignments
+    }
+    pending: list[dict[str, Any]] = [
+        {
+            **row,
+            "symbols": tuple(
+                sorted(assignments.get((row["key"], row["key"]), [])),
+            ),
+        }
+        for row in definition_rows
+        if row["key"] in selected_owner_keys
+    ]
 
     if not pending:
         return (), ()
@@ -2295,6 +2355,7 @@ def _native_data_layout(
 
     bindings: list[NativeDataBinding] = []
     regions: list[NativeDataRegion] = []
+    owner_locations: dict[tuple[int, str], tuple[int, int]] = {}
     for section_number, group in enumerate(groups, start=1):
         alignment = max(int(row["alignment"]) for row in group)
         first_address = min(int(row["address"]) for row in group)
@@ -2323,11 +2384,15 @@ def _native_data_layout(
                     size=int(row["size"]),
                     alignment=int(row["alignment"]),
                     initializer=initializer,
+                    kind="definition",
+                    storage_address=int(row["address"]),
+                    storage_name=str(row["name"]),
                     symbols=tuple(str(symbol) for symbol in row["symbols"]),
                     section_number=section_number,
                     section_offset=offset,
                 ),
             )
+            owner_locations[row["key"]] = (section_number, offset)
         regions.append(
             NativeDataRegion(
                 address=storage_address,
@@ -2344,6 +2409,34 @@ def _native_data_layout(
                 ),
             ),
         )
+    for (owner_key, target_key), symbols in sorted(assignments.items()):
+        if owner_key == target_key:
+            continue
+        owner = definitions_by_key[owner_key]
+        section_number, owner_offset = owner_locations[owner_key]
+        bindings.append(
+            NativeDataBinding(
+                address=target_key[0],
+                name=target_key[1],
+                size=None,
+                alignment=None,
+                initializer=None,
+                kind="interior-alias",
+                storage_address=owner_key[0],
+                storage_name=owner_key[1],
+                symbols=tuple(sorted(symbols)),
+                section_number=section_number,
+                section_offset=owner_offset + target_key[0] - int(owner["address"]),
+            ),
+        )
+    bindings.sort(
+        key=lambda binding: (
+            binding.section_number,
+            binding.section_offset,
+            binding.kind,
+            binding.name,
+        ),
+    )
     return tuple(bindings), tuple(regions)
 
 

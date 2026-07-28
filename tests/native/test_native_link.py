@@ -581,6 +581,13 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
                 "name": "_fill",
                 "referenced_by": [{"function": "fourth"}],
             },
+            {
+                "catalog": [{"address": 0x1006, "name": "implicit"}],
+                "category": "game_data",
+                "lookup_name": "implicit",
+                "name": "_implicit",
+                "referenced_by": [{"function": "fifth"}],
+            },
         ],
     }
 
@@ -595,13 +602,27 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
     assert regions[0].alignment == 4
     assert regions[0].data == bytes.fromhex("000102030405060708")
     assert regions[1].data == bytes.fromhex("abababab")
-    assert {binding.name for binding in bindings} == {"owner", "interior", "fill"}
+    assert {binding.name for binding in bindings} == {
+        "owner",
+        "interior",
+        "fill",
+        "implicit",
+    }
     assert symbols["?owner@@3HA"].section_number == 1
     assert symbols["?owner@@3HA"].value == 1
     assert symbols["_owner"].value == 1
     assert symbols["_interior"].value == 4
     assert symbols["_fill"].section_number == 2
     assert symbols["_fill"].value == 0
+    assert symbols["_implicit"].section_number == 1
+    assert symbols["_implicit"].value == 6
+    implicit = next(binding for binding in bindings if binding.name == "implicit")
+    assert implicit.kind == "interior-alias"
+    assert implicit.size is None
+    assert implicit.alignment is None
+    assert implicit.initializer is None
+    assert implicit.storage_address == 0x1004
+    assert implicit.storage_name == "interior"
 
     function = _function("first", 0x2000)
     data_path = tmp_path / "definitions.obj"
@@ -621,7 +642,13 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
                 object_symbol="_first",
                 coff=_coff(
                     definitions=(("_first", 1),),
-                    undefined=("?owner@@3HA", "_owner", "_interior", "_fill"),
+                    undefined=(
+                        "?owner@@3HA",
+                        "_owner",
+                        "_interior",
+                        "_fill",
+                        "_implicit",
+                    ),
                 ),
             ),
         ),
@@ -643,6 +670,7 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
         data={
             "interior": ({"address": 0x1004, "name": "interior"},),
             "fill": ({"address": 0x1010, "name": "fill"},),
+            "implicit": ({"address": 0x1006, "name": "implicit"},),
             "owner": ({"address": 0x1001, "name": "owner"},),
         },
         imports={},
@@ -658,6 +686,7 @@ def test_native_data_object_emits_overlapping_exact_symbol_aliases(
     assert {row["name"] for row in result["resolved"]} == {
         "?owner@@3HA",
         "_fill",
+        "_implicit",
         "_interior",
         "_owner",
     }

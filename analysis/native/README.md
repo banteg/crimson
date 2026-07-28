@@ -60,6 +60,10 @@ not fill unknown gaps or derive extents from neighboring symbols.
 Initializers may be recorded literally as `initializer_hex` or compactly as a
 single-byte `initializer_fill`; both forms are checked byte-for-byte against
 the pinned reference image before an object is emitted.
+An unresolved catalog name whose address falls inside one of those explicit
+ranges is emitted as an `interior-alias` binding. The alias records its own
+mapped address and name, but its section storage remains owned by the smallest
+containing explicit definition; no independent size or initializer is inferred.
 
 The three Crimsonland metadata lifecycle clusters are the first modeled
 exception. Their natural global-array definitions emit exact
