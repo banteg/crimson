@@ -1185,12 +1185,12 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     payload = data_manifest_payload("crimsonland.exe")
 
     assert payload["summary"]["entry_count"] == 1547
-    assert payload["summary"]["explicit_size_entries"] == 517
-    assert payload["summary"]["explicit_alignment_entries"] == 517
-    assert payload["summary"]["explicit_initializer_entries"] == 517
-    assert payload["summary"]["fully_specified_entries"] == 517
-    assert payload["summary"]["definition_group_entries"] == 453
-    assert payload["summary"]["definition_groups"] == 12
+    assert payload["summary"]["explicit_size_entries"] == 581
+    assert payload["summary"]["explicit_alignment_entries"] == 581
+    assert payload["summary"]["explicit_initializer_entries"] == 581
+    assert payload["summary"]["fully_specified_entries"] == 581
+    assert payload["summary"]["definition_group_entries"] == 517
+    assert payload["summary"]["definition_groups"] == 37
     assert payload["source"]["definitions"] == (
         "tools/native/data_definitions/crimsonland.exe.json"
     )
@@ -1208,6 +1208,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["effect_template"]["size"] == 0x3C
     assert defined["music_entry_table"]["size"] == 0x4200
     assert defined["weapon_table"]["size"] == 0x1F00
+    assert defined["weapon_ammo_class"]["size"] == 0x1F00
     assert defined["console_log_queue"]["size"] == 0x2C
     assert defined["grim_interface_ptr"]["size"] == 4
     assert defined["sfx_unmuted_flag"]["size"] == 1
@@ -1223,6 +1224,9 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["time_scale_active"]["definition_group"] == (
         "source-zero-uchar"
     )
+    assert defined["effect_pool"]["size"] == 0x17800
+    assert defined["quest_spawn_table"]["size"] == 0x1800
+    assert defined["ui_sign_crimson_template"]["size"] == 0xE8
     assert defined["ui_element_slot_footer_variant_a"]["definition_group"] == (
         "zero-ui-element-slots"
     )

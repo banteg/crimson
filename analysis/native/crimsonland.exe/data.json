@@ -1,5 +1,5 @@
 {
-  "audit_digest": "a16560324f71cb9f3bd74f015990ba456e566bd2e542f9ba1648e8eeba6e678e",
+  "audit_digest": "03ebb7307444e5436d8f62eeec47247b6ea412b00abaea0f14dcc278438f75d4",
   "entries": [
     {
       "address": 4211888,
@@ -134,19 +134,21 @@
     {
       "address": 4650988,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Zero GUID copied into DirectSound 8 buffer descriptors as GUID_NULL/DS3DALG_DEFAULT.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "GUID_NULL",
       "section": ".rdata",
       "section_offset": 1492,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "GUID"
     },
     {
@@ -4538,19 +4540,21 @@
     {
       "address": 4715212,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "512-byte shared formatting buffer populated by console_printf before a line is queued.",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "console_format_buffer",
       "section": ".data",
       "section_offset": 58060,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[512]"
     },
     {
@@ -7345,19 +7349,21 @@
     {
       "address": 4721024,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Credits line table (0x100 entries, stride 0x08 bytes).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "credits_line_table",
       "section": ".data",
       "section_offset": 63872,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "credits_line_table_t"
     },
     {
@@ -7573,19 +7579,21 @@
     {
       "address": 4723144,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Mods-menu table of up to 32 discovered DLL filenames, each stored in a 64-byte slot.",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "mods_menu_filenames",
       "section": ".data",
       "section_offset": 65992,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[32][64]"
     },
     {
@@ -7627,19 +7635,21 @@
     {
       "address": 4725228,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Credits secret match-3 board (6x6 ints; values 0..4, -1 empty, -3 clearing). Render tints: 0 red/pink, 1 blue, 2 magenta, 3 cyan, 4 yellow.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00090",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "credits_secret_board",
       "section": ".data",
       "section_offset": 68076,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 144,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "int[36]"
     },
     {
@@ -7717,19 +7727,21 @@
     {
       "address": 4725376,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Mod API context passed to CMOD plugins (vtable-based).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00068",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "mod_api_context",
       "section": ".data",
       "section_offset": 68224,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 104,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "mod_api_t"
     },
     {
@@ -7771,19 +7783,21 @@
     {
       "address": 4725512,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Mods-menu scrollbar item-pointer table referencing the display-name slots.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00080",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "mods_menu_item_labels",
       "section": ".data",
       "section_offset": 68360,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "char *[32]"
     },
     {
@@ -7897,19 +7911,21 @@
     {
       "address": 4725968,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Mods-menu table of up to 32 display names copied from each plugin's mod_info_t, with 64 bytes per slot.",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "mods_menu_display_names",
       "section": ".data",
       "section_offset": 68816,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[32][64]"
     },
     {
@@ -7975,19 +7991,21 @@
     {
       "address": 4728024,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Loaded CMOD plugin module handle (LoadLibraryA result); freed when plugin shuts down.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00004",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "plugin_module_handle",
       "section": ".data",
       "section_offset": 70872,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "HMODULE"
     },
     {
@@ -8201,19 +8219,21 @@
     {
       "address": 4728172,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Game-over high-score name input buffer (ui_text_input_update target).",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00020",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "game_over_name_input_buffer",
       "section": ".data",
       "section_offset": 71020,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 32,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[32]"
     },
     {
@@ -8383,19 +8403,21 @@
     {
       "address": 4728284,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Quest-results high-score name input buffer (ui_text_input_update target).",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00020",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "quest_results_name_input_buffer",
       "section": ".data",
       "section_offset": 71132,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 32,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[32]"
     },
     {
@@ -10330,19 +10352,21 @@
     {
       "address": 4741032,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Quest spawn table (256 entries, 24-byte stride; occupies 0x1800 bytes through the next global at 0x00486fa8).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-01800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "quest_spawn_table",
       "section": ".data",
       "section_offset": 83880,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 6144,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "quest_spawn_entry_t[256]"
     },
     {
@@ -10726,19 +10750,21 @@
     {
       "address": 4747240,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Survival reward tracking: recent creature death positions (3 entries, stride 0x08 bytes).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00018",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "survival_recent_death_pos",
       "section": ".data",
       "section_offset": 90088,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 24,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "vec2f_t[3]"
     },
     {
@@ -11469,19 +11495,21 @@
     {
       "address": 4747404,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Per-weapon usage tracking in milliseconds. Indexed by weapon_id (0-63) to derive most-used weapon for highscores.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "weapon_usage_time",
       "section": ".data",
       "section_offset": 90252,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "weapon_usage_time_t"
     },
     {
@@ -11875,19 +11903,21 @@
     {
       "address": 4747728,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Per-player (P1/P2) auxiliary timer (2 floats). Used for UI feedback timing; decays over time.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "player_aux_timer",
       "section": ".data",
       "section_offset": 90576,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "player_aux_timer_t"
     },
     {
@@ -12031,19 +12061,21 @@
     {
       "address": 4747764,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Per-player aim screen X coordinates. Stride 8 bytes (index * 2). Set from ui_mouse_x or joystick input.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "player_aim_screen_x",
       "section": ".data",
       "section_offset": 90612,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "player_aim_screen_xy_t"
     },
     {
@@ -14499,19 +14531,21 @@
     {
       "address": 4781372,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Three terrain texture selector indices randomized by terrain_generate_random, then fixed to {0, 1, 0} before generation.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-0000c",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "terrain_texture_selectors",
       "section": ".data",
       "section_offset": 124220,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 12,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "int[3]"
     },
     {
@@ -14675,19 +14709,21 @@
     {
       "address": 4781448,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Bonus HUD slot table (0x10 entries, stride 0x20 bytes).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "bonus_hud_slot_table",
       "section": ".data",
       "section_offset": 124296,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "bonus_hud_slot_table_t"
     },
     {
@@ -15339,20 +15375,22 @@
     {
       "address": 4782088,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "UI template pool block 0 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_template_pool_block_00",
       "section": ".data",
       "section_offset": 124936,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": null
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4782316,
@@ -15375,20 +15413,22 @@
     {
       "address": 4782320,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "UI template pool block 1 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_template_pool_block_01",
       "section": ".data",
       "section_offset": 125168,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": null
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4782548,
@@ -15411,20 +15451,22 @@
     {
       "address": 4782552,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "UI template pool block 2 initialized by ui_menu_template_pool_init (8 slots, stride 0x1c).",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_template_pool_block_02",
       "section": ".data",
       "section_offset": 125400,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": null
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4782780,
@@ -15447,20 +15489,22 @@
     {
       "address": 4782784,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "Crimson logo UI template loaded/shaped in ui_menu_assets_init then copied into ui_sign_crimson during layout init.",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_sign_crimson_template",
       "section": ".data",
       "section_offset": 125632,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "ui_element_t"
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4783012,
@@ -15483,20 +15527,22 @@
     {
       "address": 4783016,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "Menu UI element template loaded from ui_menuItem.jaz (used by ui_menu_assets_init).",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_menu_item_element",
       "section": ".data",
       "section_offset": 125864,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "ui_element_t"
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4783240,
@@ -15537,20 +15583,22 @@
     {
       "address": 4783248,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_alignment_is_four",
       "comment": "Menu panel UI template loaded from ui_menuPanel.jaz and copied into panel slots by ui_menu_layout_init.",
-      "definition_state": "unknown",
+      "definition_group": "zero-ui-subtemplates",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "ui_menu_panel_template",
       "section": ".data",
       "section_offset": 126096,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
-      "type": "ui_element_t"
+      "size": 232,
+      "size_source": "third_party/headers/crimsonland_types.h: ui_menu_item_subtemplate_block_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_subtemplate_is_0xe8",
+      "type": "ui_menu_item_subtemplate_block_t"
     },
     {
       "address": 4783472,
@@ -16067,19 +16115,21 @@
     {
       "address": 4784900,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Module handle returned while loading the configured Grim2D implementation DLL.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00004",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "grim_dll_module_handle",
       "section": ".data",
       "section_offset": 127748,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 4,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "HMODULE"
     },
     {
@@ -16103,37 +16153,41 @@
     {
       "address": 4785160,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused RGBA startup object immediately before the FX queue random globals; only its initializer references its fields.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_fx_queue_random_prefix_color",
       "section": ".data",
       "section_offset": 128008,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t"
     },
     {
       "address": 4785176,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused C++ vec2 startup object immediately before fx_queue_random_color_r; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_fx_queue_random_prefix_vec2",
       "section": ".data",
       "section_offset": 128024,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "vec2f_t"
     },
     {
@@ -16213,19 +16267,21 @@
     {
       "address": 4785200,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Rotated FX queue position array (X at base, Y at +4)",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_rotated_pos_x",
       "section": ".data",
       "section_offset": 128048,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "vec2f_t[64]"
     },
     {
@@ -16249,55 +16305,61 @@
     {
       "address": 4785712,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Bonus pool sentinel pointer returned by bonus_alloc_slot/bonus_spawn when no slot is available.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-0001c",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 5,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "bonus_pool_sentinel",
       "section": ".data",
       "section_offset": 128560,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 28,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "bonus_entry_t"
     },
     {
       "address": 4785808,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused gray RGBA startup object in the gap immediately before the rotated FX scale globals; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_fx_rotated_scale_prefix_color",
       "section": ".data",
       "section_offset": 128656,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t"
     },
     {
       "address": 4785832,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Rotated FX queue scale array",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_rotated_scale",
       "section": ".data",
       "section_offset": 128680,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "float[64]"
     },
     {
@@ -17816,73 +17878,81 @@
     {
       "address": 4788088,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused C++ vec2 startup object immediately before effect_uv_strip16; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_effect_uv_strip16_prefix_vec2",
       "section": ".data",
       "section_offset": 130936,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "vec2f_t"
     },
     {
       "address": 4788096,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Horizontal UV strip with 16 entries spanning U = 0/16 through 15/16 and V = 0.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00080",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_uv_strip16",
       "section": ".data",
       "section_offset": 130944,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "uv2f_t[16]"
     },
     {
       "address": 4788224,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused four-word C++ startup object between effect_uv_strip16 and effect_uv8; initialized to {0, 0, 0, 1} and never dereferenced at runtime.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_effect_uv8_prefix_state",
       "section": ".data",
       "section_offset": 131072,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "int[4]"
     },
     {
       "address": 4788240,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Effect UV table for 8x8 atlas frames (u,v).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_uv8",
       "section": ".data",
       "section_offset": 131088,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "uv2f_t[64]"
     },
     {
@@ -17912,7 +17982,7 @@
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "player_overlay_torso_uv8",
       "section": ".data",
       "section_offset": 131216,
@@ -17924,19 +17994,21 @@
     {
       "address": 4788752,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Effect UV table for 4x4 atlas frames (u,v).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00080",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_uv4",
       "section": ".data",
       "section_offset": 131600,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "uv2f_t[16]"
     },
     {
@@ -18000,19 +18072,21 @@
     {
       "address": 4788880,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Effect UV table for 2x2 atlas frames (u,v).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00020",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_uv2",
       "section": ".data",
       "section_offset": 131728,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 32,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "uv2f_t[4]"
     },
     {
@@ -18056,19 +18130,21 @@
     {
       "address": 4788920,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "FX queue base (0x80 entries, stride 0x28)",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-01400",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_queue",
       "section": ".data",
       "section_offset": 131768,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 5120,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "fx_queue_entry_t[128]"
     },
     {
@@ -18778,37 +18854,41 @@
     {
       "address": 4807352,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused RGBA startup object immediately after the 128-entry particle pool; pool scans also use its address as the one-past-end bound.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_particle_pool_suffix_color",
       "section": ".data",
       "section_offset": 150200,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t"
     },
     {
       "address": 4807368,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "SYSTEMTIME scratch written by GetLocalTime; year/month used for high score stamps and seasonal checks.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "local_system_time",
       "section": ".data",
       "section_offset": 150216,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "SYSTEMTIME"
     },
     {
@@ -19201,19 +19281,21 @@
     {
       "address": 4810376,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused opaque-black RGBA startup object immediately before aim64_texture; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_aim64_prefix_color",
       "section": ".data",
       "section_offset": 153224,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t"
     },
     {
@@ -19239,19 +19321,21 @@
     {
       "address": 4810396,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Rotated FX queue rotation array",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_rotated_rotation",
       "section": ".data",
       "section_offset": 153244,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "float[64]"
     },
     {
@@ -19474,37 +19558,41 @@
     {
       "address": 4831776,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused gray RGBA startup object immediately before fx_rotated_effect_id; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00010",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_fx_rotated_effect_id_prefix_color",
       "section": ".data",
       "section_offset": 174624,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 16,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t"
     },
     {
       "address": 4831792,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Rotated FX queue effect id array",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00100",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_rotated_effect_id",
       "section": ".data",
       "section_offset": 174640,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 256,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "int[64]"
     },
     {
@@ -19530,19 +19618,21 @@
     {
       "address": 4832056,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Rotated FX queue color array (RGBA aggregates)",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00400",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "fx_rotated_color_r",
       "section": ".data",
       "section_offset": 174904,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 1024,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_color_t[64]"
     },
     {
@@ -20269,37 +20359,41 @@
     {
       "address": 4891856,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Unused C++ vec2 startup object immediately before effect_uv16; only its initializer references it.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "unused_effect_uv16_prefix_vec2",
       "section": ".data",
       "section_offset": 234704,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "vec2f_t"
     },
     {
       "address": 4891864,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Effect UV table for 16x16 atlas frames (u,v).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_uv16",
       "section": ".data",
       "section_offset": 234712,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 2048,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "uv2f_t[256]"
     },
     {
@@ -20919,19 +21013,21 @@
     {
       "address": 4895152,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Two-float effect position/default block zeroed by effect_defaults_reset; no other direct references are known.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_template_position",
       "section": ".data",
       "section_offset": 238000,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_vec2_t"
     },
     {
@@ -21246,37 +21342,41 @@
     {
       "address": 4895344,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Zero-initialized fallback effect entry returned when low-detail throttling skips a spawn or the effect free list is exhausted.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-000bc",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_discard_entry",
       "section": ".data",
       "section_offset": 238192,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 188,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_entry_t"
     },
     {
       "address": 4895536,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Canonical typed base for the 512-entry effect pool (effect_entry_t stride 0xbc).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-17800",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 3,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "effect_pool",
       "section": ".data",
       "section_offset": 238384,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 96256,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "effect_pool_t"
     },
     {
@@ -21288,7 +21388,7 @@
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
-      "linker_reference_count": 1,
+      "linker_reference_count": 0,
       "name": "effect_pool_pos_x",
       "section": ".data",
       "section_offset": 238384,
@@ -23405,37 +23505,41 @@
     {
       "address": 4996224,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "SFX cooldown table (0x80 entries; float timers; per-id throttle used by sfx_play).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "sfx_cooldown_table",
       "section": ".data",
       "section_offset": 339072,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "sfx_cooldown_table_t"
     },
     {
       "address": 4996736,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "SFX voice/handle table (0x20 entries; LPDIRECTSOUNDBUFFER; cleared during sfx_system_init; inferred).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00080",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "sfx_voice_table",
       "section": ".data",
       "section_offset": 339584,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 128,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "sfx_voice_table_t"
     },
     {
@@ -25035,19 +25139,21 @@
     {
       "address": 4997196,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Per-SFX volume table (0x80 entries; float; updated by sfx_play_exclusive and sfx_update_mute_fades).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 4,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "sfx_volume_table",
       "section": ".data",
       "section_offset": 340044,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "sfx_volume_table_t"
     },
     {
@@ -25128,19 +25234,21 @@
     {
       "address": 5031632,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Music playlist queue (0x80 entries; int track id array).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00200",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 2,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "music_playlist",
       "section": ".data",
       "section_offset": 374480,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 512,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "music_playlist_t"
     },
     {
@@ -25396,19 +25504,21 @@
     {
       "address": 5032728,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 1,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: default_char_alignment_is_one",
       "comment": "Profile menu text-input buffer (64 bytes; editing is capped at 0x1b characters).",
-      "definition_state": "unknown",
+      "definition_group": "zero-char-array-00040",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "profile_name_input_buffer",
       "section": ".data",
       "section_offset": 375576,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 64,
+      "size_source": "analysis/ghidra/maps/data_map.json: fixed char-array extents; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char[64]"
     },
     {
@@ -25434,19 +25544,21 @@
     {
       "address": 5032796,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Profile menu item-pointer table: saved-name slots followed by the temporary add-new row.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00024",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "profile_name_item_ptrs",
       "section": ".data",
       "section_offset": 375644,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 36,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "char *[9]"
     },
     {
@@ -27094,19 +27206,21 @@
     {
       "address": 5076408,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Function-local Back button owned by the controls/rebinding screen.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00018",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_back_button",
       "section": ".data",
       "section_offset": 419256,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 24,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_button_t"
     },
     {
@@ -27330,19 +27444,21 @@
     {
       "address": 5076536,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Controls menu movement-method dropdown/list state (configure-for choices).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-0001c",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_move_method_list",
       "section": ".data",
       "section_offset": 419384,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 28,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_list_widget_t"
     },
     {
@@ -27366,19 +27482,21 @@
     {
       "address": 5076576,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Controls menu player-profile dropdown/list state; four labels are built but native exposes two selectable player configurations.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-0001c",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_player_profile_list",
       "section": ".data",
       "section_offset": 419424,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 28,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_list_widget_t"
     },
     {
@@ -27442,19 +27560,21 @@
     {
       "address": 5076648,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Controls menu aim-method dropdown/list state (Relative/Static/Pad/etc choices).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-0001c",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_aim_method_list",
       "section": ".data",
       "section_offset": 419496,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 28,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_list_widget_t"
     },
     {
@@ -27592,19 +27712,21 @@
     {
       "address": 5076744,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Function-local Redefine button owned by the controls/rebinding screen.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00018",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_redefine_button",
       "section": ".data",
       "section_offset": 419592,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 24,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_button_t"
     },
     {
@@ -27726,19 +27848,21 @@
     {
       "address": 5076976,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Controls menu \"Show direction arrow\" toggle checkbox state block.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_direction_arrow_checkbox",
       "section": ".data",
       "section_offset": 419824,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "ui_checkbox_t"
     },
     {
@@ -27782,19 +27906,21 @@
     {
       "address": 5077144,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Controls rebind menu-item table (15 entries, stride 0x10) consumed by ui_menu_item_update.",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-000f0",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 1,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "controls_rebind_items",
       "section": ".data",
       "section_offset": 419992,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 240,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "controls_rebind_item_table_t"
     },
     {
@@ -28350,19 +28476,21 @@
     {
       "address": 5077544,
       "aliases": [],
-      "alignment": null,
-      "alignment_source": null,
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
       "comment": "Weapon table ammo class/HUD indicator (weapon_table - 0x04, stride 0x7c).",
-      "definition_state": "unknown",
+      "definition_group": "zero-abi-01f00",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
       "initializer_hex": null,
-      "initializer_source": null,
-      "linker_reference_count": 6,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "linker_reference_count": 0,
       "name": "weapon_ammo_class",
       "section": ".data",
       "section_offset": 420392,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
-      "size": null,
-      "size_source": null,
+      "size": 7936,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "type": "weapon_storage_entry_t[64]"
     },
     {
@@ -28923,24 +29051,6 @@
       ]
     },
     {
-      "address": 5077544,
-      "definition_state": "unknown",
-      "name": "weapon_ammo_class",
-      "reference_count": 6,
-      "requested_symbols": [
-        {
-          "lookup_name": "weapon_ammo_class",
-          "name": "_weapon_ammo_class",
-          "reference_count": 5
-        },
-        {
-          "lookup_name": "weapon_ammo_class",
-          "name": "?weapon_ammo_class@@3PAVweapon_storage_entry_cpp_t@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
       "address": 4711496,
       "definition_state": "unknown",
       "name": "console_input_buf",
@@ -28954,19 +29064,6 @@
       ]
     },
     {
-      "address": 4785712,
-      "definition_state": "unknown",
-      "name": "bonus_pool_sentinel",
-      "reference_count": 5,
-      "requested_symbols": [
-        {
-          "lookup_name": "bonus_pool_sentinel",
-          "name": "_bonus_pool_sentinel",
-          "reference_count": 5
-        }
-      ]
-    },
-    {
       "address": 4664960,
       "definition_state": "unknown",
       "name": "menu_label_back",
@@ -28975,115 +29072,6 @@
         {
           "lookup_name": "menu_label_back",
           "name": "_menu_label_back",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4721024,
-      "definition_state": "unknown",
-      "name": "credits_line_table",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "credits_line_table",
-          "name": "_credits_line_table",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4728024,
-      "definition_state": "unknown",
-      "name": "plugin_module_handle",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "plugin_module_handle",
-          "name": "_plugin_module_handle",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4741032,
-      "definition_state": "unknown",
-      "name": "quest_spawn_table",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "quest_spawn_table",
-          "name": "_quest_spawn_table",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4747404,
-      "definition_state": "unknown",
-      "name": "weapon_usage_time",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "weapon_usage_time",
-          "name": "_weapon_usage_time",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4781448,
-      "definition_state": "unknown",
-      "name": "bonus_hud_slot_table",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "bonus_hud_slot_table",
-          "name": "_bonus_hud_slot_table",
-          "reference_count": 3
-        },
-        {
-          "lookup_name": "bonus_hud_slot_table",
-          "name": "?bonus_hud_slot_table@@3PAVbonus_hud_slot_cpp_t@@A",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 4807368,
-      "definition_state": "unknown",
-      "name": "local_system_time",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "local_system_time",
-          "name": "_local_system_time",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4996224,
-      "definition_state": "unknown",
-      "name": "sfx_cooldown_table",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "sfx_cooldown_table",
-          "name": "_sfx_cooldown_table",
-          "reference_count": 4
-        }
-      ]
-    },
-    {
-      "address": 4997196,
-      "definition_state": "unknown",
-      "name": "sfx_volume_table",
-      "reference_count": 4,
-      "requested_symbols": [
-        {
-          "lookup_name": "sfx_volume_table",
-          "name": "_sfx_volume_table",
           "reference_count": 4
         }
       ]
@@ -29141,37 +29129,6 @@
       ]
     },
     {
-      "address": 4725376,
-      "definition_state": "unknown",
-      "name": "mod_api_context",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "mod_api_context",
-          "name": "?mod_api_context@@3Vmod_api_cpp_t@@A",
-          "reference_count": 2
-        },
-        {
-          "lookup_name": "mod_api_context",
-          "name": "_mod_api_context",
-          "reference_count": 1
-        }
-      ]
-    },
-    {
-      "address": 4747728,
-      "definition_state": "unknown",
-      "name": "player_aux_timer",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "player_aux_timer",
-          "name": "_player_aux_timer",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
       "address": 4781384,
       "definition_state": "unknown",
       "name": "terrain_texture_handles",
@@ -29181,110 +29138,6 @@
           "lookup_name": "terrain_texture_handles",
           "name": "_terrain_texture_handles",
           "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4782784,
-      "definition_state": "unknown",
-      "name": "ui_sign_crimson_template",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "ui_sign_crimson_template",
-          "name": "_ui_sign_crimson_template",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4783016,
-      "definition_state": "unknown",
-      "name": "ui_menu_item_element",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "ui_menu_item_element",
-          "name": "_ui_menu_item_element",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4783248,
-      "definition_state": "unknown",
-      "name": "ui_menu_panel_template",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "ui_menu_panel_template",
-          "name": "_ui_menu_panel_template",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4788240,
-      "definition_state": "unknown",
-      "name": "effect_uv8",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "effect_uv8",
-          "name": "_effect_uv8",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4788752,
-      "definition_state": "unknown",
-      "name": "effect_uv4",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "effect_uv4",
-          "name": "_effect_uv4",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4788920,
-      "definition_state": "unknown",
-      "name": "fx_queue",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "fx_queue",
-          "name": "_fx_queue",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4895536,
-      "definition_state": "unknown",
-      "name": "effect_pool",
-      "reference_count": 3,
-      "requested_symbols": [
-        {
-          "lookup_name": "effect_pool",
-          "name": "_effect_pool",
-          "reference_count": 3
-        }
-      ]
-    },
-    {
-      "address": 4650988,
-      "definition_state": "unknown",
-      "name": "GUID_NULL",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "GUID_NULL",
-          "name": "_GUID_NULL",
-          "reference_count": 2
         }
       ]
     },
@@ -29419,58 +29272,6 @@
       ]
     },
     {
-      "address": 4747240,
-      "definition_state": "unknown",
-      "name": "survival_recent_death_pos",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "survival_recent_death_pos",
-          "name": "_survival_recent_death_pos",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 4747764,
-      "definition_state": "unknown",
-      "name": "player_aim_screen_x",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "player_aim_screen_x",
-          "name": "_player_aim_screen_x",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 4785200,
-      "definition_state": "unknown",
-      "name": "fx_rotated_pos_x",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "fx_rotated_pos_x",
-          "name": "_fx_rotated_pos_x",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
-      "address": 4785832,
-      "definition_state": "unknown",
-      "name": "fx_rotated_scale",
-      "reference_count": 2,
-      "requested_symbols": [
-        {
-          "lookup_name": "fx_rotated_scale",
-          "name": "_fx_rotated_scale",
-          "reference_count": 2
-        }
-      ]
-    },
-    {
       "address": 4786088,
       "definition_state": "unknown",
       "name": "game_base_path",
@@ -29484,67 +29285,384 @@
       ]
     },
     {
-      "address": 4788880,
+      "address": 4995432,
       "definition_state": "unknown",
-      "name": "effect_uv2",
+      "name": "resource_pack_path_buf",
       "reference_count": 2,
       "requested_symbols": [
         {
-          "lookup_name": "effect_uv2",
-          "name": "_effect_uv2",
+          "lookup_name": "resource_pack_path_buf",
+          "name": "?resource_pack_path_buf@@3PADA",
           "reference_count": 2
         }
       ]
     },
     {
-      "address": 4810396,
+      "address": 4995688,
       "definition_state": "unknown",
-      "name": "fx_rotated_rotation",
+      "name": "resource_pack_entry_name_buf",
       "reference_count": 2,
       "requested_symbols": [
         {
-          "lookup_name": "fx_rotated_rotation",
-          "name": "_fx_rotated_rotation",
+          "lookup_name": "resource_pack_entry_name_buf",
+          "name": "?resource_pack_entry_name_buf@@3PADA",
+          "reference_count": 1
+        },
+        {
+          "lookup_name": "resource_pack_entry_name_buf",
+          "name": "_resource_pack_entry_name_buf",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 5032912,
+      "definition_state": "unknown",
+      "name": "ui_focus_candidates",
+      "reference_count": 2,
+      "requested_symbols": [
+        {
+          "lookup_name": "ui_focus_candidates",
+          "name": "_ui_focus_candidates",
           "reference_count": 2
         }
       ]
     },
     {
-      "address": 4831792,
+      "address": 5087488,
       "definition_state": "unknown",
-      "name": "fx_rotated_effect_id",
+      "name": "input_key_name_buf",
       "reference_count": 2,
       "requested_symbols": [
         {
-          "lookup_name": "fx_rotated_effect_id",
-          "name": "_fx_rotated_effect_id",
+          "lookup_name": "input_key_name_buf",
+          "name": "_input_key_name_buf",
           "reference_count": 2
         }
       ]
     },
     {
-      "address": 4832056,
+      "address": 4657496,
       "definition_state": "unknown",
-      "name": "fx_rotated_color_r",
-      "reference_count": 2,
+      "name": "console_empty_arg",
+      "reference_count": 1,
       "requested_symbols": [
         {
-          "lookup_name": "fx_rotated_color_r",
-          "name": "_fx_rotated_color_r",
-          "reference_count": 2
+          "lookup_name": "console_empty_arg",
+          "name": "_console_empty_arg",
+          "reference_count": 1
         }
       ]
     },
     {
-      "address": 4891864,
+      "address": 4657500,
       "definition_state": "unknown",
-      "name": "effect_uv16",
-      "reference_count": 2,
+      "name": "console_open_anim_t",
+      "reference_count": 1,
       "requested_symbols": [
         {
-          "lookup_name": "effect_uv16",
-          "name": "_effect_uv16",
-          "reference_count": 2
+          "lookup_name": "console_open_anim_t",
+          "name": "_console_open_anim_t",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657756,
+      "definition_state": "unknown",
+      "name": "console_cvar_default_true",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "console_cvar_default_true",
+          "name": "_console_cvar_default_true",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657856,
+      "definition_state": "unknown",
+      "name": "console_prompt_string",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "console_prompt_string",
+          "name": "_console_prompt_string",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657860,
+      "definition_state": "unknown",
+      "name": "console_version_string",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "console_version_string",
+          "name": "_console_version_string",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657908,
+      "definition_state": "unknown",
+      "name": "tutorial_hint_bonus_id",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "tutorial_hint_bonus_id",
+          "name": "_tutorial_hint_bonus_id",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657912,
+      "definition_state": "unknown",
+      "name": "tutorial_hint_bonus_amount",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "tutorial_hint_bonus_amount",
+          "name": "_tutorial_hint_bonus_amount",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657916,
+      "definition_state": "unknown",
+      "name": "tutorial_hint_index",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "tutorial_hint_index",
+          "name": "_tutorial_hint_index",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4657928,
+      "definition_state": "unknown",
+      "name": "stats_menu_easter_egg_roll",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "stats_menu_easter_egg_roll",
+          "name": "_stats_menu_easter_egg_roll",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4663064,
+      "definition_state": "unknown",
+      "name": "tutorial_empty_string",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "tutorial_empty_string",
+          "name": "_tutorial_empty_string",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4664044,
+      "definition_state": "unknown",
+      "name": "credits_name_ville_m",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "credits_name_ville_m",
+          "name": "_credits_name_ville_m",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4664408,
+      "definition_state": "unknown",
+      "name": "credits_name_petri_j",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "credits_name_petri_j",
+          "name": "_credits_name_petri_j",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4664524,
+      "definition_state": "unknown",
+      "name": "credits_name_valtteri_pihlajam",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "credits_name_valtteri_pihlajam",
+          "name": "_credits_name_valtteri_pihlajam",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4665064,
+      "definition_state": "unknown",
+      "name": "mods_menu_refresh_pending",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "mods_menu_refresh_pending",
+          "name": "_mods_menu_refresh_pending",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4665068,
+      "definition_state": "unknown",
+      "name": "mods_menu_previous_selected_index",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "mods_menu_previous_selected_index",
+          "name": "_mods_menu_previous_selected_index",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4665072,
+      "definition_state": "unknown",
+      "name": "credits_secret_selected_index",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "credits_secret_selected_index",
+          "name": "_credits_secret_selected_index",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4666128,
+      "definition_state": "unknown",
+      "name": "perk_man_bomb_trigger_interval_s",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "perk_man_bomb_trigger_interval_s",
+          "name": "_perk_man_bomb_trigger_interval_s",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4666132,
+      "definition_state": "unknown",
+      "name": "perk_fire_cough_trigger_interval_s",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "perk_fire_cough_trigger_interval_s",
+          "name": "_perk_fire_cough_trigger_interval_s",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4666136,
+      "definition_state": "unknown",
+      "name": "perk_hot_tempered_trigger_interval_s",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "perk_hot_tempered_trigger_interval_s",
+          "name": "_perk_hot_tempered_trigger_interval_s",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667920,
+      "definition_state": "unknown",
+      "name": "developer_hint_redistribution_build",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_redistribution_build",
+          "name": "_developer_hint_redistribution_build",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667924,
+      "definition_state": "unknown",
+      "name": "developer_hint_reijo",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_reijo",
+          "name": "_developer_hint_reijo",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667928,
+      "definition_state": "unknown",
+      "name": "developer_hint_secret_weapons",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_secret_weapons",
+          "name": "_developer_hint_secret_weapons",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667932,
+      "definition_state": "unknown",
+      "name": "developer_hint_warning",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_warning",
+          "name": "_developer_hint_warning",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667936,
+      "definition_state": "unknown",
+      "name": "developer_hint_alien_zookeeper",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_alien_zookeeper",
+          "name": "_developer_hint_alien_zookeeper",
+          "reference_count": 1
+        }
+      ]
+    },
+    {
+      "address": 4667940,
+      "definition_state": "unknown",
+      "name": "developer_hint_secret_path",
+      "reference_count": 1,
+      "requested_symbols": [
+        {
+          "lookup_name": "developer_hint_secret_path",
+          "name": "_developer_hint_secret_path",
+          "reference_count": 1
         }
       ]
     }
@@ -29552,9 +29670,9 @@
   "schema": 1,
   "source": {
     "data_map": "analysis/ghidra/maps/data_map.json",
-    "data_map_sha256": "0516e179e941b3830a41b5154408f0ccdfb6675f6bfd0b2423bfc47416e82494",
+    "data_map_sha256": "51f45bb717f4e462ae407f51a5b2342cdde5cd60feb8d9971acfb1cc7ef79523",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "6f8dd4775b7a76718248ace9bbd6a6e2cfaf143f9732ea1e12cf2b58bbbf2c31",
+    "definitions_sha256": "f547a69067c05aad14f7d5eb16456dc0ab5f9ee1ad4c9aff91344c759cd5a3ae",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -29565,27 +29683,27 @@
   "summary": {
     "alias_names": 35,
     "alias_rows": 35,
-    "definition_group_entries": 453,
-    "definition_groups": 12,
+    "definition_group_entries": 517,
+    "definition_groups": 37,
     "entry_count": 1547,
-    "explicit_alignment_entries": 517,
-    "explicit_initializer_entries": 517,
-    "explicit_size_entries": 517,
+    "explicit_alignment_entries": 581,
+    "explicit_initializer_entries": 581,
+    "explicit_size_entries": 581,
     "fixed_array_types": 48,
-    "fully_specified_entries": 517,
-    "game_data_reference_count": 271,
+    "fully_specified_entries": 581,
+    "game_data_reference_count": 143,
     "incomplete_array_types": 2,
     "multidimensional_array_types": 3,
     "overlay_addresses": 2,
     "priority_entries": 50,
-    "referenced_entries": 159,
+    "referenced_entries": 93,
     "section_counts": {
       ".data": 1539,
       ".rdata": 4,
       ".text": 4
     },
-    "typed_entries": 707,
+    "typed_entries": 710,
     "unique_addresses": 1545,
-    "untyped_entries": 840
+    "untyped_entries": 837
   }
 }

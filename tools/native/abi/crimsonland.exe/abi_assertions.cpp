@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <windows.h>
 
 #include "crimsonland_types.h"
 #include "crimsonland_console.h"
@@ -72,6 +73,12 @@ struct crimson_u16_alignment_probe_t {
 };
 
 CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
+CRIMSON_ABI_ASSERT(
+    pointer_array_9_is_0x24,
+    sizeof(char *[9]) == 0x24);
+CRIMSON_ABI_ASSERT(
+    pointer_array_32_is_0x80,
+    sizeof(char *[32]) == 0x80);
 CRIMSON_ABI_ASSERT(int_is_32_bit, sizeof(int) == 4);
 CRIMSON_ABI_ASSERT(unsigned_int_is_32_bit, sizeof(unsigned int) == 4);
 CRIMSON_ABI_ASSERT(long_is_32_bit, sizeof(long) == 4);
@@ -81,6 +88,9 @@ CRIMSON_ABI_ASSERT(unsigned_char_is_one_byte, sizeof(unsigned char) == 1);
 CRIMSON_ABI_ASSERT(game_mode_id_is_32_bit, sizeof(game_mode_id_t) == 4);
 CRIMSON_ABI_ASSERT(game_state_id_is_32_bit, sizeof(game_state_id_t) == 4);
 CRIMSON_ABI_ASSERT(u16_is_16_bit, sizeof(u16_t) == 2);
+CRIMSON_ABI_ASSERT(guid_is_0x10, sizeof(GUID) == 0x10);
+CRIMSON_ABI_ASSERT(systemtime_is_0x10, sizeof(SYSTEMTIME) == 0x10);
+CRIMSON_ABI_ASSERT(hmodule_is_32_bit, sizeof(HMODULE) == 4);
 
 CRIMSON_ABI_ASSERT(
     default_char_alignment_is_one,
@@ -105,6 +115,13 @@ CRIMSON_ABI_ASSERT(
     offsetof(crimson_u16_alignment_probe_t, value) == 2);
 
 CRIMSON_ABI_ASSERT(vec2_is_8_bytes, sizeof(vec2f_t) == 0x08);
+CRIMSON_ABI_ASSERT(vec2_array_3_is_0x18, sizeof(vec2f_t[3]) == 0x18);
+CRIMSON_ABI_ASSERT(vec2_array_64_is_0x200, sizeof(vec2f_t[64]) == 0x200);
+CRIMSON_ABI_ASSERT(float_array_64_is_0x100, sizeof(float[64]) == 0x100);
+CRIMSON_ABI_ASSERT(int_array_3_is_0x0c, sizeof(int[3]) == 0x0c);
+CRIMSON_ABI_ASSERT(int_array_4_is_0x10, sizeof(int[4]) == 0x10);
+CRIMSON_ABI_ASSERT(int_array_36_is_0x90, sizeof(int[36]) == 0x90);
+CRIMSON_ABI_ASSERT(int_array_64_is_0x100, sizeof(int[64]) == 0x100);
 CRIMSON_ABI_ASSERT(cvar_float_is_16_bytes, sizeof(cvar_float_t) == 0x10);
 CRIMSON_ABI_ASSERT(
     cvar_value_is_at_0x0c,
@@ -117,11 +134,41 @@ CRIMSON_ABI_ASSERT_ALIGN4(weapon, weapon_stats_t);
 CRIMSON_ABI_ASSERT(
     weapon_storage_entry_is_0x7c,
     sizeof(weapon_storage_entry_t) == 0x7c);
+CRIMSON_ABI_ASSERT(
+    weapon_storage_table_is_0x1f00,
+    sizeof(weapon_storage_table_t) == 0x1f00);
+CRIMSON_ABI_ASSERT_ALIGN4(weapon_storage, weapon_storage_entry_t);
 CRIMSON_ABI_ASSERT(audio_entry_is_0x84, sizeof(audio_entry_t) == 0x84);
 CRIMSON_ABI_ASSERT(
     audio_entry_table_is_0x4200,
     sizeof(audio_entry_t[128]) == 0x4200);
 CRIMSON_ABI_ASSERT_ALIGN4(audio_entry, audio_entry_t);
+CRIMSON_ABI_ASSERT(
+    sfx_cooldown_table_is_0x200,
+    sizeof(sfx_cooldown_table_t) == 0x200);
+CRIMSON_ABI_ASSERT(
+    sfx_voice_table_is_0x80,
+    sizeof(sfx_voice_table_t) == 0x80);
+CRIMSON_ABI_ASSERT(
+    sfx_volume_table_is_0x200,
+    sizeof(sfx_volume_table_t) == 0x200);
+CRIMSON_ABI_ASSERT(
+    music_playlist_is_0x200,
+    sizeof(music_playlist_t) == 0x200);
+CRIMSON_ABI_ASSERT(
+    weapon_usage_time_is_0x100,
+    sizeof(weapon_usage_time_t) == 0x100);
+CRIMSON_ABI_ASSERT(player_aux_timer_is_0x08, sizeof(player_aux_timer_t) == 0x08);
+CRIMSON_ABI_ASSERT(
+    player_aim_screen_xy_is_0x10,
+    sizeof(player_aim_screen_xy_t) == 0x10);
+CRIMSON_ABI_ASSERT_ALIGN4(sfx_cooldown_table, sfx_cooldown_table_t);
+CRIMSON_ABI_ASSERT_ALIGN4(sfx_voice_table, sfx_voice_table_t);
+CRIMSON_ABI_ASSERT_ALIGN4(sfx_volume_table, sfx_volume_table_t);
+CRIMSON_ABI_ASSERT_ALIGN4(music_playlist, music_playlist_t);
+CRIMSON_ABI_ASSERT_ALIGN4(weapon_usage_time, weapon_usage_time_t);
+CRIMSON_ABI_ASSERT_ALIGN4(player_aux_timer, player_aux_timer_t);
+CRIMSON_ABI_ASSERT_ALIGN4(player_aim_screen_xy, player_aim_screen_xy_t);
 
 CRIMSON_ABI_ASSERT(player_input_is_0x34, sizeof(player_input_t) == 0x34);
 CRIMSON_ABI_ASSERT(
@@ -196,6 +243,10 @@ CRIMSON_ABI_ASSERT(
     sizeof(sprite_effect_t[384]) == 0x4200);
 CRIMSON_ABI_ASSERT_ALIGN4(sprite_effect, sprite_effect_t);
 CRIMSON_ABI_ASSERT(fx_queue_entry_is_0x28, sizeof(fx_queue_entry_t) == 0x28);
+CRIMSON_ABI_ASSERT(
+    fx_queue_is_0x1400,
+    sizeof(fx_queue_entry_t[128]) == 0x1400);
+CRIMSON_ABI_ASSERT_ALIGN4(fx_queue_entry, fx_queue_entry_t);
 CRIMSON_ABI_ASSERT(bonus_entry_is_0x1c, sizeof(bonus_entry_t) == 0x1c);
 CRIMSON_ABI_ASSERT(bonus_pool_is_0x1c0, sizeof(bonus_pool_t) == 0x1c0);
 CRIMSON_ABI_ASSERT_ALIGN4(bonus_entry, bonus_entry_t);
@@ -221,17 +272,54 @@ CRIMSON_ABI_ASSERT(
     highscore_table_is_0x1c20,
     sizeof(highscore_record_t[100]) == 0x1c20);
 CRIMSON_ABI_ASSERT_ALIGN4(highscore_record, highscore_record_t);
+CRIMSON_ABI_ASSERT(
+    credits_line_table_is_0x800,
+    sizeof(credits_line_table_t) == 0x800);
+CRIMSON_ABI_ASSERT_ALIGN4(credits_line_table, credits_line_table_t);
 CRIMSON_ABI_ASSERT(game_status_is_0x268, sizeof(game_status_t) == 0x268);
 CRIMSON_ABI_ASSERT_ALIGN4(game_status, game_status_t);
+CRIMSON_ABI_ASSERT(
+    quest_spawn_entry_is_0x18,
+    sizeof(quest_spawn_entry_t) == 0x18);
+CRIMSON_ABI_ASSERT(
+    quest_spawn_table_is_0x1800,
+    sizeof(quest_spawn_entry_t[256]) == 0x1800);
+CRIMSON_ABI_ASSERT_ALIGN4(quest_spawn_entry, quest_spawn_entry_t);
+CRIMSON_ABI_ASSERT(
+    bonus_hud_slot_is_0x20,
+    sizeof(bonus_hud_slot_t) == 0x20);
+CRIMSON_ABI_ASSERT(
+    bonus_hud_slot_table_is_0x200,
+    sizeof(bonus_hud_slot_table_t) == 0x200);
+CRIMSON_ABI_ASSERT_ALIGN4(bonus_hud_slot, bonus_hud_slot_t);
 CRIMSON_ABI_ASSERT(
     effect_template_is_0x3c,
     sizeof(effect_template_t) == 0x3c);
 CRIMSON_ABI_ASSERT_ALIGN4(effect_template, effect_template_t);
+CRIMSON_ABI_ASSERT(effect_color_is_0x10, sizeof(effect_color_t) == 0x10);
+CRIMSON_ABI_ASSERT(
+    effect_color_array_64_is_0x400,
+    sizeof(effect_color_t[64]) == 0x400);
+CRIMSON_ABI_ASSERT(effect_vec2_is_0x08, sizeof(effect_vec2_t) == 0x08);
+CRIMSON_ABI_ASSERT(effect_entry_is_0xbc, sizeof(effect_entry_t) == 0xbc);
+CRIMSON_ABI_ASSERT(
+    effect_pool_is_0x17800,
+    sizeof(effect_pool_t) == 0x17800);
+CRIMSON_ABI_ASSERT_ALIGN4(effect_color, effect_color_t);
+CRIMSON_ABI_ASSERT_ALIGN4(effect_vec2, effect_vec2_t);
+CRIMSON_ABI_ASSERT_ALIGN4(effect_entry, effect_entry_t);
+CRIMSON_ABI_ASSERT_ALIGN4(effect_pool, effect_pool_t);
 CRIMSON_ABI_ASSERT(
     sfx_mute_flags_is_0x80,
     sizeof(sfx_mute_flags_t) == 0x80);
 
 CRIMSON_ABI_ASSERT(effect_vertex_is_0x1c, sizeof(effect_vertex_t) == 0x1c);
+CRIMSON_ABI_ASSERT(uv2_is_0x08, sizeof(uv2f_t) == 0x08);
+CRIMSON_ABI_ASSERT(uv2_array_4_is_0x20, sizeof(uv2f_t[4]) == 0x20);
+CRIMSON_ABI_ASSERT(uv2_array_16_is_0x80, sizeof(uv2f_t[16]) == 0x80);
+CRIMSON_ABI_ASSERT(uv2_array_64_is_0x200, sizeof(uv2f_t[64]) == 0x200);
+CRIMSON_ABI_ASSERT(uv2_array_256_is_0x800, sizeof(uv2f_t[256]) == 0x800);
+CRIMSON_ABI_ASSERT_ALIGN4(uv2, uv2f_t);
 CRIMSON_ABI_ASSERT(ui_vertex_is_0x1c, sizeof(ui_element_vertex_t) == 0x1c);
 CRIMSON_ABI_ASSERT(
     ui_subtemplate_is_0xe8,
@@ -241,6 +329,18 @@ CRIMSON_ABI_ASSERT(
     ui_element_pointer_table_is_0xa4,
     sizeof(ui_element_t *[41]) == 0xa4);
 CRIMSON_ABI_ASSERT_ALIGN4(ui_element, ui_element_t);
+CRIMSON_ABI_ASSERT(ui_button_is_0x18, sizeof(ui_button_t) == 0x18);
+CRIMSON_ABI_ASSERT(ui_list_widget_is_0x1c, sizeof(ui_list_widget_t) == 0x1c);
+CRIMSON_ABI_ASSERT(ui_checkbox_is_0x08, sizeof(ui_checkbox_t) == 0x08);
+CRIMSON_ABI_ASSERT(
+    controls_rebind_items_is_0xf0,
+    sizeof(controls_rebind_item_table_t) == 0xf0);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_button, ui_button_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_list_widget, ui_list_widget_t);
+CRIMSON_ABI_ASSERT_ALIGN4(ui_checkbox, ui_checkbox_t);
+CRIMSON_ABI_ASSERT_ALIGN4(
+    controls_rebind_items,
+    controls_rebind_item_table_t);
 
 CRIMSON_ABI_ASSERT(
     console_history_entry_is_8_bytes,
@@ -255,6 +355,8 @@ CRIMSON_ABI_ASSERT(
     offsetof(console_queue_t, open) == 0x28);
 
 CRIMSON_ABI_ASSERT(mod_api_cpp_is_0x6c, sizeof(mod_api_cpp_t) == 0x6c);
+CRIMSON_ABI_ASSERT(mod_api_is_0x68, sizeof(mod_api_t) == 0x68);
+CRIMSON_ABI_ASSERT_ALIGN4(mod_api, mod_api_t);
 CRIMSON_ABI_ASSERT(
     mod_api_state_is_at_0x68,
     offsetof(mod_api_cpp_t, field_0x68) == 0x68);
