@@ -49,18 +49,18 @@
     "source_sha256": "5bea47e64fc357a8f5f54abc42d2f9ae037e69cc48bc054785f47cc908542bbe",
     "status": "passed"
   },
-  "audit_digest": "2b7c1fd87eb910071e7b3066a3c99aa6761a361ade25d0174fa98ea7301a4839",
+  "audit_digest": "dc6e1712c29c0d9ba31b6a21e2776a0b578149eafe9d89725776061d78442aa8",
   "function_count": 137,
   "image": "grim.dll",
   "kind": "crimson-native-object-manifest",
-  "object_count": 137,
+  "object_count": 134,
   "object_hash": {
     "algorithm": "sha256",
     "normalization": [
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "e1a4da8d74aa2d6cc365715097df4cfab98333a083fbbcfb92958b70280dd870",
+  "object_list_sha256": "32eede5de23910d15817545edaed2a872af3bad248f6c7b1b4785d74870a24d9",
   "object_order": "ascending-minimum-reference-address",
   "objects": [
     {
@@ -6468,14 +6468,14 @@
       ],
       "compile_inputs": [
         {
-          "path": "tools/match/scratches/grim_get_slot_float/scratch.cpp",
+          "path": "tools/match/scratches/grim_set_slot_int/scratch.cpp",
           "repository_relative": true,
-          "sha256": "63993c2775cabbe1a259c2705816ac9a192671d8fba936841db8782c3253f969"
+          "sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434"
         },
         {
-          "path": "tools/match/scratches/grim_get_slot_float/scratch.conf",
+          "path": "tools/match/scratches/grim_set_slot_int/scratch.conf",
           "repository_relative": true,
-          "sha256": "9bba1f7937dd7a4f636a40cb061dfdb679737a1fb4f48876c15bf2a5db7c6696"
+          "sha256": "8e722726d890e5f01f99b7fa039998c534bed5699e6454e6f08077c134eaa4dd"
         },
         {
           "path": "tools/match/cl.sh",
@@ -6499,8 +6499,8 @@
         }
       ],
       "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_get_slot_float/scratch.conf",
-      "config_sha256": "9bba1f7937dd7a4f636a40cb061dfdb679737a1fb4f48876c15bf2a5db7c6696",
+      "config": "tools/match/scratches/grim_set_slot_int/scratch.conf",
+      "config_sha256": "8e722726d890e5f01f99b7fa039998c534bed5699e6454e6f08077c134eaa4dd",
       "effective_end": 268464846,
       "end": 268464846,
       "function": "grim_get_slot_float",
@@ -6527,86 +6527,7 @@
           },
           "object_function_symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
           "target_size": 14
-        }
-      ],
-      "match": {
-        "candidate_instructions": 3,
-        "masked_mismatches": 0,
-        "masked_ok": 1,
-        "masked_unresolved": 0,
-        "prefix_instructions": 3,
-        "ratio": 1.0,
-        "state": "match",
-        "target_instructions": 3
-      },
-      "object": "tools/match/scratches/grim_get_slot_float/build/msvc6.5/08c6901db3f57706/scratch.obj",
-      "object_function_symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
-      "object_sha256": "26c8cf208f71c4b636033efa7e4e974daf70a5bd3e6ead12cb76587f59f5a6ce",
-      "scratch": "tools/match/scratches/grim_get_slot_float",
-      "source": "tools/match/scratches/grim_get_slot_float/scratch.cpp",
-      "source_sha256": "63993c2775cabbe1a259c2705816ac9a192671d8fba936841db8782c3253f969",
-      "target_size": 14,
-      "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_get_slot_float"
-      }
-    },
-    {
-      "address": 268464848,
-      "cflags": [
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-"
-      ],
-      "compile_argv": [
-        "/nologo",
-        "/c",
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-",
-        "scratch.cpp"
-      ],
-      "compile_inputs": [
-        {
-          "path": "tools/match/scratches/grim_get_slot_int/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "3f27a8a1aead399b051e7c39a74a3cad5f5291c259528fb2bc3c650e10db6c15"
         },
-        {
-          "path": "tools/match/scratches/grim_get_slot_int/scratch.conf",
-          "repository_relative": true,
-          "sha256": "d4b14066ed218ccebd507127c39c0dc4efd9bdc01fb9495165332fff7270ca2f"
-        },
-        {
-          "path": "tools/match/cl.sh",
-          "repository_relative": true,
-          "sha256": "7943cbe81195c28913bad50303b3d734f1a4d2e3e90c72ab9db1ec5ce44a7748"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
-          "repository_relative": true,
-          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-        },
-        {
-          "path": "tools/match/include/grim2d_cpp.h",
-          "repository_relative": true,
-          "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
-        },
-        {
-          "path": "tools/match/include/grim_slot_state.h",
-          "repository_relative": true,
-          "sha256": "d44f9b8818c43a8cbbf9ea8bb8e03e74ab5ca10b4d51f70d5458ed8a0c48c2c3"
-        }
-      ],
-      "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_get_slot_int/scratch.conf",
-      "config_sha256": "d4b14066ed218ccebd507127c39c0dc4efd9bdc01fb9495165332fff7270ca2f",
-      "effective_end": 268464862,
-      "end": 268464862,
-      "function": "grim_get_slot_int",
-      "functions": [
         {
           "address": 268464848,
           "canonical_config": "tools/match/scratches/grim_get_slot_int/scratch.conf",
@@ -6629,86 +6550,7 @@
           },
           "object_function_symbol": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z",
           "target_size": 14
-        }
-      ],
-      "match": {
-        "candidate_instructions": 3,
-        "masked_mismatches": 0,
-        "masked_ok": 1,
-        "masked_unresolved": 0,
-        "prefix_instructions": 3,
-        "ratio": 1.0,
-        "state": "match",
-        "target_instructions": 3
-      },
-      "object": "tools/match/scratches/grim_get_slot_int/build/msvc6.5/420af9cff026b259/scratch.obj",
-      "object_function_symbol": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z",
-      "object_sha256": "423f04832e141a133d397fcbfa865e428e3b798a6aa9f4136b5f1ee623dddac7",
-      "scratch": "tools/match/scratches/grim_get_slot_int",
-      "source": "tools/match/scratches/grim_get_slot_int/scratch.cpp",
-      "source_sha256": "3f27a8a1aead399b051e7c39a74a3cad5f5291c259528fb2bc3c650e10db6c15",
-      "target_size": 14,
-      "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_get_slot_int"
-      }
-    },
-    {
-      "address": 268464864,
-      "cflags": [
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-"
-      ],
-      "compile_argv": [
-        "/nologo",
-        "/c",
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-",
-        "scratch.cpp"
-      ],
-      "compile_inputs": [
-        {
-          "path": "tools/match/scratches/grim_set_slot_float/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "4e64f5fe57d42aaa0990ed9fbc6937d869a6c764933b87953ad8ab100ddfb20c"
         },
-        {
-          "path": "tools/match/scratches/grim_set_slot_float/scratch.conf",
-          "repository_relative": true,
-          "sha256": "3519242d5a858250135326fd82c46b4ca7378eaf7867d146bdab852e8fe3fee7"
-        },
-        {
-          "path": "tools/match/cl.sh",
-          "repository_relative": true,
-          "sha256": "7943cbe81195c28913bad50303b3d734f1a4d2e3e90c72ab9db1ec5ce44a7748"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
-          "repository_relative": true,
-          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-        },
-        {
-          "path": "tools/match/include/grim2d_cpp.h",
-          "repository_relative": true,
-          "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
-        },
-        {
-          "path": "tools/match/include/grim_slot_state.h",
-          "repository_relative": true,
-          "sha256": "d44f9b8818c43a8cbbf9ea8bb8e03e74ab5ca10b4d51f70d5458ed8a0c48c2c3"
-        }
-      ],
-      "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_set_slot_float/scratch.conf",
-      "config_sha256": "3519242d5a858250135326fd82c46b4ca7378eaf7867d146bdab852e8fe3fee7",
-      "effective_end": 268464882,
-      "end": 268464882,
-      "function": "grim_set_slot_float",
-      "functions": [
         {
           "address": 268464864,
           "canonical_config": "tools/match/scratches/grim_set_slot_float/scratch.conf",
@@ -6731,93 +6573,14 @@
           },
           "object_function_symbol": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z",
           "target_size": 18
-        }
-      ],
-      "match": {
-        "candidate_instructions": 4,
-        "masked_mismatches": 0,
-        "masked_ok": 1,
-        "masked_unresolved": 0,
-        "prefix_instructions": 4,
-        "ratio": 1.0,
-        "state": "match",
-        "target_instructions": 4
-      },
-      "object": "tools/match/scratches/grim_set_slot_float/build/msvc6.5/403989b1ecc821a8/scratch.obj",
-      "object_function_symbol": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z",
-      "object_sha256": "5ad061e6e7bbb9a3ffcb1fcb02fc9fe1492ad6738539dcc1938e3b5b687de2b4",
-      "scratch": "tools/match/scratches/grim_set_slot_float",
-      "source": "tools/match/scratches/grim_set_slot_float/scratch.cpp",
-      "source_sha256": "4e64f5fe57d42aaa0990ed9fbc6937d869a6c764933b87953ad8ab100ddfb20c",
-      "target_size": 18,
-      "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_set_slot_float"
-      }
-    },
-    {
-      "address": 268464896,
-      "cflags": [
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-"
-      ],
-      "compile_argv": [
-        "/nologo",
-        "/c",
-        "/O2",
-        "/GB",
-        "/W3",
-        "/GR-",
-        "scratch.cpp"
-      ],
-      "compile_inputs": [
-        {
-          "path": "tools/match/scratches/grim_set_slot_int/scratch.cpp",
-          "repository_relative": true,
-          "sha256": "5bb689db96edede3251708209d9137c37de00bb7994ace25e73812a15f2dbf33"
         },
-        {
-          "path": "tools/match/scratches/grim_set_slot_int/scratch.conf",
-          "repository_relative": true,
-          "sha256": "e8edbf14a4fa05f0f31a2256843851ffb3871f617d005751cf4eb1e349d8f3ac"
-        },
-        {
-          "path": "tools/match/cl.sh",
-          "repository_relative": true,
-          "sha256": "7943cbe81195c28913bad50303b3d734f1a4d2e3e90c72ab9db1ec5ce44a7748"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Bin/CL.EXE",
-          "repository_relative": true,
-          "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
-        },
-        {
-          "path": "tools/match/include/grim2d_cpp.h",
-          "repository_relative": true,
-          "sha256": "52db9c1045d95c0185922462f116781f5801c26405dee6c3bac3f19fae3f6481"
-        },
-        {
-          "path": "tools/match/include/grim_slot_state.h",
-          "repository_relative": true,
-          "sha256": "d44f9b8818c43a8cbbf9ea8bb8e03e74ab5ca10b4d51f70d5458ed8a0c48c2c3"
-        }
-      ],
-      "compiler": "msvc6.5",
-      "config": "tools/match/scratches/grim_set_slot_int/scratch.conf",
-      "config_sha256": "e8edbf14a4fa05f0f31a2256843851ffb3871f617d005751cf4eb1e349d8f3ac",
-      "effective_end": 268464914,
-      "end": 268464914,
-      "function": "grim_set_slot_int",
-      "functions": [
         {
           "address": 268464896,
           "canonical_config": "tools/match/scratches/grim_set_slot_int/scratch.conf",
-          "canonical_config_sha256": "e8edbf14a4fa05f0f31a2256843851ffb3871f617d005751cf4eb1e349d8f3ac",
+          "canonical_config_sha256": "8e722726d890e5f01f99b7fa039998c534bed5699e6454e6f08077c134eaa4dd",
           "canonical_scratch": "tools/match/scratches/grim_set_slot_int",
           "canonical_source": "tools/match/scratches/grim_set_slot_int/scratch.cpp",
-          "canonical_source_sha256": "5bb689db96edede3251708209d9137c37de00bb7994ace25e73812a15f2dbf33",
+          "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
           "effective_end": 268464914,
           "end": 268464914,
           "function": "grim_set_slot_int",
@@ -6836,25 +6599,27 @@
         }
       ],
       "match": {
-        "candidate_instructions": 4,
+        "candidate_instructions": 3,
         "masked_mismatches": 0,
         "masked_ok": 1,
         "masked_unresolved": 0,
-        "prefix_instructions": 4,
+        "prefix_instructions": 3,
         "ratio": 1.0,
         "state": "match",
-        "target_instructions": 4
+        "target_instructions": 3
       },
-      "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/da71ea9faacb7565/scratch.obj",
-      "object_function_symbol": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z",
-      "object_sha256": "b1ee14a655c56618cef8737871c8b71a417e2115959cfeb58888ae8999c9efde",
+      "object": "tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj",
+      "object_function_symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z",
+      "object_sha256": "4496d15db8f93ff9fe7fb5172341d675432e3f184228fd935ac7c891e13ce92f",
       "scratch": "tools/match/scratches/grim_set_slot_int",
       "source": "tools/match/scratches/grim_set_slot_int/scratch.cpp",
-      "source_sha256": "5bb689db96edede3251708209d9137c37de00bb7994ace25e73812a15f2dbf33",
-      "target_size": 18,
+      "source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+      "target_size": 14,
       "translation_unit": {
-        "kind": "isolated",
-        "name": "grim_set_slot_int"
+        "config": "tools/native/translation_units/grim.dll.json",
+        "config_sha256": "65aa1871d545c5c06d6054a6cb3b534fa59584ff74deab9ecbda5a1671fcba57",
+        "kind": "cluster",
+        "name": "grim-slot-state-accessors"
       }
     },
     {
@@ -13442,7 +13207,7 @@
     }
   ],
   "provenance": {
-    "build_policy": "forced-isolated-recompile",
+    "build_policy": "forced-explicit-translation-unit-recompile",
     "selection_inputs": [
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",
@@ -13463,6 +13228,11 @@
         "path": "analysis/matching_scope.json",
         "repository_relative": true,
         "sha256": "1437fb7c6961ad3f6e73f9a8df90864fb077d30667c521d3fd9fef3a2a6e8707"
+      },
+      {
+        "path": "tools/native/translation_units/grim.dll.json",
+        "repository_relative": true,
+        "sha256": "65aa1871d545c5c06d6054a6cb3b534fa59584ff74deab9ecbda5a1671fcba57"
       }
     ],
     "toolchain": {
@@ -13512,7 +13282,7 @@
     "wip": 7
   },
   "translation_units": {
-    "cluster_count": 0,
-    "isolated_count": 137
+    "cluster_count": 1,
+    "isolated_count": 133
   }
 }

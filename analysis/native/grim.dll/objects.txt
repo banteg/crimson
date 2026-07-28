@@ -64,10 +64,7 @@ tools/match/scratches/grim_joystick_left_active/build/msvc6.5/76cc9523156c147b/s
 tools/match/scratches/grim_joystick_right_active/build/msvc6.5/a7b70c6993461473/scratch.obj
 tools/match/scratches/grim_is_key_active/build/msvc6.5/7f27063469fc1f83/scratch.obj
 tools/match/scratches/grim_get_config_float/build/msvc6.5/14915453aac00ed0/scratch.obj
-tools/match/scratches/grim_get_slot_float/build/msvc6.5/08c6901db3f57706/scratch.obj
-tools/match/scratches/grim_get_slot_int/build/msvc6.5/420af9cff026b259/scratch.obj
-tools/match/scratches/grim_set_slot_float/build/msvc6.5/403989b1ecc821a8/scratch.obj
-tools/match/scratches/grim_set_slot_int/build/msvc6.5/da71ea9faacb7565/scratch.obj
+tools/match/scratches/grim_set_slot_int/build/msvc6.5/4ff8e21897266674/scratch.obj
 tools/match/scratches/grim_is_key_down/build/msvc6.5/d878c33b608b7f1e/scratch.obj
 tools/match/scratches/grim_flush_input/build/msvc6.5/6b9db6930d325121/scratch.obj
 tools/match/scratches/grim_was_key_pressed/build/msvc6.5/f6dda3089274d5fe/scratch.obj

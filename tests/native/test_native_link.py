@@ -8,6 +8,7 @@ import pytest
 
 from crimson import match as matchlib
 from crimson.native_link import (
+    DEFAULT_TRANSLATION_UNIT_CONFIGS,
     IMAGE_SCN_LNK_COMDAT,
     IMAGE_SYM_CLASS_WEAK_EXTERNAL,
     NativeCompilerBundleSnapshot,
@@ -470,6 +471,23 @@ def test_translation_unit_config_binds_unique_member_symbols(tmp_path: Path) -> 
         ("metadata_destroy", "_$E2"),
     ]
     assert len(config.sha256) == 64
+
+
+def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> None:
+    config = load_native_translation_unit_config(
+        DEFAULT_TRANSLATION_UNIT_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+
+    assert [cluster.name for cluster in config.clusters] == [
+        "grim-slot-state-accessors",
+    ]
+    assert [member.function for member in config.clusters[0].members] == [
+        "grim_get_slot_float",
+        "grim_get_slot_int",
+        "grim_set_slot_float",
+        "grim_set_slot_int",
+    ]
 
 
 def test_wibo_resolution_skips_non_executable_repository_copy(

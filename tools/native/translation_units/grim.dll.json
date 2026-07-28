@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "image": "grim.dll",
+  "clusters": [
+    {
+      "name": "grim-slot-state-accessors",
+      "scratch": "grim_set_slot_int",
+      "members": [
+        {
+          "function": "grim_get_slot_float",
+          "symbol": "?grim_get_slot_float@IGrim2D_cpp@@UAEMH@Z"
+        },
+        {
+          "function": "grim_get_slot_int",
+          "symbol": "?grim_get_slot_int@IGrim2D_cpp@@UAEHH@Z"
+        },
+        {
+          "function": "grim_set_slot_float",
+          "symbol": "?grim_set_slot_float@IGrim2D_cpp@@UAEXHM@Z"
+        },
+        {
+          "function": "grim_set_slot_int",
+          "symbol": "?grim_set_slot_int@IGrim2D_cpp@@UAEXHH@Z"
+        }
+      ]
+    }
+  ]
+}

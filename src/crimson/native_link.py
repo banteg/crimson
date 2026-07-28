@@ -52,6 +52,13 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
         / "translation_units"
         / "crimsonland.exe.json"
     ),
+    "grim.dll": (
+        matchlib.REPO_ROOT
+        / "tools"
+        / "native"
+        / "translation_units"
+        / "grim.dll.json"
+    ),
 }
 
 

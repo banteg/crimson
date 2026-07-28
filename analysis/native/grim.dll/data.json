@@ -1,5 +1,5 @@
 {
-  "audit_digest": "2b7c1fd87eb910071e7b3066a3c99aa6761a361ade25d0174fa98ea7301a4839",
+  "audit_digest": "dc6e1712c29c0d9ba31b6a21e2776a0b578149eafe9d89725776061d78442aa8",
   "entries": [
     {
       "address": 268574996,
@@ -3366,7 +3366,7 @@
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 1,
       "name": "grim_slot_ints",
       "section": ".data",
       "section_offset": 36608,
@@ -3384,7 +3384,7 @@
       "definition_state": "unknown",
       "initializer_hex": null,
       "initializer_source": null,
-      "linker_reference_count": 2,
+      "linker_reference_count": 1,
       "name": "grim_slot_floats",
       "section": ".data",
       "section_offset": 37120,
@@ -5756,7 +5756,7 @@
     "explicit_size_entries": 8,
     "fixed_array_types": 12,
     "fully_specified_entries": 8,
-    "game_data_reference_count": 351,
+    "game_data_reference_count": 349,
     "incomplete_array_types": 41,
     "multidimensional_array_types": 0,
     "overlay_addresses": 0,
