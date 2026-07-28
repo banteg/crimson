@@ -103,3 +103,89 @@ def cmd_native_audit(
 
     if require_game_closure and not closure_summary["game_owned_closure"]:
         raise typer.Exit(code=1)
+
+
+@native_app.command("link")
+def cmd_native_link(
+    image: Literal["crimsonland.exe", "grim.dll"] = typer.Option(
+        "grim.dll",
+        "--image",
+        help="native image to structurally link",
+    ),
+    scope: Literal["port", "all"] = typer.Option(
+        matchlib.DEFAULT_MATCH_SCOPE,
+        "--scope",
+        help="matching ownership scope",
+    ),
+    match_root: Path = typer.Option(
+        matchlib.DEFAULT_MATCH_ROOT,
+        "--match-root",
+        help="tools/match root",
+    ),
+    output_directory: Path | None = typer.Option(
+        None,
+        "--out-dir",
+        help="linked artifact directory (default: analysis/native/<image>/link)",
+    ),
+    provider_config: Path | None = typer.Option(
+        None,
+        "--provider-config",
+        help="provider manifest (default: tools/native/providers/<image>.json)",
+    ),
+    jobs: int = typer.Option(
+        matchlib.DEFAULT_MATCH_JOBS,
+        "--jobs",
+        "-j",
+        min=1,
+        help="parallel scratch evaluation jobs",
+    ),
+) -> None:
+    """Build a provenance-backed structural PE from the canonical object set."""
+
+    output = (
+        output_directory
+        or native_link.DEFAULT_NATIVE_ANALYSIS_ROOT / image / "link"
+    )
+    config_path = (
+        provider_config
+        or native_link.DEFAULT_PROVIDER_CONFIGS.get(image)
+    )
+    if config_path is None:
+        typer.echo(f"native link failed: no provider config for {image}", err=True)
+        raise typer.Exit(code=2)
+    try:
+        audit = native_link.build_native_audit(
+            image,
+            scope=scope,
+            match_root=match_root,
+            jobs=jobs,
+        )
+        native_link.write_native_audit(
+            audit,
+            native_link.DEFAULT_NATIVE_ANALYSIS_ROOT / image,
+        )
+        config = native_link.load_native_provider_config(
+            config_path,
+            image=image,
+        )
+        artifacts, manifest = native_link.link_native_image(
+            audit,
+            config,
+            output,
+        )
+    except Exception as exc:
+        typer.echo(f"native link failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    summary = manifest["summary"]
+    typer.echo(f"image={image} mode={manifest['mode']} status={manifest['status']}")
+    typer.echo(
+        f"providers={len(manifest['providers'])} "
+        f"covered={summary['covered_symbols']} "
+        f"imports={summary['import_symbols']} "
+        f"placeholders={summary['placeholder_symbols']} "
+        f"runnable={manifest['runnable']}",
+    )
+    typer.echo(f"linked_image={artifacts.image}")
+    typer.echo(f"link_manifest={artifacts.manifest}")
+    typer.echo(f"link_log={artifacts.log}")

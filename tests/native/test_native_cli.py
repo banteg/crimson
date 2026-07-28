@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from typer.testing import CliRunner
 
 from crimson.cli import app
-from crimson.native_link import NativeAuditArtifacts
+from crimson.native_link import NativeAuditArtifacts, NativeLinkedImageArtifacts
 
 
 def _audit(*, closed: bool):
@@ -91,3 +91,55 @@ def test_native_audit_cli_can_require_full_game_closure(monkeypatch, tmp_path: P
     )
 
     assert completed.exit_code == 1
+
+
+def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Path) -> None:
+    audit = _audit(closed=True)
+    config = object()
+    artifacts = NativeLinkedImageArtifacts(
+        image=tmp_path / "grim.dll",
+        import_library=tmp_path / "grim.lib",
+        map_file=tmp_path / "grim.dll.map",
+        response_file=tmp_path / "link.rsp",
+        log=tmp_path / "link.log",
+        manifest=tmp_path / "link.json",
+    )
+    manifest = {
+        "mode": "structural",
+        "providers": [{}, {}],
+        "runnable": False,
+        "status": "linked",
+        "summary": {
+            "covered_symbols": 53,
+            "import_symbols": 20,
+            "placeholder_symbols": 33,
+        },
+    }
+    monkeypatch.setattr(
+        "crimson.cli.native.native_link.build_native_audit",
+        lambda *args, **kwargs: audit,
+    )
+    monkeypatch.setattr(
+        "crimson.cli.native.native_link.write_native_audit",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "crimson.cli.native.native_link.load_native_provider_config",
+        lambda *args, **kwargs: config,
+    )
+    monkeypatch.setattr(
+        "crimson.cli.native.native_link.link_native_image",
+        lambda *args, **kwargs: (artifacts, manifest),
+    )
+
+    completed = CliRunner().invoke(
+        app,
+        ["native", "link", "--image", "grim.dll", "--out-dir", str(tmp_path)],
+    )
+
+    assert completed.exit_code == 0
+    assert "image=grim.dll mode=structural status=linked" in completed.stdout
+    assert "providers=2 covered=53 imports=20 placeholders=33 runnable=False" in (
+        completed.stdout
+    )
+    assert f"linked_image={tmp_path / 'grim.dll'}" in completed.stdout

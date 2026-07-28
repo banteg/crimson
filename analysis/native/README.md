@@ -21,6 +21,12 @@ Each image directory contains:
 - `data.json`: the curated data-map rows joined to reference-image sections,
   explicit data-definition evidence, and unresolved linker fan-in.
 
+An image with a provider boundary may also contain
+`link/link.json`, a deterministic structural-link receipt. The generated PE,
+map, import libraries, placeholder object, response file, and linker log stay
+ignored. The manifest records their hashes and keeps `runnable: false` until
+every unresolved symbol is backed by a real import or provider object.
+
 Object files remain ignored compiler-cache outputs. The manifest records their
 repository-relative paths and hashes so a build can be reproduced and audited
 without checking generated COFF files into Git.
@@ -50,6 +56,11 @@ The audit is intentionally strict:
 - symbol closure uses exact decorated COFF names;
 - the reference PE export must have an unambiguous `.def` mapping;
 - no unresolved symbol is hidden behind a generated stub.
+
+That last rule governs the canonical closure artifacts. A separate structural
+link may use manifest-declared placeholder functions or data to expose the
+next PE/linker blockers, but it never feeds those stubs back into
+`closure.json` or claims `all_references_closed`.
 
 Evidence-backed aliases live in
 `tools/native/linker_aliases/<image>.json`. Before emitting a deterministic

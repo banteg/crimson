@@ -1,0 +1,379 @@
+{
+  "schema": 1,
+  "image": "grim.dll",
+  "entry": "DllMain",
+  "image_base": "0x10000000",
+  "mode": "structural",
+  "providers": [
+    {
+      "name": "msvcrt.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "MSVCRT.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports these exports from MSVCRT."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "??2@YAPAXI@Z",
+          "link_name": "??2@YAPAXI@Z",
+          "export": "??2@YAPAXI@Z"
+        },
+        {
+          "name": "??3@YAXPAX@Z",
+          "link_name": "??3@YAXPAX@Z",
+          "export": "??3@YAXPAX@Z"
+        },
+        {
+          "name": "___CxxFrameHandler",
+          "link_name": "__CxxFrameHandler",
+          "export": "__CxxFrameHandler"
+        },
+        {
+          "name": "___CxxLongjmpUnwind@4",
+          "link_name": "__CxxLongjmpUnwind@4",
+          "export": "__CxxLongjmpUnwind"
+        },
+        {
+          "name": "__ftol",
+          "link_name": "_ftol",
+          "export": "_ftol"
+        },
+        {
+          "name": "__imp__longjmp",
+          "link_name": "longjmp",
+          "export": "longjmp"
+        },
+        {
+          "name": "__setjmp3",
+          "link_name": "_setjmp3",
+          "export": "_setjmp3"
+        },
+        {
+          "name": "__imp___getcwd",
+          "link_name": "_getcwd",
+          "export": "_getcwd"
+        },
+        {
+          "name": "__imp__fclose",
+          "link_name": "fclose",
+          "export": "fclose"
+        },
+        {
+          "name": "__imp__fopen",
+          "link_name": "fopen",
+          "export": "fopen"
+        },
+        {
+          "name": "__imp__fread",
+          "link_name": "fread",
+          "export": "fread"
+        },
+        {
+          "name": "__imp__fseek",
+          "link_name": "fseek",
+          "export": "fseek"
+        },
+        {
+          "name": "__imp__ftell",
+          "link_name": "ftell",
+          "export": "ftell"
+        },
+        {
+          "name": "__imp__vsprintf",
+          "link_name": "vsprintf",
+          "export": "vsprintf"
+        },
+        {
+          "name": "_strdup",
+          "link_name": "strdup",
+          "export": "_strdup"
+        }
+      ]
+    },
+    {
+      "name": "user32.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "USER32.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports these exports from USER32."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__LoadIconA@8",
+          "link_name": "LoadIconA@8",
+          "export": "LoadIconA"
+        },
+        {
+          "name": "__imp__MessageBoxA@16",
+          "link_name": "MessageBoxA@16",
+          "export": "MessageBoxA"
+        }
+      ]
+    },
+    {
+      "name": "winmm.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "WINMM.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports these exports from WINMM."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__imp__timeBeginPeriod@4",
+          "link_name": "timeBeginPeriod@4",
+          "export": "timeBeginPeriod"
+        },
+        {
+          "name": "__imp__timeGetTime@0",
+          "link_name": "timeGetTime@0",
+          "export": "timeGetTime"
+        }
+      ]
+    },
+    {
+      "name": "d3d8.dll",
+      "kind": "reference-import",
+      "resolution": "import-library",
+      "module": "d3d8.dll",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/imports.json",
+          "note": "The reference image imports Direct3DCreate8 from d3d8."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_Direct3DCreate8@4",
+          "link_name": "Direct3DCreate8@4",
+          "export": "Direct3DCreate8"
+        }
+      ]
+    },
+    {
+      "name": "host-platform-replacements",
+      "kind": "platform-replaced",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/matching_scope.json",
+          "note": "The port scope assigns these Win32, Direct3D, and input responsibilities to host backends."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "?grim_apply_config@IGrim2D_cpp@@UAE_NXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_d3d_init@@YA_NXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_d3d_shutdown@@YAXXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_joystick_button_down@@YAEI@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_joystick_init@@YA_NPAUHWND__@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_joystick_shutdown@@YAXXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_keyboard_init@@YA_NPAUHWND__@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_keyboard_key_down@@YAEI@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_keyboard_shutdown@@YAXXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_mouse_button_down@@YAEH@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_mouse_init@@YA_NPAUHWND__@@@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_mouse_shutdown@@YAXXZ",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_save_screenshot@IGrim2D_cpp@@UAE_NPAD@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_save_texture@IGrim2D_cpp@@UAE_NHPAD@Z",
+          "binding": "function"
+        },
+        {
+          "name": "?grim_window_destroy@@YAHXZ",
+          "binding": "function"
+        },
+        {
+          "name": "_grim_run_loop",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "directx-8.1-d3dx8-static",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/functions.json",
+          "note": "These D3DX8 bodies are statically linked into the reference image rather than imported."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_D3DXCreateTexture@32",
+          "binding": "function"
+        },
+        {
+          "name": "_D3DXCreateTextureFromFileExA@56",
+          "binding": "function"
+        },
+        {
+          "name": "_D3DXCreateTextureFromFileInMemoryEx@60",
+          "binding": "function"
+        },
+        {
+          "name": "_D3DXVec2Normalize@8",
+          "binding": "function"
+        },
+        {
+          "name": "_d3dx_copy_texture_filtered@24",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "directx-8.1-libjpeg-6a-static",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/matching_scope.json",
+          "note": "The matching scope identifies the IJG libjpeg 6a functions linked from the confirmed DirectX 8.1 d3dx8.lib."
+        },
+        {
+          "path": "analysis/ghidra/raw/grim.dll_strings.txt",
+          "note": "The reference image retains the corresponding IJG JPEG diagnostics."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_grim_jpeg_memory_src",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_CreateDecompress",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_destroy_decompress",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_finish_decompress",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_read_header",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_read_scanlines",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_start_decompress",
+          "binding": "function"
+        },
+        {
+          "name": "_jpeg_std_error",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "zlib-1.1.3-static",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/ghidra/raw/grim.dll_strings.txt",
+          "note": "The reference image identifies the embedded zlib/deflate implementation as 1.1.3."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_zlib_uncompress",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "msvc6-runtime-static",
+      "kind": "static-library",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/ida/raw/grim.dll/functions.json",
+          "note": "The reference image contains its atexit adapter rather than importing atexit."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "_atexit",
+          "binding": "function"
+        }
+      ]
+    },
+    {
+      "name": "msvc6-toolchain",
+      "kind": "toolchain",
+      "resolution": "placeholder-object",
+      "evidence": [
+        {
+          "path": "analysis/native/grim.dll/closure.json",
+          "note": "The native closure classifier identifies these as MSVC toolchain externals."
+        }
+      ],
+      "symbols": [
+        {
+          "name": "__except_list",
+          "binding": "data"
+        },
+        {
+          "name": "__fltused",
+          "binding": "data"
+        }
+      ]
+    }
+  ]
+}

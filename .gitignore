@@ -18,6 +18,9 @@
 /tools/native/abi/*/build/
 /tools/native/data_definitions/build/
 /tools/native/linker_aliases/build/
+/tools/native/providers/build/
+/analysis/native/*/link/*
+!/analysis/native/*/link/link.json
 .venv/
 .venv-dev/
 __pycache__/

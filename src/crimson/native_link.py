@@ -7,6 +7,7 @@ import re
 import shlex
 import shutil
 import struct
+import subprocess
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -20,15 +21,20 @@ NATIVE_DATA_MANIFEST_SCHEMA = 1
 NATIVE_DATA_DEFINITION_SCHEMA = 1
 NATIVE_TRANSLATION_UNIT_SCHEMA = 1
 NATIVE_LINKER_ALIAS_SCHEMA = 1
+NATIVE_PROVIDER_SCHEMA = 1
+NATIVE_LINK_MANIFEST_SCHEMA = 1
 
 NATIVE_OBJECT_MANIFEST_KIND = "crimson-native-object-manifest"
 NATIVE_SYMBOL_CLOSURE_KIND = "crimson-native-symbol-closure"
 NATIVE_DATA_MANIFEST_KIND = "crimson-native-data-manifest"
 NATIVE_DATA_DEFINITION_KIND = "crimson-native-data-definitions"
 NATIVE_LINKER_ALIAS_KIND = "crimson-native-linker-aliases"
+NATIVE_LINK_MANIFEST_KIND = "crimson-native-linked-image"
 
 IMAGE_SCN_LNK_COMDAT = 0x00001000
+IMAGE_SCN_CNT_CODE = 0x00000020
 IMAGE_SCN_CNT_INITIALIZED_DATA = 0x00000040
+IMAGE_SCN_MEM_EXECUTE = 0x20000000
 IMAGE_SCN_MEM_READ = 0x40000000
 IMAGE_SCN_MEM_WRITE = 0x80000000
 IMAGE_REL_I386_DIR32 = 0x0006
@@ -66,6 +72,8 @@ DEFAULT_LINKER_ALIAS_ROOT = (
     matchlib.REPO_ROOT / "tools" / "native" / "linker_aliases"
 )
 DEFAULT_LINKER_ALIAS_OBJECT_BUILD_ROOT = DEFAULT_LINKER_ALIAS_ROOT / "build"
+DEFAULT_PROVIDER_ROOT = matchlib.REPO_ROOT / "tools" / "native" / "providers"
+DEFAULT_PROVIDER_BUILD_ROOT = DEFAULT_PROVIDER_ROOT / "build"
 DEFAULT_ABI_CONFIGS = {
     "crimsonland.exe": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "crimsonland.exe",
     "grim.dll": matchlib.REPO_ROOT / "tools" / "native" / "abi" / "grim.dll",
@@ -89,6 +97,9 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
 DEFAULT_LINKER_ALIAS_CONFIGS = {
     "grim.dll": DEFAULT_LINKER_ALIAS_ROOT / "grim.dll.json",
 }
+DEFAULT_PROVIDER_CONFIGS = {
+    "grim.dll": DEFAULT_PROVIDER_ROOT / "grim.dll.json",
+}
 
 
 def default_native_data_definitions_path(image: str) -> Path:
@@ -101,6 +112,10 @@ def default_native_data_object_path(image: str) -> Path:
 
 def default_native_linker_alias_object_path(image: str) -> Path:
     return DEFAULT_LINKER_ALIAS_OBJECT_BUILD_ROOT / image / "aliases.obj"
+
+
+def default_native_provider_placeholder_object_path(image: str) -> Path:
+    return DEFAULT_PROVIDER_BUILD_ROOT / image / "placeholders.obj"
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +164,41 @@ class NativeLinkerAliasConfig:
     path: Path
     sha256: str
     aliases: tuple[NativeLinkerAliasSpec, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderEvidence:
+    path: Path
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderSymbol:
+    name: str
+    binding: str | None = None
+    link_name: str | None = None
+    export: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderSpec:
+    name: str
+    kind: str
+    resolution: str
+    module: str | None
+    evidence: tuple[NativeProviderEvidence, ...]
+    symbols: tuple[NativeProviderSymbol, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NativeProviderConfig:
+    image: str
+    path: Path
+    sha256: str
+    entry: str
+    image_base: int
+    mode: str
+    providers: tuple[NativeProviderSpec, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -285,6 +335,16 @@ class NativeAuditArtifacts:
     export_definition: Path
     symbol_closure: Path
     data_manifest: Path
+
+
+@dataclass(frozen=True, slots=True)
+class NativeLinkedImageArtifacts:
+    image: Path
+    import_library: Path
+    map_file: Path
+    response_file: Path
+    log: Path
+    manifest: Path
 
 
 def _sha256(path: Path) -> str:
@@ -479,6 +539,275 @@ def load_native_linker_alias_config(
         sha256=_sha256(path),
         aliases=tuple(aliases),
     )
+
+
+def load_native_provider_config(
+    path: Path,
+    *,
+    image: str,
+    repo_root: Path = matchlib.REPO_ROOT,
+) -> NativeProviderConfig:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != NATIVE_PROVIDER_SCHEMA:
+        raise ValueError(
+            f"{path}: expected schema {NATIVE_PROVIDER_SCHEMA}",
+        )
+    if payload.get("image") != image:
+        raise ValueError(f"{path}: targets {payload.get('image')!r}, expected {image!r}")
+    entry = payload.get("entry")
+    if not isinstance(entry, str) or not entry:
+        raise ValueError(f"{path}: entry must be a non-empty string")
+    raw_image_base = payload.get("image_base")
+    try:
+        image_base = (
+            int(raw_image_base, 0)
+            if isinstance(raw_image_base, str)
+            else int(raw_image_base)
+        )
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"{path}: image_base must be an integer") from error
+    if image_base <= 0 or image_base > 0xFFFFFFFF:
+        raise ValueError(f"{path}: image_base must fit a positive 32-bit address")
+    mode = payload.get("mode")
+    if mode != "structural":
+        raise ValueError(f"{path}: mode must be 'structural'")
+    raw_providers = payload.get("providers")
+    if not isinstance(raw_providers, list) or not raw_providers:
+        raise ValueError(f"{path}: providers must be a non-empty list")
+
+    providers: list[NativeProviderSpec] = []
+    provider_names: set[str] = set()
+    symbol_names: set[str] = set()
+    for provider_index, raw_provider in enumerate(raw_providers):
+        label = f"{path}: providers[{provider_index}]"
+        if not isinstance(raw_provider, dict):
+            raise TypeError(f"{label} must be an object")
+        name = raw_provider.get("name")
+        kind = raw_provider.get("kind")
+        resolution = raw_provider.get("resolution")
+        module = raw_provider.get("module")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"{label}.name must be non-empty")
+        if name in provider_names:
+            raise ValueError(f"{path}: duplicate provider name {name!r}")
+        provider_names.add(name)
+        if kind not in {
+            "platform-replaced",
+            "reference-import",
+            "static-library",
+            "toolchain",
+        }:
+            raise ValueError(f"{label}.kind is unsupported: {kind!r}")
+        if resolution not in {"import-library", "placeholder-object"}:
+            raise ValueError(f"{label}.resolution is unsupported: {resolution!r}")
+        if resolution == "import-library":
+            if kind != "reference-import":
+                raise ValueError(
+                    f"{label}: import-library resolution requires reference-import kind",
+                )
+            if not isinstance(module, str) or not module:
+                raise ValueError(f"{label}.module must be non-empty")
+        elif module is not None:
+            raise ValueError(f"{label}.module is only valid for import-library providers")
+
+        raw_evidence = raw_provider.get("evidence")
+        if not isinstance(raw_evidence, list) or not raw_evidence:
+            raise ValueError(f"{label}.evidence must be a non-empty list")
+        evidence: list[NativeProviderEvidence] = []
+        for evidence_index, raw_row in enumerate(raw_evidence):
+            evidence_label = f"{label}.evidence[{evidence_index}]"
+            if not isinstance(raw_row, dict):
+                raise TypeError(f"{evidence_label} must be an object")
+            raw_path = raw_row.get("path")
+            note = raw_row.get("note")
+            if not isinstance(raw_path, str) or not raw_path:
+                raise ValueError(f"{evidence_label}.path must be non-empty")
+            relative_path = Path(raw_path)
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                raise ValueError(f"{evidence_label}.path must be repository-relative")
+            evidence_path = repo_root / relative_path
+            if not evidence_path.is_file():
+                raise ValueError(f"{evidence_label}.path does not exist: {raw_path}")
+            if not isinstance(note, str) or not note:
+                raise ValueError(f"{evidence_label}.note must be non-empty")
+            evidence.append(
+                NativeProviderEvidence(
+                    path=evidence_path.resolve(),
+                    note=note,
+                ),
+            )
+
+        raw_symbols = raw_provider.get("symbols")
+        if not isinstance(raw_symbols, list) or not raw_symbols:
+            raise ValueError(f"{label}.symbols must be a non-empty list")
+        symbols: list[NativeProviderSymbol] = []
+        for symbol_index, raw_symbol in enumerate(raw_symbols):
+            symbol_label = f"{label}.symbols[{symbol_index}]"
+            if not isinstance(raw_symbol, dict):
+                raise TypeError(f"{symbol_label} must be an object")
+            symbol_name = raw_symbol.get("name")
+            if not isinstance(symbol_name, str) or not symbol_name:
+                raise ValueError(f"{symbol_label}.name must be non-empty")
+            try:
+                symbol_name.encode("latin1")
+            except UnicodeEncodeError as error:
+                raise ValueError(f"{symbol_label}.name must be Latin-1") from error
+            if symbol_name in symbol_names:
+                raise ValueError(f"{path}: duplicate provider symbol {symbol_name!r}")
+            symbol_names.add(symbol_name)
+            binding = raw_symbol.get("binding")
+            link_name = raw_symbol.get("link_name")
+            export = raw_symbol.get("export")
+            if resolution == "import-library":
+                if binding is not None:
+                    raise ValueError(
+                        f"{symbol_label}.binding is invalid for an import-library",
+                    )
+                if not isinstance(link_name, str) or not link_name:
+                    raise ValueError(f"{symbol_label}.link_name must be non-empty")
+                if not isinstance(export, str) or not export:
+                    raise ValueError(f"{symbol_label}.export must be non-empty")
+            else:
+                if binding not in {"data", "function"}:
+                    raise ValueError(
+                        f"{symbol_label}.binding must be 'data' or 'function'",
+                    )
+                if link_name is not None or export is not None:
+                    raise ValueError(
+                        f"{symbol_label}: placeholder symbols cannot declare import names",
+                    )
+            symbols.append(
+                NativeProviderSymbol(
+                    name=symbol_name,
+                    binding=cast(str | None, binding),
+                    link_name=cast(str | None, link_name),
+                    export=cast(str | None, export),
+                ),
+            )
+        providers.append(
+            NativeProviderSpec(
+                name=name,
+                kind=cast(str, kind),
+                resolution=cast(str, resolution),
+                module=cast(str | None, module),
+                evidence=tuple(evidence),
+                symbols=tuple(symbols),
+            ),
+        )
+    return NativeProviderConfig(
+        image=image,
+        path=path.resolve(),
+        sha256=_sha256(path),
+        entry=entry,
+        image_base=image_base,
+        mode=mode,
+        providers=tuple(providers),
+    )
+
+
+def native_provider_coverage(
+    config: NativeProviderConfig,
+    symbol_closure: dict[str, Any],
+) -> dict[str, Any]:
+    if symbol_closure.get("image") != config.image:
+        raise ValueError(
+            f"provider config targets {config.image!r}, "
+            f"closure targets {symbol_closure.get('image')!r}",
+        )
+    raw_unresolved = symbol_closure.get("unresolved")
+    if not isinstance(raw_unresolved, list):
+        raise TypeError("closure unresolved must be an array")
+    unresolved_by_name: dict[str, dict[str, Any]] = {}
+    for index, row in enumerate(raw_unresolved):
+        if not isinstance(row, dict) or not isinstance(row.get("name"), str):
+            raise TypeError(f"closure unresolved[{index}] must name a symbol")
+        unresolved_row = cast(dict[str, Any], row)
+        name = str(unresolved_row["name"])
+        if name in unresolved_by_name:
+            raise ValueError(f"closure contains duplicate unresolved symbol {name!r}")
+        unresolved_by_name[name] = unresolved_row
+    provider_symbols = {
+        symbol.name
+        for provider in config.providers
+        for symbol in provider.symbols
+    }
+    missing = sorted(set(unresolved_by_name) - provider_symbols)
+    unexpected = sorted(provider_symbols - set(unresolved_by_name))
+    if missing or unexpected:
+        raise ValueError(
+            "provider coverage does not equal unresolved closure: "
+            f"missing={missing} unexpected={unexpected}",
+        )
+
+    reference_imports = symbol_closure.get("reference_imports")
+    if not isinstance(reference_imports, list):
+        raise TypeError("closure reference_imports must be an array")
+    import_keys = {
+        (str(row.get("module", "")).casefold(), str(row.get("name", "")))
+        for row in reference_imports
+        if isinstance(row, dict)
+    }
+    provider_rows: list[dict[str, Any]] = []
+    for provider in config.providers:
+        if provider.resolution == "import-library":
+            assert provider.module is not None
+            for symbol in provider.symbols:
+                assert symbol.export is not None
+                key = (provider.module.removesuffix(".dll").casefold(), symbol.export)
+                normalized_import_keys = {
+                    (module.removesuffix(".dll"), export)
+                    for module, export in import_keys
+                }
+                if key not in normalized_import_keys:
+                    raise ValueError(
+                        f"{provider.name}: {symbol.name!r} lacks reference import "
+                        f"{provider.module}!{symbol.export}",
+                    )
+        for symbol in provider.symbols:
+            unresolved = unresolved_by_name[symbol.name]
+            catalog = unresolved.get("catalog")
+            if not isinstance(catalog, list):
+                raise TypeError(f"closure catalog for {symbol.name!r} must be an array")
+            dispositions = {
+                row.get("disposition")
+                for row in catalog
+                if isinstance(row, dict)
+            }
+            if (
+                provider.kind == "platform-replaced"
+                and "platform-replaced" not in dispositions
+            ):
+                raise ValueError(
+                    f"{provider.name}: {symbol.name!r} is not cataloged platform-replaced",
+                )
+            if (
+                provider.kind == "toolchain"
+                and unresolved.get("category") != "toolchain"
+            ):
+                raise ValueError(
+                    f"{provider.name}: {symbol.name!r} is not categorized toolchain",
+                )
+        provider_rows.append(
+            {
+                "kind": provider.kind,
+                "name": provider.name,
+                "resolution": provider.resolution,
+                "symbol_count": len(provider.symbols),
+            },
+        )
+    import_count = sum(
+        len(provider.symbols)
+        for provider in config.providers
+        if provider.resolution == "import-library"
+    )
+    placeholder_count = len(provider_symbols) - import_count
+    return {
+        "covered_symbols": len(provider_symbols),
+        "import_symbols": import_count,
+        "placeholder_symbols": placeholder_count,
+        "providers": provider_rows,
+        "runnable": placeholder_count == 0,
+    }
 
 
 def _record_bindings(record: NativeObjectRecord) -> tuple[NativeFunctionBinding, ...]:
@@ -3500,6 +3829,205 @@ def _write_bytes_atomic(path: Path, data: bytes) -> None:
     os.replace(temporary, path)
 
 
+def render_native_import_definition(provider: NativeProviderSpec) -> str:
+    if provider.resolution != "import-library" or provider.module is None:
+        raise ValueError(f"{provider.name}: expected an import-library provider")
+    lines = [f"LIBRARY {provider.module}", "EXPORTS"]
+    for symbol in provider.symbols:
+        assert symbol.link_name is not None
+        assert symbol.export is not None
+        entry = symbol.link_name
+        if symbol.export != symbol.link_name:
+            entry = f"{entry}={symbol.export}"
+        lines.append(f"    {entry}")
+    return "".join(f"{line}\n" for line in lines)
+
+
+def native_provider_placeholder_object_bytes(
+    providers: tuple[NativeProviderSpec, ...],
+) -> bytes:
+    symbols = sorted(
+        (
+            symbol
+            for provider in providers
+            if provider.resolution == "placeholder-object"
+            for symbol in provider.symbols
+        ),
+        key=lambda symbol: symbol.name,
+    )
+    if not symbols:
+        raise ValueError("provider placeholder object requires at least one symbol")
+    if len({symbol.name for symbol in symbols}) != len(symbols):
+        raise ValueError("provider placeholder object contains duplicate symbols")
+    function_symbols = [
+        symbol
+        for symbol in symbols
+        if symbol.binding == "function"
+    ]
+    data_symbols = [
+        symbol
+        for symbol in symbols
+        if symbol.binding == "data"
+    ]
+    if len(function_symbols) + len(data_symbols) != len(symbols):
+        raise ValueError("provider placeholder symbols require function or data binding")
+
+    text = bytearray()
+    function_offsets: dict[str, int] = {}
+    for symbol in function_symbols:
+        function_offsets[symbol.name] = len(text)
+        text.extend(b"\x31\xc0")
+        stack_match = re.search(r"@([0-9]+)$", symbol.name)
+        stack_bytes = int(stack_match.group(1)) if stack_match else 0
+        if stack_bytes:
+            if stack_bytes > 0xFFFF:
+                raise ValueError(
+                    f"placeholder function {symbol.name!r} stack size exceeds 16 bits",
+                )
+            text.extend(b"\xc2")
+            text.extend(struct.pack("<H", stack_bytes))
+        else:
+            text.extend(b"\xc3")
+        while len(text) % 4:
+            text.extend(b"\x90")
+    data = bytes(len(data_symbols) * 4)
+    data_offsets = {
+        symbol.name: index * 4
+        for index, symbol in enumerate(data_symbols)
+    }
+
+    section_rows: list[tuple[str, bytes, int]] = []
+    section_number_by_kind: dict[str, int] = {}
+    if text:
+        section_rows.append(
+            (
+                ".text",
+                bytes(text),
+                (
+                    IMAGE_SCN_CNT_CODE
+                    | _coff_alignment_characteristic(16)
+                    | IMAGE_SCN_MEM_EXECUTE
+                    | IMAGE_SCN_MEM_READ
+                ),
+            ),
+        )
+        section_number_by_kind["function"] = len(section_rows)
+    if data:
+        section_rows.append(
+            (
+                ".data",
+                data,
+                (
+                    IMAGE_SCN_CNT_INITIALIZED_DATA
+                    | _coff_alignment_characteristic(4)
+                    | IMAGE_SCN_MEM_READ
+                    | IMAGE_SCN_MEM_WRITE
+                ),
+            ),
+        )
+        section_number_by_kind["data"] = len(section_rows)
+
+    string_offsets: dict[str, int] = {}
+    string_payload = bytearray()
+    for symbol in symbols:
+        encoded = symbol.name.encode("latin1")
+        if len(encoded) <= 8:
+            continue
+        string_offsets[symbol.name] = 4 + len(string_payload)
+        string_payload.extend(encoded)
+        string_payload.append(0)
+    string_table = struct.pack("<I", 4 + len(string_payload)) + string_payload
+
+    section_table_end = 20 + len(section_rows) * 40
+    cursor = section_table_end
+    raw_offsets: list[int] = []
+    for _, section_data, _ in section_rows:
+        cursor = (cursor + 3) & ~3
+        raw_offsets.append(cursor)
+        cursor += len(section_data)
+    symbol_table_offset = (cursor + 3) & ~3
+    payload = bytearray(symbol_table_offset)
+    struct.pack_into(
+        "<HHIIIHH",
+        payload,
+        0,
+        matchlib.IMAGE_FILE_MACHINE_I386,
+        len(section_rows),
+        0,
+        symbol_table_offset,
+        len(symbols),
+        0,
+        0,
+    )
+    for index, ((section_name, section_data, characteristics), raw_offset) in enumerate(
+        zip(section_rows, raw_offsets, strict=True),
+    ):
+        header_offset = 20 + index * 40
+        payload[header_offset : header_offset + 8] = section_name.encode().ljust(
+            8,
+            b"\x00",
+        )
+        struct.pack_into(
+            "<IIIIIIHHI",
+            payload,
+            header_offset + 8,
+            0,
+            0,
+            len(section_data),
+            raw_offset,
+            0,
+            0,
+            0,
+            0,
+            characteristics,
+        )
+        payload[raw_offset : raw_offset + len(section_data)] = section_data
+
+    for symbol in symbols:
+        encoded = symbol.name.encode("latin1")
+        name_field = (
+            encoded.ljust(8, b"\x00")
+            if len(encoded) <= 8
+            else struct.pack("<II", 0, string_offsets[symbol.name])
+        )
+        payload.extend(name_field)
+        if symbol.binding == "function":
+            value = function_offsets[symbol.name]
+            symbol_type = 0x20
+        else:
+            value = data_offsets[symbol.name]
+            symbol_type = 0
+        payload.extend(
+            struct.pack(
+                "<IhHBB",
+                value,
+                section_number_by_kind[cast(str, symbol.binding)],
+                symbol_type,
+                matchlib.IMAGE_SYM_CLASS_EXTERNAL,
+                0,
+            ),
+        )
+    payload.extend(string_table)
+
+    object_data = bytes(payload)
+    coff = matchlib.parse_coff_object(object_data)
+    parsed = {
+        symbol.name: symbol
+        for symbol in coff.symbols
+        if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+    }
+    if set(parsed) != {symbol.name for symbol in symbols}:
+        raise ValueError("generated provider placeholder symbols did not round-trip")
+    for symbol in symbols:
+        parsed_symbol = parsed[symbol.name]
+        binding = cast(str, symbol.binding)
+        if parsed_symbol.section_number != section_number_by_kind[binding]:
+            raise ValueError(
+                f"generated provider placeholder {symbol.name!r} has wrong section",
+            )
+    return object_data
+
+
 def native_linker_alias_object_bytes(
     aliases: tuple[NativeLinkerAliasSpec, ...],
 ) -> bytes:
@@ -4185,3 +4713,395 @@ def write_native_audit(
         symbol_closure=symbol_closure_path,
         data_manifest=data_manifest_path,
     )
+
+
+def normalize_coff_archive_timestamps(data: bytes) -> bytes:
+    if not data.startswith(b"!<arch>\n"):
+        raise ValueError("expected a COFF archive")
+    normalized = bytearray(data)
+    offset = 8
+    while offset < len(normalized):
+        if offset + 60 > len(normalized):
+            raise ValueError("truncated COFF archive member header")
+        if normalized[offset + 58 : offset + 60] != b"`\n":
+            raise ValueError("invalid COFF archive member header")
+        raw_size = bytes(normalized[offset + 48 : offset + 58]).decode(
+            "ascii",
+            errors="strict",
+        )
+        try:
+            member_size = int(raw_size.strip())
+        except ValueError as error:
+            raise ValueError("invalid COFF archive member size") from error
+        normalized[offset + 16 : offset + 28] = b"0           "
+        member_offset = offset + 60
+        member_end = member_offset + member_size
+        if member_end > len(normalized):
+            raise ValueError("truncated COFF archive member")
+        member = normalized[member_offset:member_end]
+        if (
+            len(member) >= 20
+            and struct.unpack_from("<H", member, 0)[0]
+            == matchlib.IMAGE_FILE_MACHINE_I386
+        ):
+            normalized[member_offset + 4 : member_offset + 8] = b"\x00" * 4
+        elif len(member) >= 20 and member[0:4] == b"\x00\x00\xff\xff":
+            normalized[member_offset + 8 : member_offset + 12] = b"\x00" * 4
+        offset = member_end + (member_size & 1)
+    if offset != len(normalized):
+        raise ValueError("invalid COFF archive alignment")
+    return bytes(normalized)
+
+
+def normalize_pe_timestamp(data: bytes) -> bytes:
+    if len(data) < 0x40 or data[0:2] != b"MZ":
+        raise ValueError("expected a PE image")
+    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+    if pe_offset + 24 > len(data) or data[pe_offset : pe_offset + 4] != b"PE\x00\x00":
+        raise ValueError("invalid PE header")
+    normalized = bytearray(data)
+    normalized[pe_offset + 8 : pe_offset + 12] = b"\x00" * 4
+    _, section_count, _, _, _, optional_size, _ = struct.unpack_from(
+        "<HHIIIHH",
+        normalized,
+        pe_offset + 4,
+    )
+    optional_offset = pe_offset + 24
+    if optional_offset + optional_size > len(normalized):
+        raise ValueError("truncated PE optional header")
+    if struct.unpack_from("<H", normalized, optional_offset)[0] != 0x10B:
+        raise ValueError("expected a PE32 optional header")
+    export_rva, export_size = struct.unpack_from(
+        "<II",
+        normalized,
+        optional_offset + 96,
+    )
+    section_table_offset = optional_offset + optional_size
+    if section_table_offset + section_count * 40 > len(normalized):
+        raise ValueError("truncated PE section table")
+    if export_rva and export_size >= 8:
+        export_offset: int | None = None
+        for index in range(section_count):
+            section_offset = section_table_offset + index * 40
+            virtual_size, virtual_address, raw_size, raw_offset = struct.unpack_from(
+                "<IIII",
+                normalized,
+                section_offset + 8,
+            )
+            section_size = max(virtual_size, raw_size)
+            if virtual_address <= export_rva < virtual_address + section_size:
+                export_offset = raw_offset + export_rva - virtual_address
+                break
+        if export_offset is None or export_offset + 8 > len(normalized):
+            raise ValueError("PE export directory is outside mapped sections")
+        normalized[export_offset + 4 : export_offset + 8] = b"\x00" * 4
+    return bytes(normalized)
+
+
+def native_pe_summary(data: bytes) -> dict[str, Any]:
+    normalized = normalize_pe_timestamp(data)
+    pe_offset = struct.unpack_from("<I", normalized, 0x3C)[0]
+    machine, section_count, timestamp, _, _, optional_size, characteristics = (
+        struct.unpack_from("<HHIIIHH", normalized, pe_offset + 4)
+    )
+    optional_offset = pe_offset + 24
+    if optional_offset + optional_size > len(normalized):
+        raise ValueError("truncated PE optional header")
+    magic = struct.unpack_from("<H", normalized, optional_offset)[0]
+    if magic != 0x10B:
+        raise ValueError(f"expected PE32 optional header, got 0x{magic:x}")
+    entry_point = struct.unpack_from("<I", normalized, optional_offset + 16)[0]
+    image_base = struct.unpack_from("<I", normalized, optional_offset + 28)[0]
+    image_size = struct.unpack_from("<I", normalized, optional_offset + 56)[0]
+    subsystem = struct.unpack_from("<H", normalized, optional_offset + 68)[0]
+    return {
+        "characteristics": characteristics,
+        "dll": bool(characteristics & 0x2000),
+        "entry_point_rva": entry_point,
+        "image_base": image_base,
+        "image_size": image_size,
+        "machine": machine,
+        "optional_magic": magic,
+        "section_count": section_count,
+        "subsystem": subsystem,
+        "timestamp": timestamp,
+    }
+
+
+def _wibo_windows_path(path: Path) -> str:
+    windows_path = str(path.resolve()).replace("/", "\\")
+    return f"Z:{windows_path}"
+
+
+def _provider_file_stem(name: str) -> str:
+    stem = re.sub(r"[^a-z0-9]+", "-", name.casefold()).strip("-")
+    if not stem:
+        raise ValueError(f"provider name {name!r} has no usable file stem")
+    return stem
+
+
+def _native_linker_tools(objects: NativeObjectSet) -> tuple[Path, Path, Path]:
+    if objects.toolchain is None:
+        raise ValueError("native object set lacks a toolchain snapshot")
+    candidates = [
+        (
+            bundle.root / "Bin" / "LIB.EXE",
+            bundle.root / "Bin" / "LINK.EXE",
+        )
+        for bundle in objects.toolchain.compiler_bundles
+        if (bundle.root / "Bin" / "LIB.EXE").is_file()
+        and (bundle.root / "Bin" / "LINK.EXE").is_file()
+    ]
+    if len(candidates) != 1:
+        raise ValueError(
+            "native structural link requires exactly one compiler bundle with "
+            f"LIB.EXE and LINK.EXE, found {len(candidates)}",
+        )
+    library_tool, linker = candidates[0]
+    return objects.toolchain.wibo, library_tool, linker
+
+
+def _run_native_tool(
+    argv: list[str],
+    *,
+    cwd: Path,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        argv,
+        cwd=cwd,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+
+def link_native_image(
+    audit: NativeAudit,
+    provider_config: NativeProviderConfig,
+    output_directory: Path,
+    *,
+    repo_root: Path = matchlib.REPO_ROOT,
+) -> tuple[NativeLinkedImageArtifacts, dict[str, Any]]:
+    closure_summary = audit.symbol_closure.get("summary")
+    if not isinstance(closure_summary, dict):
+        raise TypeError("native closure summary must be an object")
+    if not closure_summary.get("game_owned_closure"):
+        raise ValueError("native link requires game-owned closure")
+    coverage = native_provider_coverage(provider_config, audit.symbol_closure)
+    wibo, library_tool, linker = _native_linker_tools(audit.objects)
+
+    output_directory.mkdir(parents=True, exist_ok=True)
+    provider_directory = output_directory / "providers"
+    provider_directory.mkdir(parents=True, exist_ok=True)
+    linker_output: list[str] = []
+    provider_artifact_rows: list[dict[str, Any]] = []
+    import_libraries: list[Path] = []
+    stems: set[str] = set()
+    for provider in provider_config.providers:
+        evidence = [
+            {
+                **_file_payload(row.path, repo_root=repo_root),
+                "note": row.note,
+            }
+            for row in provider.evidence
+        ]
+        artifact_row: dict[str, Any] = {
+            "evidence": evidence,
+            "kind": provider.kind,
+            "name": provider.name,
+            "resolution": provider.resolution,
+            "symbols": [symbol.name for symbol in provider.symbols],
+        }
+        if provider.resolution == "import-library":
+            stem = _provider_file_stem(provider.name)
+            if stem in stems:
+                raise ValueError(f"provider file stem collision: {stem!r}")
+            stems.add(stem)
+            definition_path = provider_directory / f"{stem}.def"
+            import_library_path = provider_directory / f"{stem}.lib"
+            matchlib._write_text_atomic(
+                definition_path,
+                render_native_import_definition(provider),
+            )
+            completed = _run_native_tool(
+                [
+                    str(wibo),
+                    str(library_tool),
+                    "/nologo",
+                    f"/def:{_wibo_windows_path(definition_path)}",
+                    f"/out:{_wibo_windows_path(import_library_path)}",
+                    "/machine:ix86",
+                ],
+                cwd=repo_root,
+            )
+            linker_output.extend(
+                part
+                for part in (completed.stdout, completed.stderr)
+                if part
+            )
+            if completed.returncode != 0 or not import_library_path.is_file():
+                raise RuntimeError(
+                    f"failed to build import library for {provider.name}: "
+                    f"exit={completed.returncode}",
+                )
+            _write_bytes_atomic(
+                import_library_path,
+                normalize_coff_archive_timestamps(import_library_path.read_bytes()),
+            )
+            generated_exp = import_library_path.with_suffix(".exp")
+            if generated_exp.is_file():
+                generated_exp.unlink()
+            import_libraries.append(import_library_path)
+            artifact_row.update(
+                {
+                    "definition": _file_payload(
+                        definition_path,
+                        repo_root=repo_root,
+                    ),
+                    "import_library": _file_payload(
+                        import_library_path,
+                        repo_root=repo_root,
+                    ),
+                    "module": provider.module,
+                },
+            )
+        provider_artifact_rows.append(artifact_row)
+
+    placeholder_providers = tuple(
+        provider
+        for provider in provider_config.providers
+        if provider.resolution == "placeholder-object"
+    )
+    placeholder_path: Path | None = None
+    placeholder_payload: dict[str, Any] | None = None
+    if placeholder_providers:
+        placeholder_path = provider_directory / "placeholders.obj"
+        placeholder_bytes = native_provider_placeholder_object_bytes(
+            placeholder_providers,
+        )
+        _write_bytes_atomic(placeholder_path, placeholder_bytes)
+        placeholder_payload = {
+            **_file_payload(placeholder_path, repo_root=repo_root),
+            "symbol_count": coverage["placeholder_symbols"],
+        }
+
+    object_paths = [
+        *(record.object_path for record in audit.objects.records),
+        *(record.object_path for record in audit.objects.data_records),
+        *(record.object_path for record in audit.objects.linker_alias_records),
+        *import_libraries,
+    ]
+    if placeholder_path is not None:
+        object_paths.append(placeholder_path)
+    response_path = output_directory / "link.rsp"
+    matchlib._write_text_atomic(
+        response_path,
+        "".join(f'"{_wibo_windows_path(path)}"\n' for path in object_paths),
+    )
+    export_path = output_directory / "exports.def"
+    matchlib._write_text_atomic(
+        export_path,
+        render_export_definition(audit.objects.image, audit.symbol_closure),
+    )
+    image_path = output_directory / audit.objects.image
+    import_library_path = output_directory / f"{Path(audit.objects.image).stem}.lib"
+    map_path = output_directory / f"{audit.objects.image}.map"
+    log_path = output_directory / "link.log"
+    manifest_path = output_directory / "link.json"
+    link_completed = _run_native_tool(
+        [
+            str(wibo),
+            str(linker),
+            "/nologo",
+            "/dll",
+            "/nodefaultlib",
+            "/machine:ix86",
+            f"/entry:{provider_config.entry}",
+            f"/base:0x{provider_config.image_base:08x}",
+            f"/out:{_wibo_windows_path(image_path)}",
+            f"/implib:{_wibo_windows_path(import_library_path)}",
+            f"/map:{_wibo_windows_path(map_path)}",
+            f"/def:{_wibo_windows_path(export_path)}",
+            f"@{_wibo_windows_path(response_path)}",
+        ],
+        cwd=repo_root,
+    )
+    linker_output.extend(
+        part
+        for part in (link_completed.stdout, link_completed.stderr)
+        if part
+    )
+    matchlib._write_text_atomic(log_path, "".join(linker_output))
+    if link_completed.returncode != 0 or not image_path.is_file():
+        raise RuntimeError(
+            f"native link failed: exit={link_completed.returncode}; log={log_path}",
+        )
+
+    _write_bytes_atomic(
+        image_path,
+        normalize_pe_timestamp(image_path.read_bytes()),
+    )
+    if import_library_path.is_file():
+        _write_bytes_atomic(
+            import_library_path,
+            normalize_coff_archive_timestamps(import_library_path.read_bytes()),
+        )
+    generated_exp = import_library_path.with_suffix(".exp")
+    if generated_exp.is_file():
+        exp_data = bytearray(generated_exp.read_bytes())
+        if (
+            len(exp_data) >= 20
+            and struct.unpack_from("<H", exp_data, 0)[0]
+            == matchlib.IMAGE_FILE_MACHINE_I386
+        ):
+            exp_data[4:8] = b"\x00" * 4
+            _write_bytes_atomic(generated_exp, bytes(exp_data))
+
+    pe_summary = native_pe_summary(image_path.read_bytes())
+    if (
+        pe_summary["machine"] != matchlib.IMAGE_FILE_MACHINE_I386
+        or not pe_summary["dll"]
+        or pe_summary["image_base"] != provider_config.image_base
+        or pe_summary["timestamp"] != 0
+    ):
+        raise ValueError(f"linked PE failed structural validation: {pe_summary}")
+    manifest = {
+        "audit_digest": audit.object_manifest["audit_digest"],
+        "image": audit.objects.image,
+        "kind": NATIVE_LINK_MANIFEST_KIND,
+        "mode": provider_config.mode,
+        "output": {
+            **_file_payload(image_path, repo_root=repo_root),
+            "pe": pe_summary,
+        },
+        "placeholder_object": placeholder_payload,
+        "provider_config": {
+            **_file_payload(provider_config.path, repo_root=repo_root),
+            "declared_sha256": provider_config.sha256,
+        },
+        "providers": provider_artifact_rows,
+        "runnable": coverage["runnable"],
+        "schema": NATIVE_LINK_MANIFEST_SCHEMA,
+        "status": "linked",
+        "summary": {
+            **coverage,
+            "input_object_count": len(object_paths),
+        },
+        "toolchain": {
+            "library_tool": _file_payload(library_tool, repo_root=repo_root),
+            "linker": _file_payload(linker, repo_root=repo_root),
+            "wibo": _file_payload(wibo, repo_root=repo_root),
+        },
+    }
+    matchlib.write_match_json(manifest_path, manifest)
+    artifacts = NativeLinkedImageArtifacts(
+        image=image_path,
+        import_library=import_library_path,
+        map_file=map_path,
+        response_file=response_path,
+        log=log_path,
+        manifest=manifest_path,
+    )
+    return artifacts, manifest

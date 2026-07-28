@@ -10,6 +10,7 @@ import pytest
 from crimson import match as matchlib
 from crimson.native_link import (
     DEFAULT_LINKER_ALIAS_CONFIGS,
+    DEFAULT_PROVIDER_CONFIGS,
     DEFAULT_TRANSLATION_UNIT_CONFIGS,
     IMAGE_REL_I386_DIR32,
     IMAGE_SCN_LNK_COMDAT,
@@ -31,11 +32,18 @@ from crimson.native_link import (
     data_manifest_payload,
     load_native_data_definitions,
     load_native_linker_alias_config,
+    load_native_provider_config,
     load_native_translation_unit_config,
     native_data_object_bytes,
     native_linker_alias_object_bytes,
+    native_pe_summary,
+    native_provider_coverage,
+    native_provider_placeholder_object_bytes,
+    normalize_coff_archive_timestamps,
+    normalize_pe_timestamp,
     object_manifest_payload,
     render_export_definition,
+    render_native_import_definition,
     render_object_list,
     symbol_closure_payload,
 )
@@ -572,6 +580,149 @@ def test_default_grim_linker_alias_config_records_native_cleanup_calls() -> None
             ),
         ),
     )
+
+
+def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
+    config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+    closure = json.loads(
+        (matchlib.REPO_ROOT / "analysis/native/grim.dll/closure.json").read_text(
+            encoding="utf-8",
+        ),
+    )
+
+    coverage = native_provider_coverage(config, closure)
+
+    assert coverage["covered_symbols"] == 53
+    assert coverage["import_symbols"] == 20
+    assert coverage["placeholder_symbols"] == 33
+    assert coverage["runnable"] is False
+    assert [
+        provider.name
+        for provider in config.providers
+        if provider.resolution == "import-library"
+    ] == [
+        "msvcrt.dll",
+        "user32.dll",
+        "winmm.dll",
+        "d3d8.dll",
+    ]
+
+
+def test_native_provider_import_definitions_preserve_linker_names() -> None:
+    config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+    providers = {provider.name: provider for provider in config.providers}
+
+    assert render_native_import_definition(providers["user32.dll"]) == (
+        "LIBRARY USER32.dll\n"
+        "EXPORTS\n"
+        "    LoadIconA@8=LoadIconA\n"
+        "    MessageBoxA@16=MessageBoxA\n"
+    )
+    msvcrt = render_native_import_definition(providers["msvcrt.dll"])
+    assert "    __CxxLongjmpUnwind@4=__CxxLongjmpUnwind\n" in msvcrt
+    assert "    strdup=_strdup\n" in msvcrt
+    assert "    atexit\n" not in msvcrt
+
+
+def test_native_provider_placeholder_object_is_deterministic() -> None:
+    config = load_native_provider_config(
+        DEFAULT_PROVIDER_CONFIGS["grim.dll"],
+        image="grim.dll",
+    )
+    providers = tuple(
+        provider
+        for provider in config.providers
+        if provider.resolution == "placeholder-object"
+    )
+
+    data = native_provider_placeholder_object_bytes(providers)
+    assert data == native_provider_placeholder_object_bytes(providers)
+    coff = matchlib.parse_coff_object(data)
+    symbols = {
+        symbol.name: symbol
+        for symbol in coff.symbols
+        if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL
+    }
+
+    assert len(symbols) == 33
+    assert [section.name for section in coff.sections] == [".text", ".data"]
+    stdcall = symbols["_D3DXCreateTexture@32"]
+    assert coff.sections[stdcall.section_number - 1].data[
+        stdcall.value : stdcall.value + 5
+    ] == b"\x31\xc0\xc2\x20\x00"
+    cxx = symbols["?grim_apply_config@IGrim2D_cpp@@UAE_NXZ"]
+    assert coff.sections[cxx.section_number - 1].data[
+        cxx.value : cxx.value + 3
+    ] == b"\x31\xc0\xc3"
+    assert symbols["__fltused"].section_number == 2
+
+
+def test_coff_archive_timestamp_normalization_is_idempotent() -> None:
+    member = bytearray(20)
+    struct.pack_into("<H", member, 0, matchlib.IMAGE_FILE_MACHINE_I386)
+    struct.pack_into("<I", member, 4, 0x12345678)
+    header = (
+        b"provider.obj/".ljust(16)
+        + b"1234567890".ljust(12)
+        + b"0".ljust(6)
+        + b"0".ljust(6)
+        + b"100644".ljust(8)
+        + str(len(member)).encode().ljust(10)
+        + b"`\n"
+    )
+    archive = b"!<arch>\n" + header + member
+
+    normalized = normalize_coff_archive_timestamps(archive)
+
+    assert normalized == normalize_coff_archive_timestamps(normalized)
+    assert normalized[24:36] == b"0           "
+    assert normalized[8 + 60 + 4 : 8 + 60 + 8] == b"\x00" * 4
+
+
+def test_pe_timestamp_normalization_covers_export_directory() -> None:
+    image = bytearray(0x300)
+    image[0:2] = b"MZ"
+    struct.pack_into("<I", image, 0x3C, 0x80)
+    image[0x80:0x84] = b"PE\x00\x00"
+    struct.pack_into(
+        "<HHIIIHH",
+        image,
+        0x84,
+        matchlib.IMAGE_FILE_MACHINE_I386,
+        1,
+        0x12345678,
+        0,
+        0,
+        0xE0,
+        0x2000,
+    )
+    optional = 0x98
+    struct.pack_into("<H", image, optional, 0x10B)
+    struct.pack_into("<I", image, optional + 16, 0x1010)
+    struct.pack_into("<I", image, optional + 28, 0x10000000)
+    struct.pack_into("<I", image, optional + 56, 0x2000)
+    struct.pack_into("<H", image, optional + 68, 2)
+    struct.pack_into("<II", image, optional + 96, 0x1000, 40)
+    section = optional + 0xE0
+    image[section : section + 8] = b".rdata\x00\x00"
+    struct.pack_into("<IIII", image, section + 8, 0x100, 0x1000, 0x100, 0x200)
+    struct.pack_into("<I", image, 0x204, 0x87654321)
+
+    normalized = normalize_pe_timestamp(bytes(image))
+    summary = native_pe_summary(normalized)
+
+    assert struct.unpack_from("<I", normalized, 0x88)[0] == 0
+    assert struct.unpack_from("<I", normalized, 0x204)[0] == 0
+    assert summary["machine"] == matchlib.IMAGE_FILE_MACHINE_I386
+    assert summary["dll"] is True
+    assert summary["image_base"] == 0x10000000
+    assert summary["timestamp"] == 0
 
 
 def test_wibo_resolution_skips_non_executable_repository_copy(

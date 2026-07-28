@@ -127,6 +127,38 @@ Use `--require-game-closure` when the second gate is expected to pass. It exits
 with status 1 while honest game-data debt remains; malformed inputs or build
 failures exit with status 2.
 
+## Structural Grim link
+
+Grim is the first image with a checked-in provider boundary. Once its
+game-owned closure gate passes, run:
+
+```bash
+just native-link grim.dll
+```
+
+`tools/native/providers/grim.dll.json` must cover the unresolved-symbol set
+exactly. It distinguishes 20 exports that the reference PE really imports
+from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll` from 33 static,
+toolchain, or host-replaced symbols that still lack recovered provider
+objects. Every group cites repository evidence, and reference-import entries
+are checked against the pinned PE import table before linking.
+
+The command rebuilds the canonical audit, synthesizes import libraries with
+the recorded VC6 tools, emits an explicitly labeled placeholder COFF object
+for the remaining providers, and invokes the VC6 linker with the recovered
+entry point, image base, and export definition. It writes
+`analysis/native/grim.dll/link/link.json`; bulk PE, map, library, response,
+log, and provider outputs remain ignored. Archive, object, PE header, and PE
+export-directory timestamps are normalized, so identical inputs produce the
+same linked-image hash.
+
+This is a structural linker milestone, not a runnable DLL or a byte-match
+claim. `link.json.runnable` stays false while any placeholder symbol remains.
+The canonical closure report also keeps those 33 references unresolved, so
+`all_references_closed` cannot pass merely because a generated stub made the
+linker accept the image. Replacing each placeholder group with its actual
+provider object is the path from a structural image to a runnable one.
+
 ## ABI boundary
 
 Each image assertion unit is compiled by the same 32-bit VC6 toolchain before

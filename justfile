@@ -126,6 +126,9 @@ entrypoint-trace:
 native-audit image="grim.dll" *args:
     uv run crimson native audit --image "{{image}}" --out-dir "analysis/native/{{image}}" {{args}}
 
+native-link image="grim.dll" *args:
+    uv run crimson native link --image "{{image}}" --out-dir "analysis/native/{{image}}/link" {{args}}
+
 function-hotspots:
     uv run scripts/function_hotspots.py --top 12 --only-fun
 
